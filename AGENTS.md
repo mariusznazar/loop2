@@ -13,3 +13,8 @@ Until the part map has its first parts, its guard reports every tracked file as 
 
 Nothing runs these checks automatically. Before a merge, run the format guard of every changed foundation file and the tests of every changed part, and report what failed and what stayed unchecked. A check that did not run is never a pass.
 <!-- the-way:end -->
+
+## Backlog
+
+- Projects: C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\
+- Tasks: C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\_tasks_active.md
