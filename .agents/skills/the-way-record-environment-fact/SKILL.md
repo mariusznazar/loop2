@@ -5,9 +5,9 @@ description: Use when a product's environment facts file, foundations/environmen
 
 # the-way-record-environment-fact
 
-The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `d7967ede047cefa81c0492337e7b70a314d0d697`.
+The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `f51acb3deb078be6073932059a23d488e1c41210`.
 
-If `.the-way/elements/environment-facts/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `d7967ede047cefa81c0492337e7b70a314d0d697`. If initialization fails or either commit differs, stop.
+If `.the-way/elements/environment-facts/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `f51acb3deb078be6073932059a23d488e1c41210`. If initialization fails or either commit differs, stop.
 
 Read `.the-way/elements/environment-facts/skill/SKILL.md` in full and follow it. Read its referenced template and `elements/common/` files inside `.the-way`. Its paragraph about resolving a global skill link applies only to a global install; here the process root is `.the-way`. Do not substitute a global skill.
 
