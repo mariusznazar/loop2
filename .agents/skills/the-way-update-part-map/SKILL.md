@@ -5,9 +5,9 @@ description: Use when a product's part map, foundations/part_map.md, has to gain
 
 # the-way-update-part-map
 
-The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `f51acb3deb078be6073932059a23d488e1c41210`.
+The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `a3badc952213008551e7668983caa1b3d565db3a`.
 
-If `.the-way/elements/part-map/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `f51acb3deb078be6073932059a23d488e1c41210`. If initialization fails or either commit differs, stop.
+If `.the-way/elements/part-map/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `a3badc952213008551e7668983caa1b3d565db3a`. If initialization fails or either commit differs, stop.
 
 Read `.the-way/elements/part-map/skill/SKILL.md` in full and follow it. Read its referenced template and `elements/common/` files inside `.the-way`. Its paragraph about resolving a global skill link applies only to a global install; here the process root is `.the-way`. Do not substitute a global skill.
 
