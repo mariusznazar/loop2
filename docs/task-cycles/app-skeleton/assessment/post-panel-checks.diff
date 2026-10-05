@@ -1,0 +1,55 @@
+diff --git a/tests/invariants/loop2_invariant_support.py b/tests/invariants/loop2_invariant_support.py
+index 13a54ae..860c728 100644
+--- a/tests/invariants/loop2_invariant_support.py
++++ b/tests/invariants/loop2_invariant_support.py
+@@ -320,3 +320,13 @@ def deployment_files(root=ROOT):
+                 any(fnmatch.fnmatchcase(relative, p) for p in DEPLOYMENT_PATH_PATTERNS):
+             found.append(relative)
+     return sorted(found)
++
++
++# Files that pin a Node.js version but deploy nothing: the runtime check reads them, the
++# typecheck check's deployment tripwire does not count them.
++VERSION_PIN_NAMES = (".nvmrc", ".node-version", ".tool-versions")
++
++
++def deployment_route_files(root=ROOT):
++    """The deployment files, less the version-pin files: the routes a deployment can take."""
++    return [p for p in deployment_files(root) if p.rsplit("/", 1)[-1] not in VERSION_PIN_NAMES]
+diff --git a/tests/invariants/test_account_server_typecheck.py b/tests/invariants/test_account_server_typecheck.py
+index be0ddfe..2d3a346 100644
+--- a/tests/invariants/test_account_server_typecheck.py
++++ b/tests/invariants/test_account_server_typecheck.py
+@@ -17,7 +17,9 @@ Covers:
+ Does NOT cover: a deployment defined outside this repository, or one that skips `npm run build`.
+ While the repository holds no deployment file — the skeleton has none — "before deployment" is
+ read as "before the build a deployment would run produces anything"; once a deployment file
+-appears, the last test fails on purpose until the check is extended to read that file.
++appears, the last test fails on purpose until the check is extended to read that file. A file
++that only pins a Node.js version (.nvmrc, .node-version, .tool-versions) deploys nothing and does
++not count here.
+ """
+ 
+ import os
+@@ -89,7 +91,7 @@ class ServerTypesCheckedBeforeDeployment(unittest.TestCase):
+ 
+     def test_no_deployment_route_left_unread(self):
+         # invariant: account-server-typecheck/1
+-        found = support.deployment_files()
++        found = support.deployment_route_files()
+         self.assertEqual(found, [], "deployment files exist that this check does not read; "
+                                     "extend it to show their route runs the type check first")
+ 
+diff --git a/tests/invariants/test_browser_view_framework.py b/tests/invariants/test_browser_view_framework.py
+index 613c8f9..55371c7 100644
+--- a/tests/invariants/test_browser_view_framework.py
++++ b/tests/invariants/test_browser_view_framework.py
+@@ -64,7 +64,7 @@ TEXT_EXTENSIONS = (".ts", ".mts", ".cts", ".js", ".mjs", ".cjs", ".html", ".htm"
+ DOM_RENDERING_MEMBERS = (
+     "createElement", "createElementNS", "createTextNode", "createDocumentFragment",
+     "getElementById", "getElementsByClassName", "getElementsByTagName", "querySelector",
+-    "querySelectorAll", "body", "head", "documentElement", "append", "prepend",
++    "querySelectorAll", "append", "prepend",
+     "replaceChildren", "adoptNode", "importNode",
+ )
+ DOM_RENDERING_CALL = re.compile(

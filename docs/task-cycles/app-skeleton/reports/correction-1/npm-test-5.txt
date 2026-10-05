@@ -1,0 +1,21 @@
+
+> loop2@0.0.0 test
+> npm run build && node --test tests/http.test.mjs tests/startup.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ serves the built HTML and JavaScript from another working directory (37.9193ms)
+✔ API keeps its JSON error across paths, methods, queries and HTML negotiation (42.7213ms)
+✔ ordinary missing routes and files do not become the home page or API (6.5889ms)
+✔ raw and encoded traversal cannot expose files outside dist/public (18.8153ms)
+✔ exits with an error instead of reporting ready when port 3000 is occupied (185.0526ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 302.587

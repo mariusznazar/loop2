@@ -1,0 +1,56 @@
+....F.E.............E
+======================================================================
+ERROR: setUpClass (test_account_server_express_http.ExpressRoutesRunningServer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_account_server_express_http.py", line 136, in setUpClass
+    cls.server = support.Server(copy, extra_env=DEBUG_ENV)
+                 ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\loop2_invariant_support.py", line 211, in __init__
+    raise AssertionError(
+        f"`npm start` exited {self.process.returncode} before accepting "
+        f"connections:\n{self.output()}")
+AssertionError: `npm start` exited 0 before accepting connections:
+--- stdout ---
+
+> loop2@0.0.0 start
+> node dist/server/main.js
+
+
+--- stderr ---
+
+
+======================================================================
+ERROR: setUpClass (test_loop2_api_error_route.UnmatchedApiRequests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_loop2_api_error_route.py", line 66, in setUpClass
+    cls.server = support.Server(cls.copy)
+                 ~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\loop2_invariant_support.py", line 211, in __init__
+    raise AssertionError(
+        f"`npm start` exited {self.process.returncode} before accepting "
+        f"connections:\n{self.output()}")
+AssertionError: `npm start` exited 0 before accepting connections:
+--- stdout ---
+
+> loop2@0.0.0 start
+> node dist/server/main.js
+
+
+--- stderr ---
+
+
+======================================================================
+FAIL: test_server_source_imports_express (test_account_server_express_http.ExpressInServerSource.test_server_source_imports_express)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_account_server_express_http.py", line 114, in test_server_source_imports_express
+    self.assertTrue(importing, "no file of src/server imports express")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [] is not true : no file of src/server imports express
+
+----------------------------------------------------------------------
+Ran 19 tests in 19.576s
+
+FAILED (failures=1, errors=2)

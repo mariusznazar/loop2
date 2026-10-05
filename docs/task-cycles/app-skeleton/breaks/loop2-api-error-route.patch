@@ -1,0 +1,20 @@
+diff --git a/src/server/app.ts b/src/server/app.ts
+index da76a7b..64809dd 100644
+--- a/src/server/app.ts
++++ b/src/server/app.ts
+@@ -3,13 +3,11 @@ import { fileURLToPath } from 'node:url';
+ 
+ export function createApp(): Express {
+   const app = express();
+-  app.use('/api', (_request, response) => {
+-    response.status(404).json({ error: 'Not found' });
+-  });
+   const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url));
+   app.use(express.static(publicDirectory));
++  // Single-page-app fallback: any unmatched path gets the built page.
+   app.use((_request, response) => {
+-    response.status(404).type('text/plain').send('Not found');
++    response.sendFile(publicDirectory + 'index.html');
+   });
+   return app;
+ }
