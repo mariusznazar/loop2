@@ -1,11 +1,15 @@
 """Invariant browser-view-framework/1: The browser view uses TypeScript and browser APIs to render
 its screens, with no UI framework in its code or runtime dependencies.
 
-Covers, on the commit being checked:
+Covers, in the working tree being checked:
 - the browser view's source (`src/browser`, as README.md places it) holds TypeScript files and no
   code file of another language or template format (.js, .jsx, .tsx, .vue, .svelte, ...);
-- its browser compilation (tsconfig.browser.json) includes the DOM library, and its source refers
-  to `document`;
+- its browser compilation names the libraries it compiles against and they include the DOM:
+  tsconfig.browser.json `compilerOptions.lib` must be present and hold `DOM` (any case) — an
+  absent `lib` fails, since the check then cannot see what the compilation is told about;
+- its source uses a browser API to render: in at least one of its TypeScript files, with comments
+  removed and the text of string and template literals emptied, `document.` is followed by one of
+  the DOM members DOM_RENDERING_MEMBERS lists below (creating, finding or inserting elements);
 - no UI framework from the list below is a runtime dependency — in package.json `dependencies` or
   in any package-lock.json entry not marked `dev` — or is imported or loaded by the browser
   source, by package name or by URL;
@@ -15,7 +19,8 @@ Covers, on the commit being checked:
 
 Does NOT cover: a UI framework absent from the list; a framework copied into the source under
 another name that leaves none of the listed markers; whether the page renders correctly in a
-browser (no browser runs in this check). A `.tsx` file counts as a framework's format (JSX), not
+browser (no browser runs in this check); code inside `${...}` of a template literal, which is
+emptied with the literal. A `.tsx` file counts as a framework's format (JSX), not
 as TypeScript the sentence allows.
 """
 
@@ -55,6 +60,16 @@ TYPESCRIPT_EXTENSIONS = (".ts", ".mts", ".cts")
 TEXT_EXTENSIONS = (".ts", ".mts", ".cts", ".js", ".mjs", ".cjs", ".html", ".htm", ".css",
                    ".json", ".svg", ".jsx", ".tsx", ".vue", ".svelte")
 
+# Members of `document` that create, find or insert elements: the browser API rendering uses.
+DOM_RENDERING_MEMBERS = (
+    "createElement", "createElementNS", "createTextNode", "createDocumentFragment",
+    "getElementById", "getElementsByClassName", "getElementsByTagName", "querySelector",
+    "querySelectorAll", "body", "head", "documentElement", "append", "prepend",
+    "replaceChildren", "adoptNode", "importNode",
+)
+DOM_RENDERING_CALL = re.compile(
+    r"\bdocument\s*\.\s*(?:" + "|".join(DOM_RENDERING_MEMBERS) + r")\b")
+
 IMPORT_SPECIFIER = re.compile(
     r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']""")
 SCRIPT_SOURCE = re.compile(r"""<script\b[^>]*\bsrc\s*=\s*["']?([^"'\s>]+)""", re.IGNORECASE)
@@ -83,6 +98,31 @@ def names_in(specifier):
     return {specifier.split("/")[0]}
 
 
+def code_only(text):
+    """TypeScript text with comments removed and the text of string and template literals
+    emptied, so that a word there is not read as code."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if text.startswith("//", i):
+            end = text.find("\n", i)
+            i = n if end < 0 else end
+        elif text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            i = n if end < 0 else end + 2
+            out.append(" ")
+        elif c in "'\"`":
+            j = i + 1
+            while j < n and text[j] != c:
+                j += 2 if text[j] == "\\" else 1
+            out.append(c + c)
+            i = j + 1
+        else:
+            out.append(c)
+            i += 1
+    return "".join(out)
+
+
 def text_files(directory, root):
     for relative in support.files_under(directory, root):
         if relative.lower().endswith(TEXT_EXTENSIONS):
@@ -99,15 +139,21 @@ class BrowserSourceIsTypeScript(unittest.TestCase):
         foreign = [p for p in files if p.lower().endswith(FOREIGN_CODE_EXTENSIONS)]
         self.assertEqual(foreign, [])
 
-    def test_browser_compilation_uses_dom_and_source_refers_to_document(self):
+    def test_browser_compilation_declares_the_dom_library(self):
         # invariant: browser-view-framework/1
         libraries = load_json("tsconfig.browser.json").get("compilerOptions", {}).get("lib")
-        if libraries is not None:
-            self.assertIn("dom", [str(x).lower() for x in libraries],
-                          f"tsconfig.browser.json lib is {libraries!r}, without DOM")
-        referring = [p for p, text in text_files(BROWSER_SOURCE, support.ROOT)
-                     if p.endswith(TYPESCRIPT_EXTENSIONS) and re.search(r"\bdocument\b", text)]
-        self.assertTrue(referring, f"no TypeScript file of {BROWSER_SOURCE} refers to document")
+        self.assertIsNotNone(libraries, "tsconfig.browser.json sets no compilerOptions.lib")
+        self.assertIn("dom", [str(x).lower() for x in libraries],
+                      f"tsconfig.browser.json lib is {libraries!r}, without DOM")
+
+    def test_browser_source_renders_through_document_in_code(self):
+        # invariant: browser-view-framework/1
+        rendering = [p for p, text in text_files(BROWSER_SOURCE, support.ROOT)
+                     if p.endswith(TYPESCRIPT_EXTENSIONS)
+                     and DOM_RENDERING_CALL.search(code_only(text))]
+        self.assertTrue(rendering, f"no TypeScript file of {BROWSER_SOURCE} uses one of "
+                                   f"{DOM_RENDERING_MEMBERS} on document outside comments "
+                                   "and strings")
 
 
 class NoUiFramework(unittest.TestCase):

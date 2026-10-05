@@ -68,29 +68,61 @@ def files_under(directory, root):
 # --- running commands -----------------------------------------------------------------------
 
 
+def _windows_descendants(root_pid, since):
+    """Process ids below root_pid, created no earlier than `since` (seconds since the epoch, less
+    a margin), found through each process's recorded parent id — which Windows keeps after the
+    parent has exited, so a child that outlived npm is still found."""
+    script = ("Get-CimInstance Win32_Process | ForEach-Object { '{0} {1} {2}' -f "
+              "$_.ProcessId, $_.ParentProcessId, "
+              "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds() }")
+    result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+                            capture_output=True, timeout=60)
+    children = {}
+    for line in result.stdout.decode("ascii", "replace").splitlines():
+        parts = line.split()
+        if len(parts) == 3 and all(p.lstrip("-").isdigit() for p in parts):
+            pid, parent, created = (int(p) for p in parts)
+            if created >= (since - 2) * 1000 and pid != parent:
+                children.setdefault(parent, []).append(pid)
+    found, queue = [], [root_pid]
+    while queue:
+        for child in children.get(queue.pop(), []):
+            if child not in found:
+                found.append(child)
+                queue.append(child)
+    return found
+
+
 def kill_tree(process):
-    if process.poll() is not None:
-        return
+    """Kill a started process and everything it started, also when it has already exited and
+    left a child running (npm exits; the node server it started may not)."""
     if os.name == "nt":
-        subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+        since = getattr(process, "loop2_started", time.time())
+        descendants = _windows_descendants(process.pid, since)
+        for pid in [process.pid] * (process.poll() is None) + descendants:
+            subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
     else:
         try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
+            os.killpg(process.pid, signal.SIGKILL)  # the whole session, alive parent or not
+        except (ProcessLookupError, PermissionError):
             pass
-    try:
-        process.wait(timeout=30)
-    except subprocess.TimeoutExpired:
-        process.kill()
+    if process.poll() is None:
+        try:
+            process.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            process.kill()
 
 
 def popen(args, cwd, env=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
     kwargs = {}
     if os.name != "nt":
         kwargs["start_new_session"] = True
-    return subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                            stdout=stdout, stderr=stderr, **kwargs)
+    started = time.time()
+    process = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+                               stdout=stdout, stderr=stderr, **kwargs)
+    process.loop2_started = started
+    return process
 
 
 def run(args, cwd, timeout=COMMAND_TIMEOUT):
@@ -219,7 +251,7 @@ class Server:
                         f"{START_TIMEOUT} s:\n{self.output()}")
                 time.sleep(0.2)
         except BaseException:
-            self.stop()
+            self.stop(report_held_port=False)
             raise
 
     def output(self):
@@ -232,7 +264,7 @@ class Server:
         self._stderr.flush()
         return read_text(self.stderr_path)
 
-    def stop(self):
+    def stop(self, report_held_port=True):
         try:
             kill_tree(self.process)
         finally:
@@ -242,6 +274,9 @@ class Server:
             deadline = time.monotonic() + 15
             while port_in_use() and time.monotonic() < deadline:
                 time.sleep(0.2)
+        if report_held_port and port_in_use():
+            raise AssertionError(f"port {PORT} on {HOST} is still held 15 s after the server "
+                                 "and everything it started were killed")
 
 
 def request(method, path, headers=None, body=None):

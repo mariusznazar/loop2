@@ -1,7 +1,7 @@
 """Invariant account-server-express-http/1: The account and save server handles its HTTP routes
 and responses through Express 5.
 
-Covers, on the commit being checked:
+Covers, in the working tree being checked:
 - package.json depends at run time on Express of major version 5, the lockfile and the installed
   copy are of major version 5, and no other HTTP server framework is a runtime dependency;
 - the server's TypeScript source (`src/server`, as README.md places it) imports `express`,
@@ -140,8 +140,7 @@ class ExpressRoutesRunningServer(unittest.TestCase):
         # invariant: account-server-express-http/1
         for method, path in PROBES:
             with self.subTest(method=method, path=path):
-                status, _headers, _body = support.request(method, path)
-                self.assertGreaterEqual(status, 100)
+                support.request(method, path)
                 line = re.compile(r"(?:^|\s)router dispatching " + re.escape(method) + " "
                                   + re.escape(path) + r"(?:\s|$)", re.MULTILINE)
                 deadline = time.monotonic() + DISPATCH_WAIT

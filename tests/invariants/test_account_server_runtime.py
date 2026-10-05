@@ -1,15 +1,17 @@
 """Invariant account-server-runtime/1: The account and save server's TypeScript source and
 deployment use Node.js major version 24.
 
-Covers, on the commit being checked:
+Covers, in the working tree being checked:
 - package.json `engines.node`, and the root entry of package-lock.json, admit Node.js 24 and no
   other major version;
 - the Node.js type definitions the server's TypeScript is checked against (`@types/node` in
   package.json and in package-lock.json) are of major version 24, and tsconfig.server.json lets
   the server's compilation use them;
 - every deployment file the repository holds (Dockerfile, compose file, .nvmrc, .node-version,
-  .tool-versions, CI workflow, platform file) that names a Node.js version or a Node.js image
-  names major version 24, and every Dockerfile names one.
+  .tool-versions, CI workflow, platform file) that names Node.js versions or Node.js images
+  names major version 24 in every one of them — each FROM line (with ARG/ENV defaults filled
+  in), each element of a version list or CI matrix a `node-version` refers to, each version on
+  a .tool-versions line, the content of a `node-version-file` — and every Dockerfile names one.
 
 Does NOT cover: which Node.js actually runs the server on a machine (the check runs the product
 nowhere); a deployment defined outside this repository. While the repository holds no deployment
@@ -85,13 +87,17 @@ class NodeMajorInPackageFiles(unittest.TestCase):
                           "so the server is not checked against the Node.js definitions")
 
 
-# What names a Node.js version inside a deployment file.
+# What names a Node.js version inside a deployment file. Every version a file names is read —
+# each FROM line, each element of a list or matrix, each version on a .tool-versions line.
 FROM_LINE = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*(\S+)", re.IGNORECASE | re.MULTILINE)
 IMAGE_LINE = re.compile(r"^\s*-?\s*image:\s*[\"']?([^\"'\s#]+)", re.MULTILINE)
-NODE_VERSION_KEY = re.compile(r"node[-_]version[\"']?\s*[:=]\s*\[?\s*[\"']?v?([^\"'\s,\]]+)",
-                              re.IGNORECASE)
+BUILD_DEFAULT = re.compile(r"^\s*(?:ARG|ENV)\s+([A-Za-z_]\w*)[= ]\s*[\"']?([^\"'\s]+)",
+                           re.IGNORECASE | re.MULTILINE)
 NODE_VERSION_ENV = re.compile(r"\bNODE_VERSION[\"']?\s*[:= ]\s*[\"']?v?([^\"'\s]+)")
-TOOL_VERSIONS_LINE = re.compile(r"^\s*(?:nodejs|node)\s+v?(\S+)", re.MULTILINE)
+TOOL_VERSIONS_LINE = re.compile(r"^\s*(?:nodejs|node)\s+(.+)$", re.MULTILINE)
+VERSION_KEYS = ("node-version", "node_version", "NODE_VERSION")
+VERSION_FILE_KEYS = ("node-version-file",)
+MATRIX_REFERENCE = re.compile(r"matrix\.([\w-]+)")
 DOCKERFILE_NAMES = ("Dockerfile", "Dockerfile.*", "*.Dockerfile", "*.dockerfile",
                     "Containerfile", "Containerfile.*")
 
@@ -112,8 +118,37 @@ def image_major(reference):
 
 
 def version_major(text):
-    found = re.match(r"v?(\d+)", text.strip())
+    found = re.match(r"v?(\d+)", text.strip().strip("\"'"))
     return int(found.group(1)) if found else None
+
+
+def key_values(text, key):
+    """Every value a YAML or TOML key holds in a file: a scalar, each element of a flow list
+    `[a, b]`, or each item of a block list below the key."""
+    values = []
+    lines = text.splitlines()
+    pattern = re.compile(r"^(\s*)(?:-\s+)?[\"']?" + re.escape(key) + r"[\"']?\s*[:=]\s*(.*)$")
+    for number, line in enumerate(lines):
+        match = pattern.match(line)
+        if not match:
+            continue
+        indent = len(match.group(1))
+        rest = re.sub(r"\s+#.*$", "", match.group(2)).strip()
+        if rest.startswith("["):
+            values += [v.strip().strip("\"'") for v in rest.strip("[]").split(",") if v.strip()]
+        elif rest:
+            values.append(rest.strip("\"'"))
+        else:
+            for following in lines[number + 1:]:
+                if not following.strip() or following.strip().startswith("#"):
+                    continue
+                if len(following) - len(following.lstrip()) <= indent:
+                    break
+                item = re.match(r"^\s*-\s+(.*)$", following)
+                if not item:
+                    break
+                values.append(re.sub(r"\s+#.*$", "", item.group(1)).strip().strip("\"'"))
+    return values
 
 
 def node_mentions(relative, text):
@@ -123,16 +158,37 @@ def node_mentions(relative, text):
     if base in (".nvmrc", ".node-version"):
         mentions.append((f"{base} content {text.strip()!r}", version_major(text)))
     if base == ".tool-versions":
-        mentions += [(f"node {v}", version_major(v)) for v in TOOL_VERSIONS_LINE.findall(text)]
+        mentions += [(f"node {v}", version_major(v))
+                     for line in TOOL_VERSIONS_LINE.findall(text) for v in line.split()]
     if any(fnmatch.fnmatchcase(base, p) for p in DOCKERFILE_NAMES):
-        references = FROM_LINE.findall(text)
+        defaults = dict(BUILD_DEFAULT.findall(text))
+        references = [re.sub(r"\$\{?(\w+)\}?", lambda m: defaults.get(m.group(1), m.group(0)), r)
+                      for r in FROM_LINE.findall(text)]
     else:
         references = IMAGE_LINE.findall(text)
     for reference in references:
         is_node, major = image_major(reference)
         if is_node:
             mentions.append((f"image {reference}", major))
-    mentions += [(f"node-version {v}", version_major(v)) for v in NODE_VERSION_KEY.findall(text)]
+    keys, read = list(VERSION_KEYS), set()
+    while keys:
+        key = keys.pop()
+        if key in read:
+            continue
+        read.add(key)
+        for value in key_values(text, key):
+            if value.startswith("${{"):
+                keys += MATRIX_REFERENCE.findall(value)
+                continue
+            mentions.append((f"{key} {value}", version_major(value)))
+    for key in VERSION_FILE_KEYS:
+        for value in key_values(text, key):
+            if value.rsplit("/", 1)[-1] == "package.json":
+                continue  # engines.node, checked by the tests above
+            path = os.path.join(support.ROOT, *value.split("/"))
+            content = support.read_text(path) if os.path.isfile(path) else ""
+            mentions.append((f"{key} {value} content {content.strip()!r}",
+                             version_major(content) if content else None))
     mentions += [(f"NODE_VERSION {v}", version_major(v)) for v in NODE_VERSION_ENV.findall(text)]
     return mentions
 
