@@ -1,0 +1,20 @@
+diff --git a/scripts/build.mjs b/scripts/build.mjs
+index 7768ff9..78915d9 100644
+--- a/scripts/build.mjs
++++ b/scripts/build.mjs
+@@ -6,7 +6,7 @@ const root = new URL('../', import.meta.url);
+ const compiler = fileURLToPath(new URL('node_modules/typescript/bin/tsc', root));
+ const checkOnly = process.argv.includes('--check');
+ 
+-for (const config of ['tsconfig.browser.json', 'tsconfig.server.json']) {
++for (const config of ['tsconfig.server.json']) {
+   const result = spawnSync(process.execPath, [compiler, '-p', config, ...(checkOnly ? ['--noEmit'] : [])], {
+     cwd: fileURLToPath(root),
+     stdio: 'inherit',
+@@ -17,5 +17,6 @@ for (const config of ['tsconfig.browser.json', 'tsconfig.server.json']) {
+ 
+ if (!checkOnly) {
+   await mkdir(new URL('dist/public/', root), { recursive: true });
++  await copyFile(new URL('src/browser/main.ts', root), new URL('dist/public/main.js', root));
+   await copyFile(new URL('src/browser/index.html', root), new URL('dist/public/index.html', root));
+ }

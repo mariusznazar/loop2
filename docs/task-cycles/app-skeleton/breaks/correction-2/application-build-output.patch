@@ -1,0 +1,49 @@
+diff --git a/package.json b/package.json
+index 8f32307..85ebab1 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,7 @@
+   "scripts": {
+     "typecheck": "node scripts/build.mjs --check",
+     "build": "node scripts/build.mjs",
+-    "start": "node dist/server/main.js",
++    "start": "node src/server/main.ts",
+     "dev": "npm run build && npm start",
+     "test": "npm run build && node --test tests/http.test.mjs tests/startup.test.mjs"
+   },
+diff --git a/scripts/build.mjs b/scripts/build.mjs
+index 7768ff9..28c4951 100644
+--- a/scripts/build.mjs
++++ b/scripts/build.mjs
+@@ -6,7 +6,7 @@ const root = new URL('../', import.meta.url);
+ const compiler = fileURLToPath(new URL('node_modules/typescript/bin/tsc', root));
+ const checkOnly = process.argv.includes('--check');
+ 
+-for (const config of ['tsconfig.browser.json', 'tsconfig.server.json']) {
++for (const config of ['tsconfig.browser.json']) {
+   const result = spawnSync(process.execPath, [compiler, '-p', config, ...(checkOnly ? ['--noEmit'] : [])], {
+     cwd: fileURLToPath(root),
+     stdio: 'inherit',
+diff --git a/src/server/app.ts b/src/server/app.ts
+index 0ec2593..9d8ac6d 100644
+--- a/src/server/app.ts
++++ b/src/server/app.ts
+@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
+ 
+ // The built game, found next to the compiled server (dist/server -> dist/public),
+ // so the app serves the same files whatever the working directory is.
+-const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url));
++const publicDirectory = fileURLToPath(new URL('../../dist/public/', import.meta.url));
+ 
+ export function createApp(): Express {
+   const app = express();
+diff --git a/src/server/main.ts b/src/server/main.ts
+index 08a4a33..07006a4 100644
+--- a/src/server/main.ts
++++ b/src/server/main.ts
+@@ -1,4 +1,4 @@
+-import { createApp } from './app.js';
++import { createApp } from './app.ts';
+ 
+ const host = '127.0.0.1';
+ const port = 3000;

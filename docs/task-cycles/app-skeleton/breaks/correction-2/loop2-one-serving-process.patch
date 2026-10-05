@@ -1,0 +1,80 @@
+diff --git a/src/server/app.ts b/src/server/app.ts
+index 0ec2593..86ab6c8 100644
+--- a/src/server/app.ts
++++ b/src/server/app.ts
+@@ -6,14 +6,32 @@ import { fileURLToPath } from 'node:url';
+ // so the app serves the same files whatever the working directory is.
+ const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url));
+ 
+-export function createApp(): Express {
+-  const app = express();
++export const apiPort = 3001;
+ 
+-  // No API route exists yet: every /api, /api/ and /api/... request gets a JSON 404,
+-  // never the game's page.
++// Runs in its own process: answers /api requests only.
++export function createApiApp(): Express {
++  const app = express();
+   app.use('/api', (_request: Request, response: Response) => {
+     response.status(404).json({ error: 'Not found' });
+   });
++  return app;
++}
++
++// Serves the game and forwards /api requests to the API process.
++export function createApp(): Express {
++  const app = express();
++
++  app.use('/api', async (request: Request, response: Response) => {
++    try {
++      const upstream = await fetch(`http://127.0.0.1:${apiPort}${request.originalUrl}`);
++      response
++        .status(upstream.status)
++        .type(upstream.headers.get('content-type') ?? 'application/json')
++        .send(await upstream.text());
++    } catch {
++      response.status(502).json({ error: 'API process unavailable' });
++    }
++  });
+ 
+   app.use(express.static(publicDirectory));
+ 
+diff --git a/src/server/main.ts b/src/server/main.ts
+index 08a4a33..0651be7 100644
+--- a/src/server/main.ts
++++ b/src/server/main.ts
+@@ -1,15 +1,25 @@
+-import { createApp } from './app.js';
++import { fork } from 'node:child_process';
++import { fileURLToPath } from 'node:url';
++import { apiPort, createApiApp, createApp } from './app.js';
+ 
+ const host = '127.0.0.1';
+ const port = 3000;
+ 
+-const server = createApp().listen(port, host);
++if (process.argv.includes('--api')) {
++  createApiApp().listen(apiPort, host);
++} else {
++  const api = fork(fileURLToPath(import.meta.url), ['--api']);
++  process.on('exit', () => api.kill());
+ 
+-server.once('listening', () => {
+-  console.log(`Loop: http://${host}:${port}`);
+-});
++  const server = createApp().listen(port, host);
+ 
+-server.once('error', (error: NodeJS.ErrnoException) => {
+-  console.error(`Loop could not start on ${host}:${port}: ${error.code ?? ''} ${error.message}`);
+-  process.exitCode = 1;
+-});
++  server.once('listening', () => {
++    console.log(`Loop: http://${host}:${port}`);
++  });
++
++  server.once('error', (error: NodeJS.ErrnoException) => {
++    console.error(`Loop could not start on ${host}:${port}: ${error.code ?? ''} ${error.message}`);
++    process.exitCode = 1;
++    api.kill();
++  });
++}

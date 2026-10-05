@@ -1,0 +1,4 @@
+note: there is no violated_invariants.md; the list of violated invariants is read as empty
+note: there is no human_verdicts.md; no human verdict is given
+note: no --merge-onto given: `TODO` in the entries is not checked against a merge, and the fingerprints their links carry are not compared with the current binding part; those checks are not run, and are not counted in the last line
+0 error(s), 0 warning(s), 0 unchecked

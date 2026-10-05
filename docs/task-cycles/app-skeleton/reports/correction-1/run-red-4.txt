@@ -1,0 +1,14 @@
+...............F......
+======================================================================
+FAIL: test_browser_compilation_uses_dom_and_source_refers_to_document (test_browser_view_framework.BrowserSourceIsTypeScript.test_browser_compilation_uses_dom_and_source_refers_to_document)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_browser_view_framework.py", line 110, in test_browser_compilation_uses_dom_and_source_refers_to_document
+    self.assertTrue(referring, f"no TypeScript file of {BROWSER_SOURCE} refers to document")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [] is not true : no TypeScript file of src/browser refers to document
+
+----------------------------------------------------------------------
+Ran 22 tests in 21.268s
+
+FAILED (failures=1)

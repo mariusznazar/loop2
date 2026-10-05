@@ -1,0 +1,16 @@
+UNAPPROVED - proposed foundation change of the return step, correction 2 (task/app-skeleton).
+Against commit 031b0a689f71366cdc874a93f1b2ea51092c035b. Not applied. Nothing here is approved.
+Polish translation beside the entry: proposal-pl.md in this directory.
+
+diff --git a/foundations/part_map.md b/foundations/part_map.md
+--- a/foundations/part_map.md
++++ b/foundations/part_map.md
+@@ -58,7 +58,7 @@
+ 
+ ## product-foundation
+ 
+-The part holds the product rules and the map of its responsibilities.
++The part holds the product's foundation.
+ 
+ - **Files:** foundations/**
+ - **Depends on:** none

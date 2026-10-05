@@ -1,0 +1,23 @@
+........F.F...........
+======================================================================
+FAIL: test_lockfile_root_engines_admit_only_node_24 (test_account_server_runtime.NodeMajorInPackageFiles.test_lockfile_root_engines_admit_only_node_24)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_account_server_runtime.py", line 62, in test_lockfile_root_engines_admit_only_node_24
+    self.assertIsNotNone(node, "package-lock.json's root entry declares no engines.node")
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None : package-lock.json's root entry declares no engines.node
+
+======================================================================
+FAIL: test_package_engines_admit_only_node_24 (test_account_server_runtime.NodeMajorInPackageFiles.test_package_engines_admit_only_node_24)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_account_server_runtime.py", line 54, in test_package_engines_admit_only_node_24
+    self.assertIn("node", engines, "package.json declares no engines.node")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'node' not found in {} : package.json declares no engines.node
+
+----------------------------------------------------------------------
+Ran 22 tests in 20.653s
+
+FAILED (failures=2)

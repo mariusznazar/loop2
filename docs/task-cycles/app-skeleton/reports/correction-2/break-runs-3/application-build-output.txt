@@ -1,0 +1,74 @@
+............F.FFFF.............
+======================================================================
+FAIL: test_build_refuses_server_type_error (test_account_server_typecheck.ServerTypesCheckedBeforeDeployment.test_build_refuses_server_type_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-breakrun2\tests\invariants\test_account_server_typecheck.py", line 81, in test_build_refuses_server_type_error
+    self.assertTrue(os.path.isfile(clean.file(SERVER_ENTRY_BUILT)),
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    f"`npm run build` on the unchanged tree leaves no {SERVER_ENTRY_BUILT}")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : `npm run build` on the unchanged tree leaves no dist/server/main.js
+
+======================================================================
+FAIL: test_typecheck_command_rejects_server_type_error (test_account_server_typecheck.ServerTypesCheckedBeforeDeployment.test_typecheck_command_rejects_server_type_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-breakrun2\tests\invariants\test_account_server_typecheck.py", line 73, in test_typecheck_command_rejects_server_type_error
+    self.assertNotEqual(code, 0, f"`npm run typecheck` exits 0 although {targets} hold a "
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 f"type error:\n{output}")
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : `npm run typecheck` exits 0 although ['src/server/app.ts', 'src/server/main.ts'] hold a type error:
+
+> loop2@0.0.0 typecheck
+> node scripts/build.mjs --check
+
+
+
+======================================================================
+FAIL: test_build_compiles_made_up_source_under_each_configuration (test_application_build_output.BuildCompilesBothConfigurations.test_build_compiles_made_up_source_under_each_configuration) (configuration='server')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-breakrun2\tests\invariants\test_application_build_output.py", line 164, in test_build_compiles_made_up_source_under_each_configuration
+    self.assert_javascript(copy, emitted)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Storage\repos\loop2-breakrun2\tests\invariants\test_application_build_output.py", line 135, in assert_javascript
+    self.assertTrue(os.path.isfile(copy.file(relative)), f"the build emitted no {relative}")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : the build emitted no dist/server/invariant_check_build_probe.js
+
+======================================================================
+FAIL: test_build_emits_every_source_file_of_both_configurations (test_application_build_output.BuildCompilesBothConfigurations.test_build_emits_every_source_file_of_both_configurations) (configuration='server')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-breakrun2\tests\invariants\test_application_build_output.py", line 150, in test_build_emits_every_source_file_of_both_configurations
+    self.assert_javascript(copy, emitted_path(relative, source, out))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Storage\repos\loop2-breakrun2\tests\invariants\test_application_build_output.py", line 135, in assert_javascript
+    self.assertTrue(os.path.isfile(copy.file(relative)), f"the build emitted no {relative}")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : the build emitted no dist/server/app.js
+
+======================================================================
+FAIL: test_each_configuration_rejects_source_only_the_other_accepts (test_application_build_output.BuildCompilesBothConfigurations.test_each_configuration_rejects_source_only_the_other_accepts) (configuration='server')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-breakrun2\tests\invariants\test_application_build_output.py", line 178, in test_each_configuration_rejects_source_only_the_other_accepts
+    self.assertNotEqual(code, 0, f"`npm run build` exits 0 although {placed} uses "
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 f"what the {name} configuration does not give "
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 f"it:\n{output}")
+                                 ^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : `npm run build` exits 0 although src/server/invariant_check_build_probe.ts uses what the server configuration does not give it:
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+
+
+----------------------------------------------------------------------
+Ran 31 tests in 32.402s
+
+FAILED (failures=5)

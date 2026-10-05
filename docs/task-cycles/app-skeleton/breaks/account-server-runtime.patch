@@ -1,0 +1,26 @@
+diff --git a/package-lock.json b/package-lock.json
+index 27a4d48..3df99a8 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -16,7 +16,7 @@
+         "typescript": "6.0.3"
+       },
+       "engines": {
+-        "node": "24.x"
++        "node": "22.x"
+       }
+     },
+     "node_modules/@types/body-parser": {
+diff --git a/package.json b/package.json
+index 8f32307..f4f3c84 100644
+--- a/package.json
++++ b/package.json
+@@ -3,7 +3,7 @@
+   "version": "0.0.0",
+   "private": true,
+   "type": "module",
+-  "engines": { "node": "24.x" },
++  "engines": { "node": "22.x" },
+   "scripts": {
+     "typecheck": "node scripts/build.mjs --check",
+     "build": "node scripts/build.mjs",

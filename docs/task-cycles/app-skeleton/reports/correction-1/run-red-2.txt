@@ -1,0 +1,41 @@
+............F.F.......
+======================================================================
+FAIL: test_build_refuses_server_type_error (test_account_server_typecheck.ServerTypesCheckedBeforeDeployment.test_build_refuses_server_type_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_account_server_typecheck.py", line 84, in test_build_refuses_server_type_error
+    self.assertNotEqual(code, 0, f"`npm run build` exits 0 although {targets} hold a "
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 f"type error:\n{output}")
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : `npm run build` exits 0 although ['src/server/app.ts', 'src/server/main.ts'] hold a type error:
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+src/server/app.ts(18,7): error TS2322: Type 'string' is not assignable to type 'number'.
+src/server/main.ts(14,7): error TS2322: Type 'string' is not assignable to type 'number'.
+
+
+======================================================================
+FAIL: test_typecheck_command_rejects_server_type_error (test_account_server_typecheck.ServerTypesCheckedBeforeDeployment.test_typecheck_command_rejects_server_type_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-skeleton\tests\invariants\test_account_server_typecheck.py", line 71, in test_typecheck_command_rejects_server_type_error
+    self.assertNotEqual(code, 0, f"`npm run typecheck` exits 0 although {targets} hold a "
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 f"type error:\n{output}")
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : `npm run typecheck` exits 0 although ['src/server/app.ts', 'src/server/main.ts'] hold a type error:
+
+> loop2@0.0.0 typecheck
+> node scripts/build.mjs --check
+
+src/server/app.ts(18,7): error TS2322: Type 'string' is not assignable to type 'number'.
+src/server/main.ts(14,7): error TS2322: Type 'string' is not assignable to type 'number'.
+
+
+----------------------------------------------------------------------
+Ran 22 tests in 19.925s
+
+FAILED (failures=2)
