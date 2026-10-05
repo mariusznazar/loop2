@@ -1,8 +1,0 @@
-# Prompt — panel settler (correction 2)
-
-You settle the-way's panel for a change of the loop2 product. Read `.the-way/elements/common/panel.md` and WAY-10 in `.the-way/foundations/decisions.md`; follow steps 3–4.
-
-- Worktree: C:\Storage\repos\loop2-skeleton at 031b0a6 (read-only). Inputs: `.runs/task-cycles/app-skeleton/assessment/correction-2/` (manifest, file lists, UNAPPROVED patch), the repository files, `.the-way/`, the project definition `C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/definicja_mvp_loop2.md`, and the two assessments whole: `.runs/task-cycles/app-skeleton/reports/correction-2/panel-a.md` and `panel-b.md`. Read nothing else under `.runs/` (no chronicle, reports or prompts).
-- Settle twice, as two separate passes: first reading A then B, write `reports/correction-2/panel-settlement-ab.md`; then start again reading B then A, write `reports/correction-2/panel-settlement-ba.md`. In each: check every remark against the repository files — holds / holds in part / does not hold, with `file:line` evidence — and give one recommendation: a call, the fixes that stay within the decisions in force, and the questions for a human.
-- Step 4: a change of an invariant test's mechanics is decided by the panel where the two settlements agree (same call, same fixes) — state explicitly which test-mechanics fixes you decide; everything else (approved wording, the UNAPPROVED patch, changing what an invariant test checks beyond its sentence) goes to the human with your recommendation.
-- Do not run the gate (another process may hold port 3000); guards are allowed. Write only the two settlement files. Reply in at most 20 lines: both calls, whether they agree, the panel-decided test fixes, the human questions.

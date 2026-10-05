@@ -1,8 +1,0 @@
-foundations/decisions.md:9: warning: *Scope* is `TODO`
-foundations/decisions.md:11: warning: *Relations* is `TODO`
-foundations/decisions.md:26: warning: *Scope* is `TODO`
-foundations/decisions.md:50: warning: *Scope* is `TODO`
-foundations/decisions.md:52: warning: *Relations* is `TODO`
-note: who approves a version is checked only in the-way's own log
-note: no --merge-onto given: `TODO` in the log is not checked against a merge, the copies of a version both logs hold are not compared, and the fingerprints relations carry are not compared with the current binding part; those checks are not run, and are not counted in the last line
-0 error(s), 5 warning(s), 0 unchecked

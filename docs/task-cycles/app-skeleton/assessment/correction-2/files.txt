@@ -1,7 +1,0 @@
-foundations/decisions.md
-foundations/invariants.md
-foundations/part_map.md
-src/server/app.ts
-src/server/main.ts
-tests/invariants/test_application_build_output.py
-tests/invariants/test_loop2_one_serving_process.py
