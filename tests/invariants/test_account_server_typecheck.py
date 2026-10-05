@@ -17,7 +17,9 @@ Covers:
 Does NOT cover: a deployment defined outside this repository, or one that skips `npm run build`.
 While the repository holds no deployment file — the skeleton has none — "before deployment" is
 read as "before the build a deployment would run produces anything"; once a deployment file
-appears, the last test fails on purpose until the check is extended to read that file.
+appears, the last test fails on purpose until the check is extended to read that file. A file
+that only pins a Node.js version (.nvmrc, .node-version, .tool-versions) deploys nothing and does
+not count here.
 """
 
 import os
@@ -89,7 +91,7 @@ class ServerTypesCheckedBeforeDeployment(unittest.TestCase):
 
     def test_no_deployment_route_left_unread(self):
         # invariant: account-server-typecheck/1
-        found = support.deployment_files()
+        found = support.deployment_route_files()
         self.assertEqual(found, [], "deployment files exist that this check does not read; "
                                     "extend it to show their route runs the type check first")
 

@@ -320,3 +320,13 @@ def deployment_files(root=ROOT):
                 any(fnmatch.fnmatchcase(relative, p) for p in DEPLOYMENT_PATH_PATTERNS):
             found.append(relative)
     return sorted(found)
+
+
+# Files that pin a Node.js version but deploy nothing: the runtime check reads them, the
+# typecheck check's deployment tripwire does not count them.
+VERSION_PIN_NAMES = (".nvmrc", ".node-version", ".tool-versions")
+
+
+def deployment_route_files(root=ROOT):
+    """The deployment files, less the version-pin files: the routes a deployment can take."""
+    return [p for p in deployment_files(root) if p.rsplit("/", 1)[-1] not in VERSION_PIN_NAMES]

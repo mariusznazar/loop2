@@ -64,7 +64,7 @@ TEXT_EXTENSIONS = (".ts", ".mts", ".cts", ".js", ".mjs", ".cjs", ".html", ".htm"
 DOM_RENDERING_MEMBERS = (
     "createElement", "createElementNS", "createTextNode", "createDocumentFragment",
     "getElementById", "getElementsByClassName", "getElementsByTagName", "querySelector",
-    "querySelectorAll", "body", "head", "documentElement", "append", "prepend",
+    "querySelectorAll", "append", "prepend",
     "replaceChildren", "adoptNode", "importNode",
 )
 DOM_RENDERING_CALL = re.compile(
