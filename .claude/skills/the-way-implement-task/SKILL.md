@@ -1,13 +1,13 @@
 ---
 name: the-way-implement-task
-description: Use to take one ready the-way task through autonomous design, planning, implementation, testing, review and a pull or merge request. Requires subagents and the Superpowers skills named by this process. The human reviews the request, not intermediate steps. Use this product's pinned the-way commit.
+description: Use to take one ready the-way task through autonomous design, planning, implementation, testing, review and a pull or merge request, or to apply review corrections to its open request. Requires subagents and the Superpowers skills named by this process. The human reviews the request, not intermediate steps. Use this product's pinned the-way commit.
 ---
 
 # the-way-implement-task
 
-The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `271222203981b5cedd2fcbf3451b60362cc3e4d4`.
+The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `96c52488752701ffa321ca69c0c2aa2dd3e46d2d`.
 
-If `.the-way/task-cycle/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `271222203981b5cedd2fcbf3451b60362cc3e4d4`. If initialization fails or either commit differs, stop.
+If `.the-way/task-cycle/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `96c52488752701ffa321ca69c0c2aa2dd3e46d2d`. If initialization fails or either commit differs, stop.
 
 Read `.the-way/task-cycle/skill/SKILL.md` in full and follow it. Read the files it references inside `.the-way`. Its paragraph about resolving a global skill link applies only to a global install; here the process root is `.the-way`. Do not substitute a global skill.
 
