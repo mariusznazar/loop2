@@ -5,9 +5,9 @@
 - Product repository: C:/Storage/repos/loop2-skeleton (isolated worktree).
 - Process pin: 271222203981b5cedd2fcbf3451b60362cc3e4d4.
 - Target branch and base: main, 3342d43bb2bff033efa1791f2f3037020af6f5f7.
-- Task branch: task/app-skeleton (no upstream).
+- Task branch: task/app-skeleton; upstream origin/task/app-skeleton (same name).
 - Foundation route: binding files unchanged; approved source-only settlements constrain code; return-step proposals assessed by panel and submitted for human approval in PR.
-- Status: implementation and assessments complete; request publication pending.
+- Status: complete through request; [PR #3](https://github.com/mariusznazar/loop2/pull/3) open for human review, not merged.
 
 ## Sharpness at start and after the final diff
 
@@ -55,7 +55,7 @@ Completed: both independent assessments and both order-swapped settlements call 
 
 ## Request handoff
 
-Ready for publication after records commit. Do not merge; retain worktree. Final review questions and limitations are in the request material.
+[PR #3](https://github.com/mariusznazar/loop2/pull/3) created after pushing the complete code and record. No merge; worktree retained for review changes. Questions and failed/unchecked checks are explicit in the request.
 
 ## Preflight evidence and route reconsideration
 
@@ -130,4 +130,6 @@ Final map guard, with record files staged and real base3342d43: exit1,94errors (
 
 Whitespace verification: application diff and staged documents excluding archived .diff/.patch files pass git diff --check. Unfiltered check reports the required one-space blank context lines inside stored patch/diff data. Those bytes are preserved deliberately; no application/source whitespace failure hidden.
 
-Final code de3ceb3 has5/5tests and typecheck green; browser/negative compiler/start/dev evidence and independent reviews are linked above. Target origin/main still3342d43; no assessed code/source reconciliation required. No merge performed; task worktree and SDD scratch retained. Request publication is the remaining handoff action.
+Final code de3ceb3 has5/5tests and typecheck green; browser/negative compiler/start/dev evidence and independent reviews are linked above. Target origin/main still3342d43; no assessed code/source reconciliation required. No merge performed; task worktree and SDD scratch retained. Request publication completed at PR #3; human review remains.
+
+- Request handoff: git push -u origin task/app-skeleton exited0, upstream matches branch name. gh pr create exited0, PR https://github.com/mariusznazar/loop2/pull/3 targeting main, open/not merged. It links source/spec/plan/full reports, all autonomous choices with costs, failed/unchecked checks and unapproved proposals/candidate sentences. Record-link commit changes documentation only; assessed code de3ceb3 and proposal bytes remain unchanged.
