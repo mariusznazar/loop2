@@ -46,8 +46,28 @@ An unmatched `/api/` request receives an API error response, never the built gam
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** TODO — "What serves the built game and account requests in the container?", projected in C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/definicja_mvp_loop2.md
+- **Derives from:** D-05@e11aec4d
 - **Part:** every
+- **Correction:** none
+
+## loop2-one-serving-process/1
+
+One Express 5 process serves both the built game and `/api/` requests.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-05@e11aec4d
+- **Part:** every
+- **Correction:** none
+
+## application-build-output/1
+
+Building the application compiles both the browser and the server TypeScript configurations.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-06@094e6fa7
+- **Part:** build-tools · browser-view · account-server
 - **Correction:** none
 
 ## Withdrawn identifiers
