@@ -1,0 +1,2 @@
+{"check": "elements/part-map/format_guard.py::check_violations_growth", "verdict": "pass", "invariant": "known-violations-growth/1"}
+{"check": "elements/part-map/format_guard.py::check_identifier_persistence", "verdict": "pass", "invariant": "map-identifier-persistence/1"}

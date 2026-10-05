@@ -1,0 +1,64 @@
+{
+  "commit": "de3ceb36b51636464c8e5fd80980e8c9d18754ed",
+  "claims": {
+    "browser-page": [
+      "src/browser/index.html",
+      "src/browser/main.ts"
+    ],
+    "server-http": [
+      "src/server/app.ts",
+      "src/server/main.ts",
+      "tests/http.test.mjs",
+      "tests/startup.test.mjs"
+    ],
+    "build-tools": [
+      ".gitignore",
+      "README.md",
+      "package-lock.json",
+      "package.json",
+      "scripts/build.mjs",
+      "tsconfig.browser.json",
+      "tsconfig.server.json"
+    ],
+    "agent-workflow": [
+      ".agents/skills/the-way-critique/SKILL.md",
+      ".agents/skills/the-way-define-project/SKILL.md",
+      ".agents/skills/the-way-find-foundation-entries/SKILL.md",
+      ".agents/skills/the-way-implement-task/SKILL.md",
+      ".agents/skills/the-way-record-decision/SKILL.md",
+      ".agents/skills/the-way-record-environment-fact/SKILL.md",
+      ".agents/skills/the-way-record-glossary-term/SKILL.md",
+      ".agents/skills/the-way-record-invariant/SKILL.md",
+      ".agents/skills/the-way-refine-task/SKILL.md",
+      ".agents/skills/the-way-settle-technology/SKILL.md",
+      ".agents/skills/the-way-update-part-map/SKILL.md",
+      ".claude/rules/the-way.md",
+      ".claude/skills/the-way-critique/SKILL.md",
+      ".claude/skills/the-way-define-project/SKILL.md",
+      ".claude/skills/the-way-find-foundation-entries/SKILL.md",
+      ".claude/skills/the-way-implement-task/SKILL.md",
+      ".claude/skills/the-way-record-decision/SKILL.md",
+      ".claude/skills/the-way-record-environment-fact/SKILL.md",
+      ".claude/skills/the-way-record-glossary-term/SKILL.md",
+      ".claude/skills/the-way-record-invariant/SKILL.md",
+      ".claude/skills/the-way-refine-task/SKILL.md",
+      ".claude/skills/the-way-settle-technology/SKILL.md",
+      ".claude/skills/the-way-update-part-map/SKILL.md",
+      ".gitmodules",
+      ".the-way",
+      "AGENTS.md"
+    ],
+    "product-foundation": [
+      "foundations/decisions.md",
+      "foundations/environment_facts.md",
+      "foundations/glossary.md",
+      "foundations/invariants.md",
+      "foundations/part_map.md"
+    ]
+  },
+  "tracked_count": 44,
+  "unclaimed": [],
+  "multiply_claimed": [],
+  "patterns_with_no_files_at_commit": [],
+  "post_panel_fix": "F1 removes only the two untracked documentation patterns; current 44 file claims unchanged."
+}

@@ -1,0 +1,173 @@
+diff --git a/foundations/decisions.md b/foundations/decisions.md
+--- a/foundations/decisions.md
++++ b/foundations/decisions.md
+@@ -1 +1,17 @@
+ # Decision log
++
++### [human prefix required]-01/1 — How are the browser and server built together?
++
++The browser and server share one npm package and lockfile, and have separate TypeScript compilation configurations and output directories. Building the application compiles both configurations and copies the browser HTML into the public output; checking types checks both configurations without emitting files.
++
++- **Change:** new decision
++- **Scope:** browser-page · server-http · build-tools
++- **Based on:** none
++- **Relations:** none
++- **Verification:** level 1 — invariants: application-build-layout · application-build-output · application-type-check.
++- **Review when:** none
++- **Origin:** none
++- **Approved by:** on acceptance
++
++*Rationale:* A shared installation keeps the local starting point small, while separate compiler environments keep browser and server types apart.
++*Rejected:* Separate packages add installation coordination; a bundler adds a build layer without a demonstrated need in the current application.
+diff --git a/foundations/invariants.md b/foundations/invariants.md
+--- a/foundations/invariants.md
++++ b/foundations/invariants.md
+@@ -1,4 +1,64 @@
+ # Invariants
++
++## application-build-layout/1
++
++The application has one npm package and lockfile, with distinct TypeScript configurations and output directories for browser and server code.
++
++- **Method:** `TODO`
++- **Rests on:** none
++- **Derives from:** TODO — How are the browser and server built together?, proposed in foundations/decisions.md; the human has not chosen the decision prefix.
++- **Part:** browser-page · server-http · build-tools
++- **Correction:** none
++
++## application-build-output/1
++
++Building the application compiles both the browser and server TypeScript configurations and copies the browser HTML into the public output directory.
++
++- **Method:** `TODO`
++- **Rests on:** none
++- **Derives from:** TODO — How are the browser and server built together?, proposed in foundations/decisions.md; the human has not chosen the decision prefix.
++- **Part:** browser-page · server-http · build-tools
++- **Correction:** none
++
++## application-type-check/1
++
++The application type-check command checks both the browser and server TypeScript configurations without emitting files and exits nonzero when either check fails.
++
++- **Method:** `TODO`
++- **Rests on:** none
++- **Derives from:** TODO — How are the browser and server built together?, proposed in foundations/decisions.md; the human has not chosen the decision prefix.
++- **Part:** browser-page · server-http · build-tools
++- **Correction:** none
++
++## unmatched-api-response/1
++
++A request to `/api` or a path beginning with `/api/` for which no API handler exists receives status 404 and an `application/json` response content type, including when the request accepts HTML.
++
++- **Method:** `TODO`
++- **Rests on:** none
++- **Derives from:** none
++- **Part:** server-http · build-tools
++- **Correction:** none
++
++## public-file-boundary/1
++
++The server resolves static-file requests only against the built public directory located relative to its own module, independently of the process working directory.
++
++- **Method:** `TODO`
++- **Rests on:** none
++- **Derives from:** none
++- **Part:** server-http · build-tools
++- **Correction:** none
++
++## missing-page-response/1
++
++A request outside the API paths that matches no public file receives status 404 rather than the home page.
++
++- **Method:** `TODO`
++- **Rests on:** none
++- **Derives from:** none
++- **Part:** server-http · browser-page · build-tools
++- **Correction:** none
+ 
+ ## Withdrawn identifiers
+ 
+diff --git a/foundations/part_map.md b/foundations/part_map.md
+--- a/foundations/part_map.md
++++ b/foundations/part_map.md
+@@ -1,11 +1,14 @@
+ # Part map
+ 
+ ## Criticality scale
++
++TODO — human assessment required; no degrees have been assigned.
+ 
+ ## External context
+ 
+ | Partner | Direction | What comes in | Updates with the product |
+ |---|---|---|---|
++| HTTP clients | both | untrusted | no |
+ 
+ ## Change paths
+ 
+@@ -17,6 +20,65 @@
+ | File | Why |
+ |---|---|
+ 
++## browser-page
++
++The part creates the page in the browser.
++
++- **Files:** src/browser/**
++- **Depends on:** none
++- **Failure modes:** TODO — the human has not supplied failures, damage, severity or detection.
++- **Trust boundary:** none
++
++## server-http
++
++The part serves the built page and handles HTTP requests.
++
++- **Files:** src/server/**
++  tests/http.test.mjs
++  tests/startup.test.mjs
++- **Depends on:** browser-page
++- **Failure modes:** TODO — the human has not supplied failures, damage, severity or detection.
++- **Trust boundary:** src/server/app.ts
++
++## build-tools
++
++The part installs dependencies, checks types and builds and launches the application.
++
++- **Files:** package.json
++  package-lock.json
++  tsconfig.browser.json
++  tsconfig.server.json
++  scripts/build.mjs
++  .gitignore
++  README.md
++- **Depends on:** browser-page · server-http
++- **Failure modes:** TODO — the human has not supplied failures, damage, severity or detection.
++- **Trust boundary:** none
++
++## agent-workflow
++
++The part directs and records the work performed on this repository.
++
++- **Files:** AGENTS.md
++  .agents/**
++  .claude/**
++  .gitmodules
++  .the-way
++  docs/superpowers/**
++  docs/task-cycles/**
++- **Depends on:** product-foundation
++- **Failure modes:** TODO — the human has not supplied failures, damage, severity or detection.
++- **Trust boundary:** none
++
++## product-foundation
++
++The part holds the product rules and the map of its responsibilities.
++
++- **Files:** foundations/**
++- **Depends on:** none
++- **Failure modes:** TODO — the human has not supplied failures, damage, severity or detection.
++- **Trust boundary:** none
++
+ ## Withdrawn identifiers
+ 
+ | Identifier | Why | Successors |

@@ -1,0 +1,119 @@
+# Review package: 11c7cbb7211b82687d449c168ca889f54ca6fab8..HEAD
+
+## Commits
+de3ceb3 fix: report server startup errors
+
+## Files changed
+ README.md              |  2 +-
+ package.json           |  2 +-
+ src/server/main.ts     |  8 +++++++-
+ tests/startup.test.mjs | 35 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 44 insertions(+), 3 deletions(-)
+
+## Diff
+diff --git a/README.md b/README.md
+index 169ef65..3f791ab 100644
+--- a/README.md
++++ b/README.md
+@@ -11,17 +11,17 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
+ 3. `npm run build` — kompilacja obu części i skopiowanie HTML do `dist/public`.
+ 4. `npm start` — uruchomienie zbudowanego serwera.
+ 5. Otwórz http://127.0.0.1:3000. Strona ma być pusta.
+ 
+ `npm start` wymaga wcześniejszego builda. Serwer nasłuchuje lokalnie na porcie 3000; zakończ go przez Ctrl+C.
+ 
+ ## Praca lokalna i sprawdzenie
+ 
+ `npm run dev` buduje aplikację i uruchamia serwer. Nie obserwuje plików: po edycji zatrzymaj proces przez Ctrl+C i ponów komendę.
+ 
+-`npm test` buduje aplikację i wykonuje testy HTTP na wolnym porcie.
++`npm test` buduje aplikację i wykonuje testy HTTP oraz test błędu startu przy zajętym porcie 3000.
+ 
+ W narzędziach przeglądarki sprawdź, że `document.querySelector('main')` zwraca pusty element, `/main.js` ładuje się bez błędu, a konsola nie zawiera błędów wykonania. Sama pusta strona nie dowodzi wykonania modułu.
+ 
+ Nieznane `/api`, `/api/` i ścieżki pod `/api/` otrzymują 404 JSON. Pozostałe brakujące ścieżki otrzymują zwykłe 404. Serwer podaje wyłącznie `dist/public`.
+ 
+ Kod przeglądarki jest w `src/browser`, kod serwera w `src/server`. Kompilacje mają osobne konfiguracje typów; zależności i plik blokady są wspólne. Konta, baza, mechanika gry i wdrożenie nie należą do tego szkieletu.
+diff --git a/package.json b/package.json
+index d8a884b..8f32307 100644
+--- a/package.json
++++ b/package.json
+@@ -2,19 +2,19 @@
+   "name": "loop2",
+   "version": "0.0.0",
+   "private": true,
+   "type": "module",
+   "engines": { "node": "24.x" },
+   "scripts": {
+     "typecheck": "node scripts/build.mjs --check",
+     "build": "node scripts/build.mjs",
+     "start": "node dist/server/main.js",
+     "dev": "npm run build && npm start",
+-    "test": "npm run build && node --test tests/http.test.mjs"
++    "test": "npm run build && node --test tests/http.test.mjs tests/startup.test.mjs"
+   },
+   "dependencies": { "express": "5.2.1" },
+   "devDependencies": {
+     "@types/express": "5.0.6",
+     "@types/node": "24.19.0",
+     "typescript": "6.0.3"
+   }
+ }
+diff --git a/src/server/main.ts b/src/server/main.ts
+index 69ae500..a092a73 100644
+--- a/src/server/main.ts
++++ b/src/server/main.ts
+@@ -1,5 +1,11 @@
+ import { createApp } from './app.js';
+ 
+-createApp().listen(3000, '127.0.0.1', () => {
++createApp().listen(3000, '127.0.0.1', error => {
++  if (error) {
++    console.error(`Failed to start Loop at http://127.0.0.1:3000: ${error.message}`);
++    process.exitCode = 1;
++    return;
++  }
++
+   console.log('Loop: http://127.0.0.1:3000');
+ });
+diff --git a/tests/startup.test.mjs b/tests/startup.test.mjs
+new file mode 100644
+index 0000000..2888979
+--- /dev/null
++++ b/tests/startup.test.mjs
+@@ -0,0 +1,35 @@
++import assert from 'node:assert/strict';
++import { spawnSync } from 'node:child_process';
++import { createServer } from 'node:net';
++import { test } from 'node:test';
++import { fileURLToPath } from 'node:url';
++
++test('exits with an error instead of reporting ready when port 3000 is occupied', async () => {
++  const blocker = createServer();
++  let ownsBlocker = false;
++  await new Promise((resolve, reject) => {
++    blocker.once('error', error => {
++      if (error.code === 'EADDRINUSE') resolve();
++      else reject(error);
++    });
++    blocker.listen(3000, '127.0.0.1', () => {
++      ownsBlocker = true;
++      resolve();
++    });
++  });
++
++  try {
++    const entryPoint = fileURLToPath(new URL('../dist/server/main.js', import.meta.url));
++    const result = spawnSync(process.execPath, [entryPoint], {
++      encoding: 'utf8',
++      timeout: 5000,
++    });
++
++    assert.equal(result.error, undefined, result.error?.message);
++    assert.notEqual(result.status, 0, 'server process must report a startup failure');
++    assert.match(result.stderr, /127\.0\.0\.1:3000.*EADDRINUSE|EADDRINUSE.*127\.0\.0\.1:3000/);
++    assert.doesNotMatch(result.stdout, /Loop: http:\/\/127\.0\.0\.1:3000/);
++  } finally {
++    if (ownsBlocker) await new Promise((resolve, reject) => blocker.close(error => error ? reject(error) : resolve()));
++  }
++});
