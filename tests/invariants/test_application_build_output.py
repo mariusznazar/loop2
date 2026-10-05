@@ -17,7 +17,9 @@ Covers:
   `node --check` accepting it);
 - the configurations stay apart: `npm run build` fails when the browser source uses Node's
   `process` (the browser configuration loads no Node.js types), and when the server source uses
-  `document` (the server configuration has no DOM library).
+  `document` (the server configuration has no DOM library); each failed build's output must
+  name the probe file placed and TypeScript's `Cannot find name '<name>'` for each name the
+  configuration lacks, so that a failure for another reason does not count.
 
 Does NOT cover: what the compiled code does when run; files the build copies rather than compiles
 (the HTML page); a configuration other than the two named; whether the build's output is
@@ -25,6 +27,7 @@ up to date with sources changed after it ran.
 """
 
 import os
+import re
 import shutil
 import unittest
 
@@ -73,6 +76,17 @@ PROBES = {"browser": (BROWSER_PROBE, BROWSER_MARKER), "server": (SERVER_PROBE, S
 CROSSED = {"browser": SERVER_PROBE, "server": BROWSER_PROBE}
 
 TYPESCRIPT_ONLY = "interface InvariantCheck"
+
+# What the failed build must name for each crossing, so that the failure is the one meant: the
+# probe file placed into the configuration's source, and TypeScript's report of each name that
+# configuration does not give it.
+CROSSED_FAILURE = {
+    "browser": ("src/browser/invariant_check_build_probe.ts",
+                ("Cannot find name 'process'",)),
+    "server": ("src/server/invariant_check_build_probe.ts",
+               ("Cannot find name 'HTMLElement'", "Cannot find name 'document'")),
+}
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def node():
@@ -164,6 +178,15 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
                 self.assertNotEqual(code, 0, f"`npm run build` exits 0 although {placed} uses "
                                              f"what the {name} configuration does not give "
                                              f"it:\n{output}")
+                plain = ANSI_ESCAPE.sub("", output).replace("\\", "/")
+                expected_file, missing_names = CROSSED_FAILURE[name]
+                self.assertIn(expected_file, plain,
+                              f"the failed build does not name {expected_file}, so it may have "
+                              f"failed for another reason:\n{output}")
+                for missing in missing_names:
+                    self.assertIn(missing, plain,
+                                  f"the failed build does not report {missing!r}, so it may "
+                                  f"have failed for another reason:\n{output}")
 
 
 if __name__ == "__main__":
