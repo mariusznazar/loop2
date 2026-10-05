@@ -18,7 +18,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 `npm run dev` buduje aplikację i uruchamia serwer. Nie obserwuje plików: po edycji zatrzymaj proces przez Ctrl+C i ponów komendę.
 
-`npm test` buduje aplikację i wykonuje testy HTTP na wolnym porcie.
+`npm test` buduje aplikację i wykonuje testy HTTP oraz test błędu startu przy zajętym porcie 3000.
 
 W narzędziach przeglądarki sprawdź, że `document.querySelector('main')` zwraca pusty element, `/main.js` ładuje się bez błędu, a konsola nie zawiera błędów wykonania. Sama pusta strona nie dowodzi wykonania modułu.
 
