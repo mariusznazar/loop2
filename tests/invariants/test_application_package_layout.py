@@ -42,8 +42,8 @@ def referenced_configs(package_dir, tokens):
     return [(package_dir / name).resolve() for name in names]
 
 
-def copies_application_source(root, tracked, configs, entry, side):
-    """An entry built from a local config whose source repeats this application's source."""
+def has_application_entry(root, tracked, configs, entry, side):
+    """A built entry backed by this application's source or a browser application page."""
     if not isinstance(entry, str):
         return False
     entry_path = (root / entry).resolve()
@@ -58,13 +58,24 @@ def copies_application_source(root, tracked, configs, entry, side):
         output_dir = (config_path.parent / options["outDir"]).resolve()
         if not entry_path.is_relative_to(output_dir):
             continue
+        entry_relative = entry_path.relative_to(output_dir)
         for relative in tracked:
             source_path = (Path(support.ROOT) / relative).resolve()
             if not source_path.is_relative_to(source_dir) or not relative.endswith(
                     TYPESCRIPT_EXTENSIONS):
                 continue
+            emitted_extension = {".ts": ".js", ".mts": ".mjs", ".cts": ".cjs"}[
+                source_path.suffix]
+            if source_path.relative_to(source_dir).with_suffix(
+                    emitted_extension) != entry_relative:
+                continue
             counterpart = (Path(support.ROOT) / side / source_path.relative_to(source_dir))
             if counterpart.is_file() and source_path.read_bytes() == counterpart.read_bytes():
+                return True
+            pages = (root / "index.html", source_dir / "index.html")
+            if side == "src/browser" and any(
+                    page.is_file() and page.relative_to(support.ROOT).as_posix() in tracked
+                    for page in pages):
                 return True
     return False
 
@@ -117,10 +128,10 @@ class ApplicationPackageLayout(unittest.TestCase):
             references_application = bool(application_paths.intersection(
                 referenced_paths.union(referenced)))
             builds_own_application = bool(build_commands and (
-                copies_application_source(root / package_dir, tracked, referenced,
-                                          package.get("browser"), "src/browser") or
-                copies_application_source(root / package_dir, tracked, referenced,
-                                          package.get("main"), "src/server")))
+                has_application_entry(root / package_dir, tracked, referenced,
+                                      package.get("browser"), "src/browser") or
+                has_application_entry(root / package_dir, tracked, referenced,
+                                      package.get("main"), "src/server")))
             self.assertFalse(references_application or
                              builds_own_application,
                              f"{package_path} defines a separate application package")
