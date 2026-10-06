@@ -171,7 +171,6 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_each_configuration_rejects_source_only_the_other_accepts(self):
         # invariant: application-build-output/1
-        # invariant: application-build-layout/1
         for name, crossed_text in CROSSED.items():
             source = configuration(name)[2]
             with self.subTest(configuration=name):
