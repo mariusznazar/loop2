@@ -1,10 +1,13 @@
 """The browser and server share one npm package and lockfile."""
 
+from html.parser import HTMLParser
 import json
 from pathlib import Path
 import re
 import shlex
 import unittest
+from urllib.parse import urljoin, urlsplit
+from urllib.request import url2pathname
 
 import loop2_invariant_support as support
 
@@ -42,6 +45,35 @@ def referenced_configs(package_dir, tokens):
     return [(package_dir / name).resolve() for name in names]
 
 
+class PageScripts(HTMLParser):
+    """Read actual script references and the page's first base URL."""
+
+    def __init__(self):
+        super().__init__()
+        self.base = None
+        self.sources = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        if tag == "base" and self.base is None and "href" in attributes:
+            self.base = attributes["href"]
+        if tag == "script" and attributes.get("src"):
+            self.sources.append(attributes["src"])
+
+
+def page_loads_entry(page, entry_path):
+    """A local script URL resolves to this package's compiled browser entry."""
+    parser = PageScripts()
+    parser.feed(page.read_text(encoding="utf-8"))
+    base = urljoin(page.resolve().as_uri(), parser.base or "")
+    for source in parser.sources:
+        reference = urlsplit(urljoin(base, source))
+        if reference.scheme == "file" and not reference.netloc:
+            if Path(url2pathname(reference.path)).resolve() == entry_path:
+                return True
+    return False
+
+
 def has_application_entry(root, tracked, configs, entry, side):
     """A built entry backed by this application's source or a browser application page."""
     if not isinstance(entry, str):
@@ -75,7 +107,7 @@ def has_application_entry(root, tracked, configs, entry, side):
             pages = (root / "index.html", source_dir / "index.html")
             if side == "src/browser" and any(
                     page.is_file() and page.relative_to(support.ROOT).as_posix() in tracked
-                    for page in pages):
+                    and page_loads_entry(page, entry_path) for page in pages):
                 return True
     return False
 
