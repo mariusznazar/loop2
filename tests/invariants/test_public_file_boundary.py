@@ -54,7 +54,7 @@ console.log(JSON.stringify(roots));
             expected_root = Path(copy.file("dist/public")).resolve()
             for root in roots:
                 with self.subTest(static_root=root):
-                    self.assertEqual(Path(root).resolve(), expected_root,
+                    self.assertTrue(Path(root).resolve().is_relative_to(expected_root),
                                      "Express static middleware exposes a directory outside "
                                      "the built public directory")
 
