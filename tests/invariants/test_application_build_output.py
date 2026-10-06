@@ -138,6 +138,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_build_emits_every_source_file_of_both_configurations(self):
         # invariant: application-build-output/1
+        # invariant: application-build-layout/1
         copy = self.fresh_copy()
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
@@ -151,6 +152,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_build_compiles_made_up_source_under_each_configuration(self):
         # invariant: application-build-output/1
+        # invariant: application-build-layout/1
         copy = self.fresh_copy()
         for name, (text, _marker) in PROBES.items():
             write_probe(copy, configuration(name)[2], text)
@@ -169,6 +171,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_each_configuration_rejects_source_only_the_other_accepts(self):
         # invariant: application-build-output/1
+        # invariant: application-build-layout/1
         for name, crossed_text in CROSSED.items():
             source = configuration(name)[2]
             with self.subTest(configuration=name):

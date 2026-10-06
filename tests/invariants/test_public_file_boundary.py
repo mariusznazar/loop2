@@ -3,9 +3,13 @@ even when the server starts in another working directory.
 
 The check requires real built public bytes and probes files planted outside that directory,
 including direct paths and encoded traversal paths. Response page wording is unconstrained.
+It also records every Express static root created by the built application, independently of
+the URL prefix at which its middleware is mounted.
 """
 
+import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 
@@ -24,6 +28,36 @@ class PublicFileBoundary(unittest.TestCase):
         marker = b"loop2-invariant-outside-public-asset"
 
         with tempfile.TemporaryDirectory(prefix="loop2-foreign-cwd-") as foreign:
+            node = shutil.which("node")
+            self.assertIsNotNone(node, "node is not on PATH")
+            # Patch before importing the app so module-level registrations and aliases are
+            # observed too. Resolve relative roots at registration time, as Express does.
+            code, output = support.run([node, "--input-type=module", "-e", """
+import express from 'express';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+const appUrl = pathToFileURL(resolve('dist/server/app.js'));
+const roots = [];
+const originalStatic = express.static;
+express.static = function (root, ...options) {
+  roots.push(resolve(root));
+  return originalStatic.call(this, root, ...options);
+};
+process.chdir(process.argv[1]);
+const { createApp } = await import(appUrl.href);
+await createApp();
+console.log(JSON.stringify(roots));
+""", foreign], copy.path)
+            self.assertEqual(code, 0, f"cannot inspect built application static roots:\n{output}")
+            roots = json.loads(output)
+            self.assertTrue(roots, "the built application created no Express static middleware")
+            expected_root = Path(copy.file("dist/public")).resolve()
+            for root in roots:
+                with self.subTest(static_root=root):
+                    self.assertEqual(Path(root).resolve(), expected_root,
+                                     "Express static middleware exposes a directory outside "
+                                     "the built public directory")
+
             Path(foreign, "outside-public.txt").write_bytes(marker)
             Path(copy.file("outside-public.txt")).write_bytes(marker)
             Path(copy.file("src/server/outside-public.txt")).write_bytes(marker)
