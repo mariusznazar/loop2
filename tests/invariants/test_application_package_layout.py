@@ -25,29 +25,37 @@ def file_owners(root, tracked):
     # data: foundations/part_map.md
     text = (root / "foundations/part_map.md").read_text(encoding="utf-8")
     patterns = []
-    for section in re.split(r"(?m)^## ", text)[1:]:
+    for index, section in enumerate(re.split(r"(?m)^## ", text)[1:]):
         name, _, body = section.partition("\n")
         field = re.search(r"(?m)^- \*\*Files:\*\* (.*(?:\n[ \t]+.*)*)", body)
         if field is None:
             continue
         for line in field.group(1).splitlines():
             pattern = line.strip()
+            if pattern.startswith("- "):
+                pattern = pattern[2:].strip()
             if pattern and pattern != "none":
-                patterns.append(f"{pattern} loop2-invariant-owner={name.strip()}\n")
+                patterns.append(f"{pattern} loop2-invariant-owner-{index}={name.strip()}\n")
     with tempfile.TemporaryDirectory(prefix="loop2-package-ownership-") as temporary:
         attributes = Path(temporary, "ownership.attributes")
         attributes.write_text("".join(patterns), encoding="utf-8")
         result = subprocess.run(
             ["git", "-c", f"core.attributesFile={attributes.as_posix()}",
-             "-c", "core.ignorecase=false", "check-attr", "-z", "--stdin",
-             "loop2-invariant-owner"], cwd=root,
+             "-c", "core.ignorecase=false", "check-attr", "-z", "--all", "--stdin"], cwd=root,
             input="\0".join(sorted(tracked)) + "\0", capture_output=True,
             text=True, encoding="utf-8", timeout=60)
         if result.returncode:
             raise AssertionError("git check-attr failed: " + result.stderr)
     fields = result.stdout.split("\0")
-    return dict((fields[index], fields[index + 2])
-                for index in range(0, len(fields) - 2, 3))
+    owners = dict.fromkeys(tracked, "unspecified")
+    for index in range(0, len(fields) - 2, 3):
+        path, attribute, owner = fields[index:index + 3]
+        if not attribute.startswith("loop2-invariant-owner-"):
+            continue
+        if owners[path] != "unspecified":
+            raise AssertionError(f"{path} has overlapping part owners: {owners[path]}, {owner}")
+        owners[path] = owner
+    return owners
 
 
 class ApplicationPackageLayout(unittest.TestCase):
