@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import re
 import shlex
+import subprocess
+import tempfile
 import unittest
 from urllib.parse import urljoin, urlsplit
 from urllib.request import url2pathname
@@ -15,6 +17,40 @@ import loop2_invariant_support as support
 APPLICATION_ROOTS = ("src/browser", "src/server")
 PACKAGE_FILES = {"package.json", "package-lock.json", "npm-shrinkwrap.json"}
 TYPESCRIPT_EXTENSIONS = (".ts", ".mts", ".cts")
+
+
+def application_part_files(root, tracked):
+    """Resolve the application parts' explicit ownership using the map's Git patterns."""
+    # data: foundations/part_map.md
+    text = (root / "foundations/part_map.md").read_text(encoding="utf-8")
+    patterns = []
+    for section in re.split(r"(?m)^## ", text)[1:]:
+        name, _, body = section.partition("\n")
+        if name.strip() not in ("browser-view", "account-server"):
+            continue
+        field = re.search(r"(?m)^- \*\*Files:\*\* (.*(?:\n[ \t]+.*)*)", body)
+        if field is None:
+            raise AssertionError(f"{name} has no Files field in the part map")
+        patterns.extend(line.strip().removeprefix("- ")
+                        for line in field.group(1).splitlines() if line.strip())
+    if not patterns:
+        raise AssertionError("the part map assigns no application files")
+    # check-attr has the same pattern semantics as the part-map guard, including **.
+    with tempfile.TemporaryDirectory(prefix="loop2-package-ownership-") as temporary:
+        attributes = Path(temporary, "ownership.attributes")
+        attributes.write_text("".join(f"{pattern} loop2-invariant-application\n"
+                                      for pattern in patterns), encoding="utf-8")
+        result = subprocess.run(
+            ["git", "-c", f"core.attributesFile={attributes.as_posix()}",
+             "-c", "core.ignorecase=false", "check-attr", "-z", "--stdin",
+             "loop2-invariant-application"], cwd=root,
+            input="\0".join(sorted(tracked)) + "\0", capture_output=True,
+            text=True, encoding="utf-8", timeout=60)
+        if result.returncode:
+            raise AssertionError("git check-attr failed: " + result.stderr)
+    fields = result.stdout.split("\0")
+    return {fields[index] for index in range(0, len(fields) - 2, 3)
+            if fields[index + 2] == "set"}
 
 
 def resolved_config_paths(root, filename):
@@ -74,8 +110,8 @@ def page_loads_entry(page, entry_path):
     return False
 
 
-def has_application_entry(root, tracked, configs, entry, side):
-    """A built entry backed by this application's source or a browser application page."""
+def has_browser_entry(root, tracked, configs, entry):
+    """A built browser entry backed by copied source or an application page."""
     if not isinstance(entry, str):
         return False
     entry_path = (root / entry).resolve()
@@ -101,11 +137,12 @@ def has_application_entry(root, tracked, configs, entry, side):
             if source_path.relative_to(source_dir).with_suffix(
                     emitted_extension) != entry_relative:
                 continue
-            counterpart = (Path(support.ROOT) / side / source_path.relative_to(source_dir))
-            if counterpart.is_file() and source_path.read_bytes() == counterpart.read_bytes():
+            counterpart = (Path(support.ROOT) / "src/browser" / source_path.relative_to(source_dir))
+            if counterpart.is_file() and (
+                    source_path.read_bytes() == counterpart.read_bytes()):
                 return True
             pages = (root / "index.html", source_dir / "index.html")
-            if side == "src/browser" and any(
+            if any(
                     page.is_file() and page.relative_to(support.ROOT).as_posix() in tracked
                     and page_loads_entry(page, entry_path) for page in pages):
                 return True
@@ -131,6 +168,15 @@ class ApplicationPackageLayout(unittest.TestCase):
             resolved_config_paths(root, name)
             for name in ("tsconfig.browser.json", "tsconfig.server.json")))
 
+        owned_sources = application_part_files(root, tracked)
+        for source in sorted(owned_sources):
+            parent = Path(source).parent
+            while parent != Path("."):
+                for filename in PACKAGE_FILES:
+                    self.assertNotIn((parent / filename).as_posix(), tracked,
+                                     f"{source} belongs to a separate application package")
+                parent = parent.parent
+
         for side in APPLICATION_ROOTS:
             sources = [p for p in tracked if p.startswith(side + "/")
                        and p.endswith(TYPESCRIPT_EXTENSIONS) and not p.endswith(".d.ts")]
@@ -148,7 +194,8 @@ class ApplicationPackageLayout(unittest.TestCase):
             if any(package_path.startswith(side + "/") for side in APPLICATION_ROOTS):
                 continue  # The ancestor check above gives the more precise failure.
             # A package elsewhere is relevant when it targets this application's current
-            # locations or builds its own browser/server application source.
+            # locations or builds its own browser application entry. Part ownership
+            # above covers independent server packages without source-byte inference.
             package = json.loads((root / package_path).read_text(encoding="utf-8"))
             scripts = package.get("scripts", {})
             build_commands = [str(value) for key, value in scripts.items()
@@ -160,10 +207,8 @@ class ApplicationPackageLayout(unittest.TestCase):
             references_application = bool(application_paths.intersection(
                 referenced_paths.union(referenced)))
             builds_own_application = bool(build_commands and (
-                has_application_entry(root / package_dir, tracked, referenced,
-                                      package.get("browser"), "src/browser") or
-                has_application_entry(root / package_dir, tracked, referenced,
-                                      package.get("main"), "src/server")))
+                has_browser_entry(root / package_dir, tracked, referenced,
+                                  package.get("browser"))))
             self.assertFalse(references_application or
                              builds_own_application,
                              f"{package_path} defines a separate application package")

@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import shutil
 import unittest
 
 import loop2_invariant_support as support
@@ -21,12 +22,26 @@ class ApplicationBuildLayout(unittest.TestCase):
             self.assertIn(filename, tracked, f"{filename} is not tracked")
             self.assertTrue(path.is_file(), f"{filename} is missing")
             config = json.loads(path.read_text(encoding="utf-8"))
-            includes = config["include"]
-            self.assertTrue(any(source in pattern.replace("\\", "/")
-                                for pattern in includes),
-                            f"{filename} does not include {source}")
-            self.assertTrue(any(p.startswith(source + "/") and p.endswith(".ts")
-                                for p in tracked), f"{source} has no TypeScript source")
+            # Let TypeScript resolve include, exclude, files and inherited settings.
+            node = shutil.which("node")
+            self.assertIsNotNone(node, "node is not on PATH")
+            code, output = support.run([node, "-e", """
+const ts = require('typescript');
+const path = require('node:path');
+const filename = path.resolve(process.argv[1]);
+const config = ts.readConfigFile(filename, ts.sys.readFile);
+if (config.error) throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, ' '));
+const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(filename));
+console.log(JSON.stringify(parsed.fileNames));
+""", filename], support.ROOT)
+            self.assertEqual(code, 0, f"cannot resolve {filename}: {output}")
+            included = {Path(name).resolve() for name in json.loads(output)}
+            sources = {Path(support.ROOT, name).resolve() for name in tracked
+                       if name.startswith(source + "/")
+                       and name.endswith((".ts", ".mts", ".cts"))
+                       and not name.endswith((".d.ts", ".d.mts", ".d.cts"))}
+            self.assertTrue(sources & included,
+                            f"{filename} does not include a tracked TypeScript source from {source}")
             configs.append(config)
 
         paths = [Path(support.ROOT, name) for name in

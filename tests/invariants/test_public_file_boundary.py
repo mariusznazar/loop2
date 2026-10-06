@@ -26,6 +26,7 @@ class PublicFileBoundary(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="loop2-foreign-cwd-") as foreign:
             Path(foreign, "outside-public.txt").write_bytes(marker)
             Path(copy.file("outside-public.txt")).write_bytes(marker)
+            Path(copy.file("src/server/outside-public.txt")).write_bytes(marker)
             Path(copy.file("dist/server/outside-public.txt")).write_bytes(marker)
             server = support.Server(copy, working_directory=foreign)
             try:
@@ -35,7 +36,9 @@ class PublicFileBoundary(unittest.TestCase):
                         self.assertEqual(status, 200)
                         self.assertEqual(body, expected)
 
-                for path in ("/outside-public.txt", "/package.json", "/../package.json",
+                # A second static root mounted at /source must not expose repository src.
+                for path in ("/source/server/outside-public.txt", "/outside-public.txt",
+                             "/package.json", "/../package.json",
                              "/%2e%2e/package.json", "/..%2f..%2fpackage.json",
                              "/..%5c..%5c/package.json"):
                     with self.subTest(outside=path):
