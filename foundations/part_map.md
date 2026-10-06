@@ -42,7 +42,6 @@ The part installs dependencies, checks types and builds and launches the applica
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
-  tests/invariants/test_application_build_layout.py
 - **Depends on:** browser-view · account-server
 - **Failure modes:** none
 - **Trust boundary:** package-lock.json
