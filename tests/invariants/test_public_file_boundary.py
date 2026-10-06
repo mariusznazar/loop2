@@ -5,6 +5,10 @@ The check requires real built public bytes and probes files planted outside that
 including direct paths and encoded traversal paths. Response page wording is unconstrained.
 It also records every Express static root created by the built application, independently of
 the URL prefix at which its middleware is mounted.
+Direct literal GET routes registered on the app are requested too; successful sendFile calls
+(including Express download) are checked by their actual filesystem target. This is finite
+runtime coverage: nested/parameterized routes, authentication or other request conditions,
+request-time registrations and file bytes sent through other APIs need separate review.
 """
 
 import json
@@ -32,24 +36,72 @@ class PublicFileBoundary(unittest.TestCase):
             self.assertIsNotNone(node, "node is not on PATH")
             # Patch before importing the app so module-level registrations and aliases are
             # observed too. Resolve relative roots at registration time, as Express does.
-            code, output = support.run([node, "--input-type=module", "-e", """
+            code, output = support.run([node, "--input-type=module", "-e", r"""
 import express from 'express';
+import { realpathSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const appUrl = pathToFileURL(resolve('dist/server/app.js'));
 const roots = [];
+const files = [];
 const originalStatic = express.static;
 express.static = function (root, ...options) {
   roots.push(resolve(root));
   return originalStatic.call(this, root, ...options);
 };
+const originalSendFile = express.response.sendFile;
+express.response.sendFile = function (file, options, callback) {
+  const opts = typeof options === 'function' ? {} : options;
+  const done = typeof options === 'function' ? options : callback;
+  const target = resolve(opts?.root || '.', file);
+  return originalSendFile.call(this, file, opts, error => {
+    if (!error && this.statusCode >= 200 && this.statusCode < 300) {
+      files.push({ url: this.req.originalUrl, target: realpathSync(target) });
+    }
+    if (done) return done(error);
+    // Preserve Express 5's default sendFile error handling when no callback was supplied.
+    if (error?.code === 'EISDIR') return this.req.next();
+    if (error && error.code !== 'ECONNABORTED' && error.syscall !== 'write') {
+      this.req.next(error);
+    }
+  });
+};
 process.chdir(process.argv[1]);
 const { createApp } = await import(appUrl.href);
-await createApp();
-console.log(JSON.stringify(roots));
+const app = await createApp();
+const paths = new Set(['/']);
+// Express 5 exposes its router stack here. Do not guess a leaking route's URL.
+for (const layer of app.router.stack) {
+  const route = layer.route;
+  if (!route || !(route.methods.get || route.methods._all)) continue;
+  for (const path of [route.path].flat()) {
+    if (typeof path === 'string' && !/[:*{}()[\]\\?+]/.test(path)) paths.add(path);
+  }
+}
+const server = app.listen(0, '127.0.0.1');
+await new Promise((accept, reject) => {
+  server.once('listening', accept);
+  server.once('error', reject);
+});
+try {
+  for (const path of paths) {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}${path}`, {
+      redirect: 'manual', signal: AbortSignal.timeout(10000)
+    });
+    await response.arrayBuffer();
+  }
+} finally {
+  await new Promise((accept, reject) => server.close(error => error ? reject(error) : accept()));
+}
+console.log('LOOP2_FILE_AUDIT=' + JSON.stringify({ roots, files }));
 """, foreign], copy.path)
-            self.assertEqual(code, 0, f"cannot inspect built application static roots:\n{output}")
-            roots = json.loads(output)
+            self.assertEqual(code, 0, f"cannot inspect built application file responses:\n{output}")
+            # Application logs (including ordinary 404 errors) are not audit records.
+            records = [line.removeprefix("LOOP2_FILE_AUDIT=") for line in output.splitlines()
+                       if line.startswith("LOOP2_FILE_AUDIT=")]
+            self.assertEqual(len(records), 1, f"missing or ambiguous file audit:\n{output}")
+            audit = json.loads(records[0])
+            roots = audit["roots"]
             self.assertTrue(roots, "the built application created no Express static middleware")
             expected_root = Path(copy.file("dist/public")).resolve()
             for root in roots:
@@ -57,6 +109,10 @@ console.log(JSON.stringify(roots));
                     self.assertTrue(Path(root).resolve().is_relative_to(expected_root),
                                      "Express static middleware exposes a directory outside "
                                      "the built public directory")
+            for file in audit["files"]:
+                with self.subTest(file_response=file):
+                    self.assertTrue(Path(file["target"]).resolve().is_relative_to(expected_root),
+                                    "a direct file response serves outside the built public directory")
 
             Path(foreign, "outside-public.txt").write_bytes(marker)
             Path(copy.file("outside-public.txt")).write_bytes(marker)
