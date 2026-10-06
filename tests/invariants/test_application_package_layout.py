@@ -53,15 +53,31 @@ def application_part_files(root, tracked):
             if fields[index + 2] == "set"}
 
 
+def config_directories(path):
+    """Read inherited options with TypeScript, which rebases paths to the leaf config."""
+    compiler = Path(support.ROOT) / "node_modules/typescript/bin/tsc"
+    result = subprocess.run(
+        ["node", str(compiler), "--project", str(path), "--showConfig"],
+        cwd=support.ROOT, capture_output=True, text=True, encoding="utf-8", timeout=60)
+    if result.returncode:
+        raise AssertionError(f"TypeScript could not resolve {path}: "
+                             + result.stdout + result.stderr)
+    config = json.loads(result.stdout)
+    options = config.get("compilerOptions", {})
+    missing = [name for name in ("rootDir", "outDir") if not options.get(name)]
+    if missing:
+        raise AssertionError(f"Cannot establish source/output directories for {path}: "
+                             + ", ".join(missing) + " absent from effective TypeScript config")
+    return tuple((path.parent / options[name]).resolve()
+                 for name in ("rootDir", "outDir"))
+
+
 def resolved_config_paths(root, filename):
     """The current application's config, source and output locations."""
     # data: tsconfig.browser.json
     # data: tsconfig.server.json
     path = root / filename
-    config = json.loads(path.read_text(encoding="utf-8"))
-    options = config["compilerOptions"]
-    return {path.resolve(), (path.parent / options["rootDir"]).resolve(),
-            (path.parent / options["outDir"]).resolve()}
+    return {path.resolve(), *config_directories(path)}
 
 
 def build_tokens(command):
@@ -118,12 +134,7 @@ def has_browser_entry(root, tracked, configs, entry):
     for config_path in configs:
         if not config_path.is_file():
             continue
-        config = json.loads(config_path.read_text(encoding="utf-8"))
-        options = config.get("compilerOptions", {})
-        if not options.get("rootDir") or not options.get("outDir"):
-            continue
-        source_dir = (config_path.parent / options["rootDir"]).resolve()
-        output_dir = (config_path.parent / options["outDir"]).resolve()
+        source_dir, output_dir = config_directories(config_path)
         if not entry_path.is_relative_to(output_dir):
             continue
         entry_relative = entry_path.relative_to(output_dir)
