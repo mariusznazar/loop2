@@ -29,12 +29,18 @@ class ApplicationBuildLayout(unittest.TestCase):
                                 for p in tracked), f"{source} has no TypeScript source")
             configs.append(config)
 
+        paths = [Path(support.ROOT, name) for name in
+                 ("tsconfig.browser.json", "tsconfig.server.json")]
         roots = [config["compilerOptions"]["rootDir"] for config in configs]
         outputs = [config["compilerOptions"]["outDir"] for config in configs]
         self.assertTrue(all(roots), "both configurations need rootDir")
         self.assertTrue(all(outputs), "both configurations need outDir")
-        self.assertEqual(len(set(roots)), 2, "browser and server rootDir must differ")
-        self.assertEqual(len(set(outputs)), 2, "browser and server outDir must differ")
+        resolved_roots = {(path.parent / value).resolve()
+                          for path, value in zip(paths, roots)}
+        resolved_outputs = {(path.parent / value).resolve()
+                            for path, value in zip(paths, outputs)}
+        self.assertEqual(len(resolved_roots), 2, "browser and server rootDir must differ")
+        self.assertEqual(len(resolved_outputs), 2, "browser and server outDir must differ")
 
 
 if __name__ == "__main__":
