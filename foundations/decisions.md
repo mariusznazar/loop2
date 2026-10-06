@@ -139,3 +139,56 @@ the saved progress affects only its owner's game; account isolation prevents cha
 player's saved state.
 *Rejected:* the server computing the game itself — a second home for the simulation and many
 times the work.
+
+### D-04/2 — What is the game built with?
+
+The game is written in TypeScript and runs in the browser.
+
+- **Change:** unchanged sentences
+- **Scope:** browser-view, build-tools
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a game screen written as a TypeScript module that the build compiles for the browser
+  - violates: a part of the game written as a Godot scene, or a script of the game's own code that the browser loads, written directly in JavaScript instead of compiled from TypeScript
+- **Review when:** movement and collisions become the core of the game's fun · check by: 2027-04-03
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What is the game built with?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale for change:* the violation example distinguishes the game's own code from external libraries without broadening the language choice.
+*Rejected:* keeping an example that also excludes external libraries — it extends the decision beyond the game's own code.
+
+### D-05/2 — What serves the built game and account requests in the container?
+
+One Node.js process running Express 5 serves both the built game's static files and the `/api/`
+paths. An unmatched `/api/` request receives an API error, not the game's HTML page.
+
+- **Change:** unchanged sentences
+- **Scope:** account-server, build-tools
+- **Based on:** Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/, read 2026-10-04) · Express 5 request routing and response API (https://expressjs.com/en/5x/api/express/, read 2026-10-04) · Caddy 2 route, file_server and reverse_proxy (https://caddyserver.com/docs/caddyfile/directives/route, read 2026-10-04) · Docker multiple processes in one container (https://docs.docker.com/engine/containers/multi-service_container/, read 2026-10-04)
+- **Relations:** derives from D-02@06e6d3d8
+- **Verification:** level 1 — invariants: loop2-one-serving-process · loop2-api-error-route
+- **Review when:** serving built files through Express becomes difficult to operate or the account API needs a separate process · check by: 2027-04-04
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What serves the built game and account requests in the container?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale for change:* the origin connects the serving-process choice with its full approved entry.
+*Rejected:* omitting the link to the full approved entry — the shortened choice hides its source.
+
+### D-06/2 — How are the browser and server built together?
+
+The browser and server share one npm package and lockfile, and have separate TypeScript
+compilation configurations and output directories. Building the application compiles both
+configurations.
+
+- **Change:** unchanged sentences
+- **Scope:** build-tools, browser-view, account-server
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: application-package-layout · application-build-layout · application-build-output
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale for change:* the verification names the package boundary and compiler layout as well as compilation of both sides.
+*Rejected:* keeping verification limited to compilation alone — it leaves the package boundary and compiler layout unprotected.

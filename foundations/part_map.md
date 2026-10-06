@@ -20,6 +20,8 @@ The part is the account and save server: it serves the built game and handles th
   tests/invariants/test_account_server_express_http.py
   tests/invariants/test_loop2_api_error_route.py
   tests/invariants/test_loop2_one_serving_process.py
+  tests/invariants/test_public_file_boundary.py
+  tests/invariants/test_account_server_occupied_address.py
 - **Depends on:** browser-view · build-tools
 - **Failure modes:** none
 - **Trust boundary:** src/server/**
@@ -39,6 +41,8 @@ The part installs dependencies, checks types and builds and launches the applica
   tests/invariants/test_account_server_runtime.py
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
+  tests/invariants/test_application_package_layout.py
+  tests/invariants/test_application_build_layout.py
 - **Depends on:** browser-view · account-server
 - **Failure modes:** none
 - **Trust boundary:** package-lock.json
@@ -58,7 +62,7 @@ The part directs and records the work performed on this repository.
 
 ## product-foundation
 
-The part holds the product rules and the map of its responsibilities.
+The part holds the product's foundation.
 
 - **Files:** foundations/**
 - **Depends on:** none
