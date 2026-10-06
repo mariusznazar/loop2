@@ -38,12 +38,20 @@ class PublicFileBoundary(unittest.TestCase):
             # observed too. Resolve relative roots at registration time, as Express does.
             code, output = support.run([node, "--input-type=module", "-e", r"""
 import express from 'express';
-import { realpathSync } from 'node:fs';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const appUrl = pathToFileURL(resolve('dist/server/app.js'));
 const roots = [];
 const files = [];
+const transferContext = new AsyncLocalStorage();
+const originalReadStream = fs.createReadStream;
+fs.createReadStream = function (file, ...options) {
+  // Observe send's actual selected file, including root and extension/index options.
+  transferContext.getStore()?.push(file);
+  return originalReadStream.call(this, file, ...options);
+};
 const originalStatic = express.static;
 express.static = function (root, ...options) {
   roots.push(resolve(root));
@@ -53,10 +61,13 @@ const originalSendFile = express.response.sendFile;
 express.response.sendFile = function (file, options, callback) {
   const opts = typeof options === 'function' ? {} : options;
   const done = typeof options === 'function' ? options : callback;
-  const target = resolve(opts?.root || '.', file);
-  return originalSendFile.call(this, file, opts, error => {
-    if (!error && this.statusCode >= 200 && this.statusCode < 300) {
-      files.push({ url: this.req.originalUrl, target: realpathSync(target) });
+  const targets = [];
+  return transferContext.run(targets, () => originalSendFile.call(this, file, opts, error => {
+    // An error-status response can carry file bytes; a failed transfer carries an error.
+    if (!error) {
+      for (const target of targets) {
+        files.push({ url: this.req.originalUrl, target: fs.realpathSync(target) });
+      }
     }
     if (done) return done(error);
     // Preserve Express 5's default sendFile error handling when no callback was supplied.
@@ -64,7 +75,7 @@ express.response.sendFile = function (file, options, callback) {
     if (error && error.code !== 'ECONNABORTED' && error.syscall !== 'write') {
       this.req.next(error);
     }
-  });
+  }));
 };
 process.chdir(process.argv[1]);
 const { createApp } = await import(appUrl.href);
