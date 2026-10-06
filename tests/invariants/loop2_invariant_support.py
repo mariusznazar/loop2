@@ -219,9 +219,10 @@ def port_in_use(host=HOST, port=PORT):
 
 
 class Server:
-    """`npm start` in a built copy, with stdout and stderr to files. stop() kills its whole tree."""
+    """Start a built copy through `npm start` in its root, or through `node` from a supplied
+    working directory. stdout and stderr go to files; stop() kills the whole process tree."""
 
-    def __init__(self, copy, extra_env=None):
+    def __init__(self, copy, extra_env=None, working_directory=None):
         if port_in_use():
             raise AssertionError(
                 f"port {PORT} on {HOST} is already in use before the server starts; "
@@ -234,7 +235,18 @@ class Server:
         self.stderr_path = os.path.join(self.log_dir, "stderr.txt")
         self._stdout = open(self.stdout_path, "wb")
         self._stderr = open(self.stderr_path, "wb")
-        self.process = popen([npm(), "start"], copy.path, env=env,
+        launch_cwd = copy.path if working_directory is None else working_directory
+        if working_directory is None:
+            launch_args = [npm(), "start"]
+        else:
+            node = shutil.which("node")
+            if node is None:
+                self._stdout.close()
+                self._stderr.close()
+                shutil.rmtree(self.log_dir, ignore_errors=True)
+                raise AssertionError("node is not on PATH")
+            launch_args = [node, copy.file("dist/server/main.js")]
+        self.process = popen(launch_args, launch_cwd, env=env,
                              stdout=self._stdout, stderr=self._stderr)
         try:
             deadline = time.monotonic() + START_TIMEOUT
