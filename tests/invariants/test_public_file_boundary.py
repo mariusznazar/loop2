@@ -38,19 +38,19 @@ class PublicFileBoundary(unittest.TestCase):
             # observed too. Resolve relative roots at registration time, as Express does.
             code, output = support.run([node, "--input-type=module", "-e", r"""
 import express from 'express';
-import { AsyncLocalStorage } from 'node:async_hooks';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const appUrl = pathToFileURL(resolve('dist/server/app.js'));
 const roots = [];
 const files = [];
-const transferContext = new AsyncLocalStorage();
+const streamFiles = new WeakMap();
 const originalReadStream = fs.createReadStream;
 fs.createReadStream = function (file, ...options) {
   // Observe send's actual selected file, including root and extension/index options.
-  transferContext.getStore()?.push(file);
-  return originalReadStream.call(this, file, ...options);
+  const stream = originalReadStream.call(this, file, ...options);
+  streamFiles.set(stream, file);
+  return stream;
 };
 const originalStatic = express.static;
 express.static = function (root, ...options) {
@@ -62,7 +62,13 @@ express.response.sendFile = function (file, options, callback) {
   const opts = typeof options === 'function' ? {} : options;
   const done = typeof options === 'function' ? options : callback;
   const targets = [];
-  return transferContext.run(targets, () => originalSendFile.call(this, file, opts, error => {
+  const observePipe = stream => {
+    if (streamFiles.has(stream)) targets.push(streamFiles.get(stream));
+  };
+  // Internal reads are allowed: only a stream piped to this response is a transfer.
+  this.prependListener('pipe', observePipe);
+  const completed = error => {
+    this.removeListener('pipe', observePipe);
     // An error-status response can carry file bytes; a failed transfer carries an error.
     if (!error) {
       for (const target of targets) {
@@ -75,7 +81,13 @@ express.response.sendFile = function (file, options, callback) {
     if (error && error.code !== 'ECONNABORTED' && error.syscall !== 'write') {
       this.req.next(error);
     }
-  }));
+  };
+  try {
+    return originalSendFile.call(this, file, opts, completed);
+  } catch (error) {
+    this.removeListener('pipe', observePipe);
+    throw error;
+  }
 };
 process.chdir(process.argv[1]);
 const { createApp } = await import(appUrl.href);
