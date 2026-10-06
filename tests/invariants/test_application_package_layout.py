@@ -126,35 +126,73 @@ def page_loads_entry(page, entry_path):
     return False
 
 
+def config_outputs(path):
+    """Ask TypeScript where each input emits, including its default directories."""
+    script = r"""
+const ts = require(process.argv[1]);
+const errors = [];
+const config = ts.getParsedCommandLineOfConfigFile(process.argv[2], {}, {
+    ...ts.sys,
+    onUnRecoverableConfigFileDiagnostic: error => errors.push(error),
+});
+errors.push(...(config?.errors ?? []));
+if (!config || errors.length) {
+    console.error(ts.formatDiagnosticsWithColorAndContext(errors, {
+        getCurrentDirectory: ts.sys.getCurrentDirectory,
+        getCanonicalFileName: name => name,
+        getNewLine: () => ts.sys.newLine,
+    }));
+    process.exit(1);
+}
+console.log(JSON.stringify({
+    sourceDir: config.options.rootDir,
+    sources: config.fileNames.map(source => ({
+        source,
+        outputs: ts.getOutputFileNames(config, source, !ts.sys.useCaseSensitiveFileNames),
+    })),
+}));
+"""
+    compiler = Path(support.ROOT) / "node_modules/typescript"
+    result = subprocess.run(
+        ["node", "-e", script, str(compiler), str(path)], cwd=support.ROOT,
+        capture_output=True, text=True, encoding="utf-8", timeout=60)
+    if result.returncode:
+        raise AssertionError(f"TypeScript could not resolve outputs for {path}: "
+                             + result.stdout + result.stderr)
+    return json.loads(result.stdout)
+
+
 def has_browser_entry(root, tracked, configs, entry):
     """A built browser entry backed by copied source or an application page."""
     if not isinstance(entry, str):
         return False
     entry_path = (root / entry).resolve()
+    product_root = Path(support.ROOT)
+    application_sources = [product_root / relative for relative in tracked
+                           if relative.startswith("src/browser/")
+                           and relative.endswith(TYPESCRIPT_EXTENSIONS)]
     for config_path in configs:
         if not config_path.is_file():
             continue
-        source_dir, output_dir = config_directories(config_path)
-        if not entry_path.is_relative_to(output_dir):
-            continue
-        entry_relative = entry_path.relative_to(output_dir)
-        for relative in tracked:
-            source_path = (Path(support.ROOT) / relative).resolve()
-            if not source_path.is_relative_to(source_dir) or not relative.endswith(
-                    TYPESCRIPT_EXTENSIONS):
+        config = config_outputs(config_path)
+        for source in config["sources"]:
+            source_path = Path(source["source"]).resolve()
+            if not source_path.is_relative_to(product_root):
                 continue
-            emitted_extension = {".ts": ".js", ".mts": ".mjs", ".cts": ".cjs"}[
-                source_path.suffix]
-            if source_path.relative_to(source_dir).with_suffix(
-                    emitted_extension) != entry_relative:
+            relative = source_path.relative_to(product_root).as_posix()
+            if relative not in tracked or not relative.endswith(TYPESCRIPT_EXTENSIONS):
                 continue
-            counterpart = (Path(support.ROOT) / "src/browser" / source_path.relative_to(source_dir))
-            if counterpart.is_file() and (
-                    source_path.read_bytes() == counterpart.read_bytes()):
+            if entry_path not in {Path(output).resolve() for output in source["outputs"]}:
+                continue
+            if any(source_path.read_bytes() == counterpart.read_bytes()
+                   for counterpart in application_sources):
                 return True
-            pages = (root / "index.html", source_dir / "index.html")
+            pages = {root / "index.html", source_path.parent / "index.html"}
+            if config.get("sourceDir"):
+                pages.add(Path(config["sourceDir"]) / "index.html")
             if any(
-                    page.is_file() and page.relative_to(support.ROOT).as_posix() in tracked
+                    page.is_file() and page.is_relative_to(product_root)
+                    and page.relative_to(product_root).as_posix() in tracked
                     and page_loads_entry(page, entry_path) for page in pages):
                 return True
     return False
