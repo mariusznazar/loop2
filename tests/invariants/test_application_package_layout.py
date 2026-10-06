@@ -42,6 +42,33 @@ def referenced_configs(package_dir, tokens):
     return [(package_dir / name).resolve() for name in names]
 
 
+def copies_application_source(root, tracked, configs, entry, side):
+    """An entry built from a local config whose source repeats this application's source."""
+    if not isinstance(entry, str):
+        return False
+    entry_path = (root / entry).resolve()
+    for config_path in configs:
+        if not config_path.is_file():
+            continue
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        options = config.get("compilerOptions", {})
+        if not options.get("rootDir") or not options.get("outDir"):
+            continue
+        source_dir = (config_path.parent / options["rootDir"]).resolve()
+        output_dir = (config_path.parent / options["outDir"]).resolve()
+        if not entry_path.is_relative_to(output_dir):
+            continue
+        for relative in tracked:
+            source_path = (Path(support.ROOT) / relative).resolve()
+            if not source_path.is_relative_to(source_dir) or not relative.endswith(
+                    TYPESCRIPT_EXTENSIONS):
+                continue
+            counterpart = (Path(support.ROOT) / side / source_path.relative_to(source_dir))
+            if counterpart.is_file() and source_path.read_bytes() == counterpart.read_bytes():
+                return True
+    return False
+
+
 class ApplicationPackageLayout(unittest.TestCase):
 
     def test_application_uses_only_the_root_package(self):
@@ -89,18 +116,11 @@ class ApplicationPackageLayout(unittest.TestCase):
                                 for token in tokens if token.startswith((".", "src/", "dist/"))}
             references_application = bool(application_paths.intersection(
                 referenced_paths.union(referenced)))
-            owns_typescript = any(p.startswith(package_dir.as_posix() + "/")
-                                  and p.endswith(TYPESCRIPT_EXTENSIONS) for p in tracked)
-            owns_html = any(p.startswith(package_dir.as_posix() + "/")
-                            and p.endswith(".html") for p in tracked)
-            browser_entry = isinstance(package.get("browser"), str)
-            server_entry = isinstance(package.get("main"), str) and "express" in {
-                **package.get("dependencies", {}), **package.get("devDependencies", {})}
-            config_supports_browser = any(path.is_file() and
-                "DOM" in json.loads(path.read_text(encoding="utf-8"))
-                .get("compilerOptions", {}).get("lib", []) for path in referenced)
-            builds_own_application = bool(build_commands and owns_typescript and (
-                (browser_entry and (owns_html or config_supports_browser)) or server_entry))
+            builds_own_application = bool(build_commands and (
+                copies_application_source(root / package_dir, tracked, referenced,
+                                          package.get("browser"), "src/browser") or
+                copies_application_source(root / package_dir, tracked, referenced,
+                                          package.get("main"), "src/server")))
             self.assertFalse(references_application or
                              builds_own_application,
                              f"{package_path} defines a separate application package")
