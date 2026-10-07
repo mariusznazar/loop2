@@ -1,0 +1,9 @@
+# Task 2 independent review dispatch
+
+You are a fresh independent reviewer of Task 2 in `C:\Storage\repos\loop2\.runs\worktrees\task-typescript-7`. Read the product review playbook `C:\Storage\The Brain\The Brain\Notes\Areas\(A) Claude code\playbook_code_review.md` before review and Superpowers 6.4.1 `subagent-driven-development/task-reviewer-prompt.md` for its two-verdict format.
+
+Inputs: `.superpowers/sdd/plan/task-2-brief.md`, `.superpowers/sdd/plan/task-2-report.md`, and `.superpowers/sdd/plan/task-2-review-package.md`. The package has the same base and head, commit `5dc50b5`, because this task only ran focused behavior checks and found no needed code/test correction. The Superpowers review-package script exits 1 on a zero-commit range, so the package states the empty diff explicitly. Review Task 2's reported commands, failure-mode coverage and scope; do not claim the unrun Task 3 full gate passed. Do not rerun already reported tests. Read unchanged code only for a concrete named risk.
+
+Binding product constraints: Node 24.x, exact TypeScript 7.0.2 candidate, both browser and server configurations compile separately, typecheck emits no output, negative probes must reject wrong globals with source/diagnostic evidence, shared package and lockfile, Windows verification with Linux unchecked. The observed diagnostic text remained compatible, so no invariant check change was needed.
+
+The user delegated intermediate choices to the orchestrator; do not ask the user or claim human approval. Do not spawn subagents. Do not mutate tracked files, index, commits or branch. Write a full review to `.runs/task-cycles/typescript-7/reports/task2-review.md` (ignored scratch), with anchored findings per the product playbook and explicit spec-compliance and task-quality verdicts. If no findings, state that clearly. Return short status and absolute report path.

@@ -1,0 +1,5 @@
+# Task 1 record correction re-review
+
+You reviewed Task 1 at `.runs/task-cycles/typescript-7/reports/task1-review.md`. The sole finding concerned the orchestrator-owned ignored cycle record, not the product diff. The orchestrator split the baseline and candidate verification rows in `.runs/task-cycles/typescript-7/cycle.md` by command and exit code, using `.runs/task-cycles/typescript-7/reports/task1-report.md` as the source. The product commit remains `5dc50b5` and no tracked file changed since your review.
+
+Read the original finding, the corrected verification table, and the implementer report. Verify whether each baseline command's exit code is now recorded separately, and whether the Task 1 requirements are satisfied. Write a scoped report to `.runs/task-cycles/typescript-7/reports/task1-record-re-review.md` with ADDRESSED or NOT ADDRESSED and revised explicit spec-compliance and task-quality verdicts. Do not repeat the product diff review or broad tests. Do not edit tracked files or the cycle record. Return before Task 2.
