@@ -1,0 +1,50 @@
+[
+  {
+    "case": "unchanged",
+    "expected_pass": true,
+    "actual_pass": true,
+    "exit_code": 0
+  },
+  {
+    "case": "tests-package",
+    "expected_pass": true,
+    "actual_pass": true,
+    "exit_code": 0
+  },
+  {
+    "case": "rogue-browser",
+    "expected_pass": false,
+    "actual_pass": false,
+    "exit_code": 1
+  },
+  {
+    "case": "nested-server",
+    "expected_pass": false,
+    "actual_pass": false,
+    "exit_code": 1
+  },
+  {
+    "case": "known-tooling",
+    "expected_pass": true,
+    "actual_pass": true,
+    "exit_code": 0
+  },
+  {
+    "case": "inherited-typescript",
+    "expected_pass": true,
+    "actual_pass": true,
+    "exit_code": 0
+  },
+  {
+    "case": "unknown-tooling-classification",
+    "expected_pass": false,
+    "actual_pass": false,
+    "exit_code": 1
+  },
+  {
+    "case": "lock-mismatch",
+    "expected_pass": false,
+    "actual_pass": false,
+    "exit_code": 1
+  }
+]

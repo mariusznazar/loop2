@@ -1,0 +1,16 @@
+test_application_uses_only_the_root_package (test_application_package_layout.ApplicationPackageLayout.test_application_uses_only_the_root_package) ... FAIL
+
+======================================================================
+FAIL: test_application_uses_only_the_root_package (test_application_package_layout.ApplicationPackageLayout.test_application_uses_only_the_root_package)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-first-foundation\tests\invariants\test_application_package_layout.py", line 77, in test_application_uses_only_the_root_package
+    owners = file_owners(root, tracked)
+  File "C:\Storage\repos\loop2-first-foundation\tests\invariants\test_application_package_layout.py", line 56, in file_owners
+    raise AssertionError(f"{path} has overlapping part owners: {owners[path]}, {owner}")
+AssertionError: src/server/package.json has overlapping part owners: account-server, build-tools
+
+----------------------------------------------------------------------
+Ran 1 test in 0.064s
+
+FAILED (failures=1)
