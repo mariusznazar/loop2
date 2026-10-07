@@ -5,9 +5,9 @@ description: Use when a source has to be searched for what should become entries
 
 # the-way-find-foundation-entries
 
-The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `7cfeb4c2349b181d251d1a03cb2005b980acbe9e`.
+The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `c64a6071384fb57cdb9d7e9db4560ddc43e3b355`.
 
-If `.the-way/elements/common/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `7cfeb4c2349b181d251d1a03cb2005b980acbe9e`. If initialization fails or either commit differs, stop.
+If `.the-way/elements/common/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `c64a6071384fb57cdb9d7e9db4560ddc43e3b355`. If initialization fails or either commit differs, stop.
 
 Read `.the-way/elements/common/skill/SKILL.md` in full and follow it. Read the files it references inside `.the-way`. Its paragraph about resolving a global skill link applies only to a global install; here the process root is `.the-way`. Do not substitute a global skill.
 
