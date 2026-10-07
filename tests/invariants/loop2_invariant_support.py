@@ -219,7 +219,8 @@ def port_in_use(host=HOST, port=PORT):
 
 
 class Server:
-    """`npm start` in a built copy, with stdout and stderr to files. stop() kills its whole tree."""
+    """Start a built copy through `npm start` in its root. stdout and stderr go to files;
+    stop() kills the whole process tree."""
 
     def __init__(self, copy, extra_env=None):
         if port_in_use():
