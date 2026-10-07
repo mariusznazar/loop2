@@ -153,7 +153,7 @@ The game is written in TypeScript and runs in the browser.
   - violates: a part of the game written as a Godot scene, or a script of the game's own code that the browser loads, written directly in JavaScript instead of compiled from TypeScript
 - **Review when:** movement and collisions become the core of the game's fun · check by: 2027-04-03
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What is the game built with?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/6
 
 *Rationale for change:* the violation example distinguishes the game's own code from external libraries without broadening the language choice.
 *Rejected:* keeping an example that also excludes external libraries — it extends the decision beyond the game's own code.
@@ -170,7 +170,7 @@ paths. An unmatched `/api/` request receives an API error, not the game's HTML p
 - **Verification:** level 1 — invariants: loop2-one-serving-process · loop2-api-error-route
 - **Review when:** serving built files through Express becomes difficult to operate or the account API needs a separate process · check by: 2027-04-04
 - **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What serves the built game and account requests in the container?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/6
 
 *Rationale for change:* the origin connects the serving-process choice with its full approved entry.
 *Rejected:* omitting the link to the full approved entry — the shortened choice hides its source.
@@ -188,7 +188,7 @@ configurations.
 - **Verification:** level 1 — invariants: application-package-layout · application-build-layout · application-build-output
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/6
 
 *Rationale for change:* the verification names the package boundary and compiler layout as well as compilation of both sides.
 *Rejected:* keeping verification limited to compilation alone — it leaves the package boundary and compiler layout unprotected.
