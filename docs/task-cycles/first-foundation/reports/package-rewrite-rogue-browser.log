@@ -1,0 +1,16 @@
+test_application_uses_only_the_root_package (test_application_package_layout.ApplicationPackageLayout.test_application_uses_only_the_root_package) ... FAIL
+
+======================================================================
+FAIL: test_application_uses_only_the_root_package (test_application_package_layout.ApplicationPackageLayout.test_application_uses_only_the_root_package)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<user-home>\AppData\Local\Temp\loop2-package-rewrite-djpsfwuy\tests\invariants\test_application_package_layout.py", line 77, in test_application_uses_only_the_root_package
+    owners = file_owners(root, tracked)
+  File "<user-home>\AppData\Local\Temp\loop2-package-rewrite-djpsfwuy\tests\invariants\test_application_package_layout.py", line 56, in file_owners
+    raise AssertionError(f"{path} has overlapping part owners: {owners[path]}, {owner}")
+AssertionError: apps/rogue-browser/package.json has overlapping part owners: build-tools, rogue-browser
+
+----------------------------------------------------------------------
+Ran 1 test in 0.127s
+
+FAILED (failures=1)

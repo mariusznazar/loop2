@@ -1,0 +1,6 @@
+test_application_uses_only_the_root_package (test_application_package_layout.ApplicationPackageLayout.test_application_uses_only_the_root_package) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.113s
+
+OK
