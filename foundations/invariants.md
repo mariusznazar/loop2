@@ -92,16 +92,6 @@ The browser and server have distinct TypeScript compilation configurations and o
 - **Part:** build-tools · browser-view · account-server
 - **Correction:** none
 
-## public-file-boundary/1
-
-The server serves static files only from the built public directory, whatever working directory its process starts in.
-
-- **Method:** foundations/public_file_boundary_assessment.md
-- **Rests on:** none
-- **Derives from:** none
-- **Part:** account-server · build-tools
-- **Correction:** none
-
 ## account-server-occupied-address/1
 
 When the account and save server's listening address is already in use, the server process exits with a non-zero code without printing its readiness line `Loop: <address>`.
@@ -126,5 +116,4 @@ When the account and save server's listening address is already in use, the serv
 
 | Identifier | Version | Searched | Found |
 |---|---|---|---|
-| public-file-boundary | 1 | searched: foundations/decisions.md; README.md; src/server/app.ts; tests/http.test.mjs; their git history (11c7cbb, 3af85d1); 5928e7b:docs/task-cycles/app-skeleton/reports/correction-1/return/proposal-pl.md, part C; PR #3 U4 | found: README.md, local work and verification; tests/http.test.mjs, foreign-working-directory and traversal tests; 5928e7b:docs/task-cycles/app-skeleton/reports/correction-1/return/proposal-pl.md, part C, public-file-boundary/1 |
 | account-server-occupied-address | 1 | searched: foundations/decisions.md; README.md; src/server/main.ts; tests/startup.test.mjs; their git history (11c7cbb, de3ceb3, 3af85d1); 5928e7b:docs/task-cycles/app-skeleton/reports/correction-1/return/proposal-pl.md, part C; PR #3 U4 and U7 | found: tests/startup.test.mjs, occupied-port exit and readiness assertions; 5928e7b:docs/task-cycles/app-skeleton/reports/correction-1/return/proposal-pl.md, part C, account-server-occupied-address/1 |

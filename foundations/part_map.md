@@ -20,7 +20,6 @@ The part is the account and save server: it serves the built game and handles th
   tests/invariants/test_account_server_express_http.py
   tests/invariants/test_loop2_api_error_route.py
   tests/invariants/test_loop2_one_serving_process.py
-  tests/invariants/test_public_file_boundary.py
   tests/invariants/test_account_server_occupied_address.py
 - **Depends on:** browser-view · build-tools
 - **Failure modes:** none
