@@ -1,9 +1,0 @@
-# Task 3 independent review dispatch
-
-You are a fresh independent reviewer of the full Windows gate and verified migration outcome in `C:\Storage\repos\loop2\.runs\worktrees\task-typescript-7`. Read the product review playbook `C:\Storage\The Brain\The Brain\Notes\Areas\(A) Claude code\playbook_code_review.md` before review, and Superpowers 6.4.1 `subagent-driven-development/task-reviewer-prompt.md` for the two-verdict format.
-
-Inputs: `.superpowers/sdd/plan/task-3-brief.md`, `.superpowers/sdd/plan/task-3-report.md`, and `.superpowers/sdd/plan/task-3-review-package.md`. The base/head are both `5dc50b5`; this task ran a full gate and required no new tracked edit. Task 1's product diff is reserved for the later whole-branch review. Judge whether Task 3 produced and recorded the required Windows evidence, correctly identified touched build-tools files and trust boundary, and kept Linux and other unrun checks unchecked. Do not rerun commands already evidenced; inspect unchanged code only for a specific named risk.
-
-Binding product constraints: Node 24.x, exact TypeScript 7.0.2, one package and lockfile, separate browser/server compilation configurations and output directories, product and invariant tests of changed build-tools, Windows scope accepted by frozen task, Linux unchecked. No foundation file changed, so no changed-foundation guard is required.
-
-The user delegated intermediate choices to the orchestrator; do not ask the user or claim human approval. Do not spawn subagents. Do not mutate tracked files, index, commits or branch. Write a full review to `.runs/task-cycles/typescript-7/reports/task3-review.md` (ignored scratch), with anchored findings per the product playbook and explicit spec-compliance and task-quality verdicts. If no findings, state that clearly. Return short status and absolute report path.
