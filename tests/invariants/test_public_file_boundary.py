@@ -1,5 +1,7 @@
-"""Invariant public-file-boundary/1: static files come only from the built public directory,
-even when the server starts in another working directory.
+"""Supporting public-file probe for public-file-boundary/1.
+
+The invariant's complete Method is a human assessment of the serving surface. This finite
+runtime probe supplies evidence but does not give the broad invariant a verdict.
 
 The check requires real built public bytes and probes files planted outside that directory,
 including direct paths and encoded traversal paths. Response page wording is unconstrained.
@@ -23,7 +25,6 @@ import loop2_invariant_support as support
 class PublicFileBoundary(unittest.TestCase):
 
     def test_only_built_public_files_are_served_from_a_foreign_working_directory(self):
-        # invariant: public-file-boundary/1
         copy = support.built_copy()
         public_html = Path(copy.file("dist/public/index.html")).read_bytes()
         public_script = Path(copy.file("dist/public/main.js")).read_bytes()

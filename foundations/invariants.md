@@ -96,7 +96,7 @@ The browser and server have distinct TypeScript compilation configurations and o
 
 The server serves static files only from the built public directory, whatever working directory its process starts in.
 
-- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Method:** foundations/public_file_boundary_assessment.md
 - **Rests on:** none
 - **Derives from:** none
 - **Part:** account-server · build-tools
