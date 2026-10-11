@@ -50,6 +50,7 @@ The part installs dependencies, checks types and builds and launches the applica
 The part directs and records the work performed on this repository.
 
 - **Files:** AGENTS.md
+  CLAUDE.md
   .agents/**
   .claude/**
   .gitmodules
