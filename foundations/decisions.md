@@ -192,3 +192,182 @@ configurations.
 
 *Rationale for change:* the verification names the package boundary and compiler layout as well as compilation of both sides.
 *Rejected:* keeping verification limited to compilation alone — it leaves the package boundary and compiler layout unprotected.
+
+### D-08/1 — Where does the MVP run?
+
+The MVP game and its account and save server run in a dedicated loop2 container on Mikrus, at a
+public address different from `kantarion.bieda.it`. The existing loop container remains untouched.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: loop2-container-isolation · loop2-distinct-address. Level 2 for leaving the existing loop deployment untouched — an agent compares the deployment with the decision:
+  - complies: a loop2 container and public route added beside the existing loop deployment
+  - violates: a deployment that rebuilds or replaces the existing loop container
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, 2026-10-04
+
+*Rationale:* a separate deployment exercises the new game's server and release path on the intended
+Mikrus host without disturbing the running loop game. The address can be chosen in the deployment
+task while keeping the separation fixed.
+*Rejected:* replacing the running loop container or using its public address — would interfere
+with the existing game and break the required separation.
+
+### D-09/1 — How does a change reach the server?
+
+A push to the deploy branch starts an automation that tells the server to build the game and its
+account server from that commit; the server pulls the code from GitHub itself, and the automation's
+key can only start a rebuild of a commit that belongs to that branch.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a workflow that, on a push, calls the server's one rebuild command with the commit
+  - violates: a workflow that copies the built files onto the server; a key that opens a shell on
+    the server
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Wdrożenie"
+- **Approved by:** Mariusz, 2026-10-04
+
+*Rationale:* the code is sent nowhere — the server takes it from GitHub itself — so a stolen key can
+start a rebuild but cannot bring code in. The price is a short break in access at every deployment.
+*Rejected:* none considered
+
+### D-05/3 — What serves the built game and account requests in the container?
+
+One Node.js process running Express 5 serves both the built game's static files and the `/api/`
+account and save routes in the loop2 container. An unmatched `/api/` request receives an API error,
+not the game's HTML page.
+
+- **Change:** new wording
+- **Scope:** account-server, build-tools, deployment
+- **Based on:** Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/, read 2026-10-04) · Express 5 request routing and response API (https://expressjs.com/en/5x/api/express/, read 2026-10-04) · Caddy 2 route, file_server and reverse_proxy (https://caddyserver.com/docs/caddyfile/directives/route, read 2026-10-04) · Docker multiple processes in one container (https://docs.docker.com/engine/containers/multi-service_container/, read 2026-10-04)
+- **Relations:** derives from D-02@06e6d3d8 · derives from D-08@e4e8a2f4
+- **Verification:** level 1 — invariants: loop2-one-serving-process · loop2-api-error-route
+- **Review when:** serving built files through Express becomes difficult to operate or the account API needs a separate process · check by: 2027-04-04
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What serves the built game and account requests in the container?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale for change:* the one serving process is the one in the loop2 container where the MVP
+runs, and the `/api/` paths it serves are the account and save routes, so a serving process outside
+that container does not meet the decision.
+*Rejected:* keeping the wording without the container — it leaves open where the one serving
+process runs.
+
+### D-10/1 — How do players reach loop2 on the server?
+
+Players reach loop2 at `https://loop2.mariusznazar.com/`, which Cloudflare proxies to the server: a
+proxied AAAA record points at the server's IPv6 address, and an Origin Rule sends the requests to
+the port the loop2 container publishes. Players connect to Cloudflare over HTTPS, and Cloudflare
+connects to the server over plain HTTP only while no player account is served through this route.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** cloudflare-origin-rules@6f0ea4e4 · Cloudflare network ports, "By default, Cloudflare proxies traffic destined for the HTTP/HTTPS ports listed below." (https://developers.cloudflare.com/fundamentals/reference/network-ports/, read 2026-10-13)
+- **Relations:** derives from D-08@e4e8a2f4
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a deployment whose workflow probes `https://loop2.mariusznazar.com/` and whose container publishes the port the Origin Rule names
+  - violates: a public address on a Mikrus subdomain for loop2; a task that serves player accounts through this route while Cloudflare still connects to the server over plain HTTP
+- **Review when:** a task is about to serve player accounts through this route, which needs the connection from Cloudflare to the server encrypted first · check by: 2027-01-13
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Pod jakim adresem stanie loop2 na Mikrusie?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* Cloudflare already holds the `mariusznazar.com` domain, gives players HTTPS without a
+certificate in the container, and reaches the container's port through an Origin Rule, while the
+host's public IPv4 ports stay with the existing loop deployment. Plain HTTP from Cloudflare to the
+server is accepted only while the test server holds no player data, since HTTPS for players is not
+end-to-end encryption. That Cloudflare reaches a server with only an IPv6 address is a hypothesis
+until the first deployment shows it.
+*Rejected:* a new free Mikrus subdomain — ties the game's address to the hosting provider; serving
+loop2 at `kantarion.bieda.it` in place of the old game — would reopen the approved MVP definition.
+
+### D-11/1 — Which branch deploys loop2 to the test server?
+
+The deploy branch is `main`: every push to `main`, the merge of a pull request included, starts a
+deployment to the test server.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** none
+- **Relations:** derives from D-09@20be369f
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a workflow that runs on a push to `main` and asks the server to rebuild the pushed commit
+  - violates: a workflow that deploys only from a separate `test` branch; a push to `main` that waits for a manual step before it is deployed
+- **Review when:** a separate deployment step or a separate test environment is set up between `main` and the test server · check by: 2027-04-13
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Która gałąź wdraża loop2 na serwer?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* every merged pull request reaches the test server with no manual step, and no second
+branch can drift from `main`.
+*Rejected:* a separate `test` branch, as the old loop game deploys — a manual step at every
+deployment and a risk of drifting from `main`.
+
+### D-12/1 — What access to the server does an agent have?
+
+An agent reads the server only through the `mikrus` MCP server, and every change on the server is
+made by a human.
+
+- **Change:** new decision
+- **Scope:** agent-workflow, deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a deployment skill in which the agent reads the deploy log and the container state through the `mikrus` MCP server and asks the human to run a rollback
+  - violates: a skill step in which the agent installs the deploy script, edits `authorized_keys` or restarts a container through the `mikrus` MCP server; an SSH key of the agent's own on the server
+- **Review when:** the server holds data whose loss matters, such as player accounts or saved game states, so the agent's access has to be secured further · check by: 2027-01-13
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Jaki dostęp do serwera dostaje agent?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the server holds nothing today whose loss the owner fears, the old loop game's
+container included, so reading through a tool that can run any command is accepted for now; the
+agent reads logs and state itself instead of the human relaying them. The `mikrus` MCP server runs
+every command with full rights, so the limit to reading is an agreement, not an enforced boundary.
+*Rejected:* a separate SSH key for the agent, closed in a read-only script — more setup than the
+server's present contents warrant; no agent access to the server — the human relays every log and
+state.
+
+### D-13/1 — Where do the server's access values and secrets live?
+
+Secrets and the values that give access to the server — its name, SSH port, SSH user and IPv6
+address — stay outside the repository, in the repository's GitHub secrets and the owner's private
+note, and the repository's files and requests refer to them by the secret's name or the note. The
+server directory, the container port and the deploy script may stand in the repository.
+
+- **Change:** new decision
+- **Scope:** deployment, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a workflow that reads the server's address from a named GitHub secret; a skill that says the SSH port is held in a named secret
+  - violates: a workflow, script, skill or request text that holds the server's name, SSH port, SSH user or IPv6 address itself
+- **Review when:** none
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Co poza sekretami jest wrażliwą konfiguracją serwera, której nie ma być w PR-ze ani w repozytorium?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the access values would tell a reader of the repository where and how to enter the
+server; the server directory, the container port and the deploy script tell no one how to get in.
+*Rejected:* keeping only the secrets outside the repository — the access values left in it would
+show where and how to enter the server.
+
+### D-14/1 — What kind of container does loop2 run in?
+
+The loop2 container is a Docker container.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** none
+- **Relations:** derives from D-08@e4e8a2f4
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a Compose file and a Dockerfile from which Docker builds and runs the loop2 container
+  - violates: loop2 run as a service directly on the host, or in a container of another runtime
+- **Review when:** none
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Czy kontener loop2 jest kontenerem Dockera?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the host already runs Docker with Compose, and the old loop game runs there in a Docker
+container, so loop2 is run with the tool the host is already operated with.
+*Rejected:* none considered
