@@ -48,17 +48,17 @@ An unmatched `/api/` request receives an API error response, never the built gam
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-05@e11aec4d
+- **Derives from:** D-05@db83484a
 - **Part:** every
 - **Correction:** none
 
-## loop2-one-serving-process/1
+## loop2-one-serving-process/2
 
-One Express 5 process serves both the built game and `/api/` requests.
+One Express 5 process in the loop2 container serves both the built game and `/api/` account and save requests.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-05@e11aec4d
+- **Derives from:** D-05@db83484a
 - **Part:** every
 - **Correction:** none
 
@@ -100,6 +100,26 @@ When the account and save server's listening address is already in use, the serv
 - **Rests on:** none
 - **Derives from:** none
 - **Part:** account-server · build-tools
+- **Correction:** none
+
+## loop2-container-isolation/1
+
+The loop2 deployment runs in a container separate from the existing loop deployment.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-08@e4e8a2f4
+- **Part:** every
+- **Correction:** none
+
+## loop2-distinct-address/1
+
+The public address of loop2 differs from `kantarion.bieda.it`.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-08@e4e8a2f4
+- **Part:** every
 - **Correction:** none
 
 ## Withdrawn identifiers
