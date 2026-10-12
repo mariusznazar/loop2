@@ -12,7 +12,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 4. `npm start` — uruchomienie zbudowanego serwera.
 5. Otwórz http://127.0.0.1:3000. Strona ma być pusta.
 
-`npm start` wymaga wcześniejszego builda. Serwer nasłuchuje lokalnie na porcie 3000; zakończ go przez Ctrl+C.
+`npm start` wymaga wcześniejszego builda. Serwer domyślnie nasłuchuje na 127.0.0.1:3000; adres zmienisz zmiennymi środowiska `LOOP2_LISTEN_HOST` i `LOOP2_LISTEN_PORT`. Zakończ go przez Ctrl+C.
 
 ## Praca lokalna i sprawdzenie
 
@@ -24,4 +24,4 @@ W narzędziach przeglądarki sprawdź, że `document.querySelector('main')` zwra
 
 Nieznane `/api`, `/api/` i ścieżki pod `/api/` otrzymują 404 JSON. Pozostałe brakujące ścieżki otrzymują zwykłe 404. Serwer podaje wyłącznie `dist/public`.
 
-Kod przeglądarki jest w `src/browser`, kod serwera w `src/server`. Kompilacje mają osobne konfiguracje typów; zależności i plik blokady są wspólne. Konta, baza, mechanika gry i wdrożenie nie należą do tego szkieletu.
+Kod przeglądarki jest w `src/browser`, kod serwera w `src/server`. Kompilacje mają osobne konfiguracje typów; zależności i plik blokady są wspólne. Konta, baza i mechanika gry nie należą do tego szkieletu; szkielet jest wdrażany na serwer testowy przez kontener i skill `loop2-deploy`.
