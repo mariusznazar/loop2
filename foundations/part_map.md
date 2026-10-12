@@ -55,6 +55,7 @@ The part directs and records the work performed on this repository.
   .claude/**
   .gitmodules
   .the-way
+  tests/agent_workflow/**
 - **Depends on:** product-foundation
 - **Failure modes:** none
 - **Trust boundary:** none
@@ -68,6 +69,25 @@ The part holds the product's foundation.
 - **Failure modes:** none
 - **Trust boundary:** none
 
+## deployment
+
+The part builds the application into the loop2 container and deploys a commit of the repository to
+the test server.
+
+- **Files:** Dockerfile
+  .dockerignore
+  compose.yaml
+  .gitattributes
+  .github/workflows/deploy.yml
+  deploy/**
+  tests/deploy/**
+  tests/invariants/test_loop2_container_isolation.py
+  tests/invariants/test_loop2_distinct_address.py
+  tests/invariants/test_loop2_one_serving_process_container.py
+- **Depends on:** account-server · build-tools
+- **Failure modes:** none
+- **Trust boundary:** deploy/**
+
 ## Criticality scale
 
 ## External context
@@ -76,6 +96,9 @@ The part holds the product's foundation.
 |---|---|---|---|
 | HTTP clients | both | untrusted | no |
 | npm registry | them → us | untrusted | no |
+| GitHub Actions | both | untrusted | no |
+| Cloudflare | both | untrusted | no |
+| the Mikrus host | both | trusted | no |
 
 ## Change paths
 
