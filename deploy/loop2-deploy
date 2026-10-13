@@ -1,0 +1,213 @@
+#!/bin/bash
+# loop2-deploy: deploys one commit of the loop2 repository on the test server.
+#
+# Installed root-owned, mode 0755, at /usr/local/bin/loop2-deploy, outside the checkout. The
+# automation key's authorized_keys entry runs it as its forced command
+# (restrict,command="/usr/local/bin/loop2-deploy"). It takes one commit name, 40 lowercase
+# hexadecimal characters, on one of two paths:
+#   forced command  SSH_ORIGINAL_COMMAND holds the commit name, no argument: commits of main only
+#   human run       SSH_ORIGINAL_COMMAND unset, the commit name as the one argument: commits of any
+#                   branch, for deploying a request's commit before its merge and for rollbacks
+# Anything else is refused before git or Docker runs. The commit name is used only as a git
+# argument after validation; nothing is evaluated or put into shell text.
+#
+# Everything printed reaches the GitHub Actions log, so the script prints commit names, stage
+# names, sizes and states only; git's own messages go to the log file alone.
+#
+# Exit codes: 2 input · 3 commit on no accepted branch · 4 lock · 5 resource gate
+#             6 fetch or checkout · 7 build or type check · 8 start or probe
+#             1 checked out, but the stages after the checkout are not in this version
+
+set -uo pipefail
+
+# Every constant stands in this block. No environment variable and no argument changes one. The
+# tests of deploy/ replace only the lines between the two markers.
+# >>> constants >>>
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+umask 027
+readonly CHECKOUT_DIR=/srv/loop2
+readonly INSTALLED_SCRIPT=/usr/local/bin/loop2-deploy
+readonly LOG_FILE=/var/log/loop2-deploy.log
+readonly LOCK_FILE=/run/loop2-deploy.lock
+readonly MEMINFO_FILE=/proc/meminfo
+readonly MIN_MEM_AVAILABLE_MIB=1024
+readonly MIN_DOCKER_FREE_GIB=4
+readonly LOCK_WAIT_SECONDS=900
+readonly HEALTH_WAIT_SECONDS=120
+readonly HOST_PORT=18080
+readonly BRANCH=main
+readonly COMPOSE_PROJECT=loop2
+readonly COMPOSE_SERVICE=app
+readonly CONTAINER_NAME=loop2
+readonly OLD_GAME_CONTAINER=loop
+readonly IMAGE_TITLE_LABEL=org.opencontainers.image.title=loop2
+readonly IMAGE_REVISION_LABEL=org.opencontainers.image.revision
+# <<< constants <<<
+
+export LC_ALL=C
+readonly COMMIT_NAME_PATTERN='^[0-9a-f]{40}$'
+
+REQUESTED=''
+RUN_PATH=''
+PREVIOUS_COMMIT=none
+LOG_WARNED=''
+
+# --- output -------------------------------------------------------------------------------------
+
+append_to_log() {
+  # One text to the log file only. A log that cannot be written is reported once, on stderr.
+  if ! { printf '%s\n' "$1" >>"$LOG_FILE"; } 2>/dev/null; then
+    if [[ -z $LOG_WARNED ]]; then
+      printf 'loop2-deploy: warning: cannot write the log file %s\n' "$LOG_FILE" >&2
+      LOG_WARNED=yes
+    fi
+  fi
+}
+
+log() {
+  local line
+  line="$(date -u '+%Y-%m-%dT%H:%M:%SZ') loop2-deploy: $*"
+  printf '%s\n' "$line"
+  append_to_log "$line"
+}
+
+fail() {
+  # fail CODE STAGE MESSAGE: logs the stage and ends the run with the code.
+  log "stage $2: $3 (exit $1)"
+  exit "$1"
+}
+
+path_name() {
+  if [[ $RUN_PATH == forced ]]; then printf 'forced command'; else printf 'human run'; fi
+}
+
+# --- 1. input -----------------------------------------------------------------------------------
+
+read_input() {
+  if [[ -v SSH_ORIGINAL_COMMAND ]]; then
+    RUN_PATH=forced
+    if (( $# != 0 )); then
+      fail 2 input "refused: SSH_ORIGINAL_COMMAND and an argument were both given"
+    fi
+    REQUESTED=$SSH_ORIGINAL_COMMAND
+  else
+    RUN_PATH=human
+    if (( $# == 0 )); then
+      fail 2 input "refused: no commit name given (no SSH command and no argument)"
+    fi
+    if (( $# != 1 )); then
+      fail 2 input "refused: a human run takes exactly one argument, the commit name; got $#"
+    fi
+    REQUESTED=$1
+  fi
+  if [[ ! $REQUESTED =~ $COMMIT_NAME_PATTERN ]]; then
+    REQUESTED=''
+    fail 2 input "refused ($(path_name)): the input is not one commit name of 40 lowercase hexadecimal characters"
+  fi
+}
+
+# --- 2. lock ------------------------------------------------------------------------------------
+
+take_lock() {
+  # File descriptor 9 holds the lock until the script ends.
+  if ! { exec 9>>"$LOCK_FILE"; } 2>/dev/null; then
+    fail 4 lock "cannot open the lock file $LOCK_FILE; nothing was changed"
+  fi
+  if ! flock --exclusive --wait "$LOCK_WAIT_SECONDS" 9; then
+    fail 4 lock "the lock was not free within $LOCK_WAIT_SECONDS s (another deployment runs); nothing was changed"
+  fi
+}
+
+# --- 3. start line ------------------------------------------------------------------------------
+
+running_commit() {
+  # The commit the running loop2 container was built from (its revision label), or none.
+  local label
+  if label=$(docker inspect --format "{{ index .Config.Labels \"$IMAGE_REVISION_LABEL\" }}" "$CONTAINER_NAME" 2>/dev/null) \
+      && [[ $label =~ $COMMIT_NAME_PATTERN ]]; then
+    printf '%s' "$label"
+  else
+    printf 'none'
+  fi
+}
+
+# --- 4. fetch -----------------------------------------------------------------------------------
+
+fetch_commits() {
+  local output status
+  if [[ $RUN_PATH == forced ]]; then
+    output=$(git -C "$CHECKOUT_DIR" fetch --quiet --no-tags origin \
+      "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" 2>&1)
+    status=$?
+  else
+    output=$(git -C "$CHECKOUT_DIR" fetch --quiet --no-tags --prune origin \
+      '+refs/heads/*:refs/remotes/origin/*' 2>&1)
+    status=$?
+  fi
+  if (( status != 0 )); then
+    append_to_log "$output"
+    fail 6 fetch "git fetch from GitHub failed (git exit $status; git's message is in $LOG_FILE)"
+  fi
+}
+
+# --- 5. accepted commit -------------------------------------------------------------------------
+
+accept_commit() {
+  if ! git -C "$CHECKOUT_DIR" cat-file -e "$REQUESTED^{commit}" 2>/dev/null; then
+    fail 3 commit "refused: $REQUESTED is not a commit fetched from GitHub"
+  fi
+  if [[ $RUN_PATH == forced ]]; then
+    if ! git -C "$CHECKOUT_DIR" merge-base --is-ancestor "$REQUESTED" "refs/remotes/origin/$BRANCH" 2>/dev/null; then
+      fail 3 commit "refused: $REQUESTED is not on $BRANCH"
+    fi
+    log "accepted: $REQUESTED is on $BRANCH"
+    return
+  fi
+  local refs ref
+  if ! refs=$(git -C "$CHECKOUT_DIR" for-each-ref --format='%(refname)' refs/remotes/origin/ 2>/dev/null); then
+    fail 3 commit "refused: the fetched branches cannot be listed"
+  fi
+  while IFS= read -r ref; do
+    [[ -n $ref && $ref != refs/remotes/origin/HEAD ]] || continue
+    if git -C "$CHECKOUT_DIR" merge-base --is-ancestor "$REQUESTED" "$ref" 2>/dev/null; then
+      log "accepted: $REQUESTED is on ${ref#refs/remotes/origin/}"
+      return
+    fi
+  done <<<"$refs"
+  fail 3 commit "refused: $REQUESTED is on no branch of GitHub"
+}
+
+# --- 6. checkout --------------------------------------------------------------------------------
+
+check_out_commit() {
+  local output
+  if ! output=$(git -C "$CHECKOUT_DIR" checkout --quiet --force --detach "$REQUESTED" 2>&1); then
+    append_to_log "$output"
+    fail 6 checkout "git checkout of $REQUESTED failed (git's message is in $LOG_FILE)"
+  fi
+  if ! output=$(git -C "$CHECKOUT_DIR" clean -ffdx --quiet 2>&1); then
+    append_to_log "$output"
+    fail 6 checkout "git clean after the checkout failed (git's message is in $LOG_FILE)"
+  fi
+  log "checked out $REQUESTED in $CHECKOUT_DIR"
+}
+
+# --- run ----------------------------------------------------------------------------------------
+
+main() {
+  read_input "$@"
+  take_lock
+  PREVIOUS_COMMIT=$(running_commit)
+  log "start: commit $REQUESTED, path: $(path_name), running commit: $PREVIOUS_COMMIT"
+  fetch_commits
+  accept_commit
+  check_out_commit
+
+  # Steps 7-13 of the deployment stand here: the installed script compared with the checked-out
+  # source, the resource gate, the build, the switch, the local probe, the state of the old game's
+  # container and the removal of replaced loop2 images. Until they exist a run ends here, never
+  # with exit 0.
+  fail 1 not-deployed "$REQUESTED is checked out but this version of the script does not build or start it"
+}
+
+main "$@"
