@@ -4,8 +4,26 @@
 
 The part draws the game's screens in the browser.
 
-- **Files:** src/browser/**
+- **Files:** src/browser/*.ts
+  src/browser/index.html
+  src/browser/view/**
+  assets/icons/**
+  tests/view/**
   tests/invariants/test_browser_view_framework.py
+- **Depends on:** simulation
+- **Failure modes:** none
+- **Trust boundary:** assets/icons/**
+
+## simulation
+
+The part computes the game: the game state, the map run, the character's program and the passing of game time, from the game's data.
+
+- **Files:** src/browser/sim/**
+  tests/sim/**
+  tests/invariants/test_map_run_repeatability.py
+  tests/invariants/test_simulation_randomness.py
+  tests/invariants/test_action_in_progress.py
+  tests/invariants/test_player_map_run_pace.py
 - **Depends on:** none
 - **Failure modes:** none
 - **Trust boundary:** none
@@ -76,6 +94,7 @@ The part holds the product's foundation.
 |---|---|---|---|
 | HTTP clients | both | untrusted | no |
 | npm registry | them → us | untrusted | no |
+| game-icons.net | them → us | untrusted | no |
 
 ## Change paths
 
