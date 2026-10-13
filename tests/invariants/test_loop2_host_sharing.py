@@ -11,14 +11,20 @@ Reading of the sentence:
   `-l`, `--tls…` and any other) and no variable that points Docker or Compose elsewhere
   (`DOCKER_HOST`, `DOCKER_CONTEXT`, `DOCKER_CONFIG`, `DOCKER_TLS_VERIFY`, `DOCKER_CERT_PATH`,
   `COMPOSE_PROJECT_NAME`, `COMPOSE_FILE`, `COMPOSE_PROFILES`);
-- stops, removes, replaces or reconfigures nothing but loop2's own: every `docker compose` command
-  names the project `loop2` and nothing but `-p`/`--project-name` and `-f`/`--file` before its
-  subcommand, with any Compose file under `/srv/loop2/`; no command takes a project down; nothing
-  names the old loop instance except a read-only `docker inspect` or `docker ps` of it; no
-  host-wide prune, and no image removed but by an image prune carrying the filter
-  `label=org.opencontainers.image.title=loop2`; no state-changing command on a container other
-  than `loop2`, none on a network or volume, and no container made outside Compose
-  (`docker run`, `docker create`). A function that wraps `docker … "$@"` is read at each call;
+- stops, removes, replaces or reconfigures nothing but loop2's own: every Docker command the
+  script runs is on a list of what a deployment may run, with the options and objects each may
+  name, and any other command, alias, option or object fails. The list: `docker info` (only
+  `--format`); `docker inspect --type container` or `docker container inspect` of the container
+  `loop2` or, read only, `loop`; `docker logs` of `loop2` (`--tail`, `--timestamps`);
+  `docker image prune` with the filter `label=org.opencontainers.image.title=loop2` (and only
+  `dangling=true` beside it); `docker compose` with only `-p`/`--project-name loop2` and
+  `-f`/`--file` under `/srv/loop2/` before its subcommand, the subcommands `build`, `up`,
+  `logs` and `ps` with their listed options, and no object but the service `app`. Commands are
+  matched after the management forms `container inspect` and `container logs` are read as
+  `inspect` and `logs`; aliases (`image remove`, `container remove`, `rmi`), `tag`, `down`,
+  `run`, `create` and every other command are not on the list. Nothing outside Docker names
+  the old loop instance but such a read-only `inspect`. A function that wraps
+  `docker … "$@"` is read at each call;
 - asks the host for no privilege a default container lacks: `compose.yaml` holds at its top only
   `name` and `services`; its service sets only keys that grant nothing beyond a default
   container (`container_name`, `build`, `ports`, `expose`, `mem_limit`, `memswap_limit`, `cpus`,
@@ -55,19 +61,37 @@ EXPECTED_PRUNE_FILTER = "label=org.opencontainers.image.title=loop2"
 # A word of a command that names the old loop instance: its container or project `loop`, a
 # Compose name `loop-…` or `loop_…`, or a path in its directory `/srv/loop`.
 OLD_NAME_WORD = re.compile(r"^(?:loop|loop[-_].*|.*/srv/loop(?:/.*)?)$")
-READ_ONLY_DOCKER = (("inspect",), ("ps",), ("container", "inspect"), ("container", "ls"),
-                    ("container", "ps"), ("container", "list"))
-HOST_WIDE_PRUNES = (("system", "prune"), ("builder", "prune"), ("buildx", "prune"),
-                    ("volume", "prune"), ("network", "prune"), ("container", "prune"))
-# Docker commands that change a container: every container they name must be loop2's, and those
-# that make a new container outside Compose are not run at all.
-EVERY_TARGET = ("rm", "stop", "kill", "restart", "start", "pause", "unpause", "wait", "attach")
-FIRST_TARGET = ("exec", "update", "rename", "cp", "commit")
-NEW_CONTAINER = ("run", "create")
-# Options of those commands that take a value as the next word.
-VALUE_OPTIONS = ("-t", "--time", "--timeout", "-s", "--signal", "-u", "--user", "-w",
-                 "--workdir", "-e", "--env", "--env-file", "--detach-keys")
-COMPOSE_OPTIONS = ("-p", "--project-name", "-f", "--file")
+OLD_CONTAINER = "loop"
+EXPECTED_SERVICE = "app"
+# The Docker commands a deployment may run, by their normalised name (management forms such as
+# `container inspect` and `container logs` read as `inspect` and `logs`): for each, the options it
+# may take — those taking a value as the next word mapped to True — and the objects it may name.
+# Any other command, alias, option or object fails.
+ALLOWED_DOCKER = {
+    "info": ({"--format": True, "-f": True}, ()),
+    "inspect": ({"--type": True, "--format": True, "-f": True},
+                (EXPECTED_CONTAINER, OLD_CONTAINER)),
+    "logs": ({"--tail": True, "-n": True, "--timestamps": False, "-t": False},
+             (EXPECTED_CONTAINER,)),
+    "image prune": ({"--force": False, "-f": False, "--all": False, "-a": False,
+                     "--filter": True}, ()),
+}
+# `docker container <x>` forms read as the top-level command they equal.
+CONTAINER_FORMS = {"inspect": "inspect", "logs": "logs"}
+INSPECT_TYPE = "container"
+PRUNE_FILTERS = (EXPECTED_PRUNE_FILTER, "dangling=true")
+# `docker compose`: options before the subcommand, and per subcommand its options (value-taking
+# ones mapped to True); every other word must be the service `app`.
+COMPOSE_GLOBAL = {"-p": True, "--project-name": True, "-f": True, "--file": True}
+ALLOWED_COMPOSE = {
+    "build": {"--pull": False, "--no-cache": False, "--quiet": False, "-q": False},
+    "up": {"-d": False, "--detach": False, "--no-build": False, "--no-deps": False,
+           "--remove-orphans": False, "--wait": False, "--wait-timeout": True,
+           "--force-recreate": False},
+    "logs": {"--no-color": False, "--tail": True, "-n": True, "--timestamps": False,
+             "-t": False},
+    "ps": {"--all": False, "-a": False, "--format": True, "--quiet": False, "-q": False},
+}
 DOCKER_ENDPOINT_VARIABLES = re.compile(
     r"(?<![A-Za-z0-9_])(?:DOCKER_HOST|DOCKER_CONTEXT|DOCKER_CONFIG|DOCKER_TLS_VERIFY|"
     r"DOCKER_CERT_PATH|COMPOSE_PROJECT_NAME|COMPOSE_FILE|COMPOSE_PROFILES)(?![A-Za-z0-9_])")
@@ -83,6 +107,92 @@ def plain_words(words):
     """The words of a command less its options; the value of an option given as a word of its
     own stays."""
     return [w for w in words if not w.startswith("-")]
+
+
+def split_options(words, allowed):
+    """(problems, {option: [values]}, objects) of the words after a subcommand, against the
+    options `allowed` maps to whether they take a value."""
+    problems, options, objects, index = [], {}, [], 0
+    while index < len(words):
+        word = words[index]
+        index += 1
+        if not word.startswith("-") or word == "-":
+            objects.append(word)
+            continue
+        name, equals, value = word.partition("=")
+        if name not in allowed:
+            problems.append(f"option `{word}`")
+            continue
+        if allowed[name] and not equals:
+            if index >= len(words):
+                problems.append(f"option `{word}` without its value")
+                break
+            value = words[index]
+            index += 1
+        elif not allowed[name] and equals:
+            problems.append(f"option `{word}` takes no value")
+        options.setdefault(name, []).append(value)
+    return problems, options, objects
+
+
+def docker_problems(words):
+    """What in one Docker command (the words after `docker`) a deployment may not run."""
+    if not words or words[0].startswith("-"):
+        return [f"a global option or no subcommand: {words[:1]}"]
+    if words[0] == "compose":
+        return compose_problems(words[1:])
+    if words[0] == "container" and len(words) > 1 and words[1] in CONTAINER_FORMS:
+        name, rest = CONTAINER_FORMS[words[1]], words[2:]
+        container_form = True
+    elif words[0] == "image" and len(words) > 1:
+        name, rest, container_form = "image " + words[1], words[2:], False
+    else:
+        name, rest, container_form = words[0], words[1:], False
+    if name not in ALLOWED_DOCKER:
+        return [f"`docker {' '.join(words[:2])}` is not a command a deployment may run"]
+    allowed, objects_allowed = ALLOWED_DOCKER[name]
+    problems, options, objects = split_options(rest, allowed)
+    problems += [f"object `{o}` is not one `{name}` may name" for o in objects
+                 if o not in objects_allowed]
+    if name == "inspect" and not container_form and options.get("--type") != [INSPECT_TYPE]:
+        problems.append(f"`inspect` without `--type {INSPECT_TYPE}`")
+    if name == "inspect" and len(objects) != 1:
+        problems.append(f"`inspect` names {len(objects)} objects, not one")
+    if name == "image prune":
+        filters = options.get("--filter", [])
+        if EXPECTED_PRUNE_FILTER not in filters or any(f not in PRUNE_FILTERS for f in filters):
+            problems.append(f"`image prune` filters {filters}, not `{EXPECTED_PRUNE_FILTER}`")
+    return problems
+
+
+def compose_problems(words):
+    """What in one `docker compose` command (the words after `compose`) a deployment may not
+    run."""
+    problems, index, globals_ = [], 0, {}
+    while index < len(words) and words[index].startswith("-"):
+        name, equals, value = words[index].partition("=")
+        if name not in COMPOSE_GLOBAL:
+            return [f"compose option `{words[index]}` before the subcommand"]
+        if not equals:
+            index += 1
+            value = words[index] if index < len(words) else ""
+        globals_.setdefault(name, []).append(value)
+        index += 1
+    projects = globals_.get("-p", []) + globals_.get("--project-name", [])
+    if projects != [EXPECTED_PROJECT]:
+        problems.append(f"compose project {projects}, not `{EXPECTED_PROJECT}`")
+    for compose_file in globals_.get("-f", []) + globals_.get("--file", []):
+        if not compose_file.startswith(EXPECTED_CHECKOUT):
+            problems.append(f"Compose file `{compose_file}` outside `{EXPECTED_CHECKOUT}`")
+    if index >= len(words) or words[index] not in ALLOWED_COMPOSE:
+        return problems + [f"compose subcommand {words[index:index + 1]} is not one a "
+                           f"deployment may run"]
+    subcommand = words[index]
+    found, _options, objects = split_options(words[index + 1:], ALLOWED_COMPOSE[subcommand])
+    problems += [f"compose {subcommand}: {p}" for p in found]
+    problems += [f"compose {subcommand}: object `{o}` is not the service `{EXPECTED_SERVICE}`"
+                 for o in objects if o != EXPECTED_SERVICE]
+    return problems
 
 
 def code_lines(text):
@@ -191,75 +301,19 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
             if not named:
                 continue
             read_only = any(support.is_docker(w) for w in words) and any(
-                tuple(plain_words(d)[:len(r)]) == r
-                for d in docker_lines.get(number, []) for r in READ_ONLY_DOCKER
-                if set(named) <= set(d))
+                plain_words(d)[:1] in (["inspect"], ["ps"]) and set(named) <= set(d)
+                and not docker_problems(d) for d in docker_lines.get(number, []))
             if not read_only:
                 problems.append(f"line {number}: {' '.join(words)}")
         self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} names the old loop deployment outside a "
                                        "read-only `docker inspect` or `docker ps`")
 
-    def test_no_host_wide_prune_and_images_pruned_only_by_the_loop2_label(self):
+    def test_every_docker_command_is_one_a_deployment_may_run(self):
         # invariant: loop2-host-sharing/1
-        problems = []
-        for number, words in self.docker:
-            plain = tuple(plain_words(words))
-            if any(plain[:len(p)] == p for p in HOST_WIDE_PRUNES):
-                problems.append(f"line {number}: host-wide prune: {' '.join(words)}")
-            if plain[:2] == ("image", "prune") or plain[:1] == ("rmi",) or plain[:2] == (
-                    "image", "rm"):
-                filters = [words[i + 1] for i, w in enumerate(words[:-1]) if w == "--filter"]
-                filters += [w.split("=", 1)[1] for w in words if w.startswith("--filter=")]
-                if plain[:2] != ("image", "prune") or EXPECTED_PRUNE_FILTER not in filters:
-                    problems.append(f"line {number}: image removal not limited to "
-                                    f"`{EXPECTED_PRUNE_FILTER}`: {' '.join(words)}")
-        self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} removes what is not loop2's")
-
-    def test_no_state_change_on_another_container_network_or_volume(self):
-        # invariant: loop2-host-sharing/1
-        problems = []
-        for number, words in self.docker:
-            words = words[1:] if words[:1] == ["container"] else words
-            if not words or words[0] == "compose":
-                continue
-            targets, skip = [], False
-            for word in words[1:]:
-                if skip:
-                    skip = False
-                elif word.startswith("-"):
-                    skip = word in VALUE_OPTIONS
-                else:
-                    targets.append(word)
-            command = words[0]
-            if command in ("network", "volume") or command in NEW_CONTAINER:
-                problems.append(f"line {number}: {' '.join(words)}")
-            elif command in EVERY_TARGET and targets != [EXPECTED_CONTAINER] * len(targets):
-                problems.append(f"line {number}: {' '.join(words)}")
-            elif command in FIRST_TARGET and (
-                    not targets or targets[0].split(":")[0] != EXPECTED_CONTAINER):
-                problems.append(f"line {number}: {' '.join(words)}")
-        self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} changes a container, network or volume "
-                                       f"other than `{EXPECTED_CONTAINER}`, or makes a container "
-                                       "outside Compose")
-
-    def test_docker_takes_no_global_option(self):
-        # invariant: loop2-host-sharing/1
-        found = [f"line {number}: docker {' '.join(words)}" for number, words in self.docker
-                 if words and words[0].startswith("-")]
-        self.assertEqual(found, [], f"{DEPLOY_SCRIPT} gives `docker` a global option, which can "
-                                    "point it at another Docker or configuration")
-
-    def test_compose_takes_only_project_and_file_options(self):
-        # invariant: loop2-host-sharing/1
-        problems = []
-        for number, words in self.docker:
-            if words[:1] != ["compose"]:
-                continue
-            options, _subcommand, _rest = support.compose_parts(words[1:])
-            problems += [f"line {number}: `{o}`: {' '.join(words)}" for o in options
-                         if o not in COMPOSE_OPTIONS]
-        self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} gives `docker compose` an option other "
-                                       f"than {COMPOSE_OPTIONS} before its subcommand")
+        problems = [f"line {number}: docker {' '.join(words)}: {p}"
+                    for number, words in self.docker for p in docker_problems(words)]
+        self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} runs a Docker command, option or object "
+                                       "outside the list a deployment may run")
 
     def test_no_variable_points_docker_elsewhere(self):
         # invariant: loop2-host-sharing/1
