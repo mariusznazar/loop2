@@ -213,7 +213,8 @@ CLEAN_SOURCE = (
     "export const half = 10 / 2 / 1;\n"
 )
 
-# Programs, as spec § 4.5 gives their shape.
+# Programs, in the shape `src/browser/sim/types.ts` exports: conditions from the closed list of
+# D-13, actions of D-15 and D-16.
 ALWAYS = {"kind": "always"}
 WANDER_ONLY = {"rules": [{"condition": ALWAYS, "action": {"kind": "wander"}}]}
 MIXED = {"rules": [

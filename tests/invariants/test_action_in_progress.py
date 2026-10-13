@@ -1,4 +1,4 @@
-"""Invariant action-in-progress/1: An action the character is carrying out lasts its full duration,
+"""Invariant action-in-progress/1: The character's action in progress lasts its full duration,
 even where the program changes or the condition of another program rule comes to hold before it
 ends.
 
@@ -9,8 +9,8 @@ script this check writes to a temporary directory: `newGame`, `setProgram`, `sen
 the script records the JSON of the map run.
 
 Reading of the sentence:
-- an action the character is carrying out: the map run's `current` activity (spec § 4.1), with
-  its start and end minute; its full duration: it stays the same activity, with the same end
+- the character's action in progress: the map run's `current` activity (the action a program rule
+  starts, D-13, D-15), with its start and end minute; its full duration: it stays the same activity, with the same end
   minute, at every game minute before that end minute, and the next activity starts at that end
   minute;
 - the condition of another program rule comes to hold: a program rule other than the one being
@@ -20,7 +20,8 @@ Reading of the sentence:
 - the program changes: `setProgram` with a different program.
 
 Scenario (map Las, entrance tile at column 1, row 1, which starts unrevealed; exploring lasts 20
-game minutes and a step onto a tile of Las lasts 5, spec § 4.2):
+game minutes and a step onto a tile of Las lasts 5, as the data files `actions.ts` and
+`maps.ts` give them, D-08, D-14):
 - program PA: rule 0 "fewer than 0 sticks here → wander" (never holds), rule 1 "always →
   explore"; at minute 0 the character starts exploring by rule 1, ending at minute 20;
 - at minute 5 the program becomes PA_HOLDS, in which rule 0 reads "fewer than 50 sticks here",
@@ -56,7 +57,8 @@ GAME_MODULE = "dist/public/sim/game.js"
 SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
 T = 1760000000000
 
-# The entrance of Las, (column 1, row 1), in axial coordinates (spec § 2, A2).
+# The entrance of Las, (column 1, row 1), as `maps.ts` gives it (D-14), in the axial coordinates
+# of the map run's tiles.
 ENTRANCE = {"q": 1, "r": 1}
 ENTRANCE_COLUMN, ENTRANCE_ROW = 1, 1
 

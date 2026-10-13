@@ -4,20 +4,21 @@ holds no resource missing from that list.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory imports
-`dist/public/sim/game.js` and the data modules `dist/public/sim/data/maps.js` and
-`dist/public/sim/data/archetypes.js`, and for every game map of `MAPS` starts map runs through the
-public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, `restart` and `end`, recording
-the map run's tiles at each start, together with the game map's list of resources as the data
-gives it.
+`dist/public/sim/game.js` and, for each game map written out in MAP_RESOURCES, starts map runs
+through the public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, `restart` and
+`end`, recording the map run's tiles at each start.
 
 Reading of the sentence:
 - a map run starts: the state a `send` returns, and the state a `restart` returns;
-- the game map's list of resources and its stock per tile: the entries of `resources` of the game
-  map in `MAPS`, each with its `id` and `stock`, as the data module gives them when the check runs;
+- the game map's list of resources and its stock per tile: written out below in MAP_RESOURCES,
+  transcribed from the entries of `resources` of the game map in `MAPS`
+  (`src/browser/sim/data/maps.ts`), each with its `id` and `stock`; the check does not read the
+  data at run time (WAY-69), so a game map added to the data is checked only once it is written
+  out here, and a stock changed in the data fails the check until it is written out anew;
 - a tile holds of a resource: `tile.stock[id]`; holds none: the key is missing, or its value is 0;
 - holds no resource missing from that list: every key of `tile.stock` is an `id` of the list.
 
-Scenarios: for every game map of `MAPS`, with the first archetype of `ARCHETYPES`, a send at each
+Scenarios: for every game map of MAP_RESOURCES, with the archetype `elementalMage`, a send at each
 of 15 real times written out below, then 50 game minutes, a restart, an end and a second send
 (whose seed comes from the first), so 45 map run starts for each game map. Three of the real times
 (SINGLE_TILE_TIMES) give, on Las, a map run in which berry, fiber or moss stands on one tile
@@ -26,11 +27,11 @@ alone, the outcome of a layout that places on one tile a resource its draw left 
 Controls, so the check can fail: each send at SINGLE_TILE_TIMES gives its resource on exactly
 one tile, read from the public state as the number of tiles whose stock of it is above 0 — a
 draw of one tile and a resource placed after a draw of none look alike there, so the control shows
-the starts reach that outcome, not which path gave it; the data read gives every game map a
-non-empty list with a positive stock for each resource; over the starts, each resource of the list stands on some tile
-with its stock and is missing from some tile, so a layout giving every tile everything or nothing
-would show; and the comparison flags made-up tiles holding a stock one less than the data's, a
-resource off the list, and a stock of half the data's.
+the starts reach that outcome, not which path gave it; over the starts, each resource of the list
+stands on some tile with its stock and is missing from some tile, so a layout giving every tile
+everything or nothing would show; and the comparison flags made-up tiles holding, of each
+resource of the list, a stock one more, one less or half the stock written out, and a resource
+off the list.
 
 Does NOT cover: tiles after the start of a map run; whether a tile's resources follow the
 densities of the data.
@@ -46,6 +47,13 @@ import unittest
 import loop2_invariant_support as support
 
 BUILT_DIRECTORY = "dist/public/sim"
+# The game maps and, for each, its list of resources with the stock per tile, as
+# src/browser/sim/data/maps.ts gives them.
+MAP_RESOURCES = {
+    "forest": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
+               {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
+}
+ARCHETYPE = "elementalMage"
 # Real times of a send from a new game whose map run of Las holds a resource on one tile alone —
 # the outcome a layout gives where the draw left the resource on no tile and it is placed on one
 # tile all the same, a case a few starts in a thousand reach: berry, fiber and moss in turn.
@@ -65,14 +73,10 @@ import { pathToFileURL } from 'node:url';
 
 const [simDirectory, configPath, outPath] = process.argv.slice(2);
 const config = JSON.parse(readFileSync(configPath, 'utf8'));
-const load = (path) => import(pathToFileURL(join(simDirectory, path)).href);
-const game = await load('game.js');
-const { MAPS } = await load('data/maps.js');
-const { ARCHETYPES } = await load('data/archetypes.js');
-const archetypeId = Object.keys(ARCHETYPES)[0];
-const out = { maps: {}, starts: [] };
-for (const [mapId, map] of Object.entries(MAPS)) {
-  out.maps[mapId] = JSON.parse(JSON.stringify(map.resources));
+const game = await import(pathToFileURL(join(simDirectory, 'game.js')).href);
+const archetypeId = config.archetypeId;
+const out = { starts: [] };
+for (const mapId of config.mapIds) {
   for (const realMs of config.realTimes) {
     let state = game.setProgram(game.newGame(), config.program).state;
     const record = (how) => out.starts.push({ mapId, how, realMs,
@@ -114,7 +118,8 @@ def starts():
             with open(script, "w", encoding="utf-8", newline="\n") as handle:
                 handle.write(DRIVER)
             with open(config, "w", encoding="utf-8", newline="\n") as handle:
-                json.dump({"realTimes": REAL_TIMES, "program": PROGRAM}, handle)
+                json.dump({"realTimes": REAL_TIMES, "program": PROGRAM, "archetypeId": ARCHETYPE,
+                           "mapIds": list(MAP_RESOURCES)}, handle)
             code, output = support.run([node(), script, directory, config, out_path], work)
             if code != 0:
                 raise AssertionError(f"the driver exited {code}:\n{output}")
@@ -146,24 +151,20 @@ class MapRunTiles(unittest.TestCase):
     def test_tiles_at_each_start(self):
         # invariant: map-run-tiles/1
         result = starts()
-        self.assertTrue(result["maps"], "the data gives no game map")
-        for map_id in result["maps"]:
+        for map_id in MAP_RESOURCES:
             of_map = [s for s in result["starts"] if s["mapId"] == map_id]
             self.assertEqual(len(of_map), len(REAL_TIMES) * STARTS_PER_TIME)
         found = []
         for start in result["starts"]:
             self.assertTrue(start["tiles"], "a map run started with no tiles")
-            found += violations(start, result["maps"][start["mapId"]])
+            found += violations(start, MAP_RESOURCES[start["mapId"]])
         self.assertEqual(found, [])
 
-    def test_control_the_data_and_the_layouts_can_show_a_break(self):
+    def test_control_the_layouts_can_show_a_break(self):
         # invariant: map-run-tiles/1
         result = starts()
-        for map_id, resources in result["maps"].items():
-            self.assertTrue(resources, f"the game map {map_id} lists no resource")
+        for map_id, resources in MAP_RESOURCES.items():
             for resource in resources:
-                self.assertIsInstance(resource["stock"], (int, float))
-                self.assertGreater(resource["stock"], 0, f"{map_id} {resource['id']}")
                 tiles = [t for s in result["starts"] if s["mapId"] == map_id
                          for t in s["tiles"]]
                 self.assertTrue(any(t["stock"].get(resource["id"]) == resource["stock"]
@@ -183,26 +184,26 @@ class MapRunTiles(unittest.TestCase):
                              f"the send at {real_ms} no longer gives {resource} on one tile alone, "
                              "so the starts may not reach a layout that places a resource no "
                              "tile drew")
-            self.assertEqual(violations(start, result["maps"]["forest"]), [])
+            self.assertEqual(violations(start, MAP_RESOURCES["forest"]), [])
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: map-run-tiles/1
         result = starts()
         start = result["starts"][0]
-        resources = result["maps"][start["mapId"]]
+        resources = MAP_RESOURCES[start["mapId"]]
         self.assertEqual(violations(start, resources), [])
-        first = resources[0]
-        for change in ("less", "foreign", "half"):
-            made_up = copying.deepcopy(start)
-            stock = made_up["tiles"][0]["stock"]
-            if change == "less":
-                stock[first["id"]] = first["stock"] - 1
-            elif change == "foreign":
-                stock["off-the-list"] = 1
-            else:
-                stock[first["id"]] = first["stock"] / 2
-            with self.subTest(change=change):
-                self.assertTrue(violations(made_up, resources), f"a {change} stock goes unseen")
+        changes = {"one more": lambda n: n + 1, "one less": lambda n: n - 1,
+                   "half": lambda n: n / 2}
+        for resource in resources:
+            for label, change in changes.items():
+                made_up = copying.deepcopy(start)
+                made_up["tiles"][0]["stock"][resource["id"]] = change(resource["stock"])
+                with self.subTest(resource=resource["id"], change=label):
+                    self.assertTrue(violations(made_up, resources),
+                                    f"{label} of {resource['id']} goes unseen")
+        made_up = copying.deepcopy(start)
+        made_up["tiles"][0]["stock"]["off-the-list"] = 1
+        self.assertTrue(violations(made_up, resources), "a resource off the list goes unseen")
 
 
 if __name__ == "__main__":

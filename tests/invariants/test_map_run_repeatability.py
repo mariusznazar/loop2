@@ -43,7 +43,7 @@ import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
 
-# The map and the character sent, as the data files name them (spec § 4.2).
+# The map and the character sent, as the data files name them (D-08).
 SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
 
 # Real time, in ms, given to `send`; the seed derives from it and the game state.

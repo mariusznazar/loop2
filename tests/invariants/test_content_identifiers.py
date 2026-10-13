@@ -2,10 +2,11 @@
 `src/browser/sim/data/` names a game map, a resource or an archetype, outside its comments, by the
 identifier or the name that the files of `src/browser/sim/data/` give it.
 
-The identifiers and names are read from the files of `src/browser/sim/data/` as `npm run build`
-compiles them, in a temporary copy of the working tree (the real tree is never written): the keys
-of `MAPS` (`maps.js`), `RESOURCES` (`resources.js`) and `ARCHETYPES` (`archetypes.js`), and the
-`name` each entry gives. The files scanned are the TypeScript files (`.ts`, `.tsx`, `.mts`,
+The identifiers and names are written out below in ENTRIES, transcribed from the files of
+`src/browser/sim/data/`: the keys of `MAPS` (`maps.ts`), `RESOURCES` (`resources.ts`) and
+`ARCHETYPES` (`archetypes.ts`), and the `name` each entry gives. The check does not read the data
+at run time (WAY-69), so a map, a resource or an archetype added to the data is scanned for only
+once it is written out here. The files scanned are the TypeScript files (`.ts`, `.tsx`, `.mts`,
 `.cts`) git tracks or would track under `src/browser/`, less those under `src/browser/sim/data/`.
 
 Reading of the sentence:
@@ -17,10 +18,8 @@ Reading of the sentence:
   `wood-stick` (an icon file's name) and `stickCount` do not.
 
 Covers:
-- the scan of every such file against every identifier and name the data gives;
-- control of the reading of the data: it finds at least one map, one resource and one archetype,
-  each with an identifier and a name;
-- control of the scan: made-up text naming each identifier and each name read, in code, in a
+- the scan of every such file against every identifier and name written out;
+- control of the scan: made-up text naming each identifier and each name written out, in code, in a
   string and in a template, is flagged; the same names in comments only, in `wood-stick`-like
   compounds or inside longer identifiers are not; a file under `src/browser/sim/data/` and a file
   that is no TypeScript are not scanned.
@@ -32,8 +31,6 @@ pieces at run time, or written with escape sequences); files outside `src/browse
 import json
 import os
 import re
-import shutil
-import tempfile
 import unittest
 
 import loop2_invariant_support as support
@@ -41,24 +38,15 @@ import loop2_invariant_support as support
 BROWSER_DIRECTORY = "src/browser/"
 DATA_DIRECTORY = "src/browser/sim/data/"
 TYPESCRIPT_EXTENSIONS = (".ts", ".tsx", ".mts", ".cts")
-BUILT_DATA = "dist/public/sim/data"
-COLLECTIONS = (("maps.js", "MAPS", "map"), ("resources.js", "RESOURCES", "resource"),
-               ("archetypes.js", "ARCHETYPES", "archetype"))
-
-READER = r"""
-import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
-const [dataDirectory, collectionsJson, outPath] = process.argv.slice(2);
-const out = [];
-for (const [file, exportName, kind] of JSON.parse(collectionsJson)) {
-  const module = await import(pathToFileURL(join(dataDirectory, file)).href);
-  for (const [id, entry] of Object.entries(module[exportName] || {})) {
-    out.push({ kind, id, name: entry && typeof entry.name === 'string' ? entry.name : null });
-  }
-}
-writeFileSync(outPath, JSON.stringify(out));
-"""
+# The game maps, resources and archetypes, with the identifier and the name the data gives each.
+ENTRIES = (
+    {"kind": "map", "id": "forest", "name": "Las"},
+    {"kind": "resource", "id": "stick", "name": "patyk"},
+    {"kind": "resource", "id": "berry", "name": "jagoda"},
+    {"kind": "resource", "id": "moss", "name": "mech"},
+    {"kind": "resource", "id": "fiber", "name": "włókno"},
+    {"kind": "archetype", "id": "elementalMage", "name": "Mag żywiołów"},
+)
 
 REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
 REGEX_AFTER_WORDS = ("return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
@@ -173,44 +161,11 @@ def findings(relative, text, entries):
     return found
 
 
-def node():
-    path = shutil.which("node")
-    if path is None:
-        raise AssertionError("node is not on PATH")
-    return path
-
-
-_entries = {}
-
-
-def data_entries():
-    if "value" not in _entries:
-        copy = support.built_copy()
-        data = copy.file(BUILT_DATA)
-        if not os.path.isdir(data):
-            raise AssertionError(f"`npm run build` placed no {BUILT_DATA}")
-        work = tempfile.mkdtemp(prefix="loop2-content-")
-        try:
-            script = os.path.join(work, "reader.mjs")
-            out_path = os.path.join(work, "entries.json")
-            with open(script, "w", encoding="utf-8", newline="\n") as handle:
-                handle.write(READER)
-            code, output = support.run([node(), script, data, json.dumps(COLLECTIONS),
-                                        out_path], work)
-            if code != 0:
-                raise AssertionError(f"the reader exited {code}:\n{output}")
-            with open(out_path, encoding="utf-8") as handle:
-                _entries["value"] = json.load(handle)
-        finally:
-            shutil.rmtree(work, ignore_errors=True)
-    return _entries["value"]
-
-
 class ContentIdentifiers(unittest.TestCase):
 
     def test_browser_files_outside_the_data_name_no_content(self):
         # invariant: content-identifiers/1
-        entries = data_entries()
+        entries = ENTRIES
         files = [p for p in support.listed_files() if scanned(p)]
         self.assertTrue(files, "no TypeScript file under src/browser/ outside the data")
         found = []
@@ -220,19 +175,9 @@ class ContentIdentifiers(unittest.TestCase):
         self.assertEqual(found, [], "a file outside the data names content by its identifier "
                                     "or name")
 
-    def test_control_the_data_is_read(self):
-        # invariant: content-identifiers/1
-        entries = data_entries()
-        for kind in ("map", "resource", "archetype"):
-            of_kind = [e for e in entries if e["kind"] == kind]
-            self.assertTrue(of_kind, f"the data gives no {kind}, so nothing would be scanned")
-            for entry in of_kind:
-                self.assertTrue(entry["id"], f"a {kind} without an identifier")
-                self.assertTrue(entry["name"], f"the {kind} {entry['id']} has no name read")
-
     def test_control_the_scan_flags_named_content(self):
         # invariant: content-identifiers/1
-        entries = data_entries()
+        entries = ENTRIES
         probe = "src/browser/view/probe.ts"
         for entry in entries:
             for word in (entry["id"], entry["name"]):
