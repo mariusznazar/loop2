@@ -20,7 +20,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 - **Wysyłanie** (prawa kolumna, gdy nie trwa przejście): postać „Mag żywiołów”, „Mapa: Las” i przycisk „Wyślij”. Każde wysłanie losuje nowy układ mapy.
 - **Wiersz stanu** (w trakcie przejścia): „Minuta {minuta} · {bieżąca akcja}”, z dopiskiem „ (pauza)” przy zatrzymanym czasie, oraz przyciski „Pauza”/„Wznów”, „Restart” (od minuty zero, ten sam układ, bieżący program) i „Zakończ” (powrót do wysyłania). Czas płynie minutą gry na sekundę realną.
 - **Panel terenu** pod wierszem stanu: rysunek całej mapy 4 × 4 z sześciokątnych kafelków — nieodsłonięte ciemne i puste, odsłonięte jaśniejsze z ikonami zasobów bez liczb, ikona przygaszona przy zapasie zero, gruby bursztynowy obrys na kafelku postaci i kreskowany na celu bieżącego kroku. Obok stoi lista odsłoniętych kafelków: etykieta `(kolumna, wiersz)` i zapas każdego zasobu mapy, „—” gdy kafelek go nie ma. Rysunek nie reaguje na kliknięcia; najechanie na kafelek podświetla jego wiersz listy, a najechanie na wiersz — jego kafelek.
-- **Stopka**: wzmianki o autorach ikon — dla każdej „{zasób}: {autor}, game-icons.net, CC BY 3.0, zmienione (bez tła, ciemny kolor)” z odnośnikami do źródła ikony i licencji.
+- **Stopka**: wzmianki o autorach ikon — dla każdej „{zasób}: „{tytuł ikony}”, {autor}, game-icons.net, CC BY 3.0, zmienione (bez tła, ciemny kolor)” z odnośnikami do źródła ikony i licencji.
 
 Stan gry żyje tylko w pamięci strony: przeładowanie zaczyna od nowa, z pustym programem i bez przejścia.
 

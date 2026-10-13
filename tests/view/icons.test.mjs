@@ -123,13 +123,25 @@ async function builtFooter() {
   }
 }
 
-test('each footer line says after the licence that the icon was changed', async () => {
+/** Each icon's title as its page on game-icons.net gives it (environment facts game-icons-*-title). */
+const TITLES = {
+  'wood-stick': 'Wood stick icon',
+  'berry-bush': 'Berry bush icon',
+  fern: 'Fern icon',
+  flax: 'Flax icon',
+};
+
+test('each footer line names the icon by its title on game-icons.net and says after the licence that it was changed', async () => {
   const { items, credits } = await builtFooter();
+  const resources = Object.values(RESOURCES);
   assert.ok(credits.length > 0);
+  assert.equal(items.length, resources.length);
   assert.equal(items.length, credits.length);
   items.forEach((item, i) => {
     const credit = credits[i];
-    assert.equal(textOf(item), `${credit.resourceName}: ${credit.author}, game-icons.net, CC BY 3.0, ${CHANGES}`);
+    const title = TITLES[resources[i].icon];
+    assert.ok(title, resources[i].icon);
+    assert.equal(textOf(item), `${resources[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${CHANGES}`);
   });
 });
 
