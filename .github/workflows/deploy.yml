@@ -1,0 +1,76 @@
+name: Deploy loop2
+
+# On a push to main, one SSH call hands the commit name to the server's forced command, which
+# fetches, builds and starts that commit. The run ships no files and checks out no code.
+on:
+  push:
+    branches: [main]
+
+# One run at a time; a running deployment is never cancelled. A newer pending run replaces an
+# older pending one, which is wanted: the newer commit contains the older.
+concurrency:
+  group: deploy-loop2
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  LOOP2_PUBLIC_URL: https://loop2.mariusznazar.com/
+  OLD_GAME_URL: https://kantarion.bieda.it/
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Deploy the commit on the server
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_KEY_BASE64: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key_file="$RUNNER_TEMP/deploy_key"
+          known_hosts_file="$RUNNER_TEMP/deploy_known_hosts"
+          trap 'rm -f "$key_file" "$known_hosts_file"' EXIT
+          printf '%s' "$SSH_KEY_BASE64" | base64 -d > "$key_file"
+          chmod 600 "$key_file"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$known_hosts_file"
+          status=0
+          ssh -i "$key_file" -p "$SSH_PORT" \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file" \
+            -o BatchMode=yes -o IdentitiesOnly=yes \
+            "$SSH_USER@$SSH_HOST" "$DEPLOY_SHA" || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::error::The server script (or the SSH connection) failed with exit code $status; see its output above."
+            exit "$status"
+          fi
+
+      - name: Probe the public addresses
+        run: |
+          set -uo pipefail
+          # probe URL EXPECTED: succeeds when the address answers as expected, with a few short retries.
+          probe() {
+            local url="$1" expected="$2" attempt code
+            for attempt in 1 2 3 4 5; do
+              code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$url" || true)"
+              case "$expected" in
+                200) [ "$code" = "200" ] && return 0 ;;
+                api-error) case "$code" in 4??|5??) return 0 ;; esac ;;
+                any) case "$code" in 2??|3??|4??) return 0 ;; esac ;;
+              esac
+              echo "attempt $attempt: $url answered '$code'"
+              sleep 6
+            done
+            echo "::error::Probe failed for $url (expected: $expected, last answer: '$code')"
+            return 1
+          }
+          failed=0
+          probe "$LOOP2_PUBLIC_URL" 200 || failed=1
+          probe "${LOOP2_PUBLIC_URL}api/unknown-path-probe" api-error || failed=1
+          probe "$OLD_GAME_URL" any || failed=1
+          exit "$failed"
