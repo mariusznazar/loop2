@@ -1,1 +1,0 @@
-Dispatch prompt of the design agent, phase A: same text as sent by the orchestrator at 2026-10-13T03:16 — stage boundary phase A (classification, understanding, questions with recommendations, 2–3 approaches), write boundary .runs/task-cycles/mag-w-lesie/, sources and prohibitions as listed in cycle.md Events.
