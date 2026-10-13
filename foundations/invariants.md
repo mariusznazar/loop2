@@ -102,6 +102,28 @@ When the account and save server's listening address is already in use, the serv
 - **Part:** account-server · build-tools
 - **Correction:** none
 
+## map-run-repeatability/1
+
+Two simulations of one program from one starting game state with one seed give the same map run,
+game minute by game minute, when they receive the same real-time inputs.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** TODO — "Where does the simulation's randomness come from?", projected in definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop) and expected from task 18 of plan_mvp_loop2.md there
+- **Part:** every
+- **Correction:** none
+
+## simulation-randomness/1
+
+No file of the simulation draws a random number from any source other than the generator seeded
+from the map run's state.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** TODO — "Where does the simulation's randomness come from?", projected in definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop) and expected from task 18 of plan_mvp_loop2.md there
+- **Part:** every
+- **Correction:** none
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

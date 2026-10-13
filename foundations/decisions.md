@@ -192,3 +192,155 @@ configurations.
 
 *Rationale for change:* the verification names the package boundary and compiler layout as well as compilation of both sides.
 *Rejected:* keeping verification limited to compilation alone — it leaves the package boundary and compiler layout unprotected.
+
+### D-04/3 — What is the game built with?
+
+The game is written in TypeScript and runs in the browser. Its simulation is a set of pure
+functions that take a game state and a span of game minutes and return the next game state together
+with the events it produced, and real time enters the simulation only as an argument. The browser
+view draws the game only from the game state, and changes the game state only through functions of
+the simulation, to which it passes the player's choices and the passing of real time.
+
+- **Change:** new wording
+- **Scope:** browser-view, build-tools, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: the renewal of a resurrection computed from a real time the caller passes in; the
+    program editor of the browser view passing the edited program to a function of the simulation
+  - violates: a simulation function that reads the system time or the page; a browser view that
+    keeps a game state of its own; a screen of the browser view that writes a program rule straight
+    into the game state
+- **Review when:** movement and collisions become the core of the game's fun · check by: 2027-04-03
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności"
+- **Approved by:** Mariusz, 2026-10-13
+
+*Rationale for change:* text code and tests give the most leverage in work with AI agents. A
+simulation of pure functions makes progress while away plain arithmetic and the save a JSON
+document, and runs on a phone as well; real time passed in as an argument keeps the earning loop,
+the catch-up and the renewal of a resurrection on one footing. The player changes the game state
+from the browser view — the program editor, sending a character, a restart — and the passing of
+real time changes it too; each goes through the simulation, so the game state changes in one place.
+*Rejected:* Godot — slower to work on with AI agents; giving "view" the meaning of the drawing
+alone and renaming the browser view in "How is the browser view built?", its invariant and its part
+— three entries changed to keep a sentence about a scene the MVP does not have; keeping the sentence
+"The view draws only from the game state and changes nothing in it." — false of the browser view,
+from which the player changes the game state.
+
+### D-03/2 — How is the browser view built?
+
+The browser view is built in TypeScript with the browser's DOM APIs, without an additional UI framework.
+
+- **Change:** unchanged sentences
+- **Scope:** browser-view, build-tools
+- **Based on:** TypeScript Handbook, "ships type definitions for the DOM API" (https://www.typescriptlang.org/docs/handbook/dom-manipulation.html, read 2026-10-04) · React documentation, "npm install react react-dom" (https://react.dev/learn/add-react-to-an-existing-project, read 2026-10-04) · Vue documentation, "npm create vue@latest" (https://vuejs.org/guide/quick-start.html, read 2026-10-04) · Svelte documentation, "using Vite" (https://svelte.dev/docs/svelte/typescript, read 2026-10-04)
+- **Relations:** derives from D-04@ecd038e3
+- **Verification:** level 1 — invariants: browser-view-framework
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale for change:* the relation carries the binding part D-04 now has, in which the browser
+view draws the game only from the game state and changes it only through functions of the
+simulation; building the browser view with the browser's DOM APIs, without an additional UI
+framework, still serves that binding part.
+*Rejected:* keeping the fingerprint of D-04's earlier binding part — the relation would name a
+binding part no longer in force.
+
+### D-08/1 — Where does the game's content live?
+
+The game's content — maps, items, creatures, character skills and their numbers — stands in data
+files. A map, an item or a creature of a kind the simulation already handles is added by a change
+of data alone.
+
+- **Change:** new decision
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a new creature added as a row of the creatures' data, which the simulation reads
+  - violates: a wolf's damage written as a number in the combat code
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and principle #4
+- **Approved by:** Mariusz, 2026-10-13
+
+*Rationale:* content in data makes a new item, map or creature cheap, lets the content grow by
+rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
+*Rejected:* none considered
+
+### D-09/1 — How does the player interact with the terrain panel's drawing of the game map?
+
+The terrain panel's drawing of the game map is a picture, not a control: its only interaction is
+hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock
+stand in that list, never on the drawing.
+
+- **Change:** new decision
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
+    marks the tile; a revealed tile drawn with the icons of its resources and no numbers
+  - violates: a click on a tile that sends the character there or changes the program; a tile drawn
+    with the number of sticks it holds
+- **Review when:** none
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the player writes the condition that fewer than N of a resource lie on the
+character's tile against numbers the list shows, and the list keeps the stock of every resource of
+a tile readable where numbers written into the tiles would not be; hovering ties a tile to its
+numbers without writing them on it.
+*Rejected:* the grid drawn without the list and its numbers — the player would write that condition
+without seeing the number it compares; numbers written into the tiles — unreadable where a tile
+holds several resources.
+
+### D-10/1 — What interrupts an action the character is carrying out?
+
+Neither a change of the program nor the condition of another program rule interrupts an action the
+character is carrying out. The program picks a program rule again only once that action ends.
+
+- **Change:** new decision
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a program changed during an exploration taking effect in the game minute the
+    exploration ends; a character that goes on exploring while the condition of a program rule
+    above the exploring one comes to hold
+  - violates: a change of the program that stops the exploration in progress; a program rule whose
+    condition comes to hold cutting short the character's move onto a neighbouring tile
+- **Review when:** none
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Gdzie i kiedy gracz zmienia program i od kiedy zmiana działa?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the player changes the program during a map run without ending it, and the change takes
+effect from the next free game minute, once the character's action in progress has ended; the
+program picks a program rule only in such a game minute, so the end of the character's action is
+the one moment at which both a change of the program and a program rule whose condition has come to
+hold take effect.
+*Rejected:* a change of the program allowed only outside a map run — every fix to the program
+would need the map run ended; a change of the program taking effect only from a restart — two
+versions of the program in force at once.
+
+### D-11/1 — How does time pass in a map run the player starts?
+
+A map run the player starts passes at one game minute per real second, and the player can pause and
+resume it.
+
+- **Change:** new decision
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a map run the player starts that is sixty game minutes further after sixty real
+    seconds of running, and no further after a real minute paused
+  - violates: a map run the player starts that passes ten game minutes per real second; a map run
+    the player can hold still only by ending it
+- **Review when:** none
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* one game minute per real second is the pace at which the predecessor game, loop, runs
+without fast-forwarding, and a pause holds a map run without ending it.
+*Rejected:* the same pace with no pause; a faster pace while the game has no fast-forwarding.
