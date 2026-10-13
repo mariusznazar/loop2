@@ -13,8 +13,11 @@ Reading of the sentence:
 - the game map's list of resources and its stock per tile: written out below in MAP_RESOURCES,
   transcribed from the entries of `resources` of the game map in `MAPS`
   (`src/browser/sim/data/maps.ts`), each with its `id` and `stock`; the check does not read the
-  data at run time (WAY-69), so a game map added to the data is checked only once it is written
-  out here, and a stock changed in the data fails the check until it is written out anew;
+  data at run time for its expected values (WAY-69), so a game map added to the data is checked
+  only once it is written out here, and a stock changed in the data fails the check until it is
+  written out anew; a tripwire reads the game maps of `MAPS` (`dist/public/sim/data/maps.js`)
+  with their lists of resources and stocks, only to fail when one of them is not written out
+  here, telling the maintainer to add it;
 - a tile holds of a resource: `tile.stock[id]`; holds none: the key is missing, or its value is 0;
 - holds no resource missing from that list: every key of `tile.stock` is an `id` of the list.
 
@@ -32,6 +35,10 @@ stands on some tile with its stock and is missing from some tile, so a layout gi
 everything or nothing would show; and the comparison flags made-up tiles holding, of each
 resource of the list, a stock one more, one less or half the stock written out, and a resource
 off the list.
+
+Tripwire: every game map of the data, and every resource of its list with its stock, stands in
+MAP_RESOURCES; a control shows it fails on made-up data with a game map, a resource or a stock
+that is not written out.
 
 Does NOT cover: tiles after the start of a map run; whether a tile's resources follow the
 densities of the data.
@@ -130,6 +137,57 @@ def starts():
     return _result["value"]
 
 
+READER = r"""
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+const [simDirectory, outPath] = process.argv.slice(2);
+const { MAPS } = await import(pathToFileURL(join(simDirectory, 'data', 'maps.js')).href);
+const out = {};
+for (const [mapId, map] of Object.entries(MAPS)) {
+  out[mapId] = (map.resources || []).map((r) => ({ id: r.id, stock: r.stock }));
+}
+writeFileSync(outPath, JSON.stringify(out));
+"""
+
+
+def data_maps():
+    """The game maps of the data with their lists — read only for the tripwire, never as an
+    expected value."""
+    directory = support.built_copy().file(BUILT_DIRECTORY)
+    work = tempfile.mkdtemp(prefix="loop2-map-tripwire-")
+    try:
+        script = os.path.join(work, "reader.mjs")
+        out_path = os.path.join(work, "maps.json")
+        with open(script, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(READER)
+        code, output = support.run([node(), script, directory, out_path], work)
+        if code != 0:
+            raise AssertionError(f"the reader exited {code}:\n{output}")
+        with open(out_path, encoding="utf-8") as handle:
+            return json.load(handle)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def not_written_out(read, written):
+    """What the data gives that `written` lacks, as messages for the maintainer."""
+    where = "MAP_RESOURCES in tests/invariants/test_map_run_tiles.py"
+    found = []
+    for map_id, resources in read.items():
+        if map_id not in written:
+            found.append(f"the data gives the game map {map_id!r}, which {where} does not hold; "
+                         "add it there with its resources and stocks")
+            continue
+        known = {(r["id"], r["stock"]) for r in written[map_id]}
+        for resource in resources:
+            if (resource["id"], resource["stock"]) not in known:
+                found.append(f"the data gives {map_id!r} the resource {resource['id']!r} with "
+                             f"the stock {resource['stock']!r}, which {where} does not hold; "
+                             "write it out there")
+    return found
+
+
 def violations(start, resources):
     """What breaks the sentence in one start's tiles, given the game map's list."""
     stock_of = {r["id"]: r["stock"] for r in resources}
@@ -185,6 +243,24 @@ class MapRunTiles(unittest.TestCase):
                              "so the starts may not reach a layout that places a resource no "
                              "tile drew")
             self.assertEqual(violations(start, MAP_RESOURCES["forest"]), [])
+
+    def test_tripwire_every_map_and_resource_is_written_out(self):
+        # invariant: map-run-tiles/1
+        read = data_maps()
+        self.assertTrue(read, "the tripwire read no game map of the data")
+        self.assertEqual(not_written_out(read, MAP_RESOURCES), [])
+
+    def test_control_the_tripwire_fails_on_what_is_not_written_out(self):
+        # invariant: map-run-tiles/1
+        same = {m: [dict(r) for r in rs] for m, rs in MAP_RESOURCES.items()}
+        self.assertEqual(not_written_out(same, MAP_RESOURCES), [])
+        new_map = dict(same, cave=[{"id": "stone", "stock": 4}])
+        self.assertTrue(not_written_out(new_map, MAP_RESOURCES), "a new game map goes unseen")
+        new_resource = {m: rs + [{"id": "stone", "stock": 4}] for m, rs in same.items()}
+        self.assertTrue(not_written_out(new_resource, MAP_RESOURCES),
+                        "a new resource on a map's list goes unseen")
+        new_stock = {m: [dict(r, stock=r["stock"] + 1) for r in rs] for m, rs in same.items()}
+        self.assertTrue(not_written_out(new_stock, MAP_RESOURCES), "a changed stock goes unseen")
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: map-run-tiles/1

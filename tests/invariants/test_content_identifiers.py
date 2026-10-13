@@ -5,8 +5,10 @@ identifier or the name that the files of `src/browser/sim/data/` give it.
 The identifiers and names are written out below in ENTRIES, transcribed from the files of
 `src/browser/sim/data/`: the keys of `MAPS` (`maps.ts`), `RESOURCES` (`resources.ts`) and
 `ARCHETYPES` (`archetypes.ts`), and the `name` each entry gives. The check does not read the data
-at run time (WAY-69), so a map, a resource or an archetype added to the data is scanned for only
-once it is written out here. The files scanned are the TypeScript files (`.ts`, `.tsx`, `.mts`,
+at run time for its expected values (WAY-69), so a map, a resource or an archetype added to the
+data is scanned for only once it is written out here; a tripwire reads the data's entries, as
+`npm run build` compiles them in a temporary copy of the working tree, only to fail when one of
+them is not written out here, telling the maintainer to add it. The files scanned are the TypeScript files (`.ts`, `.tsx`, `.mts`,
 `.cts`) git tracks or would track under `src/browser/`, less those under `src/browser/sim/data/`.
 
 Reading of the sentence:
@@ -19,6 +21,8 @@ Reading of the sentence:
 
 Covers:
 - the scan of every such file against every identifier and name written out;
+- the tripwire: every map, resource and archetype the data gives, with its name, stands among
+  ENTRIES; a control shows it fails on made-up data holding a resource that is not written out;
 - control of the scan: made-up text naming each identifier and each name written out, in code, in a
   string and in a template, is flagged; the same names in comments only, in `wood-stick`-like
   compounds or inside longer identifiers are not; a file under `src/browser/sim/data/` and a file
@@ -31,6 +35,8 @@ pieces at run time, or written with escape sequences); files outside `src/browse
 import json
 import os
 import re
+import shutil
+import tempfile
 import unittest
 
 import loop2_invariant_support as support
@@ -47,6 +53,62 @@ ENTRIES = (
     {"kind": "resource", "id": "fiber", "name": "włókno"},
     {"kind": "archetype", "id": "elementalMage", "name": "Mag żywiołów"},
 )
+
+# The data modules and collections the tripwire reads, as `npm run build` compiles them.
+BUILT_DATA = "dist/public/sim/data"
+COLLECTIONS = (("maps.js", "MAPS", "map"), ("resources.js", "RESOURCES", "resource"),
+               ("archetypes.js", "ARCHETYPES", "archetype"))
+READER = r"""
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+const [dataDirectory, collectionsJson, outPath] = process.argv.slice(2);
+const out = [];
+for (const [file, exportName, kind] of JSON.parse(collectionsJson)) {
+  const module = await import(pathToFileURL(join(dataDirectory, file)).href);
+  for (const [id, entry] of Object.entries(module[exportName] || {})) {
+    out.push({ kind, id, name: entry && typeof entry.name === 'string' ? entry.name : null });
+  }
+}
+writeFileSync(outPath, JSON.stringify(out));
+"""
+
+
+def node():
+    path = shutil.which("node")
+    if path is None:
+        raise AssertionError("node is not on PATH")
+    return path
+
+
+def data_entries():
+    """The entries the data gives — read only for the tripwire, never as an expected value."""
+    data = support.built_copy().file(BUILT_DATA)
+    if not os.path.isdir(data):
+        raise AssertionError(f"`npm run build` placed no {BUILT_DATA}")
+    work = tempfile.mkdtemp(prefix="loop2-content-tripwire-")
+    try:
+        script = os.path.join(work, "reader.mjs")
+        out_path = os.path.join(work, "entries.json")
+        with open(script, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(READER)
+        code, output = support.run([node(), script, data, json.dumps(COLLECTIONS), out_path],
+                                   work)
+        if code != 0:
+            raise AssertionError(f"the reader exited {code}:\n{output}")
+        with open(out_path, encoding="utf-8") as handle:
+            return json.load(handle)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def not_written_out(read, written):
+    """The entries of `read` that `written` lacks, as messages for the maintainer."""
+    known = {(e["kind"], e["id"], e["name"]) for e in written}
+    return [f"the data gives the {e['kind']} {e['id']!r} named {e['name']!r}, which ENTRIES in "
+            f"tests/invariants/test_content_identifiers.py does not hold; add it there so that "
+            f"the check scans for it" for e in read if (e["kind"], e["id"], e["name"]) not in known]
+
 
 REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
 REGEX_AFTER_WORDS = ("return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
@@ -174,6 +236,21 @@ class ContentIdentifiers(unittest.TestCase):
                               entries)
         self.assertEqual(found, [], "a file outside the data names content by its identifier "
                                     "or name")
+
+    def test_tripwire_every_data_entry_is_written_out(self):
+        # invariant: content-identifiers/1
+        read = data_entries()
+        self.assertTrue(read, "the tripwire read no entry of the data")
+        self.assertEqual(not_written_out(read, ENTRIES), [])
+
+    def test_control_the_tripwire_fails_on_an_entry_not_written_out(self):
+        # invariant: content-identifiers/1
+        self.assertEqual(not_written_out(list(ENTRIES), ENTRIES), [])
+        stone = {"kind": "resource", "id": "stone", "name": "kamień"}
+        self.assertTrue(not_written_out(list(ENTRIES) + [stone], ENTRIES),
+                        "a resource added to the data goes unseen")
+        renamed = [dict(e, name="Puszcza") if e["kind"] == "map" else e for e in ENTRIES]
+        self.assertTrue(not_written_out(renamed, ENTRIES), "a renamed map goes unseen")
 
     def test_control_the_scan_flags_named_content(self):
         # invariant: content-identifiers/1
