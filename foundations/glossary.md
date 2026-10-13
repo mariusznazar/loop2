@@ -59,7 +59,7 @@ the port at which its server is reached.
 
 ## program rule
 
-A program rule is a pair of a condition and an action of a character that a program holds.
+A program rule is a pair held by a program: a condition and an action of a character.
 
 - **Avoid:** none
 - **Not:** none
