@@ -1,5 +1,6 @@
-"""Invariant map-run-layout/1: Two map runs of one game map on one seed have the same resources on
-each tile at every game minute, whatever programs they run under.
+"""Invariant map-run-layout/1: Two map runs of one game map on one seed have the same kinds of
+resource present on each tile, whatever their amounts, at every game minute, whatever programs they
+run under.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
