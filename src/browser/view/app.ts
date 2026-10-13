@@ -1,7 +1,8 @@
-import { end, newGame, restart, setPaused, type GameResult } from '../sim/game.js';
+import { end, newGame, restart, setPaused, setProgram, type GameResult } from '../sim/game.js';
 import type { GameState } from '../sim/types.js';
 import { startClock, type GameStore } from './clock.js';
 import { createFooter } from './footer.js';
+import { createProgramEditor } from './program-editor.js';
 import { createSendPanel } from './send-panel.js';
 import { createStatusRow } from './status-row.js';
 
@@ -19,7 +20,7 @@ export function startApp(root: HTMLElement): void {
 
   const columns = document.createElement('main');
   columns.className = 'columns';
-  // Left column: the program panel (its editor is added by a later slice).
+  // Left column: the program panel, always visible.
   const programPanel = document.createElement('section');
   programPanel.className = 'program-panel';
   // Right column: the send panel without a map run; the status row and terrain panel during one.
@@ -32,12 +33,26 @@ export function startApp(root: HTMLElement): void {
   terrainPanel.className = 'terrain-panel';
   columns.append(programPanel, mapColumn);
 
+  // The editor passes each edited program to the simulation; setProgram validates and replaces it.
+  // Real time elapsed before the edit is passed first, so it runs under the program it ran under.
+  const programEditor = createProgramEditor(program => {
+    clock.flush();
+    store.apply(setProgram(state, program));
+  });
+  programPanel.append(programEditor.element);
+
   const store: GameStore = {
     get: () => state,
     apply(result: GameResult): void {
       if (result.state === state) return;
+      const previous = state;
       state = result.state;
       renderMapColumn();
+      // The editor updates only when the program or the run's map changes, never on a clock tick,
+      // so ticking cannot take focus from its controls.
+      if (state.program !== previous.program || state.run?.mapId !== previous.run?.mapId) {
+        programEditor.update(state);
+      }
     },
   };
   const clock = startClock(store);
@@ -70,4 +85,5 @@ export function startApp(root: HTMLElement): void {
 
   root.append(header, columns, createFooter());
   renderMapColumn();
+  programEditor.update(state);
 }
