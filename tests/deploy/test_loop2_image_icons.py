@@ -1,5 +1,4 @@
-"""The loop2 image carries the game's icons and serves them (review remark 3 of the task
-mag-w-lesie; D-27/1, D-05/3).
+"""The loop2 image carries the game's icons and serves them (D-27/1, D-05/3, D-14/1).
 
 `scripts/build.mjs` copies every SVG file of `assets/icons/` into `dist/public/icons/` when the
 application is built, and the image is built by `npm run build` in the Dockerfile's build stage.
@@ -105,12 +104,15 @@ class ImageServesIcons(unittest.TestCase):
         tag = "loop2-image-icons-check:" + uuid.uuid4().hex[:12]
         name = "loop2-image-icons-check-" + uuid.uuid4().hex[:12]
 
+        # Each cleanup is registered before the command it undoes, so a build or run that times
+        # out still leaves no image or container; removing a name that does not exist is harmless.
+        # Cleanups run last-registered first: the container, then the image it holds.
+        self.addCleanup(docker_run, "image", "rm", "-f", tag)
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=image-icons-check",
                                   "-t", tag, ".", timeout=BUILD_TIMEOUT)
-        self.addCleanup(docker_run, "image", "rm", "-f", tag)
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
-        code, output = docker_run("run", "-d", "--name", name, tag)
         self.addCleanup(docker_run, "rm", "-f", name)
+        code, output = docker_run("run", "-d", "--name", name, tag)
         self.assertEqual(code, 0, f"`docker run` failed:\n{output}")
 
         paths = ["/"] + [f"/icons/{icon}" for icon in icons]
