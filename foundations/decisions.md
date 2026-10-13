@@ -282,7 +282,9 @@ public IPv4 service ports of the host are taken by other workloads, the old loop
 Plain HTTP from Cloudflare to the server is accepted only while the test server holds no player
 data, since HTTPS for players is not end-to-end encryption; a Configuration Rule sets that
 encryption mode for this hostname alone, so the old game's route keeps its own. That Cloudflare
-reaches a server with only an IPv6 address is a hypothesis until the first deployment shows it.
+reaches a server with only an IPv6 address is a hypothesis until the first deployment shows it. The
+Cloudflare records and rules are state outside the repository that no entry records; what the
+human observes after setting them up and running the first deployment is recorded then.
 *Rejected:* a new free Mikrus subdomain — ties the game's address to the hosting provider; serving
 loop2 at `kantarion.bieda.it` in place of the old game — would reopen the approved MVP definition.
 
@@ -296,7 +298,7 @@ that contains it.
 - **Scope:** deployment
 - **Based on:** none
 - **Relations:** derives from D-09@20be369f
-- **Verification:** level 2 — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: loop2-deploy-trigger-input. Level 2 for the rest — an agent compares the change with the decision:
   - complies: a workflow that runs on a push to `main` and asks the server to rebuild the pushed commit, a newer push replacing a deployment still waiting to run
   - violates: a workflow that deploys only from a separate `test` branch; a push to `main` that waits for someone to start its deployment by hand
 - **Review when:** a separate deployment step or a separate test environment is set up between `main` and the test server · check by: 2027-04-13
@@ -425,7 +427,12 @@ the copy is a human's change.
 *Rationale:* what the key can run stays what a human installed, whatever a pushed commit holds. A
 warning rather than a refusal keeps a rollback to a commit older than the last change of the source
 possible. A stolen key can still redeploy an earlier commit of `main`; that is accepted while the
-test server holds no player data.
+test server holds no player data. Code merged into `main`, its container build and service
+definitions included, runs on the host with root's authority through the deployment, so it is
+trusted code and whoever can merge to `main` can act on the host; the trust boundary stays with the
+files that take in data the product does not trust. The forced-command entry and the installed copy
+are state on the server that no entry records; what the human observes after installing them and
+running the first deployment is recorded then.
 *Rejected:* a forced command that runs the checkout's own copy — a pushed commit could change what
 the key runs; a deployment that refuses when the copies differ — every rollback past a change of the
 source would stop.
@@ -442,7 +449,7 @@ sets, and the loop2 container runs under a memory limit.
 - **Scope:** deployment
 - **Based on:** none
 - **Relations:** derives from D-08@e4e8a2f4
-- **Verification:** level 1 — invariants: loop2-container-isolation. Level 2 for the thresholds and the memory limit — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: loop2-host-sharing. Level 2 for the thresholds and the memory limit — an agent compares the change with the decision:
   - complies: a deployment that refuses to build while available memory is below its threshold and leaves the running container untouched; a Compose service with a memory limit
   - violates: a build started without reading the host's memory and disk; a Compose service with no memory limit
 - **Review when:** a task needs more memory than the container's limit, or the values each deployment logs show the thresholds refusing sound builds or letting through builds that exhaust the host · check by: 2027-04-13
@@ -453,7 +460,11 @@ sets, and the loop2 container runs under a memory limit.
 build that exhausts its memory can make the kernel end a process of another workload; reading
 memory and disk before the build stops a deployment before it harms them. The thresholds and the
 limit are chosen bounds, not measured needs, tuned in the repository from the values each
-deployment logs.
+deployment logs. Code merged into `main`, its container build and service definitions included,
+runs on the host with root's authority through the deployment, so these limits hold against
+mistakes in trusted code, not against whoever can merge to `main`. The host's memory, disk and
+other workloads are state outside the repository that no entry records; what the human observes at
+the first deployment is recorded then.
 *Rejected:* a host-wide prune to reclaim build cache — it would remove images and cache of other
 workloads, and the base image may be one another workload uses; reclaiming the build cache and
 base-image layers stays a human's decision.

@@ -88,17 +88,19 @@ the test server.
   tests/invariants/test_loop2_one_serving_process_container.py
   tests/invariants/test_loop2_deploy_trigger_input.py
   tests/invariants/test_loop2_deploy_keeps_running.py
+  tests/invariants/test_loop2_host_sharing.py
 - **Depends on:** account-server · build-tools
 - **Failure modes:**
   - a request through the automation's key carries input other than one commit name, or a commit not on `main` — code the decisions forbid is deployed — high — detected by loop2-deploy-trigger-input
   - the input, the commit, the lock, the reading of memory and disk, the fetch, the checkout, the type check or the build fails — the push is not deployed and loop2 keeps running the previous commit — low — detected by loop2-deploy-keeps-running
   - the new container does not become healthy, or the local request after the switch fails — loop2 is down or broken until a human deploys the previous commit or a revert reaches `main` — high — not detected
   - the installed deploy script differs from its source at the deployed commit — an outdated check of the input runs on until a human reinstalls the script — high — not detected
-  - the lock file is gone after the host restarts and cannot be created again — every deployment refuses until a human acts — low — not detected
+  - the account that runs deployments has no write access to `/run`, so the lock file, gone after the host restarts, cannot be created again — every deployment refuses until a human acts — low — not detected
+  - the build cache, which no deployment prunes, grows until free disk falls below the threshold — every deployment refuses at the reading of memory and disk until a human reclaims the cache — low — not detected
   - the SSH connection drops while a deployment runs — the deployment stops midway, and loop2 may be left stopped — high — not detected
   - a build exhausts the memory of the host, which has no swap — the kernel can end a process of the old loop game or another workload — high — not detected
   - Cloudflare answers 521 or 522 while the new container starts — players see an error for the seconds of the switch — low — not detected
-  - a deployment changes or removes something of another workload on the host — the old loop game or another workload is harmed — high — detected by loop2-container-isolation
+  - a deployment changes or removes something of another workload on the host — the old loop game or another workload is harmed — high — detected by loop2-host-sharing
 - **Trust boundary:** deploy/**
 
 ## Criticality scale

@@ -108,7 +108,7 @@ The loop2 instance runs in a container separate from the existing loop instance.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-08@e4e8a2f4 · D-17@c332eebd
+- **Derives from:** D-08@e4e8a2f4
 - **Part:** every
 - **Correction:** none
 
@@ -128,7 +128,7 @@ The deployment command the automation's key runs refuses every input but one com
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** openssh-authorized-keys-options@3fd0389d
-- **Derives from:** D-09@20be369f
+- **Derives from:** D-09@20be369f · D-11@8ab607c7
 - **Part:** deployment
 - **Correction:** none
 
@@ -139,6 +139,16 @@ A deployment that stops before it starts the new container — at its input, the
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
 - **Derives from:** D-15@e3aa8f94
+- **Part:** deployment
+- **Correction:** none
+
+## loop2-host-sharing/1
+
+A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and the loop2 Compose service asks the host for no privilege that a default container lacks.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-17@c332eebd
 - **Part:** deployment
 - **Correction:** none
 
