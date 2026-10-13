@@ -36,7 +36,9 @@ Covers:
     secrets `DEPLOY_USER`, `DEPLOY_HOST`, `DEPLOY_PORT` and from `github.sha`, no other
     variable, alone at the top of the step, its input untouched or `</dev/null`, no pipe or
     redirection on its line. Input redirections, heredocs and here-strings, process
-    substitution and base64 encoding are refused anywhere in a step; a step names a variable
+    substitution and base64 encoding are refused anywhere in a step, and so are ANSI-C and
+    locale quoting and a backslash ending a line without whitespace before it (every rule reads
+    a step with its backslash-newlines removed, as bash removes them); a step names a variable
     the workflow's `env` sets only as `$NAME` or `${NAME}`, and `printf` and `local` take no
     option, so nothing in a step can overwrite what ssh sends. Anything outside this
     fails the check, since the check cannot tell it sends nothing;
@@ -414,11 +416,39 @@ def ssh_lines(script):
     return problems
 
 
+def joined_continuations(script, first_line):
+    """(the text of a step with each backslash-newline removed, as bash removes it, the lines it
+    joined followed by as many empty lines so that line numbers stay; the problems found): a
+    backslash ending a line without whitespace before it, or after another backslash, which can
+    split or hide a word, is refused."""
+    problems, lines, pending, joined = [], [], "", 0
+    for number, raw in enumerate(script.split("\n"), 1):
+        trailing = len(raw) - len(raw.rstrip("\\"))
+        if trailing > 1 or trailing == 1 and raw[-2:-1] not in (" ", "\t"):
+            problems.append(f"line {first_line + number - 1}: a backslash ends the line without "
+                            f"whitespace before it, which can split a word: {raw.strip()}")
+        if trailing % 2 == 1:
+            pending += raw[:-1]
+            joined += 1
+            continue
+        lines.append(pending + raw)
+        lines += [""] * joined
+        pending, joined = "", 0
+    if pending:
+        lines.append(pending)
+        lines += [""] * (joined - 1)
+    return "\n".join(lines), problems
+
+
 def run_shipping(script, first_line, env, depth=0):
     """What in the text of a `run:` step (its first line at `first_line` of the workflow, its
     variables from the workflow's `env` in `env`) could ship files or run what this check does
-    not read."""
-    problems = []
+    not read. Every rule reads the step with its backslash-newlines removed first."""
+    script, problems = joined_continuations(script, first_line)
+    for number, raw in enumerate(script.split("\n"), 1):
+        if re.search(r"\$['\"]", outside_single_quotes(raw)):
+            problems.append(f"line {first_line + number - 1}: the step uses ANSI-C or locale "
+                            f"quoting (`$'…'`, `$\"…\"`), which can hide a word: {raw.strip()}")
     for pattern, what in RUN_FORBIDDEN_TEXT:
         if pattern.search(script):
             problems.append(f"line {first_line}: the step {what}")
@@ -590,6 +620,10 @@ SHIPPING_STEPS = (
     "      - run: |\n          f() {\n            local -n target=S\"\"HA\n"
     "            target=\"$(curl -sS \"$URL\")\"\n          }\n          f\n",
     "      - run: |\n          : \"${SHA:=$(curl -sS \"$URL\")}\"\n",
+    "      - run: |\n          for S\\\n          HA in \"$(curl -sS \"$URL\")\"; do :; done\n",
+    "      - run: |\n          printf $'\\x2dv' SHA '%s' \"$(curl -sS \"$URL\")\"\n",
+    "      - run: |\n          printf $\"-v\" SHA '%s' x\n",
+    "      - run: |\n          echo \"GITHUB_\\\n          ENV\"\n",
 )
 
 

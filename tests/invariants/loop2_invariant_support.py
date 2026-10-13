@@ -643,7 +643,7 @@ def _logical_lines(text):
                 continue
             trailing = len(part) - len(part.rstrip("\\"))
             if trailing % 2 == 1 and index < len(lines):
-                code += part[:-1] + " "
+                code += part[:-1]
                 continue
             code += part
             break
