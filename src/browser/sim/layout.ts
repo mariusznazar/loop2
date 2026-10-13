@@ -4,7 +4,7 @@ import type { MapDef } from './data/maps.js';
 import type { Hex, Tile } from './types.js';
 
 /**
- * Draws the tiles of a map from a seed. The draw order is a contract (spec 4.4):
+ * Draws the tiles of a map from a seed. The draw order is a contract (D-22):
  * 1. tiles row-major; 2. per tile, per resource in the map's array order, one draw
  * (`u < density` puts the resource's full stock); 3. per resource in array order with
  * density > 0 that no tile has, one draw picks the tile; 4. the fixed entrance, no draw.
