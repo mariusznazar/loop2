@@ -5,6 +5,7 @@ import { createFooter } from './footer.js';
 import { createProgramEditor } from './program-editor.js';
 import { createSendPanel } from './send-panel.js';
 import { createStatusRow } from './status-row.js';
+import { createTerrainPanel } from './terrain-panel.js';
 
 /**
  * Builds the page in `root` and starts the game. This module holds the one current game state;
@@ -28,9 +29,8 @@ export function startApp(root: HTMLElement): void {
   mapColumn.className = 'map-column';
   const runPanel = document.createElement('div');
   runPanel.className = 'run-panel';
-  // The terrain panel draws the map run (added by a later slice).
-  const terrainPanel = document.createElement('div');
-  terrainPanel.className = 'terrain-panel';
+  // The terrain panel draws the map run and lists its revealed tiles.
+  const terrainPanel = createTerrainPanel();
   columns.append(programPanel, mapColumn);
 
   // The editor passes each edited program to the simulation; setProgram validates and replaces it.
@@ -74,13 +74,14 @@ export function startApp(root: HTMLElement): void {
       if (state.run) store.apply(end(state));
     },
   });
-  runPanel.append(statusRow.element, terrainPanel);
+  runPanel.append(statusRow.element, terrainPanel.element);
   mapColumn.append(sendPanel, runPanel);
 
   function renderMapColumn(): void {
     sendPanel.hidden = state.run !== null;
     runPanel.hidden = state.run === null;
     statusRow.update(state);
+    terrainPanel.update(state);
   }
 
   root.append(header, columns, createFooter());

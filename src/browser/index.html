@@ -57,6 +57,28 @@
         margin-right: auto;
         font-variant-numeric: tabular-nums;
       }
+      .terrain-panel {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 16px;
+        margin-top: 12px;
+      }
+      .terrain-drawing { display: block; max-width: 100%; height: auto; }
+      .terrain-drawing .tile polygon { fill: #34332e; stroke: #1c1b18; stroke-width: 1; }
+      .terrain-drawing .tile.revealed polygon { fill: #dfe7cf; stroke: #8f9c7c; }
+      .terrain-drawing .tile.hovered polygon { fill: #57554c; }
+      .terrain-drawing .tile.revealed.hovered polygon { fill: #f5e9b0; }
+      .terrain-drawing .icon.dimmed { opacity: 0.3; }
+      .terrain-drawing .outline { fill: none; pointer-events: none; stroke-linejoin: round; }
+      .terrain-drawing .outline.character { stroke: #e3a008; stroke-width: 4; }
+      .terrain-drawing .outline.step-target { stroke: #e3a008; stroke-width: 2; stroke-dasharray: 5 4; }
+      .tile-list { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+      .tile-list th, .tile-list td { padding: 2px 8px; text-align: right; white-space: nowrap; }
+      .tile-list thead th { font-weight: 600; border-bottom: 1px solid #d8d6cc; }
+      .tile-list thead img { vertical-align: middle; }
+      .tile-list tbody th { text-align: left; font-weight: normal; }
+      .tile-list tbody tr.hovered { background: #f5e9b0; }
       button { font: inherit; padding: 4px 12px; cursor: pointer; }
       footer {
         margin-top: 24px;
