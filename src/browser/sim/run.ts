@@ -98,7 +98,9 @@ export function newMapRun(
  */
 export function stepMinute(run: MapRun, map: MapDef, program: Program): { run: MapRun; events: GameEvent[] } {
   const minute = run.minute + 1;
-  if (minute !== run.current.endMinute) return { run: { ...run, minute }, events: [] };
+  // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
+  // instead of never; for every duration of 1 minute or more the two are the same.
+  if (minute < run.current.endMinute) return { run: { ...run, minute }, events: [] };
 
   const finished = run.current;
   const events: GameEvent[] = [{ kind: 'activityFinished', minute, activity: finished.activity }];

@@ -1,15 +1,5 @@
 import type { Hex, Tile } from './types.js';
 
-/** Axial offsets of the six neighbours of a hex. */
-const DIRECTIONS: readonly Hex[] = [
-  { q: 1, r: 0 },
-  { q: 1, r: -1 },
-  { q: 0, r: -1 },
-  { q: -1, r: 0 },
-  { q: -1, r: 1 },
-  { q: 0, r: 1 },
-];
-
 /** Offset coordinates (odd rows shifted right) to axial. */
 export function offsetToAxial(col: number, row: number): Hex {
   return { q: col - Math.floor(row / 2), r: row };

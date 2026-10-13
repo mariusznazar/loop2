@@ -138,3 +138,29 @@ test('send rejects a map or an archetype id not in the data', async () => {
   }
   assert.equal(send(newGame(), SENT, REAL_MS).state.run.mapId, firstMapId);
 });
+
+// Every activity must last at least one game minute (D-08: a map can be added through data alone).
+test('every map step and every fixed action duration is a whole number of minutes, at least 1', () => {
+  const durations = [
+    ...Object.entries(MAPS).map(([id, map]) => [`map ${id} stepMinutes`, map.stepMinutes]),
+    ...Object.entries(ACTIONS)
+      .filter(([, action]) => action.minutes !== null)
+      .map(([id, action]) => [`action ${id} minutes`, action.minutes]),
+    ['BALANCE.waitMinutes', BALANCE.waitMinutes],
+  ];
+  assert.ok(durations.length > 2);
+  for (const [what, minutes] of durations) {
+    assert.ok(Number.isInteger(minutes) && minutes >= 1, `${what} = ${minutes}`);
+  }
+});
+
+test('an activity of 0 minutes from faulty data still finishes in the next minute', async () => {
+  const { newMapRun, stepMinute } = await import('../../dist/public/sim/run.js');
+  const map = { ...firstMap, stepMinutes: 0 };
+  const program = { rules: [rule(ALWAYS, { kind: 'wander' })] };
+  const started = newMapRun(map, 1, program, SENT).run;
+  assert.equal(started.current.endMinute, started.minute);
+  const step = stepMinute(started, map, program);
+  assert.equal(step.run.minute, 1);
+  assert.ok(step.events.some(event => event.kind === 'activityFinished' && event.minute === 1), JSON.stringify(step.events));
+});
