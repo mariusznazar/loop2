@@ -8,9 +8,11 @@ writes them.
 
 What a run gets:
 - recording stubs for `docker`, `curl`, `flock` and `df`, written at run time with LF endings into
-  the stub directory, the first entry of the copy's `PATH`; each records its arguments and answers
-  as the test sets (`DeployFixture.answer`);
-- a guard, before every run, that stops the test when any of the four resolves outside the stub
+  the stub directory, the first entry of the copy's `PATH`; each records its arguments and the
+  `LOOP2_COMMIT` it was given, and answers as the test sets (`DeployFixture.answer`);
+- recording stubs for `hostname` and `uname` that print SENTINEL_HOST, so a test sees whether the
+  script ever asked for the server's name;
+- a guard, before every run, that stops the test when any stubbed tool resolves outside the stub
   directory on the copy's `PATH`, so a real Docker is never reached;
 - a temporary bare Git repository standing in for GitHub and a clone of it standing in for the
   server's checkout, its remote `origin`;
@@ -38,9 +40,14 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SCRIPT = os.path.join(ROOT, "deploy", "loop2-deploy")
 
 BLOCK_BEGIN = b"# >>> constants >>>"
-BLOCK_END = b"# <<< constants <<<"
+BLOCK_END = b"# === end of constants ==="  # no "<<" in it: a heredoc to shell readers
 
-STUBBED_TOOLS = ("docker", "curl", "flock", "df")
+STUBBED_TOOLS = ("docker", "curl", "flock", "df", "hostname", "uname")
+# What the hostname and uname stubs print: a stand-in for the server's name.
+SENTINEL_HOST = "sentinel-server-name-7f3a"
+UNSET = "<unset>"
+# The Docker root directory the docker stub reports under `answer_passing_run`.
+DOCKER_ROOT = "/var/lib/docker"  # recorded for a call made without LOOP2_COMMIT in its environment
 RUN_TIMEOUT = 120  # seconds for one run of the copy
 GIT_TIMEOUT = 60   # seconds for one git command of the fixture
 
@@ -50,6 +57,7 @@ STUB = """#!/bin/bash
 # Recording stub for {tool}, written by tests/deploy/deploy_script_support.py.
 stubs='{stubs}'
 {{ printf '%s\\0' "$@"; printf '\\036\\0'; }} >>"$stubs/calls/{tool}"
+printf '%s\\0' "${{LOOP2_COMMIT-{unset}}}" >>"$stubs/calls/{tool}.env"
 for rule in "$stubs/answers/{tool}"/*; do
   [[ -d $rule ]] || continue
   pattern=$(<"$rule/pattern")
@@ -75,7 +83,8 @@ exec "$BASH" "$script" "${arguments[@]}"
 
 GUARD = """#!/bin/bash
 PATH=$1
-for tool in docker curl flock df; do
+shift
+for tool in "$@"; do
   printf '%s=%s\\n' "$tool" "$(type -P "$tool")"
 done
 """
@@ -177,12 +186,18 @@ def replace_block(data, overrides):
 
 
 class Result:
-    def __init__(self, code, stdout, stderr, calls, git_trace):
+    def __init__(self, code, stdout, stderr, calls, git_trace, commit_env=None):
         self.code = code
         self.stdout = stdout
         self.stderr = stderr
         self.calls = calls          # {tool: [[argument, ...], ...]}
         self.git_trace = git_trace  # the GIT_TRACE output of the run, "" when git never ran
+        # {tool: [LOOP2_COMMIT of each call, or UNSET]}, in the order of `calls`
+        self.commit_env = commit_env or {}
+
+    def calls_with_env(self, tool):
+        """[(arguments, LOOP2_COMMIT or UNSET)] of a stub's calls."""
+        return list(zip(self.calls.get(tool, []), self.commit_env.get(tool, [])))
 
     @property
     def output(self):
@@ -219,7 +234,7 @@ class DeployFixture:
         write_bytes(self.gitconfig, b"")
         self.stubs = self.path("stubs")
         for tool in STUBBED_TOOLS:
-            stub = STUB.format(tool=tool, stubs=shell_path(self.stubs)).encode()
+            stub = STUB.format(tool=tool, stubs=shell_path(self.stubs), unset=UNSET).encode()
             write_bytes(os.path.join(self.stubs, tool), stub)
             os.chmod(os.path.join(self.stubs, tool), 0o755)
             os.makedirs(os.path.join(self.stubs, "answers", tool), exist_ok=True)
@@ -249,6 +264,8 @@ class DeployFixture:
             self.copy_path_value = self.stubs + ":/usr/bin:/bin"
         self.copy = self.path("copy", "loop2-deploy")
         self.write_copy()
+        for tool in ("hostname", "uname"):
+            self.answer(tool, stdout=SENTINEL_HOST + "\n")
 
     def write_copy(self, **extra):
         """Write the copy: the repository's script with only the block's paths and PATH replaced,
@@ -295,19 +312,30 @@ class DeployFixture:
                                  + result.stderr.decode("utf-8", "replace"))
         return result.stdout.decode("utf-8", "replace").strip()
 
-    def make_commit(self, repository, message, parent=None):
-        """A commit object in a repository, its tree a .gitignore and one file unique to it; no
-        ref is moved."""
-        blob = self.git("-C", repository, "hash-object", "-w", "--stdin",
-                        data=(message + "\n").encode())
-        ignore = self.git("-C", repository, "hash-object", "-w", "--stdin", data=b"ignored.txt\n")
-        tree = self.git("-C", repository, "mktree",
-                        data=(f"100644 blob {ignore}\t.gitignore\n"
-                              f"100644 blob {blob}\tcontent.txt\n").encode())
+    def _tree(self, repository, files):
+        """The tree object of {relative path with `/`: bytes}, subdirectories included."""
+        entries, directories = [], {}
+        for name, data in files.items():
+            head, slash, rest = name.partition("/")
+            if slash:
+                directories.setdefault(head, {})[rest] = data
+            else:
+                blob = self.git("-C", repository, "hash-object", "-w", "--stdin", data=data)
+                entries.append(f"100644 blob {blob}\t{name}\n")
+        for name, content in directories.items():
+            entries.append(f"040000 tree {self._tree(repository, content)}\t{name}\n")
+        return self.git("-C", repository, "mktree", data="".join(entries).encode())
+
+    def make_commit(self, repository, message, parent=None, files=None):
+        """A commit object in a repository, its tree a .gitignore, one file unique to it and the
+        `files` given ({relative path: bytes}); no ref is moved."""
+        tree_files = {".gitignore": b"ignored.txt\n", "content.txt": (message + "\n").encode()}
+        tree_files.update(files or {})
+        tree = self._tree(repository, tree_files)
         parents = ["-p", parent] if parent else []
         return self.git("-C", repository, "commit-tree", tree, *parents, "-m", message)
 
-    def commit(self, branch, message, parent=None):
+    def commit(self, branch, message, parent=None, files=None):
         """A new commit on a branch of the repository standing in for GitHub, on top of the
         branch's tip or of `parent`; the branch is created when missing."""
         ref = f"refs/heads/{branch}"
@@ -316,9 +344,38 @@ class DeployFixture:
                                   "--quiet", ref], capture_output=True, text=True,
                                  env=self.git_env(), timeout=GIT_TIMEOUT)
             parent = tip.stdout.strip() or None
-        sha = self.make_commit(self.github, message, parent)
+        sha = self.make_commit(self.github, message, parent, files)
         self.git("-C", self.github, "update-ref", ref, sha)
         return sha
+
+    # --- a deployable commit and a host that lets it through -----------------------------------
+
+    def deployable_commit(self, message="deployable", script=None):
+        """A new commit on main holding `compose.yaml` and `deploy/loop2-deploy` (by default the
+        repository's script), as every commit of this task on does."""
+        files = {"compose.yaml": b"name: loop2\n",
+                 "deploy/loop2-deploy": read_bytes(SCRIPT) if script is None else script}
+        return self.commit("main", message, files=files)
+
+    def install(self, data=None):
+        """Write the installed copy of the script (by default the repository's script)."""
+        write_bytes(self.installed, read_bytes(SCRIPT) if data is None else data)
+
+    def answer_passing_run(self, running=None):
+        """Answers under which a deployment gets through every stage: Docker's root directory,
+        22 GiB free on it, a build, a healthy start, both probes and the old game's state. Rules
+        are tried in the order given, so a test makes a stage fail by answering it first.
+        `running` is the revision label of the running loop2 container (None: no container)."""
+        if running is None:
+            self.answer("docker", exit_code=1, match="inspect --format *loop2")
+        else:
+            self.answer("docker", stdout=running + "\n", match="inspect --format *loop2")
+        self.answer("docker", stdout=DOCKER_ROOT + "\n", match="info --format {{.DockerRootDir}}")
+        self.answer("docker", stdout="/loop running healthy\n",
+                    match="inspect --type container * loop")
+        self.answer("df", stdout=f" Avail\n{22 * 1024 * 1024}\n")
+        self.answer("curl", stdout="404 application/json; charset=utf-8", match="*/api/*")
+        self.answer("curl", stdout="200 text/html; charset=UTF-8", match="*")
 
     def delete_branch(self, branch):
         self.git("-C", self.github, "update-ref", "-d", f"refs/heads/{branch}")
@@ -350,7 +407,8 @@ class DeployFixture:
     def guard_stubs(self):
         """Stop the test when any stubbed tool resolves outside the stub directory on the copy's
         PATH."""
-        result = subprocess.run([self.bash, shell_path(self.guard), self.copy_path_value],
+        result = subprocess.run([self.bash, shell_path(self.guard), self.copy_path_value,
+                                 *STUBBED_TOOLS],
                                 capture_output=True, timeout=RUN_TIMEOUT)
         resolved = dict(line.split("=", 1) for line in
                         result.stdout.decode("utf-8", "replace").splitlines() if "=" in line)
@@ -377,6 +435,15 @@ class DeployFixture:
             calls[tool] = records
         return calls
 
+    def _read_commit_env(self):
+        found = {}
+        for tool in STUBBED_TOOLS:
+            path = os.path.join(self.stubs, "calls", tool + ".env")
+            found[tool] = [part.decode("utf-8", "replace")
+                           for part in read_bytes(path).split(b"\0")[:-1]] \
+                if os.path.exists(path) else []
+        return found
+
     # --- a run ---------------------------------------------------------------------------------
 
     def run(self, arguments=(), ssh_original_command=None):
@@ -401,7 +468,8 @@ class DeployFixture:
             stdin=subprocess.DEVNULL, capture_output=True, env=env, timeout=RUN_TIMEOUT)
         git_trace = read_bytes(trace).decode("utf-8", "replace") if os.path.exists(trace) else ""
         return Result(result.returncode, result.stdout.decode("utf-8", "replace"),
-                      result.stderr.decode("utf-8", "replace"), self._read_calls(), git_trace)
+                      result.stderr.decode("utf-8", "replace"), self._read_calls(), git_trace,
+                      self._read_commit_env())
 
     def run_script_as_probe(self, probe_text, arguments=(), ssh_original_command=None):
         """Run another script through the same launcher, for a check of the seam itself."""

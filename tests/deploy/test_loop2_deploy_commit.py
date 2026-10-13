@@ -10,8 +10,8 @@
   `origin/main`; human path, of any `refs/remotes/origin/*` head; else exit 3;
 - the checkout: detached at the commit, with nothing left that git does not hold.
 
-The stages after the checkout (build, switch, probe) do not exist yet: a run that gets through the
-checkout ends with EXIT_AFTER_CHECKOUT, never 0.
+The stubs give no answers here, so the resource gate after the checkout cannot read Docker's root
+directory: a run that gets through the checkout ends with EXIT_AFTER_CHECKOUT, never 0.
 """
 
 import os
@@ -19,7 +19,7 @@ import unittest
 
 import deploy_script_support as support
 
-EXIT_AFTER_CHECKOUT = 1
+EXIT_AFTER_CHECKOUT = 5
 LOCK_WAIT_SECONDS = "900"
 RUNNING_LABEL = "fedcba9876543210fedcba9876543210fedcba98"
 

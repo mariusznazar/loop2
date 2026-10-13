@@ -14,9 +14,11 @@
 # Everything printed reaches the GitHub Actions log, so the script prints commit names, stage
 # names, sizes and states only; git's own messages go to the log file alone.
 #
-# Exit codes: 2 input · 3 commit on no accepted branch · 4 lock · 5 resource gate
+# Docker's own output goes to the log file alone as well; of the old game's container `loop` the
+# script only reads the name, status and health.
+#
+# Exit codes: 0 deployed · 2 input · 3 commit on no accepted branch · 4 lock · 5 resource gate
 #             6 fetch or checkout · 7 build or type check · 8 start or probe
-#             1 checked out, but the stages after the checkout are not in this version
 
 set -uo pipefail
 
@@ -42,7 +44,7 @@ readonly CONTAINER_NAME=loop2
 readonly OLD_GAME_CONTAINER=loop
 readonly IMAGE_TITLE_LABEL=org.opencontainers.image.title=loop2
 readonly IMAGE_REVISION_LABEL=org.opencontainers.image.revision
-# <<< constants <<<
+# === end of constants ===
 
 export LC_ALL=C
 readonly COMMIT_NAME_PATTERN='^[0-9a-f]{40}$'
@@ -55,7 +57,9 @@ LOG_WARNED=''
 # --- output -------------------------------------------------------------------------------------
 
 append_to_log() {
-  # One text to the log file only. A log that cannot be written is reported once, on stderr.
+  # One text to the log file only; an empty text adds nothing. A log that cannot be written is
+  # reported once, on stderr.
+  [[ -n $1 ]] || return 0
   if ! { printf '%s\n' "$1" >>"$LOG_FILE"; } 2>/dev/null; then
     if [[ -z $LOG_WARNED ]]; then
       printf 'loop2-deploy: warning: cannot write the log file %s\n' "$LOG_FILE" >&2
@@ -192,6 +196,169 @@ check_out_commit() {
   log "checked out $REQUESTED in $CHECKOUT_DIR"
 }
 
+# --- 7. installed script against the checked-out source -----------------------------------------
+
+compare_installed_script() {
+  # A difference is a warning, never a failure: this run goes on with the installed copy.
+  local source="$CHECKOUT_DIR/deploy/loop2-deploy"
+  if [[ ! -f $source ]]; then
+    log "warning: commit $REQUESTED has no deploy/loop2-deploy (the script's source is missing, as in every commit from before the deployment existed); this run goes on with the installed $INSTALLED_SCRIPT"
+    return
+  fi
+  if [[ ! -r $INSTALLED_SCRIPT ]]; then
+    log "warning: the installed $INSTALLED_SCRIPT cannot be read, so it cannot be compared with deploy/loop2-deploy at commit $REQUESTED; a human should check the installation (see the loop2-deploy skill)"
+    return
+  fi
+  if ! cmp -s -- "$INSTALLED_SCRIPT" "$source"; then
+    log "warning: the installed $INSTALLED_SCRIPT differs from deploy/loop2-deploy at commit $REQUESTED; this run goes on with the installed copy. A human should review the difference and reinstall the script (see the loop2-deploy skill). After a rollback to a commit older than the last change of the script this difference is expected."
+  fi
+}
+
+# --- 8. resource gate ---------------------------------------------------------------------------
+
+mem_available_kb() {
+  # MemAvailable in kB from the memory source, or nothing when it cannot be read.
+  local key value _unit
+  [[ -r $MEMINFO_FILE ]] || return 0
+  while read -r key value _unit; do
+    if [[ $key == MemAvailable: && $value =~ ^[0-9]+$ ]]; then
+      printf '%s' "$value"
+      return 0
+    fi
+  done <"$MEMINFO_FILE"
+}
+
+docker_root_free_kb() {
+  # Free kB on the filesystem of Docker's root directory, or nothing when it cannot be read.
+  # Only that one field of docker info is read, and neither tool's output is printed.
+  local root free
+  root=$(docker info --format '{{.DockerRootDir}}' 2>/dev/null) || return 0
+  [[ $root == /* && $root != *$'\n'* ]] || return 0
+  free=$(df --output=avail -k -- "$root" 2>/dev/null) || return 0
+  free=${free##*$'\n'}
+  free=${free//[[:space:]]/}
+  [[ $free =~ ^[0-9]+$ ]] && printf '%s' "$free"
+  return 0
+}
+
+as_mib() {
+  if [[ -n $1 ]]; then printf '%s MiB' "$(( $1 / 1024 ))"; else printf 'unreadable'; fi
+}
+
+check_resources() {
+  local mem_kb free_kb
+  mem_kb=$(mem_available_kb)
+  free_kb=$(docker_root_free_kb)
+  log "resources: MemAvailable $(as_mib "$mem_kb") (minimum $MIN_MEM_AVAILABLE_MIB MiB), free space on the filesystem of Docker's root directory $(as_mib "$free_kb") (minimum $MIN_DOCKER_FREE_GIB GiB)"
+  if [[ -z $mem_kb || -z $free_kb ]]; then
+    fail 5 resources "the resource gate cannot read its values; nothing was built, the running loop2 container is untouched"
+  fi
+  if (( mem_kb < MIN_MEM_AVAILABLE_MIB * 1024 )); then
+    fail 5 resources "MemAvailable is below $MIN_MEM_AVAILABLE_MIB MiB; nothing was built, the running loop2 container is untouched"
+  fi
+  if (( free_kb < MIN_DOCKER_FREE_GIB * 1024 * 1024 )); then
+    fail 5 resources "free space for Docker is below $MIN_DOCKER_FREE_GIB GiB; nothing was built, the running loop2 container is untouched"
+  fi
+}
+
+# --- 12. the old game's container ---------------------------------------------------------------
+
+log_old_game_state() {
+  # Read-only: the name, status and health of the old game's container, never its port.
+  local state
+  if state=$(docker inspect --type container --format '{{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "$OLD_GAME_CONTAINER" 2>/dev/null) \
+      && [[ $state =~ ^/?[A-Za-z0-9_.-]+\ [a-z]+\ [a-z-]+$ ]]; then
+    log "old game container: ${state#/}"
+  else
+    log "old game container: $OLD_GAME_CONTAINER not found or its state not readable"
+  fi
+}
+
+restore_line() {
+  if [[ $PREVIOUS_COMMIT == none ]]; then
+    log "previously running commit: none; no earlier loop2 container existed to restore"
+  else
+    log "previously running commit: $PREVIOUS_COMMIT; to restore run loop2-deploy $PREVIOUS_COMMIT on the server"
+  fi
+}
+
+fail_after_build() {
+  # fail_after_build CODE STAGE MESSAGE: a failure in steps 9-11; logs the old game's state first.
+  log_old_game_state
+  fail "$@"
+}
+
+# --- 9. build -----------------------------------------------------------------------------------
+
+build_image() {
+  local output status
+  if [[ ! -f $CHECKOUT_DIR/compose.yaml ]]; then
+    fail_after_build 7 build "the build of $REQUESTED failed: the commit has no compose.yaml; the running loop2 container is untouched"
+  fi
+  output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" build "$COMPOSE_SERVICE" 2>&1)
+  status=$?
+  append_to_log "$output"
+  if (( status != 0 )); then
+    fail_after_build 7 build "the build of $REQUESTED failed (docker exit $status; its output is in $LOG_FILE); the running loop2 container is untouched"
+  fi
+  log "build of $REQUESTED succeeded"
+  log "resources after the build: MemAvailable $(as_mib "$(mem_available_kb)")"
+}
+
+# --- 10. switch ---------------------------------------------------------------------------------
+
+start_container() {
+  local output status
+  output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" up -d --no-build --no-deps --remove-orphans --wait --wait-timeout "$HEALTH_WAIT_SECONDS" "$COMPOSE_SERVICE" 2>&1)
+  status=$?
+  append_to_log "$output"
+  if (( status != 0 )); then
+    output=$(docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" logs --no-color --tail 50 "$COMPOSE_SERVICE" 2>&1)
+    append_to_log "--- the last lines of the loop2 container's log ---"
+    append_to_log "$output"
+    log "the last lines of the loop2 container's log are in $LOG_FILE"
+    restore_line
+    fail_after_build 8 switch "the loop2 container did not start healthy within $HEALTH_WAIT_SECONDS s (docker exit $status; its output is in $LOG_FILE)"
+  fi
+  log "switch: the loop2 container of $REQUESTED is running and healthy"
+}
+
+# --- 11. local probe ----------------------------------------------------------------------------
+
+probe() {
+  # probe PATH: prints "<HTTP code> <content type>" of one local request, nothing on failure.
+  curl --silent --noproxy '*' --max-time 10 --output /dev/null \
+    --write-out '%{http_code} %{content_type}' "http://127.0.0.1:$HOST_PORT$1" 2>/dev/null
+}
+
+probe_origin() {
+  local root api
+  root=$(probe /) || root=''
+  api=$(probe /api/loop2-deploy-probe) || api=''
+  if [[ $root != '200 '* ]]; then
+    restore_line
+    fail_after_build 8 probe "GET http://127.0.0.1:$HOST_PORT/ did not answer 200 (got: ${root:-no answer})"
+  fi
+  if [[ ${api,,} != '404 application/json'* ]]; then
+    restore_line
+    fail_after_build 8 probe "GET http://127.0.0.1:$HOST_PORT/api/loop2-deploy-probe did not answer a JSON 404 (got: ${api:-no answer})"
+  fi
+  log "probe: GET / answered 200, an unknown /api/ path a JSON 404"
+}
+
+# --- 13. removal of replaced images -------------------------------------------------------------
+
+prune_replaced_images() {
+  # Only dangling images carrying loop2's title label: the ones this deployment replaced.
+  local output status
+  output=$(docker image prune --force --filter "label=$IMAGE_TITLE_LABEL" 2>&1)
+  status=$?
+  append_to_log "$output"
+  if (( status != 0 )); then
+    log "warning: the prune of replaced loop2 images failed (docker exit $status; its output is in $LOG_FILE); the deployment stands"
+  fi
+}
+
 # --- run ----------------------------------------------------------------------------------------
 
 main() {
@@ -202,12 +369,15 @@ main() {
   fetch_commits
   accept_commit
   check_out_commit
-
-  # Steps 7-13 of the deployment stand here: the installed script compared with the checked-out
-  # source, the resource gate, the build, the switch, the local probe, the state of the old game's
-  # container and the removal of replaced loop2 images. Until they exist a run ends here, never
-  # with exit 0.
-  fail 1 not-deployed "$REQUESTED is checked out but this version of the script does not build or start it"
+  compare_installed_script
+  check_resources
+  build_image
+  start_container
+  probe_origin
+  log_old_game_state
+  prune_replaced_images
+  log "deployed $REQUESTED, previously $PREVIOUS_COMMIT"
+  exit 0
 }
 
 main "$@"
