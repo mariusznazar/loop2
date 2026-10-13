@@ -4,8 +4,42 @@
 
 The part draws the game's screens in the browser.
 
-- **Files:** src/browser/**
+- **Files:** src/browser/*.ts
+  src/browser/index.html
+  src/browser/view/**
+  assets/icons/**
+  tests/view/**
   tests/invariants/test_browser_view_framework.py
+  tests/invariants/test_icon_file_content.py
+  tests/invariants/test_icon_credits.py
+  tests/invariants/test_terrain_drawing_numbers.py
+- **Depends on:** simulation
+- **Failure modes:** none
+- **Trust boundary:** assets/icons/**
+
+## simulation
+
+The part computes the game: the game state, the map run, the character's program and the passing of game time, from the game's data.
+
+- **Files:** src/browser/sim/**
+  tests/sim/**
+  tests/invariants/test_map_run_repeatability.py
+  tests/invariants/test_simulation_randomness.py
+  tests/invariants/test_action_in_progress.py
+  tests/invariants/test_player_map_run_pace.py
+  tests/invariants/test_simulation_isolation.py
+  tests/invariants/test_simulation_inputs.py
+  tests/invariants/test_content_identifiers.py
+  tests/invariants/test_program_rule_pick.py
+  tests/invariants/test_exploring_reveal.py
+  tests/invariants/test_move_reach.py
+  tests/invariants/test_walk_target.py
+  tests/invariants/test_map_run_tiles.py
+  tests/invariants/test_restart_seed.py
+  tests/invariants/test_program_closed_lists.py
+  tests/invariants/test_walk_feasibility.py
+  tests/invariants/test_program_world_reference.py
+  tests/invariants/test_map_run_layout.py
 - **Depends on:** none
 - **Failure modes:** none
 - **Trust boundary:** none
@@ -21,7 +55,7 @@ The part is the account and save server: it serves the built game and handles th
   tests/invariants/test_loop2_api_error_route.py
   tests/invariants/test_loop2_one_serving_process.py
   tests/invariants/test_account_server_occupied_address.py
-- **Depends on:** browser-view · build-tools
+- **Depends on:** browser-view · simulation · build-tools
 - **Failure modes:**
   - the listening port it is given is not a whole number from 1 to 65535 — the server process exits with a non-zero code without its readiness line, and loop2 does not start — low — not detected
   - its listening address is already in use — the server process exits with a non-zero code without its readiness line, and loop2 does not start — low — detected by account-server-occupied-address
@@ -43,7 +77,7 @@ The part installs dependencies, checks types and builds and launches the applica
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
-- **Depends on:** browser-view · account-server
+- **Depends on:** browser-view · simulation · account-server
 - **Failure modes:** none
 - **Trust boundary:** package-lock.json
 
@@ -86,10 +120,11 @@ the test server.
   tests/invariants/test_loop2_container_isolation.py
   tests/invariants/test_loop2_distinct_address.py
   tests/invariants/test_loop2_one_serving_process_container.py
+  tests/invariants/test_loop2_container_icons.py
   tests/invariants/test_loop2_deploy_trigger_input.py
   tests/invariants/test_loop2_deploy_keeps_running.py
   tests/invariants/test_loop2_host_sharing.py
-- **Depends on:** account-server · build-tools
+- **Depends on:** browser-view · account-server · build-tools
 - **Failure modes:**
   - a request through the automation's key carries input other than one commit name, or a commit not on `main` — code the decisions forbid is deployed — high — detected by loop2-deploy-trigger-input
   - the input, the commit, the lock, the reading of memory and disk, the fetch, the checkout, the type check or the build fails — the push is not deployed and loop2 keeps running the previous commit — low — detected by loop2-deploy-keeps-running
@@ -119,6 +154,7 @@ the test server.
 | the Mikrus host | both | trusted | no |
 | the container image registry | them → us | untrusted | no |
 | the GitHub repository the server fetches over its read-only key | them → us | trusted | yes |
+| game-icons.net | them → us | untrusted | no |
 
 ## Change paths
 

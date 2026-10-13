@@ -5,6 +5,7 @@ RUN npm ci
 COPY tsconfig.*.json ./
 COPY scripts/ scripts/
 COPY src/ src/
+COPY assets/icons/ assets/icons/
 RUN npm run typecheck
 RUN npm run build
 RUN npm prune --omit=dev

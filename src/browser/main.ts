@@ -1,2 +1,3 @@
-const main = document.createElement('main');
-document.body.append(main);
+import { startApp } from './view/app.js';
+
+startApp(document.body);
