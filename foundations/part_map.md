@@ -86,6 +86,8 @@ the test server.
   tests/invariants/test_loop2_container_isolation.py
   tests/invariants/test_loop2_distinct_address.py
   tests/invariants/test_loop2_one_serving_process_container.py
+  tests/invariants/test_loop2_deploy_trigger_input.py
+  tests/invariants/test_loop2_deploy_keeps_running.py
 - **Depends on:** account-server · build-tools
 - **Failure modes:**
   - a request through the automation's key carries input other than one commit name, or a commit not on `main` — code the decisions forbid is deployed — high — detected by loop2-deploy-trigger-input
