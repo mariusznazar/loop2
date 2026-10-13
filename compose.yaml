@@ -1,0 +1,15 @@
+name: loop2
+
+services:
+  app:
+    container_name: loop2
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        LOOP2_COMMIT: ${LOOP2_COMMIT:-unknown}
+    ports:
+      - "18080:3000"
+    mem_limit: 512m
+    restart: unless-stopped
+    init: true

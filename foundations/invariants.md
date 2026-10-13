@@ -48,17 +48,17 @@ An unmatched `/api/` request receives an API error response, never the built gam
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-05@e11aec4d
+- **Derives from:** D-05@db83484a
 - **Part:** every
 - **Correction:** none
 
-## loop2-one-serving-process/1
+## loop2-one-serving-process/2
 
-One Express 5 process serves both the built game and `/api/` requests.
+One Express 5 process in the loop2 container serves both the built game and `/api/` account and save requests.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-05@e11aec4d
+- **Derives from:** D-05@db83484a
 - **Part:** every
 - **Correction:** none
 
@@ -100,6 +100,56 @@ When the account and save server's listening address is already in use, the serv
 - **Rests on:** none
 - **Derives from:** none
 - **Part:** account-server · build-tools
+- **Correction:** none
+
+## loop2-container-isolation/1
+
+The loop2 instance runs in a container separate from the existing loop instance.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-08@e4e8a2f4
+- **Part:** every
+- **Correction:** none
+
+## loop2-distinct-address/1
+
+The public address of loop2 differs from `kantarion.bieda.it`.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-08@e4e8a2f4
+- **Part:** every
+- **Correction:** none
+
+## loop2-deploy-trigger-input/1
+
+The deployment command the automation's key runs refuses every input but one commit name of 40 lowercase hexadecimal characters before it fetches, builds or changes a container, and deploys only a commit that belongs to `main` as just fetched.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** openssh-authorized-keys-options@3fd0389d
+- **Derives from:** D-09@20be369f · D-11@8ab607c7
+- **Part:** deployment
+- **Correction:** none
+
+## loop2-deploy-keeps-running/1
+
+A deployment that stops before it starts the new container — at its input, the commit, the lock, the reading of memory and disk, the fetch, the checkout, the type check or the build — leaves the running loop2 container in service.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-15@e3aa8f94
+- **Part:** deployment
+- **Correction:** none
+
+## loop2-host-sharing/1
+
+A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and the loop2 Compose service asks the host for no privilege that a default container lacks.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-17@c332eebd
+- **Part:** deployment
 - **Correction:** none
 
 ## Withdrawn identifiers

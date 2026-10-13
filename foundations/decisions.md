@@ -192,3 +192,274 @@ configurations.
 
 *Rationale for change:* the verification names the package boundary and compiler layout as well as compilation of both sides.
 *Rejected:* keeping verification limited to compilation alone — it leaves the package boundary and compiler layout unprotected.
+
+### D-08/1 — Where does the MVP run?
+
+The MVP game and its account and save server run in a dedicated loop2 container on Mikrus, at a
+public address different from `kantarion.bieda.it`. The existing loop container remains untouched.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: loop2-container-isolation · loop2-distinct-address. Level 2 for leaving the existing loop instance untouched — an agent compares the change with the decision:
+  - complies: a loop2 container and public route added beside the existing loop instance
+  - violates: a deployment that rebuilds or replaces the existing loop container
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, 2026-10-13
+
+*Rationale:* a separate instance exercises the new game's server and release path on the intended
+Mikrus host without disturbing the running loop game. The address can be chosen in the deployment
+task while keeping the separation fixed.
+*Rejected:* replacing the running loop container or using its public address — would interfere
+with the existing game and break the required separation.
+
+### D-09/1 — How does a change reach the server?
+
+A push to the deploy branch starts an automation that tells the server to build the game and its
+account server from that commit; the server pulls the code from GitHub itself, and the automation's
+key can only start a rebuild of a commit that belongs to that branch.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: loop2-deploy-trigger-input. Level 2 for the rest — an agent compares the change with the decision:
+  - complies: a workflow that, on a push, calls the server's one rebuild command with the commit
+  - violates: a workflow that copies the built files onto the server; a key that opens a shell on
+    the server
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Wdrożenie"
+- **Approved by:** Mariusz, 2026-10-13
+
+*Rationale:* the code is sent nowhere — the server takes it from GitHub itself — so a stolen key can
+start a rebuild but cannot bring code in. The price is a short break in access at every deployment.
+*Rejected:* none considered
+
+### D-05/3 — What serves the built game and account requests in the container?
+
+One Node.js process running Express 5 serves both the built game's static files and the `/api/`
+account and save routes in the loop2 container. An unmatched `/api/` request receives an API error,
+not the game's HTML page.
+
+- **Change:** new wording
+- **Scope:** account-server, build-tools, deployment
+- **Based on:** Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/, read 2026-10-04) · Express 5 request routing and response API (https://expressjs.com/en/5x/api/express/, read 2026-10-04) · Caddy 2 route, file_server and reverse_proxy (https://caddyserver.com/docs/caddyfile/directives/route, read 2026-10-04) · Docker multiple processes in one container (https://docs.docker.com/engine/containers/multi-service_container/, read 2026-10-04)
+- **Relations:** derives from D-02@06e6d3d8 · derives from D-08@e4e8a2f4
+- **Verification:** level 1 — invariants: loop2-one-serving-process · loop2-api-error-route
+- **Review when:** serving built files through Express becomes difficult to operate or the account API needs a separate process · check by: 2027-04-04
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What serves the built game and account requests in the container?"
+- **Approved by:** Mariusz, 2026-10-13
+
+*Rationale for change:* the one serving process is the one in the loop2 container where the MVP
+runs, and the `/api/` paths it serves are the account and save routes, so a serving process outside
+that container does not meet the decision.
+*Rejected:* keeping the wording without the container — it leaves open where the one serving
+process runs.
+
+### D-10/1 — How do players reach loop2 on the server?
+
+Players reach loop2 at `https://loop2.mariusznazar.com/`, which Cloudflare proxies to the server: a
+proxied AAAA record points at the server's IPv6 address, and an Origin Rule sends the requests to
+the port the loop2 container publishes. Players connect to Cloudflare over HTTPS, and Cloudflare
+connects to the server over plain HTTP only while no player account is served through this route.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** cloudflare-origin-rules@6f0ea4e4 · cloudflare-configuration-rules@939e4e91 · cloudflare-test-origin-ipv6@02f0487a · Cloudflare network ports, "By default, Cloudflare proxies traffic destined for the HTTP/HTTPS ports listed below." (https://developers.cloudflare.com/fundamentals/reference/network-ports/, read 2026-10-13)
+- **Relations:** derives from D-08@e4e8a2f4
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a change whose workflow requests `https://loop2.mariusznazar.com/` after a deployment and whose container publishes the port the Origin Rule names
+  - violates: a public address on a Mikrus subdomain for loop2; a task that serves player accounts through this route while Cloudflare still connects to the server over plain HTTP
+- **Review when:** a task is about to serve player accounts through this route, which needs the connection from Cloudflare to the server encrypted first · check by: 2027-01-13
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Pod jakim adresem stanie loop2 na Mikrusie?"
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* Cloudflare already holds the `mariusznazar.com` domain, gives players HTTPS without a
+certificate in the container, and reaches the container's port through an Origin Rule, while both
+public IPv4 service ports of the host are taken by other workloads, the old loop game and another.
+Plain HTTP from Cloudflare to the server is accepted only while the test server holds no player
+data, since HTTPS for players is not end-to-end encryption; a Configuration Rule sets that
+encryption mode for this hostname alone, so the old game's route keeps its own. IPv6 lets
+Cloudflare reach loop2 without taking a shared public IPv4 service port.
+*Rejected:* a new free Mikrus subdomain — ties the game's address to the hosting provider; serving
+loop2 at `kantarion.bieda.it` in place of the old game — would reopen the approved MVP definition.
+
+### D-11/1 — Which branch deploys loop2 to the test server?
+
+The deploy branch is `main`: a push to `main`, the merge of a pull request included, reaches the
+test server without anyone starting it by hand, deployed itself or within a later commit of `main`
+that contains it.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** none
+- **Relations:** derives from D-09@20be369f
+- **Verification:** level 1 — invariants: loop2-deploy-trigger-input. Level 2 for the rest — an agent compares the change with the decision:
+  - complies: a workflow that runs on a push to `main` and asks the server to rebuild the pushed commit, a newer push replacing a deployment still waiting to run
+  - violates: a workflow that deploys only from a separate `test` branch; a push to `main` that waits for someone to start its deployment by hand
+- **Review when:** a separate deployment step or a separate test environment is set up between `main` and the test server · check by: 2027-04-13
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Która gałąź wdraża loop2 na serwer?"
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* every merged pull request reaches the test server with no manual step, and no second
+branch can drift from `main`. A newer push that replaces a deployment still waiting to run loses
+nothing, since its commit contains the older one.
+*Rejected:* a separate `test` branch, as the old loop game deploys — a manual step at every
+deployment and a risk of drifting from `main`.
+
+### D-12/1 — What access to the server does an agent have?
+
+An agent reads the server only through the `mikrus` MCP server and changes nothing on it. Every
+change on the server that is not a deployment started by the automation is made by a human.
+
+- **Change:** new decision
+- **Scope:** agent-workflow, deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a deployment skill in which the agent reads the deploy log and the container state through the `mikrus` MCP server and asks the human to run a rollback
+  - violates: an instruction of the skill in which the agent installs the deploy script, edits `authorized_keys` or restarts a container through the `mikrus` MCP server; an SSH key of the agent's own on the server
+- **Review when:** the server holds data whose loss matters, such as player accounts or saved game states, so the agent's access has to be secured further · check by: 2027-01-13
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Jaki dostęp do serwera dostaje agent?"
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* the server holds nothing today whose loss the owner fears, the old loop game's
+container included, so reading through a tool that can run any command is accepted for now; the
+agent reads logs and state itself instead of the human relaying them. The `mikrus` MCP server runs
+every command with full rights, so the limit to reading is an agreement, not an enforced boundary.
+A deployment the automation starts on a push is no agent's change.
+*Rejected:* a separate SSH key for the agent, closed in a read-only script — more setup than the
+server's present contents warrant; no agent access to the server — the human relays every log and
+state.
+
+### D-13/1 — Where do the server's access values and secrets live?
+
+Secrets and the values that give access to the server — its name, SSH port, SSH user and IPv6
+address — stay outside the repository, in the repository's GitHub secrets and the owner's private
+note, and the repository's files and requests refer to them by the secret's name or the note. The
+server directory, the container port and the deploy script may stand in the repository.
+
+- **Change:** new decision
+- **Scope:** deployment, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a workflow that reads the server's address from a named GitHub secret; a skill that says the SSH port is held in a named secret
+  - violates: a workflow, script, skill or request text that holds the server's name, SSH port, SSH user or IPv6 address itself
+- **Review when:** none
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Co poza sekretami jest wrażliwą konfiguracją serwera, której nie ma być w PR-ze ani w repozytorium?"
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* the access values would tell a reader of the repository where and how to enter the
+server; the server directory, the container port and the deploy script tell no one how to get in.
+*Rejected:* keeping only the secrets outside the repository — the access values left in it would
+show where and how to enter the server.
+
+### D-14/1 — What kind of container does loop2 run in?
+
+The loop2 container is a Docker container.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** mikrus-host-docker-workloads@f130b704
+- **Relations:** derives from D-08@e4e8a2f4
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a Compose file and a Dockerfile from which Docker builds and runs the loop2 container
+  - violates: loop2 run as a service directly on the host, or in a container of another runtime
+- **Review when:** none
+- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Czy kontener loop2 jest kontenerem Dockera?"
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* the host already runs Docker with Compose, and the old loop game runs there in a Docker
+container, so loop2 is run with the tool the host is already operated with.
+*Rejected:* none considered
+
+### D-15/1 — How is loop2 recovered when a deployment goes wrong?
+
+A deployment that stops before it starts the new container leaves the running loop2 container in
+service. A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's
+run of the installed deploy script with that commit, which may name a commit of any branch of the
+GitHub repository while the automation's key deploys only commits of `main`. No earlier image is
+kept, so a rollback restores the earlier commit's code, never the data of that time.
+
+- **Change:** new decision
+- **Scope:** deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-09@20be369f
+- **Verification:** level 1 — invariants: loop2-deploy-keeps-running. Level 2 for the rollback — an agent compares the change with the decision:
+  - complies: a revert merged to `main`; a human running the installed deploy script on the server with an earlier commit named in the deploy log
+  - violates: a rollback that restarts a kept image of an earlier commit; the automation key's path accepting a commit of a branch other than `main`
+- **Review when:** a task stores player data on the server, so that a rollback of code meets data written by newer code · check by: 2027-01-13
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* keeping no earlier image leaves the server one checkout and one image of loop2, and a
+revert on `main` keeps the branch and the server in agreement. A human's run accepts a commit of any
+branch so that a change to how loop2 is deployed can be deployed and tried before its merge, and so
+that a rollback reaches an earlier commit at once. The base image is named by a tag that is not
+pinned, so a rebuild of an earlier commit restores its code, not the identical image.
+*Rejected:* keeping the images of earlier commits and switching back by index — a restore at once,
+but a commit's image tag can be overwritten, a rollback across a change of the published port breaks
+the public route, and the kept images need ordering rules of their own.
+
+### D-16/1 — What does the automation's key run on the server?
+
+The automation's key runs only a root-owned installed copy of the deploy script, kept outside the
+server's checkout, so no pushed commit changes what the key runs. Each deployment compares that copy
+with the script's source at the deployed commit and only warns when they differ, and reinstalling
+the copy is a human's change.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** openssh-authorized-keys-options@3fd0389d · loop2-host-forced-command-entry@85efd8cc · loop2-host-installed-command@491651f8
+- **Relations:** derives from D-09@20be369f · derives from D-12@d5196ed7
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: an `authorized_keys` entry whose forced command names the installed copy's path; a deployment that logs the difference between the copies and goes on
+  - violates: a forced command that points into the server's checkout; a deployment that reinstalls its own script
+- **Review when:** a task is about to serve player accounts through loop2, since a stolen automation key can switch loop2 to any earlier commit of `main` until the next push · check by: 2027-01-13
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* what the key can run stays what a human installed, whatever a pushed commit holds. A
+warning rather than a refusal keeps a rollback to a commit older than the last change of the source
+possible. A stolen key can still redeploy an earlier commit of `main`; that is accepted while the
+test server holds no player data. Code merged into `main`, its container build and service
+definitions included, runs on the host with root's authority through the deployment, so it is
+trusted code and whoever can merge to `main` can act on the host; the trust boundary stays with the
+files that take in data the product does not trust.
+*Rejected:* a forced command that runs the checkout's own copy — a pushed commit could change what
+the key runs; a deployment that refuses when the copies differ — every rollback past a change of the
+source would stop.
+
+### D-17/1 — How does loop2 share the Mikrus host with other workloads?
+
+A deployment of loop2 changes nothing on the host but loop2's own checkout, image, container, log
+and lock, and the build cache and base image its build adds to the Docker store the host's
+workloads share, which it never prunes; it removes or replaces nothing of another workload. It
+builds only while the host's available memory and free disk stay above thresholds the repository
+sets, and the loop2 container runs under a memory limit.
+
+- **Change:** new decision
+- **Scope:** deployment
+- **Based on:** mikrus-host-docker-workloads@f130b704 · mikrus-host-swap@e1933cc7
+- **Relations:** derives from D-08@e4e8a2f4
+- **Verification:** level 1 — invariants: loop2-host-sharing. Level 2 for the thresholds and the memory limit — an agent compares the change with the decision:
+  - complies: a deployment that refuses to build while available memory is below its threshold and leaves the running container untouched; a Compose service with a memory limit
+  - violates: a build started without reading the host's memory and disk; a Compose service with no memory limit
+- **Review when:** a task needs more memory than the container's limit, or the values each deployment logs show the thresholds refusing sound builds or letting through builds that exhaust the host · check by: 2027-04-13
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
+
+*Rationale:* the host is shared with the old loop game and another workload and has no swap, so a
+build that exhausts its memory can make the kernel end a process of another workload; reading
+memory and disk before the build stops a deployment before it harms them. The thresholds and the
+limit are chosen bounds, not measured needs, tuned in the repository from the values each
+deployment logs. Code merged into `main`, its container build and service definitions included,
+runs on the host with root's authority through the deployment, so these limits hold against
+mistakes in trusted code, not against whoever can merge to `main`. Free memory and disk are
+transient readings, so the deployment reads them again before each build.
+*Rejected:* a host-wide prune to reclaim build cache — it would remove images and cache of other
+workloads, and the base image may be one another workload uses; reclaiming the build cache and
+base-image layers stays a human's decision.
