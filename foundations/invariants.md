@@ -378,8 +378,8 @@ position of its own.
 
 ## map-run-layout/1
 
-Two map runs of one game map on one seed have the same resources on each tile at every game
-minute, whatever programs they run under.
+Two map runs of one game map on one seed have the same kinds of resource present on each tile,
+whatever their amounts, at every game minute, whatever programs they run under.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
