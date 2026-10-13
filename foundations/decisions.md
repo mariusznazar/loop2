@@ -793,7 +793,7 @@ credits each icon with its title as game-icons.net gives it, its author, its pag
 and its licence, and says how the icon file differs from its source.
 
 - **Change:** new decision
-- **Scope:** browser-view, build-tools
+- **Scope:** browser-view, build-tools, simulation
 - **Based on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@25e592d3 · cc-by-3-licence-copy@faaced40
 - **Relations:** none
 - **Verification:** level 1 — invariants: icon-file-content · icon-credits · loop2-container-icons.

@@ -319,7 +319,7 @@ licence CC BY 3.0, and says how the icon file differs from its source.
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** game-icons-licence@a24f9771 · game-icons-wood-stick-title@616bffdb · game-icons-berry-bush-title@d3838fe0 · game-icons-fern-title@6a1f5fdb · game-icons-flax-title@d8aaf8c9
 - **Derives from:** D-27@06e0600c
-- **Part:** browser-view
+- **Part:** browser-view · simulation
 - **Correction:** none
 
 ## loop2-container-icons/1
