@@ -115,6 +115,7 @@ the test server.
   tests/invariants/test_loop2_container_isolation.py
   tests/invariants/test_loop2_distinct_address.py
   tests/invariants/test_loop2_one_serving_process_container.py
+  tests/invariants/test_loop2_container_icons.py
   tests/invariants/test_loop2_deploy_trigger_input.py
   tests/invariants/test_loop2_deploy_keeps_running.py
   tests/invariants/test_loop2_host_sharing.py
