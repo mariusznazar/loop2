@@ -274,7 +274,7 @@ connects to the server over plain HTTP only while no player account is served th
   - violates: a public address on a Mikrus subdomain for loop2; a task that serves player accounts through this route while Cloudflare still connects to the server over plain HTTP
 - **Review when:** a task is about to serve player accounts through this route, which needs the connection from Cloudflare to the server encrypted first · check by: 2027-01-13
 - **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Pod jakim adresem stanie loop2 na Mikrusie?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* Cloudflare already holds the `mariusznazar.com` domain, gives players HTTPS without a
 certificate in the container, and reaches the container's port through an Origin Rule, while both
@@ -303,7 +303,7 @@ that contains it.
   - violates: a workflow that deploys only from a separate `test` branch; a push to `main` that waits for someone to start its deployment by hand
 - **Review when:** a separate deployment step or a separate test environment is set up between `main` and the test server · check by: 2027-04-13
 - **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Która gałąź wdraża loop2 na serwer?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* every merged pull request reaches the test server with no manual step, and no second
 branch can drift from `main`. A newer push that replaces a deployment still waiting to run loses
@@ -325,7 +325,7 @@ change on the server that is not a deployment started by the automation is made 
   - violates: an instruction of the skill in which the agent installs the deploy script, edits `authorized_keys` or restarts a container through the `mikrus` MCP server; an SSH key of the agent's own on the server
 - **Review when:** the server holds data whose loss matters, such as player accounts or saved game states, so the agent's access has to be secured further · check by: 2027-01-13
 - **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Jaki dostęp do serwera dostaje agent?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* the server holds nothing today whose loss the owner fears, the old loop game's
 container included, so reading through a tool that can run any command is accepted for now; the
@@ -352,7 +352,7 @@ server directory, the container port and the deploy script may stand in the repo
   - violates: a workflow, script, skill or request text that holds the server's name, SSH port, SSH user or IPv6 address itself
 - **Review when:** none
 - **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Co poza sekretami jest wrażliwą konfiguracją serwera, której nie ma być w PR-ze ani w repozytorium?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* the access values would tell a reader of the repository where and how to enter the
 server; the server directory, the container port and the deploy script tell no one how to get in.
@@ -372,7 +372,7 @@ The loop2 container is a Docker container.
   - violates: loop2 run as a service directly on the host, or in a container of another runtime
 - **Review when:** none
 - **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Czy kontener loop2 jest kontenerem Dockera?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* the host already runs Docker with Compose, and the old loop game runs there in a Docker
 container, so loop2 is run with the tool the host is already operated with.
@@ -395,7 +395,7 @@ kept, so a rollback restores the earlier commit's code, never the data of that t
   - violates: a rollback that restarts a kept image of an earlier commit; the automation key's path accepting a commit of a branch other than `main`
 - **Review when:** a task stores player data on the server, so that a rollback of code meets data written by newer code · check by: 2027-01-13
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* keeping no earlier image leaves the server one checkout and one image of loop2, and a
 revert on `main` keeps the branch and the server in agreement. A human's run accepts a commit of any
@@ -422,7 +422,7 @@ the copy is a human's change.
   - violates: a forced command that points into the server's checkout; a deployment that reinstalls its own script
 - **Review when:** a task is about to serve player accounts through loop2, since a stolen automation key can switch loop2 to any earlier commit of `main` until the next push · check by: 2027-01-13
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* what the key can run stays what a human installed, whatever a pushed commit holds. A
 warning rather than a refusal keeps a rollback to a commit older than the last change of the source
@@ -454,7 +454,7 @@ sets, and the loop2 container runs under a memory limit.
   - violates: a build started without reading the host's memory and disk; a Compose service with no memory limit
 - **Review when:** a task needs more memory than the container's limit, or the values each deployment logs show the thresholds refusing sound builds or letting through builds that exhaust the host · check by: 2027-04-13
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/11
 
 *Rationale:* the host is shared with the old loop game and another workload and has no swap, so a
 build that exhausts its memory can make the kernel end a process of another workload; reading
