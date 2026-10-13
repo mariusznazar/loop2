@@ -6,7 +6,8 @@ as `npm start` starts it outside any container.
 
 Reading of the sentence:
 - the loop2 container: the one service of `compose.yaml`, built from the repository's
-  `Dockerfile`, as Compose runs it — with an init process (`init: true`);
+  `Dockerfile`. Whether Compose adds an init process (`init: true`) is not read: the Docker part
+  runs the image with an init process of its own, and an init process is not counted either way;
 - one process: the image's last stage starts `node` directly — an exec-form `CMD` whose program
   is `node`, no `ENTRYPOINT` of the Dockerfile's own (the Node.js image's entrypoint script
   replaces itself with the command it is given), and no `command` or `entrypoint` set in Compose —
@@ -24,7 +25,8 @@ Reading of the sentence:
   major version 5.
 
 The Docker part builds the image from the working tree (`docker build`, the tree is only read),
-runs it with `docker run --init`, as Compose's `init: true` does, reads the processes through
+runs it with `docker run --init` (the init process Compose's `init: true` would add, which the
+check does not require), reads the processes through
 `/proc` inside the container as the image's own user (the user the container runs as, as a
 `docker exec` without `-u` does; root without `CAP_SYS_PTRACE` may be refused another user's
 `/proc/<pid>/fd`), and removes the container and the image afterwards. Every listening socket in
