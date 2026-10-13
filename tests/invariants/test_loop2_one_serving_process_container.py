@@ -12,8 +12,8 @@ Reading of the sentence:
   replaces itself with the command it is given), and no `command` or `entrypoint` set in Compose —
   and Compose runs one container of it: one service, with no `scale` or `replicas` above 1;
 - in the running container, counted where a Docker daemon answers: among the container's
-  processes exactly one holds a listening TCP socket, it is `node`, and it has started no process
-  of its own. The init process and the health probe are not serving processes: they hold no
+  processes exactly one holds a listening TCP socket, before the requests below and after them,
+  it is `node`, and it has started no process of its own. The init process and the health probe are not serving processes: they hold no
   listening socket and are not children of the listening process, so they are not counted;
 - serves the built game and `/api/` requests: from inside the container, a GET of `/` on the
   listening port returns 200 with an HTML page, and a GET of an `/api/` path made up so that no
@@ -24,7 +24,11 @@ Reading of the sentence:
 
 The Docker part builds the image from the working tree (`docker build`, the tree is only read),
 runs it with `docker run --init`, as Compose's `init: true` does, reads the processes through
-`/proc` inside the container, and removes the container and the image afterwards. Where no Docker
+`/proc` inside the container as the image's own user (the user the container runs as, as a
+`docker exec` without `-u` does; root without `CAP_SYS_PTRACE` may be refused another user's
+`/proc/<pid>/fd`), and removes the container and the image afterwards. Every listening socket in
+the container's TCP tables must belong to a process the probe can read: a socket whose owner it
+cannot see fails the check instead of going uncounted. Where no Docker
 daemon answers, that test is skipped, so the run gives this invariant no `pass`: the container
 part stays unchecked, never passed. A deployment file that does not exist makes every test here
 fail, the Docker part included, before the daemon is asked.
@@ -54,8 +58,9 @@ DAEMON_TIMEOUT = 30     # seconds for `docker version` to answer
 BUILD_TIMEOUT = 1200    # seconds for the image build
 LISTEN_WAIT = 60        # seconds for the started container to hold a listening socket
 
-# Run inside the container by its own Node.js: every process with its parent, command line,
-# working directory and the TCP ports it listens on (state 0A in /proc/net/tcp and tcp6).
+# Run inside the container by its own Node.js: the listening sockets of the container's TCP
+# tables (state 0A in /proc/net/tcp and tcp6), and every process with its parent, command line,
+# working directory, whether its descriptors could be read, and the listening sockets it holds.
 PROCESS_PROBE = r"""
 const fs = require("fs");
 const listening = new Map();
@@ -67,6 +72,7 @@ for (const table of ["/proc/net/tcp", "/proc/net/tcp6"]) {
     if (c.length > 9 && c[3] === "0A") listening.set(c[9], parseInt(c[1].split(":").pop(), 16));
   }
 }
+const sockets = [...listening].map(([inode, port]) => ({ inode, port }));
 const processes = [];
 for (const entry of fs.readdirSync("/proc")) {
   if (!/^\d+$/.test(entry)) continue;
@@ -77,14 +83,16 @@ for (const entry of fs.readdirSync("/proc")) {
   } catch { continue; }
   const ppid = parseInt(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[1], 10);
   const ports = new Set();
+  const inodes = new Set();
+  let descriptors = true;
   try {
     for (const fd of fs.readdirSync(`/proc/${entry}/fd`)) {
       try {
         const m = /^socket:\[(\d+)\]$/.exec(fs.readlinkSync(`/proc/${entry}/fd/${fd}`));
-        if (m && listening.has(m[1])) ports.add(listening.get(m[1]));
-      } catch {}
+        if (m && listening.has(m[1])) { ports.add(listening.get(m[1])); inodes.add(m[1]); }
+      } catch { descriptors = false; }
     }
-  } catch {}
+  } catch { descriptors = false; }
   let cwd = null;
   try { cwd = fs.readlinkSync(`/proc/${entry}/cwd`); } catch {}
   let express = null;
@@ -92,9 +100,10 @@ for (const entry of fs.readdirSync("/proc")) {
     const manifest = `${cwd}/node_modules/express/package.json`;
     express = JSON.parse(fs.readFileSync(manifest, "utf8")).version;
   } catch {}
-  processes.push({ pid: Number(entry), ppid, cmd, cwd, express, ports: [...ports] });
+  processes.push({ pid: Number(entry), ppid, cmd, cwd, express, descriptors,
+                   ports: [...ports], inodes: [...inodes] });
 }
-console.log(JSON.stringify({ self: process.pid, processes }));
+console.log(JSON.stringify({ self: process.pid, sockets, processes }));
 """
 
 # Run inside the container: the status and media type of a GET of each path given.
@@ -102,7 +111,8 @@ HTTP_PROBE = r"""
 const [port, ...paths] = process.argv.slice(2);
 Promise.all(paths.map(async (path) => {
   const response = await fetch(`http://127.0.0.1:${port}${path}`,
-                               { headers: { accept: "text/html" } });
+                               { headers: { accept: "text/html" },
+                                 signal: AbortSignal.timeout(10000) });
   const body = await response.text();
   return { path, status: response.status, type: response.headers.get("content-type"),
            html: /^\s*<!doctype html|^\s*<html/i.test(body) };
@@ -208,12 +218,15 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
         while True:
             table = self.processes(name)
             listeners = [p for p in table["processes"] if p["ports"] and p["pid"] != table["self"]]
-            if listeners or time.monotonic() > deadline:
+            if listeners or table["sockets"] or time.monotonic() > deadline:
                 break
             time.sleep(1)
         if not listeners:
-            self.fail(f"no process of the container listens within {LISTEN_WAIT} s; container "
+            self.fail(f"no process the probe can read listens within {LISTEN_WAIT} s; listening "
+                      f"sockets of the container: {table['sockets']}; container "
                       f"log:\n{docker_run('logs', name)[1]}")
+        self.assertEqual(len(listeners), 1, f"processes listening in the container before the "
+                                            f"requests: {listeners}")
         port = listeners[0]["ports"][0]
 
         code, output, errors = node_in_container(name, HTTP_PROBE, str(port), "/",
@@ -228,6 +241,12 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
 
         table = self.processes(name)
         others = [p for p in table["processes"] if p["pid"] != table["self"]]
+        held = {inode for p in others for inode in p["inodes"]}
+        unowned = [s for s in table["sockets"] if s["inode"] not in held]
+        unreadable = [p for p in others if not p["descriptors"]]
+        self.assertEqual(unowned, [], f"listening sockets of the container that no process the "
+                                      f"probe can read holds; processes whose descriptors it "
+                                      f"could not read: {unreadable}")
         listeners = [p for p in others if p["ports"]]
         self.assertEqual(len(listeners), 1, f"processes listening in the container: {listeners}")
         listener = listeners[0]
@@ -243,7 +262,7 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
                          f"the listening process loads express {listener['express']!r}")
 
     def processes(self, name):
-        code, output, errors = node_in_container(name, PROCESS_PROBE, user="0")
+        code, output, errors = node_in_container(name, PROCESS_PROBE)
         self.assertEqual(code, 0, f"reading the container's processes failed:\n{output}{errors}")
         return json.loads(output.strip().splitlines()[-1])
 
