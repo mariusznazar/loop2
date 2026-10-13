@@ -127,7 +127,7 @@ take_lock() {
 running_commit() {
   # The commit the running loop2 container was built from (its revision label), or none.
   local label
-  if label=$(docker inspect --format "{{ index .Config.Labels \"$IMAGE_REVISION_LABEL\" }}" "$CONTAINER_NAME" 2>/dev/null) \
+  if label=$(docker inspect --type container --format "{{ index .Config.Labels \"$IMAGE_REVISION_LABEL\" }}" "$CONTAINER_NAME" 2>/dev/null) \
       && [[ $label =~ $COMMIT_NAME_PATTERN ]]; then
     printf '%s' "$label"
   else

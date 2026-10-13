@@ -367,9 +367,10 @@ class DeployFixture:
         are tried in the order given, so a test makes a stage fail by answering it first.
         `running` is the revision label of the running loop2 container (None: no container)."""
         if running is None:
-            self.answer("docker", exit_code=1, match="inspect --format *loop2")
+            self.answer("docker", exit_code=1, match="inspect --type container --format *loop2")
         else:
-            self.answer("docker", stdout=running + "\n", match="inspect --format *loop2")
+            self.answer("docker", stdout=running + "\n",
+                        match="inspect --type container --format *loop2")
         self.answer("docker", stdout=DOCKER_ROOT + "\n", match="info --format {{.DockerRootDir}}")
         self.answer("docker", stdout="/loop running healthy\n",
                     match="inspect --type container * loop")

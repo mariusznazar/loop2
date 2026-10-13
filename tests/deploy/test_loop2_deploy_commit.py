@@ -47,7 +47,7 @@ class DeployScriptTestCase(unittest.TestCase):
 
     def assert_refused(self, result, code):
         self.assertEqual(result.code, code, result)
-        self.assertEqual(result.calls["docker"], [["inspect", "--format",
+        self.assertEqual(result.calls["docker"], [["inspect", "--type", "container", "--format",
                                                    '{{ index .Config.Labels '
                                                    '"org.opencontainers.image.revision" }}',
                                                    "loop2"]], result)
