@@ -25,7 +25,10 @@ touches another Compose project.
   `exec` tool runs commands. The MCP runs commands as root, so "read only" is an agreement this
   skill states, not a technical limit. Allowed: `tail` of the deploy log, `docker ps`,
   `docker compose -p loop2 ps` and `logs`, `docker inspect` of labels and state, `free`, `df`,
-  `git -C /srv/loop2 status` and `log`, `cat` of the script, `cmp`.
+  `git -C /srv/loop2 log` and `git -C /srv/loop2 --no-optional-locks status` (a plain `status` can
+  rewrite the index), `cat` of the script, `cmp`.
+- The MCP's changing tools (`upload`, `porty`, `domains`, and any `exec` command that changes state)
+  are the human's too.
 - **Every change is the human's:** installing or reinstalling the script, keys, `authorized_keys`,
   GitHub secrets, Cloudflare rules, running a deployment or rollback on the server, reclaiming Docker
   build cache. The agent prepares the exact command and asks the human to run it.
@@ -35,9 +38,9 @@ touches another Compose project.
 ## Seeing deployments
 
 - **The Actions run** of "Deploy loop2" for the commit: the first step prints the script's output
-  (stage lines), the second probes the public addresses of loop2 and of the old game. A reader
-  shares Actions logs with this in mind: ssh's own fatal errors (a refused connection, a host-key
-  mismatch) may show the resolved address of the server.
+  (stage lines), the second probes the public addresses of loop2 and of the old game. ssh's own
+  fatal errors (a refused connection, a host-key mismatch) may print the resolved address of the
+  server into this log, so treat the Actions log as not safe to share publicly.
 - **The deploy log** `/var/log/loop2-deploy.log`: every line has a UTC time and `loop2-deploy:`. A
   run starts with `start: commit <sha>, path: ..., running commit: <sha>` and ends with
   `deployed <sha>, previously <sha>` or a `stage <name>: ... (exit N)` line. Docker's and git's own
@@ -62,9 +65,10 @@ touches another Compose project.
 | 7 | build | type check or image build failed (also: the commit has no `compose.yaml`) | untouched |
 | 8 | switch, probe | the container was not healthy within 120 s, or the local probe on `127.0.0.1:18080` failed | down or broken |
 
-After exit 8 the log holds a `previously running commit` line with the exact restore command. The
-container's last 50 log lines after an exit 8 go only to the server log and
-`docker compose -p loop2 logs`, not to the Actions log. The script also logs the resource values
+After exit 8 the log holds a `previously running commit` line with the exact restore command. When
+the container did not start healthy, its last 50 log lines go only to the server log (and
+`docker compose -p loop2 logs`), not to the Actions log; after a failed probe only
+`docker compose -p loop2 logs` has them. The script also logs the resource values
 (`resources: MemAvailable ... free space ...`), the old game's state after a failure, and a warning
 when the installed script differs from the checked-out source (see troubleshooting).
 

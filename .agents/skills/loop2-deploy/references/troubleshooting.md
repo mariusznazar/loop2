@@ -18,7 +18,7 @@ code N`) and the matching `stage` line in the deploy log.
 | 5 | Resource gate, below. |
 | 6 | Fetch or checkout failed: the deploy key, the SSH alias, GitHub reachability, or a full disk. Read git's message in the server log, fix, re-run the workflow. |
 | 7 | The type check or build failed. loop2 still runs the previous commit. The fix goes to `main`. |
-| 8 | The container did not become healthy, or the probe failed. loop2 is down or broken. Read the last 50 container lines in the server log (they are not in the Actions log), then run `loop2-deploy <previous sha>` using the restore line in the log, or merge a revert. |
+| 8 | The container did not become healthy, or the probe failed. loop2 is down or broken. If the container did not start healthy, its last 50 log lines are in the server log (not in the Actions log); after a failed probe read `docker compose -p loop2 logs`. Then run `loop2-deploy <previous sha>` using the restore line in the log, or merge a revert. |
 
 With exits 2 to 7 loop2 still runs the previous commit (after the first merge, the human-deployed
 request commit). A first human deployment of the request commit that fails at start (exit 8) leaves
@@ -37,7 +37,9 @@ block and reinstall it. Re-run the workflow afterwards. An `unreadable` value fa
 The log line `warning: the installed /usr/local/bin/loop2-deploy differs from deploy/loop2-deploy at
 commit ...` means the installed copy is not the checked-out source; the run went on with the installed
 copy. It is expected after a rollback to a commit older than the script's last change, and when a
-commit has no `deploy/loop2-deploy` at all. Otherwise review and reinstall (human):
+commit has no `deploy/loop2-deploy` at all. A second warning, `the installed ... cannot be read`,
+means the installed copy is missing or unreadable, so it could not be compared: check the file's
+existence, owner and mode (root-owned, 0755) and reinstall. Otherwise review and reinstall (human):
 
 1. `diff /usr/local/bin/loop2-deploy /srv/loop2/deploy/loop2-deploy` and read the difference.
 2. Keep the previous copy: `cp -p /usr/local/bin/loop2-deploy /usr/local/bin/loop2-deploy.previous`.
@@ -57,6 +59,7 @@ IPv6), not at the container. No answer there means the container is down: read
 ## Reclaiming Docker build cache
 
 Repeated builds grow the build cache, and low free disk makes the resource gate fail. Reclaiming it
-is a human decision: `docker system df` shows the size, `docker builder prune` removes build cache
-only (never `docker system prune`, which would reach the old game's resources). The next build is
-slower after a prune.
+is a human decision. `docker system df` shows its size. Emptying it clears the build cache of every
+project on the host, the old game's included, so their next builds take longer; running containers
+are not affected. Never run `docker system prune`, which reaches far more. The agent does not
+reclaim it.
