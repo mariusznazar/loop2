@@ -4,8 +4,8 @@ changes a container, and deploys only a commit that belongs to `main` as just fe
 
 The check drives the repository's script `deploy/loop2-deploy` as a black box through the seam of
 `tests/deploy/deploy_script_support.py`: a temporary copy in which only the marked constants block
-is replaced, recording stubs for docker, curl, flock and df, and a temporary Git repository standing
-in for GitHub with a clone of it standing in for the server's checkout.
+is replaced, recording stubs for docker, curl, flock, df, hostname and uname, and a temporary Git
+repository standing in for GitHub with a clone of it standing in for the server's checkout.
 
 Reading of the sentence:
 - the command the automation's key runs: the forced-command path, `SSH_ORIGINAL_COMMAND` set and no
