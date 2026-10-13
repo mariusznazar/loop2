@@ -31,6 +31,14 @@ test('every resource of the map is defined in the resource data, with name and i
   for (const entry of MAPS.forest.resources) assert.ok(entry.id in RESOURCES);
 });
 
+test("each resource's data gives its icon's title as the icon's page on game-icons.net gives it", () => {
+  // The headings of the icons' pages, as the environment facts game-icons-*-title quote them.
+  assert.deepEqual(
+    Object.values(RESOURCES).map(r => [r.icon, r.iconTitle]),
+    [['wood-stick', 'Wood stick icon'], ['berry-bush', 'Berry bush icon'], ['fern', 'Fern icon'], ['flax', 'Flax icon']],
+  );
+});
+
 test('actions carry their labels, status texts and the fixed explore duration', () => {
   assert.deepEqual(ACTIONS.explore, { label: 'Eksploruj', status: 'Eksploruje', minutes: 20 });
   assert.deepEqual(ACTIONS.wander, { label: 'Wędruj', status: 'Wędruje', minutes: null });

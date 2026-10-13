@@ -5,7 +5,7 @@ import { ICON_CREDITS, ICON_LICENCE } from './credits.js';
 /** One line of the footer: the credit of a resource's icon. */
 export type FooterCredit = {
   resourceName: string;
-  /** Title of the icon, as its page on game-icons.net gives it. */
+  /** Title of the icon, as its page on game-icons.net gives it; from the resource data. */
   title: string;
   author: string;
   sourceUrl: string;
@@ -25,7 +25,7 @@ export function footerCredits(): FooterCredit[] {
     if (!credit) throw new Error(`footer: no credit for the icon ${resource.icon}`);
     return {
       resourceName: resource.name,
-      title: credit.title,
+      title: resource.iconTitle,
       author: credit.author,
       sourceUrl: credit.sourceUrl,
       licenceName: ICON_LICENCE.name,
