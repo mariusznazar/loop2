@@ -109,7 +109,7 @@ game minute by game minute, when they receive the same real-time inputs.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** TODO — "Where does the simulation's randomness come from?", projected in definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop) and expected from task 18 of plan_mvp_loop2.md there
+- **Derives from:** D-12@4e289de6
 - **Part:** every
 - **Correction:** none
 
@@ -120,8 +120,31 @@ from the map run's state.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** TODO — "Where does the simulation's randomness come from?", projected in definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop) and expected from task 18 of plan_mvp_loop2.md there
+- **Derives from:** D-12@4e289de6
 - **Part:** every
+- **Correction:** none
+
+## action-in-progress/1
+
+An action the character is carrying out lasts its full duration, even where the program changes or
+the condition of another program rule comes to hold before it ends.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-10@d3085ad5
+- **Part:** simulation
+- **Correction:** none
+
+## player-map-run-pace/1
+
+Real time passed to the simulation for a map run the player starts moves the map run on by one game
+minute for each whole real second passed while it is not paused, and by no game minute for real
+time passed while it is paused.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-11@6032a520
+- **Part:** simulation
 - **Correction:** none
 
 ## Withdrawn identifiers

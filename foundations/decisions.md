@@ -215,15 +215,15 @@ the simulation, to which it passes the player's choices and the passing of real 
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności"
 - **Approved by:** Mariusz, 2026-10-13
 
-*Rationale for change:* text code and tests give the most leverage in work with AI agents. A
-simulation of pure functions makes progress while away plain arithmetic and the save a JSON
-document, and runs on a phone as well; real time passed in as an argument keeps the earning loop,
-the catch-up and the renewal of a resurrection on one footing. The player changes the game state
-from the browser view — the program editor, sending a character, a restart — and the passing of
-real time changes it too; each goes through the simulation, so the game state changes in one place.
-*Rejected:* Godot — slower to work on with AI agents; giving "view" the meaning of the drawing
-alone and renaming the browser view in "How is the browser view built?", its invariant and its part
-— three entries changed to keep a sentence about a scene the MVP does not have; keeping the sentence
+*Rationale for change:* a simulation of pure functions makes progress while away plain arithmetic
+and the save a JSON document, and runs on a phone as well; real time passed in as an argument keeps
+the earning loop, the catch-up and the renewal of a resurrection on one footing. The player changes
+the game state from the browser view — the program editor, sending a character, a restart — and the
+passing of real time changes it too; each goes through the simulation, so the game state changes in
+one place.
+*Rejected:* giving "view" the meaning of the drawing alone and renaming the browser view in "How is
+the browser view built?", its invariant and its part — three entries changed to keep a sentence
+about a scene the MVP does not have; keeping the sentence
 "The view draws only from the game state and changes nothing in it." — false of the browser view,
 from which the player changes the game state.
 
@@ -304,12 +304,7 @@ character is carrying out. The program picks a program rule again only once that
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 2 — an agent compares the change with the decision:
-  - complies: a program changed during an exploration taking effect in the game minute the
-    exploration ends; a character that goes on exploring while the condition of a program rule
-    above the exploring one comes to hold
-  - violates: a change of the program that stops the exploration in progress; a program rule whose
-    condition comes to hold cutting short the character's move onto a neighbouring tile
+- **Verification:** level 1 — invariants: action-in-progress
 - **Review when:** none
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Gdzie i kiedy gracz zmienia program i od kiedy zmiana działa?"
 - **Approved by:** Mariusz, merge of <request link>
@@ -332,11 +327,10 @@ resume it.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 2 — an agent compares the change with the decision:
-  - complies: a map run the player starts that is sixty game minutes further after sixty real
-    seconds of running, and no further after a real minute paused
-  - violates: a map run the player starts that passes ten game minutes per real second; a map run
-    the player can hold still only by ending it
+- **Verification:** level 1 — invariants: player-map-run-pace. Level 2 for the player's way to
+  pause and resume a map run — an agent compares the change with the decision:
+  - complies: a control of the browser view that pauses the map run in progress and resumes it
+  - violates: a map run the player can hold still only by ending it
 - **Review when:** none
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?"
 - **Approved by:** Mariusz, merge of <request link>
@@ -344,3 +338,129 @@ resume it.
 *Rationale:* one game minute per real second is the pace at which the predecessor game, loop, runs
 without fast-forwarding, and a pause holds a map run without ending it.
 *Rejected:* the same pace with no pause; a faster pace while the game has no fast-forwarding.
+
+### D-12/1 — Where does the simulation's randomness come from?
+
+Every random draw of the simulation comes from generators seeded by the seed saved in the map run's
+state, one generator for each kind of draw — the map's layout and wandering among them — and the map
+run draws its map's layout at its start, before the first game minute, in a fixed order. A restart
+of a map run keeps its seed, and any other map run takes a new seed.
+
+- **Change:** new decision
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: map-run-repeatability · simulation-randomness. Level 2 for
+  where the seed comes from — an agent compares the change with the decision:
+  - complies: a restart that brings back the same layout of the map
+  - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
+    from the generator of the map's layout
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D19 and §9 "Losowania akcji dzielą strumień z losowaniem napaści" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Where does the simulation's randomness come from?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
+run can be repeated when something has to be understood, and tests of the simulation can expect
+exact values. With a generator for each kind of draw, a draw of one kind leaves the draws of every
+other kind where they were, so a difference between two programs on one seed is a difference of
+programs rather than of luck.
+*Rejected:* the browser's own random numbers in the simulation — repeatability goes; one generator
+for every kind of draw — a draw of one kind shifts the draws of every other kind.
+
+### D-13/1 — How does a character act by its program?
+
+A character acts only by its program: in each free game minute it carries out the first program
+rule whose condition holds and whose action can be carried out then. Conditions are chosen from a
+closed list, never written as expressions, and the player has no way to carry out an action by
+hand.
+
+- **Change:** new decision
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a condition picker listing the conditions of the closed list
+  - violates: a text field taking a condition as an expression; a button that makes the character
+    explore now
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14, D15 and D9 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character act by its program?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the game is the writing of behaviour, so carrying out an action by hand would get round
+its own core. Priorities with threshold sliders are decoration: different settings end a map
+identically, since only the order of actions counts.
+*Rejected:* priorities with threshold sliders — decoration; conditions written as expressions — the
+player starts writing queries instead of arranging behaviour.
+
+### D-14/1 — What is a map made of?
+
+A map is a grid of hexagonal tiles whose dimensions, entrance, cost of a move and resources stand in
+the map's data, each resource with its density, stock per tile and time to renew one piece. What is
+not on the map's list of resources cannot be revealed there. Which tile gets what is drawn by the
+map run from its seed, within the bounds the map sets.
+
+- **Change:** new decision
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-12@4e289de6
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: a new map added as a row of the maps' data, with its dimensions and resources; Las
+    with a fixed entrance
+  - violates: a map with a hand-placed layout; a map of square tiles
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D32, D17 and §5 "Mapa jest siatką sześciokątnych kafelków" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What is a map made of?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* six neighbours at an equal distance make a move always mean the same. New challenges
+come from the map's settings alone — dimensions, densities, stocks, renewal, cost of a move. The
+first map has a fixed entrance because its first map run is a tutorial. Accepted with it: a random
+layout widens the spread between seeds.
+*Rejected:* a random layout without a fixed frame — difficulty cannot be steered; a fixed layout per
+map — exploring loses its sense after the first map run; square tiles — four directions make a
+diagonal two moves, eight give it for free; the presence of a resource without a stock — cheaper,
+but tests nothing.
+
+### D-15/1 — How does a character move?
+
+A move onto a neighbouring tile is an ordinary action, after which the program picks a program rule
+anew, as after any action. Exploring reveals the tile the character stands on, cannot be repeated on
+a revealed tile and brings no item.
+
+- **Change:** new decision
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-13@70d1cb2d
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: "Go — stick" taking one move toward the nearest known tile with sticks, then the
+    program choosing again
+  - violates: a journey stored as a route; exploring that brings a stick
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D33 and §5 "Postać stoi na jednym kafelku" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character move?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the character reacts to the world between moves, and the state grows by nothing but
+the position and the target of the current move. Exploring that brought an item would be gathering
+in disguise.
+*Rejected:* travel as a state with a stored route — the program has no say on the way; exploring
+that brings an item.
+
+### D-16/1 — How does a program point at things of the world?
+
+A program points at a thing of the world only as the nearest known one of its kind, counted in game
+minutes of walking, never by a number of its own.
+
+- **Change:** new decision
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: "Go — stick" taking one move toward the nearest known tile with sticks
+  - violates: a program rule naming "tile 7"
+- **Review when:** none
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D34 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a program point at things of the world?"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* the layout of a game map differs on every seed, so a number given to a tile means nothing
+that lasts, while "the nearest" means the same on every map run.
+*Rejected:* numbering tiles in program rules — a program is written before the map run, and the
+layout is drawn at its start.
