@@ -12,6 +12,7 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SIM = join(ROOT, 'src', 'browser', 'sim');
 const VIEW = join(ROOT, 'src', 'browser', 'view');
 const DATA = join(SIM, 'data');
+const MAIN = join(ROOT, 'src', 'browser', 'main.ts');
 const CODE = /\.(ts|mts|cts|js|mjs|cjs)$/;
 
 /** Every code file below a directory, as absolute paths; none when the directory is missing. */
@@ -177,7 +178,7 @@ function s2Findings(where, text) {
 }
 
 const simFiles = codeFiles(SIM);
-const s2Files = [...simFiles.filter(file => !file.startsWith(DATA + sep)), ...codeFiles(VIEW)];
+const s2Files = [...simFiles.filter(file => !file.startsWith(DATA + sep)), ...codeFiles(VIEW), MAIN];
 
 test('S1: the simulation imports only its own files and names no DOM, Node, timer, clock or other randomness', () => {
   assert.ok(simFiles.length > 0, 'no source file under src/browser/sim');
@@ -228,7 +229,14 @@ test('S1 control: each forbidden form is flagged, and the same names in comments
   }
 });
 
-test('S2: no file of the simulation outside sim/data or of the view writes a content id or name', () => {
+test('S2 scans the simulation outside sim/data, the view and the entry module main.ts', () => {
+  assert.ok(s2Files.includes(MAIN), 'main.ts is not scanned');
+  assert.ok(s2Files.some(file => file.startsWith(VIEW + sep)), 'no view file is scanned');
+  assert.ok(s2Files.some(file => file.startsWith(SIM + sep) && !file.startsWith(DATA + sep)), 'no simulation file is scanned');
+  assert.ok(!s2Files.some(file => file.startsWith(DATA + sep)), 'a sim/data file is scanned');
+});
+
+test('S2: no file of the simulation outside sim/data, of the view or main.ts writes a content id or name', () => {
   const found = s2Files.flatMap(file => s2Findings(relative(ROOT, file).split(sep).join('/'), readFileSync(file, 'utf8')));
   assert.deepEqual(found, []);
 });

@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { MAPS } from '../../dist/public/sim/data/maps.js';
 import { offsetToAxial, sameHex } from '../../dist/public/sim/hex.js';
 import { drawLayout } from '../../dist/public/sim/layout.js';
+import { mixSeed, nextRandom, streamState } from '../../dist/public/sim/random.js';
 
 const map = Object.values(MAPS)[0];
 const resourceIds = map.resources.map(resource => resource.id);
@@ -72,4 +73,30 @@ test('drawLayout does not change the map', () => {
   const before = JSON.stringify(map);
   drawLayout(map, 4);
   assert.equal(JSON.stringify(map), before);
+});
+
+// Fixed expected values (D-12/1: the generator, the seed mixing and the draw order are a contract).
+// Written out once from the code; a change to any of the three fails here.
+test('golden values: the layout stream of seed 1, mixSeed(1, 1000) and the stocks of Las for seed 1', () => {
+  let state = streamState(1, 'layout');
+  const values = [];
+  for (let i = 0; i < 3; i += 1) {
+    const step = nextRandom(state);
+    values.push(step.value);
+    state = step.state;
+  }
+  assert.deepEqual(values, [0.044911144534125924, 0.7811651250813156, 0.3564910045824945]);
+
+  assert.equal(mixSeed(1, 1000), 2244977679);
+
+  const stick = { stick: 12 };
+  const berry = { berry: 8 };
+  const moss = { moss: 6 };
+  const fiber = { fiber: 6 };
+  assert.deepEqual(drawLayout(MAPS.forest, 1).tiles.map(tile => tile.stock), [
+    { ...stick, ...moss }, { ...stick, ...berry, ...fiber }, {}, { ...stick, ...berry },
+    { ...berry }, { ...stick }, { ...stick, ...berry, ...moss }, { ...stick },
+    { ...stick, ...berry, ...fiber }, { ...stick, ...fiber }, { ...stick, ...berry, ...moss }, { ...stick },
+    { ...stick, ...fiber }, { ...stick, ...berry, ...moss }, { ...stick }, { ...stick, ...moss },
+  ]);
 });
