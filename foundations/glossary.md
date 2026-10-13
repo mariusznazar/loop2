@@ -2,6 +2,14 @@
 
 Terms used by this product's foundation.
 
+## character skill
+
+A character skill is an area of what a character can do that grows apart from the character's other
+areas.
+
+- **Avoid:** none
+- **Not:** none
+
 ## game minute
 
 A game minute is the unit of the simulation's time.

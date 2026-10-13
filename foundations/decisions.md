@@ -205,7 +205,9 @@ the simulation, to which it passes the player's choices and the passing of real 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 2 — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: simulation-isolation · simulation-inputs. Level 2 for the
+  shape of the simulation's functions and for how the browser view uses the game state — an agent
+  compares the change with the decision:
   - complies: the renewal of a resurrection computed from a real time the caller passes in; the
     program editor of the browser view passing the edited program to a function of the simulation
   - violates: a simulation function that reads the system time or the page; a browser view that
@@ -257,7 +259,8 @@ of data alone.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 2 — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: content-identifiers. Level 2 for the numbers of the
+  content and for what a change of data alone adds — an agent compares the change with the decision:
   - complies: a new creature added as a row of the creatures' data, which the simulation reads
   - violates: a wolf's damage written as a number in the combat code
 - **Review when:** none
@@ -350,9 +353,10 @@ of a map run keeps its seed, and any other map run takes a new seed.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 1 — invariants: map-run-repeatability · simulation-randomness. Level 2 for
-  where the seed comes from — an agent compares the change with the decision:
-  - complies: a restart that brings back the same layout of the map
+- **Verification:** level 1 — invariants: map-run-repeatability · simulation-randomness ·
+  restart-seed. Level 2 for the new seed of a map run other than a restart and for which generator a
+  kind of draw uses — an agent compares the change with the decision:
+  - complies: a map run sent anew that takes a seed other than that of the map run before it
   - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
     from the generator of the map's layout
 - **Review when:** none
@@ -378,7 +382,9 @@ hand.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 2 — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: program-rule-pick. Level 2 for the closed list of
+  conditions and for carrying out an action by hand — an agent compares the change with the
+  decision:
   - complies: a condition picker listing the conditions of the closed list
   - violates: a text field taking a condition as an expression; a button that makes the character
     explore now
@@ -403,7 +409,8 @@ map run from its seed, within the bounds the map sets.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-12@4e289de6
-- **Verification:** level 2 — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: map-run-tiles. Level 2 for what stands in the map's data
+  and for the shape of its grid — an agent compares the change with the decision:
   - complies: a new map added as a row of the maps' data, with its dimensions and resources; Las
     with a fixed entrance
   - violates: a map with a hand-placed layout; a map of square tiles
@@ -430,7 +437,8 @@ a revealed tile and brings no item.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-13@70d1cb2d
-- **Verification:** level 2 — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: exploring-reveal · move-reach. Level 2 for a journey kept
+  as a route and for exploring that brings an item — an agent compares the change with the decision:
   - complies: "Go — stick" taking one move toward the nearest known tile with sticks, then the
     program choosing again
   - violates: a journey stored as a route; exploring that brings a stick
@@ -453,7 +461,9 @@ minutes of walking, never by a number of its own.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 2 — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: walk-target. Level 2 for things of the world other than
+  tiles and for a thing named by a number of its own — an agent compares the change with the
+  decision:
   - complies: "Go — stick" taking one move toward the nearest known tile with sticks
   - violates: a program rule naming "tile 7"
 - **Review when:** none
@@ -464,3 +474,55 @@ minutes of walking, never by a number of its own.
 that lasts, while "the nearest" means the same on every map run.
 *Rejected:* numbering tiles in program rules — a program is written before the map run, and the
 layout is drawn at its start.
+
+### D-06/3 — How are the browser and server built together?
+
+The browser and server share one npm package and lockfile, and have separate TypeScript
+compilation configurations and output directories. Building the application compiles both
+configurations.
+
+- **Change:** unchanged sentences
+- **Scope:** build-tools, browser-view, simulation, account-server
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: application-package-layout · application-build-layout · application-build-output
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale for change:* the simulation is browser code, compiled by the browser's configuration and
+held in the shared package, so the decision applies to it as to the browser view.
+*Rejected:* keeping the scope without the simulation — a change giving the simulation a package or a
+configuration of its own would not find this decision.
+
+### D-17/1 — Where do the game's icons come from?
+
+The game's icons are SVG files from game-icons.net, kept in `assets/icons/` outside the directory
+the account and save server serves and copied into that directory when the application is built.
+An icon file holds nothing that runs and refers to nothing outside itself. The game's footer
+credits each icon with its author, its page on game-icons.net and its licence, and says how the
+file differs from its source.
+
+- **Change:** new decision
+- **Scope:** browser-view, build-tools
+- **Based on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@75828134
+- **Relations:** none
+- **Verification:** level 1 — invariants: icon-file-content · icon-credits. Level 2 for where the
+  icons come from and where their files stand — an agent compares the change with the decision:
+  - complies: a campfire icon taken from game-icons.net into `assets/icons/`, credited in the footer
+  - violates: an icon file placed straight in the directory the server serves; an icon drawn from
+    an emoji, or loaded from another site while the game runs
+- **Review when:** the game needs an icon that game-icons.net does not hold · check by: 2027-04-13
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Grafika" · mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions carried to cycle", "Skąd biorą się ikony zasobów i czynności"
+- **Approved by:** Mariusz, merge of <request link>
+
+*Rationale:* game-icons.net holds a large set of game icons drawn in one style, under a licence that
+allows their use in the game on condition of credit, so one source keeps the game's icons alike as
+the game grows. An icon file comes from outside the product and is untrusted: holding nothing that
+runs and reaching nothing outside itself, a changed file cannot act in the player's page. Sources
+kept apart from what the server serves leave the build to decide what reaches the player. The
+licence asks a changed work to say how it was changed, and the icons are changed to sit on the
+game's tiles.
+*Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
+thing costs drawing work; an icon package from npm — a dependency more for files the product can
+keep itself, entering through what the product already treats as untrusted.
