@@ -1,0 +1,35 @@
+## Spec Review
+
+Spec: `.runs/task-cycles/mag-w-lesie/spec.md` · Reviewed against: `task.md` (frozen), `foundations/*.md`, current `src/`, `tests/`, `scripts/build.mjs`, `package.json`, `tsconfig.*.json`, `tests/invariants/*.py`, projected entries in `definicja_mvp_loop2.md`, loop's `src/sim/data/*.ts` and `src/sim/*.test.ts` (movement, resources, terrain).
+
+**Status:** Issues Found
+
+**Issues:**
+
+- [§ 6 / § 9.2 icons]: the untrusted-input rule bans "any `http:`" in each SVG, but a standalone SVG drawn through `<img>` needs the namespace declaration `xmlns="http://www.w3.org/2000/svg"`, and game-icons.net files carry it — spec.md:233, spec.md:265. As written, every real icon fails the § 9.2 test. An implementer who strips `xmlns` to pass the test gets icons that do not render in `<img>`. The rule needs an explicit exception for namespace declarations (`xmlns`, `xmlns:xlink`) and must keep banning every other external reference.
+
+- [§ 4.1 / § 4.5 / § 5 content in data]: the ids are closed TypeScript unions in `sim/types.ts` (`type MapId = 'forest'`, `type ResourceId = 'stick' | …`). Validation checks against "the map Las's resources", and the send panel prints the literal „Mapa: Las” — spec.md:63-64, spec.md:173, spec.md:215. This task records "Where does the game's content live?": "A map, an item or a creature of a kind the simulation already handles is added by a change of data alone." (definicja_mvp_loop2.md:781-783, task.md:91). Under this spec, adding a map or a resource means editing `types.ts`, `game.ts` and the view as well as the data, which is the very decision's level-2 "violates" case. The fixes are cheap: take the id types from the data files (`keyof typeof …`, or declare the unions in `sim/data/*`), validate against the map's data, and read the map name from `maps.ts`.
+
+- [§ 9.3 map-run-repeatability, restart clause]: the scenario is `setProgram(P1)` → send → inputs that include a mid-run `setProgram(P2)`, then "the same scenario continued with `restart` and the same inputs reproduces the first run's sequence from minute 0" — spec.md:274-276. `restart` uses the current program (spec.md:138, task item 3), and the current program is P2 by then. The replay therefore runs P2 from minute 0 and diverges from the first run, unless P1 is set again before the restart. The independent test author will either write a check that fails or quietly weaken it. State that P1 is set again before `restart`, or compare only up to the edit.
+
+- [§ 5 program editor]: "the program editor is rebuilt only when the program changes" — spec.md:208. Every edit made in the editor changes the program, so the editor rebuilds on its own edits. If edits go through `input` events, the number field loses focus after the first digit (typing "12" stops at "1"). The same line says the value is "clamped to the range before the call" (spec.md:213), but clamping alone does not make 1.5 or an empty field an integer, and `setProgram` throws on those (spec.md:136, § 12 C3). Specify: commit on `change`, round and clamp, keep the previous value when the field is empty or not a number, and either keep focus or do not rebuild the editor on its own edit.
+
+- [§ 11 settlement 4]: the decision sentence is "a manual map run runs at one game minute per real second…" — spec.md:300, from task.md:115 („Ręczne przejście”). "manual map run" is a projected glossary term (definicja_mvp_loop2.md:2172), but it is not among the terms this task writes (`program rule`, `map run`, `game minute`; task.md:94-96). The foundation would then hold a binding sentence that uses a term the glossary does not define. The spec should settle this: either add the projected term (a scope addition the orchestrator has to accept), or word the sentence with "map run" plus "the player sends".
+
+**Recommendations (advisory):**
+
+- § 10 sequencing: the part-map guard reports every `Files` pattern that matches no git-tracked file (`.the-way/elements/part-map/format_guard.py:812`) and every tracked file that no part claims. `tests/view/**`, `assets/icons/**`, `tests/sim/**` and the two invariant test files exist only once the code lands. The plan should write or re-check the part map after those files are tracked, or accept that the guard passes only at the pre-merge run.
+- § 10 trust boundary: the External context row makes game-icons.net "untrusted", but every part keeps `Trust boundary: none`. The template asks for "the files that take in untrusted data" (`.the-way/elements/part-map/template.md:46`). Consider `assets/icons/**` on `browser-view`, by analogy with `package-lock.json` on `build-tools`.
+- § 10/§ 11: the simulation's code is browser-config source, but `application-build-output/1`, `application-package-layout/1` and `application-build-layout/1` list `Part: build-tools · browser-view · account-server`, and D-06/2's Scope does not name `simulation` (foundations/invariants.md:65-93, decisions.md:185). Consider adding it, so that a change to the simulation brings these checks in. `test_application_package_layout.py` still passes with the new part: its `APPLICATION_PARTS` lacks `simulation`, but no nested package exists, and `src/browser/*.ts` does not overlap `src/browser/sim/**` (in git attribute patterns `*` does not cross `/`).
+- § 11: the two new invariants derive, in the projection, from "Where does the simulation's randomness come from?", which task 18 writes (definicja_mvp_loop2.md:2031, 2046). The foundation step should use the guard's `TODO — <decision, where expected>` form. A fingerprint cannot be used yet.
+- § 4.6 / § 9.1: avoid the word "catch-up" for a long hidden-tab span. The projected glossary defines it as computing the minutes that passed while the game was closed (definicja_mvp_loop2.md:2223).
+- § 4.3: say whether `restart` emits `mapRunEnded` before `mapRunStarted`. Under settlement 2, a restart ends the old map run, because the player stopped it.
+- Feasibility checked and fine:
+  - the `sim/` and `view/` subdirectories are emitted under `dist/public` at mirrored paths, which satisfies `test_application_build_output`;
+  - NodeNext with `"type": "module"` lets `tests/sim/*.test.mjs` import `dist/public/sim/*.js` in Node;
+  - Node 24 `--test` accepts the quoted globs (they need `\"` inside package.json);
+  - `express.static` serves `/icons/*.svg`, and `test_loop2_one_serving_process` GETs them;
+  - `tests/http.test.mjs` passes while `index.html` keeps `<script type="module" src="/main.js"></script>`;
+  - `test_browser_view_framework` scans `.svg` files in `dist/public` only for script sources and framework markers.
+- Numbers and behaviours match their sources: the Las data (loop `maps.ts:105-110,167-170`), explore 20 (`activities.ts:27`), `hereBelow` 1/0–50/1 (`conditions.ts:113-122`), pace 1 (`balance.ts:72`), icon names (`items.ts`), Wędruj/Idź feasibility (`movement.test.ts`), the minimum guarantee (`resources.test.ts`), geometry and ties (`terrain.test.ts`).
+- Nothing from tasks 4–21 leaks in. § 12's choices (Q3 seed hash, Q5 pause in the state, Q6 wait one minute, C1–C8) stay inside the task and its sources.
