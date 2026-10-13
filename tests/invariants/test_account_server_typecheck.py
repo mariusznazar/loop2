@@ -168,7 +168,25 @@ def takes_built_output(arguments):
     return None
 
 
+# A made-up script for the shell reader: a comment that looks like a heredoc opener must not hide
+# the `up` after it.
+READER_SCRIPT = """#!/usr/bin/env bash
+# === constants <<< end
+docker compose -p loop2 build app
+# cat <<EOF
+docker compose -p loop2 up -d app
+"""
+READER_EXPECTED = [
+    (3, ["compose", "-p", "loop2", "build", "app"]),
+    (5, ["compose", "-p", "loop2", "up", "-d", "app"]),
+]
+
+
 class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
+
+    def test_shell_reader_reads_past_heredoc_look_alikes(self):
+        # invariant: account-server-typecheck/1
+        self.assertEqual(support.docker_commands(READER_SCRIPT), READER_EXPECTED)
 
     def test_dockerfile_type_checks_before_the_runtime_stage_takes_dist(self):
         # invariant: account-server-typecheck/1

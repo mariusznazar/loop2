@@ -355,16 +355,19 @@ def _strip_comment(line, marker="#"):
     """A line less a comment that begins outside quotes at a marker standing at the start of the
     line or after white space."""
     quote = None
-    for index, char in enumerate(line):
+    index = 0
+    while index < len(line):
+        char = line[index]
         if quote:
-            if char == quote:
+            if char == "\\" and quote == '"':
+                index += 1
+            elif char == quote:
                 quote = None
-            elif char == "\\" and quote == '"':
-                continue
         elif char in "\"'":
             quote = char
         elif char == marker and (index == 0 or line[index - 1] in " \t"):
             return line[:index].rstrip()
+        index += 1
     return line.rstrip()
 
 
@@ -404,13 +407,17 @@ def dockerfile_stages(text):
         keyword = keyword.upper()
         arguments = arguments.strip()
         heredoc = None
-        found = re.search(r"<<-?\s*[\"']?([A-Za-z_]\w*)[\"']?", arguments)
-        if found and keyword in ("RUN", "COPY", "ADD"):
+        delimiters = _shell_line(arguments)[2] if keyword in ("RUN", "COPY", "ADD") else []
+        if delimiters:
             body = []
-            while index < len(lines) and lines[index].strip() != found.group(1):
-                body.append(lines[index])
+            for delimiter in delimiters:
+                while index < len(lines) and lines[index].strip() != delimiter:
+                    body.append(lines[index])
+                    index += 1
+                if index >= len(lines):
+                    raise AssertionError(f"the heredoc `{delimiter}` of {logical.strip()!r} is "
+                                         "never closed, so the Dockerfile cannot be read")
                 index += 1
-            index += 1
             heredoc = "\n".join(body)
         if keyword == "FROM":
             words = [w for w in arguments.split() if not w.startswith("--")]
@@ -568,15 +575,95 @@ def block_text(key):
 # Shell scripts ------------------------------------------------------------------------------
 
 _ASSIGNMENT = re.compile(r"^\s*(?:(?:readonly|export|local|declare(?:\s+-\w+)*)\s+)?"
-                         r"([A-Za-z_]\w*)=(\"[^\"$`]*\"|'[^']*'|[^\s\"'$`;|&()]*)\s*(?:#.*)?$")
+                         r"([A-Za-z_]\w*)=(\"[^\"$`]*\"|'[^']*'|[^\s\"'$`;|&()]*)\s*$")
+_HEREDOC = re.compile(r"<<-?[ \t]*(?:'([^']+)'|\"([^\"]+)\"|\\?([A-Za-z_]\w*))")
+
+
+def _shell_line(line, quote=None):
+    """(the line less its comment, the quote still open at its end or None, the delimiters of the
+    heredocs it opens), read as bash reads them: quotes, backslash escapes, a comment only where a
+    word begins outside quotes, a heredoc only at `<<` outside quotes and comments (`<<<` is a
+    here-string). `quote` is the quote left open by the line before."""
+    delimiters = []
+    index = 0
+    while index < len(line):
+        char = line[index]
+        if quote == "'":
+            if char == "'":
+                quote = None
+        elif quote == '"':
+            if char == "\\":
+                index += 1
+            elif char == '"':
+                quote = None
+        elif char == "\\":
+            index += 1
+        elif char in "\"'":
+            quote = char
+        elif char == "#" and (index == 0 or line[index - 1] in " \t;|&("):
+            return line[:index].rstrip(), None, delimiters
+        elif line.startswith("<<<", index):
+            index += 3
+            continue
+        elif line.startswith("<<", index):
+            found = _HEREDOC.match(line, index)
+            if found:
+                delimiters.append(next(g for g in found.groups() if g))
+                index = found.end()
+                continue
+            index += 2
+            continue
+        index += 1
+    return line.rstrip(), quote, delimiters
+
+
+def _logical_lines(text):
+    """[(first line number, code)] of a shell script: comments left out, lines continued by a
+    backslash joined, a quoted string spanning lines kept whole, heredoc bodies left out. A quote
+    or heredoc never closed raises AssertionError, so that a check fails instead of passing on
+    what it did not read."""
+    lines = text.splitlines()
+    logical = []
+    index = 0
+    while index < len(lines):
+        number = index + 1
+        if lines[index].startswith("#!") and index == 0:
+            index += 1
+            continue
+        code, quote, delimiters = "", None, []
+        while True:
+            if index >= len(lines):
+                raise AssertionError(f"line {number}: a quote opened here is never closed, so "
+                                     "the script cannot be read")
+            part, quote, found = _shell_line(lines[index], quote)
+            index += 1
+            delimiters += found
+            if quote is not None:
+                code += part + "\n"
+                continue
+            trailing = len(part) - len(part.rstrip("\\"))
+            if trailing % 2 == 1 and index < len(lines):
+                code += part[:-1] + " "
+                continue
+            code += part
+            break
+        for delimiter in delimiters:
+            while index < len(lines) and lines[index].strip() != delimiter:
+                index += 1
+            if index >= len(lines):
+                raise AssertionError(f"line {number}: the heredoc `{delimiter}` opened here is "
+                                     "never closed, so the script cannot be read")
+            index += 1
+        logical.append((number, code))
+    return logical
 
 
 def shell_assignments(text):
-    """{name: value} of the variables a script assigns a fixed value on a line of their own —
-    the first such value of each name."""
+    """{name: value} of the variables a script assigns a fixed value on a line of its own —
+    the first such value of each name; comments and heredoc bodies are not read."""
     values = {}
-    for line in text.splitlines():
-        found = _ASSIGNMENT.match(line)
+    for _number, code in _logical_lines(text):
+        found = _ASSIGNMENT.match(code)
         if found and found.group(1) not in values:
             values[found.group(1)] = _unquote(found.group(2))
     return values
@@ -636,59 +723,52 @@ def _command_substitutions(line):
     return "".join(result), inner
 
 
-_REDIRECTION = re.compile(r"(?:(?<=\s)|^)\d*(?:&>>?|>>|>&|<&|<<<|>|<)-?\s*"
-                          r"(?:&?\d+-?|\"[^\"]*\"|'[^']*'|[^\s;|&()<>]+)?")
 SEPARATORS = (";", ";;", "&", "&&", "|", "||", "|&", "(", ")", "{", "}")
 KEYWORDS = ("if", "then", "else", "elif", "fi", "do", "done", "while", "until", "!", "time",
             "{", "}", "exec", "command")
 
 
-def _tokens(line):
-    lexer = shlex.shlex(line, posix=True, punctuation_chars=";&|()")
+def _tokens(line, number):
+    lexer = shlex.shlex(line, posix=True, punctuation_chars=";&|()<>")
     lexer.whitespace_split = True
     lexer.commenters = ""
     try:
         return list(lexer)
-    except ValueError:
-        return line.split()
+    except ValueError as error:
+        raise AssertionError(f"line {number}: cannot be read ({error}): {line!r}")
+
+
+def _is_redirection(token):
+    return bool(token) and set(token) <= set("<>&") and bool(set(token) & set("<>"))
 
 
 def shell_commands(text):
     """[(line number, words)] of every simple command a shell script holds, its own variables'
     fixed values put in, command substitutions read as commands of their own, and comments,
-    heredoc bodies and redirections left out. `case` patterns, `[[ ]]` tests and the like come
-    out as commands too; a check reads only the commands it looks for."""
+    heredoc bodies and redirections (with their targets) left out. `case` patterns, `[[ ]]`
+    tests and the like come out as commands too; a check reads only the commands it looks for.
+    What the reader cannot read raises AssertionError."""
     values = shell_assignments(text)
-    lines = text.splitlines()
-    logical = []
-    index = 0
-    while index < len(lines):
-        number = index + 1
-        line = lines[index]
-        index += 1
-        if line.startswith("#!"):
-            continue
-        while line.rstrip().endswith("\\") and index < len(lines):
-            line = line.rstrip()[:-1] + " " + lines[index].strip()
-            index += 1
-        heredoc = re.search(r"<<-?\s*[\"']?([A-Za-z_]\w*)[\"']?", line)
-        if heredoc:
-            while index < len(lines) and lines[index].strip() != heredoc.group(1):
-                index += 1
-            index += 1
-        logical.append((number, _strip_comment(line)))
     commands = []
-    for number, line in logical:
+    for number, line in _logical_lines(text):
         outer, inner = _command_substitutions(_expand(line, values))
         for part in [outer] + inner:
             words = []
-            for token in _tokens(_REDIRECTION.sub(" ", part)) + [";"]:
-                if token in SEPARATORS or token and set(token) <= set(";&|"):
+            tokens = _tokens(part, number) + [";"]
+            position = 0
+            while position < len(tokens):
+                token = tokens[position]
+                position += 1
+                if _is_redirection(token):
+                    if words and words[-1].isdigit():
+                        words.pop()   # the descriptor written before the operator, as in 2>&1
+                    position += 1     # the target
+                elif token in SEPARATORS or token and set(token) <= set(";&|"):
                     if words:
                         commands.append((number, words))
                     words = []
                 elif not words and (token in KEYWORDS
-                                    or re.fullmatch(r"[A-Za-z_]\w*=.*", token)):
+                                    or re.fullmatch(r"[A-Za-z_]\w*=.*", token, re.DOTALL)):
                     continue
                 else:
                     words.append(token)
@@ -712,7 +792,7 @@ def shell_functions(text):
         match = _FUNCTION.match(line)
         if not match:
             continue
-        if _strip_comment(match.group(2)).endswith("}"):
+        if _shell_line(match.group(2))[0].endswith("}"):
             found[match.group(1)] = (index + 1, index + 1)
             continue
         for end in range(index + 1, len(lines)):

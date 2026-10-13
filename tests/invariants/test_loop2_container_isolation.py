@@ -25,7 +25,10 @@ through a function that wraps another function, or through `eval`; whether the o
 answers (the workflow's probe of it, after a deployment).
 
 A file this check reads that does not exist makes its test fail: until the deployment files are
-written, this is the check's failing test.
+written, this is the check's failing test. The shell reader these tests rest on is itself checked
+on a made-up script below: `<<` in a comment or in quotes, a here-string `<<<`, a quoted string
+over two lines and a real heredoc must not hide the commands after them, and a heredoc or quote
+never closed must make the reader fail rather than skip the rest.
 """
 
 import re
@@ -131,6 +134,45 @@ class ComposeIsolation(unittest.TestCase):
         problems += [f"line {number}: the Docker socket: {line.strip()}"
                      for number, line in enumerate(code_lines(text), 1) if "docker.sock" in line]
         self.assertEqual(problems, [], f"{DOCKERFILE} reaches outside the loop2 container")
+
+
+# A made-up script for the shell reader, and the Docker commands it must find in it.
+READER_SCRIPT = """#!/usr/bin/env bash
+# <<< constants <<<
+PROJECT=loop2
+# a comment naming cat <<EOF does not open a heredoc
+echo "<<EOF in double quotes" 'and <<EOF in single quotes'
+read -r first <<< "a here-string"
+message="a string over
+two lines # with no comment in it"
+cat <<'BODY'
+docker compose --project-name loop down
+BODY
+docker compose --project-name "$PROJECT" -f /srv/loop2/compose.yaml build app 2>&1
+docker inspect --format '{{.State.Status}}' loop >>"$LOG"
+"""
+READER_EXPECTED = [
+    (12, ["compose", "--project-name", "loop2", "-f", "/srv/loop2/compose.yaml", "build", "app"]),
+    (13, ["inspect", "--format", "{{.State.Status}}", "loop"]),
+]
+READER_UNREADABLE = (
+    "#!/usr/bin/env bash\ncat <<EOF\ndocker compose --project-name loop down\n",
+    "#!/usr/bin/env bash\necho \"never closed\ndocker compose --project-name loop down\n",
+)
+
+
+class ShellReaderReadsTheWholeScript(unittest.TestCase):
+
+    def test_shell_reader_reads_past_comments_quotes_and_heredocs(self):
+        # invariant: loop2-container-isolation/1
+        self.assertEqual(support.docker_commands(READER_SCRIPT), READER_EXPECTED)
+
+    def test_shell_reader_fails_on_what_it_cannot_read(self):
+        # invariant: loop2-container-isolation/1
+        for script in READER_UNREADABLE:
+            with self.subTest(script=script):
+                with self.assertRaises(AssertionError):
+                    support.docker_commands(script)
 
 
 class DeployScriptActsOnLoop2Alone(unittest.TestCase):
