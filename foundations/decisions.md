@@ -215,7 +215,7 @@ the simulation, to which it passes the player's choices and the passing of real 
     into the game state
 - **Review when:** movement and collisions become the core of the game's fun · check by: 2027-04-03
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale for change:* a simulation of pure functions makes progress while away plain arithmetic
 and the save a JSON document, and runs on a phone as well; real time passed in as an argument keeps
@@ -240,7 +240,7 @@ The browser view is built in TypeScript with the browser's DOM APIs, without an 
 - **Verification:** level 1 — invariants: browser-view-framework
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale for change:* the relation carries the binding part D-04 now has, in which the browser
 view draws the game only from the game state and changes it only through functions of the
@@ -265,7 +265,7 @@ of data alone.
   - violates: a wolf's damage written as a number in the combat code
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and principle #4
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* content in data makes a new item, map or creature cheap, lets the content grow by
 rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
@@ -288,7 +288,7 @@ stand in that list, never on the drawing.
     with the number of sticks it holds
 - **Review when:** none
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
 character's tile against numbers the list shows, and the list keeps the stock of every resource of
@@ -311,7 +311,7 @@ action ends.
 - **Verification:** level 1 — invariants: action-in-progress
 - **Review when:** none
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Gdzie i kiedy gracz zmienia program i od kiedy zmiana działa?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* the player changes the program during a map run without ending it, and the change takes
 effect from the next free game minute, once the character's action in progress has ended; the
@@ -337,7 +337,7 @@ resume it.
   - violates: a map run the player can hold still only by ending it
 - **Review when:** none
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · loop's data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1`
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* one game minute per real second is the pace at which the predecessor game, loop, runs
 without fast-forwarding, and a pause holds a map run without ending it.
@@ -362,7 +362,7 @@ of a map run keeps its seed, and any other map run takes a new seed.
     from the generator of the map's layout
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D19 and §9 "Losowania akcji dzielą strumień z losowaniem napaści" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Where does the simulation's randomness come from?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
 run can be repeated when something has to be understood, and tests of the simulation can expect
@@ -391,7 +391,7 @@ hand.
     explore now
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14, D15 and D9 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character act by its program?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* the game is the writing of behaviour, so carrying out an action by hand would get round
 its own core. Priorities with threshold sliders are decoration: different settings end a map
@@ -417,7 +417,7 @@ map run from its seed, within the bounds the map sets.
   - violates: a map with a hand-placed layout; a map of square tiles
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D32, D17 and §5 "Mapa jest siatką sześciokątnych kafelków" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What is a map made of?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* six neighbours at an equal distance make a move always mean the same. New challenges
 come from the map's settings alone — dimensions, densities, stocks, renewal, cost of a move. The
@@ -445,7 +445,7 @@ a revealed tile and brings no item.
   - violates: a journey stored as a route; exploring that brings a stick
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D33 and §5 "Postać stoi na jednym kafelku" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character move?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* the character reacts to the world between moves, and the state grows by nothing but
 the position and the target of the current move. Exploring that brought an item would be gathering
@@ -469,7 +469,7 @@ minutes of walking, never by a number of its own.
   - violates: a program rule naming "tile 7"
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D34 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a program point at things of the world?"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* the layout of a game map differs on every seed, so a number given to a tile means nothing
 that lasts, while "the nearest" means the same on every map run.
@@ -489,7 +489,7 @@ configurations.
 - **Verification:** level 1 — invariants: application-package-layout · application-build-layout · application-build-output
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale for change:* the simulation is browser code, compiled by the browser's configuration and
 held in the shared package, so the decision applies to it as to the browser view.
@@ -515,7 +515,7 @@ file differs from its source.
     an emoji, or loaded from another site while the game runs
 - **Review when:** the game needs an icon that game-icons.net does not hold · check by: 2027-04-13
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Grafika" · mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions carried to cycle", "Skąd biorą się ikony zasobów i czynności"
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* game-icons.net holds a large set of game icons drawn in one style, under a licence that
 allows their use in the game on condition of credit, so one source keeps the game's icons alike as
