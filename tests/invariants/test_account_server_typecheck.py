@@ -26,11 +26,17 @@ Covers:
     `--no-build`, and no command brings an image in by
     another way (`docker pull`, `load`, `import`, `tag`, `compose pull`, `create`, `run`, `start`,
     `restart`);
-  - `.github/workflows/deploy.yml`: the workflow ships no files to the server. Its steps use no
-    action and no reusable workflow (`uses:` — what an action does is not in the repository to
-    read), run in bash or sh, and run only commands that work on the runner or, for `ssh` and
-    `curl`, reach another host without sending it files: curl with no option that sends data,
-    ssh with nothing fed through its input and no local command. A command outside that list
+  - `.github/workflows/deploy.yml`: the workflow ships no files to the server. It is written in
+    a plain YAML subset and holds only the keys the deployment needs, case counting — so no
+    action or reusable workflow (`uses:`, whose doing is not in the repository to read). Its
+    steps run in bash or sh and run only commands that work on the runner or, for `ssh` and
+    `curl`, reach another host without sending it files: curl with no option that sends data
+    and no `file:` URL; ssh in one shape only — options from a short list, the destination
+    `$USER@$HOST` and one remote argument, each a variable the workflow's `env` sets from the
+    secrets `DEPLOY_USER`, `DEPLOY_HOST`, `DEPLOY_PORT` and from `github.sha`, no other
+    variable, alone at the top of the step, its input untouched or `</dev/null`, no pipe or
+    redirection on its line. Input redirections, heredocs and here-strings, process
+    substitution and base64 encoding are refused anywhere in a step. Anything outside this
     fails the check, since the check cannot tell it sends nothing;
 - the repository holds no deployment route file other than those four.
 
@@ -105,13 +111,34 @@ RUN_FORBIDDEN_CONSTRUCTS = (
 CURL_SENDING = re.compile(r"^(?:--upload-file|--data(?:-[\w-]+)?|--form(?:-[\w-]+)?|--json|"
                           r"--config|--request|--url-query)(?:=.*)?$")
 CURL_SENDING_SHORT = set("TdFKX")
-# Options with which ssh runs a local command or reads a configuration file.
-SSH_LOCAL = re.compile(r"(?i)(?:ProxyCommand|LocalCommand|PermitLocalCommand|KnownHostsCommand)")
-# ssh fed through a pipe or a redirection.
-SSH_STDIN = (
-    re.compile(r"\|\s*ssh(?![\w.-])"),
-    re.compile(r"(?<![\w./-])ssh(?![\w.-])[^\n]*?(?<![<\d])<(?![<(])"),
-)
+# The one shape of an ssh call: options only from these, the destination `$USER@$HOST` and one
+# remote argument, each a variable the step's `env` sets to the value named here, and its input
+# untouched or `</dev/null`. No other variable may stand in its arguments.
+SSH_VALUE_OPTIONS = ("-i", "-p", "-o")
+SSH_LITERAL_OPTIONS = re.compile(r"StrictHostKeyChecking=yes|BatchMode=yes|IdentitiesOnly=yes|"
+                                 r"LogLevel=(?:QUIET|FATAL|ERROR|INFO|VERBOSE)|"
+                                 r"ConnectTimeout=\d+|ServerAliveInterval=\d+|"
+                                 r"ServerAliveCountMax=\d+")
+SSH_PATH_OPTIONS = ("UserKnownHostsFile",)
+SSH_PORT_VALUE = "${{secrets.DEPLOY_PORT}}"
+SSH_USER_VALUE = "${{secrets.DEPLOY_USER}}"
+SSH_HOST_VALUE = "${{secrets.DEPLOY_HOST}}"
+SSH_COMMIT_VALUE = "${{github.sha}}"
+SSH_STDIN_NONE = "</dev/null"
+# A path on the runner's temporary directory, the only value a path variable of ssh may hold.
+RUNNER_PATH = re.compile(r"\$\{?RUNNER_TEMP\}?/[\w.-]+")
+SHELL_VARIABLE = re.compile(r"\$(?:([A-Za-z_]\w*)|\{([A-Za-z_]\w*)\})")
+# Keys a workflow may hold, by the key above them; any other key fails, case counting.
+WORKFLOW_KEYS = {
+    None: ("name", "on", "concurrency", "permissions", "env", "jobs"),
+    "on": ("push",),
+    "push": ("branches",),
+    "concurrency": ("group", "cancel-in-progress"),
+}
+JOB_KEYS = ("name", "runs-on", "timeout-minutes", "env", "steps")
+STEP_KEYS = ("name", "env", "run", "shell", "timeout-minutes")
+ENV_NAME = re.compile(r"[A-Z_][A-Z0-9_]*")
+JOB_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_-]*")
 TRAP_DEPTH = 2
 
 
@@ -272,7 +299,7 @@ def outside_single_quotes(code):
 
 
 def curl_sends(word):
-    if CURL_SENDING.match(word):
+    if CURL_SENDING.match(word) or "file:" in word.lower():
         return True
     if word.startswith("-") and not word.startswith("--"):
         letters = re.match(r"-([A-Za-z]*)", word).group(1)
@@ -280,19 +307,126 @@ def curl_sends(word):
     return False
 
 
-def run_shipping(script, first_line, depth=0):
-    """What in the text of a `run:` step (its first line at `first_line` of the workflow) could
-    ship files or run what this check does not read."""
+def variable(word):
+    found = SHELL_VARIABLE.fullmatch(word)
+    return (found.group(1) or found.group(2)) if found else None
+
+
+def compact(value):
+    return re.sub(r"\s+", "", value)
+
+
+def ssh_shape(words, env, paths):
+    """What in the words after `ssh` leaves the one allowed shape."""
+    def holds(word, value):
+        return env.get(variable(word)) == {value}
+
+    def path(word):
+        return variable(word) in paths or bool(RUNNER_PATH.fullmatch(word))
+
+    index = 0
+    while index < len(words) and words[index].startswith("-"):
+        option = words[index]
+        value = words[index + 1] if index + 1 < len(words) else ""
+        name, _, setting = value.partition("=")
+        if option == "-i" and path(value) or option == "-p" and holds(value, SSH_PORT_VALUE) or \
+                option == "-o" and (SSH_LITERAL_OPTIONS.fullmatch(value)
+                                    or name in SSH_PATH_OPTIONS and path(setting)):
+            index += 2
+            continue
+        return [f"the option `{option} {value}` is not one of the allowed shape"]
+    rest = words[index:]
+    if len(rest) != 2:
+        return [f"{len(rest)} words after the options, not a destination and one argument: {rest}"]
+    problems = []
+    destination = re.fullmatch(SHELL_VARIABLE.pattern + "@" + SHELL_VARIABLE.pattern, rest[0])
+    if not destination or env.get(destination.group(1) or destination.group(2)) != \
+            {SSH_USER_VALUE} or env.get(destination.group(3) or destination.group(4)) != \
+            {SSH_HOST_VALUE}:
+        problems.append(f"the destination `{rest[0]}` is not the user and host from the secrets")
+    if not holds(rest[1], SSH_COMMIT_VALUE):
+        problems.append(f"the remote argument `{rest[1]}` is not the variable holding github.sha")
+    return problems
+
+
+def merged_lines(script):
+    """The logical lines of a step, a line ending in `|`, `||` or `&&` joined to the next."""
+    merged = []
+    for number, code in support._logical_lines(script):
+        if merged and re.search(r"(?:\|\|?|&&)\s*$", merged[-1][1]):
+            merged[-1] = (merged[-1][0], merged[-1][1] + " " + code)
+        else:
+            merged.append((number, code))
+    return merged
+
+
+def outside_quotes(code):
+    """A line of shell code with all quoted text blanked."""
+    blanked = outside_single_quotes(code)
+    return re.sub(r'"(?:[^"\\]|\\.)*"', lambda m: '"' + " " * (len(m.group(0)) - 2) + '"',
+                  blanked)
+
+
+def ssh_lines(script):
+    """[(line, problem)] of what in the lines of a step that run ssh lets something reach ssh's
+    input: ssh not first
+    on its line or nested in a group, loop, condition or function, a pipe, any redirection but
+    `</dev/null`."""
+    problems = []
+    depth, cases = 0, 0
+    for number, code in merged_lines(script):
+        outer, _inner = support._command_substitutions(code)
+        tokens = support._tokens(outer, number)
+        if "ssh" in tokens:
+            bare = outside_quotes(outer).replace(SSH_STDIN_NONE, "")
+            if tokens[0] != "ssh" or depth:
+                problems.append((number, f"ssh is not a command of its own at the top of the "
+                                         f"step: {code.strip()}"))
+            if re.search(r"(?<!\|)\|(?!\|)|[<>]", bare):
+                problems.append((number, f"ssh's line holds a pipe or a redirection: "
+                                         f"{code.strip()}"))
+        for token in tokens:
+            if token == "case":
+                cases += 1
+            elif token == "esac":
+                cases = max(0, cases - 1)
+            elif token in ("{", "(", "do", "then"):
+                depth += 1
+            elif token in ("}", "done", "fi") or token == ")" and not cases:
+                depth = max(0, depth - 1)
+    return problems
+
+
+def run_shipping(script, first_line, env, depth=0):
+    """What in the text of a `run:` step (its first line at `first_line` of the workflow, its
+    variables from the workflow's `env` in `env`) could ship files or run what this check does
+    not read."""
     problems = []
     for pattern, what in RUN_FORBIDDEN_TEXT:
         if pattern.search(script):
             problems.append(f"line {first_line}: the step {what}")
     if RUN_CHANGING_ASSIGNMENT.search(script):
         problems.append(f"line {first_line}: the step sets a variable that changes what runs")
-    for line, code in support._logical_lines(script):
+    for name in env:
+        if re.search(r"(?<![\w$])" + re.escape(name) + r"\+?=", script):
+            problems.append(f"line {first_line}: the step assigns `{name}`, set by the workflow")
+    logical = support._logical_lines(script)
+    for line, code in logical:
+        where = f"line {first_line + line - 1}"
         for pattern, what in RUN_FORBIDDEN_CONSTRUCTS:
             if pattern.search(outside_single_quotes(code)):
-                problems.append(f"line {first_line + line - 1}: the step {what}: {code.strip()}")
+                problems.append(f"{where}: the step {what}: {code.strip()}")
+        if "<" in outside_single_quotes(code).replace(SSH_STDIN_NONE, ""):
+            problems.append(f"{where}: the step redirects a command's input: {code.strip()}")
+    paths = set()
+    for name in {m.group(1) for _l, c in logical
+                 for m in re.finditer(r"(?<![\w$])([A-Za-z_]\w*)=", c)}:
+        assigned = [c for _l, c in logical if re.search(r"(?<![\w$])" + name + "=", c)]
+        if len(assigned) == 1 and re.fullmatch(
+                r"\s*(?:local\s+)?" + name + r"=\"?" + RUNNER_PATH.pattern + r"\"?\s*",
+                assigned[0]):
+            paths.add(name)
+    problems += [f"line {first_line + n - 1}: {m}" for n, m in ssh_lines(script)]
     functions = support.shell_functions(script)
     for line, words in support.shell_commands(script):
         where = f"line {first_line + line - 1}"
@@ -302,36 +436,53 @@ def run_shipping(script, first_line, depth=0):
             if depth >= TRAP_DEPTH:
                 problems.append(f"{where}: a trap inside a trap: {' '.join(words)}")
             for action in actions:
-                problems += run_shipping(action, first_line + line - 1, depth + 1)
+                problems += run_shipping(action, first_line + line - 1, env, depth + 1)
         elif name not in WORKFLOW_COMMANDS and name not in functions:
             problems.append(f"{where}: command `{name}` is not one this check reads as "
                             f"sending nothing: {' '.join(words)}")
         elif name == "curl" and any(curl_sends(w) for w in words[1:]):
-            problems.append(f"{where}: curl sends data: {' '.join(words)}")
-        elif name == "ssh" and any(SSH_LOCAL.search(w) or w == "-F" for w in words[1:]):
-            problems.append(f"{where}: ssh runs a local command: {' '.join(words)}")
-        elif name == "ssh" and any("__SUBSTITUTION__" in w for w in words[1:]):
-            problems.append(f"{where}: ssh sends the output of a command: {' '.join(words)}")
-    joined = re.sub(r"\\\n", " ", script)
-    problems += [f"line {first_line}: ssh is fed files: {line.strip()}"
-                 for line in joined.splitlines()
-                 if any(p.search(outside_single_quotes(line)) for p in SSH_STDIN)]
+            problems.append(f"{where}: curl sends data or reads a file: {' '.join(words)}")
+        elif name == "base64" and not ({"-d", "--decode"} & set(words[1:]) and all(
+                w.startswith("-") for w in words[1:])):
+            problems.append(f"{where}: base64 reads a file or encodes: {' '.join(words)}")
+        elif name == "ssh":
+            problems += [f"{where}: ssh: {p}" for p in ssh_shape(words[1:], env, paths)]
     return problems
+
+
+def key_allowed(path, key):
+    parent = path[-1] if path else None
+    if parent == "env":
+        return bool(ENV_NAME.fullmatch(key))
+    if parent == "jobs":
+        return bool(JOB_NAME.fullmatch(key))
+    if len(path) >= 2 and path[-2] == "jobs":
+        return key in JOB_KEYS
+    if parent == "steps":
+        return key in STEP_KEYS
+    return key in WORKFLOW_KEYS.get(parent, ())
 
 
 def workflow_shipping(text):
     """What in a workflow could ship files or images to another host. The workflow must be in the
-    plain YAML subset `support.strict_workflow` reads, or that reader fails. Then: any `uses:`
-    (an action, or a reusable workflow, does what the repository does not show), a `shell:`
-    other than bash or sh, an `env` key that changes what runs, and in each `run:` step what
-    `run_shipping` finds."""
-    problems = [f"line {n}: uses: {v}" for n, _k, v in support.workflow_keys(text, ("uses",))]
+    plain YAML subset `support.strict_workflow` reads, or that reader fails. Then: any key that
+    is not one of the keys the workflow needs (`uses:` among them — an action does what the
+    repository does not show), compared with case; a `shell:` other than bash or sh; an `env`
+    key that changes what runs; and in each `run:` step what `run_shipping` finds."""
+    entries = support.strict_workflow(text)
+    problems = [f"line {n}: key `{k}` under {'/'.join(p) or 'the top'} is not one this check "
+                f"allows" for n, p, k, _v in entries if not key_allowed(p, k)]
+    problems += [f"line {n}: uses: {v}" for n, _k, v in support.workflow_keys(text, ("uses",))]
     problems += [f"line {n}: shell: {v}" for n, _k, v in support.workflow_keys(text, ("shell",))
                  if v.strip() not in WORKFLOW_SHELLS]
     problems += [f"line {n}: {k} is set" for n, k, _v in
                  support.workflow_keys(text, RUN_CHANGING_VARIABLES)]
+    env = {}
+    for _n, path, key, value in entries:
+        if path and path[-1] == "env":
+            env.setdefault(key, set()).add(compact(support._unquote(value)))
     for number, _key, script in support.workflow_keys(text, ("run",)):
-        problems += run_shipping(script, number)
+        problems += run_shipping(script, number, env)
     return problems
 
 
@@ -352,11 +503,18 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Deploy
+        env:
+          SHA: ${{ github.sha }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+          LOGIN: ${{ secrets.DEPLOY_USER }}
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |
           set -euo pipefail
-          trap 'rm -f "$RUNNER_TEMP/key"' EXIT
-          printf '%s' "$KEY" | base64 -d > "$RUNNER_TEMP/key"
-          ssh -i "$RUNNER_TEMP/key" -o BatchMode=yes "$USER@$HOST" "$SHA"
+          key="$RUNNER_TEMP/key"
+          trap 'rm -f "$key"' EXIT
+          printf '%s' "$KEY" | base64 -d > "$key"
+          ssh -i "$key" -p "$PORT" -o BatchMode=yes "$LOGIN@$HOST" "$SHA" </dev/null
       - name: Probe
         run: |
           probe() {
@@ -392,6 +550,17 @@ SHIPPING_STEPS = (
     "      - run: |\n          ssh host \"$(base64 -w0 dist.tgz)\"\n",
     "      - uses: &copy appleboy/scp-action@v0.1.7\n",
     "    env:\n      PATH: /tmp/bin\n",
+    "      - Uses: appleboy/scp-action@v0.1.7\n",
+    "      - with:\n          source: dist\n",
+    "      - run: |\n          ssh -p \"$PORT\" \"$LOGIN@$HOST\" \"$SHA\" 0<dist.tgz\n",
+    "      - run: |\n          printf '%s' x |\n"
+    "          ssh -p \"$PORT\" \"$LOGIN@$HOST\" \"$SHA\"\n",
+    "      - run: |\n          data=\"$(base64 -w0 dist.tgz)\"\n"
+    "          ssh -p \"$PORT\" \"$LOGIN@$HOST\" \"$data\"\n",
+    "      - run: |\n          printf '%s' x | {\n"
+    "          ssh -p \"$PORT\" \"$LOGIN@$HOST\" \"$SHA\"\n          }\n",
+    "      - run: |\n          ssh -p \"$PORT\" \"$LOGIN@$HOST\" \"$SHA\" \"$KEY\"\n",
+    "      - run: |\n          curl -sS -o /dev/null \"file:///etc/hosts\"\n",
 )
 
 

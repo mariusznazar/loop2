@@ -868,10 +868,15 @@ def strict_workflow(text):
     `|+`), and on a key's line only the values `_workflow_scalar` accepts. A quoted key, a flow
     mapping, a nested flow form, an anchor, an alias, a tag, a folded scalar, a value continued
     on the lines below, a tab in the indentation or a second document is refused, so that no key
-    can stand where the readers of this module do not look."""
+    can stand where the readers of this module do not look.
+
+    Returns [(line number, the keys above it from the top, key, value)] of every key, the value
+    being the scalar on its line, `|` for a literal block, or "" for a block below."""
     lines = text.splitlines()
     block = None   # the column of the key whose literal block is being skipped
     previous_key = None
+    stack = []     # (column, key) of the keys above the current line
+    entries = []
     for number, raw in enumerate(lines, 1):
         depth = len(raw) - len(raw.lstrip(" "))
         if block is not None:
@@ -888,6 +893,11 @@ def strict_workflow(text):
         key = re.fullmatch(rf"({_YAML_KEY}):(?: +(.*))?", rest)
         if key:
             value = (key.group(2) or "").strip()
+            column = len(indent) + len(dash)
+            while stack and stack[-1][0] >= column:
+                stack.pop()
+            entries.append((number, tuple(k for _c, k in stack), key.group(1), value))
+            stack.append((column, key.group(1)))
             if re.fullmatch(r"\|[-+]?", value):
                 block = len(indent) + len(dash)
             elif value and not _workflow_scalar(value):
@@ -907,6 +917,7 @@ def strict_workflow(text):
                     not re.match(r"^ *(?:- +)?" + _YAML_KEY + r":(?: |$)", following):
                 raise AssertionError(f"workflow line {number + 1}: a value continued on the "
                                      f"next line, not read here: {following.strip()!r}")
+    return entries
 
 
 def workflow_keys(text, names):
