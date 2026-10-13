@@ -1,6 +1,6 @@
 # Loop
 
-Minimalna aplikacja TypeScript: pusta strona utworzona przez DOM oraz serwer Express 5.
+Aplikacja TypeScript: gra w przeglądarce zbudowana na DOM oraz serwer Express 5, który podaje jej pliki.
 
 Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w głównym katalogu repozytorium.
 
@@ -8,20 +8,34 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 1. `npm ci` — instalacja według pliku blokady.
 2. `npm run typecheck` — kontrola typów przeglądarki i serwera bez emisji plików.
-3. `npm run build` — kompilacja obu części i skopiowanie HTML do `dist/public`.
+3. `npm run build` — kompilacja obu części oraz skopiowanie HTML i ikon do `dist/public`.
 4. `npm start` — uruchomienie zbudowanego serwera.
-5. Otwórz http://127.0.0.1:3000. Strona ma być pusta.
+5. Otwórz http://127.0.0.1:3000.
 
 `npm start` wymaga wcześniejszego builda. Serwer nasłuchuje lokalnie na porcie 3000; zakończ go przez Ctrl+C.
+
+## Co pokazuje strona
+
+- **Panel „Program”** (lewa kolumna, widoczny zawsze): uporządkowana lista reguł „warunek → akcja”. Warunki: „Zawsze” i „Tu leży mniej niż N <zasób>”; akcje: „Eksploruj”, „Wędruj” i „Idź — <zasób>”. Przyciski „↑”, „↓”, „Usuń” i „Dodaj regułę”. Program można zmieniać przed wysłaniem maga i w trakcie przejścia; zmiana działa od najbliższej wolnej minuty gry.
+- **Wysyłanie** (prawa kolumna, gdy nie trwa przejście): postać „Mag żywiołów”, „Mapa: Las” i przycisk „Wyślij”. Każde wysłanie losuje nowy układ mapy.
+- **Wiersz stanu** (w trakcie przejścia): „Minuta {minuta} · {bieżąca akcja}”, z dopiskiem „ (pauza)” przy zatrzymanym czasie, oraz przyciski „Pauza”/„Wznów”, „Restart” (od minuty zero, ten sam układ, bieżący program) i „Zakończ” (powrót do wysyłania). Czas płynie minutą gry na sekundę realną.
+- **Panel terenu** pod wierszem stanu: rysunek całej mapy 4 × 4 z sześciokątnych kafelków — nieodsłonięte ciemne i puste, odsłonięte jaśniejsze z ikonami zasobów bez liczb, ikona przygaszona przy zapasie zero, gruby bursztynowy obrys na kafelku postaci i kreskowany na celu bieżącego kroku. Obok stoi lista odsłoniętych kafelków: etykieta `(kolumna, wiersz)` i zapas każdego zasobu mapy, „—” gdy kafelek go nie ma. Rysunek nie reaguje na kliknięcia; najechanie na kafelek podświetla jego wiersz listy, a najechanie na wiersz — jego kafelek.
+- **Stopka**: wzmianki o autorach ikon — dla każdej „{zasób}: {autor}, game-icons.net, CC BY 3.0” z odnośnikami do źródła ikony i licencji.
+
+Stan gry żyje tylko w pamięci strony: przeładowanie zaczyna od nowa, z pustym programem i bez przejścia.
+
+## Ikony
+
+Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ich źródła leżą w `assets/icons`, poza katalogiem podawanym przez serwer; `npm run build` kopiuje je do `dist/public/icons`. Autorów ikon i commit źródła trzyma `src/browser/view/credits.ts`, a stopka strony pokazuje wymagane wzmianki.
 
 ## Praca lokalna i sprawdzenie
 
 `npm run dev` buduje aplikację i uruchamia serwer. Nie obserwuje plików: po edycji zatrzymaj proces przez Ctrl+C i ponów komendę.
 
-`npm test` buduje aplikację i wykonuje testy HTTP oraz test błędu startu przy zajętym porcie 3000.
+`npm test` buduje aplikację i wykonuje testy HTTP, test błędu startu przy zajętym porcie 3000 oraz testy symulacji i widoku w Node, bez przeglądarki.
 
-W narzędziach przeglądarki sprawdź, że `document.querySelector('main')` zwraca pusty element, `/main.js` ładuje się bez błędu, a konsola nie zawiera błędów wykonania. Sama pusta strona nie dowodzi wykonania modułu.
+W przeglądarce sprawdź, że `/main.js` ładuje się bez błędu, konsola nie zawiera błędów wykonania, a strona pokazuje panel „Program”, wysyłanie maga i stopkę z wzmiankami; po „Wyślij” — wiersz stanu z minutą rosnącą co sekundę oraz panel terenu z listą kafelków.
 
 Nieznane `/api`, `/api/` i ścieżki pod `/api/` otrzymują 404 JSON. Pozostałe brakujące ścieżki otrzymują zwykłe 404. Serwer podaje wyłącznie `dist/public`.
 
-Kod przeglądarki jest w `src/browser`, kod serwera w `src/server`. Kompilacje mają osobne konfiguracje typów; zależności i plik blokady są wspólne. Konta, baza, mechanika gry i wdrożenie nie należą do tego szkieletu.
+Kod przeglądarki jest w `src/browser` — symulacja gry w `src/browser/sim`, ekrany w `src/browser/view` — a kod serwera w `src/server`. Kompilacje mają osobne konfiguracje typów; zależności i plik blokady są wspólne. Konta, zapis stanu, serwerowa część gry i wdrożenie jeszcze nie istnieją.
