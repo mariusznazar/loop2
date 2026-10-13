@@ -32,14 +32,6 @@ On Cloudflare's Free plan, Configuration Rules are available with up to 10 rules
 - **Source:** https://developers.cloudflare.com/rules/configuration-rules/ (archived: https://web.archive.org/web/20261005235800/https://developers.cloudflare.com/rules/configuration-rules/, 2026-10-05) § Overview — "Each configuration rule includes an expression that defines which requests the rule applies to, based on properties like URL path, hostname, or request header." · § Availability, Free column, Availability — "Yes" · § Availability, Free column, Number of rules — "10"; read 2026-10-13 · https://developers.cloudflare.com/rules/configuration-rules/settings/ (archived: https://web.archive.org/web/20261005235058/https://developers.cloudflare.com/rules/configuration-rules/settings/, 2026-10-05) § SSL — "Use this setting to configure the SSL/TLS encryption mode for matching requests:"; read 2026-10-13
 - **Method:** TODO
 
-## loop2-public-cloudflare-route/1
-
-The public route at `https://loop2.mariusznazar.com/api/unknown-path-probe` returns HTTP 404 with JSON, `Server: cloudflare` and `cf-cache-status: DYNAMIC`.
-
-- **Holds for:** the loop2 public route through Cloudflare, which publishes no version for this route
-- **Source:** observed: `curl.exe --silent --noproxy "*" --max-time 20 --dump-header - --output NUL "https://loop2.mariusznazar.com/api/unknown-path-probe?setup-fact-observation=20261013"` on curl 8.21.0, Windows; run 2026-10-13
-- **Method:** TODO
-
 ## loop2-host-forced-command-entry/1
 
 The test server's authorized_keys contains exactly one entry beginning with `restrict,command="/usr/local/bin/loop2-deploy"`.
@@ -58,7 +50,7 @@ The installed `/usr/local/bin/loop2-deploy` is owned by root:root with mode 0755
 
 ## mikrus-host-docker-workloads/1
 
-The old loop game and foundryvtt run as healthy Docker containers on the test server's host.
+The old loop game and foundryvtt run as Docker containers on the test server's host.
 
 - **Holds for:** Docker 28.1.1 build 4eba377 on Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64
 - **Source:** observed: `docker ps --format '{{.Names}} {{.Status}}'` on Docker 28.1.1 build 4eba377, Ubuntu 22.04.5 LTS; run 2026-10-13
@@ -72,12 +64,12 @@ The test server's host reports zero total swap in `/proc/meminfo`.
 - **Source:** observed: `cat /proc/meminfo` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64; run 2026-10-13
 - **Method:** TODO
 
-## loop2-host-memory-limit/1
+## cloudflare-test-origin-ipv6/1
 
-Docker reports `HostConfig.Memory=536870912` for the running loop2 container.
+Cloudflare establishes IPv6 TCP connections to port 18080 on the test server.
 
-- **Holds for:** Docker 28.1.1 build 4eba377 on Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64
-- **Source:** observed: `docker inspect --type container --format '{{.HostConfig.Memory}}' loop2` on Docker 28.1.1 build 4eba377, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Holds for:** the test server's published origin port 18080 on Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64
+- **Source:** observed: `python3 -c 'import ipaddress, subprocess; ranges=[ipaddress.ip_network(line) for line in subprocess.check_output(["curl", "--silent", "--show-error", "--fail", "--max-time", "20", "https://www.cloudflare.com/ips-v6"], text=True).splitlines()]; subprocess.run(["curl", "--silent", "--show-error", "--max-time", "20", "--output", "/dev/null", "--write-out", "public-api %{http_code}", "https://loop2.mariusznazar.com/api/unknown-path-probe?ipv6-evidence=3"], check=True); rows=subprocess.check_output(["ss", "-6", "-nt", "state", "established", "sport = :18080"], text=True).splitlines()[1:]; peers=[ipaddress.ip_address(row.split()[-1].rsplit(":", 1)[0].strip("[]")) for row in rows]; print("; Cloudflare IPv6 origin connections:", sum(any(peer in network for network in ranges) for peer in peers))'` on Python 3.10.12, curl 7.81.0 and ss from iproute2-5.15.0, Ubuntu 22.04.5 LTS; run 2026-10-13
 - **Method:** TODO
 
 ## Withdrawn identifiers

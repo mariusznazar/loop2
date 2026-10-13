@@ -267,7 +267,7 @@ connects to the server over plain HTTP only while no player account is served th
 
 - **Change:** new decision
 - **Scope:** deployment
-- **Based on:** cloudflare-origin-rules@6f0ea4e4 · cloudflare-configuration-rules@939e4e91 · loop2-public-cloudflare-route@0cf40654 · Cloudflare network ports, "By default, Cloudflare proxies traffic destined for the HTTP/HTTPS ports listed below." (https://developers.cloudflare.com/fundamentals/reference/network-ports/, read 2026-10-13)
+- **Based on:** cloudflare-origin-rules@6f0ea4e4 · cloudflare-configuration-rules@939e4e91 · cloudflare-test-origin-ipv6@02f0487a · Cloudflare network ports, "By default, Cloudflare proxies traffic destined for the HTTP/HTTPS ports listed below." (https://developers.cloudflare.com/fundamentals/reference/network-ports/, read 2026-10-13)
 - **Relations:** derives from D-08@e4e8a2f4
 - **Verification:** level 2 — an agent compares the change with the decision:
   - complies: a change whose workflow requests `https://loop2.mariusznazar.com/` after a deployment and whose container publishes the port the Origin Rule names
@@ -281,11 +281,8 @@ certificate in the container, and reaches the container's port through an Origin
 public IPv4 service ports of the host are taken by other workloads, the old loop game and another.
 Plain HTTP from Cloudflare to the server is accepted only while the test server holds no player
 data, since HTTPS for players is not end-to-end encryption; a Configuration Rule sets that
-encryption mode for this hostname alone, so the old game's route keeps its own. The public route
-dynamically returns the API's JSON error through Cloudflare. The owner reports
-the proxied AAAA record and hostname-scoped rules; their private configuration has not been read
-independently. The on-host request to the global IPv6 address is not an external IPv6 probe, so
-the observed public response alone does not establish the upstream address or encryption mode.
+encryption mode for this hostname alone, so the old game's route keeps its own. IPv6 lets
+Cloudflare reach loop2 without taking a shared public IPv4 service port.
 *Rejected:* a new free Mikrus subdomain — ties the game's address to the hosting provider; serving
 loop2 at `kantarion.bieda.it` in place of the old game — would reopen the approved MVP definition.
 
@@ -366,7 +363,7 @@ The loop2 container is a Docker container.
 
 - **Change:** new decision
 - **Scope:** deployment
-- **Based on:** mikrus-host-docker-workloads@4595fb04
+- **Based on:** mikrus-host-docker-workloads@f130b704
 - **Relations:** derives from D-08@e4e8a2f4
 - **Verification:** level 2 — an agent compares the change with the decision:
   - complies: a Compose file and a Dockerfile from which Docker builds and runs the loop2 container
@@ -431,10 +428,7 @@ possible. A stolen key can still redeploy an earlier commit of `main`; that is a
 test server holds no player data. Code merged into `main`, its container build and service
 definitions included, runs on the host with root's authority through the deployment, so it is
 trusted code and whoever can merge to `main` can act on the host; the trust boundary stays with the
-files that take in data the product does not trust. The host has the restricted forced-command
-entry and the root-owned installed copy; these
-observed settings are distinct from an end-to-end test of the automation key from a GitHub
-Actions runner, which has not run.
+files that take in data the product does not trust.
 *Rejected:* a forced command that runs the checkout's own copy — a pushed commit could change what
 the key runs; a deployment that refuses when the copies differ — every rollback past a change of the
 source would stop.
@@ -449,7 +443,7 @@ sets, and the loop2 container runs under a memory limit.
 
 - **Change:** new decision
 - **Scope:** deployment
-- **Based on:** mikrus-host-docker-workloads@4595fb04 · mikrus-host-swap@e1933cc7 · loop2-host-memory-limit@f941f4eb
+- **Based on:** mikrus-host-docker-workloads@f130b704 · mikrus-host-swap@e1933cc7
 - **Relations:** derives from D-08@e4e8a2f4
 - **Verification:** level 1 — invariants: loop2-host-sharing. Level 2 for the thresholds and the memory limit — an agent compares the change with the decision:
   - complies: a deployment that refuses to build while available memory is below its threshold and leaves the running container untouched; a Compose service with a memory limit
@@ -464,10 +458,8 @@ memory and disk before the build stops a deployment before it harms them. The th
 limit are chosen bounds, not measured needs, tuned in the repository from the values each
 deployment logs. Code merged into `main`, its container build and service definitions included,
 runs on the host with root's authority through the deployment, so these limits hold against
-mistakes in trusted code, not against whoever can merge to `main`. Docker reports the running
-loop2 container's configured memory bound; no independent cgroup
-reading establishes its enforcement. Free memory and disk are transient readings, so the
-deployment reads them again before each build.
+mistakes in trusted code, not against whoever can merge to `main`. Free memory and disk are
+transient readings, so the deployment reads them again before each build.
 *Rejected:* a host-wide prune to reclaim build cache — it would remove images and cache of other
 workloads, and the base image may be one another workload uses; reclaiming the build cache and
 base-image layers stays a human's decision.
