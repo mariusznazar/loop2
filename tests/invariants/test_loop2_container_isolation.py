@@ -158,7 +158,17 @@ READER_EXPECTED = [
 READER_UNREADABLE = (
     "#!/usr/bin/env bash\ncat <<EOF\ndocker compose --project-name loop down\n",
     "#!/usr/bin/env bash\necho \"never closed\ndocker compose --project-name loop down\n",
+    "#!/usr/bin/env bash\nout=$(docker compose --project-name loop2 down\n)\n",
 )
+# Redirections: a descriptor against its operator is left out, a number standing apart stays.
+READER_REDIRECTIONS = """#!/usr/bin/env bash
+docker stop --time 10 >/dev/null loop2 2>&1
+docker logs --tail 5 loop2 9>>lock
+"""
+READER_REDIRECTIONS_EXPECTED = [
+    (2, ["stop", "--time", "10", "loop2"]),
+    (3, ["logs", "--tail", "5", "loop2"]),
+]
 
 
 class ShellReaderReadsTheWholeScript(unittest.TestCase):
@@ -166,6 +176,11 @@ class ShellReaderReadsTheWholeScript(unittest.TestCase):
     def test_shell_reader_reads_past_comments_quotes_and_heredocs(self):
         # invariant: loop2-container-isolation/1
         self.assertEqual(support.docker_commands(READER_SCRIPT), READER_EXPECTED)
+
+    def test_shell_reader_keeps_words_beside_redirections(self):
+        # invariant: loop2-container-isolation/1
+        self.assertEqual(support.docker_commands(READER_REDIRECTIONS),
+                         READER_REDIRECTIONS_EXPECTED)
 
     def test_shell_reader_fails_on_what_it_cannot_read(self):
         # invariant: loop2-container-isolation/1

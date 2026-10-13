@@ -705,6 +705,9 @@ def _command_substitutions(line):
                 elif char == ")":
                     depth -= 1
                 cursor += 1
+            if depth:
+                raise AssertionError(f"a `$(` is not closed on its line, so the reader cannot "
+                                     f"read it: {line!r}")
             body = line[index + 2:cursor - 1]
             replaced, nested = _command_substitutions(body)
             inner += [replaced] + nested
@@ -712,7 +715,9 @@ def _command_substitutions(line):
             index = cursor
         elif line[index] == "`":
             end = line.find("`", index + 1)
-            end = len(line) if end < 0 else end
+            if end < 0:
+                raise AssertionError(f"a backquote is not closed on its line, so the reader "
+                                     f"cannot read it: {line!r}")
             replaced, nested = _command_substitutions(line[index + 1:end])
             inner += [replaced] + nested
             result.append(" __SUBSTITUTION__ ")
@@ -738,6 +743,42 @@ def _tokens(line, number):
         raise AssertionError(f"line {number}: cannot be read ({error}): {line!r}")
 
 
+def _drop_descriptors(line):
+    """The line less each file descriptor number written against a redirection operator outside
+    quotes (`2>&1`, `9>>file`); a number standing apart (`5 >file`) is a word and stays."""
+    result = []
+    quote = None
+    index = 0
+    while index < len(line):
+        char = line[index]
+        if quote == "'":
+            if char == "'":
+                quote = None
+        elif quote == '"':
+            if char == "\\":
+                result.append(char)
+                index += 1
+                char = line[index] if index < len(line) else ""
+            elif char == '"':
+                quote = None
+        elif char == "\\":
+            result.append(char)
+            index += 1
+            char = line[index] if index < len(line) else ""
+        elif char in "\"'":
+            quote = char
+        elif char.isdigit() and (index == 0 or line[index - 1] in " \t;|&("):
+            end = index
+            while end < len(line) and line[end].isdigit():
+                end += 1
+            if end < len(line) and line[end] in "<>":
+                index = end
+                continue
+        result.append(char)
+        index += 1
+    return "".join(result)
+
+
 def _is_redirection(token):
     return bool(token) and set(token) <= set("<>&") and bool(set(token) & set("<>"))
 
@@ -754,14 +795,12 @@ def shell_commands(text):
         outer, inner = _command_substitutions(_expand(line, values))
         for part in [outer] + inner:
             words = []
-            tokens = _tokens(part, number) + [";"]
+            tokens = _tokens(_drop_descriptors(part), number) + [";"]
             position = 0
             while position < len(tokens):
                 token = tokens[position]
                 position += 1
                 if _is_redirection(token):
-                    if words and words[-1].isdigit():
-                        words.pop()   # the descriptor written before the operator, as in 2>&1
                     position += 1     # the target
                 elif token in SEPARATORS or token and set(token) <= set(";&|"):
                     if words:
@@ -812,19 +851,17 @@ def _after_docker(words):
     return None
 
 
-def docker_commands(text):
-    """[(line number, words after `docker`)] of the Docker commands a shell script runs;
-    `docker-compose ...` comes out as `compose ...`. A function whose body runs a Docker command
-    ending in `"$@"` is a wrapper: each call of it comes out as that command with the call's
-    words in place of `"$@"`, and the body's command itself does not come out."""
-    commands = shell_commands(text)
-    functions = shell_functions(text)
+def _wrappers(commands, functions):
     wrappers = {}
     for name, (first, last) in functions.items():
         for number, words in commands:
             rest = _after_docker(words)
             if first <= number <= last and rest and rest[-1] in ALL_ARGUMENTS:
                 wrappers[name] = rest[:-1]
+    return wrappers
+
+
+def _docker_of(commands, functions, wrappers):
     found = []
     for number, words in commands:
         if words[0] in functions and words == [words[0]] and \
@@ -837,6 +874,52 @@ def docker_commands(text):
         if rest is not None and not (rest and rest[-1] in ALL_ARGUMENTS):
             found.append((number, rest))
     return found
+
+
+def docker_commands(text):
+    """[(line number, words after `docker`)] of the Docker commands a shell script holds, in the
+    order they stand in the file; `docker-compose ...` comes out as `compose ...`. A function
+    whose body runs a Docker command ending in `"$@"` is a wrapper: each call of it comes out as
+    that command with the call's words in place of `"$@"`, and the body's command itself does
+    not come out."""
+    commands = shell_commands(text)
+    functions = shell_functions(text)
+    return _docker_of(commands, functions, _wrappers(commands, functions))
+
+
+def executed_docker_commands(text):
+    """The Docker commands of a shell script, as `docker_commands` gives them, in the order the
+    script runs them: its top-level commands in order, each call of a function it defines
+    replaced by that function's body, the calls in that body replaced in turn (a function already
+    being read is not entered again). The branches of an `if` or `case` are read one after the
+    other, as they stand; a function the run never calls gives nothing."""
+    commands = shell_commands(text)
+    functions = shell_functions(text)
+    wrappers = _wrappers(commands, functions)
+
+    def owner(number):
+        holding = [(last - first, name) for name, (first, last) in functions.items()
+                   if first <= number <= last]
+        return min(holding)[1] if holding else None
+
+    bodies = {name: [] for name in functions}
+    top = []
+    for number, words in commands:
+        name = owner(number)
+        if name is not None and words == [name] and functions[name][0] == number:
+            continue  # the line that defines the function
+        (bodies[name] if name is not None else top).append((number, words))
+    order = []
+
+    def walk(sequence, entered):
+        for number, words in sequence:
+            order.append((number, words))
+            called = words[0]
+            if called in bodies and called not in wrappers and called not in entered:
+                walk(bodies[called], entered + [called])
+
+    walk(top, [])
+    return _docker_of(order, functions, wrappers)
 
 
 # Options of `docker compose` that take a value, before its subcommand.

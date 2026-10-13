@@ -20,8 +20,10 @@ Covers:
     stage takes `dist/` with `COPY --from` of a stage that cannot be built without that RUN;
   - `compose.yaml`: every service is built (`build:`, from the repository's `Dockerfile`) and
     names no `image:` that Compose could pull or reuse instead;
-  - `deploy/loop2-deploy`: the script builds (`docker compose … build`) before its first
-    `docker compose … up`, every `up` carries `--no-build`, and no command brings an image in by
+  - `deploy/loop2-deploy`: in the order the script runs its commands — its top-level flow,
+    each call of a function it defines read as that function's body — the first
+    `docker compose … build` or `up` is a `build` and an `up` follows; every `up` carries
+    `--no-build`, and no command brings an image in by
     another way (`docker pull`, `load`, `import`, `tag`, `compose pull`, `create`, `run`, `start`,
     `restart`);
   - `.github/workflows/deploy.yml`: the workflow ships no files to the server — no checkout, no
@@ -182,6 +184,29 @@ READER_EXPECTED = [
 ]
 
 
+# A made-up script whose functions stand in one order and are called in the other: the reader
+# must give the Docker commands in the order of the calls.
+ORDER_SCRIPT = """#!/usr/bin/env bash
+build_image() {
+  docker compose -p loop2 build app
+}
+start_container() {
+  if ! docker compose -p loop2 up -d --no-build app; then
+    exit 8
+  fi
+}
+main() {
+  start_container
+  build_image
+}
+main "$@"
+"""
+ORDER_EXPECTED = [
+    (6, ["compose", "-p", "loop2", "up", "-d", "--no-build", "app"]),
+    (3, ["compose", "-p", "loop2", "build", "app"]),
+]
+
+
 class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
 
     def test_shell_reader_reads_past_heredoc_look_alikes(self):
@@ -234,9 +259,9 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
 
     def test_deploy_script_builds_before_starting_without_building(self):
         # invariant: account-server-typecheck/1
-        commands = support.docker_commands(support.read_required(DEPLOY_SCRIPT))
+        text = support.read_required(DEPLOY_SCRIPT)
         builds, ups, problems = [], [], []
-        for number, words in commands:
+        for number, words in support.docker_commands(text):
             plain = tuple(w for w in words if not w.startswith("-"))
             if any(plain[:len(i)] == i for i in IMAGE_IMPORTS):
                 problems.append(f"line {number}: {' '.join(words)}")
@@ -251,12 +276,23 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
                     problems.append(f"line {number}: `up` without `--no-build`: {' '.join(words)}")
             elif subcommand in ("pull", "create", "run", "start", "restart"):
                 problems.append(f"line {number}: `compose {subcommand}`: {' '.join(words)}")
-        self.assertTrue(builds, f"{DEPLOY_SCRIPT} runs no `docker compose ... build`")
-        self.assertTrue(ups, f"{DEPLOY_SCRIPT} runs no `docker compose ... up`")
-        self.assertLess(min(builds), min(ups), f"{DEPLOY_SCRIPT} starts the service (line "
-                                               f"{min(ups)}) before it builds it (line "
-                                               f"{min(builds)})")
+        self.assertTrue(builds, f"{DEPLOY_SCRIPT} holds no `docker compose ... build`")
+        self.assertTrue(ups, f"{DEPLOY_SCRIPT} holds no `docker compose ... up`")
         self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} can start an image it did not build")
+        run = []
+        for number, words in support.executed_docker_commands(text):
+            if words[:1] == ["compose"]:
+                subcommand = support.compose_parts(words[1:])[1]
+                if subcommand in ("build", "up"):
+                    run.append((subcommand, number))
+        self.assertTrue(run, f"{DEPLOY_SCRIPT} runs no `docker compose ... build` or `up`")
+        self.assertEqual(run[0][0], "build", f"{DEPLOY_SCRIPT} starts the service before it "
+                                             f"builds it, in the order it runs: {run}")
+        self.assertIn("up", [s for s, _n in run], f"{DEPLOY_SCRIPT} never runs its `up`: {run}")
+
+    def test_shell_reader_follows_the_order_of_the_calls(self):
+        # invariant: account-server-typecheck/1
+        self.assertEqual(support.executed_docker_commands(ORDER_SCRIPT), ORDER_EXPECTED)
 
     def test_workflow_ships_no_files(self):
         # invariant: account-server-typecheck/1
