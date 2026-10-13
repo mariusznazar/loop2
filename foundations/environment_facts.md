@@ -32,6 +32,54 @@ On Cloudflare's Free plan, Configuration Rules are available with up to 10 rules
 - **Source:** https://developers.cloudflare.com/rules/configuration-rules/ (archived: https://web.archive.org/web/20261005235800/https://developers.cloudflare.com/rules/configuration-rules/, 2026-10-05) § Overview — "Each configuration rule includes an expression that defines which requests the rule applies to, based on properties like URL path, hostname, or request header." · § Availability, Free column, Availability — "Yes" · § Availability, Free column, Number of rules — "10"; read 2026-10-13 · https://developers.cloudflare.com/rules/configuration-rules/settings/ (archived: https://web.archive.org/web/20261005235058/https://developers.cloudflare.com/rules/configuration-rules/settings/, 2026-10-05) § SSL — "Use this setting to configure the SSL/TLS encryption mode for matching requests:"; read 2026-10-13
 - **Method:** TODO
 
+## loop2-public-cloudflare-route/1
+
+The public route at `https://loop2.mariusznazar.com/api/unknown-path-probe` returns HTTP 404 with JSON, `Server: cloudflare` and `cf-cache-status: DYNAMIC`.
+
+- **Holds for:** the loop2 public route through Cloudflare, which publishes no version for this route
+- **Source:** observed: `curl.exe --silent --noproxy "*" --max-time 20 --dump-header - --output NUL "https://loop2.mariusznazar.com/api/unknown-path-probe?setup-fact-observation=20261013"` on curl 8.21.0, Windows; run 2026-10-13
+- **Method:** TODO
+
+## loop2-host-forced-command-entry/1
+
+The test server's authorized_keys contains exactly one entry beginning with `restrict,command="/usr/local/bin/loop2-deploy"`.
+
+- **Holds for:** the test server's authorized_keys on Ubuntu 22.04.5 LTS
+- **Source:** observed: `python3 -c 'from pathlib import Path; lines=(Path.home()/".ssh/authorized_keys").read_text().splitlines(); print(sum(line.startswith("restrict,command="+chr(34)+"/usr/local/bin/loop2-deploy"+chr(34)+" ") for line in lines))'` on Python 3.10.12, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Method:** TODO
+
+## loop2-host-installed-command/1
+
+The installed `/usr/local/bin/loop2-deploy` is owned by root:root with mode 0755.
+
+- **Holds for:** the installed deployment command on Ubuntu 22.04.5 LTS
+- **Source:** observed: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Method:** TODO
+
+## mikrus-host-docker-workloads/1
+
+The old loop game and foundryvtt run as healthy Docker containers on the test server's host.
+
+- **Holds for:** Docker 28.1.1 build 4eba377 on Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64
+- **Source:** observed: `docker ps --format '{{.Names}} {{.Status}}'` on Docker 28.1.1 build 4eba377, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Method:** TODO
+
+## mikrus-host-swap/1
+
+The test server's host reports zero total swap in `/proc/meminfo`.
+
+- **Holds for:** Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64
+- **Source:** observed: `cat /proc/meminfo` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64; run 2026-10-13
+- **Method:** TODO
+
+## loop2-host-memory-limit/1
+
+Docker reports `HostConfig.Memory=536870912` for the running loop2 container.
+
+- **Holds for:** Docker 28.1.1 build 4eba377 on Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64
+- **Source:** observed: `docker inspect --type container --format '{{.HostConfig.Memory}}' loop2` on Docker 28.1.1 build 4eba377, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Method:** TODO
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
