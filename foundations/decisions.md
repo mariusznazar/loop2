@@ -215,7 +215,7 @@ the simulation, to which it passes the player's choices and the passing of real 
     into the game state
 - **Review when:** movement and collisions become the core of the game's fun · check by: 2027-04-03
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności"
-- **Approved by:** Mariusz, 2026-10-13
+- **Approved by:** Mariusz, merge of <request link>
 
 *Rationale for change:* a simulation of pure functions makes progress while away plain arithmetic
 and the save a JSON document, and runs on a phone as well; real time passed in as an argument keeps
@@ -265,7 +265,7 @@ of data alone.
   - violates: a wolf's damage written as a number in the combat code
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and principle #4
-- **Approved by:** Mariusz, 2026-10-13
+- **Approved by:** Mariusz, merge of <request link>
 
 *Rationale:* content in data makes a new item, map or creature cheap, lets the content grow by
 rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
