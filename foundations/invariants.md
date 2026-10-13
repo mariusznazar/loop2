@@ -324,6 +324,17 @@ its source.
 - **Part:** browser-view
 - **Correction:** none
 
+## loop2-container-icons/1
+
+The loop2 container built from the repository serves each SVG file in `assets/icons/` at the path
+`/icons/<file name>`, with the same bytes as the file.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-27@69da55dd
+- **Part:** browser-view · build-tools · account-server · deployment
+- **Correction:** none
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

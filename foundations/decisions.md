@@ -779,8 +779,9 @@ file differs from its source.
 - **Scope:** browser-view, build-tools
 - **Based on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@75828134 · Creative Commons Attribution 3.0 Unported legal code § 4(a), "You must include a copy of, or the Uniform Resource Identifier (URI) for, this License with every copy of the Work You Distribute or Publicly Perform." (https://creativecommons.org/licenses/by/3.0/legalcode, read 2026-10-13)
 - **Relations:** none
-- **Verification:** level 1 — invariants: icon-file-content · icon-credits. Level 2 for where the
-  icons come from and where their files stand — an agent compares the change with the decision:
+- **Verification:** level 1 — invariants: icon-file-content · icon-credits · loop2-container-icons.
+  Level 2 for where the icons come from and where their source files stand — an agent compares the
+  change with the decision:
   - complies: a campfire icon taken from game-icons.net into `assets/icons/`, credited in the footer
   - violates: an icon file placed straight in the directory the server serves; an icon drawn from
     an emoji, or loaded from another site while the game runs
