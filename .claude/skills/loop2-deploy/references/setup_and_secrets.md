@@ -55,7 +55,8 @@ request.
    Then check `http://127.0.0.1:18080/` on the host, reachability of port 18080 over the host's IPv6,
    `https://loop2.mariusznazar.com/`, that `https://kantarion.bieda.it/` still works, and the applied
    memory limit: `docker inspect --type container loop2`, `HostConfig.Memory` expected 536870912
-   (512 MiB). Report the observations back; a failing IPv6 route, port or limit is revised before the
+   (512 MiB), and observe the enforced limit too: the container's cgroup `memory.max` or the limit
+   column of `docker stats --no-stream loop2`. Report the observations back; a failing IPv6 route, port or limit is revised before the
    change is accepted.
 
 After the merge, the workflow run of the merge commit is the first automated deployment. If it

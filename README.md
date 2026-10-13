@@ -20,6 +20,8 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 `npm test` buduje aplikację i wykonuje testy HTTP oraz test błędu startu przy zajętym porcie 3000.
 
+Testy wdrożenia: `python -B .the-way/gate/run_tests.py tests/deploy` i `python -B .the-way/gate/run_tests.py tests/agent_workflow`.
+
 W narzędziach przeglądarki sprawdź, że `document.querySelector('main')` zwraca pusty element, `/main.js` ładuje się bez błędu, a konsola nie zawiera błędów wykonania. Sama pusta strona nie dowodzi wykonania modułu.
 
 Nieznane `/api`, `/api/` i ścieżki pod `/api/` otrzymują 404 JSON. Pozostałe brakujące ścieżki otrzymują zwykłe 404. Serwer podaje wyłącznie `dist/public`.

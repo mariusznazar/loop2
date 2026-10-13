@@ -14,8 +14,8 @@ GitHub to the server; the server pulls the code itself with a read-only deploy k
 Fixed facts, all in `compose.yaml` and the script: Compose project `loop2`, service `app`, container
 `loop2`, checkout `/srv/loop2`, host port 18080 (container port 3000), memory limit 512 MiB, log
 `/var/log/loop2-deploy.log`. The public address is `https://loop2.mariusznazar.com/` (Cloudflare
-proxies it and an Origin Rule sends it to port 18080). An older game, container `loop`, shares the
-server and must stay untouched: the deployment never prunes host-wide, never runs `down` and never
+proxies it and an Origin Rule sends it to port 18080). The server is shared: the old game (container `loop`) and any other
+workload must stay untouched: the deployment never prunes host-wide, never runs `down` and never
 touches another Compose project.
 
 ## Agent or human
@@ -47,10 +47,11 @@ touches another Compose project.
   output goes only to this file, never to the Actions log.
 - **The running commit** is the container's revision label, not the checkout (the checkout may stand
   at a commit whose build failed):
-  `docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' loop2`
+  `docker inspect --type container --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' loop2`
 - **State:** `docker compose -p loop2 ps`; application logs `docker compose -p loop2 logs --tail 100 app`.
-- **The applied memory limit:** `docker inspect --type container loop2` and read `HostConfig.Memory`
-  (512 MiB is 536870912).
+- **The applied memory limit:** `docker inspect --type container loop2` and read the requested limit,
+  `HostConfig.Memory` (512 MiB is 536870912); the enforced limit is the container's cgroup
+  `memory.max` or the limit column of `docker stats --no-stream loop2`.
 
 ## Log stages and exit codes
 
