@@ -1,3 +1,4 @@
+import { MAPS } from '../sim/data/maps.js';
 import { RESOURCES } from '../sim/data/resources.js';
 import type { ResourceId } from '../sim/data/resources.js';
 import { hexCenter, hexCorners, sameHex } from '../sim/hex.js';
@@ -34,8 +35,6 @@ export type TerrainPicture = {
   tiles: PictureTile[];
 };
 
-const RESOURCE_ORDER = Object.keys(RESOURCES) as ResourceId[];
-
 /** The terrain of the map run as plain data for drawing; pure, no DOM, no stock numbers. */
 export function terrainPicture(state: GameState, size = 24): TerrainPicture {
   const run = state.run;
@@ -48,13 +47,15 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
   const offsetX = -Math.min(...xs);
   const offsetY = -Math.min(...ys);
 
+  // Icons follow the order of the resources in the run's map data, as the tile list does.
+  const resourceOrder: ResourceId[] = MAPS[run.mapId].resources.map(({ id }) => id);
   const iconSize = size * 0.7;
   const tiles = run.tiles.map((tile, index): PictureTile => {
     const centre = centres[index]!;
     const cx = centre.x + offsetX;
     const cy = centre.y + offsetY;
     const points = corners.map(k => `${cx + k.x},${cy + k.y}`).join(' ');
-    const present = RESOURCE_ORDER.filter(id => Object.hasOwn(tile.stock, id));
+    const present = resourceOrder.filter(id => Object.hasOwn(tile.stock, id));
     // Two icons per row, centred on the tile.
     const icons = tile.revealed
       ? present.map((resource, i): PictureIcon => {

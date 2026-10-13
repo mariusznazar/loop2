@@ -124,3 +124,25 @@ test('the step target is outlined only while a move runs', () => {
   }
   assert.ok(seenMove);
 });
+
+test("a tile's icons follow the order of the resources in the run's map data", () => {
+  const state = sent();
+  const run = { ...state.run, tiles: state.run.tiles.map(t => ({ ...t, revealed: true })) };
+  const order = MAPS[run.mapId].resources;
+  const saved = [...order];
+  // Reversed in place for this test only, so the map's order differs from the resource data's order.
+  order.reverse();
+  try {
+    const mapOrder = order.map(({ id }) => id);
+    assert.notDeepEqual(mapOrder, Object.keys(RESOURCES).filter(id => mapOrder.includes(id)));
+    const picture = terrainPicture({ ...state, run });
+    const many = picture.tiles.filter(t => t.icons.length > 1);
+    assert.ok(many.length > 0);
+    for (const tile of many) {
+      const drawn = tile.icons.map(icon => icon.resource);
+      assert.deepEqual(drawn, mapOrder.filter(id => drawn.includes(id)));
+    }
+  } finally {
+    order.splice(0, order.length, ...saved);
+  }
+});
