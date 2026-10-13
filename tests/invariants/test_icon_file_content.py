@@ -1,4 +1,4 @@
-"""Invariant icon-file-content/1: No SVG file in `assets/icons/` holds a `script` or
+"""Invariant icon-file-content/1: No SVG file directly in `assets/icons/` holds a `script` or
 `foreignObject` SVG element, an attribute whose name begins with `on`, or a reference to anything
 outside the file other than the SVG and XLink namespace declarations.
 

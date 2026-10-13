@@ -1,18 +1,19 @@
 """Invariant loop2-container-icons/1: The loop2 container built from the repository serves each SVG
-file in `assets/icons/` at the path `/icons/<file name>`, with the same bytes as the file.
+icon file directly in `assets/icons/` at the path `/icons/<file name>`, with the same bytes as that
+icon file.
 
 Reading of the sentence:
 - the loop2 container built from the repository: the image `docker build` builds from the working
   tree's `Dockerfile`, with the working tree as the build context and only read, run as a
   container with `docker run`;
-- each SVG file in `assets/icons/`: every file standing directly in `assets/icons/` of the working
+- each SVG icon file directly in `assets/icons/`: every file standing directly in `assets/icons/` of the working
   tree whose name ends in `.svg` in any letter case; subdirectories and their files are not
   counted. The set must not be empty: an empty directory fails the check instead of passing it
   vacuously;
 - serves ... at `/icons/<file name>`: from inside the running container, a GET of
   `/icons/<file name>` (the name percent-encoded as a URL path segment) on the one TCP port the
   container listens on answers with status 200;
-- with the same bytes as the file: the body of that answer equals, byte for byte, the file as it
+- with the same bytes as that icon file: the body of that answer equals, byte for byte, the file as it
   stands in the working tree. The expected bytes are read from the working tree, never from the
   image, the build output or the server.
 

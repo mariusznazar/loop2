@@ -1,6 +1,6 @@
-"""Invariant icon-credits/1: For each SVG file in `assets/icons/`, the game's footer shows a credit
-that names the icon's author, its page on game-icons.net and the licence CC BY 3.0, and says how
-the file differs from its source.
+"""Invariant icon-credits/1: For each SVG icon file directly in `assets/icons/`, the game's footer
+shows a credit that names the icon's title as its page on game-icons.net gives it, the icon's
+author, that page and the licence CC BY 3.0, and says how the icon file differs from its source.
 
 The application is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory installs a small
@@ -17,6 +17,11 @@ Reading of the sentence:
   .svg>.html`;
 - a credit for a file: the largest element around that page's link or text that holds no page of
   another icon file; everything the sentence asks of the credit stands inside it;
+- names the icon's title as its page on game-icons.net gives it: the credit's text, its white
+  space run together, holds the title written out per icon file in TITLES below, letter case as
+  written — the heading of the icon's page, as the environment facts `game-icons-<file name less
+  .svg>-title` quote it. An icon file with no title written out has no title fact, and the check
+  flags it as a gap instead of passing it;
 - names the icon's author: the credit's text holds the name of the author folder of the page,
   letter case aside; and, for the files written out in AUTHORS below, the author named there,
   as game-icons.net and the game-icons/icons licence file give it;
@@ -27,9 +32,10 @@ Reading of the sentence:
 Controls, so the check can fail: the stand-in `document`, given a made-up footer built with
 `createElement`, `textContent`, `append`, `appendChild`, `setAttribute`, the `href` property,
 `className`, `innerHTML` and a fragment, writes out the HTML the made-up footer means; and the
-comparison flags made-up footers lacking, in turn, a credit for one file, the author, the page,
-the licence (also when it stands once outside the credits) and the statement of change, while a
-made-up footer holding all of them passes.
+comparison flags made-up footers lacking, in turn, a credit for one file, the title (also when
+another title or the title in other letter case stands there), the author, the page, the licence
+(also when it stands once outside the credits) and the statement of change, and an icon file with
+no title written out, while a made-up footer holding all of them passes.
 
 Does NOT cover: whether the statement of change is true of the file; how the footer looks in a
 browser (it is not rendered); credits shown anywhere but the footer.
@@ -60,6 +66,15 @@ AUTHORS = {
     "berry-bush.svg": "Delapouite",
     "fern.svg": "Delapouite",
     "flax.svg": "Delapouite",
+}
+# Titles of the current icon files, as the headings of their pages on game-icons.net give them
+# (the environment facts game-icons-wood-stick-title, game-icons-berry-bush-title,
+# game-icons-fern-title and game-icons-flax-title).
+TITLES = {
+    "wood-stick.svg": "Wood stick icon",
+    "berry-bush.svg": "Berry bush icon",
+    "fern.svg": "Fern icon",
+    "flax.svg": "Flax icon",
 }
 
 FAKE_DOCUMENT = r"""
@@ -173,7 +188,7 @@ export function made() {
   const item = document.createElement('li');
   const link = document.createElement('a');
   link.href = 'https://game-icons.net/1x1/delapouite/fern.html';
-  link.textContent = 'fern';
+  link.textContent = 'Fern icon';
   item.append('Mech: ', link, ' — Delapouite, ');
   const licence = document.createElement('a');
   licence.setAttribute('href', 'https://creativecommons.org/licenses/by/3.0/');
@@ -190,7 +205,7 @@ export function made() {
 """
 MADE_UP_EXPECTED = (
     '<footer class="credits"><ul><li>Mech: <a href="https://game-icons.net/1x1/delapouite/'
-    'fern.html">fern</a> — Delapouite, <a href="https://creativecommons.org/licenses/by/3.0/">'
+    'fern.html">Fern icon</a> — Delapouite, <a href="https://creativecommons.org/licenses/by/3.0/">'
     'CC BY 3.0</a>; zmienione</li></ul><p><b>Ikony</b> &amp; więcej</p></footer>'
 )
 
@@ -261,7 +276,8 @@ def credit_for(root, stem):
     return search(root)
 
 
-def violations(footer_html, files):
+def violations(footer_html, files, titles=None):
+    titles = TITLES if titles is None else titles
     root = parse(footer_html)
     found = []
     for name in files:
@@ -271,6 +287,11 @@ def violations(footer_html, files):
             found.append(f"{name}: the footer shows no credit with its page on game-icons.net")
             continue
         text = " ".join(text_of(credit).split())
+        if name not in titles:
+            found.append(f"{name}: no title is written out in the check, as no title fact names "
+                         "it; the title of this icon file stays unchecked")
+        elif titles[name] not in text:
+            found.append(f"{name}: the credit does not name the title {titles[name]!r}: {text!r}")
         folders = [folder for folder, s in pages_in(credit) if s == stem]
         names = [folder.replace("-", " ").lower() for folder in folders]
         if not any(n in text.lower() or n.replace(" ", "") in text.lower().replace(" ", "")
@@ -317,10 +338,11 @@ def icon_files():
 
 
 def credit_html(stem, author="Delapouite", folder="delapouite", licence=LICENCE,
-                change="zmienione (bez tła)"):
-    return (f'<li>{stem}: <a href="https://game-icons.net/1x1/{folder}/{stem}.html">ikona</a>, '
-            f'{author}, <a href="https://creativecommons.org/licenses/by/3.0/">{licence}</a>, '
-            f'{change}</li>')
+                change="zmienione (bez tła)", title=None):
+    title = TITLES[stem + ".svg"] if title is None else title
+    return (f'<li>{stem}: „{title}”, <a href="https://game-icons.net/1x1/{folder}/{stem}.html">'
+            f'ikona</a>, {author}, <a href="https://creativecommons.org/licenses/by/3.0/">'
+            f'{licence}</a>, {change}</li>')
 
 
 class IconCredits(unittest.TestCase):
@@ -370,7 +392,13 @@ class IconCredits(unittest.TestCase):
                          + "</footer>",
             "another author": "<footer>" + credit_html("fern", author="Lorc", folder="lorc")
                               + credit_html("flax") + "</footer>",
-            "no page": "<footer><li>fern: Delapouite, CC BY 3.0, zmienione</li>"
+            "no title": "<footer>" + credit_html("fern", title="") + credit_html("flax")
+                        + "</footer>",
+            "another title": "<footer>" + credit_html("fern", title="Flax icon")
+                             + credit_html("flax") + "</footer>",
+            "the title in other letter case": "<footer>" + credit_html("fern", title="fern icon")
+                                              + credit_html("flax") + "</footer>",
+            "no page": "<footer><li>fern: Fern icon, Delapouite, CC BY 3.0, zmienione</li>"
                        + credit_html("flax") + "</footer>",
             "no licence": "<footer>" + credit_html("fern", licence="CC BY") + credit_html("flax")
                           + "</footer>",
@@ -384,6 +412,9 @@ class IconCredits(unittest.TestCase):
         for label, markup in broken.items():
             with self.subTest(case=label):
                 self.assertTrue(violations(markup, files), f"{label} goes unseen")
+        no_fact = {name: title for name, title in TITLES.items() if name != "flax.svg"}
+        self.assertTrue(violations(good, files, no_fact),
+                        "an icon file with no title written out passes")
 
 
 if __name__ == "__main__":
