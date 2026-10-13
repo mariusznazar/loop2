@@ -298,10 +298,11 @@ numbers without writing them on it.
 without seeing the number it compares; numbers written into the tiles — unreadable where a tile
 holds several resources.
 
-### D-10/1 — What interrupts an action the character is carrying out?
+### D-10/1 — What interrupts the character's action in progress?
 
-Neither a change of the program nor the condition of another program rule interrupts an action the
-character is carrying out. The program picks a program rule again only once that action ends.
+Neither a change of the program nor the condition of another program rule interrupts the
+character's action in progress. The program picks a program rule again only once the character's
+action ends.
 
 - **Change:** new decision
 - **Scope:** simulation
@@ -335,7 +336,7 @@ resume it.
   - complies: a control of the browser view that pauses the map run in progress and resumes it
   - violates: a map run the player can hold still only by ending it
 - **Review when:** none
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?"
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · loop's data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1`
 - **Approved by:** Mariusz, merge of <request link>
 
 *Rationale:* one game minute per real second is the pace at which the predecessor game, loop, runs
@@ -505,7 +506,7 @@ file differs from its source.
 
 - **Change:** new decision
 - **Scope:** browser-view, build-tools
-- **Based on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@75828134
+- **Based on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@75828134 · Creative Commons Attribution 3.0 Unported legal code § 4(a), "You must include a copy of, or the Uniform Resource Identifier (URI) for, this License with every copy of the Work You Distribute or Publicly Perform." (https://creativecommons.org/licenses/by/3.0/legalcode, read 2026-10-13)
 - **Relations:** none
 - **Verification:** level 1 — invariants: icon-file-content · icon-credits. Level 2 for where the
   icons come from and where their files stand — an agent compares the change with the decision:
@@ -521,8 +522,10 @@ allows their use in the game on condition of credit, so one source keeps the gam
 the game grows. An icon file comes from outside the product and is untrusted: holding nothing that
 runs and reaching nothing outside itself, a changed file cannot act in the player's page. Sources
 kept apart from what the server serves leave the build to decide what reaches the player. The
-licence asks a changed work to say how it was changed, and the icons are changed to sit on the
-game's tiles.
+icons are changed to sit on the game's tiles, and the licence asks whoever distributes a changed
+work to include the licence or its address, to credit the work's original author and to identify
+the use of the work in the changed work. Saying how each file differs from its source goes beyond
+what the licence asks: it is the product's own choice.
 *Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
 thing costs drawing work; an icon package from npm — a dependency more for files the product can
 keep itself, entering through what the product already treats as untrusted.

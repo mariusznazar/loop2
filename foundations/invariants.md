@@ -126,12 +126,12 @@ from the map run's state.
 
 ## action-in-progress/1
 
-An action the character is carrying out lasts its full duration, even where the program changes or
-the condition of another program rule comes to hold before it ends.
+The character's action in progress lasts its full duration, even where the program changes or the
+condition of another program rule comes to hold before it ends.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-10@d3085ad5
+- **Derives from:** D-10@a03f8b53
 - **Part:** simulation
 - **Correction:** none
 
@@ -269,7 +269,7 @@ author, its page on game-icons.net and the licence CC BY 3.0, and says how the f
 its source.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
-- **Rests on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@75828134
+- **Rests on:** none
 - **Derives from:** D-17@69da55dd
 - **Part:** browser-view
 - **Correction:** none
