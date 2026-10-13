@@ -26,7 +26,7 @@ Stan gry żyje tylko w pamięci strony: przeładowanie zaczyna od nowa, z pustym
 
 ## Ikony
 
-Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmienione względem źródła: usunięte czarne tło, kształt w ciemnym kolorze. Ich źródła leżą w `assets/icons`, poza katalogiem podawanym przez serwer; `npm run build` kopiuje je do `dist/public/icons`. Autorów ikon i commit źródła trzyma `src/browser/view/credits.ts`, a stopka strony pokazuje wymagane wzmianki.
+Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmienione względem źródła: usunięte czarne tło, kształt w ciemnym kolorze. Ich źródła leżą w `assets/icons`, poza katalogiem podawanym przez serwer; `npm run build` kopiuje je do `dist/public/icons`. Tytuły ikon, ich autorów i commit źródła trzyma `src/browser/view/credits.ts`, a stopka strony pokazuje wymagane wzmianki.
 
 ## Praca lokalna i sprawdzenie
 
