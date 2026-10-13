@@ -43,7 +43,7 @@ jobs:
           status=0
           ssh -i "$key_file" -p "$SSH_PORT" \
             -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file" \
-            -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o LogLevel=ERROR \
             "$SSH_USER@$SSH_HOST" "$DEPLOY_SHA" || status=$?
           if [ "$status" -ne 0 ]; then
             echo "::error::The server script (or the SSH connection) failed with exit code $status; see its output above."
@@ -55,15 +55,20 @@ jobs:
           set -uo pipefail
           # probe URL EXPECTED: succeeds when the address answers as expected, with a few short retries.
           probe() {
-            local url="$1" expected="$2" attempt code
+            local url="$1" expected="$2" attempt answer code type
             for attempt in 1 2 3 4 5; do
-              code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$url" || true)"
+              answer="$(curl -sS -o /dev/null -w '%{http_code} %{content_type}' --max-time 15 "$url" || true)"
+              code="${answer%% *}"
+              type="${answer#* }"
               case "$expected" in
                 200) [ "$code" = "200" ] && return 0 ;;
-                api-error) case "$code" in 4??|5??) return 0 ;; esac ;;
+                api-error)
+                  case "$code" in
+                    4??|5??) case "$type" in application/json*|*+json*) return 0 ;; esac ;;
+                  esac ;;
                 any) case "$code" in 2??|3??|4??) return 0 ;; esac ;;
               esac
-              echo "attempt $attempt: $url answered '$code'"
+              echo "attempt $attempt: $url answered '$code' ('$type')"
               sleep 6
             done
             echo "::error::Probe failed for $url (expected: $expected, last answer: '$code')"

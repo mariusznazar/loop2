@@ -86,6 +86,36 @@ class DeployWorkflow(unittest.TestCase):
         text = code()
         self.assertNotRegex(text, r"continue-on-error:\s*true")
         self.assertNotRegex(text, r"\bssh\b[^\n]*\|\|\s*true")
+        match = re.search(r"(?m)^(\s*)ssh\b[^\n]*$", text)
+        self.assertIsNotNone(match)
+        ssh_line = match.group(0)
+        after = text[match.end():]
+        if re.search(r"\|\|\s*(\w+)=\$\?\s*$", ssh_line):
+            variable = re.search(r"\|\|\s*(\w+)=\$\?\s*$", ssh_line).group(1)
+            # a captured status must end the step: a test of it followed by `exit` with it
+            self.assertRegex(after, r'if \[ "\$%s" -ne 0 \]; then[^\n]*\n(?:[^\n]*\n)*?\s*exit "\$%s"'
+                             % (variable, variable))
+        else:
+            self.assertNotRegex(ssh_line, r"\|\||;|&")
+            self.assertRegex(text, r"set -[a-z]*e")
+
+    def test_ssh_forwards_nothing_and_takes_only_the_sha(self):
+        text = code()
+        self.assertNotRegex(text, r"ForwardAgent|\s-A\s|\s-[a-zA-Z]*A[a-zA-Z]*\s")
+        match = re.search(r"(?<![\w./-])ssh\s[^\n]*", text)
+        self.assertRegex(match.group(0), r'"\$SSH_USER@\$SSH_HOST" "\$DEPLOY_SHA"(?: \|\| \w+=\$\?)?\s*$')
+        self.assertIn("LogLevel=ERROR", match.group(0))
+
+    def test_decoded_key_is_never_printed(self):
+        text = code()
+        self.assertNotRegex(text, r"\bcat\b[^\n]*key|echo[^\n]*(?:key|KEY)|set -[a-z]*x|xtrace")
+        self.assertNotRegex(text, r"base64 -d(?![^\n]*> \"\$key_file\")")
+
+    def test_api_probe_demands_a_json_error(self):
+        text = code()
+        self.assertIn("%{content_type}", text)
+        self.assertRegex(text, r"application/json")
+        self.assertRegex(text, r"\+json")
 
     def test_one_ssh_call(self):
         calls = [l for l in code_lines() if re.search(r"(?<![\w./-])ssh\s", l) and "-i" in l]
