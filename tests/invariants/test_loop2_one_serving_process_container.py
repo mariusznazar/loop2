@@ -13,8 +13,9 @@ Reading of the sentence:
   and Compose runs one container of it: one service, with no `scale` or `replicas` above 1;
 - in the running container, counted where a Docker daemon answers: among the container's
   processes exactly one holds a listening TCP socket, before the requests below and after them,
-  it is `node`, and it has started no process of its own. The init process and the health probe are not serving processes: they hold no
-  listening socket and are not children of the listening process, so they are not counted;
+  it is `node`, and it has started no process of its own. The init process and the health
+  probe are not serving processes: they hold no listening socket and are not children of the
+  listening process, so they are not counted;
 - serves the built game and `/api/` requests: from inside the container, a GET of `/` on the
   listening port returns 200 with an HTML page, and a GET of an `/api/` path made up so that no
   route can mean it is answered with an HTTP status; what that answer must be is

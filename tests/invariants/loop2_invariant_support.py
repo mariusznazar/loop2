@@ -786,22 +786,42 @@ def _is_redirection(token):
 def shell_commands(text):
     """[(line number, words)] of every simple command a shell script holds, its own variables'
     fixed values put in, command substitutions read as commands of their own, and comments,
-    heredoc bodies and redirections (with their targets) left out. `case` patterns, `[[ ]]`
-    tests and the like come out as commands too; a check reads only the commands it looks for.
-    What the reader cannot read raises AssertionError."""
+    heredoc bodies and redirections (with their targets) left out. The patterns of a `case`
+    are left out; its header comes out as a command `case WORD in`. `[[ ]]` tests and the like
+    come out as commands too; a check reads only the commands it looks for. What the reader
+    cannot read raises AssertionError."""
     values = shell_assignments(text)
     commands = []
+    outer_cases = []   # per open `case`: "pattern" while its patterns are read, else "body"
     for number, line in _logical_lines(text):
         outer, inner = _command_substitutions(_expand(line, values))
         for part in [outer] + inner:
+            cases = outer_cases if part is outer else []
             words = []
             tokens = _tokens(_drop_descriptors(part), number) + [";"]
             position = 0
             while position < len(tokens):
                 token = tokens[position]
                 position += 1
+                if cases and cases[-1] == "pattern":
+                    if token == "esac":
+                        cases.pop()
+                    elif token == ")":
+                        cases[-1] = "body"
+                    continue
                 if _is_redirection(token):
                     position += 1     # the target
+                elif cases and token in (";;", ";&", ";;&"):
+                    if words:
+                        commands.append((number, words))
+                    words = []
+                    cases[-1] = "pattern"
+                elif cases and not words and token == "esac":
+                    cases.pop()
+                elif words[:1] == ["case"] and len(words) == 2 and token == "in":
+                    commands.append((number, words + [token]))
+                    words = []
+                    cases.append("pattern")
                 elif token in SEPARATORS or token and set(token) <= set(";&|"):
                     if words:
                         commands.append((number, words))
@@ -812,6 +832,51 @@ def shell_commands(text):
                 else:
                     words.append(token)
     return commands
+
+
+# GitHub Actions workflow -------------------------------------------------------------------
+
+_WORKFLOW_KEY = re.compile(r"^(\s*)(?:-\s+)?([A-Za-z_][\w-]*)\s*:(?:\s+(.*))?$")
+
+
+def workflow_keys(text, names):
+    """[(number of the line the value begins on, key, value)] of every key of a GitHub Actions
+    workflow named in `names`, at any depth. A block scalar (`|`, `|-`, `|+`) gives its lines,
+    less their common indentation;
+    a plain or quoted value on the key's line gives that value. A folded scalar (`>`) or a value
+    continued on the lines below raises AssertionError, as a form not read here."""
+    lines = text.splitlines()
+    found = []
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith("#"):
+            continue
+        match = _WORKFLOW_KEY.match(line)
+        if not match or match.group(2) not in names:
+            continue
+        column = line.index(match.group(2))
+        value = _strip_comment(match.group(3) or "")
+        following = []
+        for later in lines[index + 1:]:
+            if later.strip() and len(later) - len(later.lstrip(" ")) <= column:
+                break
+            following.append(later)
+        while following and not following[-1].strip():
+            following.pop()
+        if re.fullmatch(r"\|[-+]?\d?", value):
+            indent = min(len(l) - len(l.lstrip(" ")) for l in following if l.strip()) \
+                if any(l.strip() for l in following) else 0
+            found.append((index + 2, match.group(2), "\n".join(l[indent:] for l in following)))
+        elif not value and following and all(
+                re.match(r"^\s*[A-Za-z_][\w-]*\s*:(?:\s|$)", l) for l in following
+                if l.strip() and not l.lstrip().startswith("#")):
+            continue   # a mapping, such as `defaults: run: shell: bash`, not a value
+        elif value.startswith(">") or not value and following or value and any(
+                l.strip() and not l.lstrip().startswith("#") for l in following):
+            raise AssertionError(f"line {index + 1}: `{match.group(2)}` has a folded, empty or "
+                                 f"continued value, not read here: {line.strip()!r}")
+        else:
+            found.append((index + 1, match.group(2), _unquote(value)))
+    return found
 
 
 def is_docker(word):

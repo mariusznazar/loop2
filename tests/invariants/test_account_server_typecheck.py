@@ -26,9 +26,12 @@ Covers:
     `--no-build`, and no command brings an image in by
     another way (`docker pull`, `load`, `import`, `tag`, `compose pull`, `create`, `run`, `start`,
     `restart`);
-  - `.github/workflows/deploy.yml`: the workflow ships no files to the server — no checkout, no
-    upload, no `scp`, `rsync` or `sftp`, no image pushed, saved or built, and nothing fed into
-    `ssh` through a pipe, a redirection or a heredoc;
+  - `.github/workflows/deploy.yml`: the workflow ships no files to the server. Its steps use no
+    action and no reusable workflow (`uses:` — what an action does is not in the repository to
+    read), run in bash or sh, and run only commands that work on the runner or, for `ssh` and
+    `curl`, reach another host without sending it files: curl with no option that sends data,
+    ssh with nothing fed through its input and no local command. A command outside that list
+    fails the check, since the check cannot tell it sends nothing;
 - the repository holds no deployment route file other than those four.
 
 Does NOT cover: a deployment defined outside this repository; that the script stops before `up`
@@ -69,13 +72,21 @@ UNSAFE_OPERATORS = re.compile(r";|\|\||(?<![&|])\|(?!\|)|(?<![&>])&(?![&>])")
 # Docker commands that bring an image in other than by building it.
 IMAGE_IMPORTS = (("pull",), ("load",), ("import",), ("tag",), ("image", "pull"),
                  ("image", "load"), ("image", "import"), ("image", "tag"))
-# What ships files from the workflow to the server, or builds what could be shipped.
-SHIPPING = (
-    re.compile(r"\bactions/checkout\b"),
-    re.compile(r"\bactions/upload-artifact\b"),
-    re.compile(r"\bdocker/(?:build-push|setup-buildx)-action\b"),
-    re.compile(r"(?<![\w.-])(?:scp|rsync|sftp)(?![\w.-])"),
-    re.compile(r"(?<![\w.-])docker\s+(?:image\s+)?(?:push|save|build|buildx)\b"),
+# The workflow's steps may run only these commands: they work on the runner or, for `ssh` and
+# `curl`, reach another host without sending it files. A command outside the list fails the
+# check, since the check cannot tell that it sends nothing; adding one is a change of this check.
+WORKFLOW_COMMANDS = ("set", "umask", "trap", "printf", "echo", "base64", "chmod", "mkdir", "rm",
+                     "test", "[", "[[", "exit", "return", "sleep", "local", "true", "false", ":",
+                     "for", "case", "ssh", "curl")
+WORKFLOW_SHELLS = ("bash", "sh")
+# Options with which curl sends data or a file, or takes its options from a file.
+CURL_SENDING = re.compile(r"^(?:--upload-file|--data(?:-[\w-]+)?|--form(?:-[\w-]+)?|--json|"
+                          r"--config|--request|--url-query)(?:=.*)?$")
+CURL_SENDING_SHORT = set("TdFKX")
+# Options with which ssh runs a local command or reads a configuration file.
+SSH_LOCAL = re.compile(r"(?i)(?:ProxyCommand|LocalCommand|PermitLocalCommand|KnownHostsCommand)")
+# ssh fed through a pipe, a redirection or a heredoc.
+SSH_STDIN = (
     re.compile(r"\|\s*ssh(?![\w.-])"),
     re.compile(r"(?<![\w./-])ssh(?![\w.-])[^\n]*?(?:<<|(?<![<\d])<(?![<(]))"),
 )
@@ -207,6 +218,73 @@ ORDER_EXPECTED = [
 ]
 
 
+def workflow_shipping(text):
+    """What in a workflow could ship files or images to another host: any `uses:` (an action, or
+    a reusable workflow, does what the repository does not show), a `shell:` other than bash or
+    sh, a command of a `run:` step outside WORKFLOW_COMMANDS and the functions that step defines,
+    curl with an option that sends data, and ssh fed through its input or running a local
+    command."""
+    problems = [f"line {n}: uses: {v}" for n, _k, v in support.workflow_keys(text, ("uses",))]
+    problems += [f"line {n}: shell: {v}" for n, _k, v in support.workflow_keys(text, ("shell",))
+                 if v.split()[0] not in WORKFLOW_SHELLS]
+    for number, _key, script in support.workflow_keys(text, ("run",)):
+        functions = support.shell_functions(script)
+        for line, words in support.shell_commands(script):
+            where = f"line {number + line - 1}"
+            name = words[0]
+            if name not in WORKFLOW_COMMANDS and name not in functions:
+                problems.append(f"{where}: command `{name}` is not one this check reads as "
+                                f"sending nothing: {' '.join(words)}")
+            elif name == "curl" and any(
+                    CURL_SENDING.match(w) or re.fullmatch(r"-[A-Za-z]+", w)
+                    and set(w[1:]) & CURL_SENDING_SHORT for w in words[1:]):
+                problems.append(f"{where}: curl sends data: {' '.join(words)}")
+            elif name == "ssh" and any(SSH_LOCAL.search(w) or w == "-F" for w in words[1:]):
+                problems.append(f"{where}: ssh runs a local command: {' '.join(words)}")
+        joined = re.sub(r"\\\n", " ", script)
+        problems += [f"line {number}: ssh is fed files: {line.strip()}"
+                     for line in joined.splitlines() if any(p.search(line) for p in SSH_STDIN)]
+    return problems
+
+
+# A made-up workflow that ships nothing, and steps each of which ships files.
+SAFE_WORKFLOW = """on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Deploy
+        run: |
+          set -euo pipefail
+          printf '%s' "$KEY" | base64 -d > "$RUNNER_TEMP/key"
+          ssh -i "$RUNNER_TEMP/key" -o BatchMode=yes "$USER@$HOST" "$SHA"
+      - name: Probe
+        run: |
+          probe() {
+            case "$2" in
+              any) curl -sS -o /dev/null "$1" && return 0 ;;
+              api-error) return 1 ;;
+            esac
+          }
+          probe "$URL" any
+"""
+SHIPPING_STEPS = (
+    "      - uses: appleboy/scp-action@v0.1.7\n        with:\n          source: dist\n",
+    "      - uses: burnett01/rsync-deployments@7.0.1\n        with:\n          path: dist/\n",
+    "      - uses: actions/checkout@v4\n",
+    "      - run: rsync -az dist/ \"$USER@$HOST:/srv/loop2/\"\n",
+    "      - run: scp -r dist \"$USER@$HOST:/srv/loop2/\"\n",
+    "      - run: tar czf - dist | ssh \"$USER@$HOST\" tar xzf -\n",
+    "      - run: curl -sST dist.tgz \"sftp://$HOST/srv/loop2/\"\n",
+    "      - run: curl --upload-file dist.tgz \"https://$HOST/\"\n",
+    "      - run: ssh -o ProxyCommand='scp dist host:' \"$USER@$HOST\" \"$SHA\"\n",
+    "      - run: docker push ghcr.io/x/loop2\n",
+    "      - shell: python {0}\n        run: print('a')\n",
+)
+
+
 class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
 
     def test_shell_reader_reads_past_heredoc_look_alikes(self):
@@ -296,15 +374,17 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
 
     def test_workflow_ships_no_files(self):
         # invariant: account-server-typecheck/1
-        joined = []
-        for line in support.read_required(WORKFLOW).splitlines():
-            line = support._strip_comment(line)
-            if joined and joined[-1].endswith("\\"):
-                joined[-1] = joined[-1][:-1] + " " + line.strip()
-            else:
-                joined.append(line)
-        found = [line.strip() for line in joined if any(p.search(line) for p in SHIPPING)]
-        self.assertEqual(found, [], f"{WORKFLOW} ships files or images to the server")
+        text = support.read_required(WORKFLOW)
+        problems = workflow_shipping(text)
+        self.assertEqual(problems, [], f"{WORKFLOW} can ship files or images to the server")
+
+    def test_workflow_reader_refuses_file_copying_steps(self):
+        # invariant: account-server-typecheck/1
+        self.assertEqual(workflow_shipping(SAFE_WORKFLOW), [])
+        for step in SHIPPING_STEPS:
+            with self.subTest(step=step):
+                self.assertNotEqual(workflow_shipping(SAFE_WORKFLOW + step), [],
+                                    "a step that ships files passes")
 
     def test_no_other_deployment_route(self):
         # invariant: account-server-typecheck/1
