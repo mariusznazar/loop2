@@ -433,8 +433,10 @@ source would stop.
 ### D-17/1 — How does loop2 share the Mikrus host with other workloads?
 
 A deployment of loop2 changes nothing on the host but loop2's own checkout, image, container, log
-and lock, and prunes nothing host-wide. It builds only while the host's available memory and free
-disk stay above thresholds the repository sets, and the loop2 container runs under a memory limit.
+and lock, and the build cache and base image its build adds to the Docker store the host's
+workloads share, which it never prunes; it removes or replaces nothing of another workload. It
+builds only while the host's available memory and free disk stay above thresholds the repository
+sets, and the loop2 container runs under a memory limit.
 
 - **Change:** new decision
 - **Scope:** deployment
@@ -453,4 +455,5 @@ memory and disk before the build stops a deployment before it harms them. The th
 limit are chosen bounds, not measured needs, tuned in the repository from the values each
 deployment logs.
 *Rejected:* a host-wide prune to reclaim build cache — it would remove images and cache of other
-workloads; reclaiming cache stays a human's decision.
+workloads, and the base image may be one another workload uses; reclaiming the build cache and
+base-image layers stays a human's decision.

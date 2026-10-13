@@ -20,8 +20,8 @@ game's running instance.
 
 ## test server
 
-The test server is the server on Mikrus where loop2 runs for its players, accounts included, while
-the game is still being built.
+The test server is the server on Mikrus where loop2 runs for its players while the game is still
+being built, and where player accounts are served once the game has them.
 
 - **Avoid:** none
 - **Not:** none
