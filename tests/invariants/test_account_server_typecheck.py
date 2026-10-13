@@ -36,7 +36,9 @@ Covers:
     secrets `DEPLOY_USER`, `DEPLOY_HOST`, `DEPLOY_PORT` and from `github.sha`, no other
     variable, alone at the top of the step, its input untouched or `</dev/null`, no pipe or
     redirection on its line. Input redirections, heredocs and here-strings, process
-    substitution and base64 encoding are refused anywhere in a step. Anything outside this
+    substitution and base64 encoding are refused anywhere in a step; a step names a variable
+    the workflow's `env` sets only as `$NAME` or `${NAME}`, and `printf` and `local` take no
+    option, so nothing in a step can overwrite what ssh sends. Anything outside this
     fails the check, since the check cannot tell it sends nothing;
 - the repository holds no deployment route file other than those four.
 
@@ -316,6 +318,21 @@ def compact(value):
     return re.sub(r"\s+", "", value)
 
 
+def bare_names(code, name):
+    """How many times a line of shell code names a variable other than as the expansion `$NAME`
+    or `${NAME}`: an assignment, `printf -v`, `read`, `for`, `local`, `unset`, a function or a
+    nameref given the name, or an expansion that may assign (`${NAME:=…}`)."""
+    count = 0
+    for found in re.finditer(r"(?<![A-Za-z0-9_])" + re.escape(name) + r"(?![A-Za-z0-9_])", code):
+        start, end = found.start(), found.end()
+        if code[start - 1:start] == "$" and code[start - 2:start] != "\\$":
+            continue
+        if code[start - 2:start] == "${" and code[end:end + 1] == "}":
+            continue
+        count += 1
+    return count
+
+
 def ssh_shape(words, env, paths):
     """What in the words after `ssh` leaves the one allowed shape."""
     def holds(word, value):
@@ -407,12 +424,13 @@ def run_shipping(script, first_line, env, depth=0):
             problems.append(f"line {first_line}: the step {what}")
     if RUN_CHANGING_ASSIGNMENT.search(script):
         problems.append(f"line {first_line}: the step sets a variable that changes what runs")
-    for name in env:
-        if re.search(r"(?<![\w$])" + re.escape(name) + r"\+?=", script):
-            problems.append(f"line {first_line}: the step assigns `{name}`, set by the workflow")
     logical = support._logical_lines(script)
     for line, code in logical:
         where = f"line {first_line + line - 1}"
+        for name in sorted(env):
+            if bare_names(code, name):
+                problems.append(f"{where}: the step names `{name}`, set by the workflow's env, "
+                                f"other than as `${name}` or `${{{name}}}`: {code.strip()}")
         for pattern, what in RUN_FORBIDDEN_CONSTRUCTS:
             if pattern.search(outside_single_quotes(code)):
                 problems.append(f"{where}: the step {what}: {code.strip()}")
@@ -421,10 +439,10 @@ def run_shipping(script, first_line, env, depth=0):
     paths = set()
     for name in {m.group(1) for _l, c in logical
                  for m in re.finditer(r"(?<![\w$])([A-Za-z_]\w*)=", c)}:
-        assigned = [c for _l, c in logical if re.search(r"(?<![\w$])" + name + "=", c)]
-        if len(assigned) == 1 and re.fullmatch(
-                r"\s*(?:local\s+)?" + name + r"=\"?" + RUNNER_PATH.pattern + r"\"?\s*",
-                assigned[0]):
+        assigned = [c for _l, c in logical if bare_names(RUNNER_PATH.sub("", c), name)]
+        if len(assigned) == 1 and bare_names(RUNNER_PATH.sub("", assigned[0]), name) == 1 and \
+                re.fullmatch(r"\s*" + name + r"=\"?" + RUNNER_PATH.pattern + r"\"?\s*",
+                             assigned[0]):
             paths.add(name)
     problems += [f"line {first_line + n - 1}: {m}" for n, m in ssh_lines(script)]
     functions = support.shell_functions(script)
@@ -442,6 +460,10 @@ def run_shipping(script, first_line, env, depth=0):
                             f"sending nothing: {' '.join(words)}")
         elif name == "curl" and any(curl_sends(w) for w in words[1:]):
             problems.append(f"{where}: curl sends data or reads a file: {' '.join(words)}")
+        elif name in ("printf", "local") and any(w.startswith("-") for w in words[1:2] + [
+                w for w in words[1:] if name == "local"]):
+            problems.append(f"{where}: `{name}` with an option, which can set a variable by "
+                            f"name: {' '.join(words)}")
         elif name == "base64" and not ({"-d", "--decode"} & set(words[1:]) and all(
                 w.startswith("-") for w in words[1:])):
             problems.append(f"{where}: base64 reads a file or encodes: {' '.join(words)}")
@@ -561,6 +583,13 @@ SHIPPING_STEPS = (
     "          ssh -p \"$PORT\" \"$LOGIN@$HOST\" \"$SHA\"\n          }\n",
     "      - run: |\n          ssh -p \"$PORT\" \"$LOGIN@$HOST\" \"$SHA\" \"$KEY\"\n",
     "      - run: |\n          curl -sS -o /dev/null \"file:///etc/hosts\"\n",
+    "      - run: |\n          printf -v SHA '%s' \"$(curl -sS \"$URL\")\"\n",
+    "      - run: |\n          for SHA in \"$(curl -sS \"$URL\")\"; do\n          ssh -p \"$PORT\""
+    " \"$LOGIN@$HOST\" \"$SHA\"\n          done\n",
+    "      - run: |\n          SHA() { :; }\n",
+    "      - run: |\n          f() {\n            local -n target=S\"\"HA\n"
+    "            target=\"$(curl -sS \"$URL\")\"\n          }\n          f\n",
+    "      - run: |\n          : \"${SHA:=$(curl -sS \"$URL\")}\"\n",
 )
 
 
