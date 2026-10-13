@@ -26,8 +26,10 @@ Covers:
     `--no-build`, and no command brings an image in by
     another way (`docker pull`, `load`, `import`, `tag`, `compose pull`, `create`, `run`, `start`,
     `restart`);
-  - `.github/workflows/deploy.yml`: the workflow ships no files to the server. It is written in
-    a plain YAML subset and holds only the keys the deployment needs, case counting — so no
+  - `.github/workflows/deploy.yml`, read statically and failing closed on what the reading does
+    not accept: the workflow, as written, ships no files to the server by any construct the
+    reading recognises. It is written in a plain YAML subset and holds only the keys the
+    deployment needs, case counting — so no
     action or reusable workflow (`uses:`, whose doing is not in the repository to read). Its
     steps run in bash or sh and run only commands that work on the runner or, for `ssh` and
     `curl`, reach another host without sending it files: curl with no option that sends data
@@ -40,15 +42,22 @@ Covers:
     locale quoting and a backslash ending a line without whitespace before it (every rule reads
     a step with its backslash-newlines removed, as bash removes them); a step names a variable
     the workflow's `env` sets only as `$NAME` or `${NAME}`, and `printf` and `local` take no
-    option, so nothing in a step can overwrite what ssh sends. Anything outside this
-    fails the check, since the check cannot tell it sends nothing;
+    option written out. Anything outside this fails the check, since the check cannot tell it
+    sends nothing;
 - the repository holds no deployment route file other than those four.
 
 Does NOT cover: a deployment defined outside this repository; that the script stops before `up`
 when the build fails (the script's own tests read that: whatever it does, the image `up` starts
-is one Compose built from the Dockerfile, and so one whose build ran the type check). A file that
-only pins a Node.js version (.nvmrc, .node-version, .tool-versions) deploys nothing and does not
-count as a route.
+is one Compose built from the Dockerfile, and so one whose build ran the type check). That the
+workflow can send nothing but the commit: the workflow reading is static, of the plain YAML and
+shell subset above, and does not prove what a step builds at run time — a variable name or an
+option assembled from other values (for example `printf "$o" "${n}SHA" …`) still passes it and
+can change what ssh sends. That the automation key can only start a rebuild of a validated
+commit of `main` rests on the server's forced command (`restrict,command=…` running the
+installed `/usr/local/bin/loop2-deploy`, which accepts only a 40-hex commit on the freshly fetched
+`main`), which is outside this repository and checked by no test here. A file that only pins a
+Node.js version (.nvmrc, .node-version, .tool-versions) deploys nothing and does not count as a
+route.
 
 A route file this check reads that does not exist makes its test fail: until the deployment
 files are written, this is the check's failing test.
