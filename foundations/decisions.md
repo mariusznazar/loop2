@@ -470,7 +470,7 @@ The game is written in TypeScript and runs in the browser. Its simulation is a s
 functions that take a game state and a span of game minutes and return the next game state together
 with the events it produced, and real time enters the simulation only as an argument. The browser
 view draws the game only from the game state, and changes the game state only through functions of
-the simulation, to which it passes the player's choices and the passing of real time.
+the simulation, to which it passes the player's in-game choices and the passing of real time.
 
 - **Change:** new wording
 - **Scope:** browser-view, build-tools, simulation
@@ -507,7 +507,7 @@ The browser view is built in TypeScript with the browser's DOM APIs, without an 
 - **Change:** unchanged sentences
 - **Scope:** browser-view, build-tools
 - **Based on:** TypeScript Handbook, "ships type definitions for the DOM API" (https://www.typescriptlang.org/docs/handbook/dom-manipulation.html, read 2026-10-04) · React documentation, "npm install react react-dom" (https://react.dev/learn/add-react-to-an-existing-project, read 2026-10-04) · Vue documentation, "npm create vue@latest" (https://vuejs.org/guide/quick-start.html, read 2026-10-04) · Svelte documentation, "using Vite" (https://svelte.dev/docs/svelte/typescript, read 2026-10-04)
-- **Relations:** derives from D-04@ecd038e3
+- **Relations:** derives from D-04@e64edf9c
 - **Verification:** level 1 — invariants: browser-view-framework
 - **Review when:** none
 - **Origin:** none
@@ -522,9 +522,9 @@ binding part no longer in force.
 
 ### D-18/1 — Where does the game's content live?
 
-The game's content — maps, items, creatures, character skills and their numbers — stands in data
-files. A map, an item or a creature of a kind the simulation already handles is added by a change
-of data alone.
+The game's content — game maps, items, creatures, character skills and their numbers — stands in
+data files. A game map, an item or a creature of a kind the simulation already handles is added by a
+change of data alone.
 
 - **Change:** new decision
 - **Scope:** simulation, browser-view
@@ -538,8 +538,8 @@ of data alone.
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and principle #4
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
-*Rationale:* content in data makes a new item, map or creature cheap, lets the content grow by
-rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
+*Rationale:* content in data makes a new item, game map or creature cheap, lets the content grow
+by rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
 *Rejected:* none considered
 
 ### D-19/1 — How does the player interact with the terrain panel's drawing of the game map?
@@ -617,9 +617,9 @@ without fast-forwarding, and a pause holds a map run without ending it.
 ### D-22/1 — Where does the simulation's randomness come from?
 
 Every random draw of the simulation comes from generators seeded by the seed saved in the map run's
-state, one generator for each kind of draw — the map's layout and wandering among them — and the map
-run draws its map's layout at its start, before the first game minute, in a fixed order. A restart
-of a map run keeps its seed, and any other map run takes a new seed.
+state, one generator for each kind of draw — the game map's layout and wandering among them — and
+the map run draws its game map's layout at its start, before the first game minute, in a fixed
+order. A restart of a map run keeps its seed, and any other map run takes a new seed.
 
 - **Change:** new decision
 - **Scope:** simulation
@@ -630,7 +630,7 @@ of a map run keeps its seed, and any other map run takes a new seed.
   kind of draw uses — an agent compares the change with the decision:
   - complies: a map run sent anew that takes a seed other than that of the map run before it
   - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
-    from the generator of the map's layout
+    from the generator of the game map's layout
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D19 and §9 "Losowania akcji dzielą strumień z losowaniem napaści" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Where does the simulation's randomness come from?"
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
@@ -646,17 +646,17 @@ for every kind of draw — a draw of one kind shifts the draws of every other ki
 ### D-23/1 — How does a character act by its program?
 
 A character acts only by its program: in each free game minute it carries out the first program
-rule whose condition holds and whose action can be carried out then. Conditions are chosen from a
-closed list, never written as expressions, and the player has no way to carry out an action by
-hand.
+rule whose condition holds and whose action of the character can be carried out then. Conditions are
+chosen from a closed list, never written as expressions, and the player has no way to carry out a
+character's action by hand.
 
 - **Change:** new decision
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** level 1 — invariants: program-rule-pick. Level 2 for the closed list of
-  conditions and for carrying out an action by hand — an agent compares the change with the
-  decision:
+  conditions and for carrying out a character's action by hand — an agent compares the change with
+  the decision:
   - complies: a condition picker listing the conditions of the closed list
   - violates: a text field taking a condition as an expression; a button that makes the character
     explore now
@@ -664,51 +664,51 @@ hand.
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14, D15 and D9 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character act by its program?"
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
-*Rationale:* the game is the writing of behaviour, so carrying out an action by hand would get round
-its own core. Priorities with threshold sliders are decoration: different settings end a map
-identically, since only the order of actions counts.
+*Rationale:* the game is the writing of behaviour, so carrying out a character's action by hand
+would get round its own core. Priorities with threshold sliders are decoration: different settings
+end a game map identically, since only the order of the character's actions counts.
 *Rejected:* priorities with threshold sliders — decoration; conditions written as expressions — the
 player starts writing queries instead of arranging behaviour.
 
-### D-24/1 — What is a map made of?
+### D-24/1 — What is a game map made of?
 
-A map is a grid of hexagonal tiles whose dimensions, entrance, cost of a move and resources stand in
-the map's data, each resource with its density, stock per tile and time to renew one piece. What is
-not on the map's list of resources cannot be revealed there. Which tile gets what is drawn by the
-map run from its seed, within the bounds the map sets.
+A game map is a grid of hexagonal tiles whose dimensions, entrance, cost of a move and resources
+stand in the game map's data, each resource with its density, stock per tile and time to renew one
+piece. What is not on the game map's list of resources cannot be revealed there. Which tile gets
+what is drawn by the map run from its seed, within the bounds the game map sets.
 
 - **Change:** new decision
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-22@4e289de6
-- **Verification:** level 1 — invariants: map-run-tiles. Level 2 for what stands in the map's data
-  and for the shape of its grid — an agent compares the change with the decision:
-  - complies: a new map added as a row of the maps' data, with its dimensions and resources; Las
-    with a fixed entrance
-  - violates: a map with a hand-placed layout; a map of square tiles
+- **Relations:** derives from D-22@a6fd62b1
+- **Verification:** level 1 — invariants: map-run-tiles. Level 2 for what stands in the game map's
+  data and for the shape of its grid — an agent compares the change with the decision:
+  - complies: a new game map added as a row of the game maps' data, with its dimensions and
+    resources; Las with a fixed entrance
+  - violates: a game map with a hand-placed layout; a game map of square tiles
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D32, D17 and §5 "Mapa jest siatką sześciokątnych kafelków" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What is a map made of?"
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* six neighbours at an equal distance make a move always mean the same. New challenges
-come from the map's settings alone — dimensions, densities, stocks, renewal, cost of a move. The
-first map has a fixed entrance because its first map run is a tutorial. Accepted with it: a random
-layout widens the spread between seeds.
+come from the game map's settings alone — dimensions, densities, stocks, renewal, cost of a move.
+The first game map has a fixed entrance because its first map run is a tutorial. Accepted with it: a
+random layout widens the spread between seeds.
 *Rejected:* a random layout without a fixed frame — difficulty cannot be steered; a fixed layout per
-map — exploring loses its sense after the first map run; square tiles — four directions make a
+game map — exploring loses its sense after the first map run; square tiles — four directions make a
 diagonal two moves, eight give it for free; the presence of a resource without a stock — cheaper,
-but tests nothing.
+but tests nothing in the game.
 
 ### D-25/1 — How does a character move?
 
-A move onto a neighbouring tile is an ordinary action, after which the program picks a program rule
-anew, as after any action. Exploring reveals the tile the character stands on, cannot be repeated on
-a revealed tile and brings no item.
+A move onto a neighbouring tile is an ordinary action of the character, after which the program
+picks a program rule anew, as after any action of the character. Exploring reveals the tile the
+character stands on, cannot be repeated on a revealed tile and brings no item.
 
 - **Change:** new decision
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-23@70d1cb2d
+- **Relations:** derives from D-23@2a80871f
 - **Verification:** level 1 — invariants: exploring-reveal · move-reach. Level 2 for a journey kept
   as a route and for exploring that brings an item — an agent compares the change with the decision:
   - complies: "Go — stick" taking one move toward the nearest known tile with sticks, then the

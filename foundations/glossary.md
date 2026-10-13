@@ -19,8 +19,8 @@ A game minute is the unit of the simulation's time.
 
 ## map run
 
-A map run is one attempt of one character at one map, from entering it until a completion, the
-character's death or the player stopping it.
+A map run is one attempt of one character at one game map, from entering it until a completion,
+the character's death or the player stopping it.
 
 - **Avoid:** none
 - **Not:** none
@@ -59,7 +59,7 @@ the port at which its server is reached.
 
 ## program rule
 
-A program rule is a pair of a condition and an action that a program holds.
+A program rule is a pair of a condition and an action of a character that a program holds.
 
 - **Avoid:** none
 - **Not:** none

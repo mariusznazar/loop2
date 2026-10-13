@@ -159,7 +159,7 @@ game minute by game minute, when they receive the same real-time inputs.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-22@4e289de6
+- **Derives from:** D-22@a6fd62b1
 - **Part:** every
 - **Correction:** none
 
@@ -170,7 +170,7 @@ from the map run's state.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-22@4e289de6
+- **Derives from:** D-22@a6fd62b1
 - **Part:** every
 - **Correction:** none
 
@@ -205,7 +205,7 @@ language.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-04@ecd038e3
+- **Derives from:** D-04@e64edf9c
 - **Part:** simulation
 - **Correction:** none
 
@@ -215,7 +215,7 @@ No function that a file of the simulation exports changes a value passed to it.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-04@ecd038e3
+- **Derives from:** D-04@e64edf9c
 - **Part:** simulation
 - **Correction:** none
 
@@ -227,7 +227,7 @@ resource or an archetype, outside its comments, by the identifier or the name th
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-18@1f532d10
+- **Derives from:** D-18@9cf9e4c8
 - **Part:** simulation · browser-view
 - **Correction:** none
 
@@ -239,7 +239,7 @@ in a free game minute in which none has both.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-23@70d1cb2d
+- **Derives from:** D-23@2a80871f
 - **Part:** simulation
 - **Correction:** none
 
@@ -250,7 +250,7 @@ the character cannot carry it out on a revealed tile.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-25@6e8b0be3
+- **Derives from:** D-25@52da4747
 - **Part:** simulation
 - **Correction:** none
 
@@ -261,7 +261,7 @@ started from.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-25@6e8b0be3
+- **Derives from:** D-25@52da4747
 - **Part:** simulation
 - **Correction:** none
 
@@ -286,7 +286,7 @@ from that list.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-24@a9cf9825
+- **Derives from:** D-24@4a978d6e
 - **Part:** simulation
 - **Correction:** none
 
@@ -296,14 +296,14 @@ A restart has the seed of the map run it replaces.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-22@4e289de6
+- **Derives from:** D-22@a6fd62b1
 - **Part:** simulation
 - **Correction:** none
 
 ## icon-file-content/1
 
-No SVG file in `assets/icons/` holds a `script` or `foreignObject` element, an attribute whose name
-begins with `on`, or a reference to anything outside the file other than the SVG and XLink
+No SVG file in `assets/icons/` holds a `script` or `foreignObject` SVG element, an attribute whose
+name begins with `on`, or a reference to anything outside the file other than the SVG and XLink
 namespace declarations.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
