@@ -1,4 +1,4 @@
-"""Invariant restart-seed/1: A restart has the seed of the map run it replaces.
+"""Invariant restart-seed/1: A map run restart has the seed of the map run it replaces.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
