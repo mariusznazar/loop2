@@ -14,9 +14,9 @@ Reading of the sentence:
   activity, with the same end minute, at every game minute before that end minute, and the next
   activity starts at that end minute;
 - the condition of another program rule comes to hold: a program rule other than the one being
-  carried out whose condition did not hold now holds and whose action can start; in this task's
-  world a condition changes only through the program or at the end of an action, so it comes to
-  hold here through a change of the rule's value;
+  carried out whose condition did not hold now holds and whose action can start; in the simulation
+  this check drives, a condition changes only through the program or at the end of an action, so it
+  comes to hold here through a change of the rule's value;
 - the program changes: `setProgram` with a different program.
 
 Scenario (map Las, entrance tile at column 1, row 1, which starts unrevealed; exploring lasts 20
