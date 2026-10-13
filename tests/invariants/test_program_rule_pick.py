@@ -17,7 +17,7 @@ Reading of the sentence:
 - a condition holds: `always` always holds; "fewer than 0 sticks here" never holds;
 - the character can carry out: exploring only on a tile not revealed (exploring-reveal/1); going to
   a resource only where some revealed tile holds some of it and the character does not stand on
-  one that does (walk-target/1); wandering on any tile of the 4 x 4 map Las, every one of which
+  one that does (walk-feasibility/1); wandering on any tile of the 4 x 4 map Las, every one of which
   has a neighbour.
 
 Scenarios on the map Las (`forest`) with the archetype `elementalMage`, sent at the real time T

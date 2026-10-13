@@ -1,7 +1,6 @@
 """Invariant walk-target/1: A program rule that goes to a resource takes the character one move
 toward one of the revealed tiles holding some of that resource that lie nearest in game minutes of
-walking, and the character cannot carry it out where no revealed tile holds some of that resource
-or where it stands on one that does.
+walking.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
@@ -20,28 +19,27 @@ Reading of the sentence:
 - one move toward one of the nearest: the move's target tile (`stepTo`) is a neighbour of the
   character's tile, the character stands on it at the move's end, and entering it plus walking on
   from it to some revealed tile holding the resource that lies nearest takes exactly the game
-  minutes of walking from the character's tile to that tile;
-- cannot carry it out: with programs whose first rule is "always → go to the resource", at every
-  free minute (one at which an activity starts) where no revealed tile holds the resource, or the
-  character stands on a revealed tile that does, the rule is not started; and it is not started
-  anywhere else either but where the sentence lets it.
+  minutes of walking from the character's tile to that tile; a going started where no revealed
+  tile holds the resource is no move toward one, and one started where the character stands on
+  such a tile is none either, since that tile itself lies nearest, at 0 minutes.
+
+Where going to a resource can start at all is walk-feasibility/1, checked in
+`test_walk_feasibility.py`; this check reads only the goings that were started.
 
 Scenarios on the map Las (`forest`) with the archetype `elementalMage`: for each resource R of
 stick, berry, moss and fiber, 800 game minutes on the seeds of the real times T, T_OTHER and MORE,
 in which the program "always → go to R", "always → explore", "always → wander" alternates every 40
 game minutes with "always → explore", "always → wander", so that the character roams away before
-it goes again. The rules of going are checked at the minutes at which the first program is in
-force; a going started at any other minute is a break as well.
+it goes again. Every going to the resource the runs start is checked.
 
 Controls, so the check can fail: the runs together must start going to a resource more than 100
-times, at more than 5 of which the nearest tiles lie two or more tiles away, and refuse it more
-than 5 times where no revealed tile holds the resource and more than 100 times where the character
-stands on one; and the comparison flags made-up records with a move away from the nearest tiles,
-a move toward a tile farther than another revealed one holding the resource, a move whose end
-leaves the character elsewhere than its target, and going while standing on such a tile or where
-no revealed tile holds the resource.
+times, at more than 5 of which the nearest tiles lie two or more tiles away; and the comparison
+flags made-up records with a move away from the nearest tiles, a move toward a tile farther than
+another revealed one holding the resource, and a move whose end leaves the character elsewhere
+than its target.
 
-Does NOT cover: conditions that can fail; maps other than Las.
+Does NOT cover: where going can start (walk-feasibility/1); conditions that can fail; maps other
+than Las.
 """
 
 import copy as copying
@@ -171,35 +169,29 @@ def holds_some(tile, resource):
     return tile["revealed"] and tile["stock"].get(resource, 0) > 0
 
 
-def violations(runs, resource, in_force=None):
-    """(what breaks the sentence, counts of what was checked) for the minutes at which a program
-    whose first rule is "always → go to `resource`" is in force (every minute, without
-    `in_force`); at the other minutes only a going that is started is checked."""
+def violations(runs, resource):
+    """(what breaks the sentence, counts of what was checked) for every going to `resource` the
+    runs start."""
     found = []
-    counts = {"went": 0, "far": 0, "none": 0, "standing": 0}
+    counts = {"went": 0, "far": 0}
     for run in runs:
         current, minute = run["current"], run["minute"]
         if current["startMinute"] != minute:
             continue
-        first = in_force is None or in_force[minute]
         activity = current["activity"]
         going = activity.get("kind") == "rule" and activity.get("action") == {
             "kind": "walkTo", "resource": resource}
-        if not first and not going:
+        if not going:
             continue
         here = key(run["character"]["at"])
         targets = [key(t["at"]) for t in run["tiles"] if holds_some(t, resource)]
-        standing = here in targets
-        if not targets or standing:
-            if going:
-                found.append(f"minute {minute}: going to {resource} with "
-                             f"{'the character on such a tile' if standing else 'no tile'}")
-            else:
-                counts["none" if not targets else "standing"] += 1
+        if not targets:
+            found.append(f"minute {minute}: going to {resource} with no revealed tile holding "
+                         "some to move toward")
             continue
-        if not going and first:
-            found.append(f"minute {minute}: going to {resource} was possible and first, and "
-                         f"not started: {json.dumps(activity)}")
+        if here in targets:
+            found.append(f"minute {minute}: going to {resource} while the character stands on "
+                         "a nearest tile, so no move goes toward one")
             continue
         counts["went"] += 1
         from_here = walking_minutes(run["tiles"], here)
@@ -231,21 +223,18 @@ class WalkTarget(unittest.TestCase):
 
     def test_going_to_each_resource(self):
         # invariant: walk-target/1
-        totals = {"went": 0, "far": 0, "none": 0, "standing": 0}
+        totals = {"went": 0, "far": 0}
         for resource in RESOURCES:
             for real_ms in (T, T_OTHER) + MORE:
                 with self.subTest(resource=resource, real_ms=real_ms):
-                    runs, in_force = drive(program(resource), LONG_MINUTES, real_ms,
-                                           roam_spells=True)
-                    found, counts = violations(runs, resource, in_force)
+                    runs, _in_force = drive(program(resource), LONG_MINUTES, real_ms,
+                                            roam_spells=True)
+                    found, counts = violations(runs, resource)
                     self.assertEqual(found, [])
                     for name, value in counts.items():
                         totals[name] += value
         self.assertGreater(totals["went"], 100, f"too few goings to mean much: {totals}")
         self.assertGreater(totals["far"], 5, f"too few goings toward a far tile: {totals}")
-        self.assertGreater(totals["none"], 5, f"too few refusals for no tile: {totals}")
-        self.assertGreater(totals["standing"], 100, f"too few refusals while standing on such a "
-                                                   f"tile: {totals}")
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: walk-target/1
@@ -270,20 +259,20 @@ class WalkTarget(unittest.TestCase):
         chosen = None
         for resource in RESOURCES:
             for real_ms in (T, T_OTHER):
-                runs, in_force = drive(program(resource), LONG_MINUTES, real_ms,
-                                       roam_spells=True)
+                runs, _in_force = drive(program(resource), LONG_MINUTES, real_ms,
+                                        roam_spells=True)
                 picks = [i for i, r in enumerate(runs) if r["current"]["startMinute"] == i
                          and r["current"]["activity"].get("action", {}).get("kind") == "walkTo"
                          and r["current"]["endMinute"] < len(runs)]
                 farther = far_pick(runs, resource, picks)
                 if farther:
-                    chosen = (resource, runs, in_force, picks, farther)
+                    chosen = (resource, runs, picks, farther)
                     break
             if chosen:
                 break
         self.assertIsNotNone(chosen, "no going in the runs heads for a tile two or more away")
-        resource, runs, in_force, picks, farther = chosen
-        self.assertEqual(violations(runs, resource, in_force)[0], [])
+        resource, runs, picks, farther = chosen
+        self.assertEqual(violations(runs, resource)[0], [])
 
         # A move away: a neighbour whose walking does not lead to the nearest tiles.
         index = picks[0]
@@ -302,35 +291,23 @@ class WalkTarget(unittest.TestCase):
         self.assertIsNotNone(away, "no neighbour leads away from the nearest tiles")
         moved = copying.deepcopy(runs)
         moved[index]["current"]["stepTo"] = {"q": away[0], "r": away[1]}
-        self.assertTrue(violations(moved, resource, in_force)[0], "a move away goes unseen")
+        self.assertTrue(violations(moved, resource)[0], "a move away goes unseen")
 
         # A move toward a farther tile: another neighbour made a revealed tile with the resource.
         nearer = copying.deepcopy(runs)
         planted = tile(nearer[farther[0]], farther[1])
         planted["revealed"] = True
         planted["stock"][resource] = 5
-        self.assertTrue(violations(nearer, resource, in_force)[0],
+        self.assertTrue(violations(nearer, resource)[0],
                         "a move toward a farther tile goes unseen")
 
         # A move whose end leaves the character elsewhere.
         elsewhere = copying.deepcopy(runs)
         end = elsewhere[index]["current"]["endMinute"]
         elsewhere[end]["character"]["at"] = dict(elsewhere[index]["character"]["at"])
-        self.assertTrue(violations(elsewhere, resource, in_force)[0],
+        self.assertTrue(violations(elsewhere, resource)[0],
                         "a move ending off its target goes unseen")
 
-        # Going while standing on such a tile, and where no tile holds the resource.
-        standing = copying.deepcopy(runs)
-        here_tile = tile(standing[index], key(standing[index]["character"]["at"]))
-        here_tile["revealed"] = True
-        here_tile["stock"][resource] = 3
-        self.assertTrue(violations(standing, resource, in_force)[0],
-                        "going while standing on such a tile goes unseen")
-        empty = copying.deepcopy(runs)
-        for t in empty[index]["tiles"]:
-            t["stock"].pop(resource, None)
-        self.assertTrue(violations(empty, resource, in_force)[0],
-                        "going where no tile holds the resource goes unseen")
 
 if __name__ == "__main__":
     unittest.main()
