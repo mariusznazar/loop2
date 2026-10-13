@@ -17,7 +17,9 @@ Reading of the sentence:
   the timers, `console`, `process`, `performance` and the other host additions), or a member of
   `globalThis`, `window`, `self` or `global` read by a name not on the language's list
   LANGUAGE_GLOBALS, or read by a computed key;
-- the system time: `Date.now`, `Date()` called without `new`, or `new Date()` without arguments.
+- the system time: `Date.now`, `performance.now`, `Date()` called without `new`, or `new Date()`
+  without arguments, with `Date` or `performance` reached by its own name or as a member of
+  anything (`globalThis.Date.now()`, `new window.Date()`, for two).
 
 Covers:
 - static: every source file is scanned by the reading above;
@@ -89,12 +91,17 @@ LANGUAGE_GLOBALS = (
     "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent", "escape", "eval",
     "globalThis", "isFinite", "isNaN", "parseFloat", "parseInt", "undefined", "unescape",
 )
+# Reads of the system time, however `Date` or `performance` is reached: by its own name or as a
+# member of anything (`globalThis.Date`, `window.performance`, ...).
+MEMBER_CHAIN = r"(?:[\w$]+\s*(?:\?\.|\.)\s*)*"
 SYSTEM_TIME = (
-    (re.compile(r"(?<![\w$.])Date\s*(?:\?\.)?\s*\.?\s*now\b"), "Date.now"),
-    (re.compile(r"\bnew\s+Date\s*\(\s*\)"), "new Date()"),
-    (re.compile(r"\bnew\s+Date\s*(?![\s(\w$])"), "new Date"),
+    (re.compile(r"(?<![\w$])Date\s*(?:\?\.|\.)\s*now\b"), "Date.now"),
+    (re.compile(r"(?<![\w$])performance\s*(?:\?\.|\.)\s*now\b"), "performance.now"),
+    (re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"Date\s*\(\s*\)"), "new Date()"),
+    (re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"Date\s*(?![\s(\w$])"), "new Date"),
 )
-BARE_DATE_CALL = re.compile(r"(?<![\w$.])Date\s*\(")
+BARE_DATE_CALL = re.compile(r"(?<![\w$])Date\s*(?:\?\.\s*)?\(")
+NEW_BEFORE = re.compile(r"\bnew\s+" + MEMBER_CHAIN + r"$")
 
 REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
 REGEX_AFTER_WORDS = ("return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
@@ -282,7 +289,7 @@ def name_findings(relative, text):
         if pattern.search(code):
             found.append(f"{relative} reads the system time by {label}")
     for match in BARE_DATE_CALL.finditer(code):
-        if not re.search(r"\bnew\s*$", code[:match.start()]):
+        if not NEW_BEFORE.search(code[:match.start()]):
             found.append(f"{relative} reads the system time by Date() without new")
             break
     return found
@@ -311,6 +318,16 @@ FLAGGED_SOURCES = (
     "export const now = new Date();\n",
     "export const now = new Date;\n",
     "export const now = Date();\n",
+    "export const r = { realMsCarry: globalThis.Date.now() % 1 };\n",
+    "export const now = globalThis.Date?.now();\n",
+    "export const now = globalThis . Date . now();\n",
+    "export const now = window.Date.now();\n",
+    "export const now = self.Date.now();\n",
+    "export const now = global.Date.now();\n",
+    "export const now = globalThis.performance.now();\n",
+    "export const now = new globalThis.Date();\n",
+    "export const now = new globalThis.Date;\n",
+    "export const now = globalThis.Date();\n",
     "export const p = performance.now();\n",
     "export function log(x: number) { console.log(x); }\n",
     "export const env = process.env;\n",
@@ -332,6 +349,8 @@ CLEAN_SOURCE = (
     "export const record = { document: 1, console: 2, location: 3 };\n"
     "export const member = record.document + record.location;\n"
     "export const epoch = new Date(0).getTime();\n"
+    "export const day = new globalThis.Date(86400000).getUTCDate();\n"
+    "export const utc = globalThis.Date.UTC(2020, 0, 1);\n"
     "export const m = Math.max(1, 2) / 2;\n"
     "export const g = globalThis.Math.min(1, 2);\n"
     "export const size = MAPS.forest.width;\n"
@@ -423,8 +442,15 @@ try {
     const game = namespaces['game.js'];
     let state;
     for (const [name, ...args] of parse(JSON.stringify(config.steps))) {
-      state = name === 'newGame' ? game.newGame() : game[name](state, ...args).state;
-      result.records.push(JSON.parse(stringify({ step: name, minute: state.run ? state.run.minute : null })));
+      const hadRun = Boolean(state && state.run);
+      let error = null;
+      try {
+        state = name === 'newGame' ? game.newGame() : game[name](state, ...args).state;
+      } catch (thrown) {
+        error = { name: String(thrown && thrown.name), message: String(thrown && thrown.message) };
+      }
+      result.records.push({ step: name, hadRun, error,
+                            minute: state && state.run ? state.run.minute : null });
     }
   } else {
     for (const name of Object.keys(namespaces)) {
@@ -450,13 +476,76 @@ MIXED = {"rules": [
 SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
 T = 1760000000000
 T_OTHER = 1760000123456
+# Inputs on the paths with no map run: before the first send and after an end.
+NO_RUN = [["setPaused", True], ["passRealTime", 5000], ["setPaused", False],
+          ["passRealTime", 1500], ["advanceMinutes", 3], ["setProgram", MIXED], ["restart"],
+          ["end"]]
+NO_RUN_FUNCTIONS = ("setPaused", "passRealTime", "advanceMinutes", "setProgram", "restart", "end")
 GAME_STEPS = (
-    [["newGame"], ["setProgram", MIXED], ["send", SENT, T]]
+    [["newGame"]] + NO_RUN + [["setProgram", MIXED], ["send", SENT, T]]
     + [["advanceMinutes", 1]] * 400
     + [["passRealTime", 61000], ["setPaused", True], ["passRealTime", 5000],
-       ["setPaused", False], ["restart"], ["advanceMinutes", 100], ["end"],
-       ["send", SENT, T_OTHER], ["advanceMinutes", 100]]
+       ["advanceMinutes", 5], ["setPaused", False], ["restart"], ["advanceMinutes", 100],
+       ["end"]]
+    + NO_RUN
+    + [["send", SENT, T_OTHER], ["advanceMinutes", 100], ["setPaused", True], ["restart"],
+       ["setPaused", False], ["end"]]
 )
+FIRST_SEND = GAME_STEPS.index(["send", SENT, T])
+
+
+def run_problems(result):
+    """What a driven run shows against the sentence: a refused import, a guarded read of the
+    system time, a failure to load, and any error other than a plain `Error` the simulation
+    throws on a path with no map run (a missing host global raises a ReferenceError or a
+    TypeError instead)."""
+    problems = [f"refused import {r}" for r in result["refused"]]
+    problems += [f"read the system time by {h}" for h in result["hits"]]
+    if result["error"]:
+        problems.append(f"failed: {result['error']}")
+    for index, record in enumerate(result["records"]):
+        error = record["error"]
+        if error and (record["hadRun"] or error["name"] != "Error"
+                      or error["message"].startswith("simulation-isolation")):
+            problems.append(f"step {index} {record['step']} raised {error['name']}: "
+                            f"{error['message']}")
+    return problems
+
+
+# Made-up game modules for the control of the no-run paths: each reads the system time or a host
+# object only where there is no map run.
+MADE_UP_GAME = r"""
+const pass = (state) => ({ state, events: [] });
+const noRun = (state) => { NO_RUN_READ return pass(state); };
+export function newGame() { return { run: null, paused: false }; }
+export function setProgram(state, program) { return pass({ ...state, program }); }
+export function send(state) { return pass({ ...state, run: { minute: 0 } }); }
+export function restart(state) {
+  if (!state.run) throw new Error('no map run');
+  return pass({ ...state, run: { minute: 0 } });
+}
+export function end(state) {
+  if (!state.run) throw new Error('no map run');
+  return pass({ ...state, run: null });
+}
+export function setPaused(state, paused) { return state.run ? pass({ ...state, paused }) : noRun(state); }
+export function passRealTime(state) { return state.run ? pass(state) : noRun(state); }
+export function advanceMinutes(state, m) {
+  return state.run ? pass({ ...state, run: { minute: state.run.minute + m } }) : noRun(state);
+}
+"""
+
+
+def made_up_game(no_run_read):
+    return MADE_UP_GAME.replace("NO_RUN_READ", no_run_read)
+
+
+NO_RUN_READS = {
+    "globalThis.Date.now()": "state = { ...state, realMsCarry: globalThis.Date.now() % 1 };",
+    "globalThis.performance.now()": "state = { ...state, t: globalThis.performance.now() };",
+    "new globalThis.Date()": "state = { ...state, t: new globalThis.Date().getTime() };",
+    "setTimeout": "setTimeout(() => {}, 0);",
+}
 
 # Made-up modules for the control of the harness: each must fail.
 FAILING_MODULES = {
@@ -546,15 +635,30 @@ class SimulationIsolation(unittest.TestCase):
         result = harness(directory, {"mode": "game", "steps": GAME_STEPS})
         for name in ("console", "WebAssembly", "process", "setTimeout", "document"):
             self.assertNotIn(name, result["globals"], f"the harness's context holds {name}")
-        self.assertEqual(result["refused"], [], "a built module imports from outside the "
-                                                "simulation")
-        self.assertEqual(result["hits"], [], "a built module read the system time")
-        self.assertIsNone(result["error"], f"the simulation failed in a context holding only "
-                                           f"the language's globals:\n{result['error']}")
+        self.assertEqual(run_problems(result), [], "the simulation imports from outside it, reads "
+                                                   "the system time or uses a host global")
         self.assertIn("game.js", result["modules"])
         self.assertEqual(len(result["records"]), len(GAME_STEPS))
-        self.assertEqual(result["records"][402]["minute"], 400,
+        self.assertEqual(result["records"][FIRST_SEND + 400]["minute"], 400,
                          "the driven run did not reach game minute 400")
+        for name in NO_RUN_FUNCTIONS:
+            self.assertTrue(any(r["step"] == name and not r["hadRun"] for r in result["records"]),
+                            f"{name} was never called on a game with no map run")
+
+    def test_control_the_no_run_paths_are_judged(self):
+        # invariant: simulation-isolation/1
+        for label, read in NO_RUN_READS.items():
+            directory, inner = made_up_directory({"game.js": made_up_game(read)})
+            result = harness(inner, {"mode": "game", "steps": GAME_STEPS})
+            shutil.rmtree(directory, ignore_errors=True)
+            with self.subTest(read=label):
+                self.assertTrue(run_problems(result),
+                                f"a read of {label} on the paths with no map run goes unseen")
+        directory, inner = made_up_directory({"game.js": made_up_game("")})
+        result = harness(inner, {"mode": "game", "steps": GAME_STEPS})
+        shutil.rmtree(directory, ignore_errors=True)
+        self.assertEqual(run_problems(result), [], "a made-up game reading nothing is judged "
+                                                   "to break the sentence")
 
     def test_control_the_harness_fails_each_forbidden_use(self):
         # invariant: simulation-isolation/1

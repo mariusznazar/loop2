@@ -18,11 +18,16 @@ Reading of the sentence:
 - holds no resource missing from that list: every key of `tile.stock` is an `id` of the list.
 
 Scenarios: for every game map of `MAPS`, with the first archetype of `ARCHETYPES`, a send at each
-of 12 real times written out below, then 50 game minutes, a restart, an end and a second send
-(whose seed comes from the first), so 36 map run starts for each game map.
+of 15 real times written out below, then 50 game minutes, a restart, an end and a second send
+(whose seed comes from the first), so 45 map run starts for each game map. Three of the real times
+(SINGLE_TILE_TIMES) give, on Las, a map run in which berry, fiber or moss stands on one tile
+alone, the outcome of a layout that places on one tile a resource its draw left on none.
 
-Controls, so the check can fail: the data read gives every game map a non-empty list with a
-positive stock for each resource; over the starts, each resource of the list stands on some tile
+Controls, so the check can fail: each send at SINGLE_TILE_TIMES gives its resource on exactly
+one tile, read from the public state as the number of tiles whose stock of it is above 0 — a
+draw of one tile and a resource placed after a draw of none look alike there, so the control shows
+the starts reach that outcome, not which path gave it; the data read gives every game map a
+non-empty list with a positive stock for each resource; over the starts, each resource of the list stands on some tile
 with its stock and is missing from some tile, so a layout giving every tile everything or nothing
 would show; and the comparison flags made-up tiles holding a stock one less than the data's, a
 resource off the list, and a stock of half the data's.
@@ -41,9 +46,13 @@ import unittest
 import loop2_invariant_support as support
 
 BUILT_DIRECTORY = "dist/public/sim"
+# Real times of a send from a new game whose map run of Las holds a resource on one tile alone —
+# the outcome a layout gives where the draw left the resource on no tile and it is placed on one
+# tile all the same, a case a few starts in a thousand reach: berry, fiber and moss in turn.
+SINGLE_TILE_TIMES = {1760001609000: "berry", 1760002975000: "fiber", 1760006249000: "moss"}
 REAL_TIMES = (1760000000000, 1760000123456, 1760000200000, 1760000300000, 1760000400000,
               1760000500000, 1, 86400000, 1700000000000, 1800000000000, 1760000000001,
-              1765432109876)
+              1765432109876) + tuple(SINGLE_TILE_TIMES)
 ALWAYS = {"kind": "always"}
 PROGRAM = {"rules": [{"condition": ALWAYS, "action": {"kind": "explore"}},
                      {"condition": ALWAYS, "action": {"kind": "wander"}}]}
@@ -162,6 +171,19 @@ class MapRunTiles(unittest.TestCase):
                                 f"no tile of {map_id} holds {resource['id']}")
                 self.assertTrue(any(not t["stock"].get(resource["id"]) for t in tiles),
                                 f"every tile of {map_id} holds {resource['id']}")
+
+    def test_control_single_tile_starts_are_reached(self):
+        # invariant: map-run-tiles/1
+        result = starts()
+        for real_ms, resource in SINGLE_TILE_TIMES.items():
+            start = next(s for s in result["starts"] if s["mapId"] == "forest"
+                         and s["how"] == "send" and s["realMs"] == real_ms)
+            holding = [t for t in start["tiles"] if t["stock"].get(resource)]
+            self.assertEqual(len(holding), 1,
+                             f"the send at {real_ms} no longer gives {resource} on one tile alone, "
+                             "so the starts may not reach a layout that places a resource no "
+                             "tile drew")
+            self.assertEqual(violations(start, result["maps"]["forest"]), [])
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: map-run-tiles/1
