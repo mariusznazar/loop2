@@ -12,7 +12,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 4. `npm start` — uruchomienie zbudowanego serwera.
 5. Otwórz http://127.0.0.1:3000.
 
-`npm start` wymaga wcześniejszego builda. Serwer nasłuchuje lokalnie na porcie 3000; zakończ go przez Ctrl+C.
+`npm start` wymaga wcześniejszego builda. Serwer domyślnie nasłuchuje na 127.0.0.1:3000; adres zmienisz zmiennymi środowiska `LOOP2_LISTEN_HOST` i `LOOP2_LISTEN_PORT`. Zakończ go przez Ctrl+C.
 
 ## Co pokazuje strona
 
@@ -36,6 +36,8 @@ Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmieni
 
 W przeglądarce sprawdź, że `/main.js` ładuje się bez błędu, konsola nie zawiera błędów wykonania, a strona pokazuje panel „Program”, wysyłanie maga i stopkę z wzmiankami; po „Wyślij” — wiersz stanu z minutą rosnącą co sekundę oraz panel terenu z listą kafelków.
 
+Testy wdrożenia: `python -B .the-way/gate/run_tests.py tests/deploy` i `python -B .the-way/gate/run_tests.py tests/agent_workflow`.
+
 Nieznane `/api`, `/api/` i ścieżki pod `/api/` otrzymują 404 JSON. Pozostałe brakujące ścieżki otrzymują zwykłe 404. Serwer podaje wyłącznie `dist/public`.
 
-Kod przeglądarki jest w `src/browser` — symulacja gry w `src/browser/sim`, ekrany w `src/browser/view` — a kod serwera w `src/server`. Kompilacje mają osobne konfiguracje typów; zależności i plik blokady są wspólne. Konta, zapis stanu, serwerowa część gry i wdrożenie jeszcze nie istnieją.
+Kod przeglądarki jest w `src/browser` — symulacja gry w `src/browser/sim`, ekrany w `src/browser/view` — a kod serwera w `src/server`. Kompilacje mają osobne konfiguracje typów; zależności i plik blokady są wspólne. Konta, zapis stanu i serwerowa część gry jeszcze nie istnieją; aplikacja jest wdrażana na serwer testowy przez kontener i skill `loop2-deploy`.

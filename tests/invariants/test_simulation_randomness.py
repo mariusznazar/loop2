@@ -214,7 +214,7 @@ CLEAN_SOURCE = (
 )
 
 # Programs, in the shape `src/browser/sim/types.ts` exports: conditions from the closed list of
-# D-13, actions of D-15 and D-16.
+# D-23, actions of D-25 and D-26.
 ALWAYS = {"kind": "always"}
 WANDER_ONLY = {"rules": [{"condition": ALWAYS, "action": {"kind": "wander"}}]}
 MIXED = {"rules": [

@@ -48,17 +48,17 @@ An unmatched `/api/` request receives an API error response, never the built gam
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-05@e11aec4d
+- **Derives from:** D-05@db83484a
 - **Part:** every
 - **Correction:** none
 
-## loop2-one-serving-process/1
+## loop2-one-serving-process/2
 
-One Express 5 process serves both the built game and `/api/` requests.
+One Express 5 process in the loop2 container serves both the built game and `/api/` account and save requests.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-05@e11aec4d
+- **Derives from:** D-05@db83484a
 - **Part:** every
 - **Correction:** none
 
@@ -102,6 +102,56 @@ When the account and save server's listening address is already in use, the serv
 - **Part:** account-server · build-tools
 - **Correction:** none
 
+## loop2-container-isolation/1
+
+The loop2 instance runs in a container separate from the existing loop instance.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-08@e4e8a2f4
+- **Part:** every
+- **Correction:** none
+
+## loop2-distinct-address/1
+
+The public address of loop2 differs from `kantarion.bieda.it`.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-08@e4e8a2f4
+- **Part:** every
+- **Correction:** none
+
+## loop2-deploy-trigger-input/1
+
+The deployment command the automation's key runs refuses every input but one commit name of 40 lowercase hexadecimal characters before it fetches, builds or changes a container, and deploys only a commit that belongs to `main` as just fetched.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** openssh-authorized-keys-options@3fd0389d
+- **Derives from:** D-09@20be369f · D-11@8ab607c7
+- **Part:** deployment
+- **Correction:** none
+
+## loop2-deploy-keeps-running/1
+
+A deployment that stops before it starts the new container — at its input, the commit, the lock, the reading of memory and disk, the fetch, the checkout, the type check or the build — leaves the running loop2 container in service.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-15@e3aa8f94
+- **Part:** deployment
+- **Correction:** none
+
+## loop2-host-sharing/1
+
+A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and the loop2 Compose service asks the host for no privilege that a default container lacks.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-17@c332eebd
+- **Part:** deployment
+- **Correction:** none
+
 ## map-run-repeatability/1
 
 Two simulations of one program from one starting game state with one seed give the same map run,
@@ -109,7 +159,7 @@ game minute by game minute, when they receive the same real-time inputs.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-12@4e289de6
+- **Derives from:** D-22@4e289de6
 - **Part:** every
 - **Correction:** none
 
@@ -120,7 +170,7 @@ from the map run's state.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-12@4e289de6
+- **Derives from:** D-22@4e289de6
 - **Part:** every
 - **Correction:** none
 
@@ -131,7 +181,7 @@ condition of another program rule comes to hold before it ends.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-10@a03f8b53
+- **Derives from:** D-20@a03f8b53
 - **Part:** simulation
 - **Correction:** none
 
@@ -143,7 +193,7 @@ time passed while it is paused.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-11@6032a520
+- **Derives from:** D-21@6032a520
 - **Part:** simulation
 - **Correction:** none
 
@@ -177,7 +227,7 @@ resource or an archetype, outside its comments, by the identifier or the name th
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-08@1f532d10
+- **Derives from:** D-18@1f532d10
 - **Part:** simulation · browser-view
 - **Correction:** none
 
@@ -189,7 +239,7 @@ in a free game minute in which none has both.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-13@70d1cb2d
+- **Derives from:** D-23@70d1cb2d
 - **Part:** simulation
 - **Correction:** none
 
@@ -200,7 +250,7 @@ the character cannot carry it out on a revealed tile.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-15@6e8b0be3
+- **Derives from:** D-25@6e8b0be3
 - **Part:** simulation
 - **Correction:** none
 
@@ -211,7 +261,7 @@ started from.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-15@6e8b0be3
+- **Derives from:** D-25@6e8b0be3
 - **Part:** simulation
 - **Correction:** none
 
@@ -224,7 +274,7 @@ that does.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-16@35aef078
+- **Derives from:** D-26@35aef078
 - **Part:** simulation
 - **Correction:** none
 
@@ -236,7 +286,7 @@ from that list.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-14@a9cf9825
+- **Derives from:** D-24@a9cf9825
 - **Part:** simulation
 - **Correction:** none
 
@@ -246,7 +296,7 @@ A restart has the seed of the map run it replaces.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-12@4e289de6
+- **Derives from:** D-22@4e289de6
 - **Part:** simulation
 - **Correction:** none
 
@@ -258,7 +308,7 @@ namespace declarations.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-17@69da55dd
+- **Derives from:** D-27@69da55dd
 - **Part:** browser-view
 - **Correction:** none
 
@@ -270,7 +320,7 @@ its source.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-17@69da55dd
+- **Derives from:** D-27@69da55dd
 - **Part:** browser-view
 - **Correction:** none
 

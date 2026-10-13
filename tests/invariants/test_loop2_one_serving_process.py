@@ -1,5 +1,10 @@
-"""Invariant loop2-one-serving-process/1: One Express 5 process serves both the built game and
-`/api/` requests.
+"""Invariant loop2-one-serving-process/2: One Express 5 process in the loop2 container serves both
+the built game and `/api/` account and save requests.
+
+This file checks the server outside any container, as `npm start` starts it: the process the
+loop2 container runs is the same built server, started the same way. The container itself — its
+image's command, its one Compose service and the processes in the running container — is checked
+by `test_loop2_one_serving_process_container.py`.
 
 The product is built by `npm run build` in a temporary copy of the working tree and started there
 by `npm start` on 127.0.0.1:3000, as README.md gives them; the real tree is never written. The
@@ -20,7 +25,7 @@ Reading of the sentence:
   request above — the game's files and the `/api/` paths alike. Express 4 logs under
   `express:router` instead, which does not count.
 
-Does NOT cover: a deployment or container (none exists yet); a second process started later than
+Does NOT cover: the loop2 container (the file named above); a second process started later than
 the probes, or one outside the tree `npm start` starts that the server talks to over a channel
 other than a TCP listener; requests other than the GETs listed; whether the `/api/` responses are
 errors (loop2-api-error-route).
@@ -175,7 +180,7 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
         return [f"{pid} {self.table.get(pid, (None, None, '?'))[2]}" for pid in pids]
 
     def test_the_built_game_is_served(self):
-        # invariant: loop2-one-serving-process/1
+        # invariant: loop2-one-serving-process/2
         html = {p: data for p, data in self.game.items() if p.lower().endswith((".html", ".htm"))}
         scripts = [p for p in self.game if p.lower().endswith((".js", ".mjs"))]
         self.assertTrue(html, f"`npm run build` places no HTML file in {BUILT_GAME}")
@@ -192,14 +197,14 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
                                              f"bytes of {relative}")
 
     def test_api_requests_are_answered(self):
-        # invariant: loop2-one-serving-process/1
+        # invariant: loop2-one-serving-process/2
         for path in UNMATCHED_API_PATHS:
             with self.subTest(path=path):
                 status, _headers, _body = self.answers[path]
                 self.assertTrue(100 <= status <= 599, f"GET {path} returns status {status}")
 
     def test_one_process_of_the_started_tree_listens_and_starts_nothing(self):
-        # invariant: loop2-one-serving-process/1
+        # invariant: loop2-one-serving-process/2
         tree = set(self.tree_and_root)
         on_port = sorted({pid for pid, _address, port in self.listeners
                           if pid in tree and port == support.PORT})
@@ -216,7 +221,7 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
                                     f"started processes of its own: {self.describe(below)}")
 
     def test_installed_express_is_major_5(self):
-        # invariant: loop2-one-serving-process/1
+        # invariant: loop2-one-serving-process/2
         manifest = self.copy.file("node_modules/express/package.json")
         with open(manifest, encoding="utf-8") as handle:
             version = json.load(handle).get("version", "")
@@ -226,7 +231,7 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
                          f"the started copy runs express {version!r}")
 
     def test_express_5_router_dispatches_game_and_api_requests(self):
-        # invariant: loop2-one-serving-process/1
+        # invariant: loop2-one-serving-process/2
         for path in sorted(self.answers):
             with self.subTest(path=path):
                 line = re.compile(r"(?:^|\s)router dispatching GET " + re.escape(path)

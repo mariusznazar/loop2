@@ -14,9 +14,10 @@ Covers, in the working tree being checked:
   a .tool-versions line, the content of a `node-version-file` — and every Dockerfile names one.
 
 Does NOT cover: which Node.js actually runs the server on a machine (the check runs the product
-nowhere); a deployment defined outside this repository. While the repository holds no deployment
-file — the skeleton has none — the deployment test passes on the declarations above alone, since
-`engines.node` is what a Node.js platform reads when no other file names a version.
+nowhere); a deployment defined outside this repository. A repository holding no deployment file
+would pass the deployment test on the declarations above alone, since `engines.node` is what a
+Node.js platform reads when no other file names a version; this one holds a Dockerfile, a
+Compose file, a workflow and a deploy script, and the test reads each of them.
 """
 
 import fnmatch

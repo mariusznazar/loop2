@@ -139,7 +139,7 @@ test('send rejects a map or an archetype id not in the data', async () => {
   assert.equal(send(newGame(), SENT, REAL_MS).state.run.mapId, firstMapId);
 });
 
-// Every activity must last at least one game minute (D-08: a map can be added through data alone).
+// Every activity must last at least one game minute (D-18: a map can be added through data alone).
 test('every map step and every fixed action duration is a whole number of minutes, at least 1', () => {
   const durations = [
     ...Object.entries(MAPS).map(([id, map]) => [`map ${id} stepMinutes`, map.stepMinutes]),
