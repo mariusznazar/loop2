@@ -159,7 +159,7 @@ game minute by game minute, when they receive the same real-time inputs.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-22@a6fd62b1
+- **Derives from:** D-22@c9937b43
 - **Part:** every
 - **Correction:** none
 
@@ -170,7 +170,7 @@ from the map run's state.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-22@a6fd62b1
+- **Derives from:** D-22@c9937b43
 - **Part:** every
 - **Correction:** none
 
@@ -205,7 +205,7 @@ language.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-04@e64edf9c
+- **Derives from:** D-04@ecd038e3
 - **Part:** simulation
 - **Correction:** none
 
@@ -215,7 +215,7 @@ No function that a file of the simulation exports changes a value passed to it.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-04@e64edf9c
+- **Derives from:** D-04@ecd038e3
 - **Part:** simulation
 - **Correction:** none
 
@@ -292,11 +292,11 @@ from that list.
 
 ## restart-seed/1
 
-A restart has the seed of the map run it replaces.
+A map run restart has the seed of the map run it replaces.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-22@a6fd62b1
+- **Derives from:** D-22@c9937b43
 - **Part:** simulation
 - **Correction:** none
 

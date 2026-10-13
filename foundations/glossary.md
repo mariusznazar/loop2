@@ -64,10 +64,10 @@ A program rule is a pair of a condition and an action of a character that a prog
 - **Avoid:** none
 - **Not:** none
 
-## restart
+## map run restart
 
-A restart is a map run of the same character on the same game map, which the player starts in
-place of the map run in progress.
+A map run restart is a map run of the same character on the same game map, which the player starts
+in place of the map run in progress.
 
 - **Avoid:** none
 - **Not:** none

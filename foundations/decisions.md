@@ -470,7 +470,7 @@ The game is written in TypeScript and runs in the browser. Its simulation is a s
 functions that take a game state and a span of game minutes and return the next game state together
 with the events it produced, and real time enters the simulation only as an argument. The browser
 view draws the game only from the game state, and changes the game state only through functions of
-the simulation, to which it passes the player's in-game choices and the passing of real time.
+the simulation, to which it passes the player's choices and the passing of real time.
 
 - **Change:** new wording
 - **Scope:** browser-view, build-tools, simulation
@@ -491,9 +491,9 @@ the simulation, to which it passes the player's in-game choices and the passing 
 *Rationale for change:* a simulation of pure functions makes progress while away plain arithmetic
 and the save a JSON document, and runs on a phone as well; real time passed in as an argument keeps
 the earning loop, the catch-up and the renewal of a resurrection on one footing. The player changes
-the game state from the browser view — the program editor, sending a character, a restart — and the
-passing of real time changes it too; each goes through the simulation, so the game state changes in
-one place.
+the game state from the browser view — the program editor, sending a character, a map run restart —
+and the passing of real time changes it too; each goes through the simulation, so the game state
+changes in one place.
 *Rejected:* giving "view" the meaning of the drawing alone and renaming the browser view in "How is
 the browser view built?", its invariant and its part — three entries changed to keep a sentence
 about a scene the MVP does not have; keeping the sentence
@@ -507,7 +507,7 @@ The browser view is built in TypeScript with the browser's DOM APIs, without an 
 - **Change:** unchanged sentences
 - **Scope:** browser-view, build-tools
 - **Based on:** TypeScript Handbook, "ships type definitions for the DOM API" (https://www.typescriptlang.org/docs/handbook/dom-manipulation.html, read 2026-10-04) · React documentation, "npm install react react-dom" (https://react.dev/learn/add-react-to-an-existing-project, read 2026-10-04) · Vue documentation, "npm create vue@latest" (https://vuejs.org/guide/quick-start.html, read 2026-10-04) · Svelte documentation, "using Vite" (https://svelte.dev/docs/svelte/typescript, read 2026-10-04)
-- **Relations:** derives from D-04@e64edf9c
+- **Relations:** derives from D-04@ecd038e3
 - **Verification:** level 1 — invariants: browser-view-framework
 - **Review when:** none
 - **Origin:** none
@@ -590,8 +590,8 @@ program picks a program rule only in such a game minute, so the end of the chara
 the one moment at which both a change of the program and a program rule whose condition has come to
 hold take effect.
 *Rejected:* a change of the program allowed only outside a map run — every fix to the program
-would need the map run ended; a change of the program taking effect only from a restart — two
-versions of the program in force at once.
+would need the map run ended; a change of the program taking effect only from a map run restart —
+two versions of the program in force at once.
 
 ### D-21/1 — How does time pass in a map run the player starts?
 
@@ -619,15 +619,15 @@ without fast-forwarding, and a pause holds a map run without ending it.
 Every random draw of the simulation comes from generators seeded by the seed saved in the map run's
 state, one generator for each kind of draw — the game map's layout and wandering among them — and
 the map run draws its game map's layout at its start, before the first game minute, in a fixed
-order. A restart of a map run keeps its seed, and any other map run takes a new seed.
+order. A map run restart keeps its seed, and any other map run takes a new seed.
 
 - **Change:** new decision
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** level 1 — invariants: map-run-repeatability · simulation-randomness ·
-  restart-seed. Level 2 for the new seed of a map run other than a restart and for which generator a
-  kind of draw uses — an agent compares the change with the decision:
+  restart-seed. Level 2 for the new seed of a map run other than a map run restart and for which
+  generator a kind of draw uses — an agent compares the change with the decision:
   - complies: a map run sent anew that takes a seed other than that of the map run before it
   - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
     from the generator of the game map's layout
@@ -680,7 +680,7 @@ what is drawn by the map run from its seed, within the bounds the game map sets.
 - **Change:** new decision
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-22@a6fd62b1
+- **Relations:** derives from D-22@c9937b43
 - **Verification:** level 1 — invariants: map-run-tiles. Level 2 for what stands in the game map's
   data and for the shape of its grid — an agent compares the change with the decision:
   - complies: a new game map added as a row of the game maps' data, with its dimensions and

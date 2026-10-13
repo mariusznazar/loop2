@@ -1,17 +1,17 @@
 """Invariant icon-file-content/1: No SVG file in `assets/icons/` holds a `script` or
-`foreignObject` element, an attribute whose name begins with `on`, or a reference to anything
+`foreignObject` SVG element, an attribute whose name begins with `on`, or a reference to anything
 outside the file other than the SVG and XLink namespace declarations.
 
 The files are the files with the extension `.svg` (any case) that git tracks or would track
 directly in `assets/icons/`, read from the working tree.
 
 Reading of the sentence:
-- a `script` or `foreignObject` element: an element of that local name, in any namespace and,
-  to be safe, any letter case;
+- a `script` or `foreignObject` SVG element: an element of the file with that local name, in any
+  namespace and, to be safe, any letter case;
 - an attribute whose name begins with `on`: its local name begins with `on` in any letter case;
 - a reference to anything outside the file: a `href` (in any namespace, `xlink:href` included),
   `src` or `xml:base` attribute whose value does not begin with `#`; a `url(...)` in an attribute
-  or in text (a `style` element's) whose target does not begin with `#`; an `@import` in an
+  or in text (a `style` SVG element's) whose target does not begin with `#`; an `@import` in an
   attribute or text; a document type declaration or an entity declaration (either can name an
   outside file); a processing instruction other than the XML declaration (an `xml-stylesheet`,
   for one); and a namespace declaration naming anything but the SVG namespace
@@ -20,7 +20,7 @@ Reading of the sentence:
 
 Covers: every such file; and a control: made-up SVG text holding each forbidden form in turn is
 flagged, while made-up SVG text with both namespace declarations, an XML declaration, a `href`
-and a `url()` to `#` targets inside the file, a `style` element and a `fill` is not.
+and a `url()` to `#` targets inside the file, a `style` SVG element and a `fill` is not.
 
 Does NOT cover: a reference in a form not listed above (a CSS `image-set()`, for one).
 """
