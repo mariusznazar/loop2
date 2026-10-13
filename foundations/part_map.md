@@ -118,7 +118,7 @@ the test server.
   tests/invariants/test_loop2_deploy_trigger_input.py
   tests/invariants/test_loop2_deploy_keeps_running.py
   tests/invariants/test_loop2_host_sharing.py
-- **Depends on:** account-server · build-tools
+- **Depends on:** browser-view · account-server · build-tools
 - **Failure modes:**
   - a request through the automation's key carries input other than one commit name, or a commit not on `main` — code the decisions forbid is deployed — high — detected by loop2-deploy-trigger-input
   - the input, the commit, the lock, the reading of memory and disk, the fetch, the checkout, the type check or the build fails — the push is not deployed and loop2 keeps running the previous commit — low — detected by loop2-deploy-keeps-running
