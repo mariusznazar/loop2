@@ -558,7 +558,13 @@ stand in that list, never on the drawing.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 1 — invariants: terrain-drawing-interaction · terrain-drawing-numbers
+- **Verification:** level 1 — invariants: terrain-drawing-numbers. Level 2 for hovering and for
+  everything else the player does on the drawing, since what the player sees and what the drawing
+  does in answer is shown only by a real browser, which the repository does not declare — an agent
+  compares the change with the decision:
+  - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
+    marks the tile
+  - violates: a click on a tile that sends the character there or changes the program
 - **Review when:** none
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12

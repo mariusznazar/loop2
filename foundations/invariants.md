@@ -333,18 +333,6 @@ The loop2 container built from the repository serves each SVG icon file directly
 - **Part:** browser-view · build-tools · account-server · deployment
 - **Correction:** none
 
-## terrain-drawing-interaction/1
-
-Hovering a tile of the terrain panel's drawing of the game map marks that tile and its row in the
-list of revealed tiles, hovering that row marks both as well, and nothing else the player does on
-the drawing changes the page or the game state.
-
-- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
-- **Rests on:** none
-- **Derives from:** D-19@f7077364
-- **Part:** browser-view
-- **Correction:** none
-
 ## terrain-drawing-numbers/1
 
 The terrain panel's drawing of the game map shows no number of the stock a tile holds.

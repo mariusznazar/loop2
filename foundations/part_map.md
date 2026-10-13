@@ -12,6 +12,7 @@ The part draws the game's screens in the browser.
   tests/invariants/test_browser_view_framework.py
   tests/invariants/test_icon_file_content.py
   tests/invariants/test_icon_credits.py
+  tests/invariants/test_terrain_drawing_numbers.py
 - **Depends on:** simulation
 - **Failure modes:** none
 - **Trust boundary:** assets/icons/**
@@ -35,6 +36,10 @@ The part computes the game: the game state, the map run, the character's program
   tests/invariants/test_walk_target.py
   tests/invariants/test_map_run_tiles.py
   tests/invariants/test_restart_seed.py
+  tests/invariants/test_program_closed_lists.py
+  tests/invariants/test_walk_feasibility.py
+  tests/invariants/test_program_world_reference.py
+  tests/invariants/test_map_run_layout.py
 - **Depends on:** none
 - **Failure modes:** none
 - **Trust boundary:** none
