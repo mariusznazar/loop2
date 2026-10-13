@@ -10,9 +10,9 @@ the script records the JSON of the map run.
 
 Reading of the sentence:
 - the character's action in progress: the map run's `current` activity (the action a program rule
-  starts, D-13, D-15), with its start and end minute; its full duration: it stays the same activity, with the same end
-  minute, at every game minute before that end minute, and the next activity starts at that end
-  minute;
+  starts, D-13, D-15), with its start and end minute; its full duration: it stays the same
+  activity, with the same end minute, at every game minute before that end minute, and the next
+  activity starts at that end minute;
 - the condition of another program rule comes to hold: a program rule other than the one being
   carried out whose condition did not hold now holds and whose action can start; in this task's
   world a condition changes only through the program or at the end of an action, so it comes to
