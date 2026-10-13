@@ -9,6 +9,8 @@ export type FooterCredit = {
   sourceUrl: string;
   licenceName: string;
   licenceUrl: string;
+  /** How the icon file was changed from its source. */
+  changes: string;
 };
 
 const SOURCE_SITE = 'game-icons.net';
@@ -25,6 +27,7 @@ export function footerCredits(): FooterCredit[] {
       sourceUrl: credit.sourceUrl,
       licenceName: ICON_LICENCE.name,
       licenceUrl: ICON_LICENCE.url,
+      changes: credit.changes,
     };
   });
 }
@@ -33,13 +36,14 @@ function link(text: string, href: string): HTMLAnchorElement {
   const anchor = document.createElement('a');
   anchor.href = href;
   anchor.textContent = text;
+  anchor.target = '_blank';
   anchor.rel = 'noopener noreferrer';
   return anchor;
 }
 
 /**
- * Builds the footer: per icon „{resource name}: {author}, game-icons.net, CC BY 3.0”, linking the
- * icon's source page and the licence.
+ * Builds the footer: per icon „{resource name}: {author}, game-icons.net, CC BY 3.0, {changes}”,
+ * linking the icon's source page and the licence in a new tab, so the run in this page is kept.
  */
 export function createFooter(): HTMLElement {
   const footer = document.createElement('footer');
@@ -52,6 +56,7 @@ export function createFooter(): HTMLElement {
       link(SOURCE_SITE, credit.sourceUrl),
       ', ',
       link(credit.licenceName, credit.licenceUrl),
+      `, ${credit.changes}`,
     );
     list.append(item);
   }
