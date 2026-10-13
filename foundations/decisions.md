@@ -413,7 +413,7 @@ the copy is a human's change.
 
 - **Change:** new decision
 - **Scope:** deployment
-- **Based on:** openssh-authorized-keys-options@3aa1860c
+- **Based on:** openssh-authorized-keys-options@3fd0389d
 - **Relations:** derives from D-09@20be369f · derives from D-12@d5196ed7
 - **Verification:** level 2 — an agent compares the change with the decision:
   - complies: an `authorized_keys` entry whose forced command names the installed copy's path; a deployment that logs the difference between the copies and goes on

@@ -127,7 +127,7 @@ The public address of loop2 differs from `kantarion.bieda.it`.
 The deployment command the automation's key runs refuses every input but one commit name of 40 lowercase hexadecimal characters before it fetches, builds or changes a container, and deploys only a commit that belongs to `main` as just fetched.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
-- **Rests on:** openssh-authorized-keys-options@3aa1860c
+- **Rests on:** openssh-authorized-keys-options@3fd0389d
 - **Derives from:** D-09@20be369f
 - **Part:** deployment
 - **Correction:** none

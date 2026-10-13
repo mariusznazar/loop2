@@ -20,7 +20,7 @@ On Cloudflare's Free plan, Origin Rules are available with up to 10 rules, and a
 
 In an authorized_keys file, the option `command=` makes sshd execute its command whenever the key is used for authentication, for shell, command or subsystem execution, ignoring the command the user supplies and making the command the client supplied available in the `SSH_ORIGINAL_COMMAND` environment variable, and the option `restrict` disables port, agent and X11 forwarding, PTY allocation and execution of `~/.ssh/rc`.
 
-- **Holds for:** OpenSSH portable 8.9p1
+- **Holds for:** OpenSSH portable 8.9p1, the release the host runs as Ubuntu's openssh-server 1:8.9p1-3ubuntu0.11 (OpenSSH_8.9p1 Ubuntu-3ubuntu0.11), observed through the `mikrus` MCP server with `ssh -V` and dpkg on 2026-10-13
 - **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/sshd.8 § AUTHORIZED_KEYS FILE FORMAT, the command option — "Specifies that the command is executed whenever this key is used for authentication." · "The command supplied by the user (if any) is ignored." · "The command originally supplied by the client is available in the SSH_ORIGINAL_COMMAND environment variable." · "Note that this option applies to shell, command or subsystem execution." · § AUTHORIZED_KEYS FILE FORMAT, the restrict option — "Enable all restrictions, i.e. disable port, agent and X11 forwarding, as well as disabling PTY allocation and execution of ~/.ssh/rc."; read 2026-10-13
 - **Method:** TODO
 
