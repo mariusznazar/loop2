@@ -4,6 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Loop</title>
+    <style>
+      [hidden] { display: none !important; }
+      body {
+        margin: 0;
+        padding: 0 16px;
+        font-family: system-ui, sans-serif;
+        line-height: 1.4;
+        color: #1f2328;
+        background: #f6f5f0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header h1 { margin: 16px 0; font-size: 1.6rem; }
+      .columns {
+        flex: 1;
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 720px) {
+        .columns { grid-template-columns: 1fr; }
+      }
+      .program-panel, .map-column {
+        background: #ffffff;
+        border: 1px solid #d8d6cc;
+        border-radius: 6px;
+        padding: 12px 16px;
+        min-height: 120px;
+      }
+      .send-entry p { margin: 0 0 8px; }
+      .send-character { font-weight: 600; }
+      .status-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .status-text {
+        margin: 0;
+        margin-right: auto;
+        font-variant-numeric: tabular-nums;
+      }
+      button { font: inherit; padding: 4px 12px; cursor: pointer; }
+      footer {
+        margin-top: 24px;
+        padding: 12px 0 16px;
+        border-top: 1px solid #d8d6cc;
+        font-size: 0.85rem;
+        color: #57606a;
+      }
+      .credits { list-style: none; margin: 0; padding: 0; }
+      .credits a { color: inherit; }
+    </style>
   </head>
   <body>
     <script type="module" src="/main.js"></script>
