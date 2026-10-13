@@ -84,11 +84,55 @@ Commons 3.0 BY.
 ## cc-by-3-adaptation-credit/1
 
 The Creative Commons Attribution 3.0 Unported licence requires whoever distributes an adaptation of
-a work under it to credit the work's original author and to identify the use of the work in the
-adaptation.
+a work under it, unless a licensor has given notice to remove that credit from the adaptation, to
+provide, reasonably to the medium, the name of the work's original author if supplied, the title
+of the work if supplied, to the extent reasonably practicable the URI the licensor specifies for the
+work where that URI refers to the work's copyright notice or licensing information, and a credit
+identifying the use of the work in the adaptation.
 
 - **Holds for:** Creative Commons Attribution 3.0 Unported legal code
-- **Source:** https://creativecommons.org/licenses/by/3.0/legalcode § 4(b) — "If You Distribute, or Publicly Perform the Work or any Adaptations or Collections, You must" · § 4(b) — "the name of the Original Author (or pseudonym, if applicable) if supplied" · § 4(b) — "in the case of an Adaptation, a credit identifying the use of the Work in the Adaptation"; read 2026-10-13
+- **Source:** https://creativecommons.org/licenses/by/3.0/legalcode § 4(b) — "If You Distribute, or Publicly Perform the Work or any Adaptations or Collections, You must, unless a request has been made pursuant to Section 4(a)," · § 4(b) — "provide, reasonable to the medium or means You are utilizing:" · § 4(b) — "(i) the name of the Original Author (or pseudonym, if applicable) if supplied" · § 4(b) — "(ii) the title of the Work if supplied" · § 4(b) — "(iii) to the extent reasonably practicable, the URI, if any, that Licensor specifies to be associated with the Work, unless such URI does not refer to the copyright notice or licensing information for the Work" · § 4(b) — "(iv) consistent with Section 3(b), in the case of an Adaptation, a credit identifying the use of the Work in the Adaptation" · § 4(a) — "If You create an Adaptation, upon notice from any Licensor You must, to the extent practicable, remove from the Adaptation any credit as required by Section 4(b), as requested."; read 2026-10-13
+- **Method:** TODO
+
+## cc-by-3-licence-copy/1
+
+The Creative Commons Attribution 3.0 Unported licence requires whoever distributes a work under it
+to include a copy of the licence, or its URI, with every copy of the work they distribute.
+
+- **Holds for:** Creative Commons Attribution 3.0 Unported legal code
+- **Source:** https://creativecommons.org/licenses/by/3.0/legalcode § 4(a) — "You must include a copy of, or the Uniform Resource Identifier (URI) for, this License with every copy of the Work You Distribute or Publicly Perform."; read 2026-10-13
+- **Method:** TODO
+
+## game-icons-wood-stick-title/1
+
+The page of Delapouite's icon `wood-stick` on game-icons.net names the icon "Wood stick icon".
+
+- **Holds for:** the page https://game-icons.net/1x1/delapouite/wood-stick.html, which game-icons.net publishes without versions
+- **Source:** https://game-icons.net/1x1/delapouite/wood-stick.html (archived: https://web.archive.org/web/20260113203755/https://game-icons.net/1x1/delapouite/wood-stick.html, 2026-01-13) § heading — "Wood stick icon"; read 2026-10-13
+- **Method:** TODO
+
+## game-icons-berry-bush-title/1
+
+The page of Delapouite's icon `berry-bush` on game-icons.net names the icon "Berry bush icon".
+
+- **Holds for:** the page https://game-icons.net/1x1/delapouite/berry-bush.html, which game-icons.net publishes without versions
+- **Source:** https://game-icons.net/1x1/delapouite/berry-bush.html (archived: https://web.archive.org/web/20251006204230/https://game-icons.net/1x1/delapouite/berry-bush.html, 2025-10-06) § heading — "Berry bush icon"; read 2026-10-13
+- **Method:** TODO
+
+## game-icons-fern-title/1
+
+The page of Delapouite's icon `fern` on game-icons.net names the icon "Fern icon".
+
+- **Holds for:** the page https://game-icons.net/1x1/delapouite/fern.html, which game-icons.net publishes without versions
+- **Source:** https://game-icons.net/1x1/delapouite/fern.html (archived: https://web.archive.org/web/20260821015039/https://game-icons.net/1x1/delapouite/fern.html, 2026-08-21) § heading — "Fern icon"; read 2026-10-13
+- **Method:** TODO
+
+## game-icons-flax-title/1
+
+The page of Delapouite's icon `flax` on game-icons.net names the icon "Flax icon".
+
+- **Holds for:** the page https://game-icons.net/1x1/delapouite/flax.html, which game-icons.net publishes without versions
+- **Source:** https://game-icons.net/1x1/delapouite/flax.html (archived: https://web.archive.org/web/20250617202006/https://game-icons.net/1x1/delapouite/flax.html, 2025-06-17) § heading — "Flax icon"; read 2026-10-13
 - **Method:** TODO
 
 ## Withdrawn identifiers

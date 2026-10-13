@@ -181,7 +181,7 @@ condition of another program rule comes to hold before it ends.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-20@a03f8b53
+- **Derives from:** D-20@a03f8b53 · D-23@2a80871f
 - **Part:** simulation
 - **Correction:** none
 
@@ -205,7 +205,7 @@ language.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-04@ecd038e3
+- **Derives from:** D-04@3b3dcdc2
 - **Part:** simulation
 - **Correction:** none
 
@@ -215,7 +215,7 @@ No function that a file of the simulation exports changes a value passed to it.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-04@ecd038e3
+- **Derives from:** D-04@3b3dcdc2
 - **Part:** simulation
 - **Correction:** none
 
@@ -268,13 +268,11 @@ started from.
 ## walk-target/1
 
 A program rule that goes to a resource takes the character one move toward one of the revealed
-tiles holding some of that resource that lie nearest in game minutes of walking, and the character
-cannot carry it out where no revealed tile holds some of that resource or where it stands on one
-that does.
+tiles holding some of that resource that lie nearest in game minutes of walking.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-26@35aef078
+- **Derives from:** D-26@349276ea
 - **Part:** simulation
 - **Correction:** none
 
@@ -302,37 +300,103 @@ A map run restart has the seed of the map run it replaces.
 
 ## icon-file-content/1
 
-No SVG file in `assets/icons/` holds a `script` or `foreignObject` SVG element, an attribute whose
+No SVG file directly in `assets/icons/` holds a `script` or `foreignObject` SVG element, an attribute whose
 name begins with `on`, or a reference to anything outside the file other than the SVG and XLink
 namespace declarations.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-27@69da55dd
+- **Derives from:** D-27@06e0600c
 - **Part:** browser-view
 - **Correction:** none
 
 ## icon-credits/1
 
-For each SVG file in `assets/icons/`, the game's footer shows a credit that names the icon's
-author, its page on game-icons.net and the licence CC BY 3.0, and says how the file differs from
-its source.
+For each SVG icon file directly in `assets/icons/`, the game's footer shows a credit that names
+the icon's title as its page on game-icons.net gives it, the icon's author, that page and the
+licence CC BY 3.0, and says how the icon file differs from its source.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
-- **Rests on:** none
-- **Derives from:** D-27@69da55dd
+- **Rests on:** game-icons-licence@a24f9771 · game-icons-wood-stick-title@616bffdb · game-icons-berry-bush-title@d3838fe0 · game-icons-fern-title@6a1f5fdb · game-icons-flax-title@d8aaf8c9
+- **Derives from:** D-27@06e0600c
 - **Part:** browser-view
 - **Correction:** none
 
 ## loop2-container-icons/1
 
-The loop2 container built from the repository serves each SVG file in `assets/icons/` at the path
-`/icons/<file name>`, with the same bytes as the file.
+The loop2 container built from the repository serves each SVG icon file directly in
+`assets/icons/` at the path `/icons/<file name>`, with the same bytes as that icon file.
 
 - **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
 - **Rests on:** none
-- **Derives from:** D-27@69da55dd
+- **Derives from:** D-27@06e0600c
 - **Part:** browser-view · build-tools · account-server · deployment
+- **Correction:** none
+
+## terrain-drawing-interaction/1
+
+Hovering a tile of the terrain panel's drawing of the game map marks that tile and its row in the
+list of revealed tiles, hovering that row marks both as well, and nothing else the player does on
+the drawing changes the page or the game state.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-19@f7077364
+- **Part:** browser-view
+- **Correction:** none
+
+## terrain-drawing-numbers/1
+
+The terrain panel's drawing of the game map shows no number of the stock a tile holds.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-19@f7077364
+- **Part:** browser-view
+- **Correction:** none
+
+## program-closed-lists/1
+
+The simulation refuses a program holding a condition or an action of the character whose kind the
+data files of `src/browser/sim/data/` do not list.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-23@2a80871f
+- **Part:** simulation
+- **Correction:** none
+
+## walk-feasibility/1
+
+The character can carry out a program rule that goes to a resource where some revealed tile holds
+some of that resource and the character does not stand on one that does, and nowhere else.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-26@349276ea
+- **Part:** simulation
+- **Correction:** none
+
+## program-world-reference/1
+
+A program the simulation holds names a thing of the world only by its kind, never by a number or a
+position of its own.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-26@349276ea
+- **Part:** simulation
+- **Correction:** none
+
+## map-run-layout/1
+
+Two map runs of one game map on one seed have the same resources on each tile at every game
+minute, whatever programs they run under.
+
+- **Method:** `python -B .the-way/gate/run_tests.py tests/invariants --record .runs/invariant-tests.jsonl`
+- **Rests on:** none
+- **Derives from:** D-22@c9937b43
+- **Part:** simulation
 - **Correction:** none
 
 ## Withdrawn identifiers

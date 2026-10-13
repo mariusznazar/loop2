@@ -71,3 +71,11 @@ in place of the map run in progress.
 
 - **Avoid:** none
 - **Not:** none
+
+## free game minute
+
+A free game minute is a game minute of a map run at which the map run starts, or at which the
+character's action or the character's waiting ends.
+
+- **Avoid:** none
+- **Not:** none

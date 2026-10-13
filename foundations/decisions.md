@@ -469,21 +469,26 @@ base-image layers stays a human's decision.
 The game is written in TypeScript and runs in the browser. Its simulation is a set of pure
 functions that take a game state and a span of game minutes and return the next game state together
 with the events it produced, and real time enters the simulation only as an argument. The browser
-view draws the game only from the game state, and changes the game state only through functions of
-the simulation, to which it passes the player's choices and the passing of real time.
+view draws the game only from the game state and the game's content data, and changes the game state
+only through functions of the simulation, to which it passes the player's choices and the passing of
+real time.
 
 - **Change:** new wording
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** level 1 — invariants: simulation-isolation · simulation-inputs. Level 2 for the
-  shape of the simulation's functions and for how the browser view uses the game state — an agent
-  compares the change with the decision:
-  - complies: the renewal of a resurrection computed from a real time the caller passes in; the
-    program editor of the browser view passing the edited program to a function of the simulation
-  - violates: a simulation function that reads the system time or the page; a browser view that
-    keeps a game state of its own; a screen of the browser view that writes a program rule straight
-    into the game state
+  language the game is written in, for the shape of the simulation's functions and for how the
+  browser view uses the game state — an agent compares the change with the decision:
+  - complies: a game screen written as a TypeScript module that the build compiles for the browser;
+    the simulation's function that passes real time to a map run taking the real time elapsed as an
+    argument, which the browser view measures and passes in; the program editor of the
+    browser view passing the edited program to a function of the simulation
+  - violates: a screen of the game written as a Godot scene, or a script of the game's own code that
+    the browser loads, written directly in JavaScript instead of compiled from TypeScript; a
+    simulation function that reads the system time or the page; a screen of the browser view that
+    replaces the game state with a value no function of the simulation returned; a screen of the
+    browser view that writes a program rule straight into the game state
 - **Review when:** movement and collisions become the core of the game's fun · check by: 2027-04-03
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności"
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
@@ -493,7 +498,8 @@ and the save a JSON document, and runs on a phone as well; real time passed in a
 the earning loop, the catch-up and the renewal of a resurrection on one footing. The player changes
 the game state from the browser view — the program editor, sending a character, a map run restart —
 and the passing of real time changes it too; each goes through the simulation, so the game state
-changes in one place.
+changes in one place. The browser view also reads the game's content data, which stands apart from
+the game state, to name and picture what the game state holds.
 *Rejected:* giving "view" the meaning of the drawing alone and renaming the browser view in "How is
 the browser view built?", its invariant and its part — three entries changed to keep a sentence
 about a scene the MVP does not have; keeping the sentence
@@ -507,16 +513,16 @@ The browser view is built in TypeScript with the browser's DOM APIs, without an 
 - **Change:** unchanged sentences
 - **Scope:** browser-view, build-tools
 - **Based on:** TypeScript Handbook, "ships type definitions for the DOM API" (https://www.typescriptlang.org/docs/handbook/dom-manipulation.html, read 2026-10-04) · React documentation, "npm install react react-dom" (https://react.dev/learn/add-react-to-an-existing-project, read 2026-10-04) · Vue documentation, "npm create vue@latest" (https://vuejs.org/guide/quick-start.html, read 2026-10-04) · Svelte documentation, "using Vite" (https://svelte.dev/docs/svelte/typescript, read 2026-10-04)
-- **Relations:** derives from D-04@ecd038e3
+- **Relations:** derives from D-04@3b3dcdc2
 - **Verification:** level 1 — invariants: browser-view-framework
 - **Review when:** none
 - **Origin:** none
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale for change:* the relation carries the binding part D-04 now has, in which the browser
-view draws the game only from the game state and changes it only through functions of the
-simulation; building the browser view with the browser's DOM APIs, without an additional UI
-framework, still serves that binding part.
+view draws the game only from the game state and the game's content data and changes the game state
+only through functions of the simulation; building the browser view with the browser's DOM APIs,
+without an additional UI framework, still serves that binding part.
 *Rejected:* keeping the fingerprint of D-04's earlier binding part — the relation would name a
 binding part no longer in force.
 
@@ -552,11 +558,7 @@ stand in that list, never on the drawing.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 2 — an agent compares the change with the decision:
-  - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
-    marks the tile; a revealed tile drawn with the icons of its resources and no numbers
-  - violates: a click on a tile that sends the character there or changes the program; a tile drawn
-    with the number of sticks it holds
+- **Verification:** level 1 — invariants: terrain-drawing-interaction · terrain-drawing-numbers
 - **Review when:** none
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
@@ -607,7 +609,7 @@ resume it.
   - complies: a control of the browser view that pauses the map run in progress and resumes it
   - violates: a map run the player can hold still only by ending it
 - **Review when:** none
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · loop's data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1`
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · in loop's repository, not loop2's: the data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1`
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* one game minute per real second is the pace at which the predecessor game, loop, runs
@@ -626,8 +628,8 @@ order. A map run restart keeps its seed, and any other map run takes a new seed.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** level 1 — invariants: map-run-repeatability · simulation-randomness ·
-  restart-seed. Level 2 for the new seed of a map run other than a map run restart and for which
-  generator a kind of draw uses — an agent compares the change with the decision:
+  restart-seed · map-run-layout. Level 2 for the new seed of a map run other than a map run restart
+  and for which generator a kind of draw uses — an agent compares the change with the decision:
   - complies: a map run sent anew that takes a seed other than that of the map run before it
   - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
     from the generator of the game map's layout
@@ -654,12 +656,14 @@ character's action by hand.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** level 1 — invariants: program-rule-pick. Level 2 for the closed list of
-  conditions and for carrying out a character's action by hand — an agent compares the change with
-  the decision:
-  - complies: a condition picker listing the conditions of the closed list
-  - violates: a text field taking a condition as an expression; a button that makes the character
-    explore now
+- **Verification:** level 1 — invariants: program-rule-pick · action-in-progress ·
+  program-closed-lists. Level 2 for a condition written as an expression, since a sentence naming
+  what a kind of condition may take would also bind which kinds the closed list holds, which this
+  decision leaves open — an agent compares the change with the decision:
+  - complies: a condition picker listing the conditions of the closed list, each with the resource
+    and the whole number it takes
+  - violates: a text field taking a condition as an expression; a kind of condition added to the
+    closed list that takes a formula as text
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14, D15 and D9 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character act by its program?"
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
@@ -727,23 +731,30 @@ that brings an item.
 ### D-26/1 — How does a program point at things of the world?
 
 A program points at a thing of the world only as the nearest known one of its kind, counted in game
-minutes of walking, never by a number of its own.
+minutes of walking, never by a number of its own. An action of the character that goes to a thing of
+the world can be carried out where a thing of its kind is known and the character does not stand on
+one, and nowhere else: there it has nothing to go to.
 
 - **Change:** new decision
 - **Scope:** simulation, browser-view
 - **Based on:** none
-- **Relations:** none
-- **Verification:** level 1 — invariants: walk-target. Level 2 for things of the world other than
-  tiles and for a thing named by a number of its own — an agent compares the change with the
-  decision:
-  - complies: "Go — stick" taking one move toward the nearest known tile with sticks
-  - violates: a program rule naming "tile 7"
+- **Relations:** derives from D-23@2a80871f
+- **Verification:** level 1 — invariants: walk-target · walk-feasibility · program-world-reference.
+  Level 2 for things of the world other than resources on tiles — an agent compares the change with
+  the decision:
+  - complies: "Go — stick" taking one move toward the nearest known tile with sticks; "Go — stick"
+    passed over while the character stands on a known tile with sticks
+  - violates: a program rule naming "tile 7"; "Go — stick" sending the character off the known tile
+    with sticks it stands on toward another one
 - **Review when:** none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D34 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a program point at things of the world?"
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/12
 
 *Rationale:* the layout of a game map differs on every seed, so a number given to a tile means nothing
-that lasts, while "the nearest" means the same on every map run.
+that lasts, while "the nearest" means the same on every map run. Where nothing of the kind is known,
+or the character already stands on such a thing, the nearest one is nowhere to go to; the program
+then passes over the program rule and picks a later one, as it does for any action of the character
+that cannot be carried out.
 *Rejected:* numbering tiles in program rules — a program is written before the map run, and the
 layout is drawn at its start.
 
@@ -772,12 +783,12 @@ configuration of its own would not find this decision.
 The game's icons are SVG files from game-icons.net, kept in `assets/icons/` outside the directory
 the account and save server serves and copied into that directory when the application is built.
 An icon file holds nothing that runs and refers to nothing outside itself. The game's footer
-credits each icon with its author, its page on game-icons.net and its licence, and says how the
-file differs from its source.
+credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net
+and its licence, and says how the icon file differs from its source.
 
 - **Change:** new decision
 - **Scope:** browser-view, build-tools
-- **Based on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@75828134 · Creative Commons Attribution 3.0 Unported legal code § 4(a), "You must include a copy of, or the Uniform Resource Identifier (URI) for, this License with every copy of the Work You Distribute or Publicly Perform." (https://creativecommons.org/licenses/by/3.0/legalcode, read 2026-10-13)
+- **Based on:** game-icons-licence@a24f9771 · cc-by-3-adaptation-credit@25e592d3 · cc-by-3-licence-copy@faaced40
 - **Relations:** none
 - **Verification:** level 1 — invariants: icon-file-content · icon-credits · loop2-container-icons.
   Level 2 for where the icons come from and where their source files stand — an agent compares the
@@ -795,9 +806,10 @@ the game grows. An icon file comes from outside the product and is untrusted: ho
 runs and reaching nothing outside itself, a changed file cannot act in the player's page. Sources
 kept apart from what the server serves leave the build to decide what reaches the player. The
 icons are changed to sit on the game's tiles, and the licence asks whoever distributes a changed
-work to include the licence or its address, to credit the work's original author and to identify
-the use of the work in the changed work. Saying how each file differs from its source goes beyond
-what the licence asks: it is the product's own choice.
+work to include the licence or its address, to credit the work's original author, its title where
+one is supplied and the address the licensor gives for it, and to identify the use of the work in
+the changed work. game-icons.net supplies a title for each icon on its page. Saying how each icon
+file differs from its source goes beyond what the licence asks: it is the product's own choice.
 *Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
 thing costs drawing work; an icon package from npm — a dependency more for files the product can
 keep itself, entering through what the product already treats as untrusted.
