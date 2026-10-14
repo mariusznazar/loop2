@@ -5,9 +5,9 @@ description: Use when an agent's proposal needs an independent critical reading,
 
 # the-way-critique
 
-The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `d04c3feb1a47e0ffc9a3b2354c23aacafe25c74b`.
+The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `db77ba549cb9ece7d3e62bf29e1256973f62deab`.
 
-If `.the-way/elements/common/critique/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `d04c3feb1a47e0ffc9a3b2354c23aacafe25c74b`. If initialization fails or either commit differs, stop.
+If `.the-way/elements/common/critique/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `db77ba549cb9ece7d3e62bf29e1256973f62deab`. If initialization fails or either commit differs, stop.
 
 Read `.the-way/elements/common/critique/SKILL.md` in full and follow it. Read the files it references inside `.the-way`. Where it says where the-way lies, the product's case applies: here the process root is `.the-way`. Do not substitute a global skill.
 
