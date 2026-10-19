@@ -63,13 +63,18 @@ The part is the account and save server: it serves the built game and handles th
 
 ## build-tools
 
-The part installs dependencies, checks types and builds and launches the application.
+The part installs dependencies, checks code quality and types, audits introduced dependency versions and builds and launches the application.
 
 - **Files:** package.json
   package-lock.json
   tsconfig.browser.json
   tsconfig.server.json
-  scripts/build.mjs
+  scripts/**
+  tests/quality/**
+  eslint.config.mjs
+  prettier.config.mjs
+  requirements-quality.in
+  requirements-quality.txt
   .gitignore
   README.md
   tests/invariants/loop2_invariant_support.py
@@ -80,6 +85,7 @@ The part installs dependencies, checks types and builds and launches the applica
 - **Depends on:** browser-view · simulation · account-server
 - **Failure modes:** none
 - **Trust boundary:** package-lock.json
+  scripts/check_dependencies.py
 
 ## agent-workflow
 
@@ -92,6 +98,7 @@ The part directs and records the work performed on this repository.
   .gitmodules
   .the-way
   tests/agent_workflow/**
+  guidelines/**
 - **Depends on:** product-foundation · deployment
 - **Failure modes:** none
 - **Trust boundary:** none
@@ -148,7 +155,8 @@ the test server.
 | Partner | Direction | What comes in | Updates with the product |
 |---|---|---|---|
 | HTTP clients | both | untrusted | no |
-| npm registry | them → us | untrusted | no |
+| npm registry | both | untrusted | no |
+| Python Package Index | them → us | untrusted | no |
 | GitHub Actions | both | untrusted | no |
 | Cloudflare | both | untrusted | no |
 | the Mikrus host | both | trusted | no |
