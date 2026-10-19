@@ -104,7 +104,8 @@ export async function inspectFiles(tools, request, readSource = readFile) {
       if (!directive || comment.type === "Shebang" ||
           (comment.type === "Line" && !/^eslint-disable-(?:next-)?line$/.test(directive.label))) continue;
       if (/^eslint-disable(?:-next-line|-line)?$/.test(directive.label)) {
-        entry.disabledRules.push(directive.value ? Object.keys(commentParser.parseListConfig(directive.value)) : null);
+        const names = Object.keys(commentParser.parseListConfig(directive.value));
+        entry.disabledRules.push(names.length ? names : null);
       } else if (directive.label === "eslint") {
         const parsed = commentParser.parseJSONLikeConfig(directive.value);
         if (!parsed.ok) throw new Error(`Uninterpretable inline rules in ${input.path}: ${parsed.error.message}`);

@@ -1,6 +1,8 @@
 """Behavioral checks for the independent ESLint invariant methods."""
 
+from contextlib import redirect_stderr, redirect_stdout
 import importlib.util
+import io
 import json
 from pathlib import Path
 import re
@@ -87,6 +89,59 @@ class EslintChecks(unittest.TestCase):
         self.assertEqual(report["files"][0]["comments"], ["eslint-disable no-debugger", "eslint-disable no-debugger"])
         self.assertTrue(report["files"][1]["ignored"])
         self.assertEqual(report["files"][0]["disabledRules"], [["no-debugger"]])
+
+    def test_empty_parsed_disable_lists_are_blanket_suppressions(self):
+        bridge = ROOT / "scripts/inspect_eslint.mjs"
+        cases = [
+            {"label": label, "value": value, "want_disabled": [None]}
+            for label in ("eslint-disable", "eslint-disable-next-line", "eslint-disable-line")
+            for value in ("", ",", " , , ", "'', \"\"")
+        ]
+        cases.extend([
+            {"label": "eslint-enable", "value": ",", "want_disabled": []},
+            {"label": "eslint", "value": "no-debugger: error", "want_disabled": []},
+        ])
+        script = r"""
+          import { readFileSync } from 'node:fs';
+          const { inspectFiles } = await import(process.argv[1]);
+          const cases = JSON.parse(readFileSync(0, 'utf8'));
+          class FakeESLint {
+            constructor(options) { this.options = options; }
+            async isPathIgnored() { return false; }
+            async calculateConfigForFile() {
+              return { rules: { 'no-debugger': [2] }, languageOptions: {} };
+            }
+            async lintText(text, options) {
+              const item = JSON.parse(text);
+              this.options.overrideConfig.plugins['quality-inspection'].rules.comments.create({
+                sourceCode: { getAllComments: () => [{type: 'Block', value: JSON.stringify(item)}] }
+              });
+              return [{ filePath: options.filePath, messages: [], suppressedMessages: [] }];
+            }
+          }
+          const report = await inspectFiles({ ESLint: FakeESLint, plugin: {}, parser: {},
+            commentParser: {
+              parseDirective: value => JSON.parse(value),
+              // These literal cases all have zero names in ESLint's list parser.
+              parseListConfig: () => ({}),
+              parseJSONLikeConfig: () => ({ok: true, config: {'no-debugger': 'error'}})
+            }
+          }, { root: process.cwd(), configuration: false,
+            files: cases.map((item, index) => ({path: `scripts/empty-${index}.js`, rules: {'no-debugger': [2]}}))
+          }, async absolute => JSON.stringify(cases[Number(/empty-(\d+)\.js$/.exec(absolute)[1])]));
+          console.log(JSON.stringify(report));
+        """
+        result = subprocess.run(["node", "--input-type=module", "--eval", script, bridge.as_uri()],
+                                cwd=ROOT, input=json.dumps(cases), capture_output=True,
+                                text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        paths = [f"scripts/empty-{index}.js" for index in range(len(cases))]
+        entries = self.check.parse_report(result.stdout, paths)
+        for case, entry in zip(cases, entries):
+            with self.subTest(label=case["label"], value=case["value"]):
+                self.assertEqual(entry["disabledRules"], case["want_disabled"])
+                self.assertEqual(self.check.source_ok(entry, {"no-debugger": [2]}),
+                                 case["want_disabled"] == [])
 
     def entry(self):
         return {"path": "scripts/new.js", "ignored": False, "processor": False,
@@ -191,10 +246,15 @@ class EslintChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=ROOT / ".runs") as directory:
             record = Path(directory, "result.jsonl")
             record.write_text('{"verdict":"pass"}\n', encoding="utf-8")
-            with patch.object(self.check, "source_files", return_value=["scripts/new.js"]), patch.object(self.check.shutil, "which", return_value=None):
+            captured = io.StringIO()
+            with (patch.object(self.check, "source_files", return_value=["scripts/new.js"]),
+                  patch.object(self.check.shutil, "which", return_value=None),
+                  redirect_stdout(captured), redirect_stderr(captured)):
                 code = self.check.main(["--record", str(record)], root=ROOT)
             self.assertEqual(code, 2)
-            self.assertIsNone(json.loads(record.read_text())["invariant"])
+            recorded = json.loads(record.read_text())
+            self.assertIsNone(recorded["invariant"])
+            self.assertEqual(json.loads(captured.getvalue()), recorded)
 
     def test_tool_errors_and_malformed_json_never_become_success(self):
         for response in (self.check.QualityError("missing package"),
@@ -202,10 +262,17 @@ class EslintChecks(unittest.TestCase):
                          subprocess.CompletedProcess([], 0, "{}", "warning")):
             with tempfile.TemporaryDirectory(dir=ROOT / ".runs") as directory:
                 record = Path(directory, "result.jsonl")
-                with patch.object(self.check, "source_files", return_value=["scripts/new.js"]), patch.object(self.check, "run_tool", side_effect=response if isinstance(response, Exception) else None, return_value=response):
+                captured = io.StringIO()
+                with (patch.object(self.check, "source_files", return_value=["scripts/new.js"]),
+                      patch.object(self.check, "run_tool",
+                                   side_effect=response if isinstance(response, Exception) else None,
+                                   return_value=response),
+                      redirect_stdout(captured), redirect_stderr(captured)):
                     code = self.check.main(["--configuration", "--record", str(record)], root=ROOT)
                 self.assertEqual(code, 2)
-                self.assertIsNone(json.loads(record.read_text())["invariant"])
+                recorded = json.loads(record.read_text())
+                self.assertIsNone(recorded["invariant"])
+                self.assertEqual(json.loads(captured.getvalue()), recorded)
 
 
 if __name__ == "__main__":
