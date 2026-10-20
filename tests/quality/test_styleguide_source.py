@@ -195,6 +195,41 @@ class SourceChecks(unittest.TestCase):
                    '<svg viewBox="0 0 512 512"><path d="M0 0h12" fill="currentColor"/></svg>')
         self.assertIs(self.verdict(), True)
 
+    def test_svg_html_integration_points_preserve_attribute_semantics(self):
+        for point in ["foreignObject", "desc", "title"]:
+            cases = [
+                ('<div letter-spacing="2px">word</div>', True),
+                ('<div><span letter-spacing="2px">word</span></div>', True),
+                ('<text letter-spacing="2px">ordinary HTML element</text>', True),
+                ('<div style="letter-spacing: 2px">word</div>', False),
+                ('<div style="letter-spacing: var(--spacing)">word</div>', True),
+                ('<svg><text letter-spacing="2px">word</text></svg>', False),
+                ('<svg><text letter-spacing="var(--spacing)">word</text></svg>', True),
+                ('<svg><foreignObject><div letter-spacing="2px">word</div>'
+                 '</foreignObject></svg><div letter-spacing="2px">sibling</div>', True),
+            ]
+            for content, expected in cases:
+                with self.subTest(point=point, content=content):
+                    self.write("view/p.html", f"<svg><{point}>{content}</{point}></svg>")
+                    self.assertIs(self.verdict(), expected)
+        self.write("view/p.html", '<svg><foreignObject><title>'
+                   '<span style="padding: 2px">title text</span></title></foreignObject></svg>')
+        self.assertIs(self.verdict(), True)
+        self.write("view/p.html", '<svg><foreignObject letter-spacing="2px">'
+                   '<div letter-spacing="2px">word</div></foreignObject></svg>')
+        facts = self.facts()["files"][0]
+        self.assertEqual([d["selector"] for d in facts["declarations"]], ["foreignObject"])
+        self.assertIs(self.verdict(), False)
+
+    def test_unsupported_integration_point_trees_are_explicitly_unresolved(self):
+        cases = ['<svg><foreignObject><math><mtext>word</mtext></math></foreignObject></svg>',
+                 '<svg><title><title>nested HTML title</title></title></svg>']
+        for source in cases:
+            with self.subTest(source=source):
+                self.write("view/p.html", source)
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
     def test_typescript_appearance_sinks_literals_and_templates(self):
         cases = ["el.style.color = 'red';", "el.style['padding'] = '2px';",
                  "el.style.setProperty('opacity', '.3');",

@@ -56,12 +56,47 @@ function loadTools() {
   };
 }
 
-function extractHtml(tools, facts, text, baseLine = 1) {
+function extractHtml(
+  tools,
+  facts,
+  text,
+  baseLine = 1,
+  initialNamespace = null,
+) {
   try {
     const tree = tools.html.parse(text);
-    function visit(node) {
+    function visit(node, inheritedNamespace = initialNamespace) {
       const line = baseLine + (node.sourceSpan?.start?.line ?? 0);
+      let childNamespace = inheritedNamespace;
       if (node.kind === "element") {
+        // The parser inherits SVG through HTML integration points. Track their
+        // descendants explicitly; an inner <svg> starts foreign content again.
+        const namespace =
+          inheritedNamespace === "html" && node.name === "svg"
+            ? "svg"
+            : (inheritedNamespace ??
+              (node.namespace === "svg" ||
+              /^(?:path|g|text|circle|rect|line|ellipse|polygon|polyline|use|stop|tspan)$/.test(
+                node.name,
+              )
+                ? "svg"
+                : "html"));
+        const integrationPoint =
+          namespace === "svg" &&
+          ["foreignObject", "desc", "title"].includes(node.name);
+        childNamespace = integrationPoint
+          ? "html"
+          : inheritedNamespace === null
+            ? null
+            : namespace;
+        if (inheritedNamespace !== null && node.name === "math") {
+          diagnostic(
+            facts,
+            "unresolved",
+            line,
+            "MathML within an HTML integration point needs namespace analysis",
+          );
+        }
         facts.sites.push({
           path: facts.path,
           line,
@@ -76,17 +111,7 @@ function extractHtml(tools, facts, text, baseLine = 1) {
           const attributeLine = baseLine + attribute.sourceSpan.start.line;
           if (name === "style")
             extractCss(tools.css, facts, attribute.value, attributeLine, true);
-          else if (
-            presentationAttribute(
-              name,
-              node.namespace === "svg" ||
-                /^(?:path|g|text|circle|rect|line|ellipse|polygon|polyline|use|stop|tspan)$/.test(
-                  node.name,
-                )
-                ? "svg"
-                : "html",
-            )
-          )
+          else if (presentationAttribute(name, namespace))
             declaration(
               tools.css,
               facts,
@@ -110,6 +135,21 @@ function extractHtml(tools, facts, text, baseLine = 1) {
           }
           return;
         }
+        if (integrationPoint && node.name === "title") {
+          // This parser uses HTML title's raw-text treatment even inside SVG.
+          for (const child of node.children) {
+            if (child.kind === "text")
+              extractHtml(
+                tools,
+                facts,
+                child.value,
+                baseLine + child.sourceSpan.start.line,
+                "html",
+              );
+            else visit(child, childNamespace);
+          }
+          return;
+        }
       } else if (!["root", "text", "comment", "docType"].includes(node.kind)) {
         diagnostic(
           facts,
@@ -118,7 +158,7 @@ function extractHtml(tools, facts, text, baseLine = 1) {
           `unsupported HTML node: ${node.kind}`,
         );
       }
-      for (const child of node.children ?? []) visit(child);
+      for (const child of node.children ?? []) visit(child, childNamespace);
     }
     visit(tree);
   } catch (error) {
