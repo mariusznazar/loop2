@@ -1,0 +1,94 @@
+[
+  {
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "stdout": "dc1f9cf9e9f3713386b6059d8214e588c69e5ba8\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "symbolic-ref",
+      "--short",
+      "refs/remotes/origin/HEAD"
+    ],
+    "exit_code": 0,
+    "stdout": "origin/main\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "merge-base",
+      "HEAD",
+      "origin/main"
+    ],
+    "exit_code": 0,
+    "stdout": "dc1f9cf9e9f3713386b6059d8214e588c69e5ba8\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "-C",
+      ".the-way",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "stdout": "d829e3aa6242a9b8901274531dd82fd5c7d87628\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "ls-files",
+      "--stage",
+      "--",
+      ".the-way"
+    ],
+    "exit_code": 0,
+    "stdout": "160000 d829e3aa6242a9b8901274531dd82fd5c7d87628 0\t.the-way\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "ls-tree",
+      "-r",
+      "--name-only",
+      "dc1f9cf9e9f3713386b6059d8214e588c69e5ba8",
+      "--",
+      "src/browser/view",
+      "tools/styleguide",
+      "assets/fonts"
+    ],
+    "exit_code": 0,
+    "stdout": "src/browser/view/app.ts\nsrc/browser/view/clock.ts\nsrc/browser/view/credits.ts\nsrc/browser/view/footer.ts\nsrc/browser/view/program-editor.ts\nsrc/browser/view/send-panel.ts\nsrc/browser/view/status-row.ts\nsrc/browser/view/terrain-panel.ts\nsrc/browser/view/terrain-picture.ts\nsrc/browser/view/tile-list.ts\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "input_sha256": {
+      ".runs/task-cycles/styleguide-loop2/spec.md": "5b260696aabeb96149b4c2222716703dad63da7ec31f2ac9bf1b774c95f3e467",
+      ".runs/task-cycles/styleguide-loop2/task.md": "76813f748d911a45420520a677b4901e450d2422bbf086ec4795a3d3a5527bab"
+    }
+  },
+  {
+    "corrected_spec_sha256": "0d6192e2af823454d96a6b0cb7fd33f8b5515df40799d0f418da85c0d1a9431a",
+    "review_status": "BLOCKED; designer correction checked only at status and role-preservation paragraph"
+  }
+]

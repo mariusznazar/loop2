@@ -1,0 +1,7 @@
+python : {"check": "scripts/check_shellcheck.py", "verdict": "pass", "invariant": "shellcheck-source-rules/1"}
+At line:2 char:1
++ python -B scripts/check_shellcheck.py *> '.runs/task-cycles/styleguid ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ({"check": "scri...ource-rules/1"}:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
