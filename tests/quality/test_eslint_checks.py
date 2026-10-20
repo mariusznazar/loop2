@@ -274,6 +274,107 @@ class EslintChecks(unittest.TestCase):
                 self.assertIsNone(recorded["invariant"])
                 self.assertEqual(json.loads(captured.getvalue()), recorded)
 
+    def run_installed_bridge(self, fixture, *, parser_name="@typescript/typescript6",
+                             parser_version="6.0.2", parser_runtime="6.0.2",
+                             compiler_name="typescript-compiler", compiler_pin="7.0.2",
+                             compiler_version="7.0.2", compiler_runtime="7.0.2",
+                             compiler_locked=None, parser_locked_name=None,
+                             nested_parser=False):
+        """Exercise real Node resolution and package files without an npm install."""
+        packages = {}
+
+        def package(relative, name, version, source):
+            directory = fixture / relative
+            directory.mkdir(parents=True)
+            (directory / "package.json").write_text(json.dumps({
+                "name": name, "version": version, "main": "index.cjs"}), encoding="utf-8")
+            (directory / "index.cjs").write_text(source, encoding="utf-8")
+            packages[relative] = {"name": name, "version": version}
+
+        pins = {"eslint": "10.12.0", "@eslint/js": "10.0.1",
+                "typescript-eslint": "8.71.2", "globals": "17.13.0"}
+        for name, version in pins.items():
+            source = ("exports.ESLint = class { static version = '10.12.0'; };"
+                      if name == "eslint" else "exports.plugin = {}; exports.parser = {};")
+            package("node_modules/" + name, name, version, source)
+        for name in ("parser", "typescript-estree"):
+            package("node_modules/@typescript-eslint/" + name,
+                    "@typescript-eslint/" + name, "8.71.2", "module.exports = {};")
+        package("node_modules/@eslint/plugin-kit", "@eslint/plugin-kit", "0.7.0",
+                "exports.ConfigCommentParser = class {};")
+        parser_path = ("node_modules/@typescript-eslint/typescript-estree/node_modules/typescript"
+                       if nested_parser else "node_modules/typescript")
+        package(parser_path, parser_name, parser_version,
+                "exports.version = " + json.dumps(parser_runtime) + ";")
+        if parser_locked_name is not None:
+            packages[parser_path]["name"] = parser_locked_name
+        dependencies = dict(pins)
+        if not nested_parser:
+            dependencies["typescript"] = f"npm:{parser_name}@{parser_version}"
+        if compiler_name is not None:
+            package("node_modules/" + compiler_name, "typescript", compiler_version,
+                    "exports.version = " + json.dumps(compiler_runtime) + ";")
+            dependencies[compiler_name] = (compiler_pin if compiler_name == "typescript"
+                                           else "npm:typescript@" + compiler_pin)
+        packages[""] = {"devDependencies": dict(dependencies)}
+        if compiler_locked is not None:
+            packages[""]["devDependencies"][compiler_name] = compiler_locked
+        (fixture / "package.json").write_text(json.dumps({"devDependencies": dependencies}),
+                                             encoding="utf-8")
+        (fixture / "package-lock.json").write_text(json.dumps({"packages": packages}),
+                                                  encoding="utf-8")
+        return subprocess.run(["node", str(ROOT / "scripts/inspect_eslint.mjs")], cwd=fixture,
+                              input=json.dumps({"root": str(fixture), "configuration": True,
+                                                "files": []}), capture_output=True,
+                              text=True, encoding="utf-8")
+
+    def test_real_loader_accepts_parser_and_compiler_aliases(self):
+        for compiler in ("typescript-compiler", "application-ts"):
+            with self.subTest(compiler=compiler), tempfile.TemporaryDirectory(dir=ROOT / ".runs") as directory:
+                result = self.run_installed_bridge(Path(directory), compiler_name=compiler)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads(result.stdout), {"schema": 1, "files": []})
+
+    def test_real_loader_accepts_separate_nested_standard_api(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / ".runs") as directory:
+            result = self.run_installed_bridge(Path(directory), parser_name="typescript",
+                                              compiler_name="typescript", nested_parser=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_real_loader_rejects_wrong_api_and_compiler_runtimes(self):
+        cases = [
+            {"parser_runtime": "6.0.3"},
+            {"parser_name": "typescript", "nested_parser": True,
+             "compiler_name": "typescript", "parser_runtime": "6.0.3"},
+            {"parser_runtime": "7.0.2"},
+            {"compiler_runtime": "6.0.2"},
+            {"parser_name": "typescript", "nested_parser": True,
+             "compiler_name": "typescript", "compiler_runtime": "6.0.2"},
+        ]
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory(dir=ROOT / ".runs") as directory:
+                result = self.run_installed_bridge(Path(directory), **case)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn("runtime", result.stderr)
+                self.assertEqual(result.stdout, "")
+
+    def test_real_loader_rejects_unpinned_wrong_or_missing_packages(self):
+        cases = [
+            {"parser_version": "6.0.3"},
+            {"parser_name": "unrelated-api"},
+            {"parser_locked_name": "unrelated-api"},
+            {"compiler_pin": "^7.0.2"},
+            {"compiler_version": "7.0.3"},
+            {"compiler_pin": "6.0.2", "compiler_version": "6.0.2"},
+            {"compiler_locked": "npm:typescript@7.0.3"},
+            {"compiler_name": None},
+        ]
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory(dir=ROOT / ".runs") as directory:
+                result = self.run_installed_bridge(Path(directory), **case)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertEqual(result.stdout, "")
+
 
 if __name__ == "__main__":
     unittest.main()
