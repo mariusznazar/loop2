@@ -226,6 +226,8 @@ def main(argv=None, *, root=None):
     arguments = parser.parse_args(argv)
     root = Path(root).resolve() if root is not None else Path(__file__).resolve().parents[1]
     name = "eslint-configuration-rules" if arguments.configuration else "eslint-source-rules"
+    # invariant: eslint-source-rules/1
+    # invariant: eslint-configuration-rules/1
     return run_check(name, name + "/1", lambda: check(root, arguments.configuration),
                      record=arguments.record)
 

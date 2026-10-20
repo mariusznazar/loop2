@@ -16,6 +16,7 @@ export async function inspectFiles(tools, request, readSource = readFile) {
     fix: false,
     cache: false,
   };
+  // data: eslint.config.mjs
   const configured = new ESLint({
     ...common,
     overrideConfigFile: path.join(request.root, "eslint.config.mjs"),
@@ -160,9 +161,11 @@ export async function inspectFiles(tools, request, readSource = readFile) {
 
 async function loadTools(root) {
   const require = createRequire(path.join(root, "package.json"));
+  // data: package.json
   const manifest = JSON.parse(
     await readFile(path.join(root, "package.json"), "utf8"),
   );
+  // data: package-lock.json
   const lock = JSON.parse(
     await readFile(path.join(root, "package-lock.json"), "utf8"),
   );

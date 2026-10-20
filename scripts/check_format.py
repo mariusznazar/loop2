@@ -110,6 +110,7 @@ def _attributes(root, files, environment):
                            "--template", template, git_directory], cwd=root, env=isolated)
         if result.stdout or result.stderr:
             raise QualityError("unexpected isolated Git initialization diagnostic")
+        # data: .gitattributes
         repository = _attribute_values(
             [executable, "--git-dir", git_directory, "--work-tree", root,
              "-c", "core.bare=false", "-c", "core.attributesFile="],
@@ -131,7 +132,9 @@ def check(root):
             (root / path).read_bytes().decode("utf-8")
         except (OSError, UnicodeError) as problem:
             raise QualityError(f"unreadable UTF-8 source: {path}") from problem
+    # data: package.json
     manifest = _json_file(root / "package.json")
+    # data: package-lock.json
     lock = _json_file(root / "package-lock.json")
     if (manifest.get("devDependencies", {}).get("prettier") != VERSION
             or lock.get("packages", {}).get("node_modules/prettier", {}).get("version")
@@ -145,6 +148,7 @@ def check(root):
         raise QualityError("local Node is unavailable")
     environment = {key: value for key, value in os.environ.items()
                    if key.upper() not in {"NODE_OPTIONS", "NODE_PATH"}}
+    # data: prettier.config.mjs
     result = run_tool([executable, "--input-type=module", "-e", BRIDGE], cwd=root,
                       env=environment, input=json.dumps({"files": files}).encode("utf-8"))
     if result.stderr:
@@ -179,6 +183,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--record", type=Path)
     args = parser.parse_args()
+    # invariant: prettier-source-format/1
     return run_check("prettier-source-format", "prettier-source-format/1",
                      lambda: check(Path(__file__).resolve().parents[1]), record=args.record)
 

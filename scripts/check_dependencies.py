@@ -116,6 +116,7 @@ def _snapshot(root, fork_point):
             continue
         if metadata.split()[0] != "100644" or ".." in PurePosixPath(path).parts:
             raise QualityError(f"unsupported base manifest path: {path}")
+        # data: foundations/part_map.md
         sources[path] = _git(root, "show", fork_point + ":" + path)
     if "foundations/part_map.md" not in sources:
         raise QualityError("base ownership map is missing")
@@ -288,6 +289,8 @@ def _advisories(response, introduced):
 def check(root, fork_point):
     """No named verdict is possible before both graphs and all advisory data validate."""
     root = Path(root).resolve()
+    # data: package.json
+    # data: package-lock.json
     files = {path: _read(root / path) for path in discover_files(root, ("build-tools",))
              if PurePosixPath(path).name in MANIFESTS}
     base = _snapshot(root, fork_point)
@@ -331,6 +334,7 @@ def main():
     parser.add_argument("--record", type=Path)
     arguments = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    # invariant: introduced-npm-vulnerabilities/1
     return run_check("dependency-audit", "introduced-npm-vulnerabilities/1",
                      lambda: check(root, arguments.fork_point), record=arguments.record)
 

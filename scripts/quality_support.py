@@ -68,6 +68,7 @@ def _nul_fields(text):
 
 def _part_patterns(root):
     try:
+        # data: foundations/part_map.md
         text = (root / "foundations/part_map.md").read_text(encoding="utf-8")
     except (OSError, UnicodeError) as problem:
         raise QualityError(f"cannot read part map: {problem}") from problem

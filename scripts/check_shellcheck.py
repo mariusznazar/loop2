@@ -167,6 +167,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--record", type=Path)
     args = parser.parse_args()
+    # invariant: shellcheck-source-rules/1
     return run_check("scripts/check_shellcheck.py", "shellcheck-source-rules/1",
                      lambda: check(Path(__file__).resolve().parents[1]), record=args.record)
 
