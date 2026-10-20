@@ -82,7 +82,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
-- **Depends on:** browser-view · simulation · account-server
+- **Depends on:** browser-view · simulation · account-server · product-foundation
 - **Failure modes:** none
 - **Trust boundary:** package-lock.json
   scripts/check_dependencies.py

@@ -822,21 +822,21 @@ keep itself, entering through what the product already treats as untrusted.
 
 ### D-28/1 — Which coding-guideline discipline does loop2 adopt?
 
-Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. The introduction of the adopted linters uses full compliance before merge instead of the transitional per-file no-regression invariant, and a repair exceeding the accepted scope returns to a decision rather than leaving a violation or weakening the rule set. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
 
 - **Change:** new decision
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** none
 - **Verification:** level 2 — an agent compares the change with the decision:
-  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and test example, and introduce linters with no blocking violations
+  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
   - violates: an additional mandatory test exemplar, automatic Python formatting or a transition-debt check introduced without a new decision
 - **Review when:** none
 - **Origin:** none
 - **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
-*Rationale:* The accepted scope gives current code common checks and a small set of useful exemplars before further product work; broader exemplar maintenance and additional formatters add work without an established benefit.
-*Rejected:* A complete exemplar audit and automatic formatting for every language — more maintenance and unmeasured reformatting work; transitional lint debt — an extra mechanism where the introduction removes all blocking violations.
+*Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader exemplar maintenance and additional formatters add work without an established benefit.
+*Rejected:* A complete exemplar audit and automatic formatting for every language — more maintenance and unmeasured reformatting work; transitional lint debt — an extra mechanism where full-compliance source invariants already apply.
 
 ### D-29/1 — Which rules check TypeScript and JavaScript?
 

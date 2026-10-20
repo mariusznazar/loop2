@@ -7,7 +7,7 @@
 
 Przed każdą zmianą kodu produktu, także skryptów i testów. Stosuj sprawdzenia
 niezmienników wskazanych poniżej przez ich metody zapisane w fundamencie.
-Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28@719c9a67.
+Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28@550e88d6.
 
 ## Kinds of code
 
@@ -314,10 +314,9 @@ Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce test
 Node/Python, budowania, wdrożenia, punktów uruchomienia i HTML również są odłożone.
 Wzorce sesji, zapisu gry i poczty powstaną przy pierwszych implementacjach.
 Przed wyborem wzorca odłożonego istniejącego rodzaju porównuje się jego pliki.
-Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Wprowadzenie linterów
-wymaga pełnej zgodności przed scaleniem; nie ma przejściowej kontroli
-„nie pogarszaj starego kodu”. Naprawa przekraczająca przyjęty zakres wraca do
-decyzji, zamiast pozostawiać naruszenie lub osłabiać zestaw.
+Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Dla przyjętych linterów
+obowiązują niezmienniki pełnej zgodności kodu, bez przejściowej kontroli
+„nie pogarszaj starego kodu”.
 
 ## Where in code
 
