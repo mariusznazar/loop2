@@ -80,7 +80,7 @@ def _windows_descendants(root_pid, since):
               "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds() }")
     result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
                             capture_output=True, timeout=60)
-    if result.returncode != 0:
+    if result.returncode != 0 or result.stderr.strip():
         raise AssertionError("Get-CimInstance failed: "
                              + result.stderr.decode("utf-8", "replace"))
     children = {}

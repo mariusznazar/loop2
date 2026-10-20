@@ -125,6 +125,13 @@ class ServerResources(unittest.TestCase):
 
 
 class WindowsProcessCleanup(unittest.TestCase):
+    def test_exit_zero_descendant_query_error_rejects_partial_stdout(self):
+        answer = subprocess.CompletedProcess(["powershell"], 0,
+                                             b"42 7 1700000000000\r\n", b"query failed")
+        with patch.object(support.subprocess, "run", return_value=answer):
+            with self.assertRaisesRegex(AssertionError, "query failed"):
+                support._windows_descendants(7, 1700000000)
+
     def test_failed_descendant_query_rejects_partial_stdout(self):
         answer = subprocess.CompletedProcess(["powershell"], 1,
                                              b"42 7 1700000000000\r\n", b"query failed")

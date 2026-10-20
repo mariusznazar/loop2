@@ -65,8 +65,8 @@ The part is the account and save server: it serves the built game and handles th
 
 The part installs dependencies, checks code quality and types, audits introduced dependency versions and builds and launches the application.
 
-- **Files:** package.json
-  package-lock.json
+- **Files:** /package.json
+  /package-lock.json
   tsconfig.browser.json
   tsconfig.server.json
   scripts/**

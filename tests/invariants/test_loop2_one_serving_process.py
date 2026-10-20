@@ -69,7 +69,7 @@ def _processes():
                   "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(), $_.Name }")
         result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
                                 capture_output=True, timeout=60)
-        if result.returncode != 0:
+        if result.returncode != 0 or result.stderr.strip():
             raise AssertionError("Get-CimInstance failed: "
                                  + result.stderr.decode("utf-8", "replace"))
         for line in result.stdout.decode("utf-8", "replace").splitlines():
