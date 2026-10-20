@@ -1,11 +1,11 @@
-import { MAPS } from '../sim/data/maps.js';
-import { RESOURCES } from '../sim/data/resources.js';
-import type { ResourceId } from '../sim/data/resources.js';
-import { tileLabel } from '../sim/hex.js';
-import type { GameState } from '../sim/types.js';
+import { MAPS } from "../sim/data/maps.js";
+import { RESOURCES } from "../sim/data/resources.js";
+import type { ResourceId } from "../sim/data/resources.js";
+import { tileLabel } from "../sim/hex.js";
+import type { GameState } from "../sim/types.js";
 
 /** Shown in a cell for a resource the tile does not have (choice C5). */
-const ABSENT = '—';
+const ABSENT = "—";
 
 export type TileListColumn = {
   resource: ResourceId;
@@ -39,7 +39,7 @@ export function tileList(state: GameState): TileList {
     href: `/icons/${RESOURCES[id].icon}.svg`,
   }));
   const rows = run.tiles
-    .filter(tile => tile.revealed)
+    .filter((tile) => tile.revealed)
     .map((tile): TileListRow => ({
       col: tile.col,
       row: tile.row,
@@ -67,30 +67,35 @@ export type TileListView = {
  * Builds the table of revealed tiles. `onHover` gets the key of the row under the pointer, or
  * null when the pointer is over no row; the listeners sit on the table, so they survive redraws.
  */
-export function createTileListView(onHover: (key: string | null) => void): TileListView {
-  const element = document.createElement('table');
-  element.className = 'tile-list';
-  const head = document.createElement('thead');
-  const body = document.createElement('tbody');
+export function createTileListView(
+  onHover: (key: string | null) => void,
+): TileListView {
+  const element = document.createElement("table");
+  element.className = "tile-list";
+  const head = document.createElement("thead");
+  const body = document.createElement("tbody");
   element.append(head, body);
 
-  element.addEventListener('pointerover', event => {
-    const row = event.target instanceof Element ? event.target.closest('tbody tr[data-tile]') : null;
+  element.addEventListener("pointerover", (event) => {
+    const row =
+      event.target instanceof Element
+        ? event.target.closest("tbody tr[data-tile]")
+        : null;
     onHover(row instanceof HTMLElement ? (row.dataset.tile ?? null) : null);
   });
-  element.addEventListener('pointerleave', () => onHover(null));
+  element.addEventListener("pointerleave", () => onHover(null));
 
   return {
     element,
     draw(list: TileList): void {
-      const headRow = document.createElement('tr');
-      headRow.append(document.createElement('th'));
+      const headRow = document.createElement("tr");
+      headRow.append(document.createElement("th"));
       for (const column of list.columns) {
-        const cell = document.createElement('th');
-        cell.scope = 'col';
-        const icon = document.createElement('img');
+        const cell = document.createElement("th");
+        cell.scope = "col";
+        const icon = document.createElement("img");
         icon.src = column.href;
-        icon.alt = '';
+        icon.alt = "";
         icon.width = 16;
         icon.height = 16;
         cell.append(icon, ` ${column.name}`);
@@ -98,15 +103,15 @@ export function createTileListView(onHover: (key: string | null) => void): TileL
       }
       head.replaceChildren(headRow);
       body.replaceChildren(
-        ...list.rows.map(row => {
-          const line = document.createElement('tr');
+        ...list.rows.map((row) => {
+          const line = document.createElement("tr");
           line.dataset.tile = tileKey(row);
-          const label = document.createElement('th');
-          label.scope = 'row';
+          const label = document.createElement("th");
+          label.scope = "row";
           label.textContent = row.label;
           line.append(label);
           for (const value of row.cells) {
-            const cell = document.createElement('td');
+            const cell = document.createElement("td");
             cell.textContent = value;
             line.append(cell);
           }
