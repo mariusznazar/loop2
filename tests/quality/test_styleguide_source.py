@@ -84,6 +84,99 @@ class SourceChecks(unittest.TestCase):
         self.write("view/s.css", "@media (min-height: 400px) {a{color:inherit}}")
         self.assertIs(self.verdict(), False)
 
+    def test_review_css_names_follow_css_casing_not_dom_camelcase(self):
+        for name in ["font-weight", "FONT-WEIGHT", "Font-Weight"]:
+            with self.subTest(name=name):
+                self.write("view/s.css", f"p {{{name}:600}}")
+                self.assertIs(self.verdict(), False)
+        for name in ["width", "WIDTH", "Width", "GRID-TEMPLATE-COLUMNS"]:
+            with self.subTest(name=name):
+                self.write("view/s.css", f"p {{{name}:12px}}")
+                self.assertIs(self.verdict(), True)
+        self.write("view/s.css", "p {--MixedCase:var(--Value); FONT-WEIGHT:var(--Weight)}")
+        self.assertEqual([d["property"] for d in self.facts()["files"][0]["declarations"]],
+                         ["--MixedCase", "font-weight"])
+        self.write("view/p.ts", "el.style.fontWeight = '600';")
+        self.assertIs(self.verdict(), False)
+
+    def test_review_svg_presentation_attributes_are_not_lost(self):
+        for name in ["letter-spacing", "word-spacing", "baseline-shift", "kerning"]:
+            for value, expected in [("2px", False), ("var(--spacing)", True), ("0", True)]:
+                with self.subTest(name=name, value=value):
+                    self.write("view/p.html", f'<svg><text {name}="{value}">word</text></svg>')
+                    self.assertIs(self.verdict(), expected)
+        self.write("view/p.html", '<div letter-spacing="2px" data-color="red">word</div>'
+                   '<svg><text x="2px" y="4px" data-spacing="2px">word</text></svg>')
+        self.assertIs(self.verdict(), True)
+        self.write("view/p.ts", "el.setAttribute('letter-spacing', '2px');")
+        self.assertIs(self.verdict(), False)
+
+    def test_review_attribute_casing_respects_receiver_namespace(self):
+        for name in ["style", "STYLE", "StYlE"]:
+            with self.subTest(name=name):
+                self.write("view/p.ts", "const element = document.createElement('div'); "
+                           f"const el = element; el.setAttribute('{name}', 'padding: 2px');")
+                self.assertIs(self.verdict(), False)
+        self.write("view/p.ts", "const el = document.createElement('div'); "
+                   "el.setAttribute('STYLE', 'padding: var(--space)');")
+        self.assertIs(self.verdict(), True)
+        self.write("view/p.ts", "const el = document.createElementNS('http://www.w3.org/2000/svg', 'g'); "
+                   "el.setAttribute('STYLE', 'padding: 2px'); el.setAttribute('viewBox', '0 0 2 2');")
+        self.assertIs(self.verdict(), True)
+        for source in ["el.setAttribute('STYLE', 'padding: 2px');",
+                       "function make(document) { const el = document.createElementNS("
+                       "'http://www.w3.org/2000/svg', 'g'); el.setAttribute('STYLE', 'padding: 2px'); }",
+                       "el.setAttribute(name, value);"]:
+            with self.subTest(source=source):
+                self.write("view/p.ts", source)
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_review_style_aliases_use_lexical_bindings_and_retain_escapes(self):
+        prefix = "const s = el.style; const t = s; "
+        self.write("view/p.ts", prefix + "t.padding = '2px';")
+        self.assertIs(self.verdict(), False)
+        self.write("view/p.ts", prefix + "t.padding = 'var(--space)';")
+        self.assertIs(self.verdict(), True)
+        self.write("view/p.ts", "el.style = 'padding: var(--space)';")
+        self.assertIs(self.verdict(), True)
+        self.write("view/p.ts", "const s = el.style; function prose(s) { s.padding = '2px'; } "
+                   "function nested({s}) { s.padding = '2px'; } "
+                   "{ const s = {}; s.padding = '2px'; }")
+        self.assertIs(self.verdict(), True)
+        cases = [prefix + "t.padding = value;", "use(el.style.setProperty);",
+                 "return el.style;", "target.value = el.style;", "const bag = [el.style];",
+                 "const bag = {value: el.style};", "let s = el.style; s.padding = value;",
+                 "const s = el.style; const t = s; use(t);",
+                 "export const s = el.style;", "const s = el.style; export {s};",
+                 "const s = el.style; const bag = {s};",
+                 "use(el.setAttribute);"]
+        for source in cases:
+            with self.subTest(source=source):
+                self.write("view/p.ts", source)
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_review_python_fragments_bind_without_becoming_program_files(self):
+        self.write("view/p.py", "SCRIPT = '''class Element { constructor() { "
+                   "this.style = {setProperty() {}}; } }'''\n")
+        facts = self.facts()["files"][0]
+        self.assertTrue(facts["unresolved"])
+        self.assertEqual(facts["unresolved"][0]["path"], "view/p.py")
+
+    def test_review_namespaced_attributes_are_not_inline_style(self):
+        prefix = "const el = document.createElementNS('http://www.w3.org/2000/svg', 'g'); "
+        for namespace in ["null", "''"]:
+            with self.subTest(namespace=namespace):
+                self.write("view/p.ts", prefix +
+                           f"el.setAttributeNS({namespace}, 'style', 'padding: 2px');")
+                self.assertIs(self.verdict(), False)
+        self.write("view/p.ts", prefix + "el.setAttributeNS('urn:metadata', 'style', 'padding: 2px');")
+        self.assertIs(self.verdict(), True)
+        self.write("view/p.ts", prefix + "el.setAttributeNS(namespace, 'style', 'padding: 2px');")
+        with self.assertRaises(self.module.QualityError):
+            self.verdict()
+
     def test_supports_function_value_never_escapes_inspection(self):
         self.write("view/s.css", "@supports (color: rgb(1 2 3)) {a{color:inherit}}")
         with self.assertRaises(self.module.QualityError):

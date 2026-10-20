@@ -10,6 +10,7 @@ import {
   declaration,
   diagnostic,
   extractCss,
+  presentationAttribute,
 } from "./styleguide_css.mjs";
 
 const toolRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -75,7 +76,17 @@ function extractHtml(tools, facts, text, baseLine = 1) {
           const attributeLine = baseLine + attribute.sourceSpan.start.line;
           if (name === "style")
             extractCss(tools.css, facts, attribute.value, attributeLine, true);
-          else if (appearanceAttribute.test(name))
+          else if (
+            presentationAttribute(
+              name,
+              node.namespace === "svg" ||
+                /^(?:path|g|text|circle|rect|line|ellipse|polygon|polyline|use|stop|tspan)$/.test(
+                  node.name,
+                )
+                ? "svg"
+                : "html",
+            )
+          )
             declaration(
               tools.css,
               facts,
@@ -147,6 +158,24 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
     ts.forEachChild(node, collect);
   }
   collect(source);
+  // Bind local names without loading libraries/imports or executing source.
+  const program = ts.createProgram(
+    [source.fileName],
+    { noLib: true, noResolve: true, allowNonTsExtensions: true },
+    {
+      getSourceFile: (name) => (name === source.fileName ? source : undefined),
+      getDefaultLibFileName: () => "",
+      writeFile: () => {},
+      getCurrentDirectory: () => "",
+      getDirectories: () => [],
+      fileExists: (name) => name === source.fileName,
+      readFile: (name) => (name === source.fileName ? text : undefined),
+      getCanonicalFileName: (name) => name,
+      useCaseSensitiveFileNames: () => true,
+      getNewLine: () => "\n",
+    },
+  );
+  const checker = program.getTypeChecker();
   const member = (node) =>
     ts.isPropertyAccessExpression(node)
       ? node.name.text
@@ -159,37 +188,27 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
       ? node.expression
       : null;
   function binding(identifier) {
-    for (let scope = identifier.parent; scope; scope = scope.parent) {
-      if (
-        !ts.isBlock(scope) &&
-        !ts.isSourceFile(scope) &&
-        !ts.isFunctionLike(scope)
-      )
-        continue;
-      if (
-        ts.isFunctionLike(scope) &&
-        scope.parameters.some((p) => p.name.getText(source) === identifier.text)
-      )
-        return null;
-      const declarations = all.filter(
-        (node) =>
-          ts.isVariableDeclaration(node) &&
-          ts.isIdentifier(node.name) &&
-          node.name.text === identifier.text &&
-          (() => {
-            let owner = node.parent;
-            while (owner && !ts.isBlock(owner) && !ts.isSourceFile(owner))
-              owner = owner.parent;
-            return owner === scope;
-          })(),
-      );
-      if (declarations.length)
-        return declarations.length === 1 &&
-          declarations[0].parent.flags & ts.NodeFlags.Const
-          ? declarations[0].initializer
-          : null;
-    }
-    return null;
+    const parent = identifier.parent;
+    // Property names are not lexical references, even when spelled like an alias.
+    if (
+      (ts.isPropertyAccessExpression(parent) && parent.name === identifier) ||
+      ((ts.isPropertyAssignment(parent) || ts.isMethodDeclaration(parent)) &&
+        parent.name === identifier)
+    )
+      return null;
+    const symbol = ts.isExportSpecifier(parent)
+      ? checker.getExportSpecifierLocalTargetSymbol(parent)
+      : ts.isShorthandPropertyAssignment(parent)
+        ? checker.getShorthandAssignmentValueSymbol(parent)
+        : checker.getSymbolAtLocation(identifier);
+    const declarations = symbol?.declarations;
+    const candidate = declarations?.length === 1 ? declarations[0] : null;
+    return candidate &&
+      ts.isVariableDeclaration(candidate) &&
+      ts.isIdentifier(candidate.name) &&
+      candidate.parent.flags & ts.NodeFlags.Const
+      ? candidate.initializer
+      : null;
   }
   function values(node, seen = new Set()) {
     if (!node || seen.has(node)) return null;
@@ -260,21 +279,47 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
     }
     return null;
   }
-  const styleAliases = new Set(
-    all
-      .filter(
-        (n) =>
-          ts.isVariableDeclaration(n) &&
-          n.initializer &&
-          member(n.initializer) === "style" &&
-          ts.isIdentifier(n.name),
-      )
-      .map((n) => n.name.text),
-  );
-  const styleObject = (node) =>
-    node &&
-    (member(node) === "style" ||
-      (ts.isIdentifier(node) && styleAliases.has(node.text)));
+  function styleObject(node, seen = new Set()) {
+    if (!node || seen.has(node)) return false;
+    seen = new Set([...seen, node]);
+    if (member(node) === "style") return true;
+    if (ts.isIdentifier(node)) return styleObject(binding(node), seen);
+    if (
+      ts.isParenthesizedExpression(node) ||
+      ts.isAsExpression(node) ||
+      ts.isNonNullExpression(node) ||
+      ts.isSatisfiesExpression(node)
+    )
+      return styleObject(node.expression, seen);
+    return false;
+  }
+  function namespace(node, seen = new Set()) {
+    if (!node || seen.has(node)) return "unknown";
+    seen = new Set([...seen, node]);
+    if (ts.isIdentifier(node)) return namespace(binding(node), seen);
+    if (
+      ts.isParenthesizedExpression(node) ||
+      ts.isAsExpression(node) ||
+      ts.isNonNullExpression(node)
+    )
+      return namespace(node.expression, seen);
+    if (
+      !ts.isCallExpression(node) ||
+      receiver(node.expression)?.getText(source) !== "document" ||
+      checker.getSymbolAtLocation(receiver(node.expression))?.declarations
+        ?.length
+    )
+      return "unknown";
+    if (member(node.expression) === "createElement") return "html";
+    if (member(node.expression) === "createElementNS") {
+      const uris = values(node.arguments[0]);
+      if (uris?.every((value) => value.text === "http://www.w3.org/2000/svg"))
+        return "svg";
+      if (uris?.every((value) => value.text === "http://www.w3.org/1999/xhtml"))
+        return "html";
+    }
+    return "unknown";
+  }
   const styleElements = new Set(
     all
       .filter(
@@ -342,9 +387,32 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
           extractCss(tools.css, facts, content, value.line, kind === "style");
       }
   }
-  function attribute(name, expression, anchor) {
+  function attribute(
+    name,
+    expression,
+    anchor,
+    space = "unknown",
+    caseSensitive = false,
+  ) {
+    const lower = name.toLowerCase();
+    if (!caseSensitive && space === "html") name = lower;
+    else if (
+      !caseSensitive &&
+      space === "unknown" &&
+      name !== lower &&
+      appearanceAttribute.test(lower)
+    ) {
+      mark(expression);
+      diagnostic(
+        facts,
+        "unresolved",
+        lineOf(anchor),
+        "attribute casing needs a known receiver namespace",
+      );
+      return;
+    }
     if (name === "style") embedded(expression, "style", anchor);
-    else if (appearanceAttribute.test(name))
+    else if (presentationAttribute(name, space))
       styleValue(name, expression, anchor);
   }
   function objectProperties(object, style, anchor) {
@@ -447,13 +515,49 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
     }
   }
   for (const node of all) {
+    const parent = node.parent ?? source;
+    const mutator =
+      ["setAttribute", "setAttributeNS"].includes(member(node)) ||
+      (["setProperty", "removeProperty"].includes(member(node)) &&
+        styleObject(receiver(node)));
+    const style = styleObject(node);
+    const directCall =
+      ts.isCallExpression(parent) && parent.expression === node;
+    const propertyUse = receiver(parent) === node;
+    const styleAssignment =
+      member(node) === "style" &&
+      ts.isBinaryExpression(parent) &&
+      parent.left === node &&
+      parent.operatorToken.kind === ts.SyntaxKind.EqualsToken;
+    const alias =
+      ts.isVariableDeclaration(parent) &&
+      parent.initializer === node &&
+      ts.isIdentifier(parent.name) &&
+      parent.parent.flags & ts.NodeFlags.Const &&
+      !parent.parent.parent.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+      );
+    const wrapper =
+      (ts.isParenthesizedExpression(parent) ||
+        ts.isAsExpression(parent) ||
+        ts.isNonNullExpression(parent) ||
+        ts.isSatisfiesExpression(parent)) &&
+      parent.expression === node;
+    const declarationName =
+      ts.isVariableDeclaration(parent) && parent.name === node;
+    const assignTarget =
+      ts.isCallExpression(parent) &&
+      parent.expression.getText(source) === "Object.assign" &&
+      parent.arguments[0] === node;
     if (
-      ts.isVariableDeclaration(node) &&
-      node.initializer &&
-      ((!ts.isIdentifier(node.name) && styleObject(node.initializer)) ||
-        ["setAttribute", "setAttributeNS", "setProperty"].includes(
-          member(node.initializer),
-        ))
+      (mutator && !directCall) ||
+      (style &&
+        !propertyUse &&
+        !styleAssignment &&
+        !alias &&
+        !wrapper &&
+        !declarationName &&
+        !assignTarget)
     ) {
       diagnostic(
         facts,
@@ -488,9 +592,37 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
             lineOf(node),
             "unresolved attribute name",
           );
-        else
+        else {
+          if (name === "setAttributeNS") {
+            const argument = node.arguments[0];
+            const uris =
+              argument?.kind === ts.SyntaxKind.NullKeyword
+                ? [{ text: "" }]
+                : values(argument);
+            if (!uris) {
+              diagnostic(
+                facts,
+                "unresolved",
+                lineOf(node),
+                "unresolved attribute namespace",
+              );
+              continue;
+            }
+            // Only attributes without a namespace participate in presentation.
+            if (uris.every((uri) => uri.text !== "")) {
+              mark(node.arguments[index + 1]);
+              continue;
+            }
+          }
           for (const item of names)
-            attribute(item.text, node.arguments[index + 1], node);
+            attribute(
+              item.text,
+              node.arguments[index + 1],
+              node,
+              namespace(target),
+              name === "setAttributeNS",
+            );
+        }
       } else if (name === "setProperty" && styleObject(target)) {
         const names = values(node.arguments[0]);
         if (!names)
@@ -520,7 +652,10 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
         embedded(node.arguments[1], "html", node);
       else if (name === "write" && target?.getText(source) === "document") {
         for (const argument of node.arguments) embedded(argument, "html", node);
-      } else if (styleObject(target) || node.arguments.some(styleObject)) {
+      } else if (
+        styleObject(target) ||
+        node.arguments.some((argument) => styleObject(argument))
+      ) {
         diagnostic(
           facts,
           "unresolved",

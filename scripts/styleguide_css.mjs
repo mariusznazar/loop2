@@ -37,7 +37,14 @@ const dimensionsExempt =
 const unitless =
   /^(?:stroke-width|stroke-dasharray|stroke-dashoffset|(?:fill-|stroke-|stop-|flood-)?opacity|font-weight)$/;
 export const appearanceAttribute =
-  /^(?:style|color|bgcolor|fill|stroke|stroke-width|stroke-dasharray|stroke-dashoffset|fill-opacity|stroke-opacity|opacity|font-family|font-size|font-weight|stop-color|stop-opacity|flood-color|flood-opacity|lighting-color)$/;
+  /^(?:style|bgcolor|alignment-baseline|baseline-shift|clip|clip-path|clip-rule|color|color-interpolation|color-interpolation-filters|color-profile|color-rendering|cursor|direction|display|dominant-baseline|enable-background|fill|fill-opacity|fill-rule|filter|flood-color|flood-opacity|font-family|font-size|font-size-adjust|font-stretch|font-style|font-variant|font-weight|glyph-orientation-horizontal|glyph-orientation-vertical|image-rendering|isolation|kerning|letter-spacing|lighting-color|marker|marker-end|marker-mid|marker-start|mask|mask-type|mix-blend-mode|opacity|overflow|paint-order|pointer-events|shape-rendering|stop-color|stop-opacity|stroke|stroke-dasharray|stroke-dashoffset|stroke-linecap|stroke-linejoin|stroke-miterlimit|stroke-opacity|stroke-width|text-anchor|text-decoration|text-decoration-color|text-decoration-line|text-decoration-style|text-overflow|text-rendering|transform|transform-origin|unicode-bidi|vector-effect|visibility|white-space|word-spacing|writing-mode)$/;
+
+export function presentationAttribute(name, namespace = "unknown") {
+  // Geometry and ordinary DOM attributes are not CSS declarations.
+  return namespace === "html"
+    ? /^(?:style|color|bgcolor)$/.test(name)
+    : appearanceAttribute.test(name);
+}
 
 export function cssName(name) {
   return name.startsWith("--")
@@ -175,7 +182,8 @@ export function declaration(
   selector = "",
   context = "inline",
 ) {
-  property = cssName(property);
+  // CSS names are case-insensitive; only DOM property inputs use cssName().
+  if (!property.startsWith("--")) property = property.toLowerCase();
   facts.declarations.push({
     path: facts.path,
     line,
