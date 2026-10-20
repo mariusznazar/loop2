@@ -11,14 +11,14 @@ import tempfile
 
 from quality_support import QualityError, discover_files, run_check, run_tool
 
-VERSION = "11.13.0"
+VERSION = "12.2.1"
 MANIFESTS = {"package.json", "package-lock.json", "npm-shrinkwrap.json"}
 DEPENDENCIES = ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies")
 NAME = r"(?:@[a-z0-9._-]+/)?[a-z0-9][a-z0-9._-]*"
 PACKAGE_PATH = rf"node_modules/{NAME}(?:/node_modules/{NAME})*"
 
 # Use the already installed npm distribution's client and semver, not an install wrapper.
-# Bulk API: https://docs.npmjs.com/cli/v11/commands/npm-audit/#bulk-advisory-endpoint
+# Bulk API: npm/cli v12.2.1, workspaces/arborist/lib/audit-report.js.
 # No Quick Audit fallback: this request contains only introduced names and versions.
 BRIDGE = r"""
 import path from 'node:path';
@@ -27,7 +27,7 @@ let input = '';
 for await (const chunk of process.stdin) input += chunk;
 const request = JSON.parse(input);
 const local = createRequire(path.resolve('node_modules/npm/package.json'));
-if (local('./package.json').version !== '11.13.0') throw Error('wrong local npm version');
+if (local('./package.json').version !== '12.2.1') throw Error('wrong local npm version');
 const semver = local('semver');
 if (request.action === 'compare') {
   for (const [name, version] of request.pairs) {
@@ -40,16 +40,17 @@ if (request.action === 'compare') {
   }
   let body = null;
   if (Object.keys(request.introduced).length) {
-    const fetch = local('npm-registry-fetch');
+    // npm-registry-fetch does not forward redirect mode to its HTTP client.
+    const fetch = local('make-fetch-happen');
     const response = await fetch('https://registry.npmjs.org/-/npm/v1/security/advisories/bulk', {
-      method:'POST', body:request.introduced, retry:0, timeout:30000,
-      registry:'https://registry.npmjs.org/', redirect:'error',
-      headers:{'content-type':'application/json'},
-      userAgent:'npm/11.13.0 dependency-audit', strictSSL:true
+      method:'POST', body:JSON.stringify(request.introduced), retry:0, timeout:30000,
+      redirect:'error', cache:'no-store', strictSSL:true,
+      headers:{'content-type':'application/json', 'user-agent':'npm/12.2.1 dependency-audit'}
     });
+    if (response.status !== 200) throw Error('unsupported bulk advisory HTTP status');
     body = await response.text();
   }
-  process.stdout.write(JSON.stringify({version:'11.13.0', body}));
+  process.stdout.write(JSON.stringify({version:'12.2.1', body}));
 } else if (request.action === 'match') {
   // npm's concrete advisory matcher includes prereleases and accepts loose ranges.
   const options = {includePrerelease:true, loose:true};
@@ -57,7 +58,7 @@ if (request.action === 'compare') {
     if (semver.validRange(range, options) === null) throw Error('unsupported advisory range');
     return semver.satisfies(version, range, options);
   });
-  process.stdout.write(JSON.stringify({version:'11.13.0', matches}));
+  process.stdout.write(JSON.stringify({version:'12.2.1', matches}));
 } else throw Error('unsupported bridge operation');
 """
 
@@ -299,10 +300,10 @@ def check(root, fork_point):
     if declared.get("npm") != VERSION or not tool_locks or any(
             package.get("version") != VERSION or package.get("name", "npm") != "npm"
             for package in tool_locks):
-        raise QualityError("npm 11.13.0 must be declared and locked locally")
+        raise QualityError("npm 12.2.1 must be declared and locked locally")
     installed = _read(root / "node_modules/npm/package.json")
     if not isinstance(installed, dict) or installed.get("version") != VERSION:
-        raise QualityError("local npm 11.13.0 is unavailable")
+        raise QualityError("local npm 12.2.1 is unavailable")
     introduced = {}
     for name, version in sorted(after - before):
         introduced.setdefault(name, []).append(version)

@@ -39,31 +39,36 @@ class DependencyAudit(unittest.TestCase):
                    "- **Files:** package.json\n  package-lock.json\n  npm-shrinkwrap.json\n"
                    "  scripts/**\n\n## foundation\n\n- **Files:** foundations/**\n  .gitignore\n")
         self.write(".gitignore", "node_modules/\n.runs/\n")
-        self.manifest = {"name": "test-app", "devDependencies": {"npm": "11.13.0"},
+        self.manifest = {"name": "test-app", "devDependencies": {"npm": "12.2.1"},
                          "dependencies": {"a": "1.0.0"}}
         self.lock = {"lockfileVersion": 3, "packages": {
             "": copy.deepcopy(self.manifest),
-            "node_modules/npm": {"version": "11.13.0", "dev": True},
+            "node_modules/npm": {"version": "12.2.1", "dev": True},
             "node_modules/a": {"version": "1.0.0"}}}
         self.save()
         self.git("add", "package.json", "package-lock.json", "foundations/part_map.md", ".gitignore")
         self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
                  "-c", "core.hooksPath=", "commit", "--quiet", "-m", "fixture base")
         self.base = self.git("rev-parse", "HEAD").strip()
-        self.write("node_modules/npm/package.json", json.dumps({"version": "11.13.0"}))
+        self.write("node_modules/npm/package.json", json.dumps({"version": "12.2.1"}))
         self.write("node_modules/npm/node_modules/semver/index.js",
                    "module.exports = require(" + json.dumps(str(SEMVER)) + ");")
         # Only the remote exchange is replaced. Node, Git, range matching and parsers are real.
-        self.write("node_modules/npm/node_modules/npm-registry-fetch/index.js", r'''
+        self.write("node_modules/npm/node_modules/make-fetch-happen/index.js", r'''
 const fs = require('node:fs');
 module.exports = async (url, options) => {
   if (url !== 'https://registry.npmjs.org/-/npm/v1/security/advisories/bulk' ||
-      options.method !== 'POST' || options.retry !== 0 || options.redirect !== 'error')
+      options.method !== 'POST' || options.retry !== 0 || options.redirect !== 'error' ||
+      options.cache !== 'no-store' || options.strictSSL !== true ||
+      options.headers['content-type'] !== 'application/json' ||
+      typeof options.body !== 'string')
     throw Error('wrong registry boundary');
-  fs.writeFileSync('.runs/payload.json', JSON.stringify(options.body));
+  fs.writeFileSync('.runs/payload.json', options.body);
   const text = fs.readFileSync('.runs/response.json', 'utf8');
   if (text === 'NETWORK_FAILURE') throw Error('registry unavailable');
-  return {text:async () => text};
+  const status = fs.existsSync('.runs/status.json')
+    ? JSON.parse(fs.readFileSync('.runs/status.json', 'utf8')) : 200;
+  return {status, text:async () => text};
 };
 ''')
         self.response({})
@@ -300,6 +305,15 @@ module.exports = async (url, options) => {
         (self.root / "node_modules/npm/package.json").unlink()
         self.assertEqual(self.verdict()[0], 2)
 
+    def test_unsuccessful_http_status_cannot_turn_empty_json_into_a_pass(self):
+        self.introduce()
+        for status in (301, 307, 401, 429, 500, 503):
+            with self.subTest(status=status):
+                self.write(".runs/status.json", json.dumps(status))
+                code, record = self.verdict()
+                self.assertEqual(code, 2)
+                self.assertIsNone(record["invariant"])
+
     def test_stale_pass_is_overwritten_when_later_advisory_is_invalid(self):
         self.introduce()
         self.assertEqual(self.verdict()[0], 0)
@@ -421,14 +435,14 @@ module.exports = async (url, options) => {
         self.save()
         self.assertEqual(self.verdict(base)[0], 0)
         self.assertEqual(json.loads((self.root / ".runs/payload.json").read_text()),
-                         {"npm": ["11.13.0"]})
+                         {"npm": ["12.2.1"]})
 
     def test_nested_pinned_npm_cannot_mask_a_different_root_tool_lock(self):
         del self.manifest["devDependencies"]["npm"]
-        self.manifest["dependencies"]["npm"] = "11.13.0"
+        self.manifest["dependencies"]["npm"] = "12.2.1"
         self.manifest["optionalDependencies"] = {"npm": "12.0.0"}
         self.lock["packages"]["node_modules/npm"]["version"] = "12.0.0"
-        self.lock["packages"]["node_modules/a/node_modules/npm"] = {"version": "11.13.0"}
+        self.lock["packages"]["node_modules/a/node_modules/npm"] = {"version": "12.2.1"}
         self.save()
         self.assertEqual(self.verdict()[0], 2)
 
