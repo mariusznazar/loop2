@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exit_code": 0,
+  "seconds": 0.051,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f1-diffcheck.txt"
+}

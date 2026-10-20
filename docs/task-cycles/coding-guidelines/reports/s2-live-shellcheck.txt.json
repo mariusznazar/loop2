@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_shellcheck.py",
+    "--record",
+    ".runs/shellcheck.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 0.589,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-live-shellcheck.txt"
+}

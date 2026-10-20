@@ -1,0 +1,1 @@
+{"check": "prettier-source-format", "verdict": "fail", "invariant": null, "description": "QualityError: required local formatter input is unavailable: prettier.config.mjs"}

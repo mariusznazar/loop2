@@ -1,0 +1,293 @@
+[
+  {
+    "label": "handoff-final-invariants",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/invariants",
+      "--record",
+      ".runs/handoff-final-invariants.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 364.95,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-invariants.txt"
+  },
+  {
+    "label": "handoff-final-deploy",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/deploy",
+      "--record",
+      ".runs/handoff-final-deploy.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 189.76,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-deploy.txt"
+  },
+  {
+    "label": "handoff-final-agent_workflow",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/agent_workflow",
+      "--record",
+      ".runs/handoff-final-agent_workflow.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.2,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-agent_workflow.txt"
+  },
+  {
+    "label": "handoff-final-quality",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/quality",
+      "--record",
+      ".runs/handoff-final-quality.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 142.64,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-quality.txt"
+  },
+  {
+    "label": "handoff-final-npm-typecheck",
+    "command": [
+      "npm.cmd",
+      "run",
+      "typecheck"
+    ],
+    "exit_code": 0,
+    "seconds": 1.23,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-npm-typecheck.txt"
+  },
+  {
+    "label": "handoff-final-npm-build",
+    "command": [
+      "npm.cmd",
+      "run",
+      "build"
+    ],
+    "exit_code": 0,
+    "seconds": 1.73,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-npm-build.txt"
+  },
+  {
+    "label": "handoff-final-npm-test",
+    "command": [
+      "npm.cmd",
+      "test"
+    ],
+    "exit_code": 0,
+    "seconds": 3.71,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-npm-test.txt"
+  },
+  {
+    "label": "handoff-final-eslint",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_eslint.py",
+      "--record",
+      ".runs/handoff-final-eslint.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 3.81,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-eslint.txt"
+  },
+  {
+    "label": "handoff-final-eslint-configuration",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_eslint.py",
+      "--configuration",
+      "--record",
+      ".runs/handoff-final-eslint-configuration.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 2.54,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-eslint-configuration.txt"
+  },
+  {
+    "label": "handoff-final-ruff",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_ruff.py",
+      "--record",
+      ".runs/handoff-final-ruff.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 2.24,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-ruff.txt"
+  },
+  {
+    "label": "handoff-final-shellcheck",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_shellcheck.py",
+      "--record",
+      ".runs/handoff-final-shellcheck.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.62,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-shellcheck.txt"
+  },
+  {
+    "label": "handoff-final-format",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_format.py",
+      "--record",
+      ".runs/handoff-final-format.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 1.66,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-format.txt"
+  },
+  {
+    "label": "handoff-final-dependency-audit",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_dependencies.py",
+      "--fork-point",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/handoff-final-dependency-audit.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 1.54,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-dependency-audit.txt"
+  },
+  {
+    "label": "handoff-final-guard-decisions",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/decisions/format_guard.py",
+      "foundations/decisions.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/handoff-final-guard-decisions.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.51,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-guard-decisions.txt"
+  },
+  {
+    "label": "handoff-final-guard-invariants",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/invariants/format_guard.py",
+      "foundations/invariants.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/handoff-final-guard-invariants.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.96,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-guard-invariants.txt"
+  },
+  {
+    "label": "handoff-final-guard-environment-facts",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/environment-facts/format_guard.py",
+      "foundations/environment_facts.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/handoff-final-guard-environment-facts.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.85,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-guard-environment-facts.txt"
+  },
+  {
+    "label": "handoff-final-guard-part-map",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/part-map/format_guard.py",
+      "foundations/part_map.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/handoff-final-guard-part-map.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.41,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-guard-part-map.txt"
+  },
+  {
+    "label": "handoff-final-guidelines-form",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/product-guidelines/form_check.py",
+      "--record",
+      ".runs/handoff-final-guidelines-form.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.34,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-guidelines-form.txt"
+  },
+  {
+    "label": "handoff-final-guidelines-reference",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/product-guidelines/form_check.py",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/handoff-final-guidelines-reference.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.58,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-guidelines-reference.txt"
+  },
+  {
+    "label": "handoff-final-instructions",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/instruction-files/check_instructions.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.17,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-instructions.txt"
+  },
+  {
+    "label": "handoff-final-diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "seconds": 0.12,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-diff-check.txt"
+  }
+]

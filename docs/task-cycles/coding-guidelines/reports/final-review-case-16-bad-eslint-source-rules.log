@@ -1,0 +1,2 @@
+{"path": "scripts/guideline-case.mjs", "configuration": false, "messages": [{"ruleId": "no-debugger", "severity": 2, "message": "Unexpected 'debugger' statement.", "fatal": false}], "comments": []}
+{"check": "eslint-source-rules", "verdict": "fail", "invariant": "eslint-source-rules/1"}

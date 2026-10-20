@@ -1,0 +1,23 @@
+test_live_server_keeps_both_logs_open_until_stop (test_invariant_support.ServerResources.test_live_server_keeps_both_logs_open_until_stop) ... ok
+test_second_log_open_failure_releases_first_log_and_directory (test_invariant_support.ServerResources.test_second_log_open_failure_releases_first_log_and_directory) ... ok
+test_spawn_failure_releases_both_logs_and_directory (test_invariant_support.ServerResources.test_spawn_failure_releases_both_logs_and_directory) ... ok
+test_stop_releases_logs_when_process_cleanup_reports_failure (test_invariant_support.ServerResources.test_stop_releases_logs_when_process_cleanup_reports_failure) ... ok
+test_stop_without_a_process_releases_acquired_resources (test_invariant_support.ServerResources.test_stop_without_a_process_releases_acquired_resources) ... ok
+test_exit_zero_descendant_query_error_rejects_partial_stdout (test_invariant_support.WindowsProcessCleanup.test_exit_zero_descendant_query_error_rejects_partial_stdout) ... FAIL
+test_failed_descendant_query_rejects_partial_stdout (test_invariant_support.WindowsProcessCleanup.test_failed_descendant_query_rejects_partial_stdout) ... ok
+test_failed_descendant_query_still_terminates_known_main_process (test_invariant_support.WindowsProcessCleanup.test_failed_descendant_query_still_terminates_known_main_process) ... ok
+test_successful_descendant_query_keeps_age_and_parent_filter (test_invariant_support.WindowsProcessCleanup.test_successful_descendant_query_keeps_age_and_parent_filter) ... ok
+
+======================================================================
+FAIL: test_exit_zero_descendant_query_error_rejects_partial_stdout (test_invariant_support.WindowsProcessCleanup.test_exit_zero_descendant_query_error_rejects_partial_stdout)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_invariant_support.py", line 132, in test_exit_zero_descendant_query_error_rejects_partial_stdout
+    with self.assertRaisesRegex(AssertionError, "query failed"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: AssertionError not raised
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.733s
+
+FAILED (failures=1)

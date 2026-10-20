@@ -1,0 +1,257 @@
+FF..FF.F..FFF.FFFFFF...FFFF....FFFFFFF..F.F.F
+======================================================================
+FAIL: test_alias_peer_accepts_install_name_and_audits_real_identity (test_dependency_audit.DependencyAudit.test_alias_peer_accepts_install_name_and_audits_real_identity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 148, in test_alias_peer_accepts_install_name_and_audits_real_identity
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_alias_peer_blocks_a_matching_advisory_on_the_real_package (test_dependency_audit.DependencyAudit.test_alias_peer_blocks_a_matching_advisory_on_the_real_package)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 156, in test_alias_peer_blocks_a_matching_advisory_on_the_real_package
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_alias_peer_optional_marker_does_not_exclude_present_provider (test_dependency_audit.DependencyAudit.test_alias_peer_optional_marker_does_not_exclude_present_provider)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 186, in test_alias_peer_optional_marker_does_not_exclude_present_provider
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_alias_peer_range_resolution_is_the_same_for_an_ordinary_reference (test_dependency_audit.DependencyAudit.test_alias_peer_range_resolution_is_the_same_for_an_ordinary_reference)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 193, in test_alias_peer_range_resolution_is_the_same_for_an_ordinary_reference
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_alias_uses_actual_name_and_matching_version_only (test_dependency_audit.DependencyAudit.test_alias_uses_actual_name_and_matching_version_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 140, in test_alias_uses_actual_name_and_matching_version_only
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_bulk_outer_name_identifies_advisories_without_duplicate_name (test_dependency_audit.DependencyAudit.test_bulk_outer_name_identifies_advisories_without_duplicate_name) (severity='low', versions='<2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 270, in test_bulk_outer_name_identifies_advisories_without_duplicate_name
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_bulk_outer_name_identifies_advisories_without_duplicate_name (test_dependency_audit.DependencyAudit.test_bulk_outer_name_identifies_advisories_without_duplicate_name) (severity='info', versions='*')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 270, in test_bulk_outer_name_identifies_advisories_without_duplicate_name
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_bulk_outer_name_identifies_advisories_without_duplicate_name (test_dependency_audit.DependencyAudit.test_bulk_outer_name_identifies_advisories_without_duplicate_name) (severity='critical', versions='>=2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 270, in test_bulk_outer_name_identifies_advisories_without_duplicate_name
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_concrete_advisory_ranges_and_every_severity (test_dependency_audit.DependencyAudit.test_concrete_advisory_ranges_and_every_severity) (severity='info', versions='*')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 132, in test_concrete_advisory_ranges_and_every_severity
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_concrete_advisory_ranges_and_every_severity (test_dependency_audit.DependencyAudit.test_concrete_advisory_ranges_and_every_severity) (severity='low', versions='<2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 132, in test_concrete_advisory_ranges_and_every_severity
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_concrete_advisory_ranges_and_every_severity (test_dependency_audit.DependencyAudit.test_concrete_advisory_ranges_and_every_severity) (severity='moderate', versions='^1.5')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 132, in test_concrete_advisory_ranges_and_every_severity
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_concrete_advisory_ranges_and_every_severity (test_dependency_audit.DependencyAudit.test_concrete_advisory_ranges_and_every_severity) (severity='high', versions='>=1.4 <1.6')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 132, in test_concrete_advisory_ranges_and_every_severity
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_concrete_advisory_ranges_and_every_severity (test_dependency_audit.DependencyAudit.test_concrete_advisory_ranges_and_every_severity) (severity='critical', versions='1.0.0 || >=1.5.0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 132, in test_concrete_advisory_ranges_and_every_severity
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_concrete_advisory_ranges_and_every_severity (test_dependency_audit.DependencyAudit.test_concrete_advisory_ranges_and_every_severity) (severity='critical', versions='<1.4')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 132, in test_concrete_advisory_ranges_and_every_severity
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_each_dependency_class_and_transitive_version_is_audited (test_dependency_audit.DependencyAudit.test_each_dependency_class_and_transitive_version_is_audited) (field='dependencies')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 206, in test_each_dependency_class_and_transitive_version_is_audited
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_each_dependency_class_and_transitive_version_is_audited (test_dependency_audit.DependencyAudit.test_each_dependency_class_and_transitive_version_is_audited) (field='devDependencies')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 206, in test_each_dependency_class_and_transitive_version_is_audited
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_each_dependency_class_and_transitive_version_is_audited (test_dependency_audit.DependencyAudit.test_each_dependency_class_and_transitive_version_is_audited) (field='optionalDependencies')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 206, in test_each_dependency_class_and_transitive_version_is_audited
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_each_dependency_class_and_transitive_version_is_audited (test_dependency_audit.DependencyAudit.test_each_dependency_class_and_transitive_version_is_audited) (field='peerDependencies')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 206, in test_each_dependency_class_and_transitive_version_is_audited
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_new_nested_manifest_and_lock_are_in_scope (test_dependency_audit.DependencyAudit.test_new_nested_manifest_and_lock_are_in_scope)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 217, in test_new_nested_manifest_and_lock_are_in_scope
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_npm_config_cannot_redirect_or_omit_audit_data (test_dependency_audit.DependencyAudit.test_npm_config_cannot_redirect_or_omit_audit_data)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 478, in test_npm_config_cannot_redirect_or_omit_audit_data
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_prerelease_matches_npm_inclusive_advisory_ranges (test_dependency_audit.DependencyAudit.test_prerelease_matches_npm_inclusive_advisory_ranges)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 319, in test_prerelease_matches_npm_inclusive_advisory_ranges
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_prerelease_semver_is_not_misclassified_by_numeric_comparison (test_dependency_audit.DependencyAudit.test_prerelease_semver_is_not_misclassified_by_numeric_comparison)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 314, in test_prerelease_semver_is_not_misclassified_by_numeric_comparison
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_same_pair_moved_to_new_manifest_is_not_introduced (test_dependency_audit.DependencyAudit.test_same_pair_moved_to_new_manifest_is_not_introduced)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 225, in test_same_pair_moved_to_new_manifest_is_not_introduced
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_scoped_alias_and_multiple_versions_match_separately (test_dependency_audit.DependencyAudit.test_scoped_alias_and_multiple_versions_match_separately)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 450, in test_scoped_alias_and_multiple_versions_match_separately
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_stale_pass_is_overwritten_when_later_advisory_is_invalid (test_dependency_audit.DependencyAudit.test_stale_pass_is_overwritten_when_later_advisory_is_invalid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 305, in test_stale_pass_is_overwritten_when_later_advisory_is_invalid
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_tarball_fix_does_not_require_historical_npm_tool_pin (test_dependency_audit.DependencyAudit.test_tarball_fix_does_not_require_historical_npm_tool_pin)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 422, in test_tarball_fix_does_not_require_historical_npm_tool_pin
+    self.assertEqual(self.verdict(base)[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_tarball_supported_exact_identities_retain_alias_and_scope_support (test_dependency_audit.DependencyAudit.test_tarball_supported_exact_identities_retain_alias_and_scope_support)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 375, in test_tarball_supported_exact_identities_retain_alias_and_scope_support
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_unchanged_pairs_pass_offline_after_complete_comparison (test_dependency_audit.DependencyAudit.test_unchanged_pairs_pass_offline_after_complete_comparison)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 122, in test_unchanged_pairs_pass_offline_after_complete_comparison
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+----------------------------------------------------------------------
+Ran 35 tests in 58.819s
+
+FAILED (failures=28)

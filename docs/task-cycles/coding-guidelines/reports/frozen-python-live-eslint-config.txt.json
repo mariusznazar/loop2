@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_eslint.py",
+    "--configuration",
+    "--record",
+    ".runs/frozen-python-eslint-configuration.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 1.917,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\frozen-python-live-eslint-config.txt"
+}

@@ -1,0 +1,8 @@
+Node v24.17.0; TypeScript API 6.0.2; baseline e127aa4db9104b596cafd078caed40e0d4c46203
+PASS src/browser/sim/data/actions.ts: AST, comments, complete exported data/order, LF
+PASS src/browser/sim/data/archetypes.ts: AST, comments, complete exported data/order, LF
+PASS src/browser/sim/data/balance.ts: AST, comments, complete exported data/order, LF
+PASS src/browser/sim/data/conditions.ts: AST, comments, complete exported data/order, LF
+PASS src/browser/sim/data/maps.ts: AST, comments, complete exported data/order, LF
+PASS src/browser/sim/data/resources.ts: AST, comments, complete exported data/order, LF
+PASS controls: changed width and reversed resource order are detected

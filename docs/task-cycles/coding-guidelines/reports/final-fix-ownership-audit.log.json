@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/final-fix-ownership-audit.py"
+  ],
+  "exit_code": 1,
+  "seconds": 0.594,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-ownership-audit.log"
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "rg",
+    "-n",
+    "renderMapColumn|hidden =|pendingFocus|focusTarget|function showRule|function readNumberField|setPaused|clock.flush|performance.now|setInterval|no credit|anchor.target|anchor.rel|root.append|rebuild|showResource",
+    "src/browser/view/app.ts",
+    "src/browser/view/clock.ts",
+    "src/browser/view/footer.ts",
+    "src/browser/view/program-editor.ts"
+  ],
+  "exit_code": 0,
+  "seconds": 0.022,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s6-state-source.log"
+}

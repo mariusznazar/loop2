@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/return-collision-search.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.251,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\assessment-settlement-collision.log"
+}

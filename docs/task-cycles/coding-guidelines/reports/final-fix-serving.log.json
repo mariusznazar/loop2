@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_loop2_one_serving_process.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "seconds": 11.445,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-serving.log"
+}

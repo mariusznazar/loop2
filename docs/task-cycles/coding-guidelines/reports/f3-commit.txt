@@ -1,0 +1,12 @@
+commit 49a37059c637027880955d31199d4bbbcf99eda1
+Author:     Mariusz <mariusznn@gmail.com>
+AuthorDate: Tue Oct 20 01:54:57 2026 +0200
+Commit:     Mariusz <mariusznn@gmail.com>
+CommitDate: Tue Oct 20 01:54:57 2026 +0200
+
+    feat: add independent Python and Bash quality checks
+
+ scripts/check_ruff.py                     | 155 ++++++++++++++++++
+ scripts/check_shellcheck.py               | 177 ++++++++++++++++++++
+ tests/quality/test_python_shell_checks.py | 259 ++++++++++++++++++++++++++++++
+ 3 files changed, 591 insertions(+)

@@ -1,0 +1,4 @@
+[task/coding-guidelines ef45514] feat: audit introduced npm package versions
+ 2 files changed, 630 insertions(+)
+ create mode 100644 scripts/check_dependencies.py
+ create mode 100644 tests/quality/test_dependency_audit.py

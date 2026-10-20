@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_loop2_api_error_route.py"
+  ],
+  "exit_code": 0,
+  "seconds": 7.849,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s8-api-invariant.log"
+}

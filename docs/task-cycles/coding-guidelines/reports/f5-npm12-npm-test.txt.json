@@ -1,0 +1,9 @@
+{
+  "command": [
+    "npm.cmd",
+    "test"
+  ],
+  "exit_code": 1,
+  "seconds": 3.298,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-npm12-npm-test.txt"
+}

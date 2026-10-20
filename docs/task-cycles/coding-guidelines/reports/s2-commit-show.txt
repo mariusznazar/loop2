@@ -1,0 +1,12 @@
+commit a9080ceb95a070078950763fbd9e0d18336cd4d0
+Author:     Mariusz <mariusznn@gmail.com>
+AuthorDate: Tue Oct 20 09:28:11 2026 +0200
+Commit:     Mariusz <mariusznn@gmail.com>
+CommitDate: Tue Oct 20 09:28:11 2026 +0200
+
+    build: pin local Ruff and ShellCheck tools
+
+ README.md                | 24 ++++++++++++++++++++++++
+ requirements-quality.in  |  4 ++++
+ requirements-quality.txt | 29 +++++++++++++++++++++++++++++
+ 3 files changed, 57 insertions(+)

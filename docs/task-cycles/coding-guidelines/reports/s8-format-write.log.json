@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "node_modules/prettier/bin/prettier.cjs",
+    "--write",
+    "src/server/app.ts",
+    "src/server/main.ts",
+    "tests/http.test.mjs",
+    "tests/startup.test.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.414,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s8-format-write.log"
+}

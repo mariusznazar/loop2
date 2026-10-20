@@ -1,0 +1,48 @@
+{
+  "url": "https://pypi.org/pypi/shellcheck-py/0.11.0.1/json",
+  "version": "0.11.0.1",
+  "requires_dist": null,
+  "summary": "Python wrapper around invoking shellcheck (https://www.shellcheck.net/)",
+  "artifacts": [
+    {
+      "filename": "shellcheck_py-0.11.0.1-py2.py3-none-macosx_10_9_x86_64.whl",
+      "digests": {
+        "blake2b_256": "5427d75b03e5458cefdb6d3b674566cd20476c3e4d3fe6cc9d68b7e3b854b296",
+        "md5": "4d649dc68714bf4aae4bb3e1ae926184",
+        "sha256": "b6a3fee28efda2e16e38d6e6d59faf7224300256456639727370d404730849e8"
+      }
+    },
+    {
+      "filename": "shellcheck_py-0.11.0.1-py2.py3-none-macosx_11_0_arm64.whl",
+      "digests": {
+        "blake2b_256": "61ac2a84c37171c0cf5a10ea4b0a27d43eb0a1d29bd98b49c2c5ffe17ad24bbe",
+        "md5": "293b435194498a8bfa2901edc272a524",
+        "sha256": "6b88d0a244c82ed07e06a53e444da841f69330ca59ae15d4a66c391655dae7a0"
+      }
+    },
+    {
+      "filename": "shellcheck_py-0.11.0.1-py2.py3-none-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl",
+      "digests": {
+        "blake2b_256": "9655250e0e3367613a5c22bd82e33b16b889287d81ab0f7dda67e6514a4cccf4",
+        "md5": "50ea80ce4e51a5c236d05ddc2fc29275",
+        "sha256": "1b274df81de5b000ff78db433e7328b87e52e3c38481c60f8e488c3095beef05"
+      }
+    },
+    {
+      "filename": "shellcheck_py-0.11.0.1-py2.py3-none-win_amd64.whl",
+      "digests": {
+        "blake2b_256": "155bbb14c0a7474463b1aa3c09e866cb172dffc66ed2993b7ea8f1db581e86ee",
+        "md5": "de814eb49eec5d17103c14ab423e48be",
+        "sha256": "784156289ecb17e91c692cd783ab5152333309588cabb10032a047331c63e759"
+      }
+    },
+    {
+      "filename": "shellcheck_py-0.11.0.1.tar.gz",
+      "digests": {
+        "blake2b_256": "df55455b097417b3df3d330eff029c72c32f08b25739e3010acb30ad06d268ef",
+        "md5": "7c12795703caf49fc79353657dc3ef2a",
+        "sha256": "5c620c88901e8f1d3be5934b31ea99e3310065e1245253741eafd0a275c8c9cc"
+      }
+    }
+  ]
+}

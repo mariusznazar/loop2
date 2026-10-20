@@ -1,0 +1,14 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/product-guidelines/form_check.py",
+    "--merge-onto",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--record",
+    ".runs/guidelines-reference.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 0.644,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s11-guidelines-reference.log"
+}

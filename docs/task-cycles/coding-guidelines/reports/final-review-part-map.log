@@ -1,0 +1,6 @@
+foundations/part_map.md:64: error: `tests/quality/fixtures/dependency-audit/package-lock.json` is claimed by `build-tools` and `build-tools`
+foundations/part_map.md:64: error: `tests/quality/fixtures/dependency-audit/package.json` is claimed by `build-tools` and `build-tools`
+foundations/part_map.md:85: warning: build-tools depends on account-server with no separation recorded, so account-server is computed as `high`, above its own failure modes
+foundations/part_map.md:134: warning: deployment depends on account-server with no separation recorded, so account-server is computed as `high`, above its own failure modes
+unchecked: the dependencies between parts, and new or stale violations — no command of the product reports the dependency graph
+2 error(s), 2 warning(s), 1 unchecked

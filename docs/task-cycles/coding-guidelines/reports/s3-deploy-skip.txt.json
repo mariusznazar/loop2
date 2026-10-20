@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/deploy",
+    "-p",
+    "test_loop2_image_icons.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "seconds": 0.25,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s3-deploy-skip.txt"
+}

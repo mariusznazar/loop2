@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_eslint.py",
+    "--configuration",
+    "--record",
+    ".runs/eslint-configuration.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 1.719,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-config-final.txt"
+}

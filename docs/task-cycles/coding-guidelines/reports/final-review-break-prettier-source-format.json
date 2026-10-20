@@ -1,0 +1,15 @@
+{
+  "label": "break-prettier-source-format",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_format.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 1,
+  "expected": 1,
+  "source": "reviewer-authored from sentence; applied whole file at tests/quality/reviewer-crlf.mjs",
+  "invariant": "prettier-source-format",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-break-prettier-source-format.log",
+  "seconds": 1.48
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_ruff.py",
+    "--record",
+    ".runs/task-cycles/coding-guidelines/reports/return-citations-ruff.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 3.36,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\return-citations-ruff.txt"
+}

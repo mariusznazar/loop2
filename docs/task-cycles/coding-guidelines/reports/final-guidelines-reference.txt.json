@@ -1,0 +1,14 @@
+{
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    ".the-way/product-guidelines/form_check.py",
+    "--merge-onto",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--record",
+    ".runs/final-guidelines-reference.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 0.32,
+  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/final-guidelines-reference.txt"
+}

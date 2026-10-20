@@ -1,0 +1,10 @@
+{
+  "command": [
+    "npm.cmd",
+    "run",
+    "typecheck"
+  ],
+  "exit_code": 0,
+  "seconds": 0.797,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s4-typecheck.txt"
+}

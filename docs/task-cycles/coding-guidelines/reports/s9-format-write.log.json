@@ -1,0 +1,20 @@
+{
+  "command": [
+    "node",
+    "node_modules/prettier/bin/prettier.cjs",
+    "--write",
+    "tests/sim/actions.test.mjs",
+    "tests/sim/data.test.mjs",
+    "tests/sim/flow.test.mjs",
+    "tests/sim/hex.test.mjs",
+    "tests/sim/layout.test.mjs",
+    "tests/sim/program.test.mjs",
+    "tests/sim/purity.test.mjs",
+    "tests/sim/random.test.mjs",
+    "tests/sim/rules.test.mjs",
+    "tests/sim/time.test.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.387,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s9-format-write.log"
+}

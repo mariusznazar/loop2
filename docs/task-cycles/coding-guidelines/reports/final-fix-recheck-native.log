@@ -1,0 +1,37 @@
+STDOUT
+BASELINE_ONE_SERVER ACCEPTED
+OWNED_SERVERS {"parent": 1016, "parent_port": 52403, "child": 52020, "child_port": 52425}
+ACTUAL_HTTP 52403 200 b'parent'
+ACTUAL_HTTP 52425 200 b'child'
+REAL_SECOND_SERVER REJECTED Lists differ: [(52020, '127.0.0.1', 52425)] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+(52020, '127.0.0.1', 52425)
+
+- [(52020, '127.0.0.1', 52425)]
++ [] : processes of the started tree listen on other ports, where a second serving process could stand
+HEALTHY_DESCENDANTS contains actual owned child
+PARTIAL_PROCESS_READ REJECTED Get-CimInstance failed: Get-CimInstance : Invalid class 
+At line:1 char:76
++ ... ProcessId -ne 52020 }; Get-CimInstance RecheckMissingCimClass) | ForE ...
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : MetadataError: (root\cimv2:RecheckMissingCimClass:String) [Get-CimInstance], CimExceptio 
+   n
+    + FullyQualifiedErrorId : HRESULT 0x80041010,Microsoft.Management.Infrastructure.CimCmdlets.GetCimInstanceCommand
+ 
+
+PARTIAL_CLEANUP_READ REJECTED Get-CimInstance failed: Get-CimInstance : Invalid class 
+At line:1 char:76
++ ... ProcessId -ne 52020 }; Get-CimInstance RecheckMissingCimClass) | ForE ...
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : MetadataError: (root\cimv2:RecheckMissingCimClass:String) [Get-CimInstance], CimExceptio 
+   n
+    + FullyQualifiedErrorId : HRESULT 0x80041010,Microsoft.Management.Infrastructure.CimCmdlets.GetCimInstanceCommand
+ 
+
+RESTORED_ONE_SERVER ACCEPTED
+RESTORED_DESCENDANTS no child
+PASS: native failed partial reads rejected, real second server detected, baseline/restored accepted
+
+STDERR

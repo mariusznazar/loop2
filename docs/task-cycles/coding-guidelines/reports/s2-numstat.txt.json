@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--numstat"
+  ],
+  "exit_code": 0,
+  "seconds": 0.038,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-numstat.txt"
+}

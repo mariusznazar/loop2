@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_process_observation.py",
+    "-v"
+  ],
+  "exit_code": 1,
+  "seconds": 2.843,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-red-process.log"
+}

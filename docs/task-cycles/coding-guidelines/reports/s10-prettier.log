@@ -1,0 +1,5 @@
+tests/view/icons.test.mjs 57ms
+tests/view/program-editor.test.mjs 20ms
+tests/view/status-row.test.mjs 8ms
+tests/view/terrain-picture.test.mjs 18ms
+tests/view/tile-list.test.mjs 7ms

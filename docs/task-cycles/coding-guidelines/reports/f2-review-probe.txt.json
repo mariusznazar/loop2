@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/f2-review-probe.py"
+  ],
+  "exit_code": 1,
+  "seconds": 0.196,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f2-review-probe.txt"
+}

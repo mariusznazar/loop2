@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_invariant_support.py",
+    "-v"
+  ],
+  "exit_code": 1,
+  "seconds": 1.933,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-red-support.log"
+}

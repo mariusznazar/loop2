@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "node_modules/npm/bin/npm-cli.js",
+    "test"
+  ],
+  "exit_code": 0,
+  "seconds": 2.273,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s10-npm-test.log"
+}

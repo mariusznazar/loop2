@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_dependency_audit.py"
+  ],
+  "exit_code": 0,
+  "seconds": 32.957,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-green-first.txt"
+}

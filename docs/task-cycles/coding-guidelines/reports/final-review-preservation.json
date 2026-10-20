@@ -1,0 +1,250 @@
+{
+  "base": "c379207bfd8bd148d3589ea75604ba5165915d01",
+  "head": "e31f6a4051f33b832cb8603d67e815240af5464f",
+  "files": 44,
+  "removed": 16,
+  "rows": [
+    {
+      "path": "scripts/build.mjs",
+      "removedAssertions": [],
+      "compilerAliasChange": true,
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/index.html",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/main.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/data/actions.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/data/archetypes.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/data/conditions.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/data/maps.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/data/resources.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/game.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/hex.ts",
+      "removedAssertions": [
+        "tiles[i]",
+        "tiles[current]",
+        "cost[i]",
+        "cost[current]",
+        "tiles[i]",
+        "cost[i]",
+        "tiles[i]",
+        "cost[i]",
+        "cost[best]",
+        "tiles[best]",
+        "cost[best]",
+        "costsFrom(tiles, step.at)[best]"
+      ],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/layout.ts",
+      "removedAssertions": [
+        "tiles[Math.floor(draw() * tiles.length)]"
+      ],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/program.ts",
+      "removedAssertions": [
+        "program.rules[ruleIndex]"
+      ],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/random.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/run.ts",
+      "removedAssertions": [
+        "candidates[Math.floor(draw.value * candidates.length)]"
+      ],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/sim/types.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/app.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/clock.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/credits.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/footer.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/program-editor.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/send-panel.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/status-row.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/terrain-panel.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/terrain-picture.ts",
+      "removedAssertions": [
+        "centres[index]"
+      ],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/browser/view/tile-list.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/server/app.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "src/server/main.ts",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/http.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/actions.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/data.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/flow.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/hex.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/layout.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/program.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/purity.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/random.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/rules.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/sim/time.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/startup.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/view/icons.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/view/program-editor.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/view/status-row.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/view/terrain-picture.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    },
+    {
+      "path": "tests/view/tile-list.test.mjs",
+      "removedAssertions": [],
+      "exactExpectedOutput": true
+    }
+  ]
+}

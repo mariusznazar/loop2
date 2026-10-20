@@ -1,0 +1,21 @@
+{
+  "label": "case-01-good-browser-view-framework",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_browser_view_framework.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 0,
+  "expected": 0,
+  "source": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch\\guidelines\\coding-browser-module.md:38; applied whole file at src/browser/view/guideline-element.ts",
+  "invariant": "browser-view-framework",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-case-01-good-browser-view-framework.log",
+  "seconds": 3.03
+}

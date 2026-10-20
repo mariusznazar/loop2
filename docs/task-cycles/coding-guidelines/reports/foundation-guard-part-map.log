@@ -1,0 +1,16 @@
+foundations/part_map.md:0: error: decisions.md:828: the scope of D-28/1 names `browser-view · simulation · account-server · build-tools · deployment · agent-workflow`, which is not in the map as a part
+foundations/part_map.md:0: error: decisions.md:846: the scope of D-29/1 names `browser-view · simulation · account-server · build-tools`, which is not in the map as a part
+foundations/part_map.md:0: error: decisions.md:862: the scope of D-30/1 names `browser-view · simulation · account-server · build-tools · deployment · agent-workflow`, which is not in the map as a part
+foundations/part_map.md:0: error: decisions.md:878: the scope of D-31/1 names `browser-view · simulation · account-server · build-tools · deployment · agent-workflow`, which is not in the map as a part
+foundations/part_map.md:0: error: decisions.md:894: the scope of D-32/1 names `browser-view · simulation · account-server · build-tools · deployment`, which is not in the map as a part
+foundations/part_map.md:68: error: pattern `tests/quality/**` of `build-tools` matches no file git tracks
+foundations/part_map.md:68: error: pattern `eslint.config.mjs` of `build-tools` matches no file git tracks
+foundations/part_map.md:68: error: pattern `prettier.config.mjs` of `build-tools` matches no file git tracks
+foundations/part_map.md:68: error: pattern `requirements-quality.in` of `build-tools` matches no file git tracks
+foundations/part_map.md:68: error: pattern `requirements-quality.txt` of `build-tools` matches no file git tracks
+foundations/part_map.md:87: error: trust boundary `scripts/check_dependencies.py` of `build-tools` matches no file git tracks
+foundations/part_map.md:94: error: pattern `guidelines/**` of `agent-workflow` matches no file git tracks
+foundations/part_map.md:85: warning: build-tools depends on account-server with no separation recorded, so account-server is computed as `high`, above its own failure modes
+foundations/part_map.md:134: warning: deployment depends on account-server with no separation recorded, so account-server is computed as `high`, above its own failure modes
+unchecked: the dependencies between parts, and new or stale violations — no command of the product reports the dependency graph
+12 error(s), 2 warning(s), 1 unchecked

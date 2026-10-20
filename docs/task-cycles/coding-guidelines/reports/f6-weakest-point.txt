@@ -1,0 +1,9 @@
+windows processes: plausible stdout rejected real exit 7
+windows processes: empty stdout rejected real exit 7
+unix processes: plausible stdout rejected real exit 7
+unix processes: empty stdout rejected real exit 7
+windows listeners: plausible stdout rejected real exit 7
+windows listeners: empty stdout rejected real exit 7
+unix listeners: plausible stdout rejected real exit 7
+unix listeners: empty stdout rejected real exit 7
+8/8 failed real subprocess observations rejected

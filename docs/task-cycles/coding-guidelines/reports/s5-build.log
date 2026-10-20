@@ -1,0 +1,2 @@
+npm notice run loop2@0.0.0 build
+npm notice run node scripts/build.mjs

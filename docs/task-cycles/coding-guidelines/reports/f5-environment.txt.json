@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/f5-environment.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.173,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-environment.txt"
+}

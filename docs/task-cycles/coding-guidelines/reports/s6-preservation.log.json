@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    ".runs/task-cycles/coding-guidelines/reports/s6-preservation.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.615,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s6-preservation.log"
+}

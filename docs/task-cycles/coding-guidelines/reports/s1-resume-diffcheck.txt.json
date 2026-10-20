@@ -1,0 +1,18 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check",
+    "--",
+    "package.json",
+    "package-lock.json",
+    "scripts/build.mjs",
+    "eslint.config.mjs",
+    "prettier.config.mjs",
+    ".gitattributes",
+    "README.md"
+  ],
+  "exit_code": 0,
+  "seconds": 0.031,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-diffcheck.txt"
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/f1-live.py"
+  ],
+  "exit_code": 1,
+  "seconds": 1.348,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f1-live.txt"
+}

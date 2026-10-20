@@ -1,0 +1,14 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_dependencies.py",
+    "--fork-point",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--record",
+    ".runs/dependency-audit.jsonl"
+  ],
+  "exit_code": 2,
+  "seconds": 1.024,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-npm12-live-final.txt"
+}

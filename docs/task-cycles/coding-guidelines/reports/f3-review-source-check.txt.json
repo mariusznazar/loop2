@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/f3-review-source-check.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.066,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f3-review-source-check.txt"
+}

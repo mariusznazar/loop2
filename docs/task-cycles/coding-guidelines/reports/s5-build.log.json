@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "node_modules/npm/bin/npm-cli.js",
+    "run",
+    "build"
+  ],
+  "exit_code": 0,
+  "seconds": 0.822,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s5-build.log"
+}

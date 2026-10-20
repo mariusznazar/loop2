@@ -1,0 +1,4 @@
+{"file": "package.json", "version": "0.0.0", "declared_npm": "11.13.0"}
+{"file": "package-lock.json", "version": "0.0.0", "lockfile_version": 3, "locked_npm": "11.13.0", "package_entries": 342}
+{"file": "node_modules/npm/package.json", "version": "11.13.0"}
+{"file": "node_modules/npm/node_modules/semver/package.json", "version": "7.7.4"}

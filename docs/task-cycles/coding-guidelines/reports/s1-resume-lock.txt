@@ -1,0 +1,4 @@
+npm error code ETARGET
+npm error notarget No matching version found for npm@12.2.1 with a date before 13.10.2026, 08:59:23.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+npm error A complete log of this run can be found in: C:\Users\Mariusz\AppData\Local\npm-cache\_logs\2026-10-20T06_59_23_566Z-debug-0.log

@@ -1,0 +1,13 @@
+{
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_eslint.py",
+    "--configuration",
+    "--record",
+    ".runs/final-eslint-configuration.jsonl"
+  ],
+  "exit_code": 2,
+  "seconds": 0.43,
+  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/final-eslint-configuration.txt"
+}

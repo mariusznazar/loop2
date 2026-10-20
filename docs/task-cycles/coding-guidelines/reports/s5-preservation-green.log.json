@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    ".runs/task-cycles/coding-guidelines/reports/s5-preservation.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.498,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s5-preservation-green.log"
+}

@@ -1,0 +1,15 @@
+{
+  "label": "case-16-bad-eslint-source-rules",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_eslint.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 1,
+  "expected": 1,
+  "source": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch\\guidelines\\coding.md:65; applied whole file at scripts/guideline-case.mjs",
+  "invariant": "eslint-source-rules",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-case-16-bad-eslint-source-rules.log",
+  "seconds": 3.68
+}

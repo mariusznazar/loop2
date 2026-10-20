@@ -1,0 +1,21 @@
+{
+  "label": "break-content-identifiers",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_content_identifiers.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 1,
+  "expected": 1,
+  "source": "reviewer-authored from sentence; applied whole file at src/browser/view/reviewer-map.ts",
+  "invariant": "content-identifiers",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-break-content-identifiers.log",
+  "seconds": 3.16
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/f5-npm12-source-lock.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.631,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-npm12-source-lock.txt"
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_eslint.py",
+    "--record",
+    ".runs/accepted-final-eslint.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 4.45,
+  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-eslint.txt"
+}

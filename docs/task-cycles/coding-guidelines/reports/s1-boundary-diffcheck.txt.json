@@ -1,0 +1,13 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check",
+    "--",
+    "package.json",
+    "package-lock.json"
+  ],
+  "exit_code": 0,
+  "seconds": 0.037,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-boundary-diffcheck.txt"
+}

@@ -1,0 +1,23 @@
+....F
+======================================================================
+FAIL: test_source_imports_and_uses_nothing_outside_the_language (test_simulation_isolation.SimulationIsolation.test_source_imports_and_uses_nothing_outside_the_language)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_simulation_isolation.py", line 618, in test_source_imports_and_uses_nothing_outside_the_language
+    self.assertEqual(found, [], "a file of the simulation imports from outside it or uses "
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                "a host global or the system time")
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['src/browser/sim/guideline-time.ts reads the system time by Date.now'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'src/browser/sim/guideline-time.ts reads the system time by Date.now'
+
+- ['src/browser/sim/guideline-time.ts reads the system time by Date.now']
++ [] : a file of the simulation imports from outside it or uses a host global or the system time
+
+----------------------------------------------------------------------
+Ran 5 tests in 14.434s
+
+FAILED (failures=1)

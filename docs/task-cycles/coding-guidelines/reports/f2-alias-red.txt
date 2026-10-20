@@ -1,0 +1,76 @@
+..............FF..FFFFF..
+======================================================================
+FAIL: test_real_loader_accepts_parser_and_compiler_aliases (test_eslint_checks.EslintChecks.test_real_loader_accepts_parser_and_compiler_aliases) (compiler='typescript-compiler')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 335, in test_real_loader_accepts_parser_and_compiler_aliases
+    self.assertEqual(result.returncode, 0, result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : Error: Cannot locate local package typescript
+    at localPackage (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:155:39)
+    at async loadTools (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:178:3)
+    at async main (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:205:17)
+
+
+======================================================================
+FAIL: test_real_loader_accepts_parser_and_compiler_aliases (test_eslint_checks.EslintChecks.test_real_loader_accepts_parser_and_compiler_aliases) (compiler='application-ts')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 335, in test_real_loader_accepts_parser_and_compiler_aliases
+    self.assertEqual(result.returncode, 0, result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : Error: Cannot locate local package typescript
+    at localPackage (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:155:39)
+    at async loadTools (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:178:3)
+    at async main (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:205:17)
+
+
+======================================================================
+FAIL: test_real_loader_rejects_wrong_api_and_compiler_runtimes (test_eslint_checks.EslintChecks.test_real_loader_rejects_wrong_api_and_compiler_runtimes) (case={'parser_runtime': '6.0.3'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 358, in test_real_loader_rejects_wrong_api_and_compiler_runtimes
+    self.assertIn("runtime", result.stderr)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'runtime' not found in 'Error: Cannot locate local package typescript\n    at localPackage (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:155:39)\n    at async loadTools (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:178:3)\n    at async main (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:205:17)\n'
+
+======================================================================
+FAIL: test_real_loader_rejects_wrong_api_and_compiler_runtimes (test_eslint_checks.EslintChecks.test_real_loader_rejects_wrong_api_and_compiler_runtimes) (case={'parser_name': 'typescript', 'nested_parser': True, 'compiler_name': 'typescript', 'parser_runtime': '6.0.3'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 357, in test_real_loader_rejects_wrong_api_and_compiler_runtimes
+    self.assertEqual(result.returncode, 2, result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : 
+
+======================================================================
+FAIL: test_real_loader_rejects_wrong_api_and_compiler_runtimes (test_eslint_checks.EslintChecks.test_real_loader_rejects_wrong_api_and_compiler_runtimes) (case={'parser_runtime': '7.0.2'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 358, in test_real_loader_rejects_wrong_api_and_compiler_runtimes
+    self.assertIn("runtime", result.stderr)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'runtime' not found in 'Error: Cannot locate local package typescript\n    at localPackage (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:155:39)\n    at async loadTools (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:178:3)\n    at async main (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:205:17)\n'
+
+======================================================================
+FAIL: test_real_loader_rejects_wrong_api_and_compiler_runtimes (test_eslint_checks.EslintChecks.test_real_loader_rejects_wrong_api_and_compiler_runtimes) (case={'compiler_runtime': '6.0.2'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 358, in test_real_loader_rejects_wrong_api_and_compiler_runtimes
+    self.assertIn("runtime", result.stderr)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'runtime' not found in 'Error: Cannot locate local package typescript\n    at localPackage (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:155:39)\n    at async loadTools (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:178:3)\n    at async main (file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/scripts/inspect_eslint.mjs:205:17)\n'
+
+======================================================================
+FAIL: test_real_loader_rejects_wrong_api_and_compiler_runtimes (test_eslint_checks.EslintChecks.test_real_loader_rejects_wrong_api_and_compiler_runtimes) (case={'parser_name': 'typescript', 'nested_parser': True, 'compiler_name': 'typescript', 'compiler_runtime': '6.0.2'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 357, in test_real_loader_rejects_wrong_api_and_compiler_runtimes
+    self.assertEqual(result.returncode, 2, result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : 
+
+----------------------------------------------------------------------
+Ran 20 tests in 2.641s
+
+FAILED (failures=7)

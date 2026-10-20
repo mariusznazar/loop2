@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exit_code": 0,
+  "seconds": 0.036,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-boundary-staged-diffcheck.txt"
+}

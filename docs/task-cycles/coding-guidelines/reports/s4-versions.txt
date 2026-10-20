@@ -1,0 +1,1 @@
+{"node":"v24.17.0","prettier":"3.9.10","typescriptApi":"6.0.2","compiler":"7.0.2","eslint":"10.12.0","npm":"12.2.1"}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "tests.quality.test_eslint_checks"
+  ],
+  "exit_code": 0,
+  "seconds": 2.125,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\frozen-python-eslint-focused-green.txt"
+}

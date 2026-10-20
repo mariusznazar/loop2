@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/f4-review-attributes-probe.py"
+  ],
+  "exit_code": 0,
+  "seconds": 2.792,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f4-fix1-probe.txt"
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_format.py",
+    "--record",
+    ".runs/s1-resume-format-first.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 1.285,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-format-first.txt"
+}

@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_loop2_container_icons.py"
+  ],
+  "exit_code": 0,
+  "seconds": 55.192,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\docker-started-container-icons.txt"
+}

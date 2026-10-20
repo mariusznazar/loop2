@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/final-fix-native-listeners.py"
+  ],
+  "exit_code": 1,
+  "seconds": 6.368,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-red-native-listeners.log"
+}

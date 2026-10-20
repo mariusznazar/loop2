@@ -1,0 +1,2 @@
+warning: in the working copy of 'scripts/inspect_eslint.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/quality/test_eslint_checks.py', LF will be replaced by CRLF the next time Git touches it

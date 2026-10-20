@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    ".runs/task-cycles/coding-guidelines/reports/f2-alias-runtime-check.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.411,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f2-alias-weakest.txt"
+}

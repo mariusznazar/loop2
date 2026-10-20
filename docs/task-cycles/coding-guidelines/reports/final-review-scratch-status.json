@@ -1,0 +1,16 @@
+{
+  "label": "scratch-status",
+  "command": [
+    "git",
+    "status",
+    "--porcelain=v1",
+    "--untracked-files=all"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 0,
+  "expected": 0,
+  "source": "after restoration of every reviewer case",
+  "invariant": null,
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-scratch-status.log",
+  "seconds": 0.11
+}

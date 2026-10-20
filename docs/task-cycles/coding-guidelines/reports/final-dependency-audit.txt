@@ -1,0 +1,1 @@
+{"check": "dependency-audit", "verdict": "fail", "invariant": "introduced-npm-vulnerabilities/1"}

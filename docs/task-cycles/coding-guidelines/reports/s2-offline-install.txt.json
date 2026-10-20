@@ -1,0 +1,18 @@
+{
+  "command": [
+    ".runs/s2-offline-venv/Scripts/python.exe",
+    "-m",
+    "pip",
+    "install",
+    "--no-index",
+    "--find-links",
+    ".runs/s2-wheelhouse-windows",
+    "--require-hashes",
+    "-r",
+    "requirements-quality.txt",
+    "--disable-pip-version-check"
+  ],
+  "exit_code": 0,
+  "seconds": 2.899,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-offline-install.txt"
+}

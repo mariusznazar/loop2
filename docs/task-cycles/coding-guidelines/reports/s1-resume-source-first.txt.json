@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_eslint.py",
+    "--record",
+    ".runs/s1-resume-eslint-first.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 2.851,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-source-first.txt"
+}

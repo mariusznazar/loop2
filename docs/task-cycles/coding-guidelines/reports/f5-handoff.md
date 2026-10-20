@@ -1,0 +1,9 @@
+# Introduced npm dependency invariant method — F5
+
+Read author-contract.md first. Independent foundation-check preparation; root supplies start commit. Write only scripts/check_dependencies.py, tests/quality/test_dependency_audit.py and ignored reports. Do not read plan, frozen task or foundation/configuration authors' reasoning. Do not edit final sentence, shared mechanics or manifests/locks under check.
+
+Read whole current introduced-npm-vulnerabilities/1 in foundations/invariants.md, linked D-33 and necessary authoritative dependencies. Read whole part map, .the-way/product-guidelines/reading.md and coding/template.md. Read package.json and package-lock.json for actual input formats, and scripts/quality_support.py plus f1-report.md for mechanics. No guidelines exist yet; task creates them. Scope is build-tools and the script's untrusted-registry-data boundary; verify selection.
+
+Implement the final method python -B scripts/check_dependencies.py --fork-point c379207bfd8bd148d3589ea75604ba5165915d01 --record .runs/dependency-audit.jsonl. Use local pinned npm; no downloads/installations at check time. Derive comparison and acceptance policy independently from final sentence/decision. Treat registry responses as untrusted input. TDD fixtures address exact real-name/version pairs, aliases, multiple versions, direct/transitive/dev/optional/peer dependencies, new nested manifests/locks, missing base or locks, unsupported report shapes, ranges/severities, unavailable/network failures and valid no-new-pair offline comparison.
+
+Run python -m unittest discover -s tests/quality -p test_dependency_audit.py and actual method; fixtures never replace live result. Choose weakest-point adversarial check; record limits and required installation interface. Full report: .runs/task-cycles/coding-guidelines/reports/f5-report.md. Explicit commit assigned paths then return before review.

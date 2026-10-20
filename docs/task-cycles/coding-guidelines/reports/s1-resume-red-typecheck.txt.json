@@ -1,0 +1,10 @@
+{
+  "command": [
+    "npm.cmd",
+    "run",
+    "typecheck"
+  ],
+  "exit_code": 1,
+  "seconds": 0.441,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-red-typecheck.txt"
+}

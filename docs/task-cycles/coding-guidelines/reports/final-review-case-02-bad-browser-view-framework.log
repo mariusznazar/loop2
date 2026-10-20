@@ -1,0 +1,37 @@
+...FF.
+======================================================================
+FAIL: test_browser_source_imports_no_ui_framework (test_browser_view_framework.NoUiFramework.test_browser_source_imports_no_ui_framework)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_browser_view_framework.py", line 181, in test_browser_source_imports_no_ui_framework
+    self.assertEqual(found, [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: Lists differ: [('src/browser/view/guideline-element.ts', 'react')] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+('src/browser/view/guideline-element.ts', 'react')
+
+- [('src/browser/view/guideline-element.ts', 'react')]
++ []
+
+======================================================================
+FAIL: test_built_page_loads_only_its_own_code_and_no_framework (test_browser_view_framework.NoUiFramework.test_built_page_loads_only_its_own_code_and_no_framework)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_browser_view_framework.py", line 185, in test_built_page_loads_only_its_own_code_and_no_framework
+    copy = support.built_copy()
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\loop2_invariant_support.py", line 221, in built_copy
+    raise AssertionError(_built["error"])
+AssertionError: `npm run build` exited 1:
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+src/browser/view/guideline-element.ts(1,8): error TS2882: Cannot find module or type declarations for side-effect import of 'react'.
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.799s
+
+FAILED (failures=2)

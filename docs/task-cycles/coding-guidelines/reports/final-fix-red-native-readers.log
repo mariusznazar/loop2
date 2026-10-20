@@ -1,0 +1,43 @@
+_processes ACCEPTED {0: (0, 1791939026936, 'System Idle Process')}
+_windows_descendants ACCEPTED []
+[
+  {
+    "original_command": [
+      "powershell",
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "Get-CimInstance Win32_Process | ForEach-Object { '{0} {1} {2} {3}' -f $_.ProcessId, $_.ParentProcessId, ([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(), $_.Name }"
+    ],
+    "executed_command": [
+      "powershell",
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "@(Get-CimInstance Win32_Process | Select-Object -First 1; Get-CimInstance ReviewerMissingClass) | ForEach-Object { '{0} {1} {2} {3}' -f $_.ProcessId, $_.ParentProcessId, ([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(), $_.Name }"
+    ],
+    "exit": 0,
+    "stdout": "0 0 1791939026936 System Idle Process\r\n",
+    "stderr": "Get-CimInstance : Invalid class \r\nAt line:1 char:59\r\n+ ...  Select-Object -First 1; Get-CimInstance ReviewerMissingClass) | ForE ...\r\n+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : MetadataError: (root\\cimv2:ReviewerMissingClass:String) [Get-CimInstance], CimException\r\n    + FullyQualifiedErrorId : HRESULT 0x80041010,Microsoft.Management.Infrastructure.CimCmdlets.GetCimInstanceCommand\r\n \r\n"
+  },
+  {
+    "original_command": [
+      "powershell",
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "Get-CimInstance Win32_Process | ForEach-Object { '{0} {1} {2}' -f $_.ProcessId, $_.ParentProcessId, ([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds() }"
+    ],
+    "executed_command": [
+      "powershell",
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "@(Get-CimInstance Win32_Process | Select-Object -First 1; Get-CimInstance ReviewerMissingClass) | ForEach-Object { '{0} {1} {2}' -f $_.ProcessId, $_.ParentProcessId, ([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds() }"
+    ],
+    "exit": 0,
+    "stdout": "0 0 1791939026936\r\n",
+    "stderr": "Get-CimInstance : Invalid class \r\nAt line:1 char:59\r\n+ ...  Select-Object -First 1; Get-CimInstance ReviewerMissingClass) | ForE ...\r\n+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : MetadataError: (root\\cimv2:ReviewerMissingClass:String) [Get-CimInstance], CimException\r\n    + FullyQualifiedErrorId : HRESULT 0x80041010,Microsoft.Management.Infrastructure.CimCmdlets.GetCimInstanceCommand\r\n \r\n"
+  }
+]
+FAIL: actual native query errors were accepted by _processes, _windows_descendants

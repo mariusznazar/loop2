@@ -1,0 +1,176 @@
+FFFFFF.F..FFFFFFFFFFFF.
+======================================================================
+FAIL: test_crlf_is_a_violation_even_with_matching_formatter_output (test_format_check.FormatChecks.test_crlf_is_a_violation_even_with_matching_formatter_output)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 112, in test_crlf_is_a_violation_even_with_matching_formatter_output
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_default_format_passes (test_format_check.FormatChecks.test_default_format_passes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 86, in test_default_format_passes
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_javascript_and_browser_html_css_are_checked (test_format_check.FormatChecks.test_javascript_and_browser_html_css_are_checked) (path='build-tools/new.js')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 100, in test_javascript_and_browser_html_css_are_checked
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_javascript_and_browser_html_css_are_checked (test_format_check.FormatChecks.test_javascript_and_browser_html_css_are_checked) (path='browser-view/new.html')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 100, in test_javascript_and_browser_html_css_are_checked
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_javascript_and_browser_html_css_are_checked (test_format_check.FormatChecks.test_javascript_and_browser_html_css_are_checked) (path='simulation/new.css')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 100, in test_javascript_and_browser_html_css_are_checked
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_lf_checkout_attributes_are_required (test_format_check.FormatChecks.test_lf_checkout_attributes_are_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 124, in test_lf_checkout_attributes_are_required
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_markdown_icons_python_and_unadopted_parts_are_excluded (test_format_check.FormatChecks.test_markdown_icons_python_and_unadopted_parts_are_excluded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 108, in test_markdown_icons_python_and_unadopted_parts_are_excluded
+    self.assertEqual(self.verdict()[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_new_owned_sources_are_never_hidden_by_prettierignore (test_format_check.FormatChecks.test_new_owned_sources_are_never_hidden_by_prettierignore) (part='browser-view')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 93, in test_new_owned_sources_are_never_hidden_by_prettierignore
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_new_owned_sources_are_never_hidden_by_prettierignore (test_format_check.FormatChecks.test_new_owned_sources_are_never_hidden_by_prettierignore) (part='simulation')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 93, in test_new_owned_sources_are_never_hidden_by_prettierignore
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_new_owned_sources_are_never_hidden_by_prettierignore (test_format_check.FormatChecks.test_new_owned_sources_are_never_hidden_by_prettierignore) (part='account-server')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 93, in test_new_owned_sources_are_never_hidden_by_prettierignore
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_new_owned_sources_are_never_hidden_by_prettierignore (test_format_check.FormatChecks.test_new_owned_sources_are_never_hidden_by_prettierignore) (part='build-tools')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 93, in test_new_owned_sources_are_never_hidden_by_prettierignore
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'semi': False})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'endOfLine': 'auto'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'printWidth': 120})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'singleQuote': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'plugins': []})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'parser': 'babel'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'experimentalTernaries': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_weak_configuration_does_not_pass_when_source_happens_to_match (test_format_check.FormatChecks.test_weak_configuration_does_not_pass_when_source_happens_to_match) (config={'unknownOption': False})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 120, in test_weak_configuration_does_not_pass_when_source_happens_to_match
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+----------------------------------------------------------------------
+Ran 11 tests in 9.157s
+
+FAILED (failures=19)

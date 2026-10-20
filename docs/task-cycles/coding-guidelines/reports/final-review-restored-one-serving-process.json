@@ -1,0 +1,21 @@
+{
+  "label": "restored-one-serving-process",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_loop2_one_serving_process.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 0,
+  "expected": 0,
+  "source": "unmodified final HEAD scratch",
+  "invariant": "loop2-one-serving-process",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-restored-one-serving-process.log",
+  "seconds": 13.01
+}

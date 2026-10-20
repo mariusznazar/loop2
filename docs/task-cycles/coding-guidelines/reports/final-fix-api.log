@@ -1,0 +1,7 @@
+test_root_serves_the_built_page (test_loop2_api_error_route.UnmatchedApiRequests.test_root_serves_the_built_page) ... ok
+test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 6.927s
+
+OK

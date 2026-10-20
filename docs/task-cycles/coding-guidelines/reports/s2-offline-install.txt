@@ -1,0 +1,6 @@
+Looking in links: .runs/s2-wheelhouse-windows
+Processing c:\storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\s2-wheelhouse-windows\ruff-0.17.1-py3-none-win_amd64.whl (from -r requirements-quality.txt (line 6))
+Processing c:\storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\s2-wheelhouse-windows\shellcheck_py-0.11.0.1-py2.py3-none-win_amd64.whl (from -r requirements-quality.txt (line 25))
+Installing collected packages: shellcheck-py, ruff
+
+Successfully installed ruff-0.17.1 shellcheck-py-0.11.0.1

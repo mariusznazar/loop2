@@ -1,0 +1,21 @@
+{
+  "label": "case-09-good-loop2-api-error-route",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_loop2_api_error_route.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 0,
+  "expected": 0,
+  "source": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch\\guidelines\\coding-http-application.md:53; applied whole file at src/server/app.ts",
+  "invariant": "loop2-api-error-route",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-case-09-good-loop2-api-error-route.log",
+  "seconds": 7.93
+}

@@ -1,0 +1,18 @@
+{
+  "start": "b9d99e12eeb5b68f2374d2431457e2a8d886ac7d",
+  "base": "c379207bfd8bd148d3589ea75604ba5165915d01",
+  "old_decision_fingerprint": "fce481a6",
+  "new_decision_fingerprint": "f820c28f",
+  "invariant_sentence_fingerprint": "da4f7801",
+  "decision_version": "D-33/1",
+  "invariant_version": "introduced-npm-vulnerabilities/1",
+  "versioning": "Both entries are absent at the original fork/main. The branch-only decision remains its new /1 entry; invariant wording and /1 are unchanged. Only its deriving fingerprint moves.",
+  "approved_amendment": "Mariusz: tak, zmieńmy na 12.2.1; only npm pin changes; low+ and all other policy retained",
+  "checks": [
+    "exactly one token substitution in D-33 binding text",
+    "all other decision fields/entries unchanged byte-for-byte",
+    "one dependent link substitution in invariants; sentence, method, parts, correction and every other entry unchanged byte-for-byte",
+    "request approval URL preserved",
+    "original main has no D-33 entry"
+  ]
+}

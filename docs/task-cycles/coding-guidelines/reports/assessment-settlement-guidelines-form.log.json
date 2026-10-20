@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/product-guidelines/form_check.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.667,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\assessment-settlement-guidelines-form.log"
+}

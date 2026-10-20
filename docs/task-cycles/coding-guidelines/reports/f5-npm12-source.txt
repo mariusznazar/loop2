@@ -1,0 +1,6 @@
+npm12-package 6860 https://raw.githubusercontent.com/npm/cli/v12.2.1/package.json
+npm12-audit 12166 https://raw.githubusercontent.com/npm/cli/v12.2.1/workspaces/arborist/lib/audit-report.js
+npm12-advisory 13439 https://raw.githubusercontent.com/npm/metavuln-calculator/v10.0.0/lib/advisory.js
+npm12-registry-fetch 6600 https://raw.githubusercontent.com/npm/npm-registry-fetch/v20.0.1/lib/index.js
+npm12-http-options 1688 https://raw.githubusercontent.com/npm/make-fetch-happen/v16.0.1/lib/options.js
+npm12-http-fetch 3947 https://raw.githubusercontent.com/npm/make-fetch-happen/v16.0.1/lib/fetch.js

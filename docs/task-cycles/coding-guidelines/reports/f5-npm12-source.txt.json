@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/f5-npm12-source.py"
+  ],
+  "exit_code": 0,
+  "seconds": 2.358,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-npm12-source.txt"
+}

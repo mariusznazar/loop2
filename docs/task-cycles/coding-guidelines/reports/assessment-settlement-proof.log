@@ -1,0 +1,6 @@
+{"changed_paths": ["foundations/decisions.md", "foundations/part_map.md", "guidelines/coding.md"], "all_other_tracked_sources_unchanged": true}
+{"d28_first_last_sentences_preserved": true, "only_second_binding_sentence_replaced": true}
+{"d28_old_fingerprint": "719c9a67", "d28_new_fingerprint": "550e88d6", "all_dependent_references": [["guidelines/coding.md", 10]]}
+{"guideline_case_blocks_preserved": 26, "executable_methods_invariants_configs_tests_unchanged": true}
+{"settlement_rows_preserved": 22, "execution_only_obligations_retained_in_plan": true}
+{"all_part_bindings_other_fields_preserved": true, "computed_criticality": {"base": {"account-server": "high", "agent-workflow": "high", "browser-view": "high", "build-tools": "high", "deployment": "high", "product-foundation": "high", "simulation": "high"}, "settled": {"account-server": "high", "agent-workflow": "high", "browser-view": "high", "build-tools": "high", "deployment": "high", "product-foundation": "high", "simulation": "high"}, "start": {"account-server": "high", "agent-workflow": "high", "browser-view": "high", "build-tools": "high", "deployment": "high", "product-foundation": "high", "simulation": "high"}}, "criticality_delta": {}, "ownership_preserved_for_tracked_paths": 178}

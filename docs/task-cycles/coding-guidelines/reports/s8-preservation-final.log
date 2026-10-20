@@ -1,0 +1,5 @@
+src/server/app.ts: AST/literal values identical; exact Prettier-only output; LF
+src/server/main.ts: AST/literal values identical; exact Prettier-only output; LF
+tests/http.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/startup.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+Positive controls: changed literal and status detected. TypeScript API 6.0.2, Prettier 3.9.10

@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/s1-resume-compiler-check.py",
+    "typecheck"
+  ],
+  "exit_code": 1,
+  "seconds": 0.56,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-typecheck.txt"
+}

@@ -1,0 +1,15 @@
+{
+  "label": "baseline-eslint-source-rules",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_eslint.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 0,
+  "expected": 0,
+  "source": "unmodified final HEAD scratch",
+  "invariant": "eslint-source-rules",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-baseline-eslint-source-rules.log",
+  "seconds": 24.17
+}

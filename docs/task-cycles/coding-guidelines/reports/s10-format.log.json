@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_format.py",
+    "--record",
+    ".runs/format.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 1.444,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s10-format.log"
+}

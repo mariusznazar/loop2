@@ -1,0 +1,17 @@
+{
+  "command": [
+    "node",
+    "node_modules/prettier/bin/prettier.cjs",
+    "--write",
+    "src/browser/view/send-panel.ts",
+    "src/browser/view/status-row.ts",
+    "src/browser/view/terrain-panel.ts",
+    "src/browser/view/terrain-picture.ts",
+    "src/browser/view/tile-list.ts",
+    "src/browser/main.ts",
+    "src/browser/index.html"
+  ],
+  "exit_code": 0,
+  "seconds": 0.613,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s7-prettier-write.log"
+}

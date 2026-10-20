@@ -1,0 +1,9 @@
+{
+  "command": [
+    "docker.exe",
+    "version"
+  ],
+  "exit_code": 1,
+  "seconds": 0.148,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\resume-docker-version.txt"
+}

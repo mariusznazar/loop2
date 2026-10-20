@@ -1,0 +1,11 @@
+tests/sim/actions.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/data.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/flow.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/hex.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/layout.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/program.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/purity.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/random.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/rules.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+tests/sim/time.test.mjs: AST/literal values identical; exact Prettier-only output; LF
+Positive controls: changed input, expected value, assertion operator and description detected. Node v24.17.0, TypeScript API 6.0.2, compiler 7.0.2, npm 12.2.1, Prettier 3.9.10

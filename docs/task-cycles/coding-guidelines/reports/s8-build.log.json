@@ -1,0 +1,10 @@
+{
+  "command": [
+    "npm.cmd",
+    "run",
+    "build"
+  ],
+  "exit_code": 0,
+  "seconds": 1.435,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s8-build.log"
+}

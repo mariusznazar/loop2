@@ -1,0 +1,2 @@
+{"path": "src/server/app.ts", "configuration": true, "messages": [], "comments": []}
+{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": "eslint-configuration-rules/1"}

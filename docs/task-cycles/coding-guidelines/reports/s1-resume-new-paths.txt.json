@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    ".runs/task-cycles/coding-guidelines/reports/s1-resume-new-paths.mjs"
+  ],
+  "exit_code": 1,
+  "seconds": 0.051,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-new-paths.txt"
+}

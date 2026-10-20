@@ -1,0 +1,6 @@
+PASS: four exact accepted status tables and index; fourteen Ruff examples; test example; deferrals; npm amendment; thirteen rule pairs
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\task-cycles\coding-guidelines\reports\s11-author-checks.py", line 71, in <module>
+    assert any(row.get("status") == ("pass" if wanted == 0 else "fail") for row in verdicts), evidence
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'command': ['C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe', '-B', 'scripts/check_dependencies.py', '--fork-point', 'c379207bfd8bd148d3589ea75604ba5165915d01', '--record', '.runs/s11-audit-good.jsonl'], 'cwd': 'C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\s11-audit-scratch', 'exit_code': 0, 'output': 'C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\s11-audit-good.log', 'records': [{'check': 'dependency-audit', 'verdict': 'pass', 'invariant': 'introduced-npm-vulnerabilities/1'}]}

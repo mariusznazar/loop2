@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    ".runs/task-cycles/coding-guidelines/reports/s5-versions.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.049,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s7-versions.log"
+}

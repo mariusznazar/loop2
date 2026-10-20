@@ -1,0 +1,9 @@
+{"installName":"eslint","name":"eslint","version":"10.12.0"}
+{"installName":"@eslint/js","name":"@eslint/js","version":"10.0.1"}
+{"installName":"typescript-eslint","name":"typescript-eslint","version":"8.71.2"}
+{"installName":"globals","name":"globals","version":"17.13.0"}
+{"installName":"prettier","name":"prettier","version":"3.9.10"}
+{"installName":"npm","name":"npm","version":"11.13.0"}
+{"installName":"typescript","name":"@typescript/typescript6","version":"6.0.2"}
+{"installName":"typescript-compiler","name":"typescript","version":"7.0.2"}
+{"parserApiPath":"C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\node_modules\\typescript\\package.json","name":"@typescript/typescript6","version":"6.0.2"}

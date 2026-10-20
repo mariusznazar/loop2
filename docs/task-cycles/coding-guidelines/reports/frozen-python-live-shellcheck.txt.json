@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_shellcheck.py",
+    "--record",
+    ".runs/frozen-python-shellcheck.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 0.522,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\frozen-python-live-shellcheck.txt"
+}

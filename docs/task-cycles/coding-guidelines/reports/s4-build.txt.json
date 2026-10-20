@@ -1,0 +1,10 @@
+{
+  "command": [
+    "npm.cmd",
+    "run",
+    "build"
+  ],
+  "exit_code": 0,
+  "seconds": 0.927,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s4-build.txt"
+}

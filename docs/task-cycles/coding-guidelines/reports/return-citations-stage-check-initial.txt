@@ -1,0 +1,118 @@
+scripts/check_eslint.py:17: trailing whitespace.
++JS_RULES = [
+scripts/check_eslint.py:18: trailing whitespace.
++    "constructor-super", "for-direction", "getter-return", "no-async-promise-executor",
+scripts/check_eslint.py:19: trailing whitespace.
++    "no-case-declarations", "no-class-assign", "no-compare-neg-zero", "no-cond-assign",
+scripts/check_eslint.py:20: trailing whitespace.
++    "no-const-assign", "no-constant-binary-expression", "no-constant-condition",
+scripts/check_eslint.py:21: trailing whitespace.
++    "no-control-regex", "no-debugger", "no-delete-var", "no-dupe-args",
+scripts/check_eslint.py:22: trailing whitespace.
++    "no-dupe-class-members", "no-dupe-else-if", "no-dupe-keys", "no-duplicate-case",
+scripts/check_eslint.py:23: trailing whitespace.
++    "no-empty", "no-empty-character-class", "no-empty-pattern", "no-empty-static-block",
+scripts/check_eslint.py:24: trailing whitespace.
++    "no-ex-assign", "no-extra-boolean-cast", "no-fallthrough", "no-func-assign",
+scripts/check_eslint.py:25: trailing whitespace.
++    "no-global-assign", "no-import-assign", "no-invalid-regexp", "no-irregular-whitespace",
+scripts/check_eslint.py:26: trailing whitespace.
++    "no-loss-of-precision", "no-misleading-character-class", "no-new-native-nonconstructor",
+scripts/check_eslint.py:27: trailing whitespace.
++    "no-nonoctal-decimal-escape", "no-obj-calls", "no-octal", "no-prototype-builtins",
+scripts/check_eslint.py:28: trailing whitespace.
++    "no-redeclare", "no-regex-spaces", "no-self-assign", "no-setter-return",
+scripts/check_eslint.py:29: trailing whitespace.
++    "no-shadow-restricted-names", "no-sparse-arrays", "no-this-before-super",
+scripts/check_eslint.py:30: trailing whitespace.
++    "no-unassigned-vars", "no-undef", "no-unexpected-multiline", "no-unreachable",
+scripts/check_eslint.py:31: trailing whitespace.
++    "no-unsafe-finally", "no-unsafe-negation", "no-unsafe-optional-chaining",
+scripts/check_eslint.py:32: trailing whitespace.
++    "no-unused-labels", "no-unused-private-class-members", "no-unused-vars",
+scripts/check_eslint.py:33: trailing whitespace.
++    "no-useless-assignment", "no-useless-backreference", "no-useless-catch",
+scripts/check_eslint.py:34: trailing whitespace.
++    "no-useless-escape", "no-with", "preserve-caught-error", "require-yield", "use-isnan",
+scripts/check_eslint.py:35: trailing whitespace.
++    "valid-typeof",
+scripts/check_eslint.py:37: trailing whitespace.
++TS_ADDITIONS = [
+scripts/check_eslint.py:38: trailing whitespace.
++    "@typescript-eslint/await-thenable", "@typescript-eslint/ban-ts-comment",
+scripts/check_eslint.py:39: trailing whitespace.
++    "@typescript-eslint/no-array-constructor", "@typescript-eslint/no-array-delete",
+scripts/check_eslint.py:40: trailing whitespace.
++    "@typescript-eslint/no-base-to-string", "@typescript-eslint/no-duplicate-enum-values",
+scripts/check_eslint.py:41: trailing whitespace.
++    "@typescript-eslint/no-duplicate-type-constituents",
+scripts/check_eslint.py:42: trailing whitespace.
++    "@typescript-eslint/no-empty-object-type", "@typescript-eslint/no-explicit-any",
+scripts/check_eslint.py:43: trailing whitespace.
++    "@typescript-eslint/no-extra-non-null-assertion",
+scripts/check_eslint.py:44: trailing whitespace.
++    "@typescript-eslint/no-floating-promises", "@typescript-eslint/no-for-in-array",
+scripts/check_eslint.py:45: trailing whitespace.
++    "@typescript-eslint/no-implied-eval", "@typescript-eslint/no-misused-new",
+scripts/check_eslint.py:46: trailing whitespace.
++    "@typescript-eslint/no-misused-promises", "@typescript-eslint/no-namespace",
+scripts/check_eslint.py:47: trailing whitespace.
++    "@typescript-eslint/no-non-null-asserted-optional-chain",
+scripts/check_eslint.py:48: trailing whitespace.
++    "@typescript-eslint/no-redundant-type-constituents",
+scripts/check_eslint.py:49: trailing whitespace.
++    "@typescript-eslint/no-require-imports", "@typescript-eslint/no-this-alias",
+scripts/check_eslint.py:50: trailing whitespace.
++    "@typescript-eslint/no-unnecessary-type-assertion",
+scripts/check_eslint.py:51: trailing whitespace.
++    "@typescript-eslint/no-unnecessary-type-constraint",
+scripts/check_eslint.py:52: trailing whitespace.
++    "@typescript-eslint/no-unsafe-argument", "@typescript-eslint/no-unsafe-assignment",
+scripts/check_eslint.py:53: trailing whitespace.
++    "@typescript-eslint/no-unsafe-call", "@typescript-eslint/no-unsafe-declaration-merging",
+scripts/check_eslint.py:54: trailing whitespace.
++    "@typescript-eslint/no-unsafe-enum-comparison",
+scripts/check_eslint.py:55: trailing whitespace.
++    "@typescript-eslint/no-unsafe-function-type",
+scripts/check_eslint.py:56: trailing whitespace.
++    "@typescript-eslint/no-unsafe-member-access", "@typescript-eslint/no-unsafe-return",
+scripts/check_eslint.py:57: trailing whitespace.
++    "@typescript-eslint/no-unsafe-unary-minus", "@typescript-eslint/no-unused-expressions",
+scripts/check_eslint.py:58: trailing whitespace.
++    "@typescript-eslint/no-unused-vars", "@typescript-eslint/no-wrapper-object-types",
+scripts/check_eslint.py:59: trailing whitespace.
++    "@typescript-eslint/only-throw-error", "@typescript-eslint/prefer-as-const",
+scripts/check_eslint.py:60: trailing whitespace.
++    "@typescript-eslint/prefer-namespace-keyword",
+scripts/check_eslint.py:61: trailing whitespace.
++    "@typescript-eslint/prefer-promise-reject-errors", "@typescript-eslint/require-await",
+scripts/check_eslint.py:62: trailing whitespace.
++    "@typescript-eslint/restrict-plus-operands",
+scripts/check_eslint.py:63: trailing whitespace.
++    "@typescript-eslint/restrict-template-expressions",
+scripts/check_eslint.py:64: trailing whitespace.
++    "@typescript-eslint/triple-slash-reference", "@typescript-eslint/unbound-method",
+scripts/check_eslint.py:65: trailing whitespace.
++    "no-var", "prefer-const", "prefer-rest-params", "prefer-spread",
+scripts/check_eslint.py:67: trailing whitespace.
++TS_DISABLED = [
+scripts/check_eslint.py:68: trailing whitespace.
++    "constructor-super", "getter-return", "no-array-constructor", "no-class-assign",
+scripts/check_eslint.py:69: trailing whitespace.
++    "no-const-assign", "no-dupe-args", "no-dupe-class-members", "no-dupe-keys",
+scripts/check_eslint.py:70: trailing whitespace.
++    "no-func-assign", "no-implied-eval", "no-import-assign", "no-new-native-nonconstructor",
+scripts/check_eslint.py:71: trailing whitespace.
++    "no-new-symbol", "no-obj-calls", "no-redeclare", "no-setter-return",
+scripts/check_eslint.py:72: trailing whitespace.
++    "no-this-before-super", "no-throw-literal", "no-undef", "no-unreachable",
+scripts/check_eslint.py:73: trailing whitespace.
++    "no-unsafe-negation", "no-unused-expressions", "no-unused-vars", "no-with",
+scripts/check_eslint.py:74: trailing whitespace.
++    "prefer-promise-reject-errors", "require-await",
+scripts/check_eslint.py:229: trailing whitespace.
++    # invariant: eslint-source-rules/1
+scripts/check_eslint.py:230: trailing whitespace.
++    # invariant: eslint-configuration-rules/1
+scripts/check_eslint.py:236: trailing whitespace.
++    sys.exit(main())

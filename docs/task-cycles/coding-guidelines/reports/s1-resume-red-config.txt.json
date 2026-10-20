@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_eslint.py",
+    "--configuration",
+    "--record",
+    ".runs/s1-resume-red-config.jsonl"
+  ],
+  "exit_code": 2,
+  "seconds": 0.457,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-red-config.txt"
+}

@@ -1,0 +1,9 @@
+{
+  "command": [
+    "npm.cmd",
+    "test"
+  ],
+  "exit_code": 0,
+  "seconds": 2.499,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-npm-test.log"
+}

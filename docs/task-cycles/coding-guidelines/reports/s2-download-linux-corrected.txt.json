@@ -1,0 +1,22 @@
+{
+  "command": [
+    ".runs/quality-venv/Scripts/python.exe",
+    "-m",
+    "pip",
+    "download",
+    "--only-binary=:all:",
+    "--require-hashes",
+    "-r",
+    "requirements-quality.txt",
+    "--platform",
+    "manylinux2014_x86_64",
+    "--python-version",
+    "3.9",
+    "--dest",
+    ".runs/s2-wheelhouse-linux",
+    "--disable-pip-version-check"
+  ],
+  "exit_code": 0,
+  "seconds": 4.532,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-download-linux-corrected.txt"
+}

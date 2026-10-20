@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/gate/run_tests.py",
+    "tests/invariants",
+    "--record",
+    ".runs/invariants-after-support.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 230.708,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s3-invariants.txt"
+}

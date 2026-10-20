@@ -1,0 +1,352 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: src/browser/sim/run.ts
++ actual - expected
+... Skipped lines
+
+  [
+    308,
+    null,
+    [
+      [
+...
+                                              [
++                                               228,
+-                                               218,
+                                                null,
+                                                [
+                                                  [
++                                                   214,
+-                                                   228,
+                                                    null,
+                                                    [
+                                                      [
++                                                       80,
++                                                       'sameHex',
++                                                       []
++                                                     ],
++                                                     [
++                                                       212,
+-                                                       214,
+                                                        null,
+                                                        [
+                                                          [
+                                                            80,
++                                                           'tile',
+-                                                           'sameHex',
+                                                            []
+                                                          ],
+                                                          [
+-                                                           212,
+-                                                           null,
+-                                                           [
+-                                                             [
+-                                                               80,
+-                                                               'tile',
+-                                                               []
+-                                                             ],
+-                                                             [
+-                                                               80,
+-                                                               'at',
+-                                                               []
+-                                                             ]
+-                                                           ]
+-                                                         ],
+-                                                         [
+                                                            80,
+                                                            'at',
+                                                            []
+                                                          ]
+                                                        ]
+                                                      ],
+                                                      [
++                                                       80,
++                                                       'at',
+-                                                       58,
+-                                                       null,
+                                                        []
+                                                      ],
++                                                   ]
++                                                 ],
++                                                 [
++                                                   58,
++                                                   null,
++                                                   []
++                                                 ],
++                                                 [
++                                                   211,
++                                                   null,
++                                                   [
+                                                      [
++                                                       306,
+-                                                       211,
+                                                        null,
+                                                        [
+                                                          [
++                                                           80,
++                                                           'tile',
++                                                           []
+-                                                           306,
+-                                                           null,
+-                                                           [
+-                                                             [
+-                                                               80,
+-                                                               'tile',
+-                                                               []
+-                                                             ]
+-                                                           ]
+                                                          ],
++                                                       ]
++                                                     ],
++                                                     [
++                                                       304,
++                                                       null,
++                                                       [
+                                                          [
++                                                           80,
++                                                           'revealed',
++                                                           []
++                                                         ],
++                                                         [
++                                                           112,
+-                                                           304,
+                                                            null,
++                                                           []
+-                                                           [
+-                                                             [
+-                                                               80,
+-                                                               'revealed',
+-                                                               []
+-                                                             ],
+-                                                             [
+-                                                               112,
+-                                                               null,
+-                                                               []
+-                                                             ]
+-                                                           ]
+                                                          ]
+                                                        ]
+                                                      ],
+-                                                     [
+-                                                       59,
+-                                                       null,
+-                                                       []
+-                                                     ],
+-                                                     [
+-                                                       80,
+-                                                       'tile',
+-                                                       []
+-                                                     ]
+                                                    ]
+                                                  ],
++                                                 [
++                                                   59,
++                                                   null,
++                                                   []
++                                                 ],
++                                                 [
++                                                   80,
++                                                   'tile',
++                                                   []
++                                                 ]
+                                                ]
+                                              ]
+                                            ]
+                                          ]
+                                        ]
+
+    at file:///C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/s4-preservation.mjs:46:12
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:633:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    308,
+    null,
+    [
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './data/actions.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './data/balance.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './data/maps.js', [] ] ]
+      ],
+      [ 273, null, [ [ 274, null, [Array] ], [ 11, './hex.js', [] ] ] ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './layout.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './program.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './random.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './types.js', [] ] ]
+      ],
+      [
+        266,
+        null,
+        [
+          [ 95, null, [] ],
+          [ 80, 'GameEvent', [] ],
+          [ 193, null, [Array] ]
+        ]
+      ],
+      [
+        263,
+        null,
+        [
+          [ 80, 'startActivity', [] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 188, null, [Array] ],
+          [ 242, null, [Array] ]
+        ]
+      ],
+      [
+        263,
+        null,
+        [
+          [ 95, null, [] ],
+          [ 80, 'newMapRun', [] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 188, null, [Array] ],
+          [ 242, null, [Array] ]
+        ]
+      ],
+      [
+        263,
+        null,
+        [
+          [ 95, null, [] ],
+          [ 80, 'stepMinute', [] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 188, null, [Array] ],
+          [ 242, null, [Array] ]
+        ]
+      ],
+      [ 1, null, [] ]
+    ]
+  ],
+  expected: [
+    308,
+    null,
+    [
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './data/actions.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './data/balance.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './data/maps.js', [] ] ]
+      ],
+      [ 273, null, [ [ 274, null, [Array] ], [ 11, './hex.js', [] ] ] ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './layout.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './program.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './random.js', [] ] ]
+      ],
+      [
+        273,
+        null,
+        [ [ 274, null, [Array] ], [ 11, './types.js', [] ] ]
+      ],
+      [
+        266,
+        null,
+        [
+          [ 95, null, [] ],
+          [ 80, 'GameEvent', [] ],
+          [ 193, null, [Array] ]
+        ]
+      ],
+      [
+        263,
+        null,
+        [
+          [ 80, 'startActivity', [] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 188, null, [Array] ],
+          [ 242, null, [Array] ]
+        ]
+      ],
+      [
+        263,
+        null,
+        [
+          [ 95, null, [] ],
+          [ 80, 'newMapRun', [] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 188, null, [Array] ],
+          [ 242, null, [Array] ]
+        ]
+      ],
+      [
+        263,
+        null,
+        [
+          [ 95, null, [] ],
+          [ 80, 'stepMinute', [] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 170, null, [Array] ],
+          [ 188, null, [Array] ],
+          [ 242, null, [Array] ]
+        ]
+      ],
+      [ 1, null, [] ]
+    ]
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.17.0

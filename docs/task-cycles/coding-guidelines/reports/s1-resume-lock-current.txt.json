@@ -1,0 +1,13 @@
+{
+  "command": [
+    "npm.cmd",
+    "install",
+    "--package-lock-only",
+    "--ignore-scripts",
+    "--no-audit",
+    "--before=2026-10-20T07:01:00Z"
+  ],
+  "exit_code": 1,
+  "seconds": 0.217,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-lock-current.txt"
+}

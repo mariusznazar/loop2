@@ -1,0 +1,10 @@
+{
+  "command": [
+    "git",
+    "status",
+    "--short"
+  ],
+  "exit_code": 0,
+  "seconds": 0.149,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-final-status.txt"
+}

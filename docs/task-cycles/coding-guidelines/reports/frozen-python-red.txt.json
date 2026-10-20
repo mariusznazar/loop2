@@ -1,0 +1,14 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "tests.quality.test_quality_support.QualitySupportTests.test_unavailable_reports_traceback_and_preserves_structured_record",
+    "tests.quality.test_quality_support.QualitySupportTests.test_each_failure_reports_to_current_stderr",
+    "tests.quality.test_quality_support.QualitySupportTests.test_noninterrupt_base_exceptions_propagate_without_a_verdict"
+  ],
+  "exit_code": 1,
+  "seconds": 0.525,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\frozen-python-red.txt"
+}

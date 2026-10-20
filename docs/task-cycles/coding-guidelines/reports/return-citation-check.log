@@ -1,0 +1,9 @@
+{"file": "scripts/check_eslint.py", "invariant": "eslint-source-rules/1", "formal_comment": false, "runtime_identifier_present": true}
+{"file": "scripts/check_eslint.py", "invariant": "eslint-configuration-rules/1", "formal_comment": false, "runtime_identifier_present": true}
+{"file": "scripts/check_ruff.py", "invariant": "ruff-source-rules/1", "formal_comment": false, "runtime_identifier_present": true}
+{"file": "scripts/check_shellcheck.py", "invariant": "shellcheck-source-rules/1", "formal_comment": false, "runtime_identifier_present": true}
+{"file": "scripts/check_format.py", "invariant": "prettier-source-format/1", "formal_comment": false, "runtime_identifier_present": true}
+{"file": "scripts/check_dependencies.py", "invariant": "introduced-npm-vulnerabilities/1", "formal_comment": false, "runtime_identifier_present": true}
+{"positive_control": "guidelines-form/1", "formal_comment": true}
+{"positive_control": "guidelines-reference-current/1", "formal_comment": true}
+{"missing_citations": 6, "method_files": 5}

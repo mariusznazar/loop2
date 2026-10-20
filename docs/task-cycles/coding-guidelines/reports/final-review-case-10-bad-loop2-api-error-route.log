@@ -1,0 +1,599 @@
+.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route/deeper/still', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route/deeper/still', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route/deeper/still', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route/deeper/still', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route/deeper/still', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route/deeper/still', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route/deeper/still', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route/deeper/still', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route/deeper/still', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route?page=1', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route?page=1', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/invariant-check-no-such-route?page=1', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route?page=1', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route?page=1', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/invariant-check-no-such-route?page=1', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route?page=1', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route?page=1', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/invariant-check-no-such-route?page=1', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/index.html', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/index.html', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/index.html', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/index.html', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/index.html', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/index.html', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/index.html', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/index.html', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/index.html', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/main.js', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/main.js', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='GET', path='/api/main.js', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/main.js', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/main.js', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='POST', path='/api/main.js', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/main.js', accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/main.js', accept='application/json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+======================================================================
+FAIL: test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) (method='DELETE', path='/api/main.js', accept=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_api_error_route.py", line 94, in test_unmatched_api_requests_receive_json_errors_not_the_page
+    self.assertFalse(start.startswith((b"<!doctype", b"<html")),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"the response is an HTML document: {data[:200]!r}")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : the response is an HTML document: b'<!doctype html><title>Game</title>'
+
+----------------------------------------------------------------------
+Ran 2 tests in 8.286s
+
+FAILED (failures=54)

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_ruff.py",
+    "--record",
+    ".runs/final-fix-ruff.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 1.692,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-ruff.log"
+}

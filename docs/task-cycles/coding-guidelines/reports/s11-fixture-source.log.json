@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/s11-fixture-source.py"
+  ],
+  "exit_code": 0,
+  "seconds": 1.011,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s11-fixture-source.log"
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "-p",
+    "JSON.stringify({node:process.version,prettier:require('./node_modules/prettier/package.json').version,typescriptApi:require('./node_modules/typescript/package.json').version,compiler:require('./node_modules/typescript-compiler/package.json').version,eslint:require('./node_modules/eslint/package.json').version,npm:require('./node_modules/npm/package.json').version})"
+  ],
+  "exit_code": 0,
+  "seconds": 0.051,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s4-versions.txt"
+}

@@ -1,0 +1,8 @@
+scripts/check_eslint.py: token and AST equality PASS
+scripts/check_ruff.py: token and AST equality PASS
+scripts/check_shellcheck.py: token and AST equality PASS
+scripts/check_format.py: token and AST equality PASS
+scripts/check_dependencies.py: token and AST equality PASS
+scripts/quality_support.py: token and AST equality PASS
+Embedded BRIDGE literals unchanged through full AST equality
+Six Python files verified

@@ -1,0 +1,18 @@
+......F...{"check": "eslint-source-rules", "verdict": "fail", "invariant": null, "description": "QualityError: Node.js is unavailable locally"}
+....{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: missing package"}
+{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: unsupported or incomplete ESLint bridge report"}
+{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: ESLint bridge reported a warning: warning"}
+.
+======================================================================
+FAIL: test_fatal_parser_error_has_no_rule_verdict (test_eslint_checks.EslintChecks.test_fatal_parser_error_has_no_rule_verdict)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 143, in test_fatal_parser_error_has_no_rule_verdict
+    with self.assertRaises(self.check.QualityError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: QualityError not raised
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.467s
+
+FAILED (failures=1)

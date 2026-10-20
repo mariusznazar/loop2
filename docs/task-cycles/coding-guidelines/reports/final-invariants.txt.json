@@ -1,0 +1,13 @@
+{
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    ".the-way/gate/run_tests.py",
+    "tests/invariants",
+    "--record",
+    ".runs/final-invariants.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 86.58,
+  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/final-invariants.txt"
+}

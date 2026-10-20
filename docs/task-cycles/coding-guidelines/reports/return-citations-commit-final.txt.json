@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "commit",
+    "-m",
+    "fix: cite standing quality invariants and tracked data inputs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.114,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\return-citations-commit-final.txt"
+}

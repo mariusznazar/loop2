@@ -1,0 +1,45 @@
+test_exit_zero_windows_process_error_rejects_partial_output (test_process_observation.ProcessObservation.test_exit_zero_windows_process_error_rejects_partial_output) ... FAIL
+test_failed_unix_listener_read_rejects_plausible_output (test_process_observation.ProcessObservation.test_failed_unix_listener_read_rejects_plausible_output) ... ok
+test_failed_unix_process_read_rejects_plausible_output (test_process_observation.ProcessObservation.test_failed_unix_process_read_rejects_plausible_output) ... ok
+test_failed_windows_listener_read_rejects_plausible_output (test_process_observation.ProcessObservation.test_failed_windows_listener_read_rejects_plausible_output) ... ok
+test_failed_windows_process_read_rejects_plausible_output (test_process_observation.ProcessObservation.test_failed_windows_process_read_rejects_plausible_output) ... ok
+test_native_windows_readers_keep_owned_child_in_healthy_observation (test_process_observation.ProcessObservation.test_native_windows_readers_keep_owned_child_in_healthy_observation) ... ok
+test_native_windows_readers_reject_nonterminating_cim_errors (test_process_observation.ProcessObservation.test_native_windows_readers_reject_nonterminating_cim_errors) ... 
+  test_native_windows_readers_reject_nonterminating_cim_errors (test_process_observation.ProcessObservation.test_native_windows_readers_reject_nonterminating_cim_errors) (reader=<function _processes at 0x000001C7BBE26770>) ... FAIL
+  test_native_windows_readers_reject_nonterminating_cim_errors (test_process_observation.ProcessObservation.test_native_windows_readers_reject_nonterminating_cim_errors) (reader=<function ProcessObservation.test_native_windows_readers_reject_nonterminating_cim_errors.<locals>.<lambda> at 0x000001C7BBF51900>) ... FAIL
+test_successful_unix_listener_read_preserves_listener_fields (test_process_observation.ProcessObservation.test_successful_unix_listener_read_preserves_listener_fields) ... ok
+test_successful_unix_process_read_preserves_process_fields (test_process_observation.ProcessObservation.test_successful_unix_process_read_preserves_process_fields) ... ok
+test_successful_windows_listener_read_preserves_listener_fields (test_process_observation.ProcessObservation.test_successful_windows_listener_read_preserves_listener_fields) ... ok
+test_successful_windows_process_read_preserves_process_fields (test_process_observation.ProcessObservation.test_successful_windows_process_read_preserves_process_fields) ... ok
+
+======================================================================
+FAIL: test_exit_zero_windows_process_error_rejects_partial_output (test_process_observation.ProcessObservation.test_exit_zero_windows_process_error_rejects_partial_output)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_process_observation.py", line 27, in test_exit_zero_windows_process_error_rejects_partial_output
+    with self.assertRaisesRegex(AssertionError, "query failed"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: AssertionError not raised
+
+======================================================================
+FAIL: test_native_windows_readers_reject_nonterminating_cim_errors (test_process_observation.ProcessObservation.test_native_windows_readers_reject_nonterminating_cim_errors) (reader=<function _processes at 0x000001C7BBE26770>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_process_observation.py", line 50, in test_native_windows_readers_reject_nonterminating_cim_errors
+    with self.assertRaisesRegex(AssertionError, "Get-CimInstance failed"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: AssertionError not raised
+
+======================================================================
+FAIL: test_native_windows_readers_reject_nonterminating_cim_errors (test_process_observation.ProcessObservation.test_native_windows_readers_reject_nonterminating_cim_errors) (reader=<function ProcessObservation.test_native_windows_readers_reject_nonterminating_cim_errors.<locals>.<lambda> at 0x000001C7BBF51900>)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_process_observation.py", line 50, in test_native_windows_readers_reject_nonterminating_cim_errors
+    with self.assertRaisesRegex(AssertionError, "Get-CimInstance failed"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: AssertionError not raised
+
+----------------------------------------------------------------------
+Ran 11 tests in 2.616s
+
+FAILED (failures=3)

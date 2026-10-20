@@ -1,0 +1,13 @@
+{
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_eslint.py",
+    "--configuration",
+    "--record",
+    ".runs/handoff-final-eslint-configuration.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 2.54,
+  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-eslint-configuration.txt"
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/assessment-settlement-proof.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.986,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\assessment-settlement-proof.log"
+}

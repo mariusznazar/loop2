@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/gate/run_tests.py",
+    "tests/agent_workflow",
+    "--record",
+    ".runs/agent-workflow.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 0.37,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s12-agent-workflow.log"
+}

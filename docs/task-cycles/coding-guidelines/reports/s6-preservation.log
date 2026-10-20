@@ -1,0 +1,7 @@
+Node v24.17.0; TypeScript API 6.0.2; baseline 2f33b5deb858104729ce8871f653c051740c6c49
+PASS src/browser/view/app.ts: complete ordered AST, identifier/literal values, comments, LF
+PASS src/browser/view/clock.ts: complete ordered AST, identifier/literal values, comments, LF
+PASS src/browser/view/credits.ts: complete ordered AST, identifier/literal values, comments, LF
+PASS src/browser/view/footer.ts: complete ordered AST, identifier/literal values, comments, LF
+PASS src/browser/view/program-editor.ts: complete ordered AST, identifier/literal values, comments, LF
+PASS controls: changed comment, visible string and edit guard detected

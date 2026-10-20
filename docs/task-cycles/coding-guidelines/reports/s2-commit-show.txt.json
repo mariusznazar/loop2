@@ -1,0 +1,12 @@
+{
+  "command": [
+    "git",
+    "show",
+    "--stat",
+    "--format=fuller",
+    "HEAD"
+  ],
+  "exit_code": 0,
+  "seconds": 0.039,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-commit-show.txt"
+}

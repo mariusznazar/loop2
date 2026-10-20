@@ -1,0 +1,12 @@
+﻿import { readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import assert from 'node:assert/strict';
+const require = createRequire(new URL('../../../../package.json', import.meta.url));
+const { parse } = require('espree');
+const bridge = new URL('../../../../scripts/inspect_eslint.mjs', import.meta.url);
+const ast = parse(readFileSync(bridge, 'utf8'), {ecmaVersion: 'latest', sourceType: 'module'});
+const normalized = JSON.stringify(ast, (key, value) => ['start', 'end', 'loc', 'range', 'raw'].includes(key) ? undefined : value);
+const baseline = new URL('./f2-alias-format-ast.json', import.meta.url);
+if (process.argv[2] === 'before') writeFileSync(baseline, normalized);
+else assert.equal(normalized, readFileSync(baseline, 'utf8'));
+console.log('AST ' + (process.argv[2] === 'before' ? 'captured' : 'unchanged'));

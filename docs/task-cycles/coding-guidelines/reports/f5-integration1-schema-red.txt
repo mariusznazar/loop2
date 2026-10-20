@@ -1,0 +1,32 @@
+.FFF.
+======================================================================
+FAIL: test_bulk_outer_name_identifies_advisories_without_duplicate_name (test_dependency_audit.DependencyAudit.test_bulk_outer_name_identifies_advisories_without_duplicate_name) (severity='low', versions='<2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 270, in test_bulk_outer_name_identifies_advisories_without_duplicate_name
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_bulk_outer_name_identifies_advisories_without_duplicate_name (test_dependency_audit.DependencyAudit.test_bulk_outer_name_identifies_advisories_without_duplicate_name) (severity='info', versions='*')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 270, in test_bulk_outer_name_identifies_advisories_without_duplicate_name
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_bulk_outer_name_identifies_advisories_without_duplicate_name (test_dependency_audit.DependencyAudit.test_bulk_outer_name_identifies_advisories_without_duplicate_name) (severity='critical', versions='>=2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 270, in test_bulk_outer_name_identifies_advisories_without_duplicate_name
+    self.assertEqual(self.verdict()[0], want)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+----------------------------------------------------------------------
+Ran 3 tests in 6.927s
+
+FAILED (failures=3)

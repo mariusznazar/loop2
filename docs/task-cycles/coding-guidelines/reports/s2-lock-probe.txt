@@ -1,0 +1,9 @@
+{"package": "ruff", "version": "0.17.1", "published_wheel_hashes": 17, "runtime_dependencies": []}
+{"package": "shellcheck-py", "version": "0.11.0.1", "published_wheel_hashes": 4, "runtime_dependencies": []}
+{"wheel": "ruff-0.17.1-py3-none-win_amd64.whl", "sha256": "5df76f16580fab58d0f6c98a3ac254a4abceb7b2489b8b678335869cff77b3d7", "requires_dist": []}
+{"wheel": "shellcheck_py-0.11.0.1-py2.py3-none-win_amd64.whl", "sha256": "784156289ecb17e91c692cd783ab5152333309588cabb10032a047331c63e759", "requires_dist": []}
+{"wheel": "ruff-0.17.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", "sha256": "a6ef98e51de8ef38082f90653ceeb84944bd7673783eea13e1647c5b9b064189", "requires_dist": []}
+{"wheel": "shellcheck_py-0.11.0.1-py2.py3-none-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", "sha256": "1b274df81de5b000ff78db433e7328b87e52e3c38481c60f8e488c3095beef05", "requires_dist": []}
+{"offline_executable": ".runs\\s2-offline-venv\\Scripts\\ruff.exe", "version": "ruff 0.17.1\n"}
+{"offline_executable": ".runs\\s2-offline-venv\\Scripts\\shellcheck.exe", "version": "ShellCheck - shell script analysis tool\nversion: 0.11.0\nlicense: GNU General Public License, version 3\nwebsite: https://www.shellcheck.net\n"}
+PASS: complete published wheel hashes, downloaded artifact metadata closure, offline executable versions

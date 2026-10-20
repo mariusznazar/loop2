@@ -1,0 +1,1 @@
+{"check": "scripts/check_shellcheck.py", "verdict": "fail", "invariant": null, "description": "QualityError: local ShellCheck is unavailable: C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\quality-venv\\Scripts\\shellcheck.exe"}

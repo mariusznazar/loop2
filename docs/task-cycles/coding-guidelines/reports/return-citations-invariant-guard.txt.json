@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/elements/invariants/format_guard.py",
+    "foundations/invariants.md",
+    "--base",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--merge-onto",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--record",
+    ".runs/task-cycles/coding-guidelines/reports/return-citations-invariant-guard.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 1.008,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\return-citations-invariant-guard.txt"
+}

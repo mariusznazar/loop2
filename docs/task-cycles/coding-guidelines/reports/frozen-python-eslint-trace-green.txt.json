@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "tests.quality.test_eslint_checks.EslintChecks.test_missing_node_has_no_named_verdict_and_overwrites_old_pass",
+    "tests.quality.test_eslint_checks.EslintChecks.test_tool_errors_and_malformed_json_never_become_success"
+  ],
+  "exit_code": 0,
+  "seconds": 0.278,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\frozen-python-eslint-trace-green.txt"
+}

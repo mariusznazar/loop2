@@ -1,0 +1,15 @@
+{
+  "command": [
+    "python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_invariant_support.py"
+  ],
+  "exit_code": 0,
+  "seconds": 2.154,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s3-green-final.txt"
+}

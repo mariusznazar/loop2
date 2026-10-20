@@ -1,0 +1,153 @@
+....FFFFFFFFF......{"check": "eslint-source-rules", "verdict": "fail", "invariant": null, "description": "QualityError: Node.js is unavailable locally"}
+....{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: missing package"}
+{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: unsupported or incomplete ESLint bridge report"}
+{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: ESLint bridge reported a warning: warning"}
+.
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable', value=',')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable', value=' , , ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable', value='\'\', ""')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable-next-line', value=',')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable-next-line', value=' , , ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable-next-line', value='\'\', ""')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable-line', value=',')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable-line', value=' , , ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+======================================================================
+FAIL: test_empty_parsed_disable_lists_are_blanket_suppressions (test_eslint_checks.EslintChecks.test_empty_parsed_disable_lists_are_blanket_suppressions) (label='eslint-disable-line', value='\'\', ""')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 140, in test_empty_parsed_disable_lists_are_blanket_suppressions
+    self.assertEqual(entry["disabledRules"], case["want_disabled"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[]] != [None]
+
+First differing element 0:
+[]
+None
+
+- [[]]
++ [None]
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.416s
+
+FAILED (failures=9)

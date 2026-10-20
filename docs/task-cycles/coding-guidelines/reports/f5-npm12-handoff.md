@@ -1,0 +1,7 @@
+# Resume independent dependency-check author
+
+Read reports/author-contract.md and reports/f5-handoff.md relative to this cycle first. This is a continuation of the existing cycle, not a new branch. Original agent cannot be resumed in this session, so you replace only the independent check author. Start commit 42125f5dd4cf91d50406ccb6415610c5179a837b. Worktree C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines.
+
+Final authoritative D-33/1 now requires npm 12.2.1. Read the whole current decision, introduced-npm-vulnerabilities/1 and linked dependencies. Update this method and its fixtures to support the accepted pin and actual pinned npm semantics. Preserve exact pairs, original fork, low+ and fail-unavailable behavior. Scope only scripts/check_dependencies.py and tests/quality/test_dependency_audit.py. Do not change package.json/lock, sentences or configuration being checked. Derive checks independently; no product author reasoning is provided. No product guidelines exist; task creates them. Verify selection via .the-way/product-guidelines/reading.md; changed part build-tools with registry trust boundary.
+
+Read current method and focused tests, and verify official pinned npm source if APIs require it. Do not install or alter covered packages; live method may remain unavailable until later product installation. Capture focused tests and actual method with full output and exit codes, weakest-point evidence, choices, counts. Commit explicit paths. Report to reports/f5-npm12-report.md, preserving prior reports. Return before review; no subagents.

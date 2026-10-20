@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_application_package_layout.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.26,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s11-package-layout.log"
+}

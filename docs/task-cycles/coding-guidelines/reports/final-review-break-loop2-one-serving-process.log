@@ -1,0 +1,23 @@
+...F.
+======================================================================
+FAIL: test_one_process_of_the_started_tree_listens_and_starts_nothing (test_loop2_one_serving_process.OneExpressProcessServesGameAndApi.test_one_process_of_the_started_tree_listens_and_starts_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\final-review-scratch\tests\invariants\test_loop2_one_serving_process.py", line 223, in test_one_process_of_the_started_tree_listens_and_starts_nothing
+    self.assertEqual(elsewhere, [], "processes of the started tree listen on other ports, "
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                    "where a second serving process could stand")
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [(48680, '127.0.0.1', 58106)] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+(48680, '127.0.0.1', 58106)
+
+- [(48680, '127.0.0.1', 58106)]
++ [] : processes of the started tree listen on other ports, where a second serving process could stand
+
+----------------------------------------------------------------------
+Ran 5 tests in 11.219s
+
+FAILED (failures=1)

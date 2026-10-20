@@ -1,0 +1,18 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_dependency_audit.py",
+    "-k",
+    "tarball"
+  ],
+  "exit_code": 1,
+  "seconds": 14.049,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-fix1-red.txt"
+}

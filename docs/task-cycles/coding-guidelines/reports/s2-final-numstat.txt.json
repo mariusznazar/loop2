@@ -1,0 +1,12 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "3a769e67dcdeada5481df0e93b37f2d8f5a1eedf",
+    "HEAD",
+    "--numstat"
+  ],
+  "exit_code": 0,
+  "seconds": 0.041,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-final-numstat.txt"
+}

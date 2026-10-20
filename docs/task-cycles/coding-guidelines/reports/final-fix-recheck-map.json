@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    ".the-way/elements/part-map/format_guard.py",
+    "foundations/part_map.md",
+    "--base",
+    "c379207bfd8bd148d3589ea75604ba5165915d01"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines",
+  "exit": 0,
+  "seconds": 0.32135840004775673,
+  "stdout_base64": "Zm91bmRhdGlvbnMvcGFydF9tYXAubWQ6ODU6IHdhcm5pbmc6IGJ1aWxkLXRvb2xzIGRlcGVuZHMgb24gYWNjb3VudC1zZXJ2ZXIgd2l0aCBubyBzZXBhcmF0aW9uIHJlY29yZGVkLCBzbyBhY2NvdW50LXNlcnZlciBpcyBjb21wdXRlZCBhcyBgaGlnaGAsIGFib3ZlIGl0cyBvd24gZmFpbHVyZSBtb2Rlcw0KZm91bmRhdGlvbnMvcGFydF9tYXAubWQ6MTM0OiB3YXJuaW5nOiBkZXBsb3ltZW50IGRlcGVuZHMgb24gYWNjb3VudC1zZXJ2ZXIgd2l0aCBubyBzZXBhcmF0aW9uIHJlY29yZGVkLCBzbyBhY2NvdW50LXNlcnZlciBpcyBjb21wdXRlZCBhcyBgaGlnaGAsIGFib3ZlIGl0cyBvd24gZmFpbHVyZSBtb2Rlcw0KdW5jaGVja2VkOiB0aGUgZGVwZW5kZW5jaWVzIGJldHdlZW4gcGFydHMsIGFuZCBuZXcgb3Igc3RhbGUgdmlvbGF0aW9ucyDigJQgbm8gY29tbWFuZCBvZiB0aGUgcHJvZHVjdCByZXBvcnRzIHRoZSBkZXBlbmRlbmN5IGdyYXBoDQowIGVycm9yKHMpLCAyIHdhcm5pbmcocyksIDEgdW5jaGVja2VkDQo=",
+  "stderr_base64": ""
+}

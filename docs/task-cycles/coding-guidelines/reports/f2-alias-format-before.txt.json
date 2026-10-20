@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    ".runs/task-cycles/coding-guidelines/reports/f2-alias-format-ast.mjs",
+    "before"
+  ],
+  "exit_code": 0,
+  "seconds": 0.685,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f2-alias-format-before.txt"
+}

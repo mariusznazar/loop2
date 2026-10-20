@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "tests/sim/*.test.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.379,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s9-tests.log"
+}

@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/elements/part-map/format_guard.py",
+    "foundations/part_map.md",
+    "--base",
+    "c379207bfd8bd148d3589ea75604ba5165915d01"
+  ],
+  "exit_code": 1,
+  "seconds": 0.317,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-red-map.log"
+}

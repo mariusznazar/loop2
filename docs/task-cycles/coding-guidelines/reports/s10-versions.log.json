@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "-e",
+    "console.log('Node',process.version); for (const p of ['npm','prettier','typescript','typescript-compiler','eslint','@eslint/js','typescript-eslint','globals']) console.log(p,require(p+'/package.json').version)"
+  ],
+  "exit_code": 0,
+  "seconds": 0.048,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s10-versions.log"
+}

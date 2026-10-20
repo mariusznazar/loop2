@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_loop2_one_serving_process_container.py"
+  ],
+  "exit_code": 0,
+  "seconds": 6.197,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\docker-started-one-serving-process.txt"
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_ruff.py",
+    "--record",
+    ".runs/s3-ruff.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 3.514,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s3-ruff.txt"
+}

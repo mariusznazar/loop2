@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/product-guidelines/form_check.py",
+    "--record",
+    ".runs/guidelines-form.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 0.789,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s12-guidelines-form.log"
+}

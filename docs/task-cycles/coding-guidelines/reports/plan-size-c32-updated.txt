@@ -1,0 +1,24 @@
+# Slice sizes
+
+Too large: more than 250000 estimated tokens to read, a quarter of a 1000000-token context window at 2.5 characters a token, or more than 10 files to change.
+
+| Slice | Files to change | Characters to read | Estimated tokens | Verdict | Why |
+|---|---|---|---|---|---|
+| F1 | 2 | 159114 | 63646 | fits | — |
+| F2 | 3 | 154816 | 61927 | fits | — |
+| F3 | 3 | 157759 | 63104 | fits | — |
+| F4 | 2 | 130116 | 52047 | fits | — |
+| F5 | 2 | 298439 | 119376 | fits | — |
+| F6 | 3 | 153269 | 61308 | fits | — |
+| 1 | 7 | 312500 | 125000 | fits | — |
+| 2 | 3 | 159294 | 63718 | fits | — |
+| 3 | 3 | 210056 | 84023 | fits | — |
+| 4 | 7 | 177908 | 71164 | fits | — |
+| 5 | 6 | 146048 | 58420 | fits | — |
+| 6 | 5 | 175440 | 70176 | fits | — |
+| 7 | 7 | 167665 | 67066 | fits | — |
+| 8 | 4 | 150072 | 60029 | fits | — |
+| 9 | 10 | 197219 | 78888 | fits | — |
+| 10 | 5 | 166136 | 66455 | fits | — |
+| 11 | 7 | 213388 | 85356 | fits | — |
+| 12 | 1 | 192631 | 77053 | fits | — |

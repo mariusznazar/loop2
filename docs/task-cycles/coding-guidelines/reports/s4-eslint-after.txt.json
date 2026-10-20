@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_eslint.py",
+    "--record",
+    ".runs/task-cycles/coding-guidelines/reports/s4-eslint-after.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 3.28,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s4-eslint-after.txt"
+}

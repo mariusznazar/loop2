@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/final-fix-native-readers.py"
+  ],
+  "exit_code": 0,
+  "seconds": 1.655,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-green-native-readers.log"
+}

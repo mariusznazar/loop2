@@ -1,0 +1,2 @@
+{"file": "deploy/reviewer-directive", "diagnostics": [], "policy_changing_directive": true}
+{"check": "scripts/check_shellcheck.py", "verdict": "fail", "invariant": "shellcheck-source-rules/1"}

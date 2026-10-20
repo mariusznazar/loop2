@@ -1,0 +1,10 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check"
+  ],
+  "exit_code": 0,
+  "seconds": 0.126,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s8-diff-check.log"
+}

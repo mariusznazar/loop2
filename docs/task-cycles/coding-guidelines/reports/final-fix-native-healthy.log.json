@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/final-fix-native-healthy.py"
+  ],
+  "exit_code": 0,
+  "seconds": 1.339,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\final-fix-native-healthy.log"
+}

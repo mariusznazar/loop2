@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "node_modules/prettier/bin/prettier.cjs",
+    "--config",
+    "prettier.config.mjs",
+    "--write",
+    "scripts/build.mjs",
+    "eslint.config.mjs",
+    "prettier.config.mjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.159,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-format-owned.txt"
+}

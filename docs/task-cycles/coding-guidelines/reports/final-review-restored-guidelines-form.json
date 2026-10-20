@@ -1,0 +1,15 @@
+{
+  "label": "restored-guidelines-form",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    ".the-way/product-guidelines/form_check.py"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 0,
+  "expected": 0,
+  "source": "unmodified final HEAD scratch",
+  "invariant": "guidelines-form",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-restored-guidelines-form.log",
+  "seconds": 0.35
+}

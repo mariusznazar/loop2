@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_eslint_checks.py"
+  ],
+  "exit_code": 1,
+  "seconds": 0.238,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f2-red.txt"
+}

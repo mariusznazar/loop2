@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "node_modules/prettier/bin/prettier.cjs",
+    "scripts/inspect_eslint.mjs",
+    "--check",
+    "--no-config",
+    "--no-editorconfig",
+    "--end-of-line",
+    "lf"
+  ],
+  "exit_code": 0,
+  "seconds": 0.24,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f2-alias-format-check.txt"
+}

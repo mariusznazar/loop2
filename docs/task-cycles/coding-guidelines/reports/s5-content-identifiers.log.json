@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_content_identifiers.py"
+  ],
+  "exit_code": 0,
+  "seconds": 2.818,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s5-content-identifiers.log"
+}

@@ -1,0 +1,7 @@
+Collecting ruff==0.17.1 (from -r requirements-quality.txt (line 6))
+  Using cached ruff-0.17.1-py3-none-win_amd64.whl (10.1 MB)
+Collecting shellcheck-py==0.11.0.1 (from -r requirements-quality.txt (line 25))
+  Using cached shellcheck_py-0.11.0.1-py2.py3-none-win_amd64.whl (8.0 MB)
+Saved c:\storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\s2-wheelhouse-windows\ruff-0.17.1-py3-none-win_amd64.whl
+Saved c:\storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\s2-wheelhouse-windows\shellcheck_py-0.11.0.1-py2.py3-none-win_amd64.whl
+Successfully downloaded ruff shellcheck-py

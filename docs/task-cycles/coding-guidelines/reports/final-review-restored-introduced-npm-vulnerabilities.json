@@ -1,0 +1,17 @@
+{
+  "label": "restored-introduced-npm-vulnerabilities",
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_dependencies.py",
+    "--fork-point",
+    "c379207bfd8bd148d3589ea75604ba5165915d01"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\final-review-scratch",
+  "exit": 0,
+  "expected": 0,
+  "source": "unmodified final HEAD scratch",
+  "invariant": "introduced-npm-vulnerabilities",
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\final-review-restored-introduced-npm-vulnerabilities.log",
+  "seconds": 1.59
+}

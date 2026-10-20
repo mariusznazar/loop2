@@ -1,0 +1,9 @@
+{"check": "elements/invariants/format_guard.py::check_against_base", "verdict": "pass", "invariant": "invariant-version-new/1"}
+{"check": "elements/invariants/format_guard.py::check_against_base", "verdict": "pass", "invariant": "invariant-version-changed/1"}
+{"check": "elements/invariants/format_guard.py::check_against_base", "verdict": "pass", "invariant": "invariant-version-unchanged/1"}
+{"check": "elements/invariants/format_guard.py::check_against_base", "verdict": "pass", "invariant": "invariant-earlier-wording/1"}
+{"check": "elements/invariants/format_guard.py::check_against_base", "verdict": "pass", "invariant": "invariant-identifier-persistence/1"}
+{"check": "elements/invariants/format_guard.py::check_against_base", "verdict": "pass", "invariant": "invariant-withdrawal-persistence/1"}
+{"check": "elements/invariants/format_guard.py::check_against_base", "verdict": "pass", "invariant": "violated-list-growth/1"}
+{"check": "elements/invariants/format_guard.py::check_merge_todo", "verdict": "pass", "invariant": "invariant-entry-merge-todo/1"}
+{"check": "elements/invariants/format_guard.py::check_fingerprints", "verdict": "pass", "invariant": "link-fingerprint-value/1"}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    ".runs/task-cycles/coding-guidelines/reports/s4-preservation.mjs",
+    "apply"
+  ],
+  "exit_code": 0,
+  "seconds": 0.47,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s4-apply.txt"
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/s2-live-probes.py"
+  ],
+  "exit_code": 0,
+  "seconds": 7.731,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-live-probes.txt"
+}

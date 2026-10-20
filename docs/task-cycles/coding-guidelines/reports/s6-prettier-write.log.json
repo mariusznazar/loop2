@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "node_modules/prettier/bin/prettier.cjs",
+    "--write",
+    "src/browser/view/app.ts",
+    "src/browser/view/clock.ts",
+    "src/browser/view/credits.ts",
+    "src/browser/view/footer.ts",
+    "src/browser/view/program-editor.ts"
+  ],
+  "exit_code": 0,
+  "seconds": 0.246,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s6-prettier-write.log"
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/s12-weakest-point.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.162,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s12-weakest-point-green.log"
+}

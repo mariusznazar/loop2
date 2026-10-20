@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality"
+  ],
+  "exit_code": 0,
+  "seconds": 91.461,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f6-quality-suite.txt"
+}

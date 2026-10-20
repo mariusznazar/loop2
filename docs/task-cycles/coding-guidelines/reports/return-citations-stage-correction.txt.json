@@ -1,0 +1,12 @@
+{
+  "command": [
+    "git",
+    "add",
+    "--renormalize",
+    "--",
+    "scripts/check_eslint.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.045,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\return-citations-stage-correction.txt"
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-B",
+    "scripts/check_dependencies.py",
+    "--fork-point",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--record",
+    ".runs/final-dependency-audit.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 1.33,
+  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/final-dependency-audit.txt"
+}

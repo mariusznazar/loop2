@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "-e",
+    "const assert = require('node:assert/strict');\nconst fs = require('node:fs');\nconst {execFileSync} = require('node:child_process');\nconst espree = require('espree');\nconst name = 'scripts/inspect_eslint.mjs';\nconst before = execFileSync('git', ['show', 'ef057111b09f0b081e1c9c1dd61678bb29040a07:' + name], {encoding:'utf8'});\nconst after = fs.readFileSync(name, 'utf8');\nconst options = {ecmaVersion:'latest', sourceType:'module'};\nconst strip = (key, value) => ['start','end','range','loc'].includes(key) ? undefined : value;\nassert.equal(JSON.stringify(espree.parse(before, options), strip), JSON.stringify(espree.parse(after, options), strip));\nassert.equal(JSON.stringify(espree.tokenize(before, options), strip), JSON.stringify(espree.tokenize(after, options), strip));\nconsole.log(name + ': complete JavaScript AST and token equality PASS (source positions excluded)');"
+  ],
+  "exit_code": 0,
+  "seconds": 0.141,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\return-citations-js-preservation-green.txt"
+}

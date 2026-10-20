@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/task-cycle/slice_size.py",
+    ".runs/task-cycles/coding-guidelines/plan.md",
+    "--root",
+    "."
+  ],
+  "exit_code": 0,
+  "seconds": 0.263,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\plan-size-c32-updated.txt"
+}

@@ -1,0 +1,41 @@
+Exact Python stdin source executed from C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines
+Outer invocation: python -B -
+Exit: 0
+Complete stdout:
+guard_exit 0
+ownership_and_collection_exit 0 pairs 332
+Complete stderr: empty
+
+import base64, importlib.util, json, os, pathlib, subprocess, sys, tempfile, time
+root = pathlib.Path.cwd()
+scratch = root / '.runs/final-fix-recheck'
+tempfile.tempdir = str(scratch)
+report_dir = root / '.runs/task-cycles/coding-guidelines/reports'
+args = [sys.executable, '-B', '.the-way/elements/part-map/format_guard.py', 'foundations/part_map.md', '--base', 'c379207bfd8bd148d3589ea75604ba5165915d01']
+started = time.monotonic()
+result = subprocess.run(args, capture_output=True, env={**os.environ, 'TEMP': str(scratch), 'TMP': str(scratch), 'PYTHONIOENCODING': 'utf-8'})
+(report_dir / 'final-fix-recheck-map.log').write_bytes(b'STDOUT\n' + result.stdout + b'\nSTDERR\n' + result.stderr)
+(report_dir / 'final-fix-recheck-map.json').write_text(json.dumps({'argv': args, 'cwd': str(root), 'exit': result.returncode, 'seconds': time.monotonic() - started, 'stdout_base64': base64.b64encode(result.stdout).decode(), 'stderr_base64': base64.b64encode(result.stderr).decode()}, indent=2) + '\n', encoding='utf-8')
+print('guard_exit', result.returncode)
+assert result.returncode == 0
+sys.path.insert(0, str(root / 'scripts'))
+import check_dependencies as audit
+spec = importlib.util.spec_from_file_location('recheck_guard', root / '.the-way/elements/part-map/format_guard.py')
+guard = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = guard
+spec.loader.exec_module(guard)
+map_file = root / 'foundations/part_map.md'
+entries, sections = guard.parse_map(map_file.read_text(encoding='utf-8'), guard.read_rules())
+report = guard.Report(str(map_file))
+claims = guard.check_files(entries, sections, report, str(root), guard.tracked_files(str(root), report))
+expected = {'package.json', 'package-lock.json', 'tests/quality/fixtures/dependency-audit/package.json', 'tests/quality/fixtures/dependency-audit/package-lock.json'}
+ownership = {name: [part.identifier for part in claims[name]] for name in sorted(expected)}
+assert all(value == ['build-tools'] for value in ownership.values()), ownership
+selected = audit.discover_files(root, ('build-tools',))
+files = {name: audit._read(root / name) for name in selected if pathlib.PurePosixPath(name).name in audit.MANIFESTS}
+assert set(files) == expected, sorted(files)
+pairs, requirements = audit._collect(files)
+assert ('minimist', '1.2.8') in pairs
+result = {'argv': [sys.executable, '-B', '-'], 'source': 'inline independent reviewer ownership/collection probe, retained in final-fix-recheck-map-collection-source.txt', 'exit': 0, 'claims': ownership, 'actual_discover_files_selected_manifests': sorted(files), 'actual_collect_pair_count': len(pairs), 'actual_collect_requirement_count': len(requirements), 'fixture_pair_present': ['minimist', '1.2.8'], 'collection_real_no_network_or_fake_result': True}
+(report_dir / 'final-fix-recheck-map-collection.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+print('ownership_and_collection_exit', 0, 'pairs', len(pairs))

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "HEAD"
+  ],
+  "exit_code": 0,
+  "seconds": 0.12,
+  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-diff-check.txt"
+}

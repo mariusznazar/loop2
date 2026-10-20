@@ -1,0 +1,13 @@
+# Resume product slice 1 after approved npm amendment
+
+Read s1-handoff.md and author-contract.md here. This is the existing S1 continuation, not a fresh task/branch. Old author is unavailable in this new session, so you replace that product-author role. Root supplies current start HEAD after independent-method reviews. Existing S1 partial manifest/lock commit 3781ff9 remains; finish the full Slice 1 scope. Preserve prior s1-report.md and write continuation report s1-resume-report.md.
+
+Authoritative task: ../task.md plus ../amendment-npm12.md. Slice brief: worktree .superpowers/sdd/plan/task-1-brief.md; it carries the full slice. Read relevant original plan constraints/section as needed, not unrelated slices. Whole applicable foundation and guideline selection requirements remain. Current guideline selection: absent discipline guidelines are this task's output; D-28 creation exception and deferrals apply. Affected build-tools/deployment. Verify against own scope.
+
+Interfaces from independent-method continuation: read f5-npm12-report.md and f5-npm12-review.md; dependency method now expects real local npm12.2.1 with bundled make-fetch-happen/semver. Run real original-fork audit. Read f2-alias-report.md and its review once root has provided them. Runtime API identity must be checked, not only package label.
+
+Root verified node_modules/typescript/package.json currently names @typescript/typescript6@6.0.2, but its lib/typescript.js exports @typescript/old. That dependency is npm:typescript@^6 and current lock selects actual typescript6.0.3. D-29 adopts actual API6.0.2. Pin that transitive API compatibly to6.0.2 using the smallest supported npm installation constraint; preserve the chosen aliases and TS7 application compiler. This is an implementation choice, not authorization to revise accepted versions or weaken a check. Verify feasibility and resulting audit; report a contrary result with evidence. Do not modify frozen checks.
+
+Complete S1 configurations, explicit compiler execution, narrow attributes and README as original brief. Product tooling must cover new owned paths as accepted. Keep package scope one application package. Any new case exposing a frozen method defect returns to root with focused evidence; never patch it within this role. Installations stay local in this worktree. No deployment/global/vault writes.
+
+Focused planned checks, weakest-point check, full capture evidence and explicit-path commit. No unnecessary broad repeats after green. Return before independent review. No subagents. Report: .runs/task-cycles/coding-guidelines/reports/s1-resume-report.md.

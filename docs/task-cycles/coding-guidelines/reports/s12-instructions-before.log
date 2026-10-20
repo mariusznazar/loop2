@@ -1,0 +1,13 @@
+WARN  dead-path .agents/skills/loop2-deploy/SKILL.md:10 `/usr/local/bin/loop2-deploy` does not exist
+WARN  dead-path .agents/skills/loop2-deploy/SKILL.md:15 `/srv/loop2` does not exist
+WARN  dead-path .agents/skills/loop2-deploy/SKILL.md:16 `/var/log/loop2-deploy.log` does not exist
+WARN  dead-path .agents/skills/loop2-deploy/SKILL.md:44 `/var/log/loop2-deploy.log` does not exist
+WARN  dead-path .agents/skills/loop2-deploy/SKILL.md:63 `/run/loop2-deploy.lock` does not exist
+WARN  dead-path .claude/skills/loop2-deploy/SKILL.md:10 `/usr/local/bin/loop2-deploy` does not exist
+WARN  dead-path .claude/skills/loop2-deploy/SKILL.md:15 `/srv/loop2` does not exist
+WARN  dead-path .claude/skills/loop2-deploy/SKILL.md:16 `/var/log/loop2-deploy.log` does not exist
+WARN  dead-path .claude/skills/loop2-deploy/SKILL.md:44 `/var/log/loop2-deploy.log` does not exist
+WARN  dead-path .claude/skills/loop2-deploy/SKILL.md:63 `/run/loop2-deploy.lock` does not exist
+INFO  size AGENTS.md:0 20 lines, 392 words
+INFO  size CLAUDE.md:0 1 lines, 1 words
+0 error, 10 warn, 2 info

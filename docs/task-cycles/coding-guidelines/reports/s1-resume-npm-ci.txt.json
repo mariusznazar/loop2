@@ -1,0 +1,9 @@
+{
+  "command": [
+    "npm.cmd",
+    "ci"
+  ],
+  "exit_code": 0,
+  "seconds": 15.967,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-npm-ci.txt"
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    ".runs/quality-venv/Scripts/python.exe",
+    "-m",
+    "pip",
+    "install",
+    "--require-hashes",
+    "-r",
+    "requirements-quality.txt"
+  ],
+  "exit_code": 0,
+  "seconds": 5.845,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-install.txt"
+}

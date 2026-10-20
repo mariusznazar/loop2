@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_python_shell_checks.py"
+  ],
+  "exit_code": 1,
+  "seconds": 7.502,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f3-shell-red.txt"
+}

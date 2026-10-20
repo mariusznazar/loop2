@@ -1,0 +1,6 @@
+src/browser/sim/data/actions.ts 42ms
+src/browser/sim/data/archetypes.ts 3ms
+src/browser/sim/data/balance.ts 2ms
+src/browser/sim/data/conditions.ts 4ms
+src/browser/sim/data/maps.ts 7ms
+src/browser/sim/data/resources.ts 4ms

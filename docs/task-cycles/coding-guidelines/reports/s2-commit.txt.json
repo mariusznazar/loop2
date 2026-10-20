@@ -1,0 +1,15 @@
+{
+  "command": [
+    "git",
+    "commit",
+    "-m",
+    "build: pin local Ruff and ShellCheck tools",
+    "--",
+    "README.md",
+    "requirements-quality.in",
+    "requirements-quality.txt"
+  ],
+  "exit_code": 0,
+  "seconds": 0.096,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-commit.txt"
+}

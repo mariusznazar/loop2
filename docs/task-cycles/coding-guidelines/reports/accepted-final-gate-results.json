@@ -1,0 +1,293 @@
+[
+  {
+    "label": "accepted-final-invariants",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/invariants",
+      "--record",
+      ".runs/accepted-final-invariants.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 350.09,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-invariants.txt"
+  },
+  {
+    "label": "accepted-final-deploy",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/deploy",
+      "--record",
+      ".runs/accepted-final-deploy.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 210.22,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-deploy.txt"
+  },
+  {
+    "label": "accepted-final-agent_workflow",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/agent_workflow",
+      "--record",
+      ".runs/accepted-final-agent_workflow.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.15,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-agent_workflow.txt"
+  },
+  {
+    "label": "accepted-final-quality",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/gate/run_tests.py",
+      "tests/quality",
+      "--record",
+      ".runs/accepted-final-quality.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 146.71,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-quality.txt"
+  },
+  {
+    "label": "accepted-final-npm-typecheck",
+    "command": [
+      "npm.cmd",
+      "run",
+      "typecheck"
+    ],
+    "exit_code": 0,
+    "seconds": 1.13,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-npm-typecheck.txt"
+  },
+  {
+    "label": "accepted-final-npm-build",
+    "command": [
+      "npm.cmd",
+      "run",
+      "build"
+    ],
+    "exit_code": 0,
+    "seconds": 1.21,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-npm-build.txt"
+  },
+  {
+    "label": "accepted-final-npm-test",
+    "command": [
+      "npm.cmd",
+      "test"
+    ],
+    "exit_code": 0,
+    "seconds": 6.17,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-npm-test.txt"
+  },
+  {
+    "label": "accepted-final-eslint",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_eslint.py",
+      "--record",
+      ".runs/accepted-final-eslint.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 4.45,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-eslint.txt"
+  },
+  {
+    "label": "accepted-final-eslint-configuration",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_eslint.py",
+      "--configuration",
+      "--record",
+      ".runs/accepted-final-eslint-configuration.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 2.77,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-eslint-configuration.txt"
+  },
+  {
+    "label": "accepted-final-ruff",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_ruff.py",
+      "--record",
+      ".runs/accepted-final-ruff.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 2.17,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-ruff.txt"
+  },
+  {
+    "label": "accepted-final-shellcheck",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_shellcheck.py",
+      "--record",
+      ".runs/accepted-final-shellcheck.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.63,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-shellcheck.txt"
+  },
+  {
+    "label": "accepted-final-format",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_format.py",
+      "--record",
+      ".runs/accepted-final-format.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 2.19,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-format.txt"
+  },
+  {
+    "label": "accepted-final-dependency-audit",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      "scripts/check_dependencies.py",
+      "--fork-point",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/accepted-final-dependency-audit.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 4.09,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-dependency-audit.txt"
+  },
+  {
+    "label": "accepted-final-guard-decisions",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/decisions/format_guard.py",
+      "foundations/decisions.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/accepted-final-guard-decisions.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.71,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-guard-decisions.txt"
+  },
+  {
+    "label": "accepted-final-guard-invariants",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/invariants/format_guard.py",
+      "foundations/invariants.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/accepted-final-guard-invariants.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 1.04,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-guard-invariants.txt"
+  },
+  {
+    "label": "accepted-final-guard-environment-facts",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/environment-facts/format_guard.py",
+      "foundations/environment_facts.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/accepted-final-guard-environment-facts.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.66,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-guard-environment-facts.txt"
+  },
+  {
+    "label": "accepted-final-guard-part-map",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/elements/part-map/format_guard.py",
+      "foundations/part_map.md",
+      "--base",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/accepted-final-guard-part-map.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.38,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-guard-part-map.txt"
+  },
+  {
+    "label": "accepted-final-guidelines-form",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/product-guidelines/form_check.py",
+      "--record",
+      ".runs/accepted-final-guidelines-form.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.46,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-guidelines-form.txt"
+  },
+  {
+    "label": "accepted-final-guidelines-reference",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/product-guidelines/form_check.py",
+      "--merge-onto",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "--record",
+      ".runs/accepted-final-guidelines-reference.jsonl"
+    ],
+    "exit_code": 0,
+    "seconds": 0.61,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-guidelines-reference.txt"
+  },
+  {
+    "label": "accepted-final-instructions",
+    "command": [
+      "C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-B",
+      ".the-way/instruction-files/check_instructions.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.31,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-instructions.txt"
+  },
+  {
+    "label": "accepted-final-diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "c379207bfd8bd148d3589ea75604ba5165915d01",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "seconds": 0.14,
+    "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/accepted-final-diff-check.txt"
+  }
+]

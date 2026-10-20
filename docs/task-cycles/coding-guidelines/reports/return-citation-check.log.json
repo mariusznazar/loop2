@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".runs/task-cycles/coding-guidelines/reports/return-citation-check.py"
+  ],
+  "exit_code": 1,
+  "seconds": 0.072,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\return-citation-check.log"
+}

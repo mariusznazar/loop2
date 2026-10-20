@@ -1,0 +1,1 @@
+{"primary_source": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\s11-fixture-primary-source.json", "safe": "minimist/1.2.8", "vulnerable": "minimist/1.2.5", "severity": "critical", "advisory": "https://github.com/advisories/GHSA-xvch-5gv4-984h"}

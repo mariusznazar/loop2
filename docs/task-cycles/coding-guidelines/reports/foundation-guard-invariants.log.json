@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/elements/invariants/format_guard.py",
+    "foundations/invariants.md",
+    "--base",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--merge-onto",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--record",
+    ".runs/foundation-invariants.jsonl"
+  ],
+  "exit_code": 0,
+  "seconds": 2.414,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\foundation-guard-invariants.log"
+}
