@@ -1,27 +1,40 @@
-import { ACTIONS } from './data/actions.js';
-import { BALANCE } from './data/balance.js';
-import type { MapDef } from './data/maps.js';
-import { neighbours, sameHex, tileAt } from './hex.js';
-import { drawLayout } from './layout.js';
-import { chooseActivity, walkTarget } from './program.js';
-import { nextRandom, streamState } from './random.js';
-import type { Activity, ArchetypeId, CurrentActivity, Hex, MapId, MapRun, Program } from './types.js';
+import { ACTIONS } from "./data/actions.js";
+import { BALANCE } from "./data/balance.js";
+import type { MapDef } from "./data/maps.js";
+import { neighbours, sameHex, tileAt } from "./hex.js";
+import { drawLayout } from "./layout.js";
+import { chooseActivity, walkTarget } from "./program.js";
+import { nextRandom, streamState } from "./random.js";
+import type {
+  Activity,
+  ArchetypeId,
+  CurrentActivity,
+  Hex,
+  MapId,
+  MapRun,
+  Program,
+} from "./types.js";
 
 /** What happened in the simulation, minute-stamped, in order of occurrence. */
 export type GameEvent =
-  | { kind: 'mapRunStarted'; seed: number }
-  | { kind: 'mapRunEnded' }
-  | { kind: 'activityStarted'; minute: number; activity: Activity; stepTo: Hex | null }
-  | { kind: 'activityFinished'; minute: number; activity: Activity }
-  | { kind: 'tileRevealed'; minute: number; at: Hex }
-  | { kind: 'moved'; minute: number; from: Hex; to: Hex };
+  | { kind: "mapRunStarted"; seed: number }
+  | { kind: "mapRunEnded" }
+  | {
+      kind: "activityStarted";
+      minute: number;
+      activity: Activity;
+      stepTo: Hex | null;
+    }
+  | { kind: "activityFinished"; minute: number; activity: Activity }
+  | { kind: "tileRevealed"; minute: number; at: Hex }
+  | { kind: "moved"; minute: number; from: Hex; to: Hex };
 
 /**
  * Chooses the next activity at the run's minute with the given program and starts it.
  * Only a started Wędruj draws, once, from the wander generator.
  */
 function startActivity(
-  run: Omit<MapRun, 'current'>,
+  run: Omit<MapRun, "current">,
   map: MapDef,
   program: Program,
 ): { current: CurrentActivity; wanderRandom: number; event: GameEvent } {
@@ -30,24 +43,24 @@ function startActivity(
   let stepTo: Hex | null = null;
   let minutes: number = BALANCE.waitMinutes;
 
-  if (activity.kind === 'rule') {
+  if (activity.kind === "rule") {
     const action = activity.action;
     switch (action.kind) {
-      case 'explore':
+      case "explore":
         minutes = ACTIONS.explore.minutes;
         break;
-      case 'wander': {
+      case "wander": {
         const around = neighbours(run.tiles, run.character.at);
-        const unrevealed = around.filter(tile => !tile.revealed);
+        const unrevealed = around.filter((tile) => !tile.revealed);
         const candidates = unrevealed.length > 0 ? unrevealed : around;
         const draw = nextRandom(run.wanderRandom);
         wanderRandom = draw.state;
-        const target = candidates[Math.floor(draw.value * candidates.length)]!;
+        const target = candidates[Math.floor(draw.value * candidates.length)];
         stepTo = { ...target.at };
         minutes = target.stepMinutes;
         break;
       }
-      case 'walkTo': {
+      case "walkTo": {
         const next = walkTarget(run, action.resource)!.next;
         stepTo = { ...next };
         minutes = tileAt(run.tiles, next)!.stepMinutes;
@@ -65,7 +78,12 @@ function startActivity(
   return {
     current,
     wanderRandom,
-    event: { kind: 'activityStarted', minute: run.minute, activity, stepTo: stepTo && { ...stepTo } },
+    event: {
+      kind: "activityStarted",
+      minute: run.minute,
+      activity,
+      stepTo: stepTo && { ...stepTo },
+    },
   };
 }
 
@@ -83,11 +101,15 @@ export function newMapRun(
     minute: 0,
     tiles,
     character: { archetypeId: ids.archetypeId, at: entrance },
-    wanderRandom: streamState(seed, 'wander'),
+    wanderRandom: streamState(seed, "wander"),
   };
   const started = startActivity(base, map, program);
   return {
-    run: { ...base, current: started.current, wanderRandom: started.wanderRandom },
+    run: {
+      ...base,
+      current: started.current,
+      wanderRandom: started.wanderRandom,
+    },
     events: [started.event],
   };
 }
@@ -96,27 +118,41 @@ export function newMapRun(
  * One game minute. When the current activity ends in this minute, its finish applies and the
  * next activity is chosen in the same minute with the program given now. Inputs are not changed.
  */
-export function stepMinute(run: MapRun, map: MapDef, program: Program): { run: MapRun; events: GameEvent[] } {
+export function stepMinute(
+  run: MapRun,
+  map: MapDef,
+  program: Program,
+): { run: MapRun; events: GameEvent[] } {
   const minute = run.minute + 1;
   // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
   // instead of never; for every duration of 1 minute or more the two are the same.
-  if (minute < run.current.endMinute) return { run: { ...run, minute }, events: [] };
+  if (minute < run.current.endMinute)
+    return { run: { ...run, minute }, events: [] };
 
   const finished = run.current;
-  const events: GameEvent[] = [{ kind: 'activityFinished', minute, activity: finished.activity }];
+  const events: GameEvent[] = [
+    { kind: "activityFinished", minute, activity: finished.activity },
+  ];
   let tiles = run.tiles;
   let character = run.character;
 
-  if (finished.activity.kind === 'rule') {
+  if (finished.activity.kind === "rule") {
     const action = finished.activity.action;
-    if (action.kind === 'explore') {
+    if (action.kind === "explore") {
       const at = run.character.at;
-      tiles = run.tiles.map(tile => (sameHex(tile.at, at) ? { ...tile, revealed: true } : tile));
-      events.push({ kind: 'tileRevealed', minute, at: { ...at } });
+      tiles = run.tiles.map((tile) =>
+        sameHex(tile.at, at) ? { ...tile, revealed: true } : tile,
+      );
+      events.push({ kind: "tileRevealed", minute, at: { ...at } });
     } else if (finished.stepTo) {
       const to = finished.stepTo;
       character = { ...run.character, at: { ...to } };
-      events.push({ kind: 'moved', minute, from: { ...run.character.at }, to: { ...to } });
+      events.push({
+        kind: "moved",
+        minute,
+        from: { ...run.character.at },
+        to: { ...to },
+      });
     }
   }
 
@@ -130,5 +166,12 @@ export function stepMinute(run: MapRun, map: MapDef, program: Program): { run: M
   };
   const started = startActivity(base, map, program);
   events.push(started.event);
-  return { run: { ...base, current: started.current, wanderRandom: started.wanderRandom }, events };
+  return {
+    run: {
+      ...base,
+      current: started.current,
+      wanderRandom: started.wanderRandom,
+    },
+    events,
+  };
 }

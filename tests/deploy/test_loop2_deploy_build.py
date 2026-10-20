@@ -13,7 +13,6 @@
 - the old game's container state logged after a failed build.
 """
 
-import os
 import unittest
 
 import deploy_script_support as support

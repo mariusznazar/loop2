@@ -14,6 +14,43 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 `npm start` wymaga wcześniejszego builda. Serwer domyślnie nasłuchuje na 127.0.0.1:3000; adres zmienisz zmiennymi środowiska `LOOP2_LISTEN_HOST` i `LOOP2_LISTEN_PORT`. Zakończ go przez Ctrl+C.
 
+## Narzędzia kontroli kodu
+
+`npm ci` instaluje także narzędzia deweloperskie według wspólnego `package-lock.json`. Do pierwszej instalacji wystarcza npm dostarczony z Node.js; kontrole używają potem lokalnych przypiętych narzędzi i nie pobierają ich podczas sprawdzania. Przy świadomej aktualizacji pliku blokady lokalne ustawienie `min-release-age` może odrzucić przyjętą nową wersję narzędzia jako zbyt świeżą. Dla takiej przyjętej wersji można dodać `--min-release-age=0` do jednorazowego polecenia aktualizującego plik blokady, zachowując ustawienia globalne. Zwykła instalacja nadal używa `npm ci`.
+
+Pakiet `typescript` dostarcza linterowi API TypeScript 6.0.2; wpis `overrides` przypina także rzeczywistą wersję API eksportowaną przez jego pakiet zgodności. Oddzielny `typescript-compiler` zawiera TypeScript 7, a skrypt budowania jawnie uruchamia jego kompilator dla obu konfiguracji aplikacji. Używaj poleceń budowania projektu; samo `npx tsc` wybiera spośród dostępnych plików wykonywalnych.
+
+Ruff i ShellCheck wymagają Pythona 3.9 lub nowszego oraz osobnego, lokalnego środowiska. Nie wymagają aktywowania środowiska ani instalacji globalnej. Wersje deklaruje `requirements-quality.in`, a `requirements-quality.txt` przypina komplet paczek i hasze ich gotowych plików wheel. Instalacja pobiera tylko zgodne pliki wheel; na platformie bez takiego pliku kończy się błędem, bez budowania ze źródeł i bez wyboru innej wersji.
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .runs/quality-venv
+.runs/quality-venv/Scripts/python.exe -m pip install --require-hashes -r requirements-quality.txt
+.runs/quality-venv/Scripts/ruff.exe --version
+.runs/quality-venv/Scripts/shellcheck.exe --version
+```
+
+Linux/macOS:
+
+```sh
+python3 -m venv .runs/quality-venv
+.runs/quality-venv/bin/python -m pip install --require-hashes -r requirements-quality.txt
+.runs/quality-venv/bin/ruff --version
+.runs/quality-venv/bin/shellcheck --version
+```
+
+Ruff ma zgłosić `ruff 0.17.1`, a ShellCheck linię `version: 0.11.0`. Paczka `shellcheck-py==0.11.0.1` dostarcza ten plik wykonywalny ShellCheck; jej końcowe `.1` jest wersją opakowania Python. Kontrole poniżej korzystają bezpośrednio z tych lokalnych plików w `.runs/quality-venv`, bez pobierania narzędzi podczas sprawdzania. Po zmianie przypiętych narzędzi ponów instalację z pliku blokady i sprawdź obie wersje.
+
+- `python -B scripts/check_eslint.py --configuration --record .runs/eslint-configuration.jsonl` sprawdza kompletną efektywną konfigurację TS/JS.
+- `python -B scripts/check_eslint.py --record .runs/eslint.jsonl` sprawdza źródła i wyciszenia reguł.
+- `python -B scripts/check_ruff.py --record .runs/ruff.jsonl` sprawdza źródła Python oraz wyciszenia blokujących reguł.
+- `python -B scripts/check_shellcheck.py --record .runs/shellcheck.jsonl` sprawdza samodzielne skrypty Bash oraz dyrektywy zmieniające przyjęty zestaw kontroli.
+- `python -B scripts/check_format.py --record .runs/format.jsonl` sprawdza format i LF. Edytor używa tego samego `prettier.config.mjs`; wybierz lokalny Prettier i nie nadpisuj jego ustawień osobno.
+- `python -B scripts/check_dependencies.py --fork-point <commit-początku-zmiany> --record .runs/dependency-audit.jsonl` porównuje nowe rzeczywiste pary nazwa–wersja z początkiem zmiany i odpytuje publiczny rejestr npm przez lokalny npm. Podaj niezmienny commit początku zmiany jako podstawę porównania.
+
+Kod zakończenia kontroli to `0` dla wyniku pozytywnego, `1` dla wykrytego naruszenia i `2`, gdy nie udało się wiarygodnie wykonać kontroli. Pliki wyników w `.runs/` są lokalne i ignorowane przez Git. ESLint obejmuje również nowe warianty TS/JS w częściach z kodem; pomocnicze programy API TS6 w jego konfiguracji dają informację o typach także skryptom i testom poza konfiguracjami kompilacji aplikacji. Python i Bash nie są automatycznie formatowane.
+
 ## Co pokazuje strona
 
 - **Panel „Program”** (lewa kolumna, widoczny zawsze): uporządkowana lista reguł „warunek → akcja”. Warunki: „Zawsze” i „Tu leży mniej niż N <zasób>”; akcje: „Eksploruj”, „Wędruj” i „Idź — <zasób>”. Przyciski „↑”, „↓”, „Usuń” i „Dodaj regułę”. Program można zmieniać przed wysłaniem maga i w trakcie przejścia; zmiana działa od najbliższej wolnej minuty gry.

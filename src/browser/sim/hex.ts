@@ -1,4 +1,4 @@
-import type { Hex, Tile } from './types.js';
+import type { Hex, Tile } from "./types.js";
 
 /** Offset coordinates (odd rows shifted right) to axial. */
 export function offsetToAxial(col: number, row: number): Hex {
@@ -16,31 +16,36 @@ export function hexDistance(a: Hex, b: Hex): number {
 }
 
 export function tileAt(tiles: readonly Tile[], at: Hex): Tile | undefined {
-  return tiles.find(tile => sameHex(tile.at, at));
+  return tiles.find((tile) => sameHex(tile.at, at));
 }
 
 /** Tiles next to `at`, in tile-list order. */
 export function neighbours(tiles: readonly Tile[], at: Hex): Tile[] {
-  return tiles.filter(tile => hexDistance(tile.at, at) === 1);
+  return tiles.filter((tile) => hexDistance(tile.at, at) === 1);
 }
 
 /** Cheapest cost in minutes from `from` to every tile (by list index); entering a tile costs its stepMinutes. */
 function costsFrom(tiles: readonly Tile[], from: Hex): number[] {
   const cost = tiles.map(() => Infinity);
   const done = tiles.map(() => false);
-  const start = tiles.findIndex(tile => sameHex(tile.at, from));
+  const start = tiles.findIndex((tile) => sameHex(tile.at, from));
   if (start < 0) return cost;
   cost[start] = 0;
   for (;;) {
     let current = -1;
     for (let i = 0; i < tiles.length; i += 1) {
-      if (!done[i] && cost[i] < Infinity && (current < 0 || cost[i] < cost[current])) current = i;
+      if (
+        !done[i] &&
+        cost[i] < Infinity &&
+        (current < 0 || cost[i] < cost[current])
+      )
+        current = i;
     }
     if (current < 0) return cost;
     done[current] = true;
     for (let i = 0; i < tiles.length; i += 1) {
-      if (!done[i] && hexDistance(tiles[i]!.at, tiles[current]!.at) === 1) {
-        cost[i] = Math.min(cost[i]!, cost[current]! + tiles[i]!.stepMinutes);
+      if (!done[i] && hexDistance(tiles[i].at, tiles[current].at) === 1) {
+        cost[i] = Math.min(cost[i], cost[current] + tiles[i].stepMinutes);
       }
     }
   }
@@ -59,15 +64,21 @@ export function nearestTile(
   const cost = costsFrom(tiles, from);
   let best = -1;
   for (let i = 0; i < tiles.length; i += 1) {
-    if (cost[i]! < Infinity && predicate(tiles[i]!) && (best < 0 || cost[i]! < cost[best]!)) best = i;
+    if (
+      cost[i] < Infinity &&
+      predicate(tiles[i]) &&
+      (best < 0 || cost[i] < cost[best])
+    )
+      best = i;
   }
   if (best < 0) return null;
-  const tile = tiles[best]!;
-  const minutes = cost[best]!;
+  const tile = tiles[best];
+  const minutes = cost[best];
   if (minutes === 0) return { tile, minutes, next: from };
   for (const step of neighbours(tiles, from)) {
-    const rest = costsFrom(tiles, step.at)[best]!;
-    if (step.stepMinutes + rest === minutes) return { tile, minutes, next: step.at };
+    const rest = costsFrom(tiles, step.at)[best];
+    if (step.stepMinutes + rest === minutes)
+      return { tile, minutes, next: step.at };
   }
   return null;
 }
@@ -86,6 +97,6 @@ export function hexCorners(size: number): { x: number; y: number }[] {
 }
 
 /** Label of a tile in the tile list: 0-based offset coordinates. */
-export function tileLabel(tile: Pick<Tile, 'col' | 'row'>): string {
+export function tileLabel(tile: Pick<Tile, "col" | "row">): string {
   return `(${tile.col}, ${tile.row})`;
 }

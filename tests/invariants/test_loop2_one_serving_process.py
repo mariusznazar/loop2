@@ -69,6 +69,9 @@ def _processes():
                   "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(), $_.Name }")
         result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
                                 capture_output=True, timeout=60)
+        if result.returncode != 0 or result.stderr.strip():
+            raise AssertionError("Get-CimInstance failed: "
+                                 + result.stderr.decode("utf-8", "replace"))
         for line in result.stdout.decode("utf-8", "replace").splitlines():
             parts = line.split(" ", 3)
             if len(parts) == 4 and all(p.lstrip("-").isdigit() for p in parts[:3]):
@@ -76,6 +79,8 @@ def _processes():
     else:
         result = subprocess.run(["ps", "-A", "-o", "pid=,ppid=,comm="],
                                 capture_output=True, timeout=60)
+        if result.returncode != 0:
+            raise AssertionError("ps failed: " + result.stderr.decode("utf-8", "replace"))
         for line in result.stdout.decode("utf-8", "replace").splitlines():
             parts = line.split(None, 2)
             if len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit():
@@ -122,6 +127,8 @@ def tcp_listeners():
                                     capture_output=True, timeout=60)
         except FileNotFoundError:
             raise AssertionError("lsof is not on PATH; the listening sockets cannot be read")
+        if result.returncode != 0:
+            raise AssertionError("lsof failed: " + result.stderr.decode("utf-8", "replace"))
         pid = None
         for line in result.stdout.decode("utf-8", "replace").splitlines():
             if line.startswith("p") and line[1:].isdigit():

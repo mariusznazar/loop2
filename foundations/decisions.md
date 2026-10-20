@@ -819,3 +819,173 @@ file differs from its source goes beyond what the licence asks: it is the produc
 *Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
 thing costs drawing work; an icon package from npm — a dependency more for files the product can
 keep itself, entering through what the product already treats as untrusted.
+
+### D-28/1 — Which coding-guideline discipline does loop2 adopt?
+
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
+
+- **Change:** new decision
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
+  - violates: an additional mandatory test exemplar, automatic Python formatting or a transition-debt check introduced without a new decision
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader exemplar maintenance and additional formatters add work without an established benefit.
+*Rejected:* A complete exemplar audit and automatic formatting for every language — more maintenance and unmeasured reformatting work; transitional lint debt — an extra mechanism where full-compliance source invariants already apply.
+
+### D-29/1 — Which rules check TypeScript and JavaScript?
+
+All application, script and test TypeScript and JavaScript files in browser-view, simulation, account-server and build-tools, including new paths, use local pinned ESLint 10.12.0 with @eslint/js 10.0.1 `recommended` and, for TypeScript, typescript-eslint 8.71.2 flat `recommendedTypeChecked` with its inherited compatibility overrides: the full adopted sets of 64 JavaScript and 92 active TypeScript rules block, with no additional stylistic sets or example-only rules. The configuration uses globals 17.13.0 and TypeScript API 6.0.2 for the parser while application compilation stays on TypeScript 7, within the one shared npm package and lockfile; dependencies, generated files, the submodule and temporary work results are outside the source scope. The actual configured rule names, levels and options and complete file scope remain the adopted ones, inline directives cannot suppress a blocking rule or change the set, and changing the set takes a human-accepted change of this decision.
+
+- **Change:** new decision
+- **Scope:** browser-view, simulation, account-server, build-tools
+- **Based on:** eslint-recommended-rules@3f3d5421 · typescript-eslint-typechecked-rules@f030ff1d
+- **Relations:** derives from D-06@094e6fa7
+- **Verification:** level 1 — invariants: eslint-source-rules · eslint-configuration-rules
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency.
+*Rejected:* A compiler downgrade — gives up the existing compiler choice; an unsupported parser API — risks unreliable type-aware reports; extra style sets — add obligations beyond the accepted set.
+
+### D-30/1 — Which Python rules block a change?
+
+Every Python file in browser-view, simulation, account-server, build-tools, deployment and agent-workflow, including new paths, uses local pinned Ruff 0.17.1 with the complete default nonpreview set minus `PLW1510`, `I001`, `ISC004`, `UP031`, `RUF059`, `PIE808`, `RUF007`, `RUF012`, `PLR0402`, `FURB167`, `RUF100`, `SIM117`, `FURB192`, `SIM102`: the remaining 393 rules block and these fourteen rules remain examples. The check passes the explicit blocking list directly with isolation from external configuration, dependencies, generated files, the submodule and temporary work results are outside its source scope, and inline directives cannot suppress a blocking rule or alter the adopted set. Changing that set takes a human-accepted change of this decision.
+
+- **Change:** new decision
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** ruff-default-rules@46b97f28
+- **Relations:** none
+- **Verification:** level 1 — invariants: ruff-source-rules
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* The selected subset retains useful defect reports while leaving reports that offer no worthwhile code change as examples; direct isolated selection keeps configuration from quietly changing that boundary.
+*Rejected:* The entire default set as blocking — forces unhelpful rewrites; no Python linter — leaves useful defect reports unchecked.
+
+### D-31/1 — Which Bash rules block a change?
+
+Every standalone Bash script in the code parts, including new paths and extensionless scripts, uses local pinned ShellCheck 0.11.0 with its default nonoptional Bash checks and every diagnostic severity, with no example-only rules. Embedded commands in YAML or test literals are outside this standalone-script scope, while external rc files, environment options and source directives cannot suppress a blocking check or change the adopted set. Changing that set takes a human-accepted change of this decision.
+
+- **Change:** new decision
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** shellcheck-default-bash-checks@30288d55
+- **Relations:** none
+- **Verification:** level 1 — invariants: shellcheck-source-rules
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* The default checks cover shell defects without adding optional stylistic obligations; keeping source and environment controls from weakening them makes a successful result meaningful.
+*Rejected:* No Bash linter — leaves shell defects unchecked; enabling optional checks — adds obligations outside the accepted set.
+
+### D-32/1 — How is web code formatted?
+
+All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server and build-tools and browser HTML and CSS use local pinned Prettier 3.9.10 with its default nonexperimental configuration: two spaces, semicolons, preferred double quotes, target width 80 and LF on every platform. New paths have the same scope, Markdown, icons, generated files, dependencies, the submodule and temporary work results are excluded, and existing covered code has no formatting exception. The editor and check share one explicit configuration, and narrow repository attributes preserve LF for that scope on Windows.
+
+- **Change:** new decision
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: prettier-source-format
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* One formatter and shared settings remove repeated layout choices and platform-dependent line endings; the initial whole-scope reformatting is accepted to avoid lasting exceptions.
+*Rejected:* Per-file historic exceptions — preserve recurring format differences; Python and Bash formatting now — adds tools and unmeasured rewrites beyond the accepted scope.
+
+### D-33/1 — Which introduced dependency vulnerabilities block a change?
+
+The dependency audit uses local pinned npm 12.2.1 and the npm/GitHub Advisory Database through the public npm registry to block each actual npm package-name/version pair introduced against {fork-point} with a matching known vulnerability at low, moderate, high or critical severity when the check runs; info does not block and unchanged pairs do not block unrelated work. The comparison covers every npm manifest and lockfile in build-tools, new paths included, and direct, transitive, production, development, optional and peer dependencies, matching concrete advisories and their ranges to the introduced versions rather than using a package-wide highest severity; an unavailable, incomplete or unsupported result gives no successful verdict, while a complete valid comparison proving no introduced pair can pass without a network request. The request sends package names and versions without application code, runtime and container-image, operating-system and non-npm dependencies are outside this audit, and the low threshold has no automatic revision or scheduled threshold review.
+
+- **Change:** new decision
+- **Scope:** build-tools
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: introduced-npm-vulnerabilities
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* A low threshold starts conservatively while comparison of introduced versions keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same introduced version, and matching advisory ranges adds parsing work.
+*Rejected:* Moderate, high or critical thresholds — accept known lower-severity vulnerabilities in introduced versions; auditing unchanged versions as blockers — stops unrelated work; trusting only audit exit status or a package-wide severity — can attribute a vulnerability to the wrong installed version.
+
+### D-34/1 — Which file is the exemplar for content data?
+
+The exemplar for kind `content-data` is `src/browser/sim/data/resources.ts`, and its kind guidelines are read before adding or changing a file of that kind. The typed catalogue and identifiers derived from keys remain examples alongside the existing simulation-isolation rule, without requiring that catalogue shape in every data file.
+
+- **Change:** new decision
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-18@9cf9e4c8 · derives from D-04@3b3dcdc2
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: content-data guidelines designate the selected exemplar, retain simulation-isolation and show the catalogue as an example
+  - violates: a different exemplar or a new mandatory catalogue shape for every data file
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* A current typed content catalogue gives later authors a concrete model without creating a new architectural constraint for every kind of game data.
+*Rejected:* Making the catalogue shape mandatory — constrains data whose useful structure differs; no exemplar — leaves each new catalogue to invent its own model.
+
+### D-35/1 — Which file is the exemplar for simulation modules?
+
+The exemplar for kind `simulation-module` is `src/browser/sim/game.ts`, and its kind guidelines are read before adding or changing a file of that kind. Explicit inputs and a result consisting of state and events illustrate the existing simulation-isolation and simulation-inputs rules, without requiring every helper to return `GameResult`.
+
+- **Change:** new decision
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-04@3b3dcdc2
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: simulation-module guidelines designate the selected exemplar and keep different suitable helper return types
+  - violates: a different exemplar or a new obligation that every helper returns GameResult
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* The game operation illustrates explicit state transitions while allowing smaller helpers to expose only the result they compute.
+*Rejected:* One result type for every helper — adds wrappers without a demonstrated need; no exemplar — leaves the operation model implicit.
+
+### D-36/1 — Which file is the exemplar for browser modules?
+
+The exemplar for kind `browser-module` is `src/browser/view/status-row.ts`, and its kind guidelines are read before adding or changing a file of that kind. Creating controls once, updating while preserving focus and passing user actions to the application remain examples alongside browser-view-framework and content-identifiers, without requiring `update()` in every module or forbidding the rebuilding of static elements.
+
+- **Change:** new decision
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-03@fb5aa3b0 · derives from D-18@9cf9e4c8
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: browser-module guidelines designate the selected exemplar and show focus-preserving control updates as examples
+  - violates: a different exemplar or a mandatory update method in every browser module
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* An existing small control shows stable editing behavior without forcing every view helper to own a control lifecycle.
+*Rejected:* Mandatory update methods and a ban on static rebuilding — impose structure where no editable control needs it; no exemplar — leaves focus-preserving updates implicit.
+
+### D-37/1 — Which file is the exemplar for the HTTP application?
+
+The exemplar for kind `http-application` is `src/server/app.ts`, and its kind guidelines are read before adding or changing a file of that kind. Separating application creation from opening the listening port remains an example alongside account-server-express-http and loop2-api-error-route, with no additional structural check of the application factory.
+
+- **Change:** new decision
+- **Scope:** account-server
+- **Based on:** none
+- **Relations:** derives from D-02@06e6d3d8 · derives from D-05@db83484a
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: http-application guidelines designate the selected exemplar and show separate application creation as an example
+  - violates: a different exemplar or a new mandatory factory-structure invariant
+- **Review when:** none
+- **Origin:** none
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
+
+*Rationale:* Separating creation from listening gives a concrete model that is easy to test, without settling the architecture of future account and saved-game features.
+*Rejected:* A new factory-structure check — enforces an example as architecture; no exemplar — leaves the existing testable assembly model implicit.

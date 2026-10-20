@@ -13,10 +13,10 @@ export type ResourceDef = {
 };
 
 export const RESOURCES = {
-  stick: { name: 'patyk', icon: 'wood-stick', iconTitle: 'Wood stick icon' },
-  berry: { name: 'jagoda', icon: 'berry-bush', iconTitle: 'Berry bush icon' },
-  moss: { name: 'mech', icon: 'fern', iconTitle: 'Fern icon' },
-  fiber: { name: 'włókno', icon: 'flax', iconTitle: 'Flax icon' },
+  stick: { name: "patyk", icon: "wood-stick", iconTitle: "Wood stick icon" },
+  berry: { name: "jagoda", icon: "berry-bush", iconTitle: "Berry bush icon" },
+  moss: { name: "mech", icon: "fern", iconTitle: "Fern icon" },
+  fiber: { name: "włókno", icon: "flax", iconTitle: "Flax icon" },
 } as const satisfies Record<string, ResourceDef>;
 
 export type ResourceId = keyof typeof RESOURCES;

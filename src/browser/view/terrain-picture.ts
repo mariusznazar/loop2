@@ -1,8 +1,8 @@
-import { MAPS } from '../sim/data/maps.js';
-import { RESOURCES } from '../sim/data/resources.js';
-import type { ResourceId } from '../sim/data/resources.js';
-import { hexCenter, hexCorners, sameHex } from '../sim/hex.js';
-import type { GameState } from '../sim/types.js';
+import { MAPS } from "../sim/data/maps.js";
+import { RESOURCES } from "../sim/data/resources.js";
+import type { ResourceId } from "../sim/data/resources.js";
+import { hexCenter, hexCorners, sameHex } from "../sim/hex.js";
+import type { GameState } from "../sim/types.js";
 
 export type PictureIcon = {
   resource: ResourceId;
@@ -23,7 +23,7 @@ export type PictureTile = {
   points: string;
   revealed: boolean;
   icons: PictureIcon[];
-  outline: 'character' | 'stepTarget' | null;
+  outline: "character" | "stepTarget" | null;
 };
 
 export type TerrainPicture = {
@@ -41,21 +41,23 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
   if (!run) return { width: 0, height: 0, offsetX: 0, offsetY: 0, tiles: [] };
 
   const corners = hexCorners(size);
-  const centres = run.tiles.map(tile => hexCenter(tile.at, size));
-  const xs = centres.flatMap(c => corners.map(k => c.x + k.x));
-  const ys = centres.flatMap(c => corners.map(k => c.y + k.y));
+  const centres = run.tiles.map((tile) => hexCenter(tile.at, size));
+  const xs = centres.flatMap((c) => corners.map((k) => c.x + k.x));
+  const ys = centres.flatMap((c) => corners.map((k) => c.y + k.y));
   const offsetX = -Math.min(...xs);
   const offsetY = -Math.min(...ys);
 
   // Icons follow the order of the resources in the run's map data, as the tile list does.
-  const resourceOrder: ResourceId[] = MAPS[run.mapId].resources.map(({ id }) => id);
+  const resourceOrder: ResourceId[] = MAPS[run.mapId].resources.map(
+    ({ id }) => id,
+  );
   const iconSize = size * 0.7;
   const tiles = run.tiles.map((tile, index): PictureTile => {
-    const centre = centres[index]!;
+    const centre = centres[index];
     const cx = centre.x + offsetX;
     const cy = centre.y + offsetY;
-    const points = corners.map(k => `${cx + k.x},${cy + k.y}`).join(' ');
-    const present = resourceOrder.filter(id => Object.hasOwn(tile.stock, id));
+    const points = corners.map((k) => `${cx + k.x},${cy + k.y}`).join(" ");
+    const present = resourceOrder.filter((id) => Object.hasOwn(tile.stock, id));
     // Two icons per row, centred on the tile.
     const icons = tile.revealed
       ? present.map((resource, i): PictureIcon => {
@@ -74,12 +76,25 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
         })
       : [];
     const outline = sameHex(tile.at, run.character.at)
-      ? 'character'
+      ? "character"
       : run.current.stepTo && sameHex(tile.at, run.current.stepTo)
-        ? 'stepTarget'
+        ? "stepTarget"
         : null;
-    return { col: tile.col, row: tile.row, points, revealed: tile.revealed, icons, outline };
+    return {
+      col: tile.col,
+      row: tile.row,
+      points,
+      revealed: tile.revealed,
+      icons,
+      outline,
+    };
   });
 
-  return { width: Math.max(...xs) + offsetX, height: Math.max(...ys) + offsetY, offsetX, offsetY, tiles };
+  return {
+    width: Math.max(...xs) + offsetX,
+    height: Math.max(...ys) + offsetY,
+    offsetX,
+    offsetY,
+    tiles,
+  };
 }

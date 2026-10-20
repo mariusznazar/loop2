@@ -21,7 +21,6 @@ methods and headers not listed; a page served under another name than an HTML fi
 """
 
 import json
-import os
 import unittest
 
 import loop2_invariant_support as support

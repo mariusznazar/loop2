@@ -9,17 +9,36 @@ export type IconCredit = {
 };
 
 /** The change made to every icon file: the black background removed, the shape drawn dark. */
-const CHANGES = 'zmienione (bez tła, ciemny kolor)';
+const CHANGES = "zmienione (bez tła, ciemny kolor)";
 
 /** Commit of https://github.com/game-icons/icons the icon files were copied from. */
-export const ICON_SOURCE_COMMIT = '82d948812bfe3f269ef8f731dcdb07b08160edc4';
+export const ICON_SOURCE_COMMIT = "82d948812bfe3f269ef8f731dcdb07b08160edc4";
 
-export const ICON_LICENCE = { name: 'CC BY 3.0', url: 'https://creativecommons.org/licenses/by/3.0/' } as const;
+export const ICON_LICENCE = {
+  name: "CC BY 3.0",
+  url: "https://creativecommons.org/licenses/by/3.0/",
+} as const;
 
 /** Credits keyed by icon file name without the extension. */
 export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
-  'wood-stick': { author: 'Delapouite', sourceUrl: 'https://game-icons.net/1x1/delapouite/wood-stick.html', changes: CHANGES },
-  'berry-bush': { author: 'Delapouite', sourceUrl: 'https://game-icons.net/1x1/delapouite/berry-bush.html', changes: CHANGES },
-  fern: { author: 'Delapouite', sourceUrl: 'https://game-icons.net/1x1/delapouite/fern.html', changes: CHANGES },
-  flax: { author: 'Delapouite', sourceUrl: 'https://game-icons.net/1x1/delapouite/flax.html', changes: CHANGES },
+  "wood-stick": {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/wood-stick.html",
+    changes: CHANGES,
+  },
+  "berry-bush": {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/berry-bush.html",
+    changes: CHANGES,
+  },
+  fern: {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/fern.html",
+    changes: CHANGES,
+  },
+  flax: {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/flax.html",
+    changes: CHANGES,
+  },
 };

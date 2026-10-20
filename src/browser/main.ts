@@ -1,3 +1,3 @@
-import { startApp } from './view/app.js';
+import { startApp } from "./view/app.js";
 
 startApp(document.body);

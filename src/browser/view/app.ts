@@ -1,11 +1,18 @@
-import { end, newGame, restart, setPaused, setProgram, type GameResult } from '../sim/game.js';
-import type { GameState } from '../sim/types.js';
-import { startClock, type GameStore } from './clock.js';
-import { createFooter } from './footer.js';
-import { createProgramEditor } from './program-editor.js';
-import { createSendPanel } from './send-panel.js';
-import { createStatusRow } from './status-row.js';
-import { createTerrainPanel } from './terrain-panel.js';
+import {
+  end,
+  newGame,
+  restart,
+  setPaused,
+  setProgram,
+  type GameResult,
+} from "../sim/game.js";
+import type { GameState } from "../sim/types.js";
+import { startClock, type GameStore } from "./clock.js";
+import { createFooter } from "./footer.js";
+import { createProgramEditor } from "./program-editor.js";
+import { createSendPanel } from "./send-panel.js";
+import { createStatusRow } from "./status-row.js";
+import { createTerrainPanel } from "./terrain-panel.js";
 
 /**
  * Builds the page in `root` and starts the game. This module holds the one current game state;
@@ -14,28 +21,28 @@ import { createTerrainPanel } from './terrain-panel.js';
 export function startApp(root: HTMLElement): void {
   let state: GameState = newGame();
 
-  const header = document.createElement('header');
-  const title = document.createElement('h1');
-  title.textContent = 'Loop';
+  const header = document.createElement("header");
+  const title = document.createElement("h1");
+  title.textContent = "Loop";
   header.append(title);
 
-  const columns = document.createElement('main');
-  columns.className = 'columns';
+  const columns = document.createElement("main");
+  columns.className = "columns";
   // Left column: the program panel, always visible.
-  const programPanel = document.createElement('section');
-  programPanel.className = 'program-panel';
+  const programPanel = document.createElement("section");
+  programPanel.className = "program-panel";
   // Right column: the send panel without a map run; the status row and terrain panel during one.
-  const mapColumn = document.createElement('section');
-  mapColumn.className = 'map-column';
-  const runPanel = document.createElement('div');
-  runPanel.className = 'run-panel';
+  const mapColumn = document.createElement("section");
+  mapColumn.className = "map-column";
+  const runPanel = document.createElement("div");
+  runPanel.className = "run-panel";
   // The terrain panel draws the map run and lists its revealed tiles.
   const terrainPanel = createTerrainPanel();
   columns.append(programPanel, mapColumn);
 
   // The editor passes each edited program to the simulation; setProgram validates and replaces it.
   // Real time elapsed before the edit is passed first, so it runs under the program it ran under.
-  const programEditor = createProgramEditor(program => {
+  const programEditor = createProgramEditor((program) => {
     clock.flush();
     store.apply(setProgram(state, program));
   });
@@ -50,14 +57,17 @@ export function startApp(root: HTMLElement): void {
       renderMapColumn();
       // The editor updates only when the program or the run's map changes, never on a clock tick,
       // so ticking cannot take focus from its controls.
-      if (state.program !== previous.program || state.run?.mapId !== previous.run?.mapId) {
+      if (
+        state.program !== previous.program ||
+        state.run?.mapId !== previous.run?.mapId
+      ) {
         programEditor.update(state);
       }
     },
   };
   const clock = startClock(store);
 
-  const sendPanel = createSendPanel(target => {
+  const sendPanel = createSendPanel((target) => {
     if (!state.run) clock.send(target);
   });
   const statusRow = createStatusRow({

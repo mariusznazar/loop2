@@ -1,15 +1,24 @@
-import assert from 'node:assert/strict';
-import { test } from 'node:test';
-import { ARCHETYPES } from '../../dist/public/sim/data/archetypes.js';
-import { MAPS } from '../../dist/public/sim/data/maps.js';
-import { advanceMinutes, newGame, passRealTime, send, setPaused, setProgram } from '../../dist/public/sim/game.js';
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
+import { MAPS } from "../../dist/public/sim/data/maps.js";
+import {
+  advanceMinutes,
+  newGame,
+  passRealTime,
+  send,
+  setPaused,
+  setProgram,
+} from "../../dist/public/sim/game.js";
 
 const mapId = Object.keys(MAPS)[0];
 const archetypeId = Object.keys(ARCHETYPES)[0];
 const SENT = { mapId, archetypeId };
 const REAL_MS = 1760000000000;
 
-const EXPLORING = { rules: [{ condition: { kind: 'always' }, action: { kind: 'explore' } }] };
+const EXPLORING = {
+  rules: [{ condition: { kind: "always" }, action: { kind: "explore" } }],
+};
 
 /** A game sent to the first map with a program that explores; the run stands at minute 0. */
 function sent(program = EXPLORING) {
@@ -27,13 +36,13 @@ function feed(state, inputs) {
   return { state, events };
 }
 
-test('1000 ms of real time moves the run on by one game minute', () => {
+test("1000 ms of real time moves the run on by one game minute", () => {
   const { state } = passRealTime(sent(), 1000);
   assert.equal(state.run.minute, 1);
   assert.equal(state.realMsCarry, 0);
 });
 
-test('parts of a second carry over from one call to the next', () => {
+test("parts of a second carry over from one call to the next", () => {
   let state = passRealTime(sent(), 400).state;
   assert.equal(state.run.minute, 0);
   assert.equal(state.realMsCarry, 400);
@@ -48,7 +57,7 @@ test('parts of a second carry over from one call to the next', () => {
   assert.equal(state.realMsCarry, 500);
 });
 
-test('real time passed while paused changes nothing, carry included', () => {
+test("real time passed while paused changes nothing, carry included", () => {
   const before = passRealTime(sent(), 300).state;
   const paused = setPaused(before, true).state;
   assert.equal(paused.paused, true);
@@ -57,7 +66,7 @@ test('real time passed while paused changes nothing, carry included', () => {
   assert.deepEqual(result.events, []);
 });
 
-test('after a resume time goes on from where the pause held it', () => {
+test("after a resume time goes on from where the pause held it", () => {
   let state = passRealTime(sent(), 2300).state;
   state = setPaused(state, true).state;
   state = passRealTime(state, 10000).state;
@@ -69,65 +78,83 @@ test('after a resume time goes on from where the pause held it', () => {
   assert.equal(state.realMsCarry, 0);
 });
 
-test('one long real time (a hidden tab) advances that many minutes at once, with no cap', () => {
+test("one long real time (a hidden tab) advances that many minutes at once, with no cap", () => {
   const { state } = passRealTime(sent(), 3600000);
   assert.equal(state.run.minute, 3600);
 });
 
-test('1000 ms in one call and 1000 calls of 1 ms give the same state and events', () => {
+test("1000 ms in one call and 1000 calls of 1 ms give the same state and events", () => {
   const once = feed(sent(), [1000]);
   const many = feed(sent(), Array(1000).fill(1));
   assert.deepEqual(many.state, once.state);
   assert.deepEqual(many.events, once.events);
 });
 
-test('real time is ignored when it is not a finite number above zero', () => {
+test("real time is ignored when it is not a finite number above zero", () => {
   const state = sent();
-  for (const realMs of [0, -1000, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, '1000', undefined]) {
+  for (const realMs of [
+    0,
+    -1000,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    "1000",
+    undefined,
+  ]) {
     const result = passRealTime(state, realMs);
     assert.deepEqual(result.state, state, `realMs ${String(realMs)}`);
     assert.deepEqual(result.events, [], `realMs ${String(realMs)}`);
   }
 });
 
-test('real time without a map run is ignored', () => {
+test("real time without a map run is ignored", () => {
   const state = newGame();
   const result = passRealTime(state, 5000);
   assert.deepEqual(result.state, state);
   assert.deepEqual(result.events, []);
 });
 
-test('passing real time gives the events of the minutes it covers, in order', () => {
+test("passing real time gives the events of the minutes it covers, in order", () => {
   const { state, events } = passRealTime(sent(), 20000);
   assert.equal(state.run.minute, 20);
-  assert.deepEqual(events.map(event => event.kind), ['activityFinished', 'tileRevealed', 'activityStarted']);
-  assert.ok(events.every(event => event.minute === 20));
+  assert.deepEqual(
+    events.map((event) => event.kind),
+    ["activityFinished", "tileRevealed", "activityStarted"],
+  );
+  assert.ok(events.every((event) => event.minute === 20));
 });
 
-test('advanceMinutes advances a span of game minutes, also while paused', () => {
+test("advanceMinutes advances a span of game minutes, also while paused", () => {
   const paused = setPaused(sent(), true).state;
   const result = advanceMinutes(paused, 20);
   assert.equal(result.state.run.minute, 20);
   assert.equal(result.state.paused, true);
   assert.equal(result.state.realMsCarry, 0);
-  assert.deepEqual(result.events.map(event => event.kind), ['activityFinished', 'tileRevealed', 'activityStarted']);
+  assert.deepEqual(
+    result.events.map((event) => event.kind),
+    ["activityFinished", "tileRevealed", "activityStarted"],
+  );
 });
 
-test('advanceMinutes of zero minutes changes nothing', () => {
+test("advanceMinutes of zero minutes changes nothing", () => {
   const state = sent();
   const result = advanceMinutes(state, 0);
   assert.deepEqual(result.state, state);
   assert.deepEqual(result.events, []);
 });
 
-test('advanceMinutes rejects a span that is not a whole number of minutes from zero up', () => {
+test("advanceMinutes rejects a span that is not a whole number of minutes from zero up", () => {
   const state = sent();
-  for (const minutes of [-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '3']) {
-    assert.throws(() => advanceMinutes(state, minutes), RangeError, `minutes ${String(minutes)}`);
+  for (const minutes of [-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, "3"]) {
+    assert.throws(
+      () => advanceMinutes(state, minutes),
+      RangeError,
+      `minutes ${String(minutes)}`,
+    );
   }
 });
 
-test('advanceMinutes and setPaused without a map run change nothing', () => {
+test("advanceMinutes and setPaused without a map run change nothing", () => {
   const state = newGame();
   assert.deepEqual(advanceMinutes(state, 10), { state, events: [] });
   assert.deepEqual(setPaused(state, true), { state, events: [] });

@@ -7,6 +7,7 @@ literals (WAY-69). This module only runs the product and hands its output back.
 """
 
 import atexit
+from contextlib import ExitStack, contextmanager
 import fnmatch
 import http.client
 import json
@@ -17,7 +18,6 @@ import shlex
 import signal
 import socket
 import subprocess
-import sys
 import tempfile
 import time
 
@@ -80,6 +80,9 @@ def _windows_descendants(root_pid, since):
               "([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds() }")
     result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
                             capture_output=True, timeout=60)
+    if result.returncode != 0 or result.stderr.strip():
+        raise AssertionError("Get-CimInstance failed: "
+                             + result.stderr.decode("utf-8", "replace"))
     children = {}
     for line in result.stdout.decode("ascii", "replace").splitlines():
         parts = line.split()
@@ -99,22 +102,30 @@ def _windows_descendants(root_pid, since):
 def kill_tree(process):
     """Kill a started process and everything it started, also when it has already exited and
     left a child running (npm exits; the node server it started may not)."""
-    if os.name == "nt":
-        since = getattr(process, "loop2_started", time.time())
-        descendants = _windows_descendants(process.pid, since)
-        for pid in [process.pid] * (process.poll() is None) + descendants:
-            subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
-    else:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)  # the whole session, alive parent or not
-        except (ProcessLookupError, PermissionError):
-            pass
-    if process.poll() is None:
-        try:
-            process.wait(timeout=30)
-        except subprocess.TimeoutExpired:
-            process.kill()
+    try:
+        if os.name == "nt":
+            since = getattr(process, "loop2_started", time.time())
+            try:
+                descendants = _windows_descendants(process.pid, since)
+            finally:
+                if process.poll() is None:
+                    subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+            for pid in descendants:
+                subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+        else:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)  # the whole session, alive parent or not
+            except (ProcessLookupError, PermissionError):
+                pass
+    finally:
+        if process.poll() is None:
+            try:
+                process.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                process.kill()
+
 
 
 def popen(args, cwd, env=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
@@ -221,6 +232,12 @@ def port_in_use(host=HOST, port=PORT):
         return probe.connect_ex((host, port)) == 0
 
 
+@contextmanager
+def _server_logs(stdout_path, stderr_path):
+    with open(stdout_path, "wb") as stdout, open(stderr_path, "wb") as stderr:
+        yield stdout, stderr
+
+
 class Server:
     """Start a built copy through `npm start` in its root. stdout and stderr go to files;
     stop() kills the whole process tree."""
@@ -236,11 +253,13 @@ class Server:
         self.log_dir = tempfile.mkdtemp(prefix="loop2-server-log-")
         self.stdout_path = os.path.join(self.log_dir, "stdout.txt")
         self.stderr_path = os.path.join(self.log_dir, "stderr.txt")
-        self._stdout = open(self.stdout_path, "wb")
-        self._stderr = open(self.stderr_path, "wb")
-        self.process = popen([npm(), "start"], copy.path, env=env,
-                             stdout=self._stdout, stderr=self._stderr)
+        self._logs = ExitStack()
+        self.process = None
         try:
+            self._stdout, self._stderr = self._logs.enter_context(
+                _server_logs(self.stdout_path, self.stderr_path))
+            self.process = popen([npm(), "start"], copy.path, env=env,
+                                 stdout=self._stdout, stderr=self._stderr)
             deadline = time.monotonic() + START_TIMEOUT
             while True:
                 if self.process.poll() is not None:
@@ -270,10 +289,10 @@ class Server:
 
     def stop(self, report_held_port=True):
         try:
-            kill_tree(self.process)
+            if self.process is not None:
+                kill_tree(self.process)
         finally:
-            self._stdout.close()
-            self._stderr.close()
+            self._logs.close()
             shutil.rmtree(self.log_dir, ignore_errors=True)
             deadline = time.monotonic() + 15
             while port_in_use() and time.monotonic() < deadline:

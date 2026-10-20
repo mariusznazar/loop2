@@ -7,7 +7,7 @@ export type ActionDef = {
 };
 
 export const ACTIONS = {
-  explore: { label: 'Eksploruj', status: 'Eksploruje', minutes: 20 },
-  wander: { label: 'Wędruj', status: 'Wędruje', minutes: null },
-  walkTo: { label: 'Idź', status: 'Idzie po', minutes: null },
+  explore: { label: "Eksploruj", status: "Eksploruje", minutes: 20 },
+  wander: { label: "Wędruj", status: "Wędruje", minutes: null },
+  walkTo: { label: "Idź", status: "Idzie po", minutes: null },
 } as const satisfies Record<string, ActionDef>;

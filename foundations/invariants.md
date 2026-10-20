@@ -387,6 +387,86 @@ whatever their amounts, at every game minute, whatever programs they run under.
 - **Part:** simulation
 - **Correction:** none
 
+## eslint-source-rules/1
+
+No TypeScript or JavaScript file in the scope adopted by D-29 violates a blocking ESLint 10.12.0 rule or uses an inline directive to suppress one or change the adopted rule set.
+
+- **Method:** `python -B scripts/check_eslint.py --record .runs/eslint.jsonl`
+- **Rests on:** eslint-recommended-rules@3f3d5421 · typescript-eslint-typechecked-rules@f030ff1d
+- **Derives from:** D-29@cd8014d6
+- **Part:** browser-view · simulation · account-server · build-tools
+- **Correction:** none
+
+## ruff-source-rules/1
+
+No Python file in the scope adopted by D-30 violates a blocking Ruff 0.17.1 rule or uses an inline directive to suppress one or change the adopted rule set.
+
+- **Method:** `python -B scripts/check_ruff.py --record .runs/ruff.jsonl`
+- **Rests on:** ruff-default-rules@46b97f28
+- **Derives from:** D-30@19dcd3f6
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Correction:** none
+
+## shellcheck-source-rules/1
+
+No standalone Bash script in the scope adopted by D-31 violates a blocking ShellCheck 0.11.0 check or uses a source directive to suppress one or change the adopted set.
+
+- **Method:** `python -B scripts/check_shellcheck.py --record .runs/shellcheck.jsonl`
+- **Rests on:** shellcheck-default-bash-checks@30288d55
+- **Derives from:** D-31@e3145b98
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Correction:** none
+
+## eslint-configuration-rules/1
+
+The effective ESLint 10.12.0 configuration preserves exactly the rule names, levels, options and complete TypeScript and JavaScript file scope adopted by D-29.
+
+- **Method:** `python -B scripts/check_eslint.py --configuration --record .runs/eslint-configuration.jsonl`
+- **Rests on:** eslint-recommended-rules@3f3d5421 · typescript-eslint-typechecked-rules@f030ff1d
+- **Derives from:** D-29@cd8014d6
+- **Part:** browser-view · simulation · account-server · build-tools
+- **Correction:** none
+
+## prettier-source-format/1
+
+Every file in the scope adopted by D-32 has the formatting produced by the adopted Prettier 3.9.10 configuration and LF line endings on every platform.
+
+- **Method:** `python -B scripts/check_format.py --record .runs/format.jsonl`
+- **Rests on:** none
+- **Derives from:** D-32@7eedf283
+- **Part:** browser-view · simulation · account-server · build-tools · deployment
+- **Correction:** none
+
+## introduced-npm-vulnerabilities/1
+
+The change against {fork-point} introduces no actual npm package-name/version pair in the scope adopted by D-33 with a matching known vulnerability of low, moderate, high or critical severity in the npm/GitHub Advisory Database read when the check runs, and an unavailable, incomplete or unsupported result gives no successful verdict.
+
+- **Method:** `python -B scripts/check_dependencies.py --fork-point {fork-point} --record .runs/dependency-audit.jsonl`
+- **Rests on:** none
+- **Derives from:** D-33@f820c28f
+- **Part:** build-tools
+- **Correction:** none
+
+## guidelines-form/1
+
+Every file `guidelines/<name>.md` holds, in their order, the header lines, sections, rules, rule fields and tables that the template of guidelines and the template of its discipline require at the commit of the-way the repository uses — the commit checked, in the-way itself, and the pinned commit, in a product — each with the values and the links those templates give it, with a name that agrees with its *Discipline*, each section or rule it drops reading `none —` with a decision of the log and that decision's fingerprint, each part it names being a part of the map, and each path under `## Where in code` naming something git tracks.
+
+- **Method:** `python -B .the-way/product-guidelines/form_check.py --record .runs/guidelines-form.jsonl`
+- **Rests on:** none
+- **Derives from:** none
+- **Part:** every
+- **Correction:** none
+
+## guidelines-reference-current/1
+
+Every reference outside fenced code in a file `guidelines/<name>.md` — a decision number of the log or an identifier of the invariants file followed by `@` and a run of letters and digits, or any identifier followed by `@` and eight lower-case hexadecimal characters — names a decision of the log that is not repealed or an invariant of the file that is not withdrawn, and carries the fingerprint of that entry's binding part in the foundation of the same commit and, where {merge-onto} exists, in the foundation a merge onto {merge-onto} leaves.
+
+- **Method:** `python -B .the-way/product-guidelines/form_check.py --merge-onto {merge-onto} --record .runs/guidelines-reference.jsonl`
+- **Rests on:** none
+- **Derives from:** none
+- **Part:** agent-workflow · product-foundation
+- **Correction:** none
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
