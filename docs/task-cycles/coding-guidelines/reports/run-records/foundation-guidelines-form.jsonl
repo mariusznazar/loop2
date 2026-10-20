@@ -1,1 +1,0 @@
-{"check": "product-guidelines/form_check.py::read_guidelines", "verdict": "pass", "invariant": "guidelines-form/1"}

@@ -1,1 +1,0 @@
-{"check": "tests/deploy/test_loop2_image_icons.py::ImageServesIcons.test_built_image_serves_every_icon_and_the_page", "verdict": "fail", "invariant": null, "description": "failed: AssertionError: 1 != 0 : `docker build` failed:"}

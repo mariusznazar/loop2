@@ -1,5 +1,0 @@
-foundations/environment_facts.md:143: error: eslint-recommended-rules/1: *Source* is neither `<address> § <place> — "<passage>"; read <YYYY-MM-DD>`, with an archived copy where the page has no editions, nor `observed: `<command>` on <tool and version, platform>; run <YYYY-MM-DD>`, each joined by ` · `
-foundations/environment_facts.md:151: error: typescript-eslint-typechecked-rules/1: *Source* is neither `<address> § <place> — "<passage>"; read <YYYY-MM-DD>`, with an archived copy where the page has no editions, nor `observed: `<command>` on <tool and version, platform>; run <YYYY-MM-DD>`, each joined by ` · `
-foundations/environment_facts.md:167: error: shellcheck-default-bash-checks/1: *Source* is neither `<address> § <place> — "<passage>"; read <YYYY-MM-DD>`, with an archived copy where the page has no editions, nor `observed: `<command>` on <tool and version, platform>; run <YYYY-MM-DD>`, each joined by ` · `
-note: there is no human_verdicts.md; no human verdict is given
-3 error(s), 0 warning(s), 0 unchecked

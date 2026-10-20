@@ -1,4 +1,0 @@
-{"case": "noqa_control", "suppresses_blocking": true, "adapter_exit": 1, "record": {"check": "fixture", "verdict": "fail", "invariant": "ruff-source-rules/1"}}
-{"case": "ignore", "suppresses_blocking": false, "adapter_exit": 0, "record": {"check": "fixture", "verdict": "pass", "invariant": "ruff-source-rules/1"}}
-{"case": "file_ignore", "suppresses_blocking": false, "adapter_exit": 0, "record": {"check": "fixture", "verdict": "pass", "invariant": "ruff-source-rules/1"}}
-{"case": "disable_enable", "suppresses_blocking": false, "adapter_exit": 0, "record": {"check": "fixture", "verdict": "pass", "invariant": "ruff-source-rules/1"}}

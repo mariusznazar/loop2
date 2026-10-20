@@ -1,2 +1,0 @@
-{"check": "product-guidelines/form_check.py::check_references", "verdict": "pass", "invariant": "guidelines-reference-current/1"}
-{"check": "product-guidelines/form_check.py::check_merged_references", "verdict": "pass", "invariant": "guidelines-reference-current/1"}

@@ -1,9 +1,0 @@
-# Existing process-observation methods — F6
-
-Read author-contract.md first. Independent foundation route for existing invariant checks; root gives current start commit. Write only tests/invariants/test_loop2_one_serving_process.py, tests/invariants/test_loop2_api_error_route.py, tests/quality/test_process_observation.py and ignored reports. Do not read plan, frozen task or covered-code authors' reasoning. Never edit invariant sentences or loop2_invariant_support.py.
-
-Read whole current loop2-one-serving-process/2, loop2-api-error-route/1 and ruff-source-rules/1 invariant entries, their linked decisions/facts as needed, whole part map and .the-way/product-guidelines/reading.md. No guidelines exist yet; this task creates them. Read the two assigned existing invariant checks whole and loop2_invariant_support.py for actual observation interface. Scope is account-server, deployment and build-tools as mapped; verify selection.
-
-Preserve existing sentence meanings and the checks' observed behaviors. Failed subprocess reads must not be treated as successful observation even when stdout looks valid: cover both Windows and Unix process-reading branches. The independent test suite demonstrates rejection with injected nonzero exits and plausible stdout. Remove the unused import reported by the adopted Python rule without widening the repair. Cleanup support is a later separately authored change; do not edit it here.
-
-Use TDD; run python -m unittest discover -s tests/quality -p test_process_observation.py and focused existing checks python -m unittest discover -s tests/invariants -p test_loop2_one_serving_process.py and similarly test_loop2_api_error_route.py. If final method interpretation must change, stop and return the exact issue to root before editing it. Include weakest-point evidence and full actual outputs. Full report: .runs/task-cycles/coding-guidelines/reports/f6-report.md. Commit only assigned paths and return before review.

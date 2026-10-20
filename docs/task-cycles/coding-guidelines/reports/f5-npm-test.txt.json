@@ -1,9 +1,0 @@
-{
-  "command": [
-    "npm.cmd",
-    "test"
-  ],
-  "exit_code": 0,
-  "seconds": 3.125,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-npm-test.txt"
-}

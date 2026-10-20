@@ -1,9 +1,0 @@
-{
-  "command": [
-    "node",
-    ".runs/task-cycles/coding-guidelines/reports/s1-installed-metadata.mjs"
-  ],
-  "exit_code": 0,
-  "seconds": 0.062,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-installed-metadata.txt"
-}

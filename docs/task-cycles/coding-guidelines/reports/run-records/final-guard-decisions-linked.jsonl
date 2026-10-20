@@ -1,6 +1,0 @@
-{"check": "elements/decisions/format_guard.py::check_against_base", "verdict": "pass", "invariant": "log-existing-lines/1"}
-{"check": "elements/decisions/format_guard.py::check_against_base", "verdict": "pass", "invariant": "log-versions-added-per-number/1"}
-{"check": "elements/decisions/format_guard.py::check_template_change", "verdict": "pass", "invariant": "decision-template-change/1"}
-{"check": "elements/decisions/format_guard.py::check_merge_todo", "verdict": "pass", "invariant": "log-entry-merge-todo/1"}
-{"check": "elements/decisions/format_guard.py::merged_log", "verdict": "pass", "invariant": "log-merge-copies/1"}
-{"check": "elements/decisions/format_guard.py::check_fingerprints", "verdict": "pass", "invariant": "relation-fingerprint-value/1"}
