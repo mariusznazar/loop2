@@ -1,5 +1,5 @@
-import { passRealTime, send, type GameResult } from '../sim/game.js';
-import type { ArchetypeId, GameState, MapId } from '../sim/types.js';
+import { passRealTime, send, type GameResult } from "../sim/game.js";
+import type { ArchetypeId, GameState, MapId } from "../sim/types.js";
 
 /** Access to the one game state the app holds; `apply` replaces it with a simulation result. */
 export type GameStore = {
