@@ -1,4 +1,4 @@
-import type { ResourceId } from './resources.js';
+import type { ResourceId } from "./resources.js";
 
 export type MapResourceDef = {
   id: ResourceId;
@@ -22,16 +22,16 @@ export type MapDef = {
 
 export const MAPS = {
   forest: {
-    name: 'Las',
+    name: "Las",
     width: 4,
     height: 4,
     entrance: { col: 1, row: 1 },
     stepMinutes: 5,
     resources: [
-      { id: 'stick', density: 0.7, stock: 12, renewMinutes: 30 },
-      { id: 'berry', density: 0.5, stock: 8, renewMinutes: 40 },
-      { id: 'moss', density: 0.4, stock: 6, renewMinutes: 60 },
-      { id: 'fiber', density: 0.4, stock: 6, renewMinutes: 60 },
+      { id: "stick", density: 0.7, stock: 12, renewMinutes: 30 },
+      { id: "berry", density: 0.5, stock: 8, renewMinutes: 40 },
+      { id: "moss", density: 0.4, stock: 6, renewMinutes: 60 },
+      { id: "fiber", density: 0.4, stock: 6, renewMinutes: 60 },
     ],
   },
 } as const satisfies Record<string, MapDef>;

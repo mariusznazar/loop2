@@ -9,6 +9,13 @@ export type ConditionDef = {
 };
 
 export const CONDITIONS = {
-  always: { label: 'Zawsze' },
-  hereBelow: { label: 'Tu leży mniej niż', unit: 'szt.', defaultValue: 1, min: 0, max: 50, step: 1 },
+  always: { label: "Zawsze" },
+  hereBelow: {
+    label: "Tu leży mniej niż",
+    unit: "szt.",
+    defaultValue: 1,
+    min: 0,
+    max: 50,
+    step: 1,
+  },
 } as const satisfies Record<string, ConditionDef>;
