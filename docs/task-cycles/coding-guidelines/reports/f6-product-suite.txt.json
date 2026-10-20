@@ -1,9 +1,0 @@
-{
-  "command": [
-    "C:/Program Files/nodejs/npm.CMD",
-    "test"
-  ],
-  "exit_code": 0,
-  "seconds": 3.105,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f6-product-suite.txt"
-}

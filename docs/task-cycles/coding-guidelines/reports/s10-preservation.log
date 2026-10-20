@@ -1,6 +1,0 @@
-tests/view/icons.test.mjs: AST/literal values identical; exact Prettier-only output; LF
-tests/view/program-editor.test.mjs: AST/literal values identical; exact Prettier-only output; LF
-tests/view/status-row.test.mjs: AST/literal values identical; exact Prettier-only output; LF
-tests/view/terrain-picture.test.mjs: AST/literal values identical; exact Prettier-only output; LF
-tests/view/tile-list.test.mjs: AST/literal values identical; exact Prettier-only output; LF
-Positive controls: changed literal, assertion threshold, removed assertion and regex detected. TypeScript API 6.0.2, Prettier 3.9.10

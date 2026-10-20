@@ -1,2 +1,0 @@
-?? tests/invariants/__pycache__/loop2_invariant_support.cpython-314.pyc
-?? tests/quality/__pycache__/test_invariant_support.cpython-314.pyc

@@ -1,2 +1,0 @@
-[task/coding-guidelines b0e3d4f] fix: make quality methods comply with adopted Ruff rules
- 7 files changed, 181 insertions(+), 181 deletions(-)

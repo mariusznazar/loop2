@@ -1,9 +1,0 @@
-.......{"check": "eslint-source-rules", "verdict": "fail", "invariant": null, "description": "QualityError: Node.js is unavailable locally"}
-....{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: missing package"}
-{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: unsupported or incomplete ESLint bridge report"}
-{"check": "eslint-configuration-rules", "verdict": "fail", "invariant": null, "description": "QualityError: ESLint bridge reported a warning: warning"}
-.
-----------------------------------------------------------------------
-Ran 12 tests in 0.180s
-
-OK

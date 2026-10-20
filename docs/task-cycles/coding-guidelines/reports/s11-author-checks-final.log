@@ -1,6 +1,0 @@
-PASS: four exact accepted status tables and index; fourteen Ruff examples; test example; deferrals; npm amendment; thirteen rule pairs
-Traceback (most recent call last):
-  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\task-cycles\coding-guidelines\reports\s11-author-checks.py", line 57, in <module>
-    assert ("express", "5.1.0") in original
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

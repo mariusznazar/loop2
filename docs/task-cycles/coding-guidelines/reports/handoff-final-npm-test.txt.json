@@ -1,9 +1,0 @@
-{
-  "command": [
-    "npm.cmd",
-    "test"
-  ],
-  "exit_code": 0,
-  "seconds": 3.71,
-  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/handoff-final-npm-test.txt"
-}

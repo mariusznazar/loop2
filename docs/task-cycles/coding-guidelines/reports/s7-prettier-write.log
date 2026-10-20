@@ -1,7 +1,0 @@
-src/browser/view/send-panel.ts 65ms
-src/browser/view/status-row.ts 24ms
-src/browser/view/terrain-panel.ts 21ms
-src/browser/view/terrain-picture.ts 12ms
-src/browser/view/tile-list.ts 14ms
-src/browser/main.ts 1ms
-src/browser/index.html 326ms

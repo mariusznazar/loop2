@@ -1,4 +1,0 @@
-{"case": "repository-control", "adapter_exit": 0, "record": {"check": "format", "verdict": "pass", "invariant": "prettier-source-format/1"}}
-{"case": "absent-control", "adapter_exit": 1, "record": {"check": "format", "verdict": "fail", "invariant": "prettier-source-format/1"}}
-{"case": "local-info", "adapter_exit": 0, "record": {"check": "format", "verdict": "pass", "invariant": "prettier-source-format/1"}}
-{"case": "global-file", "adapter_exit": 0, "record": {"check": "format", "verdict": "pass", "invariant": "prettier-source-format/1"}}

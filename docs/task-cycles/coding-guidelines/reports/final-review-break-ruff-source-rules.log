@@ -1,2 +1,0 @@
-{"file": "tests/quality/reviewer_suppression.py", "diagnostics": [], "blocking_suppression": true}
-{"check": "scripts/check_ruff.py", "verdict": "fail", "invariant": "ruff-source-rules/1"}

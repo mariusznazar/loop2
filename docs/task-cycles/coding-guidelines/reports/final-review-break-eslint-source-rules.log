@@ -1,2 +1,0 @@
-{"path": "scripts/reviewer-suppression.mjs", "configuration": false, "messages": [], "comments": [" eslint-disable no-unused-vars "]}
-{"check": "eslint-source-rules", "verdict": "fail", "invariant": "eslint-source-rules/1"}

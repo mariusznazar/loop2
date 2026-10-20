@@ -1,5 +1,0 @@
-
-> loop2@0.0.0 build
-> node scripts/build.mjs
-
-{"mode": "build", "entries": [{"argv": ["C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\node_modules\\typescript-compiler\\bin\\tsc", "-p", "tsconfig.browser.json"], "runtime": "7.0.2"}, {"argv": ["C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\node_modules\\typescript-compiler\\bin\\tsc", "-p", "tsconfig.server.json"], "runtime": "7.0.2"}]}

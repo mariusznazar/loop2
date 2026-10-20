@@ -1,2 +1,0 @@
-note: who approves a version is checked only in the-way's own log
-0 error(s), 0 warning(s), 0 unchecked

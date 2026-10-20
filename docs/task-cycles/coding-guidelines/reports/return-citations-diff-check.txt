@@ -1,6 +1,0 @@
-warning: in the working copy of 'scripts/check_dependencies.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'scripts/check_eslint.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'scripts/check_format.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'scripts/check_ruff.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'scripts/check_shellcheck.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'scripts/quality_support.py', LF will be replaced by CRLF the next time Git touches it

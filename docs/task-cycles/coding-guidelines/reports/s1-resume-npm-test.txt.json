@@ -1,9 +1,0 @@
-{
-  "command": [
-    "npm.cmd",
-    "test"
-  ],
-  "exit_code": 0,
-  "seconds": 2.359,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-npm-test.txt"
-}

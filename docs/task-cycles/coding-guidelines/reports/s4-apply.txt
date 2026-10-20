@@ -1,6 +1,0 @@
-{
-  "mode": "apply",
-  "base": "fc7445a540c0beb524ea821cd30d9c25a3ce0e92",
-  "typescriptApi": "6.0.2",
-  "results": []
-}

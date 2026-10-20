@@ -1,6 +1,0 @@
-test_built_image_serves_every_icon_and_the_page (test_loop2_image_icons.ImageServesIcons.test_built_image_serves_every_icon_and_the_page) ... skipped "no Docker daemon answers; the image's build and the icons it serves stay unchecked"
-
-----------------------------------------------------------------------
-Ran 1 test in 0.143s
-
-OK (skipped=1)

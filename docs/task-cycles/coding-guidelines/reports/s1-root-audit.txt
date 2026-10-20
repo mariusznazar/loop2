@@ -1,1 +1,0 @@
-{"check": "dependency-audit", "verdict": "fail", "invariant": null, "description": "QualityError: alias does not resolve to its actual npm name"}

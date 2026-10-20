@@ -1,5 +1,0 @@
-# F5 fix round 1
-
-Resume author-contract.md and f5-handoff.md at ef4551455d30ba0a74600966a584dcc9dca767c1. Read whole f5-review.md and both concrete probes. Address Important F5-R1 within assigned adapter/test paths: validate complete actual registry tarball identity, including version and URL normalization, before any empty-difference success. Preserve current-vs-historical tool-pin distinction, valid aliases/scoped packages, strict unsupported-data inability, and original fork-point semantics. Do not edit shared mechanics, foundation or product manifests/configuration.
-
-Use focused RED/GREEN for both original counterexamples and the weakest likely related boundary. Preserve legitimate supported-source controls and document supported forms; no guessed identity from path fragments. Run only affected focused tests/probes, no application/broad suites. Explicit commit, self-review and full report .runs/task-cycles/coding-guidelines/reports/f5-fix1-report.md, with actual commands/exits/output and any contested finding evidence. Stop before re-review or next stage.

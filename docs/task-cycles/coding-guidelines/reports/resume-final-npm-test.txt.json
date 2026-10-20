@@ -1,9 +1,0 @@
-{
-  "command": [
-    "npm.cmd",
-    "test"
-  ],
-  "exit_code": 0,
-  "seconds": 2.73,
-  "output": "C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines/.runs/task-cycles/coding-guidelines/reports/resume-final-npm-test.txt"
-}

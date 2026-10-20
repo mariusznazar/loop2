@@ -1,7 +1,0 @@
-src/browser/sim/game.ts 312ms
-src/browser/sim/hex.ts 15ms
-src/browser/sim/layout.ts 6ms
-src/browser/sim/program.ts 7ms
-src/browser/sim/random.ts 6ms
-src/browser/sim/run.ts 16ms
-src/browser/sim/types.ts 3ms

@@ -1,2 +1,0 @@
-format or configuration differs: "tests/quality/reviewer-crlf.mjs"
-{"check": "prettier-source-format", "verdict": "fail", "invariant": "prettier-source-format/1"}

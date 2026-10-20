@@ -1,1 +1,0 @@
-{"check": "prettier-source-format", "verdict": "pass", "invariant": "prettier-source-format/1"}

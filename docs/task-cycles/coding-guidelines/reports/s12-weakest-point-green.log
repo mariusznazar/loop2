@@ -1,1 +1,0 @@
-PASS: one conditional pointer; removing it and its blank line restores base Git blob bytes; installer/backlog/CLAUDE preserved; target exists.

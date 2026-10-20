@@ -1,8 +1,0 @@
-PASS: four exact accepted status tables and index; fourteen Ruff examples; test example; deferrals; npm amendment; thirteen rule pairs
-PASS: actual audit good case exited 0
-PASS: actual audit bad case exited 1
-Traceback (most recent call last):
-  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\task-cycles\coding-guidelines\reports\s11-author-checks.py", line 74, in <module>
-    assert "minimist@1.2.5" in (reports / "s11-audit-bad.log").read_text(encoding="utf-8")
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

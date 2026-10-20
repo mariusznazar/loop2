@@ -1,9 +1,0 @@
-Collecting ruff==0.17.1 (from -r requirements-quality.txt (line 6))
-  Downloading ruff-0.17.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.4 MB)
-     ---------------------------------------- 10.4/10.4 MB 9.6 MB/s  0:00:01
-Collecting shellcheck-py==0.11.0.1 (from -r requirements-quality.txt (line 25))
-  Downloading shellcheck_py-0.11.0.1-py2.py3-none-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (3.8 MB)
-     ---------------------------------------- 3.8/3.8 MB 7.5 MB/s  0:00:00
-Saved c:\storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\s2-wheelhouse-linux\ruff-0.17.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-Saved c:\storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\s2-wheelhouse-linux\shellcheck_py-0.11.0.1-py2.py3-none-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl
-Successfully downloaded ruff shellcheck-py

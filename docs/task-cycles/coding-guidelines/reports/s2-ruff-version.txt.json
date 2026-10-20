@@ -1,9 +1,0 @@
-{
-  "command": [
-    ".runs/quality-venv/Scripts/ruff.exe",
-    "--version"
-  ],
-  "exit_code": 0,
-  "seconds": 0.851,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-ruff-version.txt"
-}

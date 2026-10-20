@@ -1,9 +1,0 @@
-{
-  "command": [
-    "docker.exe",
-    "version"
-  ],
-  "exit_code": 0,
-  "seconds": 0.077,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\docker-started-version.txt"
-}

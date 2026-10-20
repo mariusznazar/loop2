@@ -1,4 +1,0 @@
-[task/coding-guidelines 3a769e6] build: install accepted quality tools and preserve TS7 compilation
- 7 files changed, 717 insertions(+), 464 deletions(-)
- create mode 100644 eslint.config.mjs
- create mode 100644 prettier.config.mjs

@@ -1,5 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\task-cycles\coding-guidelines\reports\f1-live.py", line 15, in <module>
-    assert "src/browser/sim/time.ts" in found["simulation"]
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

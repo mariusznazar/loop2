@@ -1,5 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\.runs\task-cycles\coding-guidelines\reports\s12-weakest-point.py", line 9, in <module>
-    assert current.replace(pointer + newline + newline, b'', 1) == old
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

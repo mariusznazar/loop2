@@ -1,2 +1,0 @@
-items=10
-failures=0

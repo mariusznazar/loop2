@@ -1,9 +1,0 @@
-{
-  "command": [
-    "node",
-    ".runs/task-cycles/coding-guidelines/reports/s4-preservation.mjs"
-  ],
-  "exit_code": 1,
-  "seconds": 0.369,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s4-preservation.txt"
-}

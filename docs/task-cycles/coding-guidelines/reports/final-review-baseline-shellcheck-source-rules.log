@@ -1,1 +1,0 @@
-{"check": "scripts/check_shellcheck.py", "verdict": "pass", "invariant": "shellcheck-source-rules/1"}

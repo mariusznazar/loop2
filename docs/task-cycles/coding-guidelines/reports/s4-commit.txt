@@ -1,2 +1,0 @@
-[task/coding-guidelines e127aa4] style: format simulation modules and remove redundant assertions
- 7 files changed, 316 insertions(+), 132 deletions(-)

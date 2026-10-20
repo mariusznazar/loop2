@@ -1,9 +1,0 @@
-foundations/part_map.md:68: error: pattern `eslint.config.mjs` of `build-tools` matches no file git tracks
-foundations/part_map.md:68: error: pattern `prettier.config.mjs` of `build-tools` matches no file git tracks
-foundations/part_map.md:68: error: pattern `requirements-quality.in` of `build-tools` matches no file git tracks
-foundations/part_map.md:68: error: pattern `requirements-quality.txt` of `build-tools` matches no file git tracks
-foundations/part_map.md:94: error: pattern `guidelines/**` of `agent-workflow` matches no file git tracks
-foundations/part_map.md:85: warning: build-tools depends on account-server with no separation recorded, so account-server is computed as `high`, above its own failure modes
-foundations/part_map.md:134: warning: deployment depends on account-server with no separation recorded, so account-server is computed as `high`, above its own failure modes
-unchecked: the dependencies between parts, and new or stale violations — no command of the product reports the dependency graph
-5 error(s), 2 warning(s), 1 unchecked

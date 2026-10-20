@@ -1,9 +1,0 @@
-{
-  "command": [
-    "node",
-    ".runs/task-cycles/coding-guidelines/reports/s1-resume-preservation.mjs"
-  ],
-  "exit_code": 0,
-  "seconds": 0.134,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-resume-preservation.txt"
-}

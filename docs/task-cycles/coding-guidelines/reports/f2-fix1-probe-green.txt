@@ -1,4 +1,0 @@
-bridge_exit: 0
-{"schema":1,"files":[{"path":"scripts/empty-list.js","ignored":false,"processor":false,"rules":{"no-debugger":[2]},"defaults":{"no-debugger":[2]},"inlineRules":[],"disabledRules":[null],"comments":[" eslint-disable , "],"messages":[]}]}
-expected_source_ok: false
-actual_source_ok: false

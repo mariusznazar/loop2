@@ -1,4 +1,0 @@
-{"case": "same-name-different-tarball-version", "resolved": "https://registry.npmjs.org/a/-/a-1.5.0.tgz", "actual_exit": 0, "record": {"check": "dependency-audit", "verdict": "pass", "invariant": "introduced-npm-vulnerabilities/1"}, "network_request": false}
-{"case": "dot-segments-change-real-name", "resolved": "https://registry.npmjs.org/a/-/../../other/-/other-1.5.0.tgz", "actual_exit": 0, "record": {"check": "dependency-audit", "verdict": "pass", "invariant": "introduced-npm-vulnerabilities/1"}, "network_request": false}
-{"url":"https://registry.npmjs.org/a/-/a-1.5.0.tgz","normalized":"https://registry.npmjs.org/a/-/a-1.5.0.tgz","actual":{"name":"a","version":"1.5.0"}}
-{"url":"https://registry.npmjs.org/a/-/../../other/-/other-1.5.0.tgz","normalized":"https://registry.npmjs.org/other/-/other-1.5.0.tgz","actual":{"name":"other","version":"1.5.0"}}

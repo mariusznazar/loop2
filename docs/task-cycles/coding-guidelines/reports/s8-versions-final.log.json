@@ -1,9 +1,0 @@
-{
-  "command": [
-    "node",
-    ".runs/task-cycles/coding-guidelines/reports/s8-versions.mjs"
-  ],
-  "exit_code": 0,
-  "seconds": 0.067,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s8-versions-final.log"
-}

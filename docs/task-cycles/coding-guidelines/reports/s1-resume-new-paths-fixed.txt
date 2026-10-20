@@ -1,1 +1,0 @@
-{"fixture":"C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\s1-resume-paths-7b2MWt","lintCases":112,"typedGoodAndBadPerDirectory":8,"ruleCounts":[64,92],"attributePaths":122,"attributeExclusionControls":5,"sharedEditorOptions":true}

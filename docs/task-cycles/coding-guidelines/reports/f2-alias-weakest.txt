@@ -1,2 +1,0 @@
-{"node":"v24.17.0","apiEntry":"C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\node_modules\\typescript\\lib\\typescript.js","wrapperName":"@typescript/typescript6","wrapperVersion":"6.0.2","wrapperSource":"module.exports = require(\"@typescript/old\");","apiRuntime":"6.0.3","compilerRuntime":"7.0.2"}
-Actual API mismatch yields no named source or configuration verdict.

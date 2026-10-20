@@ -1,8 +1,0 @@
-scripts/check_ruff.py:66: def suppresses_blocking(data):
-scripts/check_ruff.py:71:             directive = re.search(r"#\s*(?:(?:ruff|flake8)\s*:\s*)?noqa\b(.*)",
-scripts/check_shellcheck.py:106: def _directives(text, executable, root, environment):
-scripts/check_shellcheck.py:158:         neutral = True if reports else _directives(data.decode("utf-8"), executable,
-tests/quality/test_python_shell_checks.py:97:     def test_python_blocking_suppressions_fail_even_without_tool_diagnostics(self):
-tests/quality/test_python_shell_checks.py:104:     def test_nonblocking_noqa_and_literal_directive_text_are_allowed(self):
-Ruff exact adopted membership: 407 - 14 = 393; no missing or extra codes
-guidelines directory exists: False

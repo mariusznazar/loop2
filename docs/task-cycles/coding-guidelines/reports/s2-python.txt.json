@@ -1,9 +1,0 @@
-{
-  "command": [
-    "python",
-    "--version"
-  ],
-  "exit_code": 0,
-  "seconds": 0.021,
-  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s2-python.txt"
-}

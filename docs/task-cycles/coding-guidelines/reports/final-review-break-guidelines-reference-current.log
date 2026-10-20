@@ -1,7 +1,0 @@
-0 error(s), 0 warning(s), 0 unchecked
-0 error(s), 0 warning(s), 0 unchecked
-0 error(s), 0 warning(s), 0 unchecked
-0 error(s), 0 warning(s), 0 unchecked
-0 error(s), 0 warning(s), 0 unchecked
-guidelines/coding.md:166: error: `D-32@00000000` carries a fingerprint other than the current one: on the commit checked, the current fingerprint of D-32 is 7eedf283, set by D-32/1
-1 error(s), 0 warning(s), 0 unchecked
