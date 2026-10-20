@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
+import tempfile
 
 from quality_support import QualityError, discover_files, run_check, run_tool
 
@@ -65,11 +66,8 @@ def _json_file(path):
         raise QualityError(f"cannot read {path.name}: {problem}") from problem
 
 
-def _attributes(root, files, environment):
-    executable = shutil.which("git")
-    if executable is None:
-        raise QualityError("local Git is unavailable")
-    result = run_tool([executable, "check-attr", "-z", "--stdin", "text", "eol"],
+def _attribute_values(command, root, files, environment):
+    result = run_tool([*command, "check-attr", "-z", "--stdin", "text", "eol"],
                       cwd=root, env=environment,
                       input=("\0".join(files) + "\0").encode("utf-8"))
     if result.stderr or not result.stdout.endswith("\0"):
@@ -88,6 +86,35 @@ def _attributes(root, files, environment):
         observed[key] = value
     return all(observed.get((path, "eol")) == "lf"
                and observed.get((path, "text")) in {"set", "auto"} for path in files)
+
+
+def _attributes(root, files, environment):
+    executable = shutil.which("git")
+    if executable is None:
+        raise QualityError("local Git is unavailable")
+    effective = _attribute_values([executable], root, files, environment)
+    # A separate empty Git directory reads current worktree .gitattributes without
+    # the real index, info/attributes, user/system configuration or attribute files.
+    isolated = {key: value for key, value in environment.items()
+                if not key.upper().startswith("GIT_")}
+    isolated.update(GIT_ATTR_NOSYSTEM="1", GIT_CONFIG_NOSYSTEM="1",
+                    GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_SYSTEM=os.devnull)
+    runs = root / ".runs"
+    runs.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="format-attributes-", dir=runs) as temporary:
+        directory = Path(temporary)
+        template = directory / "empty-template"
+        template.mkdir()
+        git_directory = directory / "git"
+        result = run_tool([executable, "init", "--bare", "--quiet",
+                           "--template", template, git_directory], cwd=root, env=isolated)
+        if result.stdout or result.stderr:
+            raise QualityError("unexpected isolated Git initialization diagnostic")
+        repository = _attribute_values(
+            [executable, "--git-dir", git_directory, "--work-tree", root,
+             "-c", "core.bare=false", "-c", "core.attributesFile="],
+            root, files, isolated)
+    return effective and repository
 
 
 def check(root):

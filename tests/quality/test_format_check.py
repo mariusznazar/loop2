@@ -4,6 +4,7 @@ from contextlib import redirect_stderr
 import importlib
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -53,7 +54,7 @@ class FormatChecks(unittest.TestCase):
         mapping = "# Parts\n\n" + "".join(
             f"## {part}\n\n- **Files:** {part}/**\n\n" for part in parts)
         mapping += ("## foundation\n\n- **Files:** foundations/**\n  .gitignore\n"
-                    "  .gitattributes\n  prettier.config.mjs\n  package.json\n"
+                    "  /.gitattributes\n  prettier.config.mjs\n  package.json\n"
                     "  package-lock.json\n  .editorconfig\n")
         self.write("foundations/part_map.md", mapping)
         self.write(".gitignore", "node_modules/\n.runs/\ndist/\n")
@@ -136,6 +137,44 @@ class FormatChecks(unittest.TestCase):
     def test_lf_checkout_attributes_are_required(self):
         self.write(".gitattributes", "*.ts -text eol=lf\n")
         self.assertEqual(self.verdict()[0], 1)
+
+    def test_local_attributes_cannot_replace_missing_repository_rules(self):
+        self.write(".gitattributes", "")
+        self.assertEqual(self.verdict()[0], 1)
+        self.write(".git/info/attributes", "*.ts text eol=lf\n")
+        self.assertEqual(self.verdict()[0], 1)
+
+    def test_global_attributes_cannot_replace_missing_repository_rules(self):
+        self.write(".gitattributes", "")
+        attributes = self.write(".runs/user.attributes", "*.ts text eol=lf\n")
+        config = self.write(".runs/user.gitconfig", "[core]\n attributesFile = "
+                            + json.dumps(attributes.as_posix()) + "\n")
+        with patch.dict(os.environ, {"GIT_CONFIG_GLOBAL": str(config)}):
+            self.assertEqual(self.verdict()[0], 1)
+
+    def test_local_override_cannot_weaken_valid_repository_rules(self):
+        self.write(".git/info/attributes", "*.ts text eol=crlf\n")
+        self.assertEqual(self.verdict()[0], 1)
+
+    def test_new_nested_attributes_and_current_edits_are_evaluated_without_index_changes(self):
+        attributes = self.write("browser-view/.gitattributes", "*.ts text eol=crlf\n")
+        subprocess.run(["git", "-C", self.root, "add", "--", ".gitattributes",
+                        "browser-view/.gitattributes"], check=True, capture_output=True)
+        index = (self.root / ".git/index").read_bytes()
+        config = (self.root / ".git/config").read_bytes()
+        root_attributes = self.write(".gitattributes", "")
+        attributes.write_bytes(b"*.ts text eol=lf\n")
+        self.assertEqual(self.verdict()[0], 0)
+        self.assertEqual((self.root / ".git/index").read_bytes(), index)
+        self.assertEqual(root_attributes.read_bytes(), b"")
+        self.assertEqual(attributes.read_bytes(), b"*.ts text eol=lf\n")
+        nested = self.write("browser-view/deep/.gitattributes", "*.ts -text\n")
+        self.write("browser-view/deep/new.ts", "const value = 1;\n")
+        self.assertEqual(self.verdict()[0], 1)
+        self.assertEqual(nested.read_bytes(), b"*.ts -text\n")
+        self.assertEqual((self.root / ".git/index").read_bytes(), index)
+        self.assertEqual((self.root / ".git/config").read_bytes(), config)
+        self.assertEqual(list((self.root / ".runs").glob("format-attributes-*")), [])
 
     def test_editor_configuration_cannot_disagree_with_the_checked_configuration(self):
         self.write(".editorconfig", '{"tabWidth":4}')
