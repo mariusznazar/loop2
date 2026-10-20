@@ -443,7 +443,7 @@ The change against {fork-point} introduces no actual npm package-name/version pa
 
 - **Method:** `python -B scripts/check_dependencies.py --fork-point {fork-point} --record .runs/dependency-audit.jsonl`
 - **Rests on:** none
-- **Derives from:** D-33@fce481a6
+- **Derives from:** D-33@f820c28f
 - **Part:** build-tools
 - **Correction:** none
 
