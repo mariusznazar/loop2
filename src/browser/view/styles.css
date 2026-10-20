@@ -1,0 +1,185 @@
+[hidden] {
+  display: none !important;
+}
+body {
+  margin: 0;
+  padding: 0 var(--space-16);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--page);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+header h1 {
+  margin: var(--space-16) 0;
+  font-size: var(--font-size-game-title);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-strong);
+}
+.columns {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+  gap: var(--space-24);
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+.program-panel,
+.map-column {
+  background: var(--panel);
+  border: var(--border-width) solid var(--divider);
+  padding: var(--space-12) var(--space-16);
+  min-height: 120px;
+}
+.program-editor h2 {
+  margin: 0 0 var(--space-8);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-strong);
+}
+.rules {
+  margin: 0 0 var(--space-12);
+  padding-left: var(--space-24);
+}
+.rule {
+  margin-bottom: var(--space-8);
+}
+.rule > * {
+  margin: 0 var(--space-4) var(--space-4) 0;
+  vertical-align: middle;
+}
+.rule input[type="number"] {
+  width: 4em;
+}
+.rule button {
+  padding: var(--space-2) var(--space-8);
+}
+.send-entry p {
+  margin: 0 0 var(--space-8);
+}
+.send-character {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-strong);
+}
+.send-entry p:not(.send-character) {
+  font-size: var(--font-size-map-title);
+}
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+.status-text {
+  margin: 0;
+  margin-right: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.terrain-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-16);
+  margin-top: var(--space-12);
+}
+.terrain-drawing {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.terrain-drawing .tile polygon {
+  fill: var(--tile-hidden);
+  stroke: var(--tile-edge);
+  stroke-width: var(--border-width);
+}
+.terrain-drawing .tile.revealed polygon {
+  fill: var(--tile-revealed);
+}
+.terrain-drawing .icon.dimmed {
+  opacity: var(--depleted);
+}
+.terrain-drawing .outline {
+  fill: none;
+  pointer-events: none;
+  stroke-linejoin: round;
+}
+.terrain-drawing .outline.character {
+  stroke: var(--character);
+  stroke-width: var(--character-width);
+}
+.terrain-drawing .outline.step-target {
+  stroke: var(--character);
+  stroke-width: var(--step-width);
+  stroke-dasharray: var(--step-dash);
+}
+.tile-list {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.tile-list th,
+.tile-list td {
+  padding: var(--space-2) var(--space-8);
+  text-align: right;
+  white-space: nowrap;
+}
+.tile-list thead th {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-label);
+  border-bottom: var(--border-width) solid var(--divider);
+}
+.tile-list thead img {
+  vertical-align: middle;
+}
+.tile-list tbody th {
+  text-align: left;
+  font-weight: var(--font-weight-regular);
+}
+button,
+input,
+select {
+  font-family: inherit;
+  font-size: var(--font-size-description);
+  font-weight: var(--font-weight-regular);
+  color: var(--text);
+  background: transparent;
+  border: var(--border-width) solid var(--control-border);
+  border-radius: 0;
+}
+select option {
+  background: var(--panel);
+  color: var(--text);
+}
+button {
+  padding: var(--space-4) var(--space-12);
+  cursor: pointer;
+}
+footer {
+  margin-top: var(--space-24);
+  padding: var(--space-12) 0 var(--space-16);
+  border-top: var(--border-width) solid var(--divider);
+  font-size: var(--font-size-description);
+  color: var(--text-secondary);
+}
+.credits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.credits a {
+  color: inherit;
+}
