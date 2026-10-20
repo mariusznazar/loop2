@@ -5,9 +5,9 @@ description: Use when a decision has to be written into a product's decision log
 
 # the-way-record-decision
 
-The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `d829e3aa6242a9b8901274531dd82fd5c7d87628`.
+The process for this repository is pinned as the Git submodule `.the-way`. Its commit is `f0b5eb131de5d681ee3fcdeb264e9f88778af2ec`.
 
-If `.the-way/elements/decisions/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `d829e3aa6242a9b8901274531dd82fd5c7d87628`. If initialization fails or either commit differs, stop.
+If `.the-way/elements/decisions/skill/SKILL.md` is absent, run `git submodule update --init -- .the-way` from the product root. Check `git ls-files --stage -- .the-way` and `git -C .the-way rev-parse HEAD`: both must show `f0b5eb131de5d681ee3fcdeb264e9f88778af2ec`. If initialization fails or either commit differs, stop.
 
 Read `.the-way/elements/decisions/skill/SKILL.md` in full and follow it. Read the files it references inside `.the-way`. Where it says where the-way lies, the product's case applies: here the process root is `.the-way`. Do not substitute a global skill.
 
