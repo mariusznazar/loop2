@@ -48,6 +48,19 @@ UP036 UP037 UP039 UP040 UP041 UP043 UP044 UP045 UP046 UP047 UP049 UP050 W605 YTT
 YTT103 YTT201 YTT202 YTT203 YTT204 YTT301 YTT302 YTT303
 """.split()
 
+# Pinned rule_redirects.rs entries whose exact target is in BLOCKING. Deprecated
+# spellings suppress the target in both noqa.rs and suppression.rs.
+BLOCKING_REDIRECTS = {
+    "R501": "RET501", "U001": "UP001", "U003": "UP003", "U004": "UP004",
+    "U005": "UP005", "U006": "UP006", "U007": "UP007", "U008": "UP008",
+    "U009": "UP009", "U010": "UP010", "U011": "UP011", "U012": "UP012",
+    "U014": "UP014", "U017": "UP017", "U019": "UP019", "RUF004": "B026",
+    "PIE802": "C419", "PLW0130": "B033", "RUF011": "B035", "PGH002": "G010",
+    "TRIO100": "ASYNC100", "TRIO105": "ASYNC105", "TRIO115": "ASYNC115",
+    "PLR1701": "SIM101", "PLW0117": "PLW0177", "TRY302": "TRY203",
+    "TCH004": "TC004", "TCH005": "TC005", "TCH006": "TC010", "TCH010": "TC010",
+}
+
 
 def python_source(path, data):
     if path.suffix.lower() in {".py", ".pyi", ".pyw"}:
@@ -68,6 +81,18 @@ def suppresses_blocking(data):
         for token in tokenize.tokenize(io.BytesIO(data).readline):
             if token.type != tokenize.COMMENT:
                 continue
+            # Pinned Ruff's bracket syntax uses exact codes (not noqa prefixes).
+            # Scan every sub-comment: an earlier neutral directive cannot hide one.
+            for suppression in re.finditer(
+                    r"#\s*ruff\s*:\s*(?:file-ignore|disable|ignore)\s*\[([^\]#]*)\]",
+                    token.string):
+                codes = [code.strip() for code in suppression[1].split(",")]
+                if codes[-1] == "":
+                    codes.pop()  # The pinned parser permits a trailing comma.
+                if codes and all(code and code[0].isalpha() and all(
+                        char.isalnum() or char in "_-:" for char in code) for code in codes):
+                    if any(BLOCKING_REDIRECTS.get(code, code) in BLOCKING for code in codes):
+                        return True
             directive = re.search(r"#\s*(?:(?:ruff|flake8)\s*:\s*)?noqa\b(.*)",
                                   token.string, re.IGNORECASE)
             if directive is None:
@@ -78,7 +103,8 @@ def suppresses_blocking(data):
             codes = re.match(r"\s*([A-Z]+[0-9]*(?:[\s,]+[A-Z]+[0-9]*)*)", tail[1:])
             if codes is None:
                 return True
-            if any(rule.startswith(code) for code in re.findall(r"[A-Z]+[0-9]*", codes[1])
+            if any(rule.startswith(BLOCKING_REDIRECTS.get(code, code))
+                   for code in re.findall(r"[A-Z]+[0-9]*", codes[1])
                    for rule in BLOCKING):
                 return True
     except (tokenize.TokenError, SyntaxError, UnicodeError):

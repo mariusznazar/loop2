@@ -105,6 +105,45 @@ class PythonShellChecks(unittest.TestCase):
         self.write("build-tools/new.py", 'value = "# noqa: F821"  # noqa: E402\n')
         self.assertEqual(self.run_check("ruff")[0], 0)
 
+    def test_pinned_ruff_suppression_actions_fail_on_clean_source(self):
+        cases = (
+            "value = 1  # ruff: ignore[F821]\n",
+            "# ruff: file-ignore[F821]\nvalue = 1\n",
+            "# ruff: disable[F821]\nvalue = 1\n# ruff: enable[F821]\n",
+            "# ruff: disable[F401]\nvalue = 1\n",
+            "value = 1  # ruff : ignore [ E402, F821, ] reason\n",
+            "value = 1  # note # ruff: ignore[E402] # ruff: ignore[F821]\n",
+            "value = 1  # noqa: E402 # ruff: ignore[F821]\n",
+            "value = 1  # ruff: ignore[U001]\n",
+            "# ruff: file-ignore[PGH002]\nvalue = 1\n",
+            "# ruff: disable[TCH006]\nvalue = 1\n# ruff: enable[TCH006]\n",
+            "value = 1  # noqa: R501\n",
+        )
+        for source in cases:
+            with self.subTest(source=source):
+                self.write("build-tools/new.py", source)
+                code, record = self.run_check("ruff")
+                self.assertEqual(code, 1)
+                self.assertEqual(record["invariant"], "ruff-source-rules/1")
+                self.assertEqual(record["verdict"], "fail")
+
+    def test_nonblocking_pinned_ruff_actions_and_literal_data_remain_neutral(self):
+        cases = (
+            "value = 1  # ruff: ignore[E402]\n",
+            "# ruff: file-ignore[E402]\nvalue = 1\n",
+            "# ruff: disable[E402]\nvalue = 1\n# ruff: enable[E402]\n",
+            'value = "# ruff: ignore[F821]"\n',
+            'value = "# ruff: file-ignore[F821]"\n',
+            'value = """# ruff: disable[F821]\n# ruff: enable[F821]"""\n',
+            "value = 1  # ruff: ignore[M001]\n",
+        )
+        for source in cases:
+            with self.subTest(source=source):
+                self.write("build-tools/new.py", source)
+                code, record = self.run_check("ruff")
+                self.assertEqual(code, 0)
+                self.assertEqual(record["verdict"], "pass")
+
     def test_extensionless_bash_and_new_bash_suffixes_are_checked(self):
         for filename, prefix in (("deploy", "#!/bin/bash\n"),
                                  ("new.bash", ""), ("new.sh", ""),
