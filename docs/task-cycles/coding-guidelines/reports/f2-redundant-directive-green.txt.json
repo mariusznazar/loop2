@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_eslint_checks.py"
+  ],
+  "exit_code": 0,
+  "seconds": 0.388,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f2-redundant-directive-green.txt"
+}

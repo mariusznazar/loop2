@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "-B",
+    ".the-way/task-cycle/cycle_stages.py",
+    "01a15660-aa7b-7ed1-a72b-2d38d5e6585c",
+    "--output",
+    ".runs/task-cycles/coding-guidelines/stages.md"
+  ],
+  "exit_code": 0,
+  "seconds": 0.321,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\cycle-stages-command.txt"
+}

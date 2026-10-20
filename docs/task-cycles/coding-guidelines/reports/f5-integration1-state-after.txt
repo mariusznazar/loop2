@@ -1,0 +1,65 @@
+{"path": "package.json", "sha256": "1853e14c659d6ec59f97a2759881fc2eaa5db89714141b94002809becda84625"}
+{"path": "package-lock.json", "sha256": "997d60665cee25c8094d6d8719fb2c5d82e9e578857bc3ec71da11582fb2b2c0"}
+{
+  "npm": "11.13.0",
+  "installName": "typescript",
+  "actualName": "@typescript/typescript6",
+  "version": "6.0.2",
+  "resolved": "https://registry.npmjs.org/@typescript/typescript6/-/typescript6-6.0.2.tgz",
+  "peers": [
+    {
+      "from": "node_modules/@typescript-eslint/eslint-plugin",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/@typescript-eslint/parser",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/@typescript-eslint/project-service",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/@typescript-eslint/tsconfig-utils",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/@typescript-eslint/type-utils",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/@typescript-eslint/typescript-estree",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/@typescript-eslint/utils",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/ts-api-utils",
+      "spec": ">=4.8.4",
+      "valid": true,
+      "type": "peer"
+    },
+    {
+      "from": "node_modules/typescript-eslint",
+      "spec": ">=4.8.4 <6.1.0",
+      "valid": true,
+      "type": "peer"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# Review F3: Python/Bash methods
+
+Read reviewer-contract.md and exact Superpowers 6.4.1 task-reviewer-prompt.md. Task-scoped spec compliance and quality review, no product changes/subagents. Worktree C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines. Requirements f3-handoff.md and complete final authoritative entries. Author evidence f3-report.md. Base e85670a467de02ec0c46d1fb17777f54ad70ec9e; head 49a37059c637027880955d31199d4bbbcf99eda1. Read diff once: .superpowers/sdd/plan/review-e85670a..49a3705.diff.
+
+No guidelines exist yet; this task creates them. Verify selection from reading.md. Both actual methods currently exit 2 because pinned local binaries are not installed until a later product slice. Real parser probe/output compatibility and final product/deliberate-break/guideline-pair acceptance remain unchecked. Judge implementation and fixtures, retaining those limits without calling a missing-tool result enforcement acceptance. Check actual sharpness and weakest-point evidence; no routine test repeats.
+
+Cross-stage clarification from D-31: source directives are forbidden when they suppress adopted checks/change the set, not merely because they exist. Root accepted the author's bounded classifier as an implementation choice: proven suppression → named fail; proven neutral directive → normal further check; unresolved membership/effect → inability/null invariant. Do not accept this choice on root's authority: assess its correctness and practical limits against final sentence. Literal/data distinction and source/source-path effects need concrete evidence. No full heuristic inventory of diagnostic codes was requested. Preserve any finding independently graded by you.
+
+Full report .runs/task-cycles/coding-guidelines/reports/f3-review.md. Return both verdicts, range and every unresolved finding with report path. No whole-branch review or next stage.

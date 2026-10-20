@@ -1,0 +1,104 @@
+FFFFFFFFFFF
+======================================================================
+FAIL: test_comments_reject_suppressions_and_rule_configuration (test_eslint_checks.EslintChecks.test_comments_reject_suppressions_and_rule_configuration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_configuration_rejects_disabled_warn_extra_and_changed_options (test_eslint_checks.EslintChecks.test_configuration_rejects_disabled_warn_extra_and_changed_options)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_effective_configuration_accepts_exact_default_options (test_eslint_checks.EslintChecks.test_effective_configuration_accepts_exact_default_options)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_exclusion_and_processors_cannot_hide_a_file (test_eslint_checks.EslintChecks.test_exclusion_and_processors_cannot_hide_a_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_expected_membership_matches_whole_authoritative_facts (test_eslint_checks.EslintChecks.test_expected_membership_matches_whole_authoritative_facts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_language_selection_includes_new_variants_without_root_allowlist (test_eslint_checks.EslintChecks.test_language_selection_includes_new_variants_without_root_allowlist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_missing_node_has_no_named_verdict_and_overwrites_old_pass (test_eslint_checks.EslintChecks.test_missing_node_has_no_named_verdict_and_overwrites_old_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_ordinary_comments_and_nonblocking_disable_do_not_fail (test_eslint_checks.EslintChecks.test_ordinary_comments_and_nonblocking_disable_do_not_fail)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_parser_rejects_incomplete_duplicate_unexpected_and_malformed_results (test_eslint_checks.EslintChecks.test_parser_rejects_incomplete_duplicate_unexpected_and_malformed_results)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_source_reports_and_fatal_parse_errors_fail (test_eslint_checks.EslintChecks.test_source_reports_and_fatal_parse_errors_fail)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+======================================================================
+FAIL: test_tool_errors_and_malformed_json_never_become_success (test_eslint_checks.EslintChecks.test_tool_errors_and_malformed_json_never_become_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_eslint_checks.py", line 21, in setUp
+    self.assertTrue(path.is_file(), "ESLint method is not implemented")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : ESLint method is not implemented
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.003s
+
+FAILED (failures=11)

@@ -1,0 +1,7 @@
+# Review F1: shared mechanics
+
+Read reviewer-contract.md first, then Superpowers 6.4.1 task-reviewer-prompt.md. This is a task-scoped spec and quality review, not final whole-branch review. No product edits. Requirements: f1-handoff.md; author report: f1-report.md (same directory). Base 75a5fc91b8e74c81cba6f0aded3f2bf3752475a6, head 5f7d31cb7a6e2d274d996f22577f84050f4d3b2e. Diff package: .superpowers/sdd/plan/review-75a5fc9..5f7d31c.diff. Read once and evaluate claims against it.
+
+Worktree C:/Storage/repos/loop2/.runs/worktrees/coding-guidelines. No guidelines yet because this task creates them; verify against reading.md. Shared mechanics must contain no policy expectations. This review covers discovery, invocation and recording mechanics, plus meaningful fixture behavior. Guideline cases and deliberate invariant breaks belong to later acceptance on complete product, not this helper-only stage. Check actual diff sharpness and weakest-point evidence. Do not rerun tests without a specific unanswered risk. A previously started broad invariant run may still be active; if report says pending, preserve that status rather than count it as pass or duplicate it.
+
+Write complete review to .runs/task-cycles/coding-guidelines/reports/f1-review.md. Return concise spec compliance and quality verdicts, full report path, range, and every unresolved finding. No external comments, no next-stage invocation.

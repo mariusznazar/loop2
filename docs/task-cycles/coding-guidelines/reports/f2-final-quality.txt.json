@@ -1,0 +1,14 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality"
+  ],
+  "exit_code": 0,
+  "seconds": 4.129,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f2-final-quality.txt"
+}

@@ -1,0 +1,5 @@
+# F4 fix round 1
+
+Resume author-contract.md and f4-handoff.md at eb94bd41d4ec2b4d222baf6bd4ea090551697a16. Read full f4-review.md and isolated probe evidence. Address the Important repository-LF provenance finding in your two assigned paths only. Evaluate current repository-owned attribute rules, including current edits/new nested attributes, without allowing local/global/system Git attributes to manufacture a pass. Preserve working tree, index and user Git configuration. Keep raw LF checks and current policy meaning; no shared helper/foundation/config edits.
+
+Focused RED/GREEN must show repository rules passing, missing rules failing, and both local/global masking unable to pass. Add the weakest likely missed case and record actual commands/exits/output. Run only affected focused checks, not broad/application suites. Explicit commit, self-review and full report .runs/task-cycles/coding-guidelines/reports/f4-fix1-report.md. Stop before review. Contested finding needs evidence in report, never silent dismissal.

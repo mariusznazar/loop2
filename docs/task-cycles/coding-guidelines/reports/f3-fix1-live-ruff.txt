@@ -1,0 +1,1 @@
+{"check": "scripts/check_ruff.py", "verdict": "fail", "invariant": null, "description": "QualityError: local Ruff is unavailable: C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\quality-venv\\Scripts\\ruff.exe"}

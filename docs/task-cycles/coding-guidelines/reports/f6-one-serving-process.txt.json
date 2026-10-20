@@ -1,0 +1,15 @@
+{
+  "command": [
+    "python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/invariants",
+    "-p",
+    "test_loop2_one_serving_process.py"
+  ],
+  "exit_code": 0,
+  "seconds": 12.487,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f6-one-serving-process.txt"
+}

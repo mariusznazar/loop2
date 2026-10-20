@@ -1,0 +1,14 @@
+F
+======================================================================
+FAIL: test_prerelease_matches_npm_inclusive_advisory_ranges (test_dependency_audit.DependencyAudit.test_prerelease_matches_npm_inclusive_advisory_ranges)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 227, in test_prerelease_matches_npm_inclusive_advisory_ranges
+    self.assertEqual(self.verdict()[0], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 1 test in 0.951s
+
+FAILED (failures=1)

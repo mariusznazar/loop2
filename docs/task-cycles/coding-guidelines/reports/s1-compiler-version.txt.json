@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "node_modules/typescript-compiler/bin/tsc",
+    "--version"
+  ],
+  "exit_code": 0,
+  "seconds": 0.71,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\s1-compiler-version.txt"
+}

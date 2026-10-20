@@ -1,0 +1,14 @@
+F
+======================================================================
+FAIL: test_nested_pinned_npm_cannot_mask_a_different_root_tool_lock (test_dependency_audit.DependencyAudit.test_nested_pinned_npm_cannot_mask_a_different_root_tool_lock)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_dependency_audit.py", line 238, in test_nested_pinned_npm_cannot_mask_a_different_root_tool_lock
+    self.assertEqual(self.verdict()[0], 2)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2
+
+----------------------------------------------------------------------
+Ran 1 test in 0.969s
+
+FAILED (failures=1)

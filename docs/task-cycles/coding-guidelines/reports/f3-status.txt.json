@@ -1,0 +1,10 @@
+{
+  "command": [
+    "git",
+    "status",
+    "--short"
+  ],
+  "exit_code": 0,
+  "seconds": 0.063,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f3-status.txt"
+}

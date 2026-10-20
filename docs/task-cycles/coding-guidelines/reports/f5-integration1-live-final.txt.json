@@ -1,0 +1,14 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "scripts/check_dependencies.py",
+    "--fork-point",
+    "c379207bfd8bd148d3589ea75604ba5165915d01",
+    "--record",
+    ".runs/f5-integration1-audit-final.jsonl"
+  ],
+  "exit_code": 1,
+  "seconds": 1.239,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-integration1-live-final.txt"
+}

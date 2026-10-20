@@ -1,0 +1,1 @@
+{"source": "https://raw.githubusercontent.com/astral-sh/ruff/0.17.1/crates/ruff_linter/src/rule_redirects.rs", "blocking_rules": 393, "blocking_redirects": 30, "nonblocking_control": "M001 -> RUF100", "verdict": "pass"}

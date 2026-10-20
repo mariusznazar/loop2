@@ -1,0 +1,50 @@
+{"check": "scripts/check_fixture.py", "verdict": "fail", "invariant": null, "description": "QualityError: check operation did not return an explicit bool"}
+......F..{"check": "scripts/check_fixture.py", "verdict": "fail", "invariant": null, "description": "QualityError: C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe exited 3\n\n"}
+.F.{"check": "scripts/check_fixture.py", "verdict": "pass", "invariant": "fixture-rule/1"}
+{"check": "scripts/check_fixture.py", "verdict": "fail", "invariant": "fixture-rule/1"}
+{"check": "scripts/check_fixture.py", "verdict": "fail", "invariant": null, "description": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"}
+.{"check": "scripts/check_fixture.py", "verdict": "fail", "invariant": null, "description": "QualityError: cannot run C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe: Command '['C:\\\\Users\\\\Mariusz\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python314\\\\python.exe', '-c', 'import time; time.sleep(10)']' timed out after 0.05 seconds"}
+..{"check": "scripts/check_fixture.py", "verdict": "fail", "invariant": null, "description": "QualityError: unreadable UTF-8 output from C:\\Users\\Mariusz\\AppData\\Local\\Programs\\Python\\Python314\\python.exe"}
+.
+======================================================================
+FAIL: test_local_tool_returns_both_streams_and_status (test_quality_support.QualitySupportTests.test_local_tool_returns_both_streams_and_status)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_quality_support.py", line 104, in test_local_tool_returns_both_streams_and_status
+    self.assertEqual((result.returncode, result.stdout, result.stderr),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     (0, "report\n", "detail\n"))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: (0, 'report\r\n', 'detail\r\n') != (0, 'report\n', 'detail\n')
+
+First differing element 1:
+'report\r\n'
+'report\n'
+
+- (0, 'report\r\n', 'detail\r\n')
+?             --            --
+
++ (0, 'report\n', 'detail\n')
+
+======================================================================
+FAIL: test_nonzero_exit_is_failure_unless_the_adapter_accepts_it (test_quality_support.QualitySupportTests.test_nonzero_exit_is_failure_unless_the_adapter_accepts_it)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_quality_support.py", line 119, in test_nonzero_exit_is_failure_unless_the_adapter_accepts_it
+    self.assertEqual((result.returncode, result.stdout), (1, "violations\n"))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: (1, 'violations\r\n') != (1, 'violations\n')
+
+First differing element 1:
+'violations\r\n'
+'violations\n'
+
+- (1, 'violations\r\n')
+?                 --
+
++ (1, 'violations\n')
+
+----------------------------------------------------------------------
+Ran 16 tests in 4.327s
+
+FAILED (failures=2)

@@ -1,0 +1,14 @@
+...F.........
+======================================================================
+FAIL: test_invalid_utf8_cannot_be_silently_replaced_into_a_pass (test_format_check.FormatChecks.test_invalid_utf8_cannot_be_silently_replaced_into_a_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_format_check.py", line 125, in test_invalid_utf8_cannot_be_silently_replaced_into_a_pass
+    self.assertEqual(code, 2)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+AssertionError: 0 != 2
+
+----------------------------------------------------------------------
+Ran 13 tests in 13.474s
+
+FAILED (failures=1)

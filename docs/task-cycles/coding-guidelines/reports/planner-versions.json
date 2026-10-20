@@ -1,0 +1,140 @@
+[
+  {
+    "url": "https://registry.npmjs.org/eslint/10.12.0",
+    "status": 200,
+    "name": "eslint",
+    "version": "10.12.0",
+    "engines": {
+      "node": "^20.19.0 || ^22.13.0 || >=24"
+    },
+    "peerDependencies": {
+      "jiti": "*"
+    },
+    "integrity_present": true
+  },
+  {
+    "url": "https://registry.npmjs.org/@eslint%2fjs/10.0.1",
+    "status": 200,
+    "name": "@eslint/js",
+    "version": "10.0.1",
+    "engines": {
+      "node": "^20.19.0 || ^22.13.0 || >=24"
+    },
+    "peerDependencies": {
+      "eslint": "^10.0.0"
+    },
+    "integrity_present": true
+  },
+  {
+    "url": "https://registry.npmjs.org/typescript-eslint/8.71.2",
+    "status": 200,
+    "name": "typescript-eslint",
+    "version": "8.71.2",
+    "engines": {
+      "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+    },
+    "peerDependencies": {
+      "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0",
+      "typescript": ">=4.8.4 <6.1.0"
+    },
+    "integrity_present": true
+  },
+  {
+    "url": "https://registry.npmjs.org/globals/17.13.0",
+    "status": 200,
+    "name": "globals",
+    "version": "17.13.0",
+    "engines": {
+      "node": ">=18"
+    },
+    "peerDependencies": null,
+    "integrity_present": true
+  },
+  {
+    "url": "https://registry.npmjs.org/@typescript%2ftypescript6/6.0.2",
+    "status": 200,
+    "name": "@typescript/typescript6",
+    "version": "6.0.2",
+    "engines": null,
+    "peerDependencies": null,
+    "integrity_present": true
+  },
+  {
+    "url": "https://registry.npmjs.org/typescript/7.0.2",
+    "status": 200,
+    "name": "typescript",
+    "version": "7.0.2",
+    "engines": {
+      "node": ">=16.20.0"
+    },
+    "peerDependencies": null,
+    "integrity_present": true
+  },
+  {
+    "url": "https://registry.npmjs.org/prettier/3.9.10",
+    "status": 200,
+    "name": "prettier",
+    "version": "3.9.10",
+    "engines": {
+      "node": ">=14"
+    },
+    "peerDependencies": null,
+    "integrity_present": true
+  },
+  {
+    "url": "https://registry.npmjs.org/npm/11.13.0",
+    "status": 200,
+    "name": "npm",
+    "version": "11.13.0",
+    "engines": {
+      "node": "^20.17.0 || >=22.9.0"
+    },
+    "peerDependencies": null,
+    "integrity_present": true
+  },
+  {
+    "url": "https://pypi.org/pypi/ruff/0.17.1/json",
+    "status": 200,
+    "version": "0.17.1",
+    "artifacts": [
+      "ruff-0.17.1-py3-none-linux_armv6l.whl",
+      "ruff-0.17.1-py3-none-macosx_10_12_x86_64.whl",
+      "ruff-0.17.1-py3-none-macosx_11_0_arm64.whl",
+      "ruff-0.17.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+      "ruff-0.17.1-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+      "ruff-0.17.1-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl",
+      "ruff-0.17.1-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+      "ruff-0.17.1-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl",
+      "ruff-0.17.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "ruff-0.17.1-py3-none-manylinux_2_31_riscv64.whl",
+      "ruff-0.17.1-py3-none-musllinux_1_2_aarch64.whl",
+      "ruff-0.17.1-py3-none-musllinux_1_2_armv7l.whl",
+      "ruff-0.17.1-py3-none-musllinux_1_2_i686.whl",
+      "ruff-0.17.1-py3-none-musllinux_1_2_x86_64.whl",
+      "ruff-0.17.1-py3-none-win32.whl",
+      "ruff-0.17.1-py3-none-win_amd64.whl",
+      "ruff-0.17.1-py3-none-win_arm64.whl",
+      "ruff-0.17.1.tar.gz"
+    ]
+  },
+  {
+    "url": "https://api.github.com/repos/koalaman/shellcheck/releases/tags/v0.11.0",
+    "status": 200,
+    "version": "v0.11.0",
+    "artifacts": [
+      "shellcheck-v0.11.0.darwin.aarch64.tar.gz",
+      "shellcheck-v0.11.0.darwin.aarch64.tar.xz",
+      "shellcheck-v0.11.0.darwin.x86_64.tar.gz",
+      "shellcheck-v0.11.0.darwin.x86_64.tar.xz",
+      "shellcheck-v0.11.0.linux.aarch64.tar.gz",
+      "shellcheck-v0.11.0.linux.aarch64.tar.xz",
+      "shellcheck-v0.11.0.linux.armv6hf.tar.gz",
+      "shellcheck-v0.11.0.linux.armv6hf.tar.xz",
+      "shellcheck-v0.11.0.linux.riscv64.tar.gz",
+      "shellcheck-v0.11.0.linux.riscv64.tar.xz",
+      "shellcheck-v0.11.0.linux.x86_64.tar.gz",
+      "shellcheck-v0.11.0.linux.x86_64.tar.xz",
+      "shellcheck-v0.11.0.zip"
+    ]
+  }
+]

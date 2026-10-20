@@ -1,0 +1,15 @@
+{
+  "command": [
+    "python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_python_shell_checks.py"
+  ],
+  "exit_code": 0,
+  "seconds": 20.622,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f3-fix1-green.txt"
+}

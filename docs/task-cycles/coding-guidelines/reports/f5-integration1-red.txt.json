@@ -1,0 +1,18 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/quality",
+    "-p",
+    "test_dependency_audit.py",
+    "-k",
+    "alias_peer"
+  ],
+  "exit_code": 1,
+  "seconds": 5.627,
+  "output": ".runs\\task-cycles\\coding-guidelines\\reports\\f5-integration1-red.txt"
+}

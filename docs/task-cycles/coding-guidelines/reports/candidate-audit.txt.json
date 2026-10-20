@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\npm-candidate-12.2.1\\node_modules\\npm\\bin\\npm-cli.js",
+    "audit",
+    "--json",
+    "--registry=https://registry.npmjs.org",
+    "--userconfig=C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\npm-candidate-12.2.1\\user.npmrc",
+    "--globalconfig=C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\npm-candidate-12.2.1\\global.npmrc"
+  ],
+  "cwd": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\npm-candidate-12.2.1",
+  "exit_code": 0,
+  "seconds": 1.64,
+  "output": "C:\\Storage\\repos\\loop2\\.runs\\worktrees\\coding-guidelines\\.runs\\task-cycles\\coding-guidelines\\reports\\candidate-audit.txt"
+}

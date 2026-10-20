@@ -1,0 +1,1 @@
+{"check": "dependency-audit", "verdict": "fail", "invariant": null, "description": "QualityError: npm 11.13.0 must be declared and locked locally"}

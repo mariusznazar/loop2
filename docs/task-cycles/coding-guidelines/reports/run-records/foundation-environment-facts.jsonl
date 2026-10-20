@@ -1,0 +1,7 @@
+{"check": "elements/environment-facts/format_guard.py::check_against_base", "verdict": "pass", "invariant": "fact-version-new/1"}
+{"check": "elements/environment-facts/format_guard.py::check_against_base", "verdict": "pass", "invariant": "fact-version-changed/1"}
+{"check": "elements/environment-facts/format_guard.py::check_against_base", "verdict": "pass", "invariant": "fact-version-unchanged/1"}
+{"check": "elements/environment-facts/format_guard.py::check_against_base", "verdict": "pass", "invariant": "fact-identifier-persistence/1"}
+{"check": "elements/environment-facts/format_guard.py::check_against_base", "verdict": "pass", "invariant": "fact-withdrawal-persistence/1"}
+{"check": "elements/environment-facts/format_guard.py::check_fingerprints", "verdict": "pass", "invariant": "based-on-fact-fingerprint-value/1"}
+{"check": "elements/environment-facts/format_guard.py::check_dependants", "verdict": "pass", "invariant": "fact-dependants/1"}

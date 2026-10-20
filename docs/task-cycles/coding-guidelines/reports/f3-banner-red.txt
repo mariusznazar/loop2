@@ -1,0 +1,14 @@
+.............F..
+======================================================================
+FAIL: test_shellcheck_windows_banner_accepts_pinned_version_with_license_lines (test_python_shell_checks.PythonShellChecks.test_shellcheck_windows_banner_accepts_pinned_version_with_license_lines)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\coding-guidelines\tests\quality\test_python_shell_checks.py", line 181, in test_shellcheck_windows_banner_accepts_pinned_version_with_license_lines
+    self.assertEqual(self.run_check("shellcheck")[0], 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+----------------------------------------------------------------------
+Ran 16 tests in 14.421s
+
+FAILED (failures=1)
