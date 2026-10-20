@@ -1,5 +1,5 @@
 /** Kinds of draw; each has its own generator, derived from the map run's seed. */
-export type Stream = 'layout' | 'wander';
+export type Stream = "layout" | "wander";
 
 /** A fixed distinct constant per stream: adding a stream changes no existing one. */
 const STREAM_CONSTANT: Record<Stream, number> = {

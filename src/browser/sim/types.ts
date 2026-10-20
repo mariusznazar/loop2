@@ -1,6 +1,6 @@
-import type { ArchetypeId } from './data/archetypes.js';
-import type { MapId } from './data/maps.js';
-import type { ResourceId } from './data/resources.js';
+import type { ArchetypeId } from "./data/archetypes.js";
+import type { MapId } from "./data/maps.js";
+import type { ResourceId } from "./data/resources.js";
 
 export type { ArchetypeId, MapId, ResourceId };
 
@@ -8,13 +8,13 @@ export type { ArchetypeId, MapId, ResourceId };
 export type Hex = { q: number; r: number };
 
 export type Condition =
-  | { kind: 'always' }
-  | { kind: 'hereBelow'; resource: ResourceId; value: number };
+  | { kind: "always" }
+  | { kind: "hereBelow"; resource: ResourceId; value: number };
 
 export type Action =
-  | { kind: 'explore' }
-  | { kind: 'wander' }
-  | { kind: 'walkTo'; resource: ResourceId };
+  | { kind: "explore" }
+  | { kind: "wander" }
+  | { kind: "walkTo"; resource: ResourceId };
 
 export type ProgramRule = { condition: Condition; action: Action };
 
@@ -34,8 +34,7 @@ export type Tile = {
 
 /** What the character is doing now. */
 export type Activity =
-  | { kind: 'rule'; ruleIndex: number; action: Action }
-  | { kind: 'wait' };
+  { kind: "rule"; ruleIndex: number; action: Action } | { kind: "wait" };
 
 export type CurrentActivity = {
   activity: Activity;
