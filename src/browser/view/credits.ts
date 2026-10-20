@@ -8,8 +8,8 @@ export type IconCredit = {
   changes: string;
 };
 
-/** The change made to every icon file: the black background removed, the shape drawn dark. */
-const CHANGES = "zmienione (bez tła, ciemny kolor)";
+/** The change made to every icon file: the black background removed, the shape drawn light. */
+const CHANGES = "zmienione (bez tła, jasny kolor)";
 
 /** Commit of https://github.com/game-icons/icons the icon files were copied from. */
 export const ICON_SOURCE_COMMIT = "82d948812bfe3f269ef8f731dcdb07b08160edc4";

@@ -22,6 +22,20 @@ function svgElement<K extends keyof SVGElementTagNameMap>(
   return element;
 }
 
+/** Inset the link line so the character and step strokes stay separate at the tile edge. */
+function linkPoints(points: string): string {
+  const corners = points.split(" ").map((pair) => pair.split(",").map(Number));
+  const cx = corners.reduce((sum, [x]) => sum + x, 0) / corners.length;
+  const cy = corners.reduce((sum, [, y]) => sum + y, 0) / corners.length;
+  return corners
+    .map(([x, y]) => {
+      const distance = Math.hypot(x - cx, y - cy);
+      const scale = (distance - MARGIN) / distance;
+      return `${cx + (x - cx) * scale},${cy + (y - cy) * scale}`;
+    })
+    .join(" ");
+}
+
 /**
  * Builds the terrain panel: the drawing of the map run and, beside it, the list of revealed tiles.
  * The drawing is a picture, not a control: it has no click handling, and hovering is its only
@@ -72,7 +86,9 @@ export function createTerrainPanel(): TerrainPanel {
         "data-tile": tileKey(tile),
         class: tile.revealed ? "tile revealed" : "tile",
       });
-      group.append(svgElement("polygon", { points: tile.points }));
+      group.append(
+        svgElement("polygon", { points: tile.points, class: "tile-body" }),
+      );
       for (const icon of tile.icons) {
         group.append(
           svgElement("image", {
@@ -85,6 +101,12 @@ export function createTerrainPanel(): TerrainPanel {
           }),
         );
       }
+      group.append(
+        svgElement("polygon", {
+          points: linkPoints(tile.points),
+          class: "link-outline",
+        }),
+      );
       return group;
     });
     // Outlines go on top of every tile, so a neighbour drawn later does not cover them.

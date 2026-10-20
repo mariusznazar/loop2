@@ -101,21 +101,30 @@ header h1 {
   max-width: 100%;
   height: auto;
 }
-.terrain-drawing .tile polygon {
+.terrain-drawing .tile-body {
   fill: var(--tile-hidden);
   stroke: var(--tile-edge);
   stroke-width: var(--border-width);
 }
-.terrain-drawing .tile.revealed polygon {
+.terrain-drawing .tile.revealed .tile-body {
   fill: var(--tile-revealed);
 }
 .terrain-drawing .icon.dimmed {
   opacity: var(--depleted);
 }
-.terrain-drawing .outline {
+.terrain-drawing .outline,
+.terrain-drawing .link-outline {
   fill: none;
   pointer-events: none;
   stroke-linejoin: round;
+}
+.terrain-drawing .link-outline {
+  stroke: var(--link-highlight);
+  stroke-width: var(--link-width);
+  visibility: hidden;
+}
+.terrain-drawing .tile.hovered .link-outline {
+  visibility: visible;
 }
 .terrain-drawing .outline.character {
   stroke: var(--character);
@@ -148,6 +157,10 @@ header h1 {
 .tile-list tbody th {
   text-align: left;
   font-weight: var(--font-weight-regular);
+  border-left: var(--link-width) solid transparent;
+}
+.tile-list tbody tr.hovered th {
+  border-left-color: var(--link-highlight);
 }
 button,
 input,
