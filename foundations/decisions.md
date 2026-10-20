@@ -833,7 +833,7 @@ Loop2 adopts the coding-guideline templates of its pinned the-way, while deferri
   - violates: an additional mandatory test exemplar, automatic Python formatting or a transition-debt check introduced without a new decision
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* The accepted scope gives current code common checks and a small set of useful exemplars before further product work; broader exemplar maintenance and additional formatters add work without an established benefit.
 *Rejected:* A complete exemplar audit and automatic formatting for every language — more maintenance and unmeasured reformatting work; transitional lint debt — an extra mechanism where the introduction removes all blocking violations.
@@ -849,7 +849,7 @@ All application, script and test TypeScript and JavaScript files in browser-view
 - **Verification:** level 1 — invariants: eslint-source-rules · eslint-configuration-rules
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency.
 *Rejected:* A compiler downgrade — gives up the existing compiler choice; an unsupported parser API — risks unreliable type-aware reports; extra style sets — add obligations beyond the accepted set.
@@ -865,7 +865,7 @@ Every Python file in browser-view, simulation, account-server, build-tools, depl
 - **Verification:** level 1 — invariants: ruff-source-rules
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* The selected subset retains useful defect reports while leaving reports that offer no worthwhile code change as examples; direct isolated selection keeps configuration from quietly changing that boundary.
 *Rejected:* The entire default set as blocking — forces unhelpful rewrites; no Python linter — leaves useful defect reports unchecked.
@@ -881,7 +881,7 @@ Every standalone Bash script in the code parts, including new paths and extensio
 - **Verification:** level 1 — invariants: shellcheck-source-rules
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* The default checks cover shell defects without adding optional stylistic obligations; keeping source and environment controls from weakening them makes a successful result meaningful.
 *Rejected:* No Bash linter — leaves shell defects unchecked; enabling optional checks — adds obligations outside the accepted set.
@@ -897,7 +897,7 @@ All application, script and test TypeScript and JavaScript in browser-view, simu
 - **Verification:** level 1 — invariants: prettier-source-format
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* One formatter and shared settings remove repeated layout choices and platform-dependent line endings; the initial whole-scope reformatting is accepted to avoid lasting exceptions.
 *Rejected:* Per-file historic exceptions — preserve recurring format differences; Python and Bash formatting now — adds tools and unmeasured rewrites beyond the accepted scope.
@@ -913,7 +913,7 @@ The dependency audit uses local pinned npm 11.13.0 and the npm/GitHub Advisory D
 - **Verification:** level 1 — invariants: introduced-npm-vulnerabilities
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* A low threshold starts conservatively while comparison of introduced versions keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same introduced version, and matching advisory ranges adds parsing work.
 *Rejected:* Moderate, high or critical thresholds — accept known lower-severity vulnerabilities in introduced versions; auditing unchanged versions as blockers — stops unrelated work; trusting only audit exit status or a package-wide severity — can attribute a vulnerability to the wrong installed version.
@@ -931,7 +931,7 @@ The exemplar for kind `content-data` is `src/browser/sim/data/resources.ts`, and
   - violates: a different exemplar or a new mandatory catalogue shape for every data file
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* A current typed content catalogue gives later authors a concrete model without creating a new architectural constraint for every kind of game data.
 *Rejected:* Making the catalogue shape mandatory — constrains data whose useful structure differs; no exemplar — leaves each new catalogue to invent its own model.
@@ -949,7 +949,7 @@ The exemplar for kind `simulation-module` is `src/browser/sim/game.ts`, and its 
   - violates: a different exemplar or a new obligation that every helper returns GameResult
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* The game operation illustrates explicit state transitions while allowing smaller helpers to expose only the result they compute.
 *Rejected:* One result type for every helper — adds wrappers without a demonstrated need; no exemplar — leaves the operation model implicit.
@@ -967,7 +967,7 @@ The exemplar for kind `browser-module` is `src/browser/view/status-row.ts`, and 
   - violates: a different exemplar or a mandatory update method in every browser module
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* An existing small control shows stable editing behavior without forcing every view helper to own a control lifecycle.
 *Rejected:* Mandatory update methods and a ban on static rebuilding — impose structure where no editable control needs it; no exemplar — leaves focus-preserving updates implicit.
@@ -985,7 +985,7 @@ The exemplar for kind `http-application` is `src/server/app.ts`, and its kind gu
   - violates: a different exemplar or a new mandatory factory-structure invariant
 - **Review when:** none
 - **Origin:** none
-- **Approved by:** Mariusz, merge of <request link>
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/16
 
 *Rationale:* Separating creation from listening gives a concrete model that is easy to test, without settling the architecture of future account and saved-game features.
 *Rejected:* A new factory-structure check — enforces an example as architecture; no exemplar — leaves the existing testable assembly model implicit.
