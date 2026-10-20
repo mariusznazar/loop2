@@ -1,7 +1,0 @@
-python : {"check": "prettier-source-format", "verdict": "pass", "invariant": "prettier-source-format/1"}
-At line:2 char:1
-+ python -B scripts/check_format.py *> '.runs/task-cycles/styleguide-lo ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: ({"check": "pret...urce-format/1"}:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 

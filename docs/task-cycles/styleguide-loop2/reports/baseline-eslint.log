@@ -1,7 +1,0 @@
-python : {"check": "eslint-source-rules", "verdict": "pass", "invariant": "eslint-source-rules/1"}
-At line:2 char:1
-+ python -B scripts/check_eslint.py *> '.runs/task-cycles/styleguide-lo ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: ({"check": "esli...ource-rules/1"}:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 

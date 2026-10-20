@@ -1,7 +1,0 @@
-python : {"check": "scripts/check_ruff.py", "verdict": "pass", "invariant": "ruff-source-rules/1"}
-At line:2 char:1
-+ python -B scripts/check_ruff.py *> '.runs/task-cycles/styleguide-loop ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: ({"check": "scri...ource-rules/1"}:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
