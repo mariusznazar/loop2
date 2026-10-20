@@ -168,6 +168,40 @@ button {
   padding: var(--space-4) var(--space-12);
   cursor: pointer;
 }
+.control-field {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+}
+.control:enabled:hover {
+  background: var(--highlight);
+}
+.destructive-button {
+  color: var(--danger);
+}
+.selected-button[aria-pressed="true"] {
+  color: var(--text-strong);
+  border-color: var(--selected);
+}
+.control[aria-invalid="true"] {
+  border-color: var(--warning);
+}
+.control::placeholder {
+  color: var(--text-label);
+  opacity: inherit;
+}
+.control-error {
+  display: block;
+  margin-top: var(--space-4);
+  font-size: var(--font-size-description);
+  color: var(--warning);
+}
+.control:disabled,
+.destructive-button:disabled,
+.selected-button[aria-pressed="true"]:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+}
 footer {
   margin-top: var(--space-24);
   padding: var(--space-12) 0 var(--space-16);
