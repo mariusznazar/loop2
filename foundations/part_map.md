@@ -8,6 +8,8 @@ The part draws the game's screens in the browser.
   src/browser/index.html
   src/browser/view/**
   assets/icons/**
+  assets/fonts/**
+  tools/styleguide/**
   tests/view/**
   tests/invariants/test_browser_view_framework.py
   tests/invariants/test_icon_file_content.py
@@ -16,6 +18,7 @@ The part draws the game's screens in the browser.
 - **Depends on:** simulation
 - **Failure modes:** none
 - **Trust boundary:** assets/icons/**
+  assets/fonts/**
 
 ## simulation
 
@@ -69,6 +72,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   /package-lock.json
   tsconfig.browser.json
   tsconfig.server.json
+  tsconfig.styleguide.json
   scripts/**
   tests/quality/**
   eslint.config.mjs
@@ -86,6 +90,7 @@ The part installs dependencies, checks code quality and types, audits introduced
 - **Failure modes:** none
 - **Trust boundary:** package-lock.json
   scripts/check_dependencies.py
+  scripts/kitchen-sink.mjs
 
 ## agent-workflow
 
@@ -163,6 +168,7 @@ the test server.
 | the container image registry | them → us | untrusted | no |
 | the GitHub repository the server fetches over its read-only key | them → us | trusted | yes |
 | game-icons.net | them → us | untrusted | no |
+| official Vercel Geist font repository (https://github.com/vercel/geist-font) | them → us | untrusted | no |
 
 ## Change paths
 

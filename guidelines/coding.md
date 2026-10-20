@@ -7,7 +7,7 @@
 
 Przed każdą zmianą kodu produktu, także skryptów i testów. Stosuj sprawdzenia
 niezmienników wskazanych poniżej przez ich metody zapisane w fundamencie.
-Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28@550e88d6.
+Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28@f70f8d16.
 
 ## Kinds of code
 
@@ -311,7 +311,7 @@ To przykład testu, bez osobnego formalnego rodzaju testów.
 ### Odłożone rodzaje i formatowanie
 
 Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce testów
-Node/Python, budowania, wdrożenia, punktów uruchomienia i HTML również są odłożone.
+Node/Python, budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone.
 Wzorce sesji, zapisu gry i poczty powstaną przy pierwszych implementacjach.
 Przed wyborem wzorca odłożonego istniejącego rodzaju porównuje się jego pliki.
 Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Dla przyjętych linterów

@@ -989,3 +989,165 @@ The exemplar for kind `http-application` is `src/server/app.ts`, and its kind gu
 
 *Rationale:* Separating creation from listening gives a concrete model that is easy to test, without settling the architecture of future account and saved-game features.
 *Rejected:* A new factory-structure check — enforces an example as architecture; no exemplar — leaves the existing testable assembly model implicit.
+
+### D-38/1 — Which styleguide discipline does loop2 adopt?
+
+Loop2 adopts the styleguide template of its pinned the-way without departures for browser-view, with named design tokens whose values carry sources and whose roles keep their names and kinds against {fork-point}.
+
+- **Change:** new decision
+- **Scope:** browser-view, build-tools, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: design-token-sources · design-role-preservation · shared-control-states · styleguide-production-exclusion
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* A shared discipline makes later screens use the same visual language while leaving appearance values changeable.
+*Rejected:* Screen-specific conventions — let meanings and appearance drift; departures from the template — no accepted exception calls for one.
+
+### D-39/1 — What do the signal roles mean?
+
+The text roles `positive` (green), `warning` (orange), `danger` (red), `discovery` (yellow) and `player-change` (purple) mean respectively working, okay or active; a warning that something cannot run or is unsaved, including invalid field input; a risk of losing a character, progress or data; something newly discovered; and something the player did. Each of these text roles applies on each of the `page`, `panel` and `highlight` backgrounds.
+
+- **Change:** new decision
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: design-role-meanings · design-contrast
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* Stable signal meanings let a player distinguish a warning from threatened loss and recognize discovery and personal changes.
+*Rejected:* Red field errors — confuse invalid input with threatened loss; meanings chosen separately by each screen — make the same signal ambiguous.
+
+### D-40/1 — What do the neutral roles mean?
+
+The background roles `page`, `panel` and `highlight` mean the place of the game, a separate block, and a selected row or track; the other roles `divider`, `control-border` and `selected` mean a section boundary, a clickable or editable control, and selection within a group. The text roles `text-strong`, `text`, `text-secondary`, `text-label` and `text-disabled` mean respectively a name, heading or value to notice first; readable content; a description, explanation or note; a field or section label or date; and something currently unavailable. Each of these text roles applies on each of these background roles, and `text` is the Text on it of each of these backgrounds in the styleguide.
+
+- **Change:** new decision
+- **Scope:** browser-view, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: design-role-meanings · design-contrast
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* Separate roles preserve the distinction between importance, explanation, labels and unavailable actions even when their current values coincide.
+*Rejected:* Collapsing the neutral roles — removes distinctions still used by the interface; carrying every observed grey as a role — confuses a value with its purpose.
+
+### D-41/1 — What do the terrain and focus roles mean?
+
+The other roles `character`, `tile-hidden`, `tile-revealed`, `tile-edge`, `link-highlight`, `depleted` and `focus` mean respectively where the character is and is going now, an unknown place, a known place, a boundary between tiles, the same place in a tile and its list row, something no longer present, and the current place in keyboard operation. The step target shares `character` with the character outline and differs by its thin dashed shape instead of color, both tile states use `tile-edge`, link highlighting outlines the tile and marks its row without changing the tile color, and `depleted` dims only the resource icon while zero stock remains in the list. The focus outline is distinct from the selected group button border.
+
+- **Change:** new decision
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: design-role-meanings · keyboard-focus-style · design-contrast
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* Position and direction are one meaning with distinct shapes; linked representations and exhausted resources retain separate meanings without hiding the terrain.
+*Rejected:* A separate step color — invents another meaning for the same movement; repainting the tile on hover — obscures whether the place is known; treating selection as focus — confuses two different states.
+
+### D-42/1 — Which accessibility criteria and contrast thresholds apply?
+
+Every loop2 screen adopts WCAG 2.2 success criteria 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast and 2.4.7 Focus Visible from the W3C Recommendation of 12 December 2024, without adopting the rest of level AA. Every text role except `text-disabled` has contrast of at least 4.5:1 on each of `page`, `panel` and `highlight`, and `control-border`, `focus`, `character` and the distinction between `tile-revealed` and `tile-hidden` have contrast of at least 3:1 against the colors they touch. Disabled text and depleted icons have no contrast threshold, and every keyboard-focusable element, links included, has a focus style using `focus` with nothing disabling it.
+
+- **Change:** new decision
+- **Scope:** browser-view, build-tools
+- **Based on:** wcag-text-contrast@44710605 · wcag-non-text-contrast@132b433e · wcag-focus-visible@bed275f9
+- **Relations:** none
+- **Verification:** level 1 — invariants: design-contrast · keyboard-focus-style
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* Basic contrast and keyboard orientation are a voluntary product choice; a single text threshold avoids assuming a size when comparing role values.
+*Rejected:* Full level AA — a broader obligation than the accepted basic accessibility scope; a lower threshold for some text roles — relies on a text size the role pair does not establish.
+
+### D-43/1 — Which appearance values belong only in design tokens?
+
+Outside `src/browser/view/design-tokens.json`, no browser-view file contains a value in place of a design token: any literal color in any notation in styles or TypeScript, or, in styles, a size or spacing in px, rem or em, a font-family name, or unitless line thickness, dash pattern, opacity or font weight. Exceptions are zero, percentages, fr, vw and vh, the keywords transparent, currentColor, inherit and none, viewport-width thresholds in @media, terrain drawing geometry computed in TypeScript (tile radius, icon size and drawing margin), image width and height attributes, layout width and height including their minima and maxima and layout-grid column sizes, and the icon files in `assets/icons/` whose color is updated manually when the strong-text value changes. This rule applies to the whole part without historical per-file exceptions or a transitional no-regression allowance.
+
+- **Change:** new decision
+- **Scope:** browser-view, build-tools
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: design-token-use
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* One source makes an appearance change consistent while the explicit geometry and layout exceptions preserve independent structural dimensions.
+*Rejected:* A gradual migration with historic allowances — prolongs conflicting values; runtime recoloring of icon files — adds machinery where a deliberate file update is accepted.
+
+### D-44/1 — Which shared controls and states do screens use?
+
+Screens use the six shared controls in `src/browser/view/controls/`: ordinary button, destructive button, selected group button, select, number field and text field; Zakończ, Usuń and Restart are destructive buttons. Controls show their underlying background and ordinary text, with danger text for destructive buttons and strong text and the selected border for selected buttons; all have default, focus and disabled states, hover uses the highlight background without changing the border, disabled text uses text-disabled, input errors use a warning border and message below the field, and empty selects and fields show no choices or a label-text placeholder. Error and empty states do not apply to buttons, and loading does not apply until a control waits for a server; the all-states page shows each control in each of default, hover, focus, disabled, error, empty and loading or gives its reason for inapplicability.
+
+- **Change:** new decision
+- **Scope:** browser-view, build-tools
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: shared-control-states · design-role-meanings · keyboard-focus-style
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* Shared controls keep destructive actions and editing states recognizable across screens while native behavior keeps their operation familiar.
+*Rejected:* Each screen making its own controls — repeats state handling and permits inconsistent signals; invented loading behavior — implies waiting where no server operation exists.
+
+### D-45/1 — Where is the page of control and terrain appearance states available?
+
+A separate local command builds and opens the all-states page outside the ordinary application output, and `npm run build` contains no all-states page artifact. The page shows the shared controls and role-driven terrain appearance samples in each state, never a drawing of the game from a game state.
+
+- **Change:** new decision
+- **Scope:** browser-view, build-tools, deployment
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 1 — invariants: styleguide-production-exclusion · shared-control-states
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* A local demonstration makes appearance states inspectable without adding a player-facing screen or coupling examples to a fabricated game.
+*Rejected:* Shipping the page with the ordinary build behind a development mode — adds a server responsibility and risks exposing development output; a prepared game state for the samples — makes a style demonstration depend on game behavior.
+
+### D-46/1 — How are the interface fonts supplied?
+
+The interface uses Geist and Geist Mono from font files kept in the product with their licence and copyright notice beside them and copied into the application output at build time, with no font fetched from a foreign server by the game. Geist Mono is used for chronicle text and the map run clock.
+
+- **Change:** new decision
+- **Scope:** browser-view, build-tools, deployment
+- **Based on:** geist-font-licence@1f860d62
+- **Relations:** none
+- **Verification:** level 1 — invariants: local-font-delivery
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale:* Local font files keep typography consistent without making play depend on another server, at the cost of deliberate font updates and distributing the licence.
+*Rejected:* System fonts — vary the appearance across systems; a remote font service — adds a runtime network dependency; an npm font package — adds package maintenance for assets that can be kept locally.
+
+### D-28/2 — Which coding-guideline discipline does loop2 adopt?
+
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points, HTML and CSS; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
+
+- **Change:** new wording
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** level 2 — an agent compares the change with the decision:
+  - complies: general and kind guidelines retain the stated deferrals, CSS without a separate exemplar or kind guideline, the test example and full-compliance source invariants
+  - violates: a mandatory CSS exemplar or kind guideline introduced without a new decision
+- **Review when:** none
+- **Origin:** https://github.com/mariusznazar/loop2/pull/17
+- **Approved by:** Mariusz, merge of https://github.com/mariusznazar/loop2/pull/17
+
+*Rationale for change:* Appearance styles use the general coding discipline without a separate kind and exemplar whose maintenance has no established benefit.
+*Rejected:* A mandatory CSS kind and exemplar now — adds another guideline without an accepted need.

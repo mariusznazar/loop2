@@ -467,6 +467,96 @@ Every reference outside fenced code in a file `guidelines/<name>.md` — a decis
 - **Part:** agent-workflow · product-foundation
 - **Correction:** none
 
+## design-role-meanings/1
+
+No file of browser-view uses a role with a meaning other than the meaning its decision gives it.
+
+- **Method:** `python -B scripts/check_role_meanings.py --k 2 --n 3 --record .runs/styleguide-meanings.jsonl`
+- **Rests on:** none
+- **Derives from:** D-39@0862ab68 · D-40@5adefaee · D-41@99820883 · D-44@78804d0e
+- **Part:** browser-view · build-tools · product-foundation
+- **Correction:** none
+
+## design-token-use/1
+
+No file of browser-view outside the design-token value file contains a value in place of a design token as defined by D-43.
+
+- **Method:** `python -B scripts/check_styleguide.py --check tokens --record .runs/styleguide-design-token-use.jsonl`
+- **Rests on:** none
+- **Derives from:** D-43@583fd993
+- **Part:** browser-view · build-tools
+- **Correction:** none
+
+## keyboard-focus-style/1
+
+Every keyboard-focusable element has a focus style using the focus role and nothing disables that style.
+
+- **Method:** `python -B scripts/check_styleguide.py --check focus --record .runs/styleguide-keyboard-focus-style.jsonl`
+- **Rests on:** wcag-focus-visible@bed275f9
+- **Derives from:** D-41@99820883 · D-42@e4803c64 · D-44@78804d0e
+- **Part:** browser-view · build-tools
+- **Correction:** none
+
+## design-contrast/1
+
+Every background and text-role pair and every pair with a 3:1 threshold specified by D-42 reaches its threshold calculated from the design-token values.
+
+- **Method:** `python -B scripts/check_styleguide.py --check contrast --record .runs/styleguide-design-contrast.jsonl`
+- **Rests on:** wcag-text-contrast@44710605 · wcag-non-text-contrast@132b433e
+- **Derives from:** D-39@0862ab68 · D-40@5adefaee · D-41@99820883 · D-42@e4803c64
+- **Part:** browser-view · build-tools
+- **Correction:** none
+
+## shared-control-states/1
+
+The all-states page shows every shared control in each of the seven states specified by D-44 or gives the reason that state does not apply.
+
+- **Method:** `python -B scripts/check_styleguide.py --check states --record .runs/styleguide-shared-control-states.jsonl`
+- **Rests on:** none
+- **Derives from:** D-38@ccccbfce · D-44@78804d0e · D-45@f5a449e4
+- **Part:** browser-view · build-tools
+- **Correction:** none
+
+## design-role-preservation/1
+
+Every role present at {fork-point} keeps its name and kind.
+
+- **Method:** `python -B scripts/check_styleguide.py --check roles --fork-point {fork-point} --record .runs/styleguide-design-role-preservation.jsonl`
+- **Rests on:** none
+- **Derives from:** D-38@ccccbfce
+- **Part:** browser-view · build-tools
+- **Correction:** none
+
+## design-token-sources/1
+
+Every appearance value in the design-token value file has a source entry beside it.
+
+- **Method:** `python -B scripts/check_styleguide.py --check sources --record .runs/styleguide-design-token-sources.jsonl`
+- **Rests on:** none
+- **Derives from:** D-38@ccccbfce
+- **Part:** browser-view · build-tools
+- **Correction:** none
+
+## styleguide-production-exclusion/1
+
+The output of `npm run build` contains no artifact of the all-states page.
+
+- **Method:** `python -B scripts/check_styleguide.py --check production --record .runs/styleguide-styleguide-production-exclusion.jsonl`
+- **Rests on:** none
+- **Derives from:** D-38@ccccbfce · D-45@f5a449e4
+- **Part:** browser-view · build-tools · deployment
+- **Correction:** none
+
+## local-font-delivery/1
+
+The application output includes the product-held Geist and Geist Mono font files with their licence and copyright notice, and the game loads those fonts from its own origin rather than a foreign server.
+
+- **Method:** `python -B scripts/check_styleguide.py --check fonts --record .runs/styleguide-local-font-delivery.jsonl`
+- **Rests on:** geist-font-licence@1f860d62
+- **Derives from:** D-46@1470728a
+- **Part:** browser-view · build-tools · deployment
+- **Correction:** none
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
