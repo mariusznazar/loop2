@@ -19,6 +19,46 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const emitterPath = new URL("../../scripts/style-assets.mjs", import.meta.url);
 
+test("number-field width retains its root-size dependency when typography changes", async () => {
+  const css = await readFile(
+    path.join(root, "src/browser/view/styles.css"),
+    "utf8",
+  );
+  const data = JSON.parse(
+    await readFile(
+      path.join(root, "src/browser/view/design-tokens.json"),
+      "utf8",
+    ),
+  );
+  const field = css.match(/\.rule input\[type="number"\]\s*\{([^}]+)\}/);
+  assert.ok(field, "number-field layout declaration must be inspectable");
+  const width = field[1].match(/\bwidth:\s*([\d.]+)(rem|em|px);/);
+  assert.ok(width, "number-field width must use a supported length");
+  const controls = css.match(/button,\s*input,\s*select\s*\{([^}]+)\}/);
+  assert.ok(controls, "native input typography must be inspectable");
+  const font = controls[1].match(/\bfont-size:\s*var\(--([\w-]+)\);/);
+  assert.ok(font, "input typography must come from a token");
+  const inputSize = data.tokens[font[1]].value.match(/^([\d.]+)px$/);
+  assert.ok(inputSize, "input font token must be a px size");
+  for (const [rootSize, expectedWidth] of [
+    [12, 48],
+    [16, 64],
+    [20, 80],
+  ]) {
+    const reference =
+      width[2] === "rem"
+        ? rootSize
+        : width[2] === "em"
+          ? Number(inputSize[1])
+          : 1;
+    assert.equal(
+      Number(width[1]) * reference,
+      expectedWidth,
+      `number-field content width with a ${rootSize}px root`,
+    );
+  }
+});
+
 async function fixture(t) {
   assert.ok(existsSync(emitterPath), "the build needs a style asset emitter");
   const temporary = await mkdtemp(path.join(tmpdir(), "loop2-style-assets-"));

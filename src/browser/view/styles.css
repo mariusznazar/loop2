@@ -61,7 +61,7 @@ header h1 {
   vertical-align: middle;
 }
 .rule input[type="number"] {
-  width: 4em;
+  width: 4rem;
 }
 .rule button {
   padding: var(--space-2) var(--space-8);
