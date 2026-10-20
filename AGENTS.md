@@ -3,6 +3,8 @@
 - Projects: C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\
 - Tasks: C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\_tasks_active.md
 
+Before changing product code, including scripts and tests, read `guidelines/coding.md`.
+
 <!-- the-way:begin -->
 # Pinned the-way process
 
