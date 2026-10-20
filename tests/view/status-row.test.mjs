@@ -11,7 +11,11 @@ import {
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
-import { statusText } from "../../dist/public/view/status-row.js";
+import {
+  createStatusRow,
+  statusText,
+} from "../../dist/public/view/status-row.js";
+import { installDOM } from "./dom-support.mjs";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -100,4 +104,42 @@ test("a paused map run gets „ (pauza)” appended, and loses it when resumed",
     statusText(resumed.run, resumed.paused),
     "Minuta 3 · Eksploruje",
   );
+});
+
+test("status actions retain focused native buttons across ticks and invoke only their own callback", (t) => {
+  const document = installDOM(t);
+  const calls = [];
+  const row = createStatusRow({
+    togglePause: () => calls.push("pause"),
+    restart: () => calls.push("restart"),
+    end: () => calls.push("end"),
+  });
+  const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  row.update(running);
+  const [text, pause, restart, end] = row.element.children;
+  for (const button of [pause, restart, end]) {
+    assert.equal(button.tagName, "BUTTON");
+    assert.equal(button.type, "button");
+    assert.ok(button.className.split(" ").includes("control"));
+  }
+  for (const button of [restart, end])
+    assert.ok(button.className.split(" ").includes("destructive-button"));
+  assert.ok(!pause.className.split(" ").includes("destructive-button"));
+  for (const button of [pause, restart, end]) {
+    button.focus();
+    row.update(advanceMinutes(running, 2).state);
+    row.update(setPaused(running, true).state);
+    assert.deepEqual(row.element.children, [text, pause, restart, end]);
+    assert.equal(document.activeElement, button);
+  }
+  assert.equal(pause.textContent, "Wznów");
+  pause.click();
+  restart.click();
+  end.click();
+  assert.deepEqual(calls, ["pause", "restart", "end"]);
+  end.disabled = true;
+  end.click();
+  assert.deepEqual(calls, ["pause", "restart", "end"]);
+  row.update(running);
+  assert.equal(pause.textContent, "Pauza");
 });

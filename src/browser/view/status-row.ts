@@ -1,6 +1,7 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type { Activity, GameState, MapRun } from "../sim/types.js";
+import { createButton, createDestructiveButton } from "./controls/index.js";
 
 const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
 const PAUSED_SUFFIX = " (pauza)";
@@ -42,14 +43,9 @@ export function createStatusRow(controls: StatusRowControls): StatusRow {
   element.className = "status-row";
   const text = document.createElement("p");
   text.className = "status-text";
-  const pauseButton = document.createElement("button");
-  pauseButton.type = "button";
-  const restartButton = document.createElement("button");
-  restartButton.type = "button";
-  restartButton.textContent = "Restart";
-  const endButton = document.createElement("button");
-  endButton.type = "button";
-  endButton.textContent = "Zakończ";
+  const pauseButton = createButton({ text: "Pauza" });
+  const restartButton = createDestructiveButton({ text: "Restart" });
+  const endButton = createDestructiveButton({ text: "Zakończ" });
   element.append(text, pauseButton, restartButton, endButton);
 
   pauseButton.addEventListener("click", () => controls.togglePause());

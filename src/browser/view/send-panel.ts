@@ -1,6 +1,7 @@
 import { ARCHETYPES } from "../sim/data/archetypes.js";
 import { MAPS } from "../sim/data/maps.js";
 import type { ArchetypeId, MapId } from "../sim/types.js";
+import { createButton } from "./controls/index.js";
 
 /** A character the player can send, and the map it goes to. */
 export type SendTarget = { mapId: MapId; archetypeId: ArchetypeId };
@@ -31,9 +32,7 @@ export function createSendPanel(
     who.textContent = ARCHETYPES[target.archetypeId].name;
     const where = document.createElement("p");
     where.textContent = `Mapa: ${MAPS[target.mapId].name}`;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = "Wyślij";
+    const button = createButton({ text: "Wyślij" });
     button.addEventListener("click", () => onSend(target));
     entry.append(who, where, button);
     panel.append(entry);
