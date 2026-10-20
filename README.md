@@ -14,6 +14,19 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 `npm start` wymaga wcześniejszego builda. Serwer domyślnie nasłuchuje na 127.0.0.1:3000; adres zmienisz zmiennymi środowiska `LOOP2_LISTEN_HOST` i `LOOP2_LISTEN_PORT`. Zakończ go przez Ctrl+C.
 
+## Narzędzia kontroli kodu
+
+`npm ci` instaluje także narzędzia deweloperskie według wspólnego `package-lock.json`. Do pierwszej instalacji wystarcza npm dostarczony z Node.js; kontrole używają potem lokalnych przypiętych narzędzi i nie pobierają ich podczas sprawdzania. Przy świadomej aktualizacji pliku blokady lokalne ustawienie `min-release-age` może odrzucić przyjętą nową wersję narzędzia jako zbyt świeżą. Dla takiej przyjętej wersji można dodać `--min-release-age=0` do jednorazowego polecenia aktualizującego plik blokady, zachowując ustawienia globalne. Zwykła instalacja nadal używa `npm ci`.
+
+Pakiet `typescript` dostarcza linterowi API TypeScript 6.0.2; wpis `overrides` przypina także rzeczywistą wersję API eksportowaną przez jego pakiet zgodności. Oddzielny `typescript-compiler` zawiera TypeScript 7, a skrypt budowania jawnie uruchamia jego kompilator dla obu konfiguracji aplikacji. Używaj poleceń budowania projektu; samo `npx tsc` wybiera spośród dostępnych plików wykonywalnych.
+
+- `python -B scripts/check_eslint.py --configuration --record .runs/eslint-configuration.jsonl` sprawdza kompletną efektywną konfigurację TS/JS.
+- `python -B scripts/check_eslint.py --record .runs/eslint.jsonl` sprawdza źródła i wyciszenia reguł.
+- `python -B scripts/check_format.py --record .runs/format.jsonl` sprawdza format i LF. Edytor używa tego samego `prettier.config.mjs`; wybierz lokalny Prettier i nie nadpisuj jego ustawień osobno.
+- `python -B scripts/check_dependencies.py --fork-point <commit-początku-zmiany> --record .runs/dependency-audit.jsonl` porównuje nowe rzeczywiste pary nazwa–wersja z początkiem zmiany i odpytuje publiczny rejestr npm przez lokalny npm. Podaj niezmienny commit początku zmiany jako podstawę porównania.
+
+Kod zakończenia kontroli to `0` dla wyniku pozytywnego, `1` dla wykrytego naruszenia i `2`, gdy nie udało się wiarygodnie wykonać kontroli. Pliki wyników w `.runs/` są lokalne i ignorowane przez Git. ESLint obejmuje również nowe warianty TS/JS w częściach z kodem; pomocnicze programy API TS6 w jego konfiguracji dają informację o typach także skryptom i testom poza konfiguracjami kompilacji aplikacji. Python i Bash nie są automatycznie formatowane.
+
 ## Co pokazuje strona
 
 - **Panel „Program”** (lewa kolumna, widoczny zawsze): uporządkowana lista reguł „warunek → akcja”. Warunki: „Zawsze” i „Tu leży mniej niż N <zasób>”; akcje: „Eksploruj”, „Wędruj” i „Idź — <zasób>”. Przyciski „↑”, „↓”, „Usuń” i „Dodaj regułę”. Program można zmieniać przed wysłaniem maga i w trakcie przejścia; zmiana działa od najbliższej wolnej minuty gry.
