@@ -2,7 +2,7 @@
 
 Official repository: https://github.com/vercel/geist-font
 Release: v1.8.1 (https://github.com/vercel/geist-font/releases/tag/v1.8.1).
-Pinned commit: `e1f671c727f6de7e97c1e1d26dbb44f349c19459`, resolved by the reviewed design on 2026-10-20.
+Pinned commit: `e1f671c727f6de7e97c1e1d26dbb44f349c19459`.
 
 These are unchanged upstream bytes, stored with stable local filenames. The two WOFF2 files are the variable-weight Geist and Geist Mono faces. UI uses only the separately accepted weights 400 and 500. No upstream scripts, archives or npm font packages are used.
 
