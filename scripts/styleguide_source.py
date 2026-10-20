@@ -93,7 +93,7 @@ def _located(record, files):
 
 def _validate_facts(report, requested):
     if (not isinstance(report, dict) or set(report) != {"schema", "files"}
-            or type(report["schema"]) is not int or report["schema"] != 1):
+            or type(report["schema"]) is not int or report["schema"] != 2):
         raise QualityError("unsupported source-fact protocol")
     files = report["files"]
     if not isinstance(files, list) or len(files) != len(requested):
@@ -121,14 +121,21 @@ def _validate_facts(report, requested):
                             fact["reason"], str) or not fact["reason"]:
                         raise QualityError("invalid diagnostic evidence")
                 elif key == "declarations":
-                    if set(fact) != {"path", "line", "property", "value", "selector", "context"}:
+                    if set(fact) != {"path", "line", "property", "value", "selector", "context", "priority"}:
                         raise QualityError("incomplete declaration evidence")
                     if any(not isinstance(fact[field], str) for field in (
                             "property", "selector", "context")) or not fact["property"]:
                         raise QualityError("invalid declaration name/context")
                     if fact["value"] is not None and not isinstance(fact["value"], str):
                         raise QualityError("invalid declaration value")
-                    if fact["value"] is None and not entry["unresolved"]:
+                    if fact["priority"] is not None and (
+                            not isinstance(fact["priority"], str)
+                            or fact["priority"] not in {"normal", "important"}):
+                        raise QualityError("invalid declaration priority")
+                    if (fact["value"] is None or fact["priority"] is None) and not any(
+                            diagnostic.get("path") == fact["path"]
+                            and diagnostic.get("line") == fact["line"]
+                            for diagnostic in entry["unresolved"] if isinstance(diagnostic, dict)):
                         raise QualityError("unresolved declaration without diagnostic")
                 elif set(fact) != {"path", "line", "kind", "expression"} or any(
                         not isinstance(fact[field], str) for field in ("kind", "expression")):

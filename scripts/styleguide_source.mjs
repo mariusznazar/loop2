@@ -381,7 +381,12 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
       ts.forEachChild(node, mark);
     }
   }
-  function styleValue(property, expression, anchor = expression) {
+  function styleValue(
+    property,
+    expression,
+    anchor = expression,
+    priority = "normal",
+  ) {
     mark(expression);
     const variants = values(expression);
     if (variants === null)
@@ -393,6 +398,7 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
         lineOf(anchor),
         "",
         "typescript",
+        priority,
       );
     else
       for (const value of variants)
@@ -401,10 +407,27 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
           facts,
           property,
           value.text,
-          value.line,
+          priority === null ? lineOf(anchor) : value.line,
           "",
           "typescript",
+          priority,
         );
+  }
+  function stylePriority(expression) {
+    if (!expression) return "normal";
+    mark(expression);
+    const variants = values(expression);
+    if (!variants) return null;
+    const priorities = new Set(
+      variants.map((value) =>
+        value.text === ""
+          ? "normal"
+          : value.text.toLowerCase() === "important"
+            ? "important"
+            : null,
+      ),
+    );
+    return priorities.size === 1 ? [...priorities][0] : null;
   }
   function embedded(expression, kind, anchor = expression) {
     mark(expression);
@@ -674,7 +697,12 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
           );
         else
           for (const item of names)
-            styleValue(item.text, node.arguments[1], node);
+            styleValue(
+              item.text,
+              node.arguments[1],
+              node,
+              stylePriority(node.arguments[2]),
+            );
       } else if (
         node.expression.getText(source) === "Object.assign" &&
         styleObject(node.arguments[0])
@@ -862,7 +890,7 @@ export function inspectSources(request, tools = loadTools()) {
     }
     return facts;
   });
-  return { schema: 1, files };
+  return { schema: 2, files };
 }
 
 function freeze(value) {

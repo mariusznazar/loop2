@@ -374,6 +374,92 @@ el.style.opacity = '0'; el.style.width = '12px';
                          [("", 1), (None, 2)])
         self.assertEqual(len(facts["unresolved"]), 1)
 
+    def test_priority_is_retained_for_css_and_embedded_declaration_lists(self):
+        cases = [
+            ("view/p.css", "\nbutton{color:var(--text)!important}", 2),
+            ("view/p.css", "\nbutton{color:var(--text) ! /*priority*/ IMPORTANT}", 2),
+            ("view/p.html", '<style>\nbutton{color:var(--text)!important}</style>', 2),
+            ("view/p.html", '<div>\n<button style="color:var(--text)!important">x</button></div>', 2),
+            ("view/p.ts", "sheet.insertRule('button{color:var(--text)!important}');", 1),
+            ("view/p.ts", "el.style.cssText = 'color:var(--text)!important';", 1),
+            ("view/p.ts", "el.setAttribute('style', 'color:var(--text)!important');", 1),
+            ("view/p.py", "CSS = '''\nbutton{color:var(--text)!important}'''", 2),
+        ]
+        for path, source, line in cases:
+            with self.subTest(path=path, source=source):
+                self.write(path, source)
+                report = self.facts()
+                self.assertEqual(report["schema"], 2)
+                declaration = report["files"][0]["declarations"][0]
+                self.assertEqual((declaration["value"], declaration["priority"], declaration["line"]),
+                                 ("var(--text)", "important", line))
+                self.assertIs(self.verdict(), True)
+                (self.root / path).unlink()
+        self.write("view/p.css", 'button{color:var(--text);content:"!important"}')
+        self.assertEqual([d["priority"] for d in self.facts()["files"][0]["declarations"]],
+                         ["normal", "normal"])
+        self.write("view/p.css", "button{color:red!important}")
+        self.assertIs(self.verdict(), False)
+
+    def test_priority_from_dom_set_property_is_separate_from_value(self):
+        for suffix, expected in [("", "normal"), (", ''", "normal"),
+                                 (", 'important'", "important"), (", 'IMPORTANT'", "important")]:
+            with self.subTest(suffix=suffix):
+                self.write("view/p.ts", f"el.style.setProperty('color', 'var(--text)'{suffix});")
+                declaration = self.facts()["files"][0]["declarations"][0]
+                self.assertEqual((declaration["value"], declaration["priority"]),
+                                 ("var(--text)", expected))
+                self.assertIs(self.verdict(), True)
+        self.write("view/p.ts", "const priority = 'important';\n"
+                   "el.style.setProperty('color', 'red', priority);")
+        declaration = self.facts()["files"][0]["declarations"][0]
+        self.assertEqual((declaration["priority"], declaration["line"]), ("important", 2))
+        self.assertIs(self.verdict(), False)
+        self.write("view/p.ts", "el.style.setProperty('color', value, 'important');")
+        declaration = self.facts()["files"][0]["declarations"][0]
+        self.assertEqual((declaration["value"], declaration["priority"]), (None, "important"))
+
+    def test_priority_unknown_or_embedded_in_dom_value_cannot_pass(self):
+        for source in ["el.style.setProperty('color', 'var(--text)', priority);",
+                       "el.style.setProperty('color', 'var(--text)', flag ? '' : 'important');",
+                       "el.style.setProperty('color', 'var(--text)', 'urgent');",
+                       "el.style.color = 'var(--text)!important';",
+                       r"el.style.cssText = 'color:var(--text)!\\69mportant';"]:
+            with self.subTest(source=source):
+                self.write("view/p.ts", source)
+                declaration = self.facts()["files"][0]["declarations"][0]
+                self.assertIsNone(declaration["priority"])
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+        self.write("view/p.ts", "const token = 'var(--text)';\n"
+                   "el.style.setProperty('color', token, priority);")
+        facts = self.facts()["files"][0]
+        self.assertEqual(facts["declarations"][0]["line"], 2)
+        self.assertEqual(facts["unresolved"][0]["line"], 2)
+
+    def test_priority_protocol_requires_exact_field_value_and_located_inability(self):
+        self.write("view/p.css", "button{color:var(--text)}\n")
+        valid = self.facts()
+        for priority in ["urgent", True, 1, [], None]:
+            with self.subTest(priority=priority):
+                bad = json.loads(json.dumps(valid))
+                bad["files"][0]["declarations"][0]["priority"] = priority
+                bad["files"][0]["unresolved"] = [{"path": "view/p.css", "line": 2,
+                                                   "reason": "unrelated inability"}]
+                result = subprocess.CompletedProcess([], 0, json.dumps(bad), "")
+                with patch.object(self.module, "run_tool", return_value=result):
+                    with self.assertRaises(self.module.QualityError):
+                        self.facts()
+        for old_schema in [False, True]:
+            bad = json.loads(json.dumps(valid))
+            bad["files"][0]["declarations"][0].pop("priority", None)
+            if old_schema:
+                bad["schema"] = 1
+            result = subprocess.CompletedProcess([], 0, json.dumps(bad), "")
+            with patch.object(self.module, "run_tool", return_value=result):
+                with self.assertRaises(self.module.QualityError):
+                    self.facts()
+
     def test_out_of_inventory_or_out_of_range_evidence_is_rejected(self):
         self.write("view/s.css", "a {color:red}")
         valid = self.facts()

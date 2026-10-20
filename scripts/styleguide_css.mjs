@@ -81,7 +81,8 @@ function valueChildren(node) {
   return [node.group, ...(node.groups ?? [])].filter(Boolean);
 }
 
-function assessValue(parser, facts, property, value, line) {
+function assessValue(parser, facts, record) {
+  const { property, value, line } = record;
   const normalized = unescapeCss(value);
   const tree = parser.parse(`x{${property}:${normalized}}`);
   if (
@@ -90,6 +91,17 @@ function assessValue(parser, facts, property, value, line) {
     tree.nodes[0].nodes[0].type !== "css-decl"
   ) {
     throw new Error("Value changed the declaration structure");
+  }
+  if (tree.nodes[0].nodes[0].important) {
+    // A value is not a declaration list or a DOM setProperty priority argument.
+    // This also catches escaped priority syntax the source parser did not split.
+    record.priority = null;
+    diagnostic(
+      facts,
+      "unresolved",
+      line,
+      "priority annotation remains inside a declaration value",
+    );
   }
   const violations = new Set();
   function visit(node, parentFunction = "") {
@@ -181,24 +193,29 @@ export function declaration(
   line,
   selector = "",
   context = "inline",
+  priority = "normal",
 ) {
   // CSS names are case-insensitive; only DOM property inputs use cssName().
   if (!property.startsWith("--")) property = property.toLowerCase();
-  facts.declarations.push({
+  const record = {
     path: facts.path,
     line,
     property,
     value,
     selector,
     context,
-  });
+    priority,
+  };
+  facts.declarations.push(record);
+  if (priority === null)
+    diagnostic(facts, "unresolved", line, `unresolved ${property} priority`);
   if (value === null) {
     diagnostic(facts, "unresolved", line, `unresolved ${property} value`);
     return;
   }
   if (value.trim() === "") return;
   try {
-    assessValue(parser, facts, property, value, line);
+    assessValue(parser, facts, record);
   } catch (error) {
     diagnostic(
       facts,
@@ -227,6 +244,11 @@ export function extractCss(parser, facts, text, line = 1, inline = false) {
           originalLine,
           inline ? "" : selector,
           inline ? "inline" : context.join(" / "),
+          node.important === true
+            ? "important"
+            : node.important === undefined || node.important === false
+              ? "normal"
+              : null,
         );
         return;
       }
