@@ -1,12 +1,16 @@
 """Shared discovery, local invocation and the-way records; callers own check policy."""
 
 import json
+import logging
 from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class QualityError(Exception):
@@ -180,6 +184,7 @@ def run_check(check, invariant, operation, *, record=None):
             if type(verdict) is not bool:
                 raise QualityError("check operation did not return an explicit bool")
         except (Exception, KeyboardInterrupt) as problem:
+            LOGGER.exception("Quality check could not complete")
             line["description"] = f"{type(problem).__name__}: {problem}"
             code = 2
         else:

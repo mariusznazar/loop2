@@ -206,7 +206,7 @@ class FormatChecks(unittest.TestCase):
         for output in ("not json", '{}', '{"version":"3.9.10","files":[]}',
                        '{"version":"3.9.10","files":[{"path":"browser-view/good.ts",'
                        '"formatted":"yes","configuration":true}]}'):
-            def malformed(command, **options):
+            def malformed(command, *, output=output, **options):
                 if "--input-type=module" in command:
                     return subprocess.CompletedProcess(command, 0, output, "")
                 return invoke(command, **options)

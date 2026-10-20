@@ -14,149 +14,65 @@ JS_SUFFIXES = {".js", ".mjs", ".cjs", ".jsx"}
 TS_SUFFIXES = {".ts", ".mts", ".cts", ".tsx"}
 
 # Membership is transcribed from the two D-29 environment facts, not tool configs.
-JS_RULES = """
-constructor-super
-for-direction
-getter-return
-no-async-promise-executor
-no-case-declarations
-no-class-assign
-no-compare-neg-zero
-no-cond-assign
-no-const-assign
-no-constant-binary-expression
-no-constant-condition
-no-control-regex
-no-debugger
-no-delete-var
-no-dupe-args
-no-dupe-class-members
-no-dupe-else-if
-no-dupe-keys
-no-duplicate-case
-no-empty
-no-empty-character-class
-no-empty-pattern
-no-empty-static-block
-no-ex-assign
-no-extra-boolean-cast
-no-fallthrough
-no-func-assign
-no-global-assign
-no-import-assign
-no-invalid-regexp
-no-irregular-whitespace
-no-loss-of-precision
-no-misleading-character-class
-no-new-native-nonconstructor
-no-nonoctal-decimal-escape
-no-obj-calls
-no-octal
-no-prototype-builtins
-no-redeclare
-no-regex-spaces
-no-self-assign
-no-setter-return
-no-shadow-restricted-names
-no-sparse-arrays
-no-this-before-super
-no-unassigned-vars
-no-undef
-no-unexpected-multiline
-no-unreachable
-no-unsafe-finally
-no-unsafe-negation
-no-unsafe-optional-chaining
-no-unused-labels
-no-unused-private-class-members
-no-unused-vars
-no-useless-assignment
-no-useless-backreference
-no-useless-catch
-no-useless-escape
-no-with
-preserve-caught-error
-require-yield
-use-isnan
-valid-typeof
-""".split()
-TS_ADDITIONS = """
-@typescript-eslint/await-thenable
-@typescript-eslint/ban-ts-comment
-@typescript-eslint/no-array-constructor
-@typescript-eslint/no-array-delete
-@typescript-eslint/no-base-to-string
-@typescript-eslint/no-duplicate-enum-values
-@typescript-eslint/no-duplicate-type-constituents
-@typescript-eslint/no-empty-object-type
-@typescript-eslint/no-explicit-any
-@typescript-eslint/no-extra-non-null-assertion
-@typescript-eslint/no-floating-promises
-@typescript-eslint/no-for-in-array
-@typescript-eslint/no-implied-eval
-@typescript-eslint/no-misused-new
-@typescript-eslint/no-misused-promises
-@typescript-eslint/no-namespace
-@typescript-eslint/no-non-null-asserted-optional-chain
-@typescript-eslint/no-redundant-type-constituents
-@typescript-eslint/no-require-imports
-@typescript-eslint/no-this-alias
-@typescript-eslint/no-unnecessary-type-assertion
-@typescript-eslint/no-unnecessary-type-constraint
-@typescript-eslint/no-unsafe-argument
-@typescript-eslint/no-unsafe-assignment
-@typescript-eslint/no-unsafe-call
-@typescript-eslint/no-unsafe-declaration-merging
-@typescript-eslint/no-unsafe-enum-comparison
-@typescript-eslint/no-unsafe-function-type
-@typescript-eslint/no-unsafe-member-access
-@typescript-eslint/no-unsafe-return
-@typescript-eslint/no-unsafe-unary-minus
-@typescript-eslint/no-unused-expressions
-@typescript-eslint/no-unused-vars
-@typescript-eslint/no-wrapper-object-types
-@typescript-eslint/only-throw-error
-@typescript-eslint/prefer-as-const
-@typescript-eslint/prefer-namespace-keyword
-@typescript-eslint/prefer-promise-reject-errors
-@typescript-eslint/require-await
-@typescript-eslint/restrict-plus-operands
-@typescript-eslint/restrict-template-expressions
-@typescript-eslint/triple-slash-reference
-@typescript-eslint/unbound-method
-no-var
-prefer-const
-prefer-rest-params
-prefer-spread
-""".split()
-TS_DISABLED = """
-constructor-super
-getter-return
-no-array-constructor
-no-class-assign
-no-const-assign
-no-dupe-args
-no-dupe-class-members
-no-dupe-keys
-no-func-assign
-no-implied-eval
-no-import-assign
-no-new-native-nonconstructor
-no-new-symbol
-no-obj-calls
-no-redeclare
-no-setter-return
-no-this-before-super
-no-throw-literal
-no-undef
-no-unreachable
-no-unsafe-negation
-no-unused-expressions
-no-unused-vars
-no-with
-prefer-promise-reject-errors
-require-await
-""".split()
+JS_RULES = [
+    "constructor-super", "for-direction", "getter-return", "no-async-promise-executor",
+    "no-case-declarations", "no-class-assign", "no-compare-neg-zero", "no-cond-assign",
+    "no-const-assign", "no-constant-binary-expression", "no-constant-condition",
+    "no-control-regex", "no-debugger", "no-delete-var", "no-dupe-args",
+    "no-dupe-class-members", "no-dupe-else-if", "no-dupe-keys", "no-duplicate-case",
+    "no-empty", "no-empty-character-class", "no-empty-pattern", "no-empty-static-block",
+    "no-ex-assign", "no-extra-boolean-cast", "no-fallthrough", "no-func-assign",
+    "no-global-assign", "no-import-assign", "no-invalid-regexp", "no-irregular-whitespace",
+    "no-loss-of-precision", "no-misleading-character-class", "no-new-native-nonconstructor",
+    "no-nonoctal-decimal-escape", "no-obj-calls", "no-octal", "no-prototype-builtins",
+    "no-redeclare", "no-regex-spaces", "no-self-assign", "no-setter-return",
+    "no-shadow-restricted-names", "no-sparse-arrays", "no-this-before-super",
+    "no-unassigned-vars", "no-undef", "no-unexpected-multiline", "no-unreachable",
+    "no-unsafe-finally", "no-unsafe-negation", "no-unsafe-optional-chaining",
+    "no-unused-labels", "no-unused-private-class-members", "no-unused-vars",
+    "no-useless-assignment", "no-useless-backreference", "no-useless-catch",
+    "no-useless-escape", "no-with", "preserve-caught-error", "require-yield", "use-isnan",
+    "valid-typeof",
+]
+TS_ADDITIONS = [
+    "@typescript-eslint/await-thenable", "@typescript-eslint/ban-ts-comment",
+    "@typescript-eslint/no-array-constructor", "@typescript-eslint/no-array-delete",
+    "@typescript-eslint/no-base-to-string", "@typescript-eslint/no-duplicate-enum-values",
+    "@typescript-eslint/no-duplicate-type-constituents",
+    "@typescript-eslint/no-empty-object-type", "@typescript-eslint/no-explicit-any",
+    "@typescript-eslint/no-extra-non-null-assertion",
+    "@typescript-eslint/no-floating-promises", "@typescript-eslint/no-for-in-array",
+    "@typescript-eslint/no-implied-eval", "@typescript-eslint/no-misused-new",
+    "@typescript-eslint/no-misused-promises", "@typescript-eslint/no-namespace",
+    "@typescript-eslint/no-non-null-asserted-optional-chain",
+    "@typescript-eslint/no-redundant-type-constituents",
+    "@typescript-eslint/no-require-imports", "@typescript-eslint/no-this-alias",
+    "@typescript-eslint/no-unnecessary-type-assertion",
+    "@typescript-eslint/no-unnecessary-type-constraint",
+    "@typescript-eslint/no-unsafe-argument", "@typescript-eslint/no-unsafe-assignment",
+    "@typescript-eslint/no-unsafe-call", "@typescript-eslint/no-unsafe-declaration-merging",
+    "@typescript-eslint/no-unsafe-enum-comparison",
+    "@typescript-eslint/no-unsafe-function-type",
+    "@typescript-eslint/no-unsafe-member-access", "@typescript-eslint/no-unsafe-return",
+    "@typescript-eslint/no-unsafe-unary-minus", "@typescript-eslint/no-unused-expressions",
+    "@typescript-eslint/no-unused-vars", "@typescript-eslint/no-wrapper-object-types",
+    "@typescript-eslint/only-throw-error", "@typescript-eslint/prefer-as-const",
+    "@typescript-eslint/prefer-namespace-keyword",
+    "@typescript-eslint/prefer-promise-reject-errors", "@typescript-eslint/require-await",
+    "@typescript-eslint/restrict-plus-operands",
+    "@typescript-eslint/restrict-template-expressions",
+    "@typescript-eslint/triple-slash-reference", "@typescript-eslint/unbound-method",
+    "no-var", "prefer-const", "prefer-rest-params", "prefer-spread",
+]
+TS_DISABLED = [
+    "constructor-super", "getter-return", "no-array-constructor", "no-class-assign",
+    "no-const-assign", "no-dupe-args", "no-dupe-class-members", "no-dupe-keys",
+    "no-func-assign", "no-implied-eval", "no-import-assign", "no-new-native-nonconstructor",
+    "no-new-symbol", "no-obj-calls", "no-redeclare", "no-setter-return",
+    "no-this-before-super", "no-throw-literal", "no-undef", "no-unreachable",
+    "no-unsafe-negation", "no-unused-expressions", "no-unused-vars", "no-with",
+    "prefer-promise-reject-errors", "require-await",
+]
 
 
 def expected_rules(path):

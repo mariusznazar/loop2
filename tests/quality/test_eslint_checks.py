@@ -254,7 +254,11 @@ class EslintChecks(unittest.TestCase):
             self.assertEqual(code, 2)
             recorded = json.loads(record.read_text())
             self.assertIsNone(recorded["invariant"])
-            self.assertEqual(json.loads(captured.getvalue()), recorded)
+            diagnostics = captured.getvalue().splitlines()
+            self.assertIn("Traceback (most recent call last):", diagnostics[:-1])
+            self.assertIn("Quality check could not complete", diagnostics[:-1])
+            self.assertIn(recorded["description"], "\n".join(diagnostics[:-1]))
+            self.assertEqual(json.loads(diagnostics[-1]), recorded)
 
     def test_tool_errors_and_malformed_json_never_become_success(self):
         for response in (self.check.QualityError("missing package"),
@@ -272,7 +276,11 @@ class EslintChecks(unittest.TestCase):
                 self.assertEqual(code, 2)
                 recorded = json.loads(record.read_text())
                 self.assertIsNone(recorded["invariant"])
-                self.assertEqual(json.loads(captured.getvalue()), recorded)
+                diagnostics = captured.getvalue().splitlines()
+                self.assertIn("Traceback (most recent call last):", diagnostics[:-1])
+                self.assertIn("Quality check could not complete", diagnostics[:-1])
+                self.assertIn(recorded["description"], "\n".join(diagnostics[:-1]))
+                self.assertEqual(json.loads(diagnostics[-1]), recorded)
 
     def run_installed_bridge(self, fixture, *, parser_name="@typescript/typescript6",
                              parser_version="6.0.2", parser_runtime="6.0.2",

@@ -36,10 +36,8 @@ def bash_source(path, data):
         except (ValueError, UnicodeError) as problem:
             raise QualityError(f"unreadable shebang: {path}") from problem
         interpreters = [word.rsplit("/", 1)[-1] for word in words]
-        if "bash" in interpreters or "bash.exe" in interpreters:
-            return True
-        # A declared different interpreter is not a standalone Bash script.
-        return False
+        # A declared interpreter determines the language before the suffix.
+        return "bash" in interpreters or "bash.exe" in interpreters
     return path.suffix.lower() in {".sh", ".bash"}
 
 
