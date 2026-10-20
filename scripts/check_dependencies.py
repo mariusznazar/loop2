@@ -236,7 +236,9 @@ def _collect(files):
                             requirements.append((None, wanted))
                             continue
                         target_name = target.get("name", name)
-                        if target_name != actual:
+                        # Ordinary ranges bind an install name and version, including aliases.
+                        # Only an explicit npm: specification asserts the real package name.
+                        if spec.startswith("npm:") and target_name != actual:
                             raise QualityError("alias does not resolve to its actual npm name")
                         requirements.append((target["version"], wanted))
     paired = {path.removesuffix("package.json") + name for path in manifests
@@ -270,7 +272,7 @@ def _advisories(response, introduced):
         if not isinstance(advisories, list):
             raise QualityError("advisories are not an array")
         for advisory in advisories:
-            if not isinstance(advisory, dict) or advisory.get("name") != name or (
+            if not isinstance(advisory, dict) or advisory.get("name", name) != name or (
                     type(advisory.get("id")) is not int or advisory["id"] <= 0) or (
                     advisory.get("severity") not in {"info", "low", "moderate", "high", "critical"}) or any(
                     not isinstance(advisory.get(key), str) or not advisory[key].strip()

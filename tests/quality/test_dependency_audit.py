@@ -96,6 +96,16 @@ module.exports = async (url, options) => {
         self.lock["packages"]["node_modules/a"]["version"] = version
         self.save()
 
+    def alias_peer(self, spec=">=4.8.4 <6.1.0"):
+        self.manifest["devDependencies"]["typescript"] = "npm:@typescript/typescript6@6.0.2"
+        self.manifest["dependencies"]["consumer"] = "1.0.0"
+        self.lock["packages"]["node_modules/typescript"] = {
+            "name": "@typescript/typescript6", "version": "6.0.2",
+            "resolved": "https://registry.npmjs.org/@typescript/typescript6/-/typescript6-6.0.2.tgz"}
+        self.lock["packages"]["node_modules/consumer"] = {
+            "version": "1.0.0", "peerDependencies": {"typescript": spec}}
+        self.save()
+
     def verdict(self, base=None):
         try:
             module = importlib.import_module("check_dependencies")
@@ -132,6 +142,57 @@ module.exports = async (url, options) => {
                          {"real": ["2.1.0"]})
         self.response({"real": [self.advisory("low", ">=2", "real")]})
         self.assertEqual(self.verdict()[0], 1)
+
+    def test_alias_peer_accepts_install_name_and_audits_real_identity(self):
+        self.alias_peer()
+        self.assertEqual(self.verdict()[0], 0)
+        self.assertEqual(json.loads((self.root / ".runs/payload.json").read_text()),
+                         {"@typescript/typescript6": ["6.0.2"], "consumer": ["1.0.0"]})
+
+    def test_alias_peer_blocks_a_matching_advisory_on_the_real_package(self):
+        self.alias_peer()
+        self.response({"@typescript/typescript6": [
+            self.advisory("low", ">=6.0.0 <6.1.0", "@typescript/typescript6")]})
+        self.assertEqual(self.verdict()[0], 1)
+
+    def test_alias_peer_explicit_target_conflict_is_unavailable(self):
+        self.alias_peer("npm:other-typescript@6.0.2")
+        code, record = self.verdict()
+        self.assertEqual(code, 2)
+        self.assertIsNone(record["invariant"])
+        self.assertFalse((self.root / ".runs/payload.json").exists())
+
+    def test_alias_peer_unsatisfied_range_is_unavailable(self):
+        self.alias_peer("<6.0.0")
+        code, record = self.verdict()
+        self.assertEqual(code, 2)
+        self.assertIsNone(record["invariant"])
+        self.assertFalse((self.root / ".runs/payload.json").exists())
+
+    def test_alias_peer_conflicting_tarball_source_is_unavailable(self):
+        self.alias_peer()
+        self.lock["packages"]["node_modules/typescript"]["resolved"] = (
+            "https://registry.npmjs.org/@typescript/typescript6/-/typescript6-6.0.3.tgz")
+        self.save()
+        self.assertEqual(self.verdict()[0], 2)
+
+    def test_alias_peer_optional_marker_does_not_exclude_present_provider(self):
+        self.alias_peer()
+        self.lock["packages"]["node_modules/consumer"]["peerDependenciesMeta"] = {
+            "typescript": {"optional": True}}
+        self.save()
+        self.response({"@typescript/typescript6": [
+            self.advisory("high", "6.0.2", "@typescript/typescript6")]})
+        self.assertEqual(self.verdict()[0], 1)
+
+    def test_alias_peer_range_resolution_is_the_same_for_an_ordinary_reference(self):
+        self.alias_peer()
+        consumer = self.lock["packages"]["node_modules/consumer"]
+        consumer["dependencies"] = consumer.pop("peerDependencies")
+        self.save()
+        self.assertEqual(self.verdict()[0], 0)
+        self.assertEqual(json.loads((self.root / ".runs/payload.json").read_text()),
+                         {"@typescript/typescript6": ["6.0.2"], "consumer": ["1.0.0"]})
 
     def test_each_dependency_class_and_transitive_version_is_audited(self):
         for field in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
@@ -196,6 +257,37 @@ module.exports = async (url, options) => {
                 code, record = self.verdict()
                 self.assertEqual(code, 2)
                 self.assertIsNone(record["invariant"])
+
+    def test_bulk_outer_name_identifies_advisories_without_duplicate_name(self):
+        self.introduce()
+        for severity, versions, want in [("low", "<2", 1), ("info", "*", 0),
+                                         ("critical", ">=2", 0)]:
+            with self.subTest(severity=severity, versions=versions):
+                advisory = self.advisory(severity, versions)
+                del advisory["name"]
+                advisory.update(cwe=["CWE-400"], cvss={"score": 0, "vectorString": None})
+                self.response({"a": [advisory]})
+                self.assertEqual(self.verdict()[0], want)
+
+    def test_bulk_present_name_must_match_even_when_omission_is_supported(self):
+        self.introduce()
+        for name in (None, "", "other", 1, ["a"]):
+            with self.subTest(name=name):
+                advisory = self.advisory()
+                advisory["name"] = name
+                self.response({"a": [advisory]})
+                code, record = self.verdict()
+                self.assertEqual(code, 2)
+                self.assertIsNone(record["invariant"])
+
+    def test_bulk_omitted_name_does_not_allow_bad_ranges_or_unsubmitted_groups(self):
+        self.introduce()
+        advisory = self.advisory(versions="invalid-range")
+        del advisory["name"]
+        self.response({"a": [advisory]})
+        self.assertEqual(self.verdict()[0], 2)
+        self.response({"unsubmitted": [advisory]})
+        self.assertEqual(self.verdict()[0], 2)
 
     def test_network_malformed_output_and_missing_pinned_tool_are_unavailable(self):
         self.introduce()
