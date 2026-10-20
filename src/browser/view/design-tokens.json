@@ -1,0 +1,221 @@
+{
+  "roles": {
+    "page": {
+      "kind": "background",
+      "value": "#09090b",
+      "source": "Q9: loop page background, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "panel": {
+      "kind": "background",
+      "value": "#18181b",
+      "source": "Q9: loop chronicle and map-run end backgrounds, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "highlight": {
+      "kind": "background",
+      "value": "#27272a",
+      "source": "Q9: loop highlighted row and unfilled progress track, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "divider": {
+      "kind": "other",
+      "value": "#27272a",
+      "source": "Q9: loop section dividers, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "control-border": {
+      "kind": "other",
+      "value": "#71717b",
+      "source": "Q9/Q8: loop control border #3f3f46 changed to loop label color #71717b to reach 3:1 on page, panel and highlight under WCAG 2.2 1.4.11 https://www.w3.org/TR/2024/REC-WCAG22-20241212/; rendered https://kantarion.bieda.it/ observed and adjustment accepted 2026-10-20."
+    },
+    "text-strong": {
+      "kind": "text",
+      "value": "#f4f4f5",
+      "source": "Q9: loop names and headings, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "text": {
+      "kind": "text",
+      "value": "#d4d4d8",
+      "source": "Q9: loop body text, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "text-secondary": {
+      "kind": "text",
+      "value": "#9f9fa9",
+      "source": "Q9: loop descriptions, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "text-label": {
+      "kind": "text",
+      "value": "#8d8d97",
+      "source": "Q9/Q8: loop labels/inactive tabs #71717b and dates/section labels #52525c changed to the darkest shade of that grey reaching 4.5:1 on page, panel and highlight under WCAG 2.2 1.4.3 https://www.w3.org/TR/2024/REC-WCAG22-20241212/; rendered https://kantarion.bieda.it/ observed and adjustment accepted 2026-10-20."
+    },
+    "text-disabled": {
+      "kind": "text",
+      "value": "#52525c",
+      "source": "Q9: loop disabled items, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "positive": {
+      "kind": "text",
+      "value": "#00bc7d",
+      "source": "Q9: loop POTEM and left bar of the executing rule, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "warning": {
+      "kind": "text",
+      "value": "#fe9a00",
+      "source": "Q9: loop warning that no rule matches and the character will stop, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "danger": {
+      "kind": "text",
+      "value": "#ff6467",
+      "source": "Q9: loop freezing and starving notices and character-froze message, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "discovery": {
+      "kind": "text",
+      "value": "#ffd230",
+      "source": "Q9: loop Odkryto discovery message, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "player-change": {
+      "kind": "text",
+      "value": "#c4b4ff",
+      "source": "Q9: loop Dodano regule chronicle message, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "character": {
+      "kind": "other",
+      "value": "#ffd230",
+      "source": "Q9: loop character tile outline, rendered https://kantarion.bieda.it/ observed 2026-10-20; Q7/Q19 share this role with the step target."
+    },
+    "tile-hidden": {
+      "kind": "other",
+      "value": "#18181b",
+      "source": "Q10: loop hidden terrain tile, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "tile-revealed": {
+      "kind": "other",
+      "value": "#71717b",
+      "source": "Q10 preview choice A accepted by Mariusz 2026-10-20: grey revealed tiles with light icons."
+    },
+    "link-highlight": {
+      "kind": "other",
+      "value": "#f4f4f5",
+      "source": "Q10 preview choice A accepted by Mariusz 2026-10-20: light line around the tile and at its list row's left edge."
+    },
+    "depleted": {
+      "kind": "other",
+      "value": 0.35,
+      "source": "Q10 preview choice A accepted by Mariusz 2026-10-20: exhausted resource icon at 35 percent opacity, zero stock stays in the list."
+    },
+    "focus": {
+      "kind": "other",
+      "value": "#f4f4f5",
+      "source": "Q10 preview choice A accepted by Mariusz 2026-10-20: light keyboard-focus outline."
+    },
+    "selected": {
+      "kind": "other",
+      "value": "#d4d4d8",
+      "source": "Q19 C: loop selected group button border, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "tile-edge": {
+      "kind": "other",
+      "value": "#27272a",
+      "source": "Q10/Q19 C: loop terrain tile edge, rendered https://kantarion.bieda.it/ observed 2026-10-20; shared by hidden and revealed tiles."
+    }
+  },
+  "tokens": {
+    "font-ui": {
+      "value": "Geist",
+      "source": "Q11: loop UI font, rendered https://kantarion.bieda.it/ observed 2026-10-20; local font files accepted."
+    },
+    "font-mono": {
+      "value": "Geist Mono",
+      "source": "Q11: loop chronicle and map-run clock font, rendered https://kantarion.bieda.it/ observed 2026-10-20; local font files accepted."
+    },
+    "font-size-label": {
+      "value": "11px",
+      "source": "Q11: loop dates and labels, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "font-size-description": {
+      "value": "12px",
+      "source": "Q11: loop buttons, descriptions and chronicle, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "font-size-body": {
+      "value": "13px",
+      "source": "Q11: loop menu and body text, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "font-size-heading": {
+      "value": "14px",
+      "source": "Q11: loop names and panel headings, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "font-size-map-title": {
+      "value": "15px",
+      "source": "Q11: loop map title, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "font-size-game-title": {
+      "value": "16px",
+      "source": "Q11: loop game name, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "space-2": {
+      "value": "2px",
+      "source": "Q11 spacing scale accepted by Mariusz 2026-10-20 from loop map-run spacing observed at https://kantarion.bieda.it/; Q19 E rounds to nearest step, ties upward."
+    },
+    "space-4": {
+      "value": "4px",
+      "source": "Q11 spacing scale accepted by Mariusz 2026-10-20 from loop map-run spacing observed at https://kantarion.bieda.it/; Q19 E rounds to nearest step, ties upward."
+    },
+    "space-8": {
+      "value": "8px",
+      "source": "Q11 spacing scale accepted by Mariusz 2026-10-20 from loop map-run spacing observed at https://kantarion.bieda.it/; Q19 E rounds to nearest step, ties upward."
+    },
+    "space-12": {
+      "value": "12px",
+      "source": "Q11 spacing scale accepted by Mariusz 2026-10-20 from loop map-run spacing observed at https://kantarion.bieda.it/; Q19 E rounds to nearest step, ties upward."
+    },
+    "space-16": {
+      "value": "16px",
+      "source": "Q11 spacing scale accepted by Mariusz 2026-10-20 from loop map-run spacing observed at https://kantarion.bieda.it/; Q19 E rounds to nearest step, ties upward."
+    },
+    "space-24": {
+      "value": "24px",
+      "source": "Q11 spacing scale and its added 24px step accepted by Mariusz 2026-10-20; scale based on loop map-run spacing observed at https://kantarion.bieda.it/; Q19 E rounds to nearest step, ties upward."
+    },
+    "space-32": {
+      "value": "32px",
+      "source": "Q11 spacing scale accepted by Mariusz 2026-10-20 from loop map-run spacing observed at https://kantarion.bieda.it/; Q19 E rounds to nearest step, ties upward."
+    },
+    "font-weight-regular": {
+      "value": 400,
+      "source": "Q19 C: loop regular font weight, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "font-weight-medium": {
+      "value": 500,
+      "source": "Q19 C: loop medium font weight, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "border-width": {
+      "value": "1px",
+      "source": "Q11: loop control frames, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "bar-width": {
+      "value": "2px",
+      "source": "Q11: loop vertical left-edge row bars, rendered https://kantarion.bieda.it/ observed 2026-10-20."
+    },
+    "character-width": {
+      "value": "4px",
+      "source": "Q19 C accepted by Mariusz 2026-10-20: character outline width, following the Q10 preview."
+    },
+    "step-width": {
+      "value": "2px",
+      "source": "Q19 C accepted by Mariusz 2026-10-20: step-target outline width, following the Q10 preview."
+    },
+    "step-dash": {
+      "value": "5 4",
+      "source": "Q19 C accepted by Mariusz 2026-10-20: unitless step-target dash/gap pattern 5/4, following the Q10 preview."
+    },
+    "link-width": {
+      "value": "1.5px",
+      "source": "Q19 C accepted by Mariusz 2026-10-20: tile/list link-highlight line width, following the Q10 preview."
+    },
+    "focus-width": {
+      "value": "2px",
+      "source": "Q10 preview choice A accepted by Mariusz 2026-10-20: keyboard-focus outline width."
+    },
+    "focus-offset": {
+      "value": "2px",
+      "source": "Q10 preview choice A accepted by Mariusz 2026-10-20: keyboard-focus outline offset from the control."
+    }
+  }
+}
