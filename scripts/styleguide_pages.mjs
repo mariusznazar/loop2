@@ -74,7 +74,9 @@ function buildPage(source, sources, root, mount) {
   const body = element("body", source, 1, {}, html.id);
   const inlineOwners = new Map();
   const embeddedDeclarations = new Set();
-  const order = (declarations, target = null, condition = "") => {
+  const stylesheetOwners = new Map();
+  let nextOrder = 0;
+  const order = (declarations, target = null, condition = "", owner = null) => {
     for (const declaration of declarations) {
       if (target !== null) {
         if (
@@ -88,12 +90,14 @@ function buildPage(source, sources, root, mount) {
           );
         inlineOwners.set(declaration, target);
       }
-      page.declarations.push({
+      const ordered = {
         ...declaration,
         target,
-        order: page.declarations.length,
+        order: nextOrder++,
         condition,
-      });
+      };
+      page.declarations.push(ordered);
+      if (owner !== null) stylesheetOwners.set(ordered, owner);
     }
   };
   const loaded = (file, via) => {
@@ -147,7 +151,7 @@ function buildPage(source, sources, root, mount) {
     issue(from, line, `missing ${kind} loading target: ${reference}`);
     return null;
   }
-  function sheet(file, via, chain = [], condition = "") {
+  function sheet(file, via, chain = [], condition = "", owner = null) {
     if (chain.includes(file.path)) {
       issue(file, 1, "cyclic stylesheet import");
       return;
@@ -190,9 +194,10 @@ function buildPage(source, sources, root, mount) {
           [condition, match[3] ? `@media ${match[3]}` : ""]
             .filter(Boolean)
             .join(" / "),
+          owner,
         );
     }
-    order(file.declarations, null, condition);
+    order(file.declarations, null, condition, owner);
   }
   function checkNesting(node, file, line, ruleDepth = 0) {
     if (node.type === "css-rule") {
@@ -222,12 +227,31 @@ function buildPage(source, sources, root, mount) {
     if (child.tag === "style" && child.attached) {
       if (!child.styleDeclarations)
         issue(file, line, "unresolved generated style content");
-      else order(child.styleDeclarations);
+      else
+        order(
+          child.styleDeclarations,
+          null,
+          child.styleCondition ?? "",
+          child.id,
+        );
     }
     for (const descendant of page.elements.filter(
       (node) => node.parent === child.id,
     ))
       attach(child, descendant, file, line);
+  }
+  function detach(child, disconnect = true) {
+    child.attached = false;
+    if (disconnect) child.parent = null;
+    page.declarations = page.declarations.filter((declaration) => {
+      if (stylesheetOwners.get(declaration) !== child.id) return true;
+      stylesheetOwners.delete(declaration);
+      return false;
+    });
+    for (const descendant of page.elements.filter(
+      (node) => node.parent === child.id,
+    ))
+      detach(descendant, false);
   }
   function declarationsIn(file, first, last, inline) {
     return file.declarations.filter(
@@ -312,7 +336,13 @@ function buildPage(source, sources, root, mount) {
       if (ts.isObjectLiteralExpression(node)) {
         const result = {};
         for (const property of node.properties) {
-          if (ts.isPropertyAssignment(property))
+          if (property.name && ts.isComputedPropertyName(property.name)) {
+            issue(
+              file,
+              lineOf(property),
+              "computed object member effects are unresolved",
+            );
+          } else if (ts.isPropertyAssignment(property))
             result[property.name.getText(tree).replace(/^["']|["']$/g, "")] =
               value(property.initializer, scope);
           else if (ts.isShorthandPropertyAssignment(property))
@@ -322,6 +352,12 @@ function buildPage(source, sources, root, mount) {
             result[property.name.getText(tree)] = functionValue(
               property,
               scope,
+            );
+          else
+            issue(
+              file,
+              lineOf(property),
+              "unsupported object member effects are unresolved",
             );
         }
         return result;
@@ -362,9 +398,21 @@ function buildPage(source, sources, root, mount) {
         const condition = value(node.condition, scope);
         if (typeof condition === "boolean")
           return value(condition ? node.whenTrue : node.whenFalse, scope);
+        issue(
+          file,
+          lineOf(node),
+          "unknown conditional expression effects are unresolved",
+        );
         return unknown;
       }
-      if (!ts.isCallExpression(node)) return unknown;
+      if (!ts.isCallExpression(node)) {
+        issue(
+          file,
+          lineOf(node),
+          "unsupported expression effects are unresolved",
+        );
+        return unknown;
+      }
       const name = member(node.expression),
         receiverNode = receiver(node.expression);
       const args = node.arguments.map((argument) => value(argument, scope));
@@ -391,7 +439,7 @@ function buildPage(source, sources, root, mount) {
             for (const child of page.elements.filter(
               (e) => e.parent === object.id,
             ))
-              child.attached = false;
+              detach(child);
           for (const child of args) attach(object, child, file, line);
           return args[0];
         }
@@ -613,6 +661,7 @@ function buildPage(source, sources, root, mount) {
           located(source, line, "HTML stylesheet link"),
           [],
           attrs.media ? `@media ${attrs.media}` : "",
+          target.id,
         );
       if ("disabled" in attrs || attrs.rel.includes("alternate"))
         issue(
@@ -639,7 +688,9 @@ function buildPage(source, sources, root, mount) {
       }
       for (const child of node.children)
         if (child.kind === "text") checkEmbedded(child.value, source, line);
-      order(declarations, null, attrs.media ? `@media ${attrs.media}` : "");
+      target.styleDeclarations = declarations;
+      target.styleCondition = attrs.media ? `@media ${attrs.media}` : "";
+      order(declarations, null, target.styleCondition, target.id);
       return;
     }
     if (node.name === "script") {

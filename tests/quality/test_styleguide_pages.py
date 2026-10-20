@@ -254,6 +254,79 @@ process.stdout.write(JSON.stringify({result, answers}));
                    "button.id='target';button.disabled=false;document.body.append(button);"}
         self.assertEqual(self.inspect(sources, [self.query()])["answers"][0]["value"], "green")
 
+    def test_unknown_expression_effects_cannot_retain_resolved_styles(self):
+        for expression in [
+            "flag ? b.style.color='red' : b.style.color='blue'",
+            "flag && (b.style.color='red')",
+            "flag || (b.style.color='red')",
+            "flag ?? (b.style.color='red')",
+            "(b.style.color='red', 0)",
+            "!(b.style.color='red')",
+            "[b.style.color='red']",
+            "new Change(b)",
+            "({...change(b)})",
+            "({[change(b)]: 1})",
+        ]:
+            with self.subTest(expression=expression):
+                sources = {"view/a.html": '<style>button{color:green}</style>'
+                           '<script type="module" src="main.js"></script>',
+                           "view/main.ts": "const b=document.createElement('button');\n"
+                           "b.id='target';\ndocument.body.append(b);\n" + expression + ";"}
+                report = self.inspect(sources, [self.query()])
+                self.assertEqual(report["answers"][0]["status"], "unresolved")
+                self.assertTrue(any(item["path"] == "view/main.ts" and item["line"] == 4
+                                    for item in report["result"]["pages"][0]["unresolved"]))
+
+    def test_replace_children_detaches_descendants_and_severs_removed_parent(self):
+        sources = {"view/a.html": '<html><head><style>body button{color:green}</style></head>'
+                   '<body><script type="module" src="main.js"></script></body></html>',
+                   "view/main.ts": "const box=document.createElement('div');\n"
+                   "const b=document.createElement('button');\nb.id='target';\n"
+                   "box.append(b);\ndocument.body.append(box);\ndocument.body.replaceChildren();"}
+        report = self.inspect(sources, [self.query()])
+        page = report["result"]["pages"][0]
+        target = next(e for e in page["elements"] if e["attributes"].get("id") == "target")
+        box = next(e for e in page["elements"] if e["tag"] == "div")
+        self.assertFalse(target["attached"])
+        self.assertFalse(box["attached"])
+        self.assertIsNone(box["parent"])
+        self.assertEqual(target["parent"], box["id"])
+        self.assertEqual(report["answers"][0]["status"], "unresolved")
+        sources["view/main.ts"] += "\ndocument.body.append(b);"
+        report = self.inspect(sources, [self.query()])
+        self.assertEqual(report["answers"][0]["value"], "green")
+        self.assertTrue(next(e for e in report["result"]["pages"][0]["elements"]
+                             if e["attributes"].get("id") == "target")["attached"])
+
+    def test_replace_children_retires_removed_styles_and_their_imports(self):
+        for head, extra_sources, construction in [
+            ("", {}, "const sheet=document.createElement('style');\n"
+             "sheet.textContent='button{color:green}';\ndocument.head.append(sheet);\n"),
+            ("<style>button{color:green}</style>", {}, ""),
+            ('<link rel="stylesheet" href="theme.css">',
+             {"view/theme.css": '@import "base.css";', "view/base.css": 'button{color:green}'}, ""),
+        ]:
+            with self.subTest(head=head):
+                sources = {"view/a.html": '<html><head>' + head + '</head><body>'
+                           '<button id="target"></button><script type="module" src="main.js">'
+                           '</script></body></html>',
+                           "view/main.ts": construction + "document.head.replaceChildren();",
+                           **extra_sources}
+                report = self.inspect(sources, [self.query()])
+                self.assertEqual(report["answers"][0]["status"], "missing")
+                self.assertEqual(report["result"]["pages"][0]["declarations"], [])
+                self.assertTrue(next(e for e in report["result"]["pages"][0]["elements"]
+                                     if e["attributes"].get("id") == "target")["attached"])
+        sources = {"view/a.html": '<button id="target"></button>'
+                   '<script type="module" src="main.js"></script>',
+                   "view/main.ts": "const box=document.createElement('div');\n"
+                   "const sheet=document.createElement('style');\n"
+                   "sheet.textContent='button{color:green}';\nbox.append(sheet);\n"
+                   "document.head.append(box);\ndocument.head.replaceChildren();"}
+        self.assertEqual(self.inspect(sources, [self.query()])["answers"][0]["status"], "missing")
+        sources["view/main.ts"] += "\ndocument.head.append(box);"
+        self.assertEqual(self.inspect(sources, [self.query()])["answers"][0]["value"], "green")
+
     def test_uncertain_script_order_and_attached_style_replacement_are_not_success(self):
         for html, module in [
             ('<script async src="main.js"></script><style>button{color:red}</style>',
