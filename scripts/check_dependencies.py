@@ -8,7 +8,6 @@ import re
 import shutil
 import sys
 import tempfile
-from urllib.parse import unquote, urlsplit
 
 from quality_support import QualityError, discover_files, run_check, run_tool
 
@@ -205,12 +204,16 @@ def _collect(files):
                     raise QualityError("missing actual npm name or exact version")
                 if "resolved" in package:
                     resolved = package["resolved"]
-                    if not isinstance(resolved, str) or not resolved.startswith(
-                            "https://registry.npmjs.org/"):
-                        raise QualityError("unsupported non-registry dependency source")
-                    source = unquote(urlsplit(resolved).path).removeprefix("/")
-                    if "/-/" not in source or source.split("/-/", 1)[0] != name:
-                        raise QualityError("registry source conflicts with actual npm name")
+                    # Compare complete supported spellings; never normalize an untrusted URL.
+                    # npm also recognizes %2f/%2F for a scoped package's one separator.
+                    names = {name}
+                    if name.startswith("@"):
+                        names.update({name.replace("/", "%2f"), name.replace("/", "%2F")})
+                    archive = f"{name.rsplit('/', 1)[-1]}-{version}.tgz"
+                    sources = {f"https://registry.npmjs.org/{source}/-/{archive}"
+                               for source in names}
+                    if not isinstance(resolved, str) or resolved not in sources:
+                        raise QualityError("unsupported or conflicting registry tarball identity")
                 pairs.add((name, version))
             for location, package in packages.items():
                 maps_here = _dependencies(package)

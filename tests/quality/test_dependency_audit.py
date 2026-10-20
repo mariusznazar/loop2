@@ -233,6 +233,104 @@ module.exports = async (url, options) => {
         self.save()
         self.assertEqual(self.verdict()[0], 2)
 
+    def test_tarball_version_conflict_is_unavailable_before_offline_pass(self):
+        self.lock["packages"]["node_modules/a"]["resolved"] = (
+            "https://registry.npmjs.org/a/-/a-1.5.0.tgz")
+        self.save()
+        self.write(".runs/response.json", "NETWORK_FAILURE")
+        code, record = self.verdict()
+        self.assertEqual(code, 2)
+        self.assertIsNone(record["invariant"])
+        self.assertFalse((self.root / ".runs/payload.json").exists())
+
+    def test_tarball_dot_segments_are_unavailable_before_offline_pass(self):
+        self.lock["packages"]["node_modules/a"]["resolved"] = (
+            "https://registry.npmjs.org/a/-/../../other/-/other-1.5.0.tgz")
+        self.save()
+        self.write(".runs/response.json", "NETWORK_FAILURE")
+        code, record = self.verdict()
+        self.assertEqual(code, 2)
+        self.assertIsNone(record["invariant"])
+        self.assertFalse((self.root / ".runs/payload.json").exists())
+
+    def test_tarball_ambiguous_urls_are_unavailable_before_offline_pass(self):
+        urls = [
+            "https://registry.npmjs.org/a/-/%2e%2e/%2e%2e/other/-/other-1.5.0.tgz",
+            r"https://registry.npmjs.org/a/-/..\..\other\-\other-1.5.0.tgz",
+            "https://registry.npmjs.org/a/-/a-1.0.0.tgz?download=1",
+            "https://registry.npmjs.org/a/-/a-1.0.0.tgz#fragment",
+            "https://registry.npmjs.org/a/-/other-1.0.0.tgz",
+            "https://registry.npmjs.org/a/-/a-1.0.0.tgz/extra",
+            "https://registry.npmjs.org/a/-/%61-1.0.0.tgz",
+            "https://registry.npmjs.org/a/-/\na-1.0.0.tgz",
+            "https://registry.npmjs.org:443/a/-/a-1.0.0.tgz",
+        ]
+        self.write(".runs/response.json", "NETWORK_FAILURE")
+        for url in urls:
+            with self.subTest(url=url):
+                self.lock["packages"]["node_modules/a"]["resolved"] = url
+                self.save()
+                code, record = self.verdict()
+                self.assertEqual(code, 2)
+                self.assertIsNone(record["invariant"])
+                self.assertFalse((self.root / ".runs/payload.json").exists())
+
+    def test_tarball_supported_exact_identities_retain_alias_and_scope_support(self):
+        self.lock["packages"]["node_modules/a"]["resolved"] = (
+            "https://registry.npmjs.org/a/-/a-1.0.0.tgz")
+        self.save()
+        self.write(".runs/response.json", "NETWORK_FAILURE")
+        self.assertEqual(self.verdict()[0], 0)
+        self.assertFalse((self.root / ".runs/payload.json").exists())
+        for name, version, source in [
+                ("real-name", "2.0.0", "real-name/-/real-name-2.0.0.tgz"),
+                ("@scope/real", "2.0.0", "@scope/real/-/real-2.0.0.tgz"),
+                ("@scope/real", "2.0.0", "@scope%2freal/-/real-2.0.0.tgz"),
+                ("@scope/real", "2.0.0", "@scope%2Freal/-/real-2.0.0.tgz"),
+                ("real-name", "2.0.0-beta.1+build", "real-name/-/real-name-2.0.0-beta.1+build.tgz")]:
+            with self.subTest(source=source):
+                self.manifest["dependencies"]["alias"] = f"npm:{name}@{version}"
+                self.lock["packages"]["node_modules/alias"] = {
+                    "name": name, "version": version,
+                    "resolved": "https://registry.npmjs.org/" + source}
+                self.save()
+                self.response({})
+                self.assertEqual(self.verdict()[0], 0)
+                self.assertEqual(json.loads((self.root / ".runs/payload.json").read_text()),
+                                 {name: [version]})
+
+    def test_tarball_historical_identity_conflict_is_unavailable(self):
+        self.lock["packages"]["node_modules/a"]["resolved"] = (
+            "https://registry.npmjs.org/a/-/a-1.5.0.tgz")
+        self.save()
+        self.git("add", "package-lock.json")
+        self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                 "-c", "core.hooksPath=", "commit", "--quiet", "-m", "conflicting base source")
+        base = self.git("rev-parse", "HEAD").strip()
+        self.lock["packages"]["node_modules/a"]["resolved"] = (
+            "https://registry.npmjs.org/a/-/a-1.0.0.tgz")
+        self.save()
+        self.write(".runs/response.json", "NETWORK_FAILURE")
+        code, record = self.verdict(base)
+        self.assertEqual(code, 2)
+        self.assertIsNone(record["invariant"])
+        self.assertFalse((self.root / ".runs/payload.json").exists())
+
+    def test_tarball_fix_does_not_require_historical_npm_tool_pin(self):
+        current_manifest, current_lock = copy.deepcopy(self.manifest), copy.deepcopy(self.lock)
+        del self.manifest["devDependencies"]["npm"]
+        del self.lock["packages"]["node_modules/npm"]
+        self.save()
+        self.git("add", "package.json", "package-lock.json")
+        self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                 "-c", "core.hooksPath=", "commit", "--quiet", "-m", "base before audit tool")
+        base = self.git("rev-parse", "HEAD").strip()
+        self.manifest, self.lock = current_manifest, current_lock
+        self.save()
+        self.assertEqual(self.verdict(base)[0], 0)
+        self.assertEqual(json.loads((self.root / ".runs/payload.json").read_text()),
+                         {"npm": ["11.13.0"]})
+
     def test_nested_pinned_npm_cannot_mask_a_different_root_tool_lock(self):
         del self.manifest["devDependencies"]["npm"]
         self.manifest["dependencies"]["npm"] = "11.13.0"
