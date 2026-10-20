@@ -190,6 +190,9 @@ button {
   color: var(--text-label);
   opacity: inherit;
 }
+.control:disabled::placeholder {
+  color: var(--text-disabled);
+}
 .control-error {
   display: block;
   margin-top: var(--space-4);

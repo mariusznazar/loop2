@@ -240,6 +240,26 @@ function declarations(selector) {
   );
 }
 
+for (const name of ["createNumberField", "createTextField"]) {
+  test(`${name} uses disabled text for its empty placeholder`, (t) => {
+    assert.ok(controls, "shared native control factories must exist");
+    installDOM(t);
+    const field = controls[name]({ label: "Value", disabled: true });
+    assert.equal(field.control.value, "");
+    assert.equal(field.control.placeholder, "Value");
+    assert.equal(field.control.disabled, true);
+    assert.equal(field.control.className, "control");
+    assert.equal(
+      declarations(".control:disabled::placeholder").color,
+      "var(--text-disabled)",
+    );
+    assert.equal(
+      declarations(".control::placeholder").color,
+      "var(--text-label)",
+    );
+  });
+}
+
 test("controls retain transparent defaults and use semantic selected, destructive and warning styles", () => {
   assert.equal(declarations("button").background, "transparent");
   assert.equal(declarations("button").color, "var(--text)");
