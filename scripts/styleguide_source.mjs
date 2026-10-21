@@ -850,7 +850,276 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
   }
 }
 
+/** Parse module relationships only; never resolve, load or execute imported code. */
+export function inspectImports(request, tools = loadTools()) {
+  const { ts } = tools;
+  return {
+    schema: 1,
+    files: request.files.map((input) => {
+      const imports = [];
+      const unresolved = [];
+      if (input.kind !== "typescript")
+        return { path: input.path, digest: input.digest, imports, unresolved };
+      const source = ts.createSourceFile(
+        input.path,
+        input.source,
+        ts.ScriptTarget.Latest,
+        true,
+        /\.[jt]sx$/i.test(input.path) ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+      );
+      const lineOf = (position) =>
+        source.getLineAndCharacterOfPosition(position).line + 1;
+      for (const error of source.parseDiagnostics)
+        unresolved.push({
+          path: input.path,
+          line: lineOf(error.start ?? 0),
+          reason: `Import grammar: ${ts.flattenDiagnosticMessageText(error.messageText, " ")}`,
+        });
+      const nodes = [];
+      function collect(node) {
+        nodes.push(node);
+        ts.forEachChild(node, collect);
+      }
+      collect(source);
+      const program = ts.createProgram(
+        [source.fileName],
+        {
+          noLib: true,
+          noResolve: true,
+          allowJs: true,
+          allowNonTsExtensions: true,
+        },
+        {
+          getSourceFile: (name) =>
+            name === source.fileName ? source : undefined,
+          getDefaultLibFileName: () => "",
+          writeFile: () => {},
+          getCurrentDirectory: () => "",
+          getDirectories: () => [],
+          fileExists: (name) => name === source.fileName,
+          readFile: (name) =>
+            name === source.fileName ? input.source : undefined,
+          getCanonicalFileName: (name) => name,
+          useCaseSensitiveFileNames: () => true,
+          getNewLine: () => "\n",
+        },
+      );
+      const checker = program.getTypeChecker();
+      function constURL(argument) {
+        if (!argument || !ts.isIdentifier(argument)) return null;
+        const symbol = checker.getSymbolAtLocation(argument);
+        const binding =
+          symbol?.declarations?.length === 1 ? symbol.declarations[0] : null;
+        const value = binding?.initializer;
+        if (
+          !binding ||
+          !ts.isVariableDeclaration(binding) ||
+          !ts.isIdentifier(binding.name) ||
+          !(binding.parent.flags & ts.NodeFlags.Const) ||
+          binding.parent.parent.parent !== source ||
+          binding.parent.parent.modifiers?.some(
+            (m) => m.kind === ts.SyntaxKind.ExportKeyword,
+          ) ||
+          !value ||
+          !ts.isNewExpression(value) ||
+          !ts.isIdentifier(value.expression) ||
+          value.expression.text !== "URL" ||
+          checker.getSymbolAtLocation(value.expression)?.declarations?.length ||
+          value.arguments?.length !== 2 ||
+          !ts.isStringLiteral(value.arguments[0]) ||
+          value.arguments[1].getText(source) !== "import.meta.url"
+        )
+          return null;
+        for (const node of nodes) {
+          if (
+            ts.isIdentifier(node) &&
+            checker.getSymbolAtLocation(node) === symbol
+          ) {
+            if (node === binding.name) continue;
+            const call = node.parent;
+            if (
+              !ts.isCallExpression(call) ||
+              call.expression.kind !== ts.SyntaxKind.ImportKeyword ||
+              call.arguments.length !== 1 ||
+              call.arguments[0] !== node
+            )
+              return null;
+          }
+          if (
+            ts.isIdentifier(node) &&
+            node.text === "URL" &&
+            node !== value.expression &&
+            !(
+              ts.isPropertyAccessExpression(node.parent) &&
+              node.parent.name === node
+            )
+          ) {
+            if (
+              !ts.isNewExpression(node.parent) ||
+              node.parent.expression !== node ||
+              checker.getSymbolAtLocation(node)?.declarations?.length
+            )
+              return null;
+          }
+          if (
+            ts.isIdentifier(node) &&
+            [
+              "globalThis",
+              "window",
+              "self",
+              "global",
+              "eval",
+              "Function",
+            ].includes(node.text)
+          )
+            return null;
+          if (ts.isMetaProperty(node)) {
+            const property = node.parent;
+            const constructor = property.parent;
+            if (
+              !ts.isPropertyAccessExpression(property) ||
+              property.name.text !== "url" ||
+              !ts.isNewExpression(constructor) ||
+              !ts.isIdentifier(constructor.expression) ||
+              constructor.expression.text !== "URL" ||
+              constructor.arguments?.[1] !== property
+            )
+              return null;
+          }
+        }
+        return { literal: value.arguments[0], via: value };
+      }
+      function edge(node, specifier, kind, via = null) {
+        const literal =
+          specifier && ts.isStringLiteral(specifier) ? specifier : null;
+        imports.push({
+          path: input.path,
+          line: lineOf(node.getStart(source)),
+          start: node.getStart(source),
+          end: node.end,
+          expression: node.getText(source),
+          specifier: literal?.text ?? null,
+          specifierStart: literal?.getStart(source) ?? null,
+          specifierEnd: literal?.end ?? null,
+          kind,
+          via: via
+            ? {
+                start: via.getStart(source),
+                end: via.end,
+                expression: via.getText(source),
+              }
+            : null,
+        });
+      }
+      function relation(clause, elements) {
+        if (clause?.isTypeOnly) return "type";
+        const flags = elements?.map((item) => item.isTypeOnly) ?? [];
+        if (flags.length && flags.every(Boolean) && !clause?.name)
+          return "type";
+        return flags.some(Boolean) ? "mixed" : "runtime";
+      }
+      function visit(node) {
+        if (ts.isImportDeclaration(node)) {
+          const bindings = node.importClause?.namedBindings;
+          edge(
+            node,
+            node.moduleSpecifier,
+            `import-${relation(
+              node.importClause,
+              bindings && ts.isNamedImports(bindings)
+                ? bindings.elements
+                : null,
+            )}`,
+          );
+        } else if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
+          edge(
+            node,
+            node.moduleSpecifier,
+            `export-${relation(
+              node,
+              node.exportClause && ts.isNamedExports(node.exportClause)
+                ? node.exportClause.elements
+                : null,
+            )}`,
+          );
+        } else if (ts.isImportEqualsDeclaration(node)) {
+          edge(
+            node,
+            ts.isExternalModuleReference(node.moduleReference)
+              ? node.moduleReference.expression
+              : null,
+            "unsupported",
+          );
+        } else if (ts.isImportTypeNode(node)) {
+          edge(
+            node,
+            ts.isLiteralTypeNode(node.argument) ? node.argument.literal : null,
+            "import-type",
+          );
+        } else if (
+          ts.isCallExpression(node) &&
+          node.expression.kind === ts.SyntaxKind.ImportKeyword
+        ) {
+          const argument =
+            node.arguments.length === 1 ? node.arguments[0] : null;
+          const url = constURL(argument);
+          edge(
+            node,
+            url?.literal ?? argument,
+            url ? "dynamic-url" : "dynamic-runtime",
+            url?.via,
+          );
+        } else if (
+          ts.isCallExpression(node) &&
+          ((ts.isPropertyAccessExpression(node.expression) &&
+            node.expression.name.text === "require") ||
+            (ts.isElementAccessExpression(node.expression) &&
+              ts.isStringLiteral(node.expression.argumentExpression) &&
+              node.expression.argumentExpression.text === "require"))
+        ) {
+          edge(
+            node,
+            node.arguments.length === 1 ? node.arguments[0] : null,
+            "unsupported",
+          );
+        } else if (
+          ts.isIdentifier(node) &&
+          node.text === "require" &&
+          !(
+            ts.isPropertyAccessExpression(node.parent) &&
+            node.parent.name === node
+          )
+        ) {
+          // CommonJS calls and shadowed/escaping require bindings are not ESM evidence.
+          const call =
+            ts.isCallExpression(node.parent) && node.parent.expression === node
+              ? node.parent
+              : node;
+          edge(
+            call,
+            call.arguments?.length === 1 ? call.arguments[0] : null,
+            "unsupported",
+          );
+        }
+        ts.forEachChild(node, visit);
+      }
+      visit(source);
+      imports.sort((a, b) => a.start - b.start || a.end - b.end);
+      return { path: input.path, digest: input.digest, imports, unresolved };
+    }),
+  };
+}
+
 export function inspectSources(request, tools = loadTools()) {
+  if (
+    request.schema !== 2 ||
+    !Array.isArray(request.files) ||
+    !Array.isArray(request.dependencies) ||
+    !Array.isArray(request.configurations) ||
+    !Array.isArray(request.imports) ||
+    !Array.isArray(request.unresolved)
+  )
+    throw new Error("Unsupported source request protocol or missing evidence");
   const files = request.files.map((input) => {
     const facts = {
       path: input.path,
@@ -890,7 +1159,14 @@ export function inspectSources(request, tools = loadTools()) {
     }
     return facts;
   });
-  return { schema: 2, files };
+  return {
+    schema: 3,
+    files,
+    dependencies: request.dependencies,
+    imports: request.imports,
+    configurations: request.configurations,
+    unresolved: request.unresolved,
+  };
 }
 
 function freeze(value) {
@@ -904,15 +1180,23 @@ function freeze(value) {
 async function main() {
   const request = JSON.parse(readFileSync(0, "utf8"));
   if (
-    request.schema !== 1 ||
+    request.schema !== 2 ||
     path.resolve(request.root) !== process.cwd() ||
-    !["sources", "focus", "adjacency"].includes(request.operation) ||
-    !Array.isArray(request.files)
+    !["imports", "sources", "focus", "adjacency"].includes(request.operation) ||
+    !Array.isArray(request.files) ||
+    !Array.isArray(request.dependencies) ||
+    !Array.isArray(request.configurations) ||
+    !Array.isArray(request.imports) ||
+    !Array.isArray(request.unresolved)
   ) {
     throw new Error("Invalid source inspection request");
   }
   const seen = new Set();
-  for (const file of request.files) {
+  for (const file of [
+    ...request.files,
+    ...request.dependencies,
+    ...request.configurations,
+  ]) {
     if (
       typeof file.path !== "string" ||
       !file.path ||
@@ -926,6 +1210,10 @@ async function main() {
       throw new Error("Unsafe or incomplete source input");
     }
     seen.add(file.path);
+  }
+  if (request.operation === "imports") {
+    process.stdout.write(JSON.stringify(inspectImports(request)) + "\n");
+    return;
   }
   const facts = freeze(inspectSources(request));
   let result = facts;

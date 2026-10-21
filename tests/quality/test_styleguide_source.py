@@ -36,9 +36,328 @@ class SourceChecks(unittest.TestCase):
     def facts(self):
         return self.module.source_facts(self.root)
 
+    def dependency_fixture(self, source='import { x } from "../data/a.js";'):
+        self.write("foundations/part_map.md", "## browser-view\n\n- **Files:** view/**\n"
+                   "\n## other\n\n- **Files:** foundations/**\n  data/**\n")
+        self.write("view/main.ts", source)
+        self.write("data/a.ts", 'export const x = "red";')
+
+    def corrupt_transport(self, mutate):
+        run = self.module.run_tool
+
+        def transport(*args, **kwargs):
+            result = run(*args, **kwargs)
+            request = json.loads(kwargs["input"])
+            report = json.loads(result.stdout)
+            mutate(report, request)
+            return subprocess.CompletedProcess(result.args, result.returncode, json.dumps(report), result.stderr)
+
+        return patch.object(self.module, "run_tool", side_effect=transport)
+
+    def test_import_manifest_rejects_duplicate_and_forged_edges_before_reading(self):
+        self.dependency_fixture()
+        cases = [("line", True), ("line", 2), ("start", -1), ("end", 999),
+                 ("expression", "forged"), ("specifier", "../data/forged.js"),
+                 ("specifierStart", 0), ("specifierEnd", 2), ("kind", "invented")]
+        for field, value in cases:
+            with self.subTest(field=field):
+                def mutate(report, request, field=field, value=value):
+                    if request["operation"] == "imports":
+                        report["files"][0]["imports"][0][field] = value
+                with self.corrupt_transport(mutate):
+                    with self.assertRaises(self.module.QualityError):
+                        self.facts()
+        def duplicate(report, request):
+            if request["operation"] == "imports":
+                report["files"][0]["imports"] *= 2
+        with self.corrupt_transport(duplicate):
+            with self.assertRaises(self.module.QualityError):
+                self.facts()
+
+        for change in ["omit", "duplicate", "digest", "schema"]:
+            def mutate(report, request, change=change):
+                if request["operation"] != "imports":
+                    return
+                if change == "omit":
+                    report["files"] = []
+                elif change == "duplicate":
+                    report["files"] *= 2
+                elif change == "digest":
+                    report["files"][0]["digest"] = "0" * 64
+                else:
+                    report["schema"] = True
+            with self.subTest(change=change):
+                with self.corrupt_transport(mutate):
+                    with self.assertRaises(self.module.QualityError):
+                        self.facts()
+
+    def test_final_dependency_snapshot_and_manifest_cannot_be_omitted_or_forged(self):
+        self.dependency_fixture()
+        def mutate_collection(key, mode):
+            def mutate(report, request):
+                if request["operation"] != "sources":
+                    return
+                if mode == "omit":
+                    report[key] = []
+                elif mode == "duplicate":
+                    report[key] *= 2
+                else:
+                    report[key][0]["path"] = "data/forged.ts"
+            return mutate
+        for key in ["dependencies", "imports"]:
+            for mode in ["omit", "duplicate", "forge"]:
+                with self.subTest(key=key, mode=mode):
+                    with self.corrupt_transport(mutate_collection(key, mode)):
+                        with self.assertRaises(self.module.QualityError):
+                            self.facts()
+        for field, value in [("source", "altered bytes"), ("digest", "0" * 64), ("kind", "css")]:
+            with self.subTest(field=field):
+                def mutate(report, request, field=field, value=value):
+                    if request["operation"] == "sources":
+                        report["dependencies"][0][field] = value
+                with self.corrupt_transport(mutate):
+                    with self.assertRaises(self.module.QualityError):
+                        self.facts()
+
+        def boolean_location(report, request):
+            if request["operation"] == "sources":
+                report["imports"][0]["line"] = True
+        with self.corrupt_transport(boolean_location):
+            with self.assertRaises(self.module.QualityError):
+                self.facts()
+
+    def test_source_change_during_acquisition_is_not_stale_success(self):
+        self.dependency_fixture()
+        def mutate(_report, request):
+            if request["operation"] == "sources":
+                self.write("data/a.ts", 'export const x = "blue";')
+        with self.corrupt_transport(mutate):
+            with self.assertRaises(self.module.QualityError):
+                self.facts()
+
+    def test_dynamic_literal_is_acquired_but_unknown_shadowed_and_external_stay_inability(self):
+        self.dependency_fixture('const loaded = import("../data/a.js");')
+        facts = self.facts()
+        self.assertEqual(facts["imports"][0]["kind"], "dynamic-runtime")
+        self.assertEqual(facts["imports"][0]["target"], "data/a.ts")
+        for source in ['import(moduleName);', 'import("package-name");',
+                       'function load(require) { return require("../data/a.js"); }',
+                       'const require = local; require("../data/a.js");',
+                       'module.require("../data/a.js");',
+                       'import library = require("../data/a.js");',
+                       'import x from "/data/a.js";', 'import x from "../../outside.js";',
+                       'import x from "../node_modules/a.js";', 'import x from "../data/a";']:
+            with self.subTest(source=source):
+                self.write("view/main.ts", source)
+                facts = self.facts()
+                self.assertTrue(facts["unresolved"])
+                self.assertEqual(facts["dependencies"], [])
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_type_imports_exports_and_extension_substitution_are_located(self):
+        self.dependency_fixture('import type { T } from "../data/a.js";\n'
+                                'export { type T, x } from "../data/a.js";\n'
+                                'type Q = import("../data/other.mjs").Q;\n'
+                                'export type { C } from "../data/c.cjs";')
+        self.write("data/other.mts", 'export type Q = string;')
+        self.write("data/c.cts", 'export type C = string;')
+        facts = self.facts()
+        self.assertEqual([(i["line"], i["kind"], i["target"]) for i in facts["imports"]],
+                         [(1, "import-type", "data/a.ts"), (2, "export-mixed", "data/a.ts"),
+                          (3, "import-type", "data/other.mts"), (4, "export-type", "data/c.cts")])
+        self.assertEqual(facts["unresolved"], [])
+
+    def test_declaration_only_module_cannot_stand_in_for_runtime_source(self):
+        self.dependency_fixture()
+        (self.root / "data/a.ts").unlink()
+        self.write("data/a.d.ts", "export declare const x: string;")
+        self.assertTrue(self.facts()["unresolved"])
+        self.write("view/main.ts", 'import type { x } from "../data/a.js";')
+        facts = self.facts()
+        self.assertEqual(facts["unresolved"], [])
+        self.assertEqual(facts["imports"][0]["target"], "data/a.d.ts")
+
+    def test_utf16_and_crlf_import_locations_preserve_original_bytes(self):
+        self.dependency_fixture()
+        (self.root / "view/main.ts").write_bytes(
+            '// emoji: \U0001f332\r\nimport { x } from "../data/a.js";\r\n'.encode("utf-8"))
+        facts = self.facts()
+        self.assertEqual(facts["imports"][0]["line"], 2)
+        self.assertIn("\r\n", facts["files"][0]["source"])
+        self.assertEqual(facts["unresolved"], [])
+
+    def test_link_boundary_is_rejected_before_dependency_read(self):
+        self.dependency_fixture()
+        target = self.root / "data/a.ts"
+        target.unlink()
+        with tempfile.TemporaryDirectory() as outside:
+            real = Path(outside) / "a.ts"
+            real.write_text('throw new Error("outside")', encoding="utf-8")
+            try:
+                target.symlink_to(real)
+            except OSError:
+                self.skipTest("creating symlinks is unavailable")
+            with patch.object(self.module, "discover_files", return_value=["view/main.ts"]):
+                with self.assertRaises(self.module.QualityError):
+                    self.facts()
+
+    def test_tooling_and_generated_references_are_explicit_boundaries(self):
+        self.write("foundations/part_map.md", "## browser-view\n\n- **Files:** tests/**\n"
+                   "\n## other\n\n- **Files:** foundations/**\n  tsconfig.*.json\n  src/**\n")
+        self.write("tsconfig.browser.json", json.dumps({"compilerOptions": {
+            "module": "NodeNext", "moduleResolution": "NodeNext",
+            "rootDir": "src/browser", "outDir": "dist/public"}}))
+        self.write("tsconfig.styleguide.json", json.dumps({"extends": "./tsconfig.browser.json",
+                   "compilerOptions": {"rootDir": ".", "outDir": ".runs/styleguide/public"}}))
+        self.write("src/browser/a.ts", "export const x = 1;")
+        self.write("tests/probe.mjs", 'import assert from "node:assert/strict";\n'
+                   'import { x } from "../dist/public/a.js";\n'
+                   'await import("../.runs/styleguide/public/src/browser/a.js");')
+        facts = self.facts()
+        self.assertEqual([i["resolution"] for i in facts["imports"]],
+                         ["tooling", "generated", "generated"])
+        self.assertEqual([i["target"] for i in facts["imports"]],
+                         [None, "src/browser/a.ts", "src/browser/a.ts"])
+        self.assertTrue(all(i["reason"] for i in facts["imports"]))
+        self.assertEqual([i["path"] for i in facts["dependencies"]], ["src/browser/a.ts"])
+        self.assertEqual([i["path"] for i in facts["configurations"]],
+                         ["tsconfig.browser.json", "tsconfig.styleguide.json"])
+
+    def test_const_url_import_requires_lexical_builtin_unmutated_unescaped_evidence(self):
+        self.dependency_fixture('const moduleURL = new URL("../data/a.js", import.meta.url);\n'
+                                'await import(moduleURL);')
+        facts = self.facts()
+        self.assertEqual(facts["imports"][0]["target"], "data/a.ts")
+        self.assertEqual(facts["imports"][0]["kind"], "dynamic-url")
+        self.assertTrue(facts["imports"][0]["via"])
+        bad = ['const URL = custom; ', 'URL = custom; ', 'globalThis.URL = custom; ',
+               'import.meta.url = "file:///elsewhere"; ', 'const meta = import.meta; ',
+               'eval("URL = custom"); ']
+        suffixes = ['moduleURL.pathname = "elsewhere";', 'consume(moduleURL);',
+                    'moduleURL.searchParams.set("a", "b");', 'const alias = moduleURL;']
+        good = 'const moduleURL = new URL("../data/a.js", import.meta.url);\n'
+        cases = [prefix + good + 'await import(moduleURL);' for prefix in bad]
+        cases += [good + suffix + 'await import(moduleURL);' for suffix in suffixes]
+        cases += ['let moduleURL = new URL("../data/a.js", import.meta.url); await import(moduleURL);',
+                  'const moduleURL = new URL(path, import.meta.url); await import(moduleURL);',
+                  'const moduleURL = new URL("../data/a.js", base); await import(moduleURL);',
+                  good + 'function load(moduleURL) { return import(moduleURL); }']
+        for source in cases:
+            with self.subTest(source=source):
+                self.write("view/main.ts", source)
+                self.assertTrue(self.facts()["unresolved"])
+
+    def test_generated_prefix_without_verified_configuration_and_source_is_inability(self):
+        self.write("foundations/part_map.md", "## browser-view\n\n- **Files:** tests/**\n"
+                   "\n## other\n\n- **Files:** foundations/**\n  tsconfig.*.json\n  src/**\n")
+        self.write("tests/probe.mjs", 'import { x } from "../dist/public/a.js";')
+        self.assertTrue(self.facts()["unresolved"])
+        config = {"compilerOptions": {"module": "NodeNext", "moduleResolution": "NodeNext",
+                  "rootDir": "src/browser", "outDir": "dist/public"}}
+        self.write("tsconfig.browser.json", json.dumps(config))
+        self.assertTrue(self.facts()["unresolved"])
+        self.write("src/browser/a.ts", "export const x = 1;")
+        self.assertEqual(self.facts()["unresolved"], [])
+        for field, value in [("rootDir", "../outside"), ("outDir", "elsewhere"),
+                             ("module", "CommonJS"), ("noEmit", "true"),
+                             ("emitDeclarationOnly", 1), ("jsx", "preserve")]:
+            changed = json.loads(json.dumps(config))
+            changed["compilerOptions"][field] = value
+            self.write("tsconfig.browser.json", json.dumps(changed))
+            self.assertTrue(self.facts()["unresolved"])
+        self.write("tsconfig.browser.json", json.dumps(config))
+        def mutate(report, request):
+            if request["operation"] == "sources":
+                report["configurations"][0]["digest"] = "0" * 64
+        with self.corrupt_transport(mutate):
+            with self.assertRaises(self.module.QualityError):
+                self.facts()
+
+        for mode in ["omit", "duplicate", "stale"]:
+            def corrupt_config(report, request, mode=mode):
+                if request["operation"] != "sources":
+                    return
+                if mode == "omit":
+                    report["configurations"] = []
+                elif mode == "duplicate":
+                    report["configurations"] *= 2
+                else:
+                    self.write("tsconfig.browser.json", json.dumps({"compilerOptions": {}}))
+            self.write("tsconfig.browser.json", json.dumps(config))
+            with self.subTest(mode=mode):
+                with self.corrupt_transport(corrupt_config):
+                    with self.assertRaises(self.module.QualityError):
+                        self.facts()
+
+    def test_actual_app_and_standalone_imports_have_original_dependency_evidence(self):
+        facts = self.module.source_facts(ROOT)
+        self.assertEqual(facts["unresolved"], [])
+        dependencies = {file["path"]: file for file in facts["dependencies"]}
+        self.assertIn("src/browser/sim/game.ts", dependencies)
+        self.assertIn("src/browser/sim/data/resources.ts", dependencies)
+        self.assertIn("src/browser/sim/types.ts", dependencies)
+        self.assertIn("src/browser/sim/hex.ts", dependencies)
+        governed = {file["path"] for file in facts["files"]}
+        self.assertNotIn("src/browser/sim/game.ts", governed)
+        self.assertIn("tests/view/dom-support.mjs", governed)
+        witnesses = {(edge["path"], edge["target"]) for edge in facts["imports"]
+                     if edge["resolution"] == "local"}
+        self.assertIn(("src/browser/view/app.ts", "src/browser/sim/game.ts"), witnesses)
+        self.assertIn(("tools/styleguide/page.ts", "src/browser/sim/data/resources.ts"), witnesses)
+        self.assertIn(("src/browser/sim/game.ts", "src/browser/sim/run.ts"), witnesses)
+        self.assertIn(("src/browser/sim/types.ts", "src/browser/sim/data/resources.ts"), witnesses)
+
     def verdict(self):
         with redirect_stderr(io.StringIO()):
             return self.module.check(self.root, "tokens")
+
+    def test_missing_import_cannot_produce_a_token_pass(self):
+        self.write("view/main.ts", 'import { catalog } from "../data/missing.js";')
+        with self.assertRaises(self.module.QualityError):
+            self.verdict()
+
+    def test_old_direct_extractor_request_cannot_omit_dependency_evidence(self):
+        result = subprocess.run([shutil.which("node"), "--input-type=module", "-e",
+                                 "import {inspectSources} from './scripts/styleguide_source.mjs';"
+                                 "inspectSources({files:[]});"], cwd=ROOT, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("source request protocol", result.stderr.decode("utf-8"))
+
+    def test_operation_cannot_hide_missing_import_acquisition(self):
+        self.write("view/main.ts", 'import { x } from "../data/missing.js";')
+        call = self.module._call
+
+        def inspector(root, operation, *args):
+            if operation == "focus":
+                return {"schema": 1, "operation": "focus", "inventory": ["view/main.ts"],
+                        "unresolved": [], "findings": [], "result": True}
+            return call(root, operation, *args)
+
+        with patch.object(self.module, "_call", side_effect=inspector):
+            with self.assertRaises(self.module.QualityError):
+                self.module.check(self.root, "focus")
+
+    def test_acquired_graph_is_separate_complete_and_never_executed(self):
+        self.write("foundations/part_map.md", "## browser-view\n\n- **Files:** view/**\n"
+                   "\n## other\n\n- **Files:** foundations/**\n  data/**\n")
+        self.write("view/main.ts", 'import { x, type T } from "../data/a.js";')
+        self.write("view/unloaded.css", 'a{color:var(--text)}')
+        self.write("data/a.ts", 'import type { T } from "./b.js";\n'
+                   'export { y } from "./b.js";\n'
+                   'throw new Error("must not execute"); export const color = "red";')
+        self.write("data/b.ts", 'export { x } from "./a.js"; export type T = string;')
+        facts = self.facts()
+        self.assertEqual([f["path"] for f in facts["files"]],
+                         ["view/main.ts", "view/unloaded.css"])
+        self.assertEqual([f["path"] for f in facts["dependencies"]], ["data/a.ts", "data/b.ts"])
+        self.assertEqual([(i["path"], i["kind"], i["target"]) for i in facts["imports"]],
+                         [("view/main.ts", "import-mixed", "data/a.ts"),
+                          ("data/a.ts", "import-type", "data/b.ts"),
+                          ("data/a.ts", "export-runtime", "data/b.ts"),
+                          ("data/b.ts", "export-runtime", "data/a.ts")])
+        self.assertEqual(facts["unresolved"], [])
+        self.assertIs(self.verdict(), True)
 
     def test_new_map_owned_path_is_inspected_without_fixed_directory_list(self):
         self.write("view/unloaded/deep.css", "a { color: red; }")
@@ -389,7 +708,7 @@ el.style.opacity = '0'; el.style.width = '12px';
             with self.subTest(path=path, source=source):
                 self.write(path, source)
                 report = self.facts()
-                self.assertEqual(report["schema"], 2)
+                self.assertEqual(report["schema"], 3)
                 declaration = report["files"][0]["declarations"][0]
                 self.assertEqual((declaration["value"], declaration["priority"], declaration["line"]),
                                  ("var(--text)", "important", line))
