@@ -133,6 +133,83 @@ try {
         self.assertEqual(answer["value"], "#f4f4f5")
         self.assertEqual([origin["name"] for origin in answer["origins"]], ["text-strong"])
 
+    def test_script_reference_does_not_certify_a_stylesheet_load(self):
+        governed, page, output = self.generated_fixture()
+        for name in [page, output + "/index.html"]:
+            text = (self.root / name).read_bytes().decode("utf-8")
+            self.write(name, text.replace('<link rel="stylesheet" href="/design-tokens.css">',
+                       '<script type="module" src="/design-tokens.css"></script>'))
+        report = self.inspect(self.facts(governed), [self.query(page, states=["focus-visible"])])
+        self.assertNotIn("error", report)
+        self.assertEqual(report["result"]["pages"][0]["origins"]["declarations"], [])
+        self.assertEqual(report["answers"][0]["origins"], [])
+
+    def test_unproved_stylesheet_types_refuse_page_and_query_origins(self):
+        for attribute in ('type="text/plain"', 'TYPE="text/plain"', 'type="application/json"'):
+            with self.subTest(attribute=attribute):
+                governed, page, output = self.generated_fixture()
+                for name in [page, output + "/index.html"]:
+                    text = (self.root / name).read_bytes().decode("utf-8")
+                    self.write(name, text.replace('href="/design-tokens.css"',
+                               f'href="/design-tokens.css" {attribute}'))
+                report = self.inspect(self.facts(governed), [self.query(page, states=["focus-visible"])])
+                self.assertNotIn("error", report)
+                origins = report["result"]["pages"][0]["origins"]
+                self.assertEqual(origins["status"], "unresolved")
+                self.assertEqual(origins["declarations"], [])
+                self.assertTrue(any("stylesheet type" in item["reason"] for item in origins["unresolved"]))
+                self.assertEqual(report["answers"][0]["status"], "unresolved")
+                self.assertEqual(report["answers"][0]["origins"], [])
+
+    def test_inert_or_conditional_html_context_refuses_generated_origins(self):
+        for container in ("template", "TEMPLATE", "noscript"):
+            with self.subTest(container=container):
+                governed, page, output = self.generated_fixture()
+                for name in [page, output + "/index.html"]:
+                    text = (self.root / name).read_bytes().decode("utf-8")
+                    link = '<link rel="stylesheet" href="/design-tokens.css">'
+                    self.write(name, text.replace(link, f'<{container}>{link}</{container}>'))
+                report = self.inspect(self.facts(governed), [self.query(page, states=["focus-visible"])])
+                self.assertNotIn("error", report)
+                origins = report["result"]["pages"][0]["origins"]
+                self.assertEqual(origins["status"], "unresolved")
+                self.assertEqual(origins["declarations"], [])
+                self.assertTrue(any("loading context" in item["reason"] for item in origins["unresolved"]))
+                self.assertEqual(report["answers"][0]["status"], "unresolved")
+                self.assertEqual(report["answers"][0]["origins"], [])
+
+    def test_duplicate_loading_attributes_cannot_hide_a_non_css_type(self):
+        governed, page, output = self.generated_fixture()
+        for name in [page, output + "/index.html"]:
+            text = (self.root / name).read_bytes().decode("utf-8")
+            self.write(name, text.replace('href="/design-tokens.css"',
+                       'href="/design-tokens.css" type="text/plain" TYPE="text/css"'))
+        report = self.inspect(self.facts(governed), [self.query(page, states=["focus-visible"])])
+        self.assertNotIn("error", report)
+        origins = report["result"]["pages"][0]["origins"]
+        self.assertEqual(origins["status"], "unresolved")
+        self.assertEqual(origins["declarations"], [])
+        self.assertEqual(report["answers"][0]["status"], "unresolved")
+        self.assertEqual(report["answers"][0]["origins"], [])
+
+    def test_explicit_css_type_preserves_a_generated_stylesheet_origin(self):
+        for attribute in ('type="text/css"', 'type=""'):
+            with self.subTest(attribute=attribute):
+                governed, page, output = self.generated_fixture()
+                for name in [page, output + "/index.html"]:
+                    text = (self.root / name).read_bytes().decode("utf-8")
+                    self.write(name, text.replace('href="/design-tokens.css"',
+                               f'href="/design-tokens.css" {attribute}'))
+                report = self.inspect(self.facts(governed), [self.query(page, states=["focus-visible"])])
+                self.assertNotIn("error", report)
+                origins = report["result"]["pages"][0]["origins"]
+                self.assertEqual(origins["status"], "certified")
+                self.assertTrue(origins["declarations"])
+                self.assertTrue(all(edge["kind"] == "style" for origin in origins["declarations"]
+                                    for edge in origin["loading"]))
+                self.assertEqual(report["answers"][0]["status"], "resolved")
+                self.assertEqual([origin["name"] for origin in report["answers"][0]["origins"]], ["focus"])
+
     def test_missing_changed_output_token_producer_and_loading_refuse_certificate(self):
         for mutation in ("delete-output", "output", "token", "producer", "caller", "loading", "escape"):
             with self.subTest(mutation=mutation):

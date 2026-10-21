@@ -626,15 +626,33 @@ function proveOrigins(source, sources, root) {
     const loading = [];
     function visit(node) {
       if (node.kind === "element") {
+        const name = node.name.toLowerCase();
+        // These contents need browser context that this finite proof does not model.
+        if (["template", "noscript"].includes(name))
+          throw new Error(`Output ${name} loading context cannot be certified`);
         const attrs = Object.fromEntries(
-          node.attrs.map((attribute) => [attribute.name, attribute.value]),
+          node.attrs.map((attribute) => [
+            attribute.name.toLowerCase(),
+            attribute.value,
+          ]),
         );
-        if (node.name === "base")
+        if (
+          ["link", "script"].includes(name) &&
+          Object.keys(attrs).length !== node.attrs.length
+        )
+          throw new Error(
+            "Duplicate output loading attributes are unsupported",
+          );
+        if (name === "base")
           throw new Error("Output base URL cannot certify loading");
-        const style =
-          node.name === "link" &&
-          attrs.rel?.split(/\s+/).includes("stylesheet");
-        const script = node.name === "script" && attrs.src;
+        const relations = attrs.rel?.toLowerCase().split(/\s+/) ?? [];
+        const style = name === "link" && relations.includes("stylesheet");
+        const script = name === "script" && attrs.src;
+        if (
+          style &&
+          !["", "text/css"].includes((attrs.type ?? "").toLowerCase())
+        )
+          throw new Error("Output stylesheet type cannot certify CSS loading");
         if (style || script) {
           const reference = style ? attrs.href : attrs.src;
           const target = outputReference(reference, documentPath, output);
@@ -653,7 +671,7 @@ function proveOrigins(source, sources, root) {
             style &&
             (!styles.has(target) ||
               "disabled" in attrs ||
-              attrs.rel.includes("alternate"))
+              relations.includes("alternate"))
           )
             throw new Error(
               "Output stylesheet has no recognized producer/loading relation",
@@ -677,7 +695,7 @@ function proveOrigins(source, sources, root) {
     }
     visit(htmlParsers.html.parse(documentBytes.toString("utf8")));
     const generatedLoading = loading.filter(
-      (edge) => edge.target === generatedPath,
+      (edge) => edge.kind === "style" && edge.target === generatedPath,
     );
     result.declarations = generatedLoading.length
       ? records.map((record, index) =>
