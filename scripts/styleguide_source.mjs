@@ -1303,73 +1303,239 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
       else attribute(name, property.initializer, property);
     }
   }
-  // Recognize the actual generic SVG helper by its AST operations, not its name.
-  const helpers = new Map(),
+  // A closed local allocation/iteration/return family. Captures refer to lexical
+  // symbols, not spelling; nothing is executed and an uncertain shape falls
+  // back to the ordinary unresolved attribute write.
+  const svgCalls = new Set(),
     genericWrites = new Set();
-  for (const fn of all.filter(
-    (n) => ts.isFunctionDeclaration(n) && n.name && n.body,
-  )) {
-    const loops = all.filter(
-      (n) =>
-        ts.isForOfStatement(n) &&
-        n.getStart() > fn.body.getStart() &&
-        n.end < fn.end,
+  const localSymbol = (node) => {
+    if (!node || !ts.isIdentifier(node)) return null;
+    const parent = node.parent;
+    if (ts.isExportSpecifier(parent))
+      return checker.getExportSpecifierLocalTargetSymbol(parent);
+    if (ts.isShorthandPropertyAssignment(parent))
+      return checker.getShorthandAssignmentValueSymbol(parent);
+    return checker.getSymbolAtLocation(node);
+  };
+  const sameBinding = (node, declaration) =>
+    node &&
+    ts.isIdentifier(node) &&
+    localSymbol(node) &&
+    localSymbol(node) === localSymbol(declaration);
+  const builtin = (node, name) =>
+    node &&
+    ts.isIdentifier(node) &&
+    node.text === name &&
+    !localSymbol(node)?.declarations?.length;
+  const directCall = (node) =>
+    ts.isCallExpression(node.parent) &&
+    node.parent.expression === node &&
+    !node.parent.questionDotToken;
+  // A builtin may be called at supported sites, but never retained, replaced,
+  // reflected on or reached through a global-object alias in this proof.
+  const svgBuiltinsIntact = all.every((node) => {
+    if (["prototype", "__proto__", "constructor"].includes(member(node)))
+      return false;
+    if (!ts.isIdentifier(node)) return true;
+    const parent = node.parent;
+    if (
+      (ts.isPropertyAccessExpression(parent) && parent.name === node) ||
+      ((ts.isPropertyAssignment(parent) || ts.isMethodDeclaration(parent)) &&
+        parent.name === node)
+    )
+      return true;
+    if (
+      ["eval", "Function", "Reflect", "globalThis", "window", "self"].includes(
+        node.text,
+      )
+    )
+      return false;
+    if (!["Object", "document", "String"].includes(node.text)) return true;
+    if (localSymbol(node)?.declarations?.length) return false;
+    if (node.text === "String") return directCall(node);
+    return (
+      ts.isPropertyAccessExpression(parent) &&
+      parent.expression === node &&
+      !parent.questionDotToken &&
+      directCall(parent) &&
+      (node.text === "Object"
+        ? ["entries", "keys", "values"].includes(parent.name.text)
+        : ["createElement", "createElementNS", "createTextNode"].includes(
+            parent.name.text,
+          ))
     );
-    for (const loop of loops) {
-      const entries = loop.expression;
-      if (
-        !ts.isCallExpression(entries) ||
-        entries.expression.getText(source) !== "Object.entries" ||
-        entries.arguments.length !== 1 ||
-        !ts.isVariableDeclarationList(loop.initializer)
+  });
+  for (const fn of source.statements.filter(
+    (node) => ts.isFunctionDeclaration(node) && node.name && node.body,
+  )) {
+    if (
+      !svgBuiltinsIntact ||
+      fn.modifiers?.length ||
+      fn.asteriskToken ||
+      fn.parameters.length !== 2 ||
+      fn.body.statements.length !== 3 ||
+      fn.parameters.some(
+        (parameter) =>
+          !ts.isIdentifier(parameter.name) ||
+          parameter.initializer ||
+          parameter.dotDotDotToken ||
+          parameter.questionToken,
       )
-        continue;
-      const names = loop.initializer.declarations[0]?.name;
-      if (
-        !names ||
-        !ts.isArrayBindingPattern(names) ||
-        names.elements.length !== 2
+    )
+      continue;
+    const [allocation, loop, returned] = fn.body.statements;
+    if (
+      !ts.isVariableStatement(allocation) ||
+      !(allocation.declarationList.flags & ts.NodeFlags.Const) ||
+      allocation.declarationList.declarations.length !== 1 ||
+      !ts.isForOfStatement(loop) ||
+      loop.awaitModifier ||
+      !ts.isReturnStatement(returned)
+    )
+      continue;
+    const variable = allocation.declarationList.declarations[0];
+    const factory = variable.initializer;
+    const entries = loop.expression;
+    if (
+      !ts.isIdentifier(variable.name) ||
+      !factory ||
+      !ts.isCallExpression(factory) ||
+      factory.questionDotToken ||
+      factory.arguments.length !== 2 ||
+      !ts.isPropertyAccessExpression(factory.expression) ||
+      factory.expression.questionDotToken ||
+      !builtin(factory.expression.expression, "document") ||
+      factory.expression.name.text !== "createElementNS" ||
+      namespace(factory) !== "svg" ||
+      !sameBinding(factory.arguments[1], fn.parameters[0].name) ||
+      !sameBinding(returned.expression, variable.name) ||
+      !ts.isCallExpression(entries) ||
+      entries.questionDotToken ||
+      !ts.isPropertyAccessExpression(entries.expression) ||
+      entries.expression.questionDotToken ||
+      !builtin(entries.expression.expression, "Object") ||
+      entries.expression.name.text !== "entries" ||
+      entries.arguments.length !== 1 ||
+      !sameBinding(entries.arguments[0], fn.parameters[1].name) ||
+      !ts.isVariableDeclarationList(loop.initializer) ||
+      !(loop.initializer.flags & ts.NodeFlags.Const) ||
+      loop.initializer.declarations.length !== 1
+    )
+      continue;
+    const pair = loop.initializer.declarations[0];
+    if (
+      pair.initializer ||
+      !ts.isArrayBindingPattern(pair.name) ||
+      pair.name.elements.length !== 2 ||
+      pair.name.elements.some(
+        (element) =>
+          !ts.isBindingElement(element) ||
+          !ts.isIdentifier(element.name) ||
+          element.initializer ||
+          element.dotDotDotToken ||
+          element.propertyName,
       )
-        continue;
-      const statement =
-        ts.isBlock(loop.statement) && loop.statement.statements.length === 1
-          ? loop.statement.statements[0]
-          : loop.statement;
-      const call = ts.isExpressionStatement(statement)
-        ? statement.expression
-        : null;
-      if (
-        !call ||
-        !ts.isCallExpression(call) ||
-        member(call.expression) !== "setAttribute" ||
-        call.arguments.length !== 2 ||
-        call.arguments[0].getText(source) !==
-          names.elements[0].name?.getText(source) ||
-        !ts.isCallExpression(call.arguments[1]) ||
-        call.arguments[1].expression.getText(source) !== "String" ||
-        call.arguments[1].arguments.length !== 1 ||
-        call.arguments[1].arguments[0].getText(source) !==
-          names.elements[1].name?.getText(source)
+    )
+      continue;
+    const [key, value] = pair.name.elements;
+    const statement =
+      ts.isBlock(loop.statement) && loop.statement.statements.length === 1
+        ? loop.statement.statements[0]
+        : loop.statement;
+    const call = ts.isExpressionStatement(statement)
+      ? statement.expression
+      : null;
+    if (
+      !call ||
+      !ts.isCallExpression(call) ||
+      call.questionDotToken ||
+      !ts.isPropertyAccessExpression(call.expression) ||
+      call.expression.questionDotToken ||
+      call.expression.name.text !== "setAttribute" ||
+      !sameBinding(call.expression.expression, variable.name) ||
+      call.arguments.length !== 2 ||
+      !sameBinding(call.arguments[0], key.name)
+    )
+      continue;
+    const forwarded = call.arguments[1];
+    if (
+      !sameBinding(forwarded, value.name) &&
+      !(
+        ts.isCallExpression(forwarded) &&
+        !forwarded.questionDotToken &&
+        builtin(forwarded.expression, "String") &&
+        forwarded.arguments.length === 1 &&
+        sameBinding(forwarded.arguments[0], value.name)
       )
-        continue;
-      const index = fn.parameters.findIndex(
-        (p) => p.name.getText(source) === entries.arguments[0].getText(source),
+    )
+      continue;
+    const identity = localSymbol(fn.name);
+    if (!identity || identity.declarations?.length !== 1) continue;
+    const uses = all.filter(
+      (node) => ts.isIdentifier(node) && localSymbol(node) === identity,
+    );
+    if (
+      uses.some(
+        (node) =>
+          node !== fn.name &&
+          (!directCall(node) ||
+            node.parent.arguments.length !== 2 ||
+            node.parent.arguments.some((argument) =>
+              ts.isSpreadElement(argument),
+            )),
+      )
+    )
+      continue;
+    for (const use of uses) if (use !== fn.name) svgCalls.add(use.parent);
+    genericWrites.add(call);
+  }
+  function svgProperties(object, anchor) {
+    // Only inline objects have a complete local entry inventory without proving
+    // mutations, aliases or getter effects on a separately retained object.
+    if (!object || !ts.isObjectLiteralExpression(object)) {
+      diagnostic(
+        facts,
+        "unresolved",
+        lineOf(anchor),
+        "unresolved SVG attribute object",
       );
-      if (index >= 0) {
-        helpers.set(fn.name.text, index);
-        genericWrites.add(call);
-        if (
-          fn.modifiers?.some(
-            (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
-          )
-        ) {
-          diagnostic(
-            facts,
-            "unresolved",
-            lineOf(fn),
-            "exported generic attribute helper needs cross-file call resolution",
-          );
-        }
+      return;
+    }
+    for (const property of object.properties) {
+      if (
+        (!ts.isPropertyAssignment(property) &&
+          !ts.isShorthandPropertyAssignment(property)) ||
+        ts.isComputedPropertyName(property.name) ||
+        property.objectAssignmentInitializer
+      ) {
+        diagnostic(
+          facts,
+          "unresolved",
+          lineOf(property),
+          "unsupported SVG attribute object member",
+        );
+        continue;
+      }
+      const name = property.name.text;
+      const expression = ts.isShorthandPropertyAssignment(property)
+        ? property.name
+        : property.initializer;
+      // SVG attributes are case sensitive. A differently cased presentation
+      // spelling is an inert attribute, not a lowercased CSS declaration.
+      if (appearanceAttribute.test(name.toLowerCase())) {
+        handled.add(property);
+        attribute(name, expression, property, "svg");
+      } else if (
+        !/^(?:viewBox|points|d|x|y|x1|x2|y1|y2|cx|cy|r|rx|ry|width|height|class|id|role|href|preserveAspectRatio|(?:data|aria)-[\w-]+)$/.test(
+          name,
+        )
+      ) {
+        diagnostic(
+          facts,
+          "unresolved",
+          lineOf(property),
+          "unsupported SVG attribute semantics",
+        );
       }
     }
   }
@@ -1450,12 +1616,8 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
       const name = member(node.expression),
         target = receiver(node.expression);
       if (genericWrites.has(node)) continue;
-      if (helpers.has(node.expression.getText(source))) {
-        objectProperties(
-          node.arguments[helpers.get(node.expression.getText(source))],
-          false,
-          node,
-        );
+      if (svgCalls.has(node)) {
+        svgProperties(node.arguments[1], node);
       } else if (
         ["setAttribute", "setAttributeNS", "toggleAttribute"].includes(name)
       ) {
@@ -1602,19 +1764,6 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
       /<[a-zA-Z][^>]*>|[.#\w\]]\s*\{\s*[\w-]+\s*:/.test(node.head.text)
     ) {
       embedded(node, /^\s*</.test(node.head.text) ? "html" : "css");
-    }
-    if (
-      ts.isIdentifier(node) &&
-      helpers.has(node.text) &&
-      !(ts.isFunctionDeclaration(node.parent) && node.parent.name === node) &&
-      !(ts.isCallExpression(node.parent) && node.parent.expression === node)
-    ) {
-      diagnostic(
-        facts,
-        "unresolved",
-        lineOf(node),
-        "generic attribute helper escapes direct local calls",
-      );
     }
     if (
       handled.has(node) ||

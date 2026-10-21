@@ -1197,6 +1197,145 @@ el.style.opacity = '0'; el.style.width = '12px';
         with self.assertRaises(self.module.QualityError):
             self.verdict()
 
+    def svg_helper(self, forwarding="value"):
+        return ("function makeShape(tag, attributes) {\n"
+                " const node = document.createElementNS('http://www.w3.org/2000/svg', tag);\n"
+                " for (const [key, value] of Object.entries(attributes))\n"
+                f"   node.setAttribute(key, {forwarding});\n"
+                " return node;\n}\n")
+
+    def test_svg_helper_direct_and_string_forwarding_preserve_original_values(self):
+        for forwarding in ["value", "String(value)"]:
+            with self.subTest(forwarding=forwarding):
+                source = self.svg_helper(forwarding) + (
+                    "const points = '1,2 3,4 5,6';\n"
+                    "const fill = 'var(--text)';\n"
+                    "makeShape('polygon', {points, fill, class: theme.className,\n"
+                    " 'aria-label': theme.label, width: size, height: size});\n")
+                self.write("view/p.ts", source)
+                self.assertIs(self.verdict(), True)
+                facts = self.facts()["files"][0]
+                self.assertEqual(facts["source"], (self.root / "view/p.ts").read_bytes().decode("utf-8"))
+                self.assertEqual([(d["line"], d["property"], d["value"])
+                                  for d in facts["declarations"]], [(8, "fill", "var(--text)")])
+                self.assertIn((4, "node.setAttribute(key, " + forwarding + ")"),
+                              [(s["line"], s["expression"]) for s in facts["sites"]])
+
+    def test_svg_helper_shorthand_appearance_and_namespace_are_not_geometry(self):
+        for member, prefix, expected in [
+                ("fill", "const fill = 'red';", False),
+                ("opacity", "const opacity = '.4';", False),
+                ("points", "const points = '1,2 3,4';", True),
+                ("'stroke-width': '2'", "", False),
+                ("'letter-spacing': '2px'", "", False),
+                ("FILL: 'red'", "", True),
+                ("width: '12px', height: '4rem'", "", True),
+                ("style: 'color: red'", "", False)]:
+            with self.subTest(member=member):
+                self.write("view/p.ts", self.svg_helper() + prefix +
+                           "\nmakeShape('polygon', {" + member + "});")
+                self.assertIs(self.verdict(), expected)
+
+    def test_svg_helper_uncertain_members_and_appearance_never_pass(self):
+        for argument in ["{fill}", "{fill: palette.value}", "{[key]: 'currentColor'}",
+                         "{...attributes}", "{get fill() { return 'red'; }}",
+                         "{customAttribute: unknown}", "{onclick: code}",
+                         "attributes"]:
+            with self.subTest(argument=argument):
+                self.write("view/p.ts", self.svg_helper() + "makeShape('g', " + argument + ");")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_svg_helper_changed_bindings_receiver_or_iteration_never_pass(self):
+        source = self.svg_helper("String(value)")
+        mutations = [
+            source.replace("key, String(value)", "value, String(key)"),
+            source.replace("node.setAttribute", "other.setAttribute"),
+            source.replace("Object.entries(attributes)", "Object.entries(other)"),
+            source.replace("const [key, value]", "const [key, value = 'red']"),
+            source.replace("for (const", "for await (const"),
+            source.replace("String(value)", "String('red')"),
+            source.replace("return node;", "consume(node); return node;"),
+            source.replace("return node;", "return other;"),
+            source.replace("const node", "let node"),
+            source.replace("tag, attributes)", "tag, attributes = external)"),
+            source.replace("http://www.w3.org/2000/svg", "http://www.w3.org/1999/xhtml"),
+            source.replace("node.setAttribute(key, String(value));",
+                           "{ const value = 'red'; node.setAttribute(key, String(value)); }"),
+            "export " + source,
+            source + "const retained = makeShape;",
+            source + "consume({makeShape});",
+            source + "export {makeShape};",
+            source + "makeShape = replacement;",
+            source + "makeShape(...args);",
+            source + "makeShape('g', {}, extra);",
+        ]
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.write("view/p.ts", mutation + "makeShape('g', {class: 'sample'});")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_svg_helper_shadowed_replaced_or_escaped_builtins_never_pass(self):
+        source = self.svg_helper("String(value)")
+        for prefix in ["const Object = external;", "const document = external;",
+                       "function String(value) { return 'red'; }",
+                       "Object.entries = external;", "document.createElementNS = external;",
+                       "const entries = Object.entries;", "consume(document);",
+                       "const global = globalThis;", "const native = String;",
+                       "eval(code);", "Reflect.set(document, key, value);"]:
+            with self.subTest(prefix=prefix):
+                self.write("view/p.ts", prefix + source + "makeShape('g', {});")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_svg_helper_uses_lexical_identity_with_renamed_and_shadowed_names(self):
+        source = self.svg_helper().replace("makeShape", "paint").replace("attributes", "pairs")
+        source = source.replace("node", "result").replace("key", "label").replace("value", "payload")
+        source += "paint('g', {fill: 'var(--text)'});\n"
+        source += "function unrelated(paint) { return paint('g', {}); }\n"
+        source += "const object = {paint: 'label'};"
+        self.write("view/p.ts", source)
+        self.assertIs(self.verdict(), True)
+
+    def test_svg_helper_refuses_indirect_builtin_replacement(self):
+        for prefix in ["({}).constructor.entries = replacement;",
+                       "const native = ''.constructor; consume(native);",
+                       "const prototype = target.__proto__; consume(prototype);"]:
+            with self.subTest(prefix=prefix):
+                self.write("view/p.ts", prefix + self.svg_helper() + "makeShape('g', {});")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_public_token_method_keeps_python_record_dom_and_svg_boundaries(self):
+        checker = importlib.import_module("check_styleguide")
+        cases = [
+            ("python", self.python_template(expression="'<g fill=\"currentColor\"/>'"), 0),
+            ("python", self.python_template(expression="'<g fill=\"red\"/>'"), 1),
+            ("python", self.python_template(expression="unknown"), 2),
+            ("record", self.record_dom() + "new RecordNode().setAttribute('fill', 'currentColor');", 0),
+            ("record", self.record_dom() + "new RecordNode().setAttribute('fill', 'red');", 1),
+            ("record", self.record_dom() + "new RecordNode().setAttribute('fill', unknown);", 2),
+            ("svg", self.svg_helper() + "makeShape('g', {fill: 'currentColor'});", 0),
+            ("svg", self.svg_helper() + "makeShape('g', {fill: 'red'});", 1),
+            ("svg", self.svg_helper() + "makeShape('g', {fill: unknown});", 2),
+        ]
+        for family, source, expected in cases:
+            with self.subTest(family=family, expected=expected):
+                text = source if family == "python" else 'SCRIPT = r"""\n' + source + '\n"""\n'
+                self.write("view/public.py", text)
+                record = self.root / ".runs/result.jsonl"
+                record.unlink(missing_ok=True)
+                with redirect_stderr(io.StringIO()):
+                    actual = checker.main(["--check", "tokens", "--record", str(record)], root=self.root)
+                result = json.loads(record.read_text(encoding="utf-8"))
+                self.assertEqual(actual, expected, result)
+                if expected < 2:
+                    self.assertEqual(result["invariant"], "design-token-use/1")
+                    self.assertEqual(result["verdict"], "pass" if expected == 0 else "fail")
+                else:
+                    self.assertNotEqual(result["verdict"], "pass")
+
     def test_python_embedded_html_is_inspected_without_fixture_exception(self):
         self.write("view/probe.py", '"""red 12px"""\nSVG = \'<path fill="#2b2b2b"/>\'\n')
         self.assertIs(self.verdict(), False)
