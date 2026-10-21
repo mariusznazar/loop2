@@ -378,26 +378,111 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
     constBinding(node.parent, node)
       ? bindingUses(node.parent, transportCall)
       : transportCall(node);
+  function passiveDocumentMember(node) {
+    if (pattern(node, "addEventListener() {}")) return true;
+    const captures = pattern(
+      node,
+      "probe() { const document = { createTextNode: ($text) => new $Text($text) }; }",
+      (n) =>
+        n.body.statements[0].declarationList.declarations[0].initializer
+          .properties[0],
+    );
+    const identity = captures?.get("$Text");
+    const declarations = identity?.declarations;
+    if (declarations?.length !== 1 || !ts.isClassDeclaration(declarations[0]))
+      return false;
+    const textClass = declarations[0];
+    const constructors = textClass.members.filter(ts.isConstructorDeclaration);
+    const inertFields = (owner) =>
+      !owner.modifiers?.length &&
+      owner.members.every(
+        (member) =>
+          !ts.isPropertyDeclaration(member) &&
+          !ts.isClassStaticBlockDeclaration(member) &&
+          !(member.name && ts.isComputedPropertyName(member.name)) &&
+          !["nodeType", "data", "parentNode"].includes(member.name?.text),
+      );
+    if (!inertFields(textClass) || constructors.length !== 1) return false;
+    const heritage =
+      textClass.heritageClauses?.flatMap((clause) => clause.types) ?? [];
+    if (heritage.length > 1) return false;
+    if (heritage.length) {
+      const baseDeclarations = symbol(heritage[0].expression)?.declarations;
+      if (
+        baseDeclarations?.length !== 1 ||
+        !ts.isClassDeclaration(baseDeclarations[0])
+      )
+        return false;
+      const base = baseDeclarations[0];
+      if (
+        base.heritageClauses?.length ||
+        !inertFields(base) ||
+        base.members.some(ts.isConstructorDeclaration) ||
+        !all.every((use) => {
+          if (
+            !ts.isIdentifier(use) ||
+            symbol(use) !== symbol(base.name) ||
+            use === base.name
+          )
+            return true;
+          const parent = use.parent;
+          if (
+            ts.isExpressionWithTypeArguments(parent) &&
+            parent.expression === use
+          )
+            return true;
+          return (
+            ts.isBinaryExpression(parent) &&
+            parent.right === use &&
+            parent.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            member(parent.left) === "Node" &&
+            receiver(parent.left)?.getText(source) === "globalThis" &&
+            !symbol(receiver(parent.left))?.declarations?.length
+          );
+        })
+      )
+        return false;
+    }
+    if (
+      !pattern(
+        constructors[0],
+        `constructor($text) {
+      ${heritage.length ? "super();" : ""}
+      this.nodeType = 3; this.data = String($text); this.parentNode = null;
+    }`,
+      )
+    )
+      return false;
+    // Rebinding or passing out the constructor could replace the matched body.
+    return all.every(
+      (use) =>
+        !ts.isIdentifier(use) ||
+        symbol(use) !== identity ||
+        use === textClass.name ||
+        (ts.isNewExpression(use.parent) && use.parent.expression === use),
+    );
+  }
   function documentUses(factories) {
     const propertyName = (node) => node.name?.text;
     const names = new Set([...factories].map((node) => propertyName(node)));
     const assignments = new Set(
       [...factories].map((node) => node.parent.parent),
     );
+    const passive = new Set();
     for (const assignment of assignments) {
-      const properties = assignment.right.properties;
-      if (
-        properties.some(
-          (node) =>
-            ts.isSpreadAssignment(node) ||
-            ts.isComputedPropertyName(node.name) ||
-            (names.has(propertyName(node)) && !factories.has(node)),
+      const seen = new Set();
+      for (const node of assignment.right.properties) {
+        const name = propertyName(node);
+        if (
+          ts.isSpreadAssignment(node) ||
+          ts.isComputedPropertyName(node.name) ||
+          seen.has(name)
         )
-      )
-        return false;
-      for (const name of names) {
-        if (properties.filter((node) => propertyName(node) === name).length > 1)
           return false;
+        seen.add(name);
+        if (factories.has(node)) continue;
+        if (!passiveDocumentMember(node)) return false;
+        passive.add(name);
       }
     }
     const global = (node, name) =>
@@ -419,8 +504,9 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
       } else if (!global(node, "document")) return true;
       if (write(node)) return assignments.has(parent) && parent.left === node;
       if (receiver(parent) !== node || member(parent) === null) return false;
-      if (!names.has(member(parent))) return true;
-      return direct(parent) && resultUses(parent.parent);
+      if (!direct(parent)) return false;
+      if (names.has(member(parent))) return resultUses(parent.parent);
+      return passive.has(member(parent));
     });
   }
   for (const owner of all.filter(ts.isClassDeclaration)) {

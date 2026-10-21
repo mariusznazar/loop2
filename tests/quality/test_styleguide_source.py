@@ -268,6 +268,72 @@ const instance = new {constructor}(); instance.setAttribute('id', 'safe');
             self.assertTrue(any(d['property'] == 'fill' and d['value'] == '#123456' for d in facts['declarations']))
             self.assertEqual(sum(s['kind'].startswith('record-dom-') for s in facts['sites']), 3)
 
+    def test_record_dom_document_members_cannot_hide_an_implicit_receiver(self):
+        factory = "globalThis.document = { createElement: (tag) => new RecordNode(tag) };"
+        mutations = {
+            'review assigned method mutation': "document.mutate = function () { const instance = this.createElement('div'); instance[unknown] = external; instance.setAttributeNS(null, 'id', 'safe'); }; document.mutate();",
+            'review assigned method escape': "document.mutate = function () { const instance = this.createElement('div'); leak(instance); }; document.mutate();",
+            'safe custom method remains unsupported': "document.safe = function () { const instance = this.createElement('div'); instance.setAttributeNS(null, 'id', 'safe'); }; document.safe();",
+            'inherited method can expose document': 'const doc = document.valueOf(); leak(doc);',
+            'unknown member read': 'leak(document.unknown);',
+            'unproved listener replacement': "document.addEventListener = function () { leak(this); }; document.addEventListener();",
+            'unproved text factory replacement': "document.createTextNode = function () { return this.createElement('div'); }; leak(document.createTextNode());",
+        }
+        for label, use in mutations.items():
+            with self.subTest(case=label):
+                self.write('view/document-member.py', 'SCRIPT = r"""\n' + self.record_dom() + factory + use + '\n"""\n')
+                facts = self.facts()['files'][0]
+                self.assertTrue(facts['unresolved'], label)
+                self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']), label)
+        members = [
+            "mutate() { const instance = this.createElement('div'); instance[unknown] = external; instance.setAttributeNS(null, 'id', 'safe'); }",
+            "addEventListener() { leak(this); }",
+            "get createTextNode() { return this.createElement; }",
+            "createTextNode: (text) => new RecordNode(text)",
+            "valueOf() { return this; }",
+            "unknown: {}",
+        ]
+        for member in members:
+            with self.subTest(member=member):
+                self.write('view/document-member.py', 'SCRIPT = r"""\n' + self.record_dom() +
+                           factory.replace(' };', ', ' + member + ' };') + '\n"""\n')
+                facts = self.facts()['files'][0]
+                self.assertTrue(facts['unresolved'])
+                self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']))
+
+    def test_record_dom_only_proved_text_factory_and_empty_listener_are_supported(self):
+        for renamed in [False, True]:
+            element, text_class, parameter, base = (('Vessel', 'Glyph', 'value', 'Parent') if renamed
+                                                   else ('RecordNode', 'TextNode', 'text', 'Base'))
+            for inherited in [False, True]:
+                with self.subTest(renamed=renamed, inherited=inherited):
+                    text_source = f"""
+class {base} {{}}
+class {text_class}{' extends ' + base if inherited else ''} {{
+  constructor({parameter}) {{ {'super();' if inherited else ''} this.nodeType = 3; this.data = String({parameter}); this.parentNode = null; }}
+}}
+globalThis.document = {{
+  createElement: (tag) => new {element}(tag),
+  createTextNode: ({parameter}) => new {text_class}({parameter}),
+  addEventListener() {{}},
+}};
+document.createTextNode('safe'); document.addEventListener();
+"""
+                    source = self.record_dom(renamed) + text_source
+                    self.write('view/document-supported.py', 'SCRIPT = r"""\n' + source + '\n"""\n')
+                    facts = self.facts()['files'][0]
+                    self.assertEqual(facts['unresolved'], [])
+                    self.assertEqual(facts['violations'], [])
+                    self.assertEqual(sum(s['kind'].startswith('record-dom-') for s in facts['sites']), 3)
+                    for changed in [source.replace('this.nodeType = 3;', 'external(); this.nodeType = 3;'),
+                                    source + f'{text_class} = external;',
+                                    source.replace(f'class {base} {{}}', f'class {base} {{ constructor() {{ external(); }} }}') if inherited else source + f'leak({text_class});',
+                                    source + f'leak({base if inherited else text_class});']:
+                        self.write('view/document-supported.py', 'SCRIPT = r"""\n' + changed + '\n"""\n')
+                        facts = self.facts()['files'][0]
+                        self.assertTrue(facts['unresolved'])
+                        self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']))
+
     def test_record_dom_all_callers_still_expose_appearance_values_and_uncertainty(self):
         callers = [
             ("new RecordNode().setAttribute('fill', '#123456');", 'fill', '#123456'),
