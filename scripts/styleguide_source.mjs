@@ -191,6 +191,528 @@ function extractHtml(
   }
 }
 
+/** Prove only the local record transports below, never execute a DOM stand-in. */
+function recordDOMProof(ts, source, checker, all, member, receiver) {
+  const proven = new Map();
+  const children = (node) => {
+    const result = [];
+    ts.forEachChild(node, (child) => {
+      result.push(child);
+    });
+    return result;
+  };
+  const inside = (node, owner) =>
+    node.pos >= owner.pos && node.end <= owner.end;
+  const symbol = (node) =>
+    ts.isShorthandPropertyAssignment(node.parent)
+      ? checker.getShorthandAssignmentValueSymbol(node.parent)
+      : checker.getSymbolAtLocation(node);
+  // These are finite AST patterns. $ identifiers capture lexical symbols, so
+  // renaming a parameter is allowed but changing its binding is not. Member
+  // names, operators, calls, arities and all side effects must match exactly.
+  function pattern(node, code, select = (n) => n) {
+    const template = select(
+      ts.createSourceFile(
+        "record-pattern.ts",
+        `class Proof { ${code} }`,
+        ts.ScriptTarget.Latest,
+        true,
+        ts.ScriptKind.TS,
+      ).statements[0].members[0],
+    );
+    const captures = new Map();
+    function same(actual, expected) {
+      if (actual.kind !== expected.kind) return false;
+      if (ts.isIdentifier(expected)) {
+        if (expected.text.startsWith("$")) {
+          const identity = symbol(actual);
+          if (!identity) return false;
+          if (captures.has(expected.text))
+            return captures.get(expected.text) === identity;
+          captures.set(expected.text, identity);
+          return true;
+        }
+        if (actual.text !== expected.text) return false;
+        if (
+          ["String", "Proxy", "undefined"].includes(expected.text) &&
+          symbol(actual)?.declarations?.length
+        )
+          return false;
+      } else if ("text" in expected && actual.text !== expected.text)
+        return false;
+      if (
+        ts.isVariableDeclarationList(expected) &&
+        actual.flags !== expected.flags
+      )
+        return false;
+      const a = children(actual),
+        b = children(expected);
+      return a.length === b.length && a.every((child, i) => same(child, b[i]));
+    }
+    return same(node, template) ? captures : null;
+  }
+  const stored = [
+    "setAttribute($name, $value) { this.attributes[String($name)] = String($value); }",
+    "setAttribute($name, $value) { this.attributes[String($name).toLowerCase()] = String($value); }",
+  ];
+  const toggles = [
+    "toggleAttribute($name, $force) { if ($force === false || ($force === undefined && this.hasAttribute($name))) this.removeAttribute($name); else this.setAttribute($name, ''); }",
+    "toggleAttribute($name, $force) { const $on = $force === undefined ? !this.hasAttribute($name) : !!$force; if ($on) this.setAttribute($name, ''); else this.removeAttribute($name); return $on; }",
+  ];
+  const get = `get($target, $prop) {
+    if ($prop in $target || typeof $prop === 'symbol') return $target[$prop];
+    const $name = $map[$prop] || String($prop).toLowerCase();
+    if ($name in $target.attributes) return $target.attributes[$name];
+    return undefined;
+  }`;
+  const sets = [
+    `set($target, $prop, $value) {
+      if ($prop in $target || typeof $prop === 'symbol') { $target[$prop] = $value; return true; }
+      if (typeof $value === 'string' || typeof $value === 'number' || typeof $value === 'boolean') {
+        $target.attributes[$map[$prop] || String($prop).toLowerCase()] = String($value);
+        return true;
+      }
+      $target[$prop] = $value; return true;
+    }`,
+    `set($target, $prop, $value) {
+      if ($prop in $target || typeof $prop === 'symbol') { $target[$prop] = $value; return true; }
+      if (typeof $value === 'string' || typeof $value === 'number' || typeof $value === 'boolean') {
+        const $name = $map[$prop] || String($prop).toLowerCase();
+        if ($value === false) delete $target.attributes[$name]; else $target.attributes[$name] = $value === true ? '' : String($value);
+        return true;
+      }
+      $target[$prop] = $value; return true;
+    }`,
+  ];
+  const write = (node) =>
+    node.parent &&
+    ts.isBinaryExpression(node.parent) &&
+    node.parent.left === node &&
+    node.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+    node.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+  const direct = (node) =>
+    ts.isCallExpression(node.parent) && node.parent.expression === node;
+  const emptyObject = (node) =>
+    ts.isObjectLiteralExpression(node) && node.properties.length === 0;
+  const ownAssignment = (node, name) =>
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+    member(node.left) === name &&
+    receiver(node.left)?.kind === ts.SyntaxKind.ThisKeyword;
+  const sensitive = new Set([
+    "setAttribute",
+    "setAttributeNS",
+    "toggleAttribute",
+    "hasAttribute",
+    "removeAttribute",
+    "setProperty",
+    "removeProperty",
+  ]);
+  for (const owner of all.filter(ts.isClassDeclaration)) {
+    const constructor = owner.members.find(ts.isConstructorDeclaration);
+    if (
+      !constructor?.body ||
+      !owner.name ||
+      owner.modifiers?.length ||
+      owner.members.some(ts.isClassStaticBlockDeclaration)
+    )
+      continue;
+    const statements = constructor.body.statements;
+    const assignments = statements
+      .filter(ts.isExpressionStatement)
+      .map((n) => n.expression);
+    const style = assignments.filter((n) => ownAssignment(n, "style"));
+    const attributes = assignments.filter((n) =>
+      ownAssignment(n, "attributes"),
+    );
+    if (
+      style.length !== 1 ||
+      attributes.length !== 1 ||
+      !emptyObject(attributes[0].right)
+    )
+      continue;
+    const object = style[0].right;
+    if (
+      !ts.isObjectLiteralExpression(object) ||
+      object.properties.length !== 2 ||
+      !object.properties.every(
+        (n) =>
+          ts.isMethodDeclaration(n) &&
+          ["setProperty", "removeProperty"].includes(n.name.getText(source)) &&
+          !n.modifiers?.length &&
+          !n.asteriskToken &&
+          !n.questionToken &&
+          n.parameters.length === 0 &&
+          n.body?.statements.length === 0,
+      ) ||
+      new Set(object.properties.map((n) => n.name.getText(source))).size !== 2
+    )
+      continue;
+    // The optional dataset proxy closes over this record. Its callbacks and
+    // key conversion must also be the finite scalar transport, not arbitrary code.
+    const datasets = assignments.filter((n) => ownAssignment(n, "dataset"));
+    let datasetProxy = null;
+    if (datasets.length > 1) continue;
+    if (datasets.length === 1 && !emptyObject(datasets[0].right)) {
+      const dataset = pattern(
+        datasets[0],
+        `probe() {
+        this.dataset = new Proxy({}, {
+          get: ($gt, $gp) => $self.attributes['data-' + $kebab($gp)],
+          set: ($st, $sp, $value) => { $self.attributes['data-' + $kebab($sp)] = String($value); return true; },
+          has: ($ht, $hp) => ('data-' + $kebab($hp)) in $self.attributes,
+        });
+      }`,
+        (n) => n.body.statements[0].expression,
+      );
+      if (!dataset) continue;
+      const alias = dataset.get("$self")?.declarations;
+      const convert = dataset.get("$kebab")?.declarations;
+      if (
+        alias?.length !== 1 ||
+        !ts.isVariableDeclaration(alias[0]) ||
+        !(alias[0].parent.flags & ts.NodeFlags.Const) ||
+        alias[0].initializer?.kind !== ts.SyntaxKind.ThisKeyword ||
+        convert?.length !== 1 ||
+        !ts.isVariableDeclaration(convert[0]) ||
+        !(convert[0].parent.flags & ts.NodeFlags.Const) ||
+        !convert[0].initializer ||
+        !pattern(
+          convert[0].initializer,
+          `probe() { const converter = ($s) => String($s).replace(/[A-Z]/g, ($c) => '-' + $c.toLowerCase()); }`,
+          (n) =>
+            n.body.statements[0].declarationList.declarations[0].initializer,
+        )
+      )
+        continue;
+      if (
+        all.some(
+          (n) =>
+            ts.isIdentifier(n) &&
+            symbol(n) === dataset.get("$kebab") &&
+            n !== convert[0].name &&
+            !direct(n),
+        )
+      )
+        continue;
+      datasetProxy = datasets[0].right;
+    }
+    const method = (name) => {
+      const found = owner.members.filter(
+        (n) => n.name?.getText(source) === name,
+      );
+      return found.length === 1 && ts.isMethodDeclaration(found[0])
+        ? found[0]
+        : null;
+    };
+    const storage = method("setAttribute");
+    if (!storage || !stored.some((code) => pattern(storage, code))) continue;
+    const forwards = [];
+    let valid = true;
+    for (const name of ["setAttributeNS", "toggleAttribute"]) {
+      const candidate = method(name);
+      if (!candidate) continue;
+      const options =
+        name === "toggleAttribute"
+          ? toggles
+          : [
+              "setAttributeNS($ns, $name, $value) { this.setAttribute($name, $value); }",
+            ];
+      if (!options.some((code) => pattern(candidate, code))) {
+        valid = false;
+        break;
+      }
+      forwards.push(candidate);
+    }
+    if (!valid) continue;
+    if (method("toggleAttribute")) {
+      for (const [name, bodies] of [
+        [
+          "hasAttribute",
+          [
+            "return String($name) in this.attributes;",
+            "return String($name).toLowerCase() in this.attributes;",
+          ],
+        ],
+        [
+          "removeAttribute",
+          [
+            "delete this.attributes[String($name)];",
+            "delete this.attributes[String($name).toLowerCase()];",
+          ],
+        ],
+      ]) {
+        const candidate = method(name);
+        if (
+          !candidate ||
+          !bodies.some((body) =>
+            pattern(candidate, `${name}($name) { ${body} }`),
+          )
+        )
+          valid = false;
+      }
+    }
+    const returned = statements.at(-1);
+    const proxy = ts.isReturnStatement(returned) ? returned.expression : null;
+    if (
+      !valid ||
+      !proxy ||
+      !ts.isNewExpression(proxy) ||
+      proxy.expression.getText(source) !== "Proxy" ||
+      symbol(proxy.expression) ||
+      proxy.arguments?.length !== 2 ||
+      proxy.arguments[0].kind !== ts.SyntaxKind.ThisKeyword ||
+      !ts.isObjectLiteralExpression(proxy.arguments[1])
+    )
+      continue;
+    const handlers = proxy.arguments[1].properties;
+    if (handlers.length !== 2 || !handlers.every(ts.isMethodDeclaration))
+      continue;
+    const getter = handlers.find((n) => n.name.getText(source) === "get");
+    const setter = handlers.find((n) => n.name.getText(source) === "set");
+    const read = getter && pattern(getter, get);
+    const writes =
+      setter && sets.map((code) => pattern(setter, code)).find(Boolean);
+    if (!read || !writes || read.get("$map") !== writes.get("$map")) continue;
+    const mapSymbol = read.get("$map");
+    const mapDeclaration =
+      mapSymbol.declarations?.length === 1 ? mapSymbol.declarations[0] : null;
+    if (
+      !mapDeclaration ||
+      !ts.isVariableDeclaration(mapDeclaration) ||
+      !(mapDeclaration.parent.flags & ts.NodeFlags.Const) ||
+      !mapDeclaration.initializer ||
+      !ts.isObjectLiteralExpression(mapDeclaration.initializer) ||
+      mapDeclaration.initializer.properties.length !== 2 ||
+      !mapDeclaration.initializer.properties.every(
+        (p) =>
+          ts.isPropertyAssignment(p) &&
+          ts.isIdentifier(p.name) &&
+          ts.isStringLiteral(p.initializer) &&
+          { className: "class", htmlFor: "for" }[p.name.text] ===
+            p.initializer.text,
+      )
+    )
+      continue;
+    // Mutable syntax is accepted only with a complete local use inventory. No
+    // method/value escape, replacement, reflective mutation or unknown computed
+    // dispatch can preserve this proof. Ordinary direct callers remain inspected.
+    for (const node of all) {
+      if (
+        ts.isIdentifier(node) &&
+        symbol(node) === mapSymbol &&
+        node !== mapDeclaration.name
+      ) {
+        if (
+          !ts.isElementAccessExpression(node.parent) ||
+          node.parent.expression !== node ||
+          write(node.parent) ||
+          ts.isDeleteExpression(node.parent.parent)
+        )
+          valid = false;
+      }
+      if (
+        ts.isIdentifier(node) &&
+        symbol(node) === symbol(owner.name) &&
+        node !== owner.name
+      ) {
+        const parent = node.parent;
+        const construction =
+          ts.isNewExpression(parent) && parent.expression === node;
+        const heritage =
+          ts.isExpressionWithTypeArguments(parent) &&
+          parent.expression === node;
+        const published =
+          ts.isBinaryExpression(parent) &&
+          parent.right === node &&
+          parent.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+          ["Element", "HTMLElement", "SVGElement"].includes(
+            member(parent.left),
+          ) &&
+          receiver(parent.left)?.getText(source) === "globalThis" &&
+          !symbol(receiver(parent.left))?.declarations?.length;
+        if (!construction && !heritage && !published) valid = false;
+      }
+      const name = member(node);
+      if (
+        write(node) &&
+        ["Proxy", "String", "Object", "undefined"].includes(name ?? node.text)
+      )
+        valid = false;
+      if (name === "prototype") valid = false;
+      if (ts.isNewExpression(node) && inside(node, constructor)) {
+        let scope = node.parent;
+        while (scope && scope !== constructor && !ts.isFunctionLike(scope))
+          scope = scope.parent;
+        if (scope === constructor && node !== proxy && node !== datasetProxy)
+          valid = false;
+      }
+      if (ts.isCallExpression(node) && inside(node, constructor)) {
+        let scope = node.parent;
+        while (scope && scope !== constructor && !ts.isFunctionLike(scope))
+          scope = scope.parent;
+        if (scope === constructor) {
+          const callee = node.expression;
+          const scalar =
+            callee.getText(source) === "String" &&
+            !symbol(callee)?.declarations?.length &&
+            node.arguments.length === 1;
+          const lower =
+            member(callee) === "toLowerCase" &&
+            node.arguments.length === 0 &&
+            ((member(receiver(callee)) === "localName" &&
+              receiver(receiver(callee))?.kind === ts.SyntaxKind.ThisKeyword) ||
+              (ts.isCallExpression(receiver(callee)) &&
+                receiver(callee).expression.getText(source) === "String" &&
+                !symbol(receiver(callee).expression)?.declarations?.length &&
+                receiver(callee).arguments.length === 1));
+          const upper =
+            member(callee) === "toUpperCase" &&
+            node.arguments.length === 0 &&
+            member(receiver(callee)) === "localName" &&
+            receiver(receiver(callee))?.kind === ts.SyntaxKind.ThisKeyword;
+          if (
+            !scalar &&
+            !lower &&
+            !upper &&
+            callee.kind !== ts.SyntaxKind.SuperKeyword
+          )
+            valid = false;
+        }
+      }
+      if (sensitive.has(name) && !direct(node)) valid = false;
+      if (name === "style" && write(node) && node !== style[0].left)
+        valid = false;
+      if (name === "attributes") {
+        if (write(node) && node !== attributes[0].left) valid = false;
+        const parent = node.parent;
+        const copied =
+          ts.isSpreadAssignment(parent) ||
+          (ts.isCallExpression(parent) &&
+            parent.arguments[0] === node &&
+            parent.expression.getText(source) === "Object.entries" &&
+            !symbol(parent.expression.expression));
+        if (
+          !write(node) &&
+          receiver(parent) !== node &&
+          !copied &&
+          !(
+            ts.isBinaryExpression(parent) &&
+            parent.operatorToken.kind === ts.SyntaxKind.InKeyword &&
+            parent.right === node
+          )
+        )
+          valid = false;
+      }
+      if (name === "style" && !write(node) && receiver(node.parent) !== node)
+        valid = false;
+      if (
+        ts.isElementAccessExpression(node) &&
+        member(node) === null &&
+        (node.expression.kind === ts.SyntaxKind.ThisKeyword ||
+          member(node.expression) === "prototype")
+      )
+        valid = false;
+      if (
+        ts.isCallExpression(node) &&
+        [
+          "defineProperty",
+          "defineProperties",
+          "setPrototypeOf",
+          "assign",
+          "__defineGetter__",
+          "__defineSetter__",
+        ].includes(member(node.expression))
+      )
+        valid = false;
+      if (
+        ts.isCallExpression(node) &&
+        ["eval", "Function"].includes(node.expression.getText(source))
+      )
+        valid = false;
+      if (
+        ts.isReturnStatement(node) &&
+        inside(node, constructor) &&
+        node !== returned
+      ) {
+        let scope = node.parent;
+        while (scope && scope !== constructor && !ts.isFunctionLike(scope))
+          scope = scope.parent;
+        if (scope === constructor) valid = false;
+      }
+      if (
+        inside(node, owner) &&
+        node !== owner &&
+        (ts.isPropertyDeclaration(node) ||
+          ts.isGetAccessorDeclaration(node) ||
+          ts.isSetAccessorDeclaration(node)) &&
+        ["style", "attributes", ...sensitive].includes(
+          node.name?.getText(source),
+        )
+      )
+        valid = false;
+    }
+    // An inherited constructor or overridden transport would change this receiver.
+    for (const clause of owner.heritageClauses ?? []) {
+      for (const type of clause.types) {
+        const base = symbol(type.expression)?.declarations?.[0];
+        if (
+          !base ||
+          !ts.isClassDeclaration(base) ||
+          base.heritageClauses?.length ||
+          base.members.some(
+            (n) =>
+              ts.isConstructorDeclaration(n) ||
+              ["style", "attributes", ...sensitive].includes(
+                n.name?.getText(source),
+              ),
+          )
+        )
+          valid = false;
+      }
+    }
+    const descendants = new Set([symbol(owner.name)]);
+    for (let changed = true; changed;) {
+      changed = false;
+      for (const child of all.filter(ts.isClassDeclaration)) {
+        if (!child.name || descendants.has(symbol(child.name))) continue;
+        if (
+          !child.heritageClauses?.some((clause) =>
+            clause.types.some((type) =>
+              descendants.has(symbol(type.expression)),
+            ),
+          )
+        )
+          continue;
+        descendants.add(symbol(child.name));
+        changed = true;
+        if (
+          child.members.length !== 1 ||
+          !ts.isConstructorDeclaration(child.members[0]) ||
+          !pattern(
+            child.members[0],
+            "constructor() { super('#fragment'); this.nodeType = 11; }",
+          )
+        )
+          valid = false;
+      }
+    }
+    if (!valid) continue;
+    proven.set(style[0], "record-dom-style");
+    for (const fn of forwards) {
+      for (const node of all) {
+        if (
+          inside(node, fn) &&
+          ts.isCallExpression(node) &&
+          member(node.expression) === "setAttribute"
+        )
+          proven.set(node, "record-dom-forward");
+      }
+    }
+  }
+  return proven;
+}
+
 function extractTypeScript(tools, facts, text, baseLine = 1) {
   const { ts } = tools;
   const source = ts.createSourceFile(
@@ -597,7 +1119,22 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
       }
     }
   }
+  const recordDOM = recordDOMProof(ts, source, checker, all, member, receiver);
   for (const node of all) {
+    if (recordDOM.has(node)) {
+      for (const kind of [
+        ts.isCallExpression(node) ? "call" : "assignment",
+        recordDOM.get(node),
+      ]) {
+        facts.sites.push({
+          path: facts.path,
+          line: lineOf(node),
+          kind,
+          expression: node.getText(source),
+        });
+      }
+      continue;
+    }
     const parent = node.parent ?? source;
     const mutator =
       ["setAttribute", "setAttributeNS"].includes(member(node)) ||
@@ -665,7 +1202,9 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
           false,
           node,
         );
-      } else if (name === "setAttribute" || name === "setAttributeNS") {
+      } else if (
+        ["setAttribute", "setAttributeNS", "toggleAttribute"].includes(name)
+      ) {
         const index = name === "setAttributeNS" ? 1 : 0;
         const names = values(node.arguments[index]);
         if (!names)
@@ -698,13 +1237,14 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
             }
           }
           for (const item of names)
-            attribute(
-              item.text,
-              node.arguments[index + 1],
-              node,
-              namespace(target),
-              name === "setAttributeNS",
-            );
+            if (name !== "toggleAttribute")
+              attribute(
+                item.text,
+                node.arguments[index + 1],
+                node,
+                namespace(target),
+                name === "setAttributeNS",
+              );
         }
       } else if (name === "setProperty" && styleObject(target)) {
         const names = values(node.arguments[0]);

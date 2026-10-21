@@ -36,6 +36,151 @@ class SourceChecks(unittest.TestCase):
     def facts(self):
         return self.module.source_facts(self.root)
 
+    def record_dom(self, renamed=False):
+        """Small authored transport fixture; the expected policy result is independent."""
+        source = """const names = { className: 'class', htmlFor: 'for' };
+class RecordNode {
+  constructor() {
+    this.attributes = {};
+    this.style = { setProperty() {}, removeProperty() {} };
+    return new Proxy(this, {
+      set(target, prop, value) {
+        if (prop in target || typeof prop === 'symbol') { target[prop] = value; return true; }
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+          target.attributes[names[prop] || String(prop).toLowerCase()] = String(value);
+          return true;
+        }
+        target[prop] = value; return true;
+      },
+      get(target, prop) {
+        if (prop in target || typeof prop === 'symbol') return target[prop];
+        const name = names[prop] || String(prop).toLowerCase();
+        if (name in target.attributes) return target.attributes[name];
+        return undefined;
+      },
+    });
+  }
+  setAttribute(name, value) { this.attributes[String(name)] = String(value); }
+  setAttributeNS(ns, name, value) { this.setAttribute(name, value); }
+  toggleAttribute(name, force) { const on = force === undefined ? !this.hasAttribute(name) : !!force; if (on) this.setAttribute(name, ''); else this.removeAttribute(name); return on; }
+  hasAttribute(name) { return String(name) in this.attributes; }
+  removeAttribute(name) { delete this.attributes[String(name)]; }
+}
+"""
+        if renamed:
+            import re
+            for old, new in [('RecordNode', 'Vessel'), ('names', 'aliases'),
+                             ('target', 'destination'), ('prop', 'key'),
+                             ('value', 'payload'), ('name', 'label'),
+                             ('force', 'requested'), ('on', 'enabled'), ('ns', 'space')]:
+                source = re.sub(r"\b" + old + r"\b", new, source)
+        return source
+
+    def test_record_dom_has_located_transport_evidence_after_python_extraction(self):
+        # Losing local allocation/dispatch proof must make these fixtures unresolved.
+        for renamed in [False, True]:
+            with self.subTest(renamed=renamed):
+                self.write('view/renamed.py', 'SCRIPT = r"""\n' + self.record_dom(renamed) + '"""\n')
+                facts = self.facts()["files"][0]
+                self.assertEqual(facts["unresolved"], [])
+                self.assertEqual(facts["violations"], [])
+                self.assertEqual([(s["line"], s["kind"]) for s in facts["sites"]
+                                  if s["kind"].startswith('record-dom-')],
+                                 [(6, 'record-dom-style'), (25, 'record-dom-forward'),
+                                  (26, 'record-dom-forward')])
+                self.assertEqual(sorted({(site['line'], site['kind']) for site in facts['sites']
+                                  if site['line'] in [6, 25, 26] and site['kind'] in ['assignment', 'call']}),
+                                 [(6, 'assignment'), (25, 'call'), (26, 'call')])
+                self.assertEqual(facts["source"], (self.root / 'view/renamed.py').read_bytes().decode('utf-8'))
+
+    def test_record_dom_actual_helpers_resolve_only_the_five_original_sites(self):
+        for filename, expected in [('test_icon_credits.py', [(102, 'record-dom-style'),
+                                                           (140, 'record-dom-forward')]),
+                                   ('test_terrain_drawing_numbers.py', [(125, 'record-dom-style'),
+                                                                      (172, 'record-dom-forward'),
+                                                                      (176, 'record-dom-forward')])]:
+            with self.subTest(filename=filename):
+                original = (ROOT / 'tests/invariants' / filename).read_text(encoding='utf-8')
+                self.write('view/renamed.py', original)
+                facts = self.facts()["files"][0]
+                self.assertEqual(facts['unresolved'], [])
+                self.assertEqual(facts['violations'], [])
+                self.assertEqual([(s['line'], s['kind']) for s in facts['sites']
+                                  if s['kind'].startswith('record-dom-')], expected)
+
+    def test_record_dom_dataset_proxy_cannot_change_dispatch_or_escape_the_receiver(self):
+        original = (ROOT / 'tests/invariants/test_terrain_drawing_numbers.py').read_text(encoding='utf-8')
+        for changed in [original.replace("get: (_t, prop) => self.attributes['data-' + kebab(prop)]",
+                                         'get: (_t, prop) => native[prop]'),
+                        original.replace("const kebab = (s) => String(s)", "const kebab = (s) => external(s)"),
+                        original.replace("return new Proxy(this, {", "const leaked = new External(this); return new Proxy(this, {")]:
+            self.write('view/dataset.py', changed)
+            facts = self.facts()['files'][0]
+            self.assertTrue(facts['unresolved'])
+            self.assertFalse(any(site['kind'].startswith('record-dom-') for site in facts['sites']))
+
+    def test_record_dom_proof_refuses_mutation_escape_and_unknown_dispatch(self):
+        source = self.record_dom()
+        mutations = {
+            'style body': source.replace('setProperty() {}', "setProperty() { document.body.style.opacity = '0.5'; }"),
+            'style method replacement': source.replace('return new Proxy', 'this.style.setProperty = external; return new Proxy'),
+            'style replacement': source + 'RecordNode.prototype.style = native.style;',
+            'method replacement': source + 'RecordNode.prototype.setAttribute = native.setAttribute;',
+            'method escape': source + 'const stolen = RecordNode.prototype.toggleAttribute;',
+            'receiver escape': source.replace('return new Proxy', 'leak(this); return new Proxy'),
+            'constructor allocation effect': source.replace('return new Proxy', 'new Unknown(this); return new Proxy'),
+            'constructor side effect': source.replace('return new Proxy', 'unknown(); return new Proxy'),
+            'subclass override': source + 'class Child extends RecordNode { setAttribute(name, value) { native.setAttribute(name, value); } }',
+            'static initialization': source.replace('class RecordNode {', 'class RecordNode { static { mutate(this); }'),
+            'builtin replacement': 'Proxy = external;\n' + source,
+            'prototype alias': source + 'const proto = RecordNode.prototype; proto[unknown] = external;',
+            'style escape': source.replace('return new Proxy', 'leak(this.style); return new Proxy'),
+            'storage escape': source.replace('return new Proxy', 'leak(this.attributes); return new Proxy'),
+            'storage replacement': source.replace('this.attributes = {};', 'this.attributes = native;'),
+            'other receiver': source.replace('this.setAttribute(name, value)', 'native.setAttribute(name, value)'),
+            'proxy target': source.replace('new Proxy(this,', 'new Proxy(native,'),
+            'proxy dispatch': source.replace('return target[prop];', 'return native[prop];'),
+            'proxy side effect': source.replace('return undefined;', 'leak(target); return undefined;'),
+            'storage side effect': source.replace('this.attributes[String(name)] = String(value);',
+                                                  'this.attributes[String(name)] = String(value); leak(this);'),
+            'shadowed builtin': 'const Proxy = external;\n' + source,
+            'aliased mapping escape': source + 'leak(names);',
+            'mapping mutation': source + "names.className = 'style';",
+            'computed replacement': source + 'RecordNode.prototype[unknown] = external;',
+        }
+        for label, changed in mutations.items():
+            with self.subTest(case=label):
+                self.write('view/changed.py', 'SCRIPT = r"""\n' + changed + '\n"""\n')
+                facts = self.facts()['files'][0]
+                self.assertTrue(facts['unresolved'] or facts['violations'], label)
+                self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']), label)
+
+    def test_record_dom_all_callers_still_expose_appearance_values_and_uncertainty(self):
+        callers = [
+            ("new RecordNode().setAttribute('fill', '#123456');", 'fill', '#123456'),
+            ("new RecordNode().setAttributeNS(null, 'stroke-width', '3');", 'stroke-width', '3'),
+            ("new RecordNode().style.setProperty('opacity', '0.5');", 'opacity', '0.5'),
+            ("new RecordNode().setAttribute('style', 'padding:2px');", 'padding', '2px'),
+        ]
+        for call, property_name, value in callers:
+            with self.subTest(call=call):
+                self.write('view/changed.py', 'SCRIPT = r"""\n' + self.record_dom() + call + '\n"""\n')
+                facts = self.facts()['files'][0]
+                self.assertTrue(facts['violations'])
+                self.assertTrue(any(d['property'] == property_name and d['value'] == value
+                                    for d in facts['declarations']))
+        for call in ["new RecordNode().setAttribute(key, value);",
+                     "new RecordNode().setAttributeNS(null, key, value);",
+                     "new RecordNode().toggleAttribute(key);",
+                     "new RecordNode().style.setProperty(key, value);"]:
+            with self.subTest(call=call):
+                self.write('view/changed.py', 'SCRIPT = r"""\n' + self.record_dom() + call + '\n"""\n')
+                self.assertTrue(self.facts()['files'][0]['unresolved'])
+        changed = self.record_dom().replace('this.setAttribute(name, value)',
+                                           "this.setAttribute('fill', '#123456')")
+        self.write('view/changed.py', 'SCRIPT = r"""\n' + changed + '"""\n')
+        self.assertTrue(self.facts()['files'][0]['violations'])
+
     def dependency_fixture(self, source='import { x } from "../data/a.js";'):
         self.write("foundations/part_map.md", "## browser-view\n\n- **Files:** view/**\n"
                    "\n## other\n\n- **Files:** foundations/**\n  data/**\n")
@@ -579,8 +724,8 @@ class SourceChecks(unittest.TestCase):
         self.assertEqual([f["origin"]["call"]["line"] for f in expanded], [4, 5])
         self.assertTrue(all(f["origin"]["template"]["line"] == 3 for f in expanded))
 
-    def test_python_template_actual_sources_close_only_the_two_template_diagnostics(self):
-        for filename, calls, remaining in [("test_icon_credits.py", 20, 2),
+    def test_python_template_actual_sources_preserve_all_expansions(self):
+        for filename, calls, remaining in [("test_icon_credits.py", 20, 0),
                                            ("test_icon_file_content.py", 23, 0)]:
             with self.subTest(filename=filename):
                 source = (ROOT / "tests/invariants" / filename).read_text(encoding="utf-8")
