@@ -1,0 +1,181 @@
+/* Load after generated tokens and the actual shared view stylesheet. */
+.control.preview-hover:enabled {
+  background: var(--highlight);
+}
+.control.preview-focus {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+.styleguide {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+.styleguide h1 {
+  font-size: var(--font-size-game-title);
+}
+.styleguide h2 {
+  font-size: var(--font-size-map-title);
+  margin: var(--space-24) 0 var(--space-12);
+}
+.styleguide h3 {
+  font-size: var(--font-size-heading);
+  margin: 0 0 var(--space-12);
+}
+.styleguide h1,
+.styleguide h2,
+.styleguide h3 {
+  color: var(--text-strong);
+  font-weight: var(--font-weight-medium);
+}
+.state-grid,
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-12);
+}
+.state-cell,
+.role-card,
+.terrain-sample {
+  min-width: 0;
+  border: var(--border-width) solid var(--divider);
+  background: var(--panel);
+  padding: var(--space-12);
+}
+.state-cell .control {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+.state-cell .control-field {
+  min-width: 0;
+  max-width: 100%;
+}
+.state-reason,
+.preview-label,
+.token-source {
+  color: var(--text-secondary);
+  font-size: var(--font-size-description);
+}
+.token-value {
+  color: var(--text-label);
+  font-size: var(--font-size-label);
+}
+.token-source {
+  overflow-wrap: anywhere;
+}
+.role-example p {
+  margin: 0;
+  padding: var(--space-8);
+}
+.role-example hr {
+  border: 0;
+  border-top: var(--border-width) solid var(--divider);
+}
+.background-page {
+  background: var(--page);
+  color: var(--text);
+}
+.background-panel {
+  background: var(--panel);
+  color: var(--text);
+}
+.background-highlight {
+  background: var(--highlight);
+  color: var(--text);
+}
+.role-text-strong {
+  color: var(--text-strong);
+}
+.role-text {
+  color: var(--text);
+}
+.role-text-secondary {
+  color: var(--text-secondary);
+}
+.role-text-label {
+  color: var(--text-label);
+}
+.role-text-disabled {
+  color: var(--text-disabled);
+}
+.role-positive {
+  color: var(--positive);
+}
+.role-warning {
+  color: var(--warning);
+}
+.role-danger {
+  color: var(--danger);
+}
+.role-discovery {
+  color: var(--discovery);
+}
+.role-player-change {
+  color: var(--player-change);
+}
+.sample-stock {
+  border-left: var(--link-width) solid transparent;
+  padding-left: var(--space-8);
+}
+.sample-linked-row {
+  border-left-color: var(--link-highlight);
+}
+.scale-sample {
+  border-bottom: var(--border-width) solid var(--divider);
+  padding: var(--space-8) 0;
+}
+.scale-sample [class^="token-space-"] {
+  height: 16px;
+  background: var(--highlight);
+}
+.token-space-2 {
+  width: var(--space-2);
+}
+.token-space-4 {
+  width: var(--space-4);
+}
+.token-space-8 {
+  width: var(--space-8);
+}
+.token-space-12 {
+  width: var(--space-12);
+}
+.token-space-16 {
+  width: var(--space-16);
+}
+.token-space-24 {
+  width: var(--space-24);
+}
+.token-space-32 {
+  width: var(--space-32);
+}
+.token-font-ui {
+  font-family: var(--font-ui);
+}
+.token-font-mono {
+  font-family: var(--font-mono);
+}
+.token-font-size-label {
+  font-size: var(--font-size-label);
+}
+.token-font-size-description {
+  font-size: var(--font-size-description);
+}
+.token-font-size-body {
+  font-size: var(--font-size-body);
+}
+.token-font-size-heading {
+  font-size: var(--font-size-heading);
+}
+.token-font-size-map-title {
+  font-size: var(--font-size-map-title);
+}
+.token-font-size-game-title {
+  font-size: var(--font-size-game-title);
+}
+.token-font-weight-regular {
+  font-weight: var(--font-weight-regular);
+}
+.token-font-weight-medium {
+  font-weight: var(--font-weight-medium);
+}
