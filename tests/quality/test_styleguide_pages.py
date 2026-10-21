@@ -1,5 +1,6 @@
 """Page-scoped loading and cascade evidence through the real source extractor."""
 
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -19,16 +20,33 @@ class PageChecks(unittest.TestCase):
         self.root = Path(self.temporary.name)
 
     def inspect(self, sources, queries=()):
-        files = [{"path": path, "source": source, "digest": "fixture", "fragments": [],
+        files = [{"path": path, "source": source,
+                  "digest": hashlib.sha256(source.encode("utf-8")).hexdigest(), "fragments": [],
                   "kind": {".html": "html", ".css": "css", ".ts": "typescript"}.get(
                       Path(path).suffix, "token-values")}
                  for path, source in sources.items()]
-        driver = """
+        for name, source in sources.items():
+            target = self.root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.encode("utf-8"))
+        driver = r"""
 import {readFileSync} from 'node:fs';
-import {inspectSources} from './scripts/styleguide_source.mjs';
+import {inspectSources, inspectImports} from './scripts/styleguide_source.mjs';
+import path from 'node:path';
 import {analyzePages, effectiveStyle} from './scripts/styleguide_pages.mjs';
 const request = JSON.parse(readFileSync(0, 'utf8'));
-const facts = inspectSources({files:request.files});
+const input = {schema:2, root:request.root, operation:'sources', files:request.files,
+  dependencies:[], configurations:[], imports:[], unresolved:[]};
+for (const file of inspectImports({files:input.files.filter(f=>f.kind==='typescript')}).files) {
+  for (const edge of file.imports) {
+    const candidate = typeof edge.specifier === 'string' ?
+      path.posix.normalize(path.posix.join(path.posix.dirname(edge.path), edge.specifier)) : '';
+    const target = input.files.find(f=>[candidate.replace(/\.js$/, '.ts'), candidate].includes(f.path));
+    input.imports.push({...edge, resolution:target?'local':'unresolved',
+      target:target?.path??null, reason:target?null:'unresolved fixture import'});
+  }
+}
+const facts = inspectSources(input);
 function freeze(value) {
   if (value && typeof value === 'object') {
     Object.freeze(value); Object.values(value).forEach(freeze);

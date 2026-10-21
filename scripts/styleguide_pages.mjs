@@ -1,17 +1,214 @@
 /** Bounded, non-executing page construction and authored-style cascade evidence. */
 import path from "node:path";
-import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, lstatSync } from "node:fs";
 import { createHash } from "node:crypto";
 import ts from "typescript";
 import { parsers as htmlParsers } from "prettier/plugins/html";
 import { parsers as cssParsers } from "prettier/plugins/postcss";
-import { inspectSources } from "./styleguide_source.mjs";
+import { inspectSources, inspectImports } from "./styleguide_source.mjs";
 import { cssName } from "./styleguide_css.mjs";
 
 const unknown = Symbol("unresolved source value");
 const located = (source, line, reason) => ({ path: source.path, line, reason });
 const inherited =
   /^(?:color|font(?:-.+)?|line-height|visibility|fill|stroke(?:-.+)?|text-align)$/;
+const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+function originalBytes(root, relative) {
+  if (
+    typeof relative !== "string" ||
+    !relative ||
+    /[\\:]/.test(relative) ||
+    [...relative].some((character) => character.charCodeAt(0) < 32) ||
+    path.posix.isAbsolute(relative) ||
+    path.posix.normalize(relative) !== relative ||
+    relative.split("/").some((part) => [".", "..", ""].includes(part))
+  )
+    throw new Error("Unsafe evidence path");
+  let current = path.resolve(root);
+  for (const part of relative.split("/")) {
+    current = path.join(current, part);
+    if (lstatSync(current).isSymbolicLink())
+      throw new Error(`Evidence path crosses a link: ${relative}`);
+  }
+  if (!lstatSync(current).isFile())
+    throw new Error(`Not an evidence file: ${relative}`);
+  return readFileSync(current);
+}
+
+function sourceRequest(files) {
+  return {
+    schema: 2,
+    files,
+    dependencies: [],
+    configurations: [],
+    imports: [],
+    unresolved: [],
+  };
+}
+
+function validatedSources(facts, root) {
+  if (
+    facts.schema !== 3 ||
+    !["files", "dependencies", "configurations", "imports", "unresolved"].every(
+      (key) => Array.isArray(facts[key]),
+    )
+  )
+    throw new Error("Page analysis requires complete source schema 3");
+  const snapshots = [
+    ...facts.files,
+    ...facts.dependencies,
+    ...facts.configurations,
+  ];
+  const seen = new Set();
+  for (const file of snapshots) {
+    const bytes = originalBytes(root, file.path);
+    if (
+      seen.has(file.path) ||
+      file.digest !== digest(bytes) ||
+      file.source !== (file.kind === "font" ? null : bytes.toString("utf8"))
+    )
+      throw new Error(
+        `Duplicate, forged or stale source evidence: ${file.path}`,
+      );
+    seen.add(file.path);
+  }
+  const originals = [...facts.files, ...facts.dependencies];
+  const byPath = new Map(originals.map((file) => [file.path, file]));
+  const parsed = inspectImports({
+    files: originals.filter((file) => file.kind === "typescript"),
+  });
+  const edges = parsed.files.flatMap((file) => file.imports);
+  if (edges.length !== facts.imports.length)
+    throw new Error("Missing import evidence");
+  const edgeIds = new Set();
+  for (const edge of facts.imports) {
+    const id = `${edge.path}:${edge.start}`;
+    const actual = edges.find(
+      (item) => item.path === edge.path && item.start === edge.start,
+    );
+    if (
+      edgeIds.has(id) ||
+      !actual ||
+      Object.keys(actual).some(
+        (key) => JSON.stringify(actual[key]) !== JSON.stringify(edge[key]),
+      )
+    )
+      throw new Error("Forged import location or expression");
+    edgeIds.add(id);
+    if (edge.resolution === "local") {
+      if (
+        typeof edge.specifier !== "string" ||
+        /[\\:%?#]/.test(edge.specifier) ||
+        !edge.specifier.startsWith(".")
+      )
+        throw new Error("Unsafe import evidence");
+      const relative = path.posix.normalize(
+        path.posix.join(path.posix.dirname(edge.path), edge.specifier),
+      );
+      const extension = path.posix.extname(relative);
+      const suffixes = {
+        ".js": [".ts", ".tsx", ".d.ts", ".js", ".jsx"],
+        ".mjs": [".mts", ".d.mts", ".mjs"],
+        ".cjs": [".cts", ".d.cts", ".cjs"],
+      }[extension];
+      const candidates = suffixes
+        ? suffixes.map(
+            (suffix) => relative.slice(0, -extension.length) + suffix,
+          )
+        : [relative];
+      const expected = candidates.find(
+        (candidate) =>
+          (edge.kind.endsWith("-type") || !/\.d\.[cm]?ts$/.test(candidate)) &&
+          within(root, candidate),
+      );
+      if (expected !== edge.target || !byPath.has(edge.target))
+        throw new Error("Missing or mismatched acquired dependency");
+    } else if (edge.resolution === "generated") {
+      if (!byPath.has(edge.target) || !facts.configurations.length)
+        throw new Error("Missing generated import original/configuration");
+      if (
+        !edge.path.startsWith("tests/") ||
+        typeof edge.specifier !== "string" ||
+        !edge.specifier.startsWith(".") ||
+        /[\\:%?#]/.test(edge.specifier)
+      )
+        throw new Error("Unsafe generated import relation");
+      const target = path.posix.normalize(
+        path.posix.join(path.posix.dirname(edge.path), edge.specifier),
+      );
+      const configs = new Map(
+        facts.configurations.map((file) => [
+          file.path,
+          JSON.parse(file.source),
+        ]),
+      );
+      const browser = configs.get("tsconfig.browser.json");
+      let mapped = false;
+      for (const [name, config] of configs) {
+        if (
+          !["tsconfig.browser.json", "tsconfig.styleguide.json"].includes(name)
+        )
+          throw new Error("Unrecognized generated import configuration");
+        const standalone = name === "tsconfig.styleguide.json";
+        const options = {
+          ...(standalone ? browser?.compilerOptions : {}),
+          ...config.compilerOptions,
+        };
+        if (
+          (standalone
+            ? config.extends !== "./tsconfig.browser.json"
+            : "extends" in config) ||
+          options.module !== "NodeNext" ||
+          options.moduleResolution !== "NodeNext" ||
+          typeof options.rootDir !== "string" ||
+          typeof options.outDir !== "string" ||
+          !options.outDir ||
+          options.outDir === "." ||
+          options.noEmit ||
+          options.emitDeclarationOnly ||
+          ["paths", "rootDirs", "outFile", "moduleSuffixes", "jsx"].some(
+            (key) => key in options,
+          )
+        )
+          throw new Error("Unproved generated import compiler mapping");
+        for (const directory of [options.rootDir, options.outDir])
+          if (
+            directory !== "." &&
+            (path.posix.normalize(directory) !== directory ||
+              directory.startsWith("../") ||
+              /[\\:]/.test(directory) ||
+              path.posix.isAbsolute(directory))
+          )
+            throw new Error("Escaping generated import compiler directory");
+        if (!target.startsWith(options.outDir + "/")) continue;
+        const original = path.posix.join(
+          options.rootDir,
+          target.slice(options.outDir.length + 1),
+        );
+        const extension = path.posix.extname(original);
+        const candidates = (
+          { ".js": [".ts", ".tsx"], ".mjs": [".mts"], ".cjs": [".cts"] }[
+            extension
+          ] ?? []
+        ).map((suffix) => original.slice(0, -extension.length) + suffix);
+        const expected = candidates.find((candidate) =>
+          within(root, candidate),
+        );
+        if (expected === edge.target) mapped = true;
+      }
+      if (!mapped) throw new Error("Forged generated import target");
+    } else if (
+      !["tooling", "unresolved"].includes(edge.resolution) ||
+      edge.target !== null
+    )
+      throw new Error("Invalid import resolution evidence");
+  }
+  const dependencies = inspectSources(sourceRequest(facts.dependencies)).files;
+  return new Map(
+    [...facts.files, ...dependencies].map((file) => [file.path, file]),
+  );
+}
 
 function within(root, relative) {
   const absolute = path.resolve(root, relative);
@@ -31,19 +228,540 @@ function compilerMount(root) {
   return { source: options.rootDir, output: options.outDir };
 }
 
+// Identity is only the admission gate for the independently checked derivation below.
+// These complete programs include the input validation, helpers, import bindings and
+// top-level effects. Exact bytes deliberately refuse even harmless producer edits.
+// Do not replace this with whitespace-stripped tokens (ASI changes their semantics).
+const producerPrograms = {
+  "scripts/style-assets.mjs":
+    "11c193c2eec8c36d0a94fe573a441655dfb3581bdb8f6ee943efef03dae6d472",
+  "scripts/build.mjs":
+    "9aff37212631bc2bd9d009c98a81a941ac1909a6cd4a7b3d5a14e6cd78f4a6b1",
+  "scripts/kitchen-sink.mjs":
+    "63f2a373419e579219a7e16ee590cbacabb4278bdca051e24c385e05668f2d0b",
+};
+const certifiedDeclarations = new WeakMap();
+const tokenPath = "src/browser/view/design-tokens.json";
+const roleKinds = {
+  page: "background",
+  panel: "background",
+  highlight: "background",
+  divider: "other",
+  "control-border": "other",
+  selected: "other",
+  "text-strong": "text",
+  text: "text",
+  "text-secondary": "text",
+  "text-label": "text",
+  "text-disabled": "text",
+  positive: "text",
+  warning: "text",
+  danger: "text",
+  discovery: "text",
+  "player-change": "text",
+  character: "other",
+  "tile-hidden": "other",
+  "tile-revealed": "other",
+  "tile-edge": "other",
+  "link-highlight": "other",
+  depleted: "other",
+  focus: "other",
+};
+const familyTokens = ["font-ui", "font-mono"];
+const weightTokens = ["font-weight-regular", "font-weight-medium"];
+const lengthTokens = [
+  "font-size-label",
+  "font-size-description",
+  "font-size-body",
+  "font-size-heading",
+  "font-size-map-title",
+  "font-size-game-title",
+  "space-2",
+  "space-4",
+  "space-8",
+  "space-12",
+  "space-16",
+  "space-24",
+  "space-32",
+  "border-width",
+  "bar-width",
+  "character-width",
+  "step-width",
+  "link-width",
+  "focus-width",
+  "focus-offset",
+];
+
+function freezeEvidence(value) {
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(freezeEvidence);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+function witness(file, node, tree) {
+  const start = node.getStart(tree),
+    end = node.end;
+  return {
+    path: file.path,
+    digest: file.digest,
+    line: tree.getLineAndCharacterOfPosition(start).line + 1,
+    start,
+    end,
+  };
+}
+
+function programWitness(root, name, functionName) {
+  const bytes = originalBytes(root, name);
+  if (digest(bytes) !== producerPrograms[name])
+    throw new Error(`Unrecognized origin producer program: ${name}`);
+  const file = { path: name, digest: digest(bytes) };
+  const tree = ts.createSourceFile(
+    name,
+    bytes.toString("utf8"),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  let node = tree.statements.find(
+    (statement) =>
+      ts.isFunctionDeclaration(statement) &&
+      statement.name?.text === functionName,
+  );
+  if (!node) {
+    function find(current) {
+      if (
+        ts.isCallExpression(current) &&
+        ts.isIdentifier(current.expression) &&
+        current.expression.text === functionName
+      )
+        node = current;
+      ts.forEachChild(current, find);
+    }
+    find(tree);
+  }
+  return {
+    file,
+    tree,
+    anchor: node ? witness(file, node, tree) : { ...file, line: 1 },
+  };
+}
+
+function tokenRecords(file) {
+  const data = JSON.parse(file.source);
+  const tree = ts.parseJsonText(file.path, file.source);
+  if (tree.parseDiagnostics.length)
+    throw new Error("Unparseable original token records");
+  function properties(node) {
+    if (!node || !ts.isObjectLiteralExpression(node))
+      throw new Error("Invalid token object");
+    const map = new Map();
+    for (const property of node.properties) {
+      if (
+        !ts.isPropertyAssignment(property) ||
+        !ts.isStringLiteral(property.name) ||
+        map.has(property.name.text)
+      )
+        throw new Error("Duplicate or unsupported token key");
+      map.set(property.name.text, property.initializer);
+    }
+    return map;
+  }
+  const top = properties(tree.statements[0]?.expression);
+  if (top.size !== 2 || !top.has("roles") || !top.has("tokens"))
+    throw new Error("Invalid token root");
+  const result = [];
+  const names = new Set();
+  for (const group of ["roles", "tokens"]) {
+    const expected =
+      group === "roles"
+        ? Object.keys(roleKinds)
+        : [...familyTokens, ...weightTokens, ...lengthTokens, "step-dash"];
+    const keys = [...properties(top.get(group)).keys()];
+    if (
+      keys.length !== expected.length ||
+      expected.some((key) => !keys.includes(key))
+    )
+      throw new Error(
+        "Token keys cannot pass the recognized producer validator",
+      );
+    for (const [name, node] of properties(top.get(group))) {
+      const fields = properties(node),
+        record = data[group][name];
+      if (
+        names.has(name) ||
+        !/^[a-z][a-z0-9-]*$/.test(name) ||
+        fields.size !== (group === "roles" ? 3 : 2) ||
+        !fields.has("value") ||
+        !fields.has("source") ||
+        typeof record.source !== "string" ||
+        !record.source.trim() ||
+        !["string", "number"].includes(typeof record.value) ||
+        (group === "roles" &&
+          !["background", "text", "other"].includes(record.kind))
+      )
+        throw new Error("Invalid token record or colliding name");
+      names.add(name);
+      const family = group === "tokens" && familyTokens.includes(name);
+      let valid;
+      if (group === "roles")
+        valid =
+          record.kind === roleKinds[name] &&
+          (name === "depleted"
+            ? typeof record.value === "number" &&
+              Number.isFinite(record.value) &&
+              record.value >= 0 &&
+              record.value <= 1
+            : typeof record.value === "string" &&
+              /^#[0-9a-f]{6}$/i.test(record.value));
+      else if (family)
+        valid =
+          typeof record.value === "string" &&
+          /^[A-Za-z][A-Za-z0-9 ]{0,63}$/.test(record.value);
+      else if (weightTokens.includes(name))
+        valid =
+          Number.isInteger(record.value) &&
+          record.value >= 1 &&
+          record.value <= 1000;
+      else if (name === "step-dash")
+        valid =
+          typeof record.value === "string" &&
+          /^[1-9]\d*(?:\.\d+)? [1-9]\d*(?:\.\d+)?$/.test(record.value);
+      else
+        valid =
+          typeof record.value === "string" &&
+          /^(?:[1-9]\d*(?:\.\d+)?|0\.\d*[1-9]\d*)px$/.test(record.value);
+      if (!valid)
+        throw new Error(
+          "Token value cannot pass the recognized producer validator",
+        );
+      result.push({
+        name,
+        kind: group === "roles" ? "role" : "token",
+        roleKind: record.kind ?? null,
+        value: family ? JSON.stringify(record.value) : String(record.value),
+        source: {
+          ...witness(file, fields.get("value"), tree),
+          pointer: `/${group}/${name}/value`,
+        },
+      });
+    }
+  }
+  if (
+    data.tokens["font-weight-regular"].value >
+    data.tokens["font-weight-medium"].value
+  )
+    throw new Error("Invalid font weight order");
+  return { data, records: result };
+}
+
+function outputReference(reference, from, output) {
+  if (
+    typeof reference !== "string" ||
+    !reference ||
+    /[\\:%?#]/.test(reference) ||
+    [...reference].some((character) => character.charCodeAt(0) <= 32) ||
+    reference.startsWith("//")
+  )
+    throw new Error("Unsafe output loading reference");
+  const target = path.posix.normalize(
+    reference.startsWith("/")
+      ? output + reference
+      : path.posix.join(path.posix.dirname(from), reference),
+  );
+  if (!target.startsWith(output + "/"))
+    throw new Error("Output loading reference escapes caller root");
+  return target;
+}
+
+function proveOrigins(source, sources, root) {
+  const standalone = source.path === "tools/styleguide/index.html";
+  const applies = standalone || source.path === "src/browser/index.html";
+  const result = {
+    status: applies ? "unresolved" : "not-applicable",
+    declarations: [],
+    loaded: [],
+    unresolved: [],
+  };
+  if (!applies) return result;
+  try {
+    const emitter = programWitness(
+      root,
+      "scripts/style-assets.mjs",
+      "tokenCss",
+    );
+    const callerName = standalone
+      ? "scripts/kitchen-sink.mjs"
+      : "scripts/build.mjs";
+    const caller = programWitness(root, callerName, "emitStyleAssets");
+    const emission = emitter.tree.statements.find(
+      (statement) =>
+        ts.isFunctionDeclaration(statement) &&
+        statement.name?.text === "emitStyleAssets",
+    );
+    const inputs = new Map([
+      [emitter.file.path, emitter.file.digest],
+      [caller.file.path, caller.file.digest],
+    ]);
+    const read = (name) => {
+      const bytes = originalBytes(root, name);
+      if (sources.has(name) && sources.get(name).digest !== digest(bytes))
+        throw new Error(`Stale inventoried origin: ${name}`);
+      inputs.set(name, digest(bytes));
+      return bytes;
+    };
+    // Both inspected callers have fixed roots, and compiler options must agree.
+    const output = standalone ? ".runs/styleguide/public" : "dist/public";
+    const configNames = [
+      "tsconfig.browser.json",
+      ...(standalone ? ["tsconfig.styleguide.json"] : []),
+    ];
+    const configs = configNames.map((name) => ({
+      path: name,
+      source: read(name).toString("utf8"),
+    }));
+    const browser = JSON.parse(configs[0].source);
+    const config = standalone ? JSON.parse(configs[1].source) : browser;
+    const options = { ...browser.compilerOptions, ...config.compilerOptions };
+    if (
+      browser.extends ||
+      browser.compilerOptions?.rootDir !== "src/browser" ||
+      browser.compilerOptions?.outDir !== "dist/public" ||
+      (standalone && config.extends !== "./tsconfig.browser.json") ||
+      options.rootDir !== (standalone ? "." : "src/browser") ||
+      options.outDir !== output ||
+      options.module !== "NodeNext" ||
+      options.moduleResolution !== "NodeNext" ||
+      options.noEmit ||
+      options.emitDeclarationOnly ||
+      ["paths", "rootDirs", "outFile", "moduleSuffixes", "jsx"].some(
+        (key) => key in options,
+      )
+    )
+      throw new Error("Unproved origin compiler/output mapping");
+    const packageData = JSON.parse(read("package.json").toString("utf8"));
+    const command = standalone ? "kitchen-sink" : "build";
+    if (
+      packageData.type !== "module" ||
+      packageData.scripts?.[command] !== `node ${callerName}` ||
+      packageData.scripts?.[`pre${command}`] ||
+      packageData.scripts?.[`post${command}`]
+    )
+      throw new Error("Unproved package producer entry");
+    const tokens = sources.get(tokenPath);
+    if (!tokens || tokens.kind !== "token-values")
+      throw new Error("Missing governed token origin");
+    if (digest(read(tokenPath)) !== tokens.digest)
+      throw new Error("Stale token origin");
+    const { data, records } = tokenRecords(tokens);
+    const declarations = records.map(
+      (record) => `  --${record.name}: ${record.value};`,
+    );
+    const faces = ["font-ui", "font-mono"].map(
+      (name, index) =>
+        `@font-face {\n  font-family: ${JSON.stringify(data.tokens[name].value)};\n  src: url("./fonts/${["Geist.woff2", "GeistMono.woff2"][index]}") format("woff2");\n  font-weight: ${data.tokens["font-weight-regular"].value} ${data.tokens["font-weight-medium"].value};\n  font-style: normal;\n  font-display: swap;\n}`,
+    );
+    const expected = `:root {\n${declarations.join("\n")}\n}\n\n${faces.join("\n\n")}\n`;
+    const generatedPath = output + "/design-tokens.css";
+    const generated = read(generatedPath);
+    if (!generated.equals(Buffer.from(expected)))
+      throw new Error("Generated token output has no current source origin");
+    const styles = new Map([
+      [generatedPath, null],
+      [output + "/styles.css", "src/browser/view/styles.css"],
+    ]);
+    if (standalone)
+      styles.set(output + "/styleguide.css", "tools/styleguide/styles.css");
+    for (const [target, original] of styles) {
+      if (original) {
+        if (!sources.has(original) || sources.get(original).kind !== "css")
+          throw new Error(`Missing governed stylesheet origin: ${original}`);
+        if (!read(target).equals(read(original)))
+          throw new Error(`Stale copied stylesheet: ${target}`);
+      }
+    }
+    for (const name of ["Geist.woff2", "GeistMono.woff2", "OFL.txt"]) {
+      const bytes = read("assets/fonts/" + name);
+      if (
+        name.endsWith(".woff2")
+          ? bytes.length < 48 ||
+            bytes.toString("ascii", 0, 4) !== "wOF2" ||
+            bytes.readUInt32BE(8) !== bytes.length ||
+            bytes.readUInt16BE(12) === 0 ||
+            bytes.readUInt16BE(14) !== 0 ||
+            bytes.readUInt32BE(16) === 0 ||
+            bytes.readUInt32BE(20) === 0 ||
+            bytes.readUInt32BE(20) > bytes.length - 48
+          : !bytes.includes(Buffer.from("Copyright")) ||
+            !bytes.includes(Buffer.from("SIL OPEN FONT LICENSE Version 1.1"))
+      )
+        throw new Error(
+          "Font input cannot pass the recognized producer validator",
+        );
+      if (!read(output + "/fonts/" + name).equals(bytes))
+        throw new Error(`Stale emitted font input: ${name}`);
+    }
+    let expectedHtml = source.source;
+    if (standalone) {
+      const marker = "<!-- STYLEGUIDE_TOKEN_DATA -->";
+      if (expectedHtml.split(marker).length !== 2)
+        throw new Error("Missing unique token-data marker");
+      const escaped = JSON.stringify(data).replace(
+        /[<>&\u2028\u2029]/g,
+        (character) =>
+          `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`,
+      );
+      expectedHtml = expectedHtml.replace(
+        marker,
+        () =>
+          `<script type="application/json" id="styleguide-tokens">${escaped}</script>`,
+      );
+    }
+    const documentPath = output + "/index.html",
+      documentBytes = read(documentPath);
+    if (!documentBytes.equals(Buffer.from(expectedHtml)))
+      throw new Error(
+        "Output HTML is not the caller's current source transformation",
+      );
+    const loading = [];
+    function visit(node) {
+      if (node.kind === "element") {
+        const attrs = Object.fromEntries(
+          node.attrs.map((attribute) => [attribute.name, attribute.value]),
+        );
+        if (node.name === "base")
+          throw new Error("Output base URL cannot certify loading");
+        const style =
+          node.name === "link" &&
+          attrs.rel?.split(/\s+/).includes("stylesheet");
+        const script = node.name === "script" && attrs.src;
+        if (style || script) {
+          const reference = style ? attrs.href : attrs.src;
+          const target = outputReference(reference, documentPath, output);
+          const bytes = read(target);
+          const edge = {
+            path: documentPath,
+            digest: digest(documentBytes),
+            line: node.sourceSpan.start.line + 1,
+            reference,
+            target,
+            targetDigest: digest(bytes),
+            kind: style ? "style" : "module",
+          };
+          loading.push(edge);
+          if (
+            style &&
+            (!styles.has(target) ||
+              "disabled" in attrs ||
+              attrs.rel.includes("alternate"))
+          )
+            throw new Error(
+              "Output stylesheet has no recognized producer/loading relation",
+            );
+          if (style) {
+            const tree = cssParsers.css.parse(bytes.toString("utf8"));
+            if (
+              tree.nodes.some(
+                (child) =>
+                  child.type === "css-atrule" &&
+                  child.name.toLowerCase() === "import",
+              )
+            )
+              throw new Error(
+                "Output CSS import origin is outside the finite emitter graph",
+              );
+          }
+        }
+      }
+      for (const child of node.children ?? []) visit(child);
+    }
+    visit(htmlParsers.html.parse(documentBytes.toString("utf8")));
+    const generatedLoading = loading.filter(
+      (edge) => edge.target === generatedPath,
+    );
+    result.declarations = generatedLoading.length
+      ? records.map((record, index) =>
+          freezeEvidence({
+            ...record,
+            producer: emitter.anchor,
+            emission: witness(emitter.file, emission, emitter.tree),
+            caller: caller.anchor,
+            output: {
+              path: generatedPath,
+              digest: digest(generated),
+              line: index + 2,
+            },
+            loading: generatedLoading,
+            configurations: configs.map((config) => ({
+              path: config.path,
+              digest: inputs.get(config.path),
+            })),
+          }),
+        )
+      : [];
+    result.loaded = loading;
+    result.inputs = [...inputs].map(([name, hash]) => ({
+      path: name,
+      digest: hash,
+    }));
+    result.output = output;
+    result.status = "certified";
+    // Recheck after the graph is inspected; there is no persistent success cache.
+    for (const [name, hash] of inputs)
+      if (digest(originalBytes(root, name)) !== hash)
+        throw new Error("Origin bytes changed during inspection");
+  } catch (error) {
+    result.status = "unresolved";
+    result.declarations = [];
+    result.unresolved.push(
+      located(
+        source,
+        1,
+        `Generated origin cannot be certified: ${error.message}`,
+      ),
+    );
+  }
+  return result;
+}
+
 /** Every inventoried HTML document gets an independent page; no shared success cache. */
 export function analyzePages(facts, { root }) {
-  if (facts.schema !== 2)
-    throw new Error("Page analysis requires source schema 2");
-  const sources = new Map(facts.files.map((file) => [file.path, file]));
+  const sources = validatedSources(facts, root);
   const mount = compilerMount(root);
   const pages = facts.files
     .filter((file) => file.kind === "html" && file.path.endsWith(".html"))
-    .map((source) => buildPage(source, sources, root, mount));
+    .map((source) => {
+      const origins = proveOrigins(
+        source,
+        new Map(facts.files.map((file) => [file.path, file])),
+        root,
+      );
+      const page = buildPage(
+        source,
+        sources,
+        root,
+        mount,
+        origins,
+        facts.imports,
+      );
+      page.origins = origins;
+      page.unresolved.push(...origins.unresolved);
+      page.unresolved.push(...facts.unresolved);
+      return page;
+    });
+  for (const file of [
+    ...facts.files,
+    ...facts.dependencies,
+    ...facts.configurations,
+  ])
+    if (digest(originalBytes(root, file.path)) !== file.digest)
+      throw new Error(
+        `Source bytes changed during page inspection: ${file.path}`,
+      );
   return { schema: 1, inventory: facts.files.map((file) => file.path), pages };
 }
 
-function buildPage(source, sources, root, mount) {
+function buildPage(source, sources, root, mount, origins, imports) {
   const page = {
     path: source.path,
     loaded: [],
@@ -97,6 +815,11 @@ function buildPage(source, sources, root, mount) {
         condition,
       };
       page.declarations.push(ordered);
+      if (certifiedDeclarations.has(declaration))
+        certifiedDeclarations.set(
+          ordered,
+          certifiedDeclarations.get(declaration),
+        );
       if (owner !== null) stylesheetOwners.set(ordered, owner);
     }
   };
@@ -105,6 +828,93 @@ function buildPage(source, sources, root, mount) {
     page.unresolved.push(...file.unresolved);
   };
   function resolve(reference, from, kind, line) {
+    if (kind === "module" && from.kind === "typescript") {
+      const relations = imports.filter(
+        (edge) =>
+          edge.path === from.path &&
+          edge.line === line &&
+          edge.specifier === reference,
+      );
+      const targets = new Set(relations.map((edge) => edge.target));
+      if (
+        !relations.length ||
+        targets.size !== 1 ||
+        relations.some(
+          (edge) => !["local", "generated"].includes(edge.resolution),
+        ) ||
+        !sources.has(relations[0].target)
+      ) {
+        issue(
+          from,
+          line,
+          "Module load has no unique acquired original relationship",
+        );
+        return null;
+      }
+      return sources.get(relations[0].target);
+    }
+    if (origins.status === "certified" && kind === "style") {
+      try {
+        const target = outputReference(
+          reference,
+          from.path.startsWith(origins.output + "/")
+            ? from.path
+            : origins.output + "/index.html",
+          origins.output,
+        );
+        const edge = origins.loaded.find(
+          (item) => item.target === target && item.kind === "style",
+        );
+        if (!edge)
+          throw new Error("Stylesheet is outside certified loading graph");
+        const bytes = originalBytes(root, target);
+        if (digest(bytes) !== edge.targetDigest)
+          throw new Error("Stale generated stylesheet");
+        const extracted = inspectSources(
+          sourceRequest([
+            {
+              path: target,
+              kind: "css",
+              source: bytes.toString("utf8"),
+              digest: digest(bytes),
+              fragments: [],
+            },
+          ]),
+        ).files[0];
+        for (const declaration of extracted.declarations) {
+          const origin = origins.declarations.find(
+            (item) =>
+              item.output.path === target &&
+              item.output.line === declaration.line &&
+              `--${item.name}` === declaration.property &&
+              item.value === declaration.value &&
+              declaration.selector === ":root" &&
+              declaration.priority === "normal",
+          );
+          if (origin) certifiedDeclarations.set(declaration, origin);
+          else if (
+            target.endsWith("/styles.css") ||
+            target.endsWith("/styleguide.css")
+          ) {
+            declaration.output = {
+              path: target,
+              digest: digest(bytes),
+              line: declaration.line,
+            };
+            declaration.path = target.endsWith("/styleguide.css")
+              ? "tools/styleguide/styles.css"
+              : "src/browser/view/styles.css";
+            declaration.digest =
+              sources.get(declaration.path)?.digest ?? digest(bytes);
+          }
+        }
+        extracted.certified = true;
+        return extracted;
+      } catch (error) {
+        issue(from, line, error.message);
+        return null;
+      }
+    }
     if (
       typeof reference !== "string" ||
       /^(?:[a-z][\w+.-]*:|\/\/)|[\\\0]/i.test(reference)
@@ -113,6 +923,36 @@ function buildPage(source, sources, root, mount) {
       return null;
     }
     const clean = reference.split(/[?#]/, 1)[0];
+    if (
+      origins.status === "certified" &&
+      kind === "module" &&
+      from.kind === "html"
+    ) {
+      try {
+        const target = outputReference(
+          reference,
+          origins.output + "/index.html",
+          origins.output,
+        );
+        if (
+          !origins.loaded.some(
+            (edge) => edge.target === target && edge.kind === "module",
+          )
+        )
+          throw new Error("Module is outside observed output graph");
+        const original =
+          (source.path === "tools/styleguide/index.html"
+            ? ""
+            : "src/browser/") +
+          target.slice(origins.output.length + 1).replace(/\.js$/, ".ts");
+        if (!sources.has(original))
+          throw new Error("Output module lacks acquired original");
+        return sources.get(original);
+      } catch (error) {
+        issue(from, line, error.message);
+        return null;
+      }
+    }
     let relative = path.posix.normalize(
       clean.startsWith("/")
         ? path.posix.join(mount?.source ?? "", clean.slice(1))
@@ -133,8 +973,8 @@ function buildPage(source, sources, root, mount) {
       const physical = within(root, relative);
       if (physical) {
         const bytes = readFileSync(physical);
-        const extracted = inspectSources({
-          files: [
+        const extracted = inspectSources(
+          sourceRequest([
             {
               path: relative,
               kind: "css",
@@ -142,8 +982,8 @@ function buildPage(source, sources, root, mount) {
               digest: createHash("sha256").update(bytes).digest("hex"),
               fragments: [],
             },
-          ],
-        }).files[0];
+          ]),
+        ).files[0];
         extracted.generated = true;
         return extracted;
       }
@@ -868,6 +1708,7 @@ export function effectiveStyle(
     value: null,
     evidence,
     references,
+    origins: [],
     unresolved: [{ path: target.path, line: target.line, reason }],
   });
   if (page.unresolved.length)
@@ -941,6 +1782,7 @@ export function effectiveStyle(
         value: null,
         evidence: [],
         references: [],
+        origins: [],
         unresolved: [],
       };
     }
@@ -1000,6 +1842,13 @@ export function effectiveStyle(
       value: text,
       evidence,
       references,
+      origins: [
+        ...new Set(
+          evidence
+            .map((declaration) => certifiedDeclarations.get(declaration))
+            .filter(Boolean),
+        ),
+      ],
       unresolved: [],
     };
   }
