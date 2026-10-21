@@ -1331,45 +1331,236 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
     ts.isCallExpression(node.parent) &&
     node.parent.expression === node &&
     !node.parent.questionDotToken;
-  // A builtin may be called at supported sites, but never retained, replaced,
-  // reflected on or reached through a global-object alias in this proof.
-  const svgBuiltinsIntact = all.every((node) => {
-    if (["prototype", "__proto__", "constructor"].includes(member(node)))
-      return false;
-    if (!ts.isIdentifier(node)) return true;
-    const parent = node.parent;
+  const svgMemberNames = (node) => {
+    if (ts.isPropertyAccessExpression(node)) return [node.name.text];
+    if (ts.isElementAccessExpression(node))
+      return values(node.argumentExpression)?.map((value) => value.text);
+    if (ts.isBindingElement(node) && ts.isObjectBindingPattern(node.parent)) {
+      const key = node.propertyName ?? node.name;
+      if (ts.isIdentifier(key) || ts.isStringLiteral(key)) return [key.text];
+      return ts.isComputedPropertyName(key)
+        ? values(key.expression)?.map((value) => value.text)
+        : null;
+    }
+    return [];
+  };
+  const lexicalReads = (name, inspect) => {
+    const identity = localSymbol(name);
+    return (
+      identity &&
+      identity.declarations?.length === 1 &&
+      all.every(
+        (use) =>
+          use === name ||
+          !ts.isIdentifier(use) ||
+          localSymbol(use) !== identity ||
+          inspect(use),
+      )
+    );
+  };
+  const stableFunction = (fn) =>
+    ts.isFunctionDeclaration(fn) &&
+    fn.name &&
+    lexicalReads(fn.name, directCall);
+  function svgTextReceiver(node, seen = new Set()) {
+    if (!node || seen.has(node)) return false;
+    seen = new Set([...seen, node]);
+    if (namespace(node) !== "unknown") return true;
+    if (ts.isIdentifier(node)) return svgTextReceiver(binding(node), seen);
+    if (!ts.isCallExpression(node) || node.questionDotToken) return false;
+    const declarations = localSymbol(node.expression)?.declarations;
+    const fn = declarations?.length === 1 ? declarations[0] : null;
     if (
-      (ts.isPropertyAccessExpression(parent) && parent.name === node) ||
-      ((ts.isPropertyAssignment(parent) || ts.isMethodDeclaration(parent)) &&
-        parent.name === node)
-    )
-      return true;
-    if (
-      ["eval", "Function", "Reflect", "globalThis", "window", "self"].includes(
-        node.text,
+      !fn ||
+      !stableFunction(fn) ||
+      !fn.body ||
+      fn.asteriskToken ||
+      fn.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
       )
     )
       return false;
-    if (!["Object", "document", "String"].includes(node.text)) return true;
-    if (localSymbol(node)?.declarations?.length) return false;
-    if (node.text === "String") return directCall(node);
+    const returned = fn.body.statements.at(-1);
+    const returns = [];
+    const visit = (child) => {
+      if (ts.isReturnStatement(child)) returns.push(child);
+      ts.forEachChild(child, visit);
+    };
+    visit(fn.body);
     return (
-      ts.isPropertyAccessExpression(parent) &&
-      parent.expression === node &&
-      !parent.questionDotToken &&
-      directCall(parent) &&
-      (node.text === "Object"
-        ? ["entries", "keys", "values"].includes(parent.name.text)
-        : ["createElement", "createElementNS", "createTextNode"].includes(
-            parent.name.text,
-          ))
+      returns.length === 1 &&
+      returned === returns[0] &&
+      returned.expression &&
+      ts.isIdentifier(returned.expression) &&
+      namespace(returned.expression) !== "unknown"
     );
-  });
+  }
+  // Unknown keys can produce a native constructor. Follow retained references
+  // through const aliases and local parameters; only scalar sinks are terminal.
+  // This is a use inventory, not execution of functions or imported modules.
+  function svgReadUse(node, helper, seen = new Set()) {
+    if (seen.has(node) || seen.size > 64) return false;
+    seen = new Set([...seen, node]);
+    const parent = node.parent;
+    const inspect = (use) => svgReadUse(use, helper, seen);
+    if (ts.isBindingElement(node))
+      return ts.isIdentifier(node.name) && lexicalReads(node.name, inspect);
+    if (ts.isTypeNode(parent)) return true;
+    if (
+      ts.isParenthesizedExpression(parent) ||
+      ts.isAsExpression(parent) ||
+      ts.isNonNullExpression(parent) ||
+      ts.isSatisfiesExpression(parent) ||
+      (receiver(parent) === node && svgMemberNames(parent)?.length)
+    )
+      return inspect(parent);
+    if (
+      ts.isVariableDeclaration(parent) &&
+      parent.initializer === node &&
+      ts.isIdentifier(parent.name) &&
+      parent.parent.flags & ts.NodeFlags.Const
+    )
+      return lexicalReads(parent.name, inspect);
+    if (ts.isTemplateSpan(parent) || ts.isTypeOfExpression(parent)) return true;
+    if (ts.isBinaryExpression(parent)) {
+      if (
+        [
+          ts.SyntaxKind.EqualsEqualsEqualsToken,
+          ts.SyntaxKind.ExclamationEqualsEqualsToken,
+        ].includes(parent.operatorToken.kind)
+      )
+        return true;
+      if (
+        parent.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        parent.right === node &&
+        ["textContent", "className", "href"].includes(member(parent.left)) &&
+        svgTextReceiver(receiver(parent.left))
+      )
+        return true;
+      return false;
+    }
+    if (
+      ts.isPropertyAssignment(parent) &&
+      parent.initializer === node &&
+      /^(?:class|id|role|href|data-[\w-]+|aria-[\w-]+)$/.test(
+        parent.name.text ?? "",
+      ) &&
+      ts.isObjectLiteralExpression(parent.parent) &&
+      ts.isCallExpression(parent.parent.parent) &&
+      parent.parent.parent.arguments[1] === parent.parent &&
+      sameBinding(parent.parent.parent.expression, helper.name)
+    )
+      return true;
+    if (!ts.isCallExpression(parent) || parent.questionDotToken) return false;
+    if (parent.expression === node) {
+      // Direct dispatch on a lexical import retains its existing runtime
+      // boundary. Local receivers and retained/aliased method values do not.
+      const declarations = localSymbol(receiver(node))?.declarations;
+      return (
+        declarations?.length === 1 &&
+        ts.isImportSpecifier(declarations[0]) &&
+        !declarations[0].isTypeOnly &&
+        !declarations[0].parent.parent.isTypeOnly
+      );
+    }
+    const index = parent.arguments.indexOf(node);
+    if (index < 0) return false;
+    if (
+      parent.arguments.length === 1 &&
+      (builtin(parent.expression, "String") ||
+        (member(parent.expression) === "isArray" &&
+          builtin(receiver(parent.expression), "Array")))
+    )
+      return true;
+    const declarations = localSymbol(parent.expression)?.declarations;
+    const fn = declarations?.length === 1 ? declarations[0] : null;
+    const parameter = fn && stableFunction(fn) ? fn.parameters[index] : null;
+    return (
+      parameter &&
+      ts.isIdentifier(parameter.name) &&
+      !parameter.dotDotDotToken &&
+      (!parameter.initializer || values(parameter.initializer)) &&
+      lexicalReads(parameter.name, inspect)
+    );
+  }
+  // A builtin may be called at supported sites, but never retained, replaced,
+  // reflected on or reached through a global-object alias in this proof.
+  const svgBuiltinsIntact = (helper) =>
+    all.every((node) => {
+      // Destructuring assignment can retrieve a constructor without an access
+      // expression. Only declaration bindings have the use inventory below.
+      if (
+        (ts.isBinaryExpression(node) &&
+          (ts.isObjectLiteralExpression(node.left) ||
+            ts.isArrayLiteralExpression(node.left))) ||
+        ((ts.isForOfStatement(node) || ts.isForInStatement(node)) &&
+          !ts.isVariableDeclarationList(node.initializer))
+      )
+        return false;
+      const names = svgMemberNames(node);
+      if (
+        names?.some((name) =>
+          [
+            "prototype",
+            "__proto__",
+            "constructor",
+            "__defineGetter__",
+            "__defineSetter__",
+            "__lookupGetter__",
+            "__lookupSetter__",
+            "Object",
+            "String",
+            "Array",
+            "document",
+            "Function",
+            "eval",
+            "Reflect",
+          ].includes(name),
+        )
+      )
+        return false;
+      if (!names && !svgReadUse(node, helper)) return false;
+      if (!ts.isIdentifier(node)) return true;
+      const parent = node.parent;
+      if (
+        (ts.isPropertyAccessExpression(parent) && parent.name === node) ||
+        ((ts.isPropertyAssignment(parent) || ts.isMethodDeclaration(parent)) &&
+          parent.name === node)
+      )
+        return true;
+      if (
+        [
+          "eval",
+          "Function",
+          "Reflect",
+          "globalThis",
+          "window",
+          "self",
+        ].includes(node.text)
+      )
+        return false;
+      if (!["Object", "document", "String", "Array"].includes(node.text))
+        return true;
+      if (localSymbol(node)?.declarations?.length) return false;
+      if (node.text === "String") return directCall(node);
+      return (
+        ts.isPropertyAccessExpression(parent) &&
+        parent.expression === node &&
+        !parent.questionDotToken &&
+        directCall(parent) &&
+        (node.text === "Object"
+          ? ["entries", "keys", "values"].includes(parent.name.text)
+          : node.text === "Array"
+            ? parent.name.text === "isArray"
+            : ["createElement", "createElementNS", "createTextNode"].includes(
+                parent.name.text,
+              ))
+      );
+    });
   for (const fn of source.statements.filter(
     (node) => ts.isFunctionDeclaration(node) && node.name && node.body,
   )) {
     if (
-      !svgBuiltinsIntact ||
       fn.modifiers?.length ||
       fn.asteriskToken ||
       fn.parameters.length !== 2 ||
@@ -1475,6 +1666,7 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
       (node) => ts.isIdentifier(node) && localSymbol(node) === identity,
     );
     if (
+      !svgBuiltinsIntact(fn) ||
       uses.some(
         (node) =>
           node !== fn.name &&

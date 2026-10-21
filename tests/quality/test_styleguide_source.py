@@ -1307,6 +1307,81 @@ el.style.opacity = '0'; el.style.width = '12px';
                 with self.assertRaises(self.module.QualityError):
                     self.verdict()
 
+    def test_svg_helper_refuses_computed_reflection_and_uncertain_mutation(self):
+        for prefix in [
+                "({})['con' + 'structor'].entries = replacement;",
+                "const key = `con${'structor'}`; ({})[key].entries = replacement;",
+                "const key = flag ? 'safe' : 'constructor'; ({})[key].entries = replacement;",
+                "const key = unknown; target[key].entries = replacement;",
+                "const native = target[unknown]; native.entries = replacement;",
+                "const native = target[unknown]; const alias = native; alias[other] = replacement;",
+                "const native = target[unknown]; consume(native);",
+                "const native = target[unknown]; publish({native});",
+                "target[unknown] = replacement;",
+                "delete target[unknown];",
+                "target[unknown]++;",
+                "({})[unknown]('code');",
+                "const {['con' + 'structor']: native} = {}; native.entries = replacement;",
+                "const {[unknown]: native} = target; consume(native);",
+                "({constructor: native} = {}); native.entries = replacement;",
+                "const native = target[unknown]; function change(value) { value.entries = replacement; } change(native);",
+                "const native = target[unknown]; function use(value) { return value; } use(native);",
+                "function use(value) { String(value); } use = consume; use(target[unknown]);",
+                "top['O' + 'bject'].entries = replacement;",
+        ]:
+            with self.subTest(prefix=prefix):
+                self.write("view/p.ts", prefix + self.svg_helper() + "makeShape('g', {});")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_public_token_method_refuses_computed_svg_builtin_mutation(self):
+        checker = importlib.import_module("check_styleguide")
+        self.write("view/p.ts", self.svg_helper() +
+                   '\n({})["con" + "structor"].entries = () => [["opacity", ".37"]];\n'
+                   "makeShape('g', {});")
+        record = self.root / ".runs/result.jsonl"
+        with redirect_stderr(io.StringIO()):
+            actual = checker.main(["--check", "tokens", "--record", str(record)], root=self.root)
+        result = json.loads(record.read_text(encoding="utf-8"))
+        self.assertEqual(actual, 2, result)
+        self.assertIsNone(result["invariant"])
+        self.assertNotEqual(result["verdict"], "pass")
+
+    def test_svg_helper_refuses_replaced_scalar_read_sink(self):
+        for prefix in ["Array.isArray = consume;", "const native = Array; consume(native);",
+                       "const node = document.createElement('p'); node.__defineSetter__('textContent', consume); node.textContent = target[unknown];"]:
+            with self.subTest(prefix=prefix):
+                self.write("view/p.ts", prefix + "Array.isArray(target[unknown]);" +
+                           self.svg_helper() + "makeShape('g', {});")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
+    def test_svg_helper_keeps_bounded_reads_and_imported_dispatch(self):
+        cases = [
+            "const key = 'la' + 'bel'; const value = target[key]; consume(value);",
+            "const value = target[unknown]; const alias = value; String(alias);",
+            "function label(value = '') { const node = document.createElement('p'); node.textContent = value; return node; } label(target[unknown]);",
+            "function text() { const node = document.createElement('a'); return node; } const node = text(); node.href = target[unknown];",
+            "const {[unknown]: value} = target; String(value);",
+            "const value = target[unknown]; makeShape('g', {'aria-label': value});",
+        ]
+        for prefix in cases:
+            with self.subTest(prefix=prefix):
+                self.write("view/p.ts", prefix + self.svg_helper() + "makeShape('g', {});")
+                self.assertIs(self.verdict(), True)
+        self.write("view/factories.ts", "export const choices = {plain: () => null};")
+        self.write("view/p.ts", "import {choices} from './factories.js'; choices[unknown]({});" +
+                   self.svg_helper() + "makeShape('g', {});")
+        self.assertIs(self.verdict(), True)
+        for dispatch in ["const alias = choices[unknown]; alias({});",
+                         "choices[unknown].entries = replacement;",
+                         "consume(choices[unknown]);"]:
+            with self.subTest(dispatch=dispatch):
+                self.write("view/p.ts", "import {choices} from './factories.js';" + dispatch +
+                           self.svg_helper() + "makeShape('g', {});")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+
     def test_public_token_method_keeps_python_record_dom_and_svg_boundaries(self):
         checker = importlib.import_module("check_styleguide")
         cases = [
