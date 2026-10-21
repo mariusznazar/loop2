@@ -81,7 +81,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL(".", import.meta.url));
 const ext = "{js,mjs,cjs,jsx,ts,mts,cts,tsx}";
 const typed = "{ts,mts,cts,tsx}";
-const dirs = ["src/browser", "src/server", "scripts", "tests/sim", "tests/view", "tests/quality"];
+const dirs = ["src/browser", "src/server", "tools/styleguide", "scripts", "tests/sim", "tests/view", "tests/quality"];
 const source = [...dirs.map((dir) => `${dir}/**/*.${ext}`), "tests/http.test.mjs", "tests/startup.test.mjs", "eslint.config.mjs", "prettier.config.mjs"];
 const typescript = dirs.map((dir) => `${dir}/**/*.${typed}`);
 const excluded = ["**/node_modules/**", "**/dist/**", ".the-way/**", ".runs/**", ".superpowers/**"];
@@ -95,13 +95,13 @@ function program(configPath, includes, extraOptions = {}) {
     options: { ...parsed.options, noEmit: true, jsx: ts.JsxEmit.Preserve, ...extraOptions },
   });
 }
-const programs = [program("tsconfig.browser.json", ["src/browser/**/*"]), program("tsconfig.server.json", ["src/server/**/*"]), program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], { types: ["node"] })];
+const programs = [program("tsconfig.browser.json", ["src/browser/**/*"]), program("tsconfig.server.json", ["src/server/**/*"]), program("tsconfig.styleguide.json", ["tools/styleguide/**/*"]), program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], { types: ["node"] })];
 export default [
   { ignores: excluded },
   { ...js.configs.recommended, files: source, languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
   ...tseslint.configs.recommendedTypeChecked.map((config) => ({ ...config, files: typescript })),
   { files: typescript, languageOptions: { parserOptions: { programs, tsconfigRootDir: root } } },
-  { files: [`src/browser/**/*.${ext}`], languageOptions: { globals: globals.browser } },
+  { files: [`src/browser/**/*.${ext}`, `tools/styleguide/**/*.${ext}`], languageOptions: { globals: globals.browser } },
   { files: [`src/server/**/*.${ext}`, `scripts/**/*.${ext}`, `tests/**/*.${ext}`, "*.config.mjs"], languageOptions: { globals: globals.node } },
 ];
 ```
@@ -115,7 +115,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL(".", import.meta.url));
 const ext = "{js,mjs,cjs,jsx,ts,mts,cts,tsx}";
 const typed = "{ts,mts,cts,tsx}";
-const dirs = ["src/browser", "src/server", "scripts", "tests/sim", "tests/view", "tests/quality"];
+const dirs = ["src/browser", "src/server", "tools/styleguide", "scripts", "tests/sim", "tests/view", "tests/quality"];
 const source = [...dirs.map((dir) => `${dir}/**/*.${ext}`), "tests/http.test.mjs", "tests/startup.test.mjs", "eslint.config.mjs", "prettier.config.mjs"];
 const typescript = dirs.map((dir) => `${dir}/**/*.${typed}`);
 const excluded = ["**/node_modules/**", "**/dist/**", ".the-way/**", ".runs/**", ".superpowers/**"];
@@ -129,13 +129,13 @@ function program(configPath, includes, extraOptions = {}) {
     options: { ...parsed.options, noEmit: true, jsx: ts.JsxEmit.Preserve, ...extraOptions },
   });
 }
-const programs = [program("tsconfig.browser.json", ["src/browser/**/*"]), program("tsconfig.server.json", ["src/server/**/*"]), program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], { types: ["node"] })];
+const programs = [program("tsconfig.browser.json", ["src/browser/**/*"]), program("tsconfig.server.json", ["src/server/**/*"]), program("tsconfig.styleguide.json", ["tools/styleguide/**/*"]), program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], { types: ["node"] })];
 export default [
   { ignores: excluded },
   { ...js.configs.recommended, files: source, languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
   ...tseslint.configs.recommendedTypeChecked.map((config) => ({ ...config, files: typescript })),
   { files: typescript, languageOptions: { parserOptions: { programs, tsconfigRootDir: root } } },
-  { files: [`src/browser/**/*.${ext}`], languageOptions: { globals: globals.browser } },
+  { files: [`src/browser/**/*.${ext}`, `tools/styleguide/**/*.${ext}`], languageOptions: { globals: globals.browser } },
   { files: [`src/server/**/*.${ext}`, `scripts/**/*.${ext}`, `tests/**/*.${ext}`, "*.config.mjs"], languageOptions: { globals: globals.node } },
   { files: source, rules: { "no-debugger": "off" } },
 ];
@@ -311,7 +311,8 @@ To przykład testu, bez osobnego formalnego rodzaju testów.
 ### Odłożone rodzaje i formatowanie
 
 Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce testów
-Node/Python, budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone.
+Node/Python, budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone;
+CSS nie ma osobnego wzorca ani pliku wytycznych rodzaju (D-28@f70f8d16).
 Wzorce sesji, zapisu gry i poczty powstaną przy pierwszych implementacjach.
 Przed wyborem wzorca odłożonego istniejącego rodzaju porównuje się jego pliki.
 Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Dla przyjętych linterów

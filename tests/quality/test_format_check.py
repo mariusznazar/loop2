@@ -138,6 +138,34 @@ class FormatChecks(unittest.TestCase):
         self.write(".gitattributes", "*.ts -text eol=lf\n")
         self.assertEqual(self.verdict()[0], 1)
 
+    def test_actual_styleguide_paths_keep_lf_and_font_licence_keeps_its_bytes(self):
+        root = Path(__file__).resolve().parents[2]
+        paths = ["tools/styleguide/main.ts", "tools/styleguide/page.ts",
+                 "tools/styleguide/index.html", "tools/styleguide/styles.css"]
+        result = subprocess.run(["git", "check-attr", "-z", "text", "eol", "--", *paths,
+                                 "assets/fonts/OFL.txt"], cwd=root, capture_output=True,
+                                check=True)
+        fields = result.stdout.decode("utf-8").strip("\0").split("\0")
+        attributes = {(fields[index], fields[index + 1]): fields[index + 2]
+                      for index in range(0, len(fields), 3)}
+        for path in paths:
+            self.assertEqual(attributes[path, "text"], "set", path)
+            self.assertEqual(attributes[path, "eol"], "lf", path)
+        self.assertEqual(attributes["assets/fonts/OFL.txt", "text"], "unset")
+
+    def test_owned_tools_styleguide_sources_are_discovered_and_formatted(self):
+        mapping = (self.root / "foundations/part_map.md").read_text(encoding="utf-8")
+        self.write("foundations/part_map.md", mapping.replace(
+            "- **Files:** browser-view/**", "- **Files:** browser-view/**\n  tools/styleguide/**"))
+        for path in ("tools/styleguide/new.ts", "tools/styleguide/new.html",
+                     "tools/styleguide/new.css"):
+            with self.subTest(path=path):
+                source = self.write(path, "value=1\n")
+                self.assertEqual(self.verdict()[0], 1)
+                source.write_bytes(b"value = 1;\n")
+                self.assertEqual(self.verdict()[0], 0)
+                source.unlink()
+
     def test_local_attributes_cannot_replace_missing_repository_rules(self):
         self.write(".gitattributes", "")
         self.assertEqual(self.verdict()[0], 1)

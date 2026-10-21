@@ -229,6 +229,34 @@ class EslintChecks(unittest.TestCase):
             self.assertEqual(self.check.source_files(fixture),
                              ["scripts/deep/new.mts", "tests/new/new.jsx"])
 
+    def test_styleguide_sources_have_the_complete_typed_rules_and_browser_globals(self):
+        paths = ["tools/styleguide/main.ts", "tools/styleguide/page.ts"]
+        script = """
+          import { ESLint } from 'eslint';
+          const lint = new ESLint({allowInlineConfig: false});
+          const results = [];
+          for (const filePath of ['tools/styleguide/main.ts', 'tools/styleguide/page.ts']) {
+            const config = await lint.calculateConfigForFile(filePath);
+            const messages = await lint.lintFiles([filePath]);
+            results.push({path: filePath, rules: config?.rules,
+              document: Object.hasOwn(config?.languageOptions.globals ?? {}, 'document'),
+              fatal: messages.flatMap(item => item.messages).some(item => item.fatal)});
+          }
+          console.log(JSON.stringify(results));
+        """
+        result = subprocess.run(["node", "--input-type=module", "--eval", script],
+                                cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        entries = json.loads(result.stdout)
+        self.assertEqual([entry["path"] for entry in entries], paths)
+        for entry in entries:
+            with self.subTest(path=entry["path"]):
+                active = {name for name, setting in (entry.get("rules") or {}).items()
+                          if setting[0] != 0}
+                self.assertEqual(active, set(self.check.expected_rules(entry["path"])))
+                self.assertTrue(entry["document"])
+                self.assertFalse(entry["fatal"])
+
     def test_parser_rejects_incomplete_duplicate_unexpected_and_malformed_results(self):
         good = {"schema": 1, "files": [self.entry()]}
         self.assertEqual(self.check.parse_report(json.dumps(good), ["scripts/new.js"]), good["files"])

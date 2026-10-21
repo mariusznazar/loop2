@@ -60,3 +60,13 @@ src/browser/**/*.css text eol=lf
 tests/view/**/*.css text eol=lf
 tests/sim/**/*.css text eol=lf
 assets/fonts/OFL.txt -text
+tools/styleguide/**/*.ts text eol=lf
+tools/styleguide/**/*.mts text eol=lf
+tools/styleguide/**/*.cts text eol=lf
+tools/styleguide/**/*.tsx text eol=lf
+tools/styleguide/**/*.js text eol=lf
+tools/styleguide/**/*.mjs text eol=lf
+tools/styleguide/**/*.cjs text eol=lf
+tools/styleguide/**/*.jsx text eol=lf
+tools/styleguide/**/*.html text eol=lf
+tools/styleguide/**/*.css text eol=lf

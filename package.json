@@ -11,7 +11,8 @@
     "build": "node scripts/build.mjs",
     "start": "node dist/server/main.js",
     "dev": "npm run build && npm start",
-    "test": "npm run build && node --test tests/http.test.mjs tests/startup.test.mjs \"tests/sim/*.test.mjs\" \"tests/view/*.test.mjs\""
+    "kitchen-sink": "node scripts/kitchen-sink.mjs",
+    "test": "npm run build && node --test tests/http.test.mjs tests/startup.test.mjs \"tests/sim/*.test.mjs\" \"tests/view/*.test.mjs\" && node --test --test-concurrency=1 \"tests/quality/*.test.mjs\""
   },
   "dependencies": {
     "express": "5.2.1"

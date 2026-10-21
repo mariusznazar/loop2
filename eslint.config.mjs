@@ -10,6 +10,7 @@ const typedExtensions = "{ts,mts,cts,tsx}";
 const directories = [
   "src/browser",
   "src/server",
+  "tools/styleguide",
   "scripts",
   "tests/sim",
   "tests/view",
@@ -72,6 +73,7 @@ function program(configPath, includes, extraOptions = {}) {
 const programs = [
   program("tsconfig.browser.json", ["src/browser/**/*"]),
   program("tsconfig.server.json", ["src/server/**/*"]),
+  program("tsconfig.styleguide.json", ["tools/styleguide/**/*"]),
   program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], {
     types: ["node"],
   }),
@@ -93,7 +95,10 @@ export default [
     languageOptions: { parserOptions: { programs, tsconfigRootDir: root } },
   },
   {
-    files: [`src/browser/**/*.${extensions}`],
+    files: [
+      `src/browser/**/*.${extensions}`,
+      `tools/styleguide/**/*.${extensions}`,
+    ],
     languageOptions: { globals: globals.browser },
   },
   {
