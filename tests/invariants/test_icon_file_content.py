@@ -129,7 +129,7 @@ CLEAN = (
           '<path id="p" d="M0 0h10v10z"/></defs>'
           '<style>path { fill: url(#g); }</style>'
           '<use href="#p"/><use xlink:href="#p"/>'
-          '<path fill="#2b2b2b" style="fill: url( #g ); stroke: none" d="M0 0h512v512H0z"/>'
+          '<path fill="url(#g)" style="fill: url( #g ); stroke: none" d="M0 0h512v512H0z"/>'
           '<text>one</text>',
           f' xmlns:xlink="{XLINK}"')
 )
