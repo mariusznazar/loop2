@@ -850,6 +850,63 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
   }
 }
 
+/** Independently parse original relationship sites, without consuming extracted edges. */
+export function inspectImportCoverage(request, tools = loadTools()) {
+  const { ts } = tools;
+  return {
+    schema: 1,
+    files: request.files.map((input) => {
+      const source = ts.createSourceFile(
+        input.path,
+        input.source,
+        ts.ScriptTarget.Latest,
+        true,
+        /\.[jt]sx$/i.test(input.path) ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+      );
+      const sites = [];
+      function visit(node) {
+        let site = null;
+        if (
+          ts.isImportDeclaration(node) ||
+          (ts.isExportDeclaration(node) && node.moduleSpecifier) ||
+          ts.isImportEqualsDeclaration(node) ||
+          ts.isImportTypeNode(node)
+        )
+          site = node;
+        else if (ts.isCallExpression(node)) {
+          const expression = node.expression;
+          if (
+            expression.kind === ts.SyntaxKind.ImportKeyword ||
+            (ts.isPropertyAccessExpression(expression) &&
+              expression.name.text === "require") ||
+            (ts.isElementAccessExpression(expression) &&
+              ts.isStringLiteral(expression.argumentExpression) &&
+              expression.argumentExpression.text === "require")
+          )
+            site = node;
+        } else if (
+          ts.isIdentifier(node) &&
+          node.text === "require" &&
+          !(
+            ts.isPropertyAccessExpression(node.parent) &&
+            node.parent.name === node
+          )
+        ) {
+          site =
+            ts.isCallExpression(node.parent) && node.parent.expression === node
+              ? node.parent
+              : node;
+        }
+        if (site) sites.push({ start: site.getStart(source), end: site.end });
+        ts.forEachChild(node, visit);
+      }
+      visit(source);
+      sites.sort((a, b) => a.start - b.start || a.end - b.end);
+      return { path: input.path, digest: input.digest, sites };
+    }),
+  };
+}
+
 /** Parse module relationships only; never resolve, load or execute imported code. */
 export function inspectImports(request, tools = loadTools()) {
   const { ts } = tools;
@@ -931,10 +988,12 @@ export function inspectImports(request, tools = loadTools()) {
         )
           return null;
         for (const node of nodes) {
-          if (
-            ts.isIdentifier(node) &&
-            checker.getSymbolAtLocation(node) === symbol
-          ) {
+          const reference = ts.isIdentifier(node)
+            ? ts.isShorthandPropertyAssignment(node.parent)
+              ? checker.getShorthandAssignmentValueSymbol(node.parent)
+              : checker.getSymbolAtLocation(node)
+            : null;
+          if (ts.isIdentifier(node) && reference === symbol) {
             if (node === binding.name) continue;
             const call = node.parent;
             if (
@@ -1182,7 +1241,9 @@ async function main() {
   if (
     request.schema !== 2 ||
     path.resolve(request.root) !== process.cwd() ||
-    !["imports", "sources", "focus", "adjacency"].includes(request.operation) ||
+    !["imports", "coverage", "sources", "focus", "adjacency"].includes(
+      request.operation,
+    ) ||
     !Array.isArray(request.files) ||
     !Array.isArray(request.dependencies) ||
     !Array.isArray(request.configurations) ||
@@ -1213,6 +1274,10 @@ async function main() {
   }
   if (request.operation === "imports") {
     process.stdout.write(JSON.stringify(inspectImports(request)) + "\n");
+    return;
+  }
+  if (request.operation === "coverage") {
+    process.stdout.write(JSON.stringify(inspectImportCoverage(request)) + "\n");
     return;
   }
   const facts = freeze(inspectSources(request));

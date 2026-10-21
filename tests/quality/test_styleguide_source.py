@@ -67,6 +67,7 @@ class SourceChecks(unittest.TestCase):
                 with self.corrupt_transport(mutate):
                     with self.assertRaises(self.module.QualityError):
                         self.facts()
+
         def duplicate(report, request):
             if request["operation"] == "imports":
                 report["files"][0]["imports"] *= 2
@@ -90,6 +91,80 @@ class SourceChecks(unittest.TestCase):
                 with self.corrupt_transport(mutate):
                     with self.assertRaises(self.module.QualityError):
                         self.facts()
+
+    def test_fix_1_total_and_partial_parser_edge_omissions_are_inability(self):
+        self.dependency_fixture('import { x } from "../data/a.js";\n'
+                                'import { y } from "../data/missing.js";')
+        for retain in [[], [0], [1]]:
+            def omit(report, request, retain=retain):
+                if request["operation"] == "imports":
+                    for entry in report["files"]:
+                        if entry["path"] == "view/main.ts":
+                            entry["imports"] = [entry["imports"][index] for index in retain]
+            with self.subTest(retain=retain):
+                with self.corrupt_transport(omit):
+                    with self.assertRaises(self.module.QualityError):
+                        self.facts()
+
+    def test_fix_1_url_shorthand_is_an_escape_of_its_value_binding(self):
+        self.dependency_fixture('const moduleURL = new URL("../data/a.js", import.meta.url);\n'
+                                'const leaked = { moduleURL };\n'
+                                'leaked.moduleURL.pathname = "/other.js";\n'
+                                'await import(moduleURL);')
+        facts = self.facts()
+        self.assertTrue(facts["unresolved"])
+        self.assertEqual(facts["dependencies"], [])
+        self.write("view/main.ts", 'const moduleURL = new URL("../data/a.js", import.meta.url);\n'
+                   'const separate = { moduleURL: "unrelated property name" };\n'
+                   'await import(moduleURL);')
+        self.assertEqual(self.facts()["unresolved"], [])
+
+    def test_fix_1_original_coverage_witness_is_strictly_validated(self):
+        self.dependency_fixture()
+        for change in ["missing-files", "missing-sites", "duplicate-sites", "digest", "span", "schema"]:
+            def corrupt(report, request, change=change):
+                if request["operation"] != "coverage":
+                    return
+                if change == "missing-files":
+                    report["files"] = []
+                elif change == "missing-sites":
+                    report["files"][0]["sites"] = []
+                elif change == "duplicate-sites":
+                    report["files"][0]["sites"] *= 2
+                elif change == "digest":
+                    report["files"][0]["digest"] = "0" * 64
+                elif change == "span":
+                    report["files"][0]["sites"][0]["start"] = True
+                else:
+                    report["schema"] = True
+            with self.subTest(change=change):
+                with self.corrupt_transport(corrupt):
+                    with self.assertRaises(self.module.QualityError):
+                        self.facts()
+
+    def test_fix_1_generated_originals_cannot_cross_excluded_components_before_read(self):
+        self.write("tests/probe.mjs", 'import { x } from "../dist/public/a.js";')
+        read = self.module._read_source
+        for directory in ["node_modules/vendor", ".git/vendor", ".runs/vendor",
+                          ".the-way/vendor", "dist/vendor", "data/node_modules/vendor"]:
+            self.write("tsconfig.browser.json", json.dumps({"compilerOptions": {
+                "module": "NodeNext", "moduleResolution": "NodeNext",
+                "rootDir": directory, "outDir": "dist/public"}}))
+            self.write(directory + "/a.ts", "export const x = 1;")
+            attempted = []
+
+            def observe(root, path, attempted=attempted):
+                attempted.append(path)
+                return read(root, path)
+
+            with self.subTest(directory=directory):
+                with patch.object(self.module, "discover_files", return_value=["tests/probe.mjs"]):
+                    with patch.object(self.module, "_read_source", side_effect=observe):
+                        facts = self.facts()
+                self.assertNotIn(directory + "/a.ts", attempted,
+                                 "excluded mapped original reached the read boundary")
+                self.assertEqual(facts["dependencies"], [])
+                self.assertTrue(facts["unresolved"])
 
     def test_final_dependency_snapshot_and_manifest_cannot_be_omitted_or_forged(self):
         self.dependency_fixture()
