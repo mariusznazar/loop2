@@ -155,6 +155,60 @@ class RecordNode {
                 self.assertTrue(facts['unresolved'] or facts['violations'], label)
                 self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']), label)
 
+    def test_record_dom_receiver_aliases_and_allocations_cannot_escape_or_change_dispatch(self):
+        # Retaining a proof after these independently supplied mutations is a false pass.
+        source = self.record_dom()
+        mutations = {
+            'review constructor alias': source.replace('return new Proxy',
+                'const alias = this; alias[unknown] = external; return new Proxy'),
+            'review prototype write': source.replace('return new Proxy',
+                'this.__proto__ = native; return new Proxy'),
+            'review instance escape': source + 'const instance = new RecordNode(); leak(instance);',
+            'constructor alias escape': source.replace('return new Proxy',
+                'const alias = this; escaped = alias; return new Proxy'),
+            'constructor alias chain': source.replace('return new Proxy',
+                'const alias = this; const second = alias; second[unknown] = external; return new Proxy'),
+            'wrapped constructor alias': source.replace('return new Proxy',
+                'const alias = (this); alias[unknown] = external; return new Proxy'),
+            'constructed instance alias': source + 'const instance = new RecordNode(); const alias = instance; alias[unknown] = external;',
+            'constructed instance write': source + 'const instance = new RecordNode(); instance[unknown] = external;',
+            'constructed direct escape': source + 'leak(new RecordNode());',
+            'unproved instance method': source.replace('class RecordNode {', 'class RecordNode { removeProperty() { const alias = this; alias[unknown] = external; }') + 'const instance = new RecordNode(); instance.removeProperty();',
+            'factory allocation escape': source + "globalThis.document = { createDocumentFragment: () => { const f = new RecordNode('template'); leak(f); f.nodeType = 11; return f; } };",
+        }
+        for label, changed in mutations.items():
+            with self.subTest(case=label):
+                self.write('view/alias.py', 'SCRIPT = r"""\n' + changed + '\n"""\n')
+                facts = self.facts()['files'][0]
+                self.assertTrue(facts['unresolved'], label)
+                self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']), label)
+
+    def test_record_dom_bounded_document_factories_and_local_callers_survive_renaming(self):
+        for renamed in [False, True]:
+            constructor, local, argument, subclass = (('Vessel', 'piece', 'label', 'Segment') if renamed
+                                                       else ('RecordNode', 'fragment', 'tag', 'Fragment'))
+            fragments = [f"{{ const {local} = new {constructor}('template'); {local}.nodeType = 11; return {local}; }}",
+                         f'new {constructor}()', f'new {subclass}()']
+            for fragment in fragments:
+                with self.subTest(renamed=renamed, fragment=fragment):
+                    factories = f"""
+class {subclass} extends {constructor} {{ constructor() {{ super('#fragment'); this.nodeType = 11; }} }}
+globalThis.document = {{
+  createElement: ({argument}) => new {constructor}({argument}),
+  createElementNS: (space, {argument}) => new {constructor}({argument}, space),
+  createDocumentFragment: () => {fragment},
+}};
+globalThis.document = {{ createElementNS: (space, {argument}) => new {constructor}({argument}) }};
+const instance = new {constructor}(); instance.setAttribute('id', 'safe');
+"""
+                    source = self.record_dom(renamed).replace('return new Proxy',
+                        f"const {local} = this; {local}.attributes.id = 'safe'; return new Proxy")
+                    self.write('view/factory.py', 'SCRIPT = r"""\n' + source + factories + '"""\n')
+                    facts = self.facts()['files'][0]
+                    self.assertEqual(facts['unresolved'], [])
+                    self.assertEqual(facts['violations'], [])
+                    self.assertEqual(sum(s['kind'].startswith('record-dom-') for s in facts['sites']), 3)
+
     def test_record_dom_all_callers_still_expose_appearance_values_and_uncertainty(self):
         callers = [
             ("new RecordNode().setAttribute('fill', '#123456');", 'fill', '#123456'),

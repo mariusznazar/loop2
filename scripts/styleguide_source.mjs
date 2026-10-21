@@ -308,6 +308,75 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
     "setProperty",
     "removeProperty",
   ]);
+  const constBinding = (node, initializer) =>
+    ts.isVariableDeclaration(node) &&
+    ts.isIdentifier(node.name) &&
+    node.initializer === initializer &&
+    node.parent.flags & ts.NodeFlags.Const;
+  const bindingUses = (declaration, accepts) =>
+    all.every(
+      (node) =>
+        !ts.isIdentifier(node) ||
+        symbol(node) !== symbol(declaration.name) ||
+        node === declaration.name ||
+        accepts(node),
+    );
+  const transportCall = (node) => {
+    const access = node.parent;
+    if (receiver(access) !== node) return false;
+    if (
+      ["setAttribute", "setAttributeNS", "toggleAttribute"].includes(
+        member(access),
+      )
+    )
+      return direct(access);
+    return (
+      member(access) === "style" &&
+      receiver(access.parent) === access &&
+      ["setProperty", "removeProperty"].includes(member(access.parent)) &&
+      direct(access.parent)
+    );
+  };
+  // Publication through the document interface is an explicit boundary. Match
+  // the complete factory body, including the sole fragment alias and its uses.
+  function documentAllocation(node) {
+    let property = node.parent;
+    while (property && !ts.isPropertyAssignment(property))
+      property = property.parent;
+    if (!property || !ts.isObjectLiteralExpression(property.parent))
+      return false;
+    const assignment = property.parent.parent;
+    if (
+      !ts.isBinaryExpression(assignment) ||
+      assignment.operatorToken.kind !== ts.SyntaxKind.EqualsToken ||
+      assignment.right !== property.parent ||
+      member(assignment.left) !== "document" ||
+      receiver(assignment.left)?.getText(source) !== "globalThis" ||
+      symbol(receiver(assignment.left))?.declarations?.length
+    )
+      return false;
+    return [
+      "createElement: ($tag) => new $Class($tag)",
+      "createElementNS: ($ns, $tag) => new $Class($tag)",
+      "createElementNS: ($ns, $tag) => new $Class($tag, $ns)",
+      "createDocumentFragment: () => new $Class()",
+      "createDocumentFragment: () => { const $fragment = new $Class('template'); $fragment.nodeType = 11; return $fragment; }",
+    ].some(
+      (body) =>
+        pattern(
+          property,
+          `probe() { const document = { ${body} }; }`,
+          (n) =>
+            n.body.statements[0].declarationList.declarations[0].initializer
+              .properties[0],
+        )?.get("$Class") === symbol(node.expression),
+    );
+  }
+  const allocationUses = (node) =>
+    documentAllocation(node) ||
+    (constBinding(node.parent, node)
+      ? bindingUses(node.parent, transportCall)
+      : transportCall(node));
   for (const owner of all.filter(ts.isClassDeclaration)) {
     const constructor = owner.members.find(ts.isConstructorDeclaration);
     if (
@@ -539,7 +608,33 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
         ["Proxy", "String", "Object", "undefined"].includes(name ?? node.text)
       )
         valid = false;
-      if (name === "prototype") valid = false;
+      if (["prototype", "__proto__"].includes(name)) valid = false;
+      if (
+        node.kind === ts.SyntaxKind.ThisKeyword &&
+        inside(node, constructor)
+      ) {
+        const parent = node.parent;
+        if (constBinding(parent, node)) {
+          if (
+            !bindingUses(parent, (use) => {
+              const access = use.parent;
+              if (receiver(access) !== use) return false;
+              if (member(access) === "attributes") return true;
+              return (
+                member(access) === "classList" &&
+                receiver(access.parent) === access &&
+                ["add", "remove"].includes(member(access.parent)) &&
+                direct(access.parent)
+              );
+            })
+          )
+            valid = false;
+        } else if (
+          receiver(parent) !== node &&
+          !(parent === proxy && proxy.arguments[0] === node)
+        )
+          valid = false;
+      }
       if (ts.isNewExpression(node) && inside(node, constructor)) {
         let scope = node.parent;
         while (scope && scope !== constructor && !ts.isFunctionLike(scope))
@@ -692,6 +787,30 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
           !pattern(
             child.members[0],
             "constructor() { super('#fragment'); this.nodeType = 11; }",
+          )
+        )
+          valid = false;
+      }
+    }
+    for (const node of all) {
+      if (
+        ts.isNewExpression(node) &&
+        descendants.has(symbol(node.expression)) &&
+        !allocationUses(node)
+      )
+        valid = false;
+      if (
+        ts.isIdentifier(node) &&
+        descendants.has(symbol(node)) &&
+        symbol(node) !== symbol(owner.name) &&
+        node !== symbol(node)?.declarations?.[0]?.name
+      ) {
+        const parent = node.parent;
+        if (
+          !(ts.isNewExpression(parent) && parent.expression === node) &&
+          !(
+            ts.isExpressionWithTypeArguments(parent) &&
+            parent.expression === node
           )
         )
           valid = false;
