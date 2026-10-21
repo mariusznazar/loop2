@@ -1528,8 +1528,11 @@ function extractTypeScript(tools, facts, text, baseLine = 1) {
           parent.name === node)
       )
         return true;
+      // The implicit argument object exposes parameter aliases outside the
+      // named-symbol use inventory, including references in nested arrows.
       if (
         [
+          "arguments",
           "eval",
           "Function",
           "Reflect",

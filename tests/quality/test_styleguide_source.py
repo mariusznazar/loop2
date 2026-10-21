@@ -1382,6 +1382,33 @@ el.style.opacity = '0'; el.style.width = '12px';
                 with self.assertRaises(self.module.QualityError):
                     self.verdict()
 
+    def test_svg_helper_refuses_implicit_arguments_in_local_scalar_consumers(self):
+        bodies = [
+            "String(value); String(arguments[0]);",
+            "'use strict'; String(value); String(arguments[0]);",
+            "const supplied = arguments; String(value); String(supplied[0]);",
+            "const describe = () => String(arguments[0]); String(value); describe();",
+        ]
+        for body in bodies:
+            with self.subTest(body=body):
+                self.write("view/p.ts", self.svg_helper() +
+                           "function label(value) { " + body + " }\n" +
+                           "label(labels[index]); makeShape('g', {});")
+                with self.assertRaises(self.module.QualityError):
+                    self.verdict()
+                sites = self.facts()["files"][0]["sites"]
+                self.assertIn("node.setAttribute(key, value)", [site["expression"] for site in sites])
+
+    def test_svg_helper_implicit_arguments_refusal_keeps_named_scalar_reads(self):
+        self.write("view/p.ts", self.svg_helper() +
+                   "function label(value) { String(value); }\n"
+                   "const notes = {arguments: 'description'}; String(notes.arguments);\n"
+                   "label(labels[index]); makeShape('g', {});")
+        self.assertIs(self.verdict(), True)
+        sites = self.facts()["files"][0]["sites"]
+        self.assertIn("String(value)", [site["expression"] for site in sites])
+        self.assertIn("label(labels[index])", [site["expression"] for site in sites])
+
     def test_public_token_method_keeps_python_record_dom_and_svg_boundaries(self):
         checker = importlib.import_module("check_styleguide")
         cases = [
