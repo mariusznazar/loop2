@@ -62,9 +62,29 @@ function extractHtml(
   text,
   baseLine = 1,
   initialNamespace = null,
+  finitePython = false,
 ) {
   try {
-    const tree = tools.html.parse(text);
+    let tree;
+    try {
+      tree = tools.html.parse(text);
+    } catch (error) {
+      // One bounded malformed-XML control leaves a child open before the final
+      // SVG close. Removing only that parser-rejected final closing token loses
+      // no attributes, text, style or script and preserves every namespace.
+      // All other grammar uncertainty remains inability.
+      const closing = text.lastIndexOf("</svg>");
+      if (
+        !finitePython ||
+        !/^<svg(?:\s|>)/.test(text) ||
+        closing < 0 ||
+        closing + 6 !== text.length ||
+        error.cause?.elementName !== ":svg:svg" ||
+        error.cause?.span?.start?.offset !== closing
+      )
+        throw error;
+      tree = tools.html.parse(text.slice(0, closing));
+    }
     function visit(node, inheritedNamespace = initialNamespace) {
       const line = baseLine + (node.sourceSpan?.start?.line ?? 0);
       let childNamespace = inheritedNamespace;
@@ -1169,6 +1189,58 @@ export function inspectImports(request, tools = loadTools()) {
   };
 }
 
+function validatePythonFragment(input, fragment) {
+  const exact = (object, keys) =>
+    object &&
+    typeof object === "object" &&
+    Object.keys(object).sort().join() === [...keys].sort().join();
+  const fields = ["text", "line", "dynamic", "kind"];
+  if (Object.hasOwn(fragment, "origin")) fields.push("origin");
+  if (
+    !exact(fragment, fields) ||
+    typeof fragment.text !== "string" ||
+    typeof fragment.dynamic !== "boolean" ||
+    !Number.isInteger(fragment.line) ||
+    fragment.line < 1 ||
+    fragment.line > input.source.split("\n").length ||
+    !["html", "typescript", "css"].includes(fragment.kind)
+  )
+    throw new Error("Invalid Python fragment");
+  if (!Object.hasOwn(fragment, "origin")) return;
+  const origin = fragment.origin;
+  if (
+    !exact(origin, ["template", "call", "inputs"]) ||
+    !Array.isArray(origin.inputs) ||
+    !origin.inputs.length ||
+    fragment.dynamic ||
+    fragment.kind !== "html"
+  )
+    throw new Error("Invalid Python expansion provenance");
+  const characters = Array.from(input.source);
+  for (const witness of [origin.template, origin.call, ...origin.inputs]) {
+    if (
+      !exact(witness, ["start", "end", "line", "expression"]) ||
+      !Number.isInteger(witness.start) ||
+      !Number.isInteger(witness.end) ||
+      !Number.isInteger(witness.line) ||
+      witness.start < 0 ||
+      witness.end <= witness.start ||
+      witness.end > characters.length ||
+      witness.expression !==
+        characters.slice(witness.start, witness.end).join("") ||
+      witness.line !==
+        characters.slice(0, witness.start).join("").split("\n").length
+    )
+      throw new Error(
+        "Python expansion witness does not match original source",
+      );
+  }
+  if (fragment.line !== origin.call.line)
+    throw new Error(
+      "Python expansion location must identify its original call",
+    );
+}
+
 export function inspectSources(request, tools = loadTools()) {
   if (
     request.schema !== 2 ||
@@ -1196,6 +1268,13 @@ export function inspectSources(request, tools = loadTools()) {
       extractTypeScript(tools, facts, input.source);
     else if (input.kind === "python") {
       for (const fragment of input.fragments) {
+        validatePythonFragment(input, fragment);
+        const offsets = Object.fromEntries(
+          ["declarations", "sites", "unresolved", "violations"].map((key) => [
+            key,
+            facts[key].length,
+          ]),
+        );
         if (fragment.dynamic)
           diagnostic(
             facts,
@@ -1206,8 +1285,24 @@ export function inspectSources(request, tools = loadTools()) {
         if (fragment.kind === "typescript")
           extractTypeScript(tools, facts, fragment.text, fragment.line);
         else if (fragment.kind === "html")
-          extractHtml(tools, facts, fragment.text, fragment.line);
+          extractHtml(
+            tools,
+            facts,
+            fragment.text,
+            fragment.line,
+            null,
+            Boolean(fragment.origin),
+          );
         else extractCss(tools.css, facts, fragment.text, fragment.line);
+        // Expanded lines are generated, not locations in the original Python.
+        // Attribute all expansion findings to the original call; retain the full
+        // template/input witness in the request instead of inventing source lines.
+        if (fragment.origin) {
+          for (const [key, start] of Object.entries(offsets)) {
+            for (const record of facts[key].slice(start))
+              record.line = fragment.line;
+          }
+        }
       }
     } else if (
       !["documentation", "font", "icon-exception", "token-values"].includes(

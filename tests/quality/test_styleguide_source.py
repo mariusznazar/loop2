@@ -558,6 +558,163 @@ class SourceChecks(unittest.TestCase):
         self.assertTrue(facts["unresolved"])
         self.assertEqual(facts["unresolved"][0]["path"], "view/p.py")
 
+    def python_template(self, tail="", expression="'<g/>'"):
+        return ('NS = "http://www.w3.org/2000/svg"\n'
+                'def picture(inner, extra=""):\n'
+                '    return f\'<svg xmlns="{NS}"{extra}>{inner}</svg>\'\n'
+                f'FIRST = picture({expression})\n' + tail)
+
+    def test_python_finite_template_binds_defaults_keywords_and_original_call(self):
+        source = self.python_template('SECOND = picture(extra=\' fill="red"\', inner="<path/>")\n')
+        self.write("view/p.py", source)
+        facts = self.facts()["files"][0]
+        self.assertEqual(facts["unresolved"], [])
+        self.assertEqual([(v["line"], v["reason"]) for v in facts["violations"]],
+                         [(5, "fill: literal color: red")])
+        fragments = self.module._python_fragments(source)
+        expanded = [f for f in fragments if "origin" in f]
+        self.assertEqual([f["text"] for f in expanded],
+                         ['<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+                          '<svg xmlns="http://www.w3.org/2000/svg" fill="red"><path/></svg>'])
+        self.assertEqual([f["origin"]["call"]["line"] for f in expanded], [4, 5])
+        self.assertTrue(all(f["origin"]["template"]["line"] == 3 for f in expanded))
+
+    def test_python_template_actual_sources_close_only_the_two_template_diagnostics(self):
+        for filename, calls, remaining in [("test_icon_credits.py", 20, 2),
+                                           ("test_icon_file_content.py", 23, 0)]:
+            with self.subTest(filename=filename):
+                source = (ROOT / "tests/invariants" / filename).read_text(encoding="utf-8")
+                self.write("view/p.py", source)
+                facts = self.facts()["files"][0]
+                self.assertEqual(len(facts["unresolved"]), remaining, facts["unresolved"])
+                self.assertEqual(facts["violations"], [])
+                expanded = [f for f in self.module._python_fragments(source) if "origin" in f]
+                self.assertEqual(len(expanded), calls)
+
+    def test_python_template_raw_holes_cannot_hide_appearance(self):
+        cases = ['<path fill="red"/>', '<path stroke-width="2"/>',
+                 '<style>g { opacity: .5 }</style>', '<g><path style="color:red">']
+        for inner in cases:
+            with self.subTest(inner=inner):
+                self.write("view/p.py", self.python_template(expression=repr(inner)))
+                facts = self.facts()["files"][0]
+                self.assertTrue(facts["violations"] or facts["unresolved"])
+
+    def test_python_malformed_final_svg_close_still_inspects_all_opening_tags(self):
+        for inner, forbidden in [('<path d="M0 0">', False),
+                                 ('<path fill="red">', True),
+                                 ('<style>g{opacity:.5}</style><path>', True)]:
+            with self.subTest(inner=inner):
+                self.write("view/p.py", self.python_template(expression=repr(inner)))
+                facts = self.facts()["files"][0]
+                self.assertEqual(facts["unresolved"], [])
+                self.assertEqual(bool(facts["violations"]), forbidden)
+        for extra in [' fill="red"', ' style="opacity:.5"', '><style>g{color:red}</style><g x="']:
+            with self.subTest(extra=extra):
+                self.write("view/p.py", self.python_template(
+                    f'SECOND = picture("<g/>", {extra!r})\n'))
+                facts = self.facts()["files"][0]
+                self.assertTrue(facts["violations"] or facts["unresolved"])
+
+    def test_python_template_unknown_calls_mutation_escape_and_recursion_refuse(self):
+        tails = ['SECOND = picture(unknown)\n', 'alias = picture\n', 'consume(picture)\n',
+                 'picture = other\n', 'NS = "other"\n',
+                 'SECOND = picture(*values)\n', 'SECOND = picture(**values)\n',
+                 'SECOND = picture("<g/>", extra=unknown())\n',
+                 'def hidden(picture):\n    return picture("<g/>")\n',
+                 'globals()["NS"] = "other"\n']
+        sources = [self.python_template(tail) for tail in tails]
+        sources += [self.python_template().replace('extra=""', 'extra=unknown'),
+                    self.python_template().replace('{inner}', '{picture(inner)}'),
+                    self.python_template().replace('{inner}', '{inner.upper()}')]
+        for source in sources:
+            with self.subTest(source=source):
+                self.write("view/p.py", source)
+                self.assertTrue(self.facts()["files"][0]["unresolved"])
+
+    def test_python_template_non_name_bindings_and_reflection_refuse(self):
+        tails = ['try:\n    run()\nexcept Exception as picture:\n    pass\n',
+                 'match value:\n    case {"x": picture}:\n        pass\n',
+                 'import sys\nsys.modules[__name__].NS = "changed"\n',
+                 'other.__globals__["NS"] = "changed"\n']
+        sources = [self.python_template(tail) for tail in tails]
+        sources.append(self.python_template().replace('extra=""', 'extra=unknown').replace(
+            "FIRST = picture('<g/>')", "FIRST = picture('<g/>', '')"))
+        for source in sources:
+            with self.subTest(source=source):
+                self.write("view/p.py", source)
+                self.assertTrue(self.facts()["files"][0]["unresolved"])
+
+    def test_python_expansion_protocol_and_multiline_original_location(self):
+        source = '# emoji: \U0001f33f\n' + self.python_template(
+            'SECOND = picture("<g/>", extra=\'\\n fill="red"\')\n')
+        self.write("view/p.py", source)
+        facts = self.facts()["files"][0]
+        self.assertEqual(facts["unresolved"], [])
+        self.assertEqual([v["line"] for v in facts["violations"]], [6])
+        self.assertTrue(all(site["line"] <= 6 for site in facts["sites"]))
+        for field, value in [("line", True), ("start", -1), ("end", 99999),
+                             ("expression", "forged")]:
+            with self.subTest(field=field):
+                snapshot = self.module._read_source(self.root, "view/p.py")
+                fragment = next(f for f in snapshot["fragments"] if "origin" in f)
+                fragment["origin"]["call"][field] = value
+                with self.assertRaises(self.module.QualityError):
+                    self.module._call(self.root, "sources", [snapshot])
+
+    def test_python_text_and_href_holes_are_inspected_after_substitution(self):
+        for value in ['<b style="color:red">x</b>', '" style="opacity:.5" x="']:
+            for hole in ["text", "href"]:
+                with self.subTest(hole=hole, value=value):
+                    source = ('def link(text="ok", href="https://example.org/"):\n'
+                              '    return f\'<a href="{href}">{text}</a>\'\n'
+                              f'RESULT = link({hole}={value!r})\n')
+                    self.write("view/p.py", source)
+                    facts = self.facts()["files"][0]
+                    # An ordinary quote in text is harmless; markup and attribute
+                    # escapes still enter the real HTML/CSS extractor.
+                    if hole == "text" and value.startswith('"'):
+                        self.assertEqual(facts["unresolved"], [])
+                        self.assertEqual(facts["violations"], [])
+                    else:
+                        self.assertTrue(facts["violations"] or facts["unresolved"])
+
+    def test_python_renamed_lookup_with_readonly_local_alias_and_copy(self):
+        source = ('CATALOG = {"leaf.svg": "Leaf"}\n'
+                  'def caption(stem, title=None):\n'
+                  '    title = CATALOG[stem + ".svg"] if title is None else title\n'
+                  '    return f"<li>{title}</li>"\n'
+                  'def check(data=None):\n'
+                  '    data = CATALOG if data is None else data\n'
+                  '    return "leaf.svg" in data and data["leaf.svg"] == "Leaf"\n'
+                  'COPY = {key: value for key, value in CATALOG.items() if key != "x"}\n'
+                  'RESULT = caption("leaf")\n')
+        self.write("view/p.py", source)
+        self.assertEqual(self.facts()["files"][0]["unresolved"], [])
+        self.assertIn('<li>Leaf</li>', [f["text"] for f in self.module._python_fragments(source)])
+        mutations = ['    data["leaf.svg"] = "changed"\n', '    consume(data)\n',
+                     '    alias = data\n', '    data.update({})\n',
+                     '    def nested():\n        return data\n']
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.write("view/p.py", source.replace('    return "leaf.svg"', mutation + '    return "leaf.svg"'))
+                self.assertTrue(self.facts()["files"][0]["unresolved"])
+        for tail in ['consume(CATALOG)\n', 'CATALOG["leaf.svg"] = "changed"\n',
+                     'VIEW = CATALOG.items()\n', 'ALIAS = CATALOG\n',
+                     'SECOND = caption("missing")\n',
+                     'SECOND = caption("leaf", title=unknown)\n']:
+            with self.subTest(tail=tail):
+                self.write("view/p.py", source + tail)
+                self.assertTrue(self.facts()["files"][0]["unresolved"])
+
+    def test_python_template_limits_keep_explicit_inability(self):
+        for source in [self.python_template(expression='"x"' + ' + "x"' * 40),
+                       self.python_template('RESULT = picture("x")\n' * 4096),
+                       self.python_template(expression=repr("x" * 1_000_001))]:
+            with self.subTest(length=len(source)):
+                fragments = self.module._python_fragments(source)
+                self.assertTrue(any(fragment["dynamic"] for fragment in fragments))
+
     def test_review_namespaced_attributes_are_not_inline_style(self):
         prefix = "const el = document.createElementNS('http://www.w3.org/2000/svg', 'g'); "
         for namespace in ["null", "''"]:

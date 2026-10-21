@@ -40,11 +40,258 @@ def _kind(path):
         suffix, "unknown")
 
 
+class _FinitePythonMarkup:
+    """Prove a closed authored family, never execute Python or imported fixtures."""
+
+    def __init__(self, source, tree, parents):
+        self.source, self.tree, self.parents = source, tree, parents
+        self.nodes = list(ast.walk(tree))
+        self.globals = {}
+        self.lines = source.splitlines(keepends=True)
+        self.inputs = []
+
+    def witness(self, node):
+        def offset(line, column):
+            prefix = self.lines[line - 1].encode("utf-8")[:column].decode("utf-8")
+            return sum(len(part) for part in self.lines[:line - 1]) + len(prefix)
+        start = offset(node.lineno, node.col_offset)
+        end = offset(node.end_lineno, node.end_col_offset)
+        return {"start": start, "end": end, "line": node.lineno,
+                "expression": self.source[start:end]}
+
+    def scope(self, node):
+        while node in self.parents:
+            node = self.parents[node]
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)):
+                return node
+        return self.tree
+
+    def unique_global(self, name, definition):
+        for node in self.nodes:
+            if isinstance(node, ast.Name) and node.id == name and not isinstance(node.ctx, ast.Load):
+                if node is not definition:
+                    raise ValueError("rebound global")
+            if isinstance(node, ast.arg) and node.arg == name:
+                raise ValueError("shadowed global")
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == name:
+                if node is not definition:
+                    raise ValueError("shadowed definition")
+            if isinstance(node, ast.alias) and (node.asname or node.name.split('.')[0]) in {name, "*"}:
+                raise ValueError("imported or wildcard binding")
+            if isinstance(node, (ast.Global, ast.Nonlocal)) and name in node.names:
+                raise ValueError("dynamic binding")
+            if ((isinstance(node, ast.ExceptHandler) and node.name == name)
+                    or (isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name == name)
+                    or (isinstance(node, ast.MatchMapping) and node.rest == name)):
+                raise ValueError("pattern or exception binding")
+
+    def readonly_use(self, node):
+        parent = self.parents.get(node)
+        if isinstance(parent, ast.Subscript) and parent.value is node and isinstance(parent.ctx, ast.Load):
+            return True  # The literal table contains only immutable strings.
+        return (isinstance(parent, ast.Compare) and len(parent.ops) == 1
+                and isinstance(parent.ops[0], (ast.In, ast.NotIn))
+                and parent.comparators == [node])
+
+    def readonly_alias(self, node):
+        branch = self.parents.get(node)
+        assignment = self.parents.get(branch)
+        if not (isinstance(branch, ast.IfExp) and branch.body is node
+                and isinstance(assignment, ast.Assign) and len(assignment.targets) == 1
+                and isinstance(assignment.targets[0], ast.Name)):
+            return False
+        target = assignment.targets[0]
+        scope = self.scope(target)
+        if not isinstance(scope, ast.FunctionDef):
+            return False
+        name = target.id
+        test = branch.test
+        if not (isinstance(branch.orelse, ast.Name) and branch.orelse.id == name
+                and isinstance(test, ast.Compare) and isinstance(test.left, ast.Name)
+                and test.left.id == name and len(test.ops) == 1 and isinstance(test.ops[0], ast.Is)
+                and len(test.comparators) == 1 and isinstance(test.comparators[0], ast.Constant)
+                and test.comparators[0].value is None):
+            return False
+        for use in ast.walk(scope):
+            if isinstance(use, (ast.Global, ast.Nonlocal)) and name in use.names:
+                return False
+            if isinstance(use, ast.Name) and use.id == name:
+                if self.scope(use) is not scope:
+                    return False
+                if use in (target, test.left, branch.orelse):
+                    continue
+                if not isinstance(use.ctx, ast.Load) or not self.readonly_use(use):
+                    return False
+        return True
+
+    def readonly_items(self, node):
+        attribute = self.parents.get(node)
+        call = self.parents.get(attribute)
+        generator = self.parents.get(call)
+        comp = self.parents.get(generator)
+        if not (isinstance(attribute, ast.Attribute) and attribute.attr == "items"
+                and isinstance(call, ast.Call) and call.func is attribute and not call.args and not call.keywords
+                and isinstance(generator, ast.comprehension) and generator.iter is call and not generator.is_async
+                and isinstance(comp, ast.DictComp) and len(comp.generators) == 1
+                and isinstance(generator.target, ast.Tuple) and len(generator.target.elts) == 2
+                and all(isinstance(item, ast.Name) for item in generator.target.elts)):
+            return False
+        key, value = generator.target.elts
+        if not (isinstance(comp.key, ast.Name) and comp.key.id == key.id
+                and isinstance(comp.value, ast.Name) and comp.value.id == value.id):
+            return False
+        for condition in generator.ifs:
+            if not (isinstance(condition, ast.Compare) and len(condition.ops) == 1
+                    and isinstance(condition.ops[0], (ast.Eq, ast.NotEq))
+                    and isinstance(condition.left, ast.Name) and condition.left.id in {key.id, value.id}
+                    and len(condition.comparators) == 1
+                    and isinstance(condition.comparators[0], ast.Constant)
+                    and isinstance(condition.comparators[0].value, str)):
+                return False
+        return True
+
+    def global_value(self, name):
+        if name in self.globals:
+            return self.globals[name]
+        candidates = [node for node in self.tree.body if isinstance(node, ast.Assign)
+                      and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)
+                      and node.targets[0].id == name]
+        if len(candidates) != 1:
+            raise ValueError("unknown global")
+        assignment = candidates[0]
+        self.unique_global(name, assignment.targets[0])
+        # Globals are literal data, not arbitrary expressions or reference chains.
+        value = ast.literal_eval(assignment.value)
+        if isinstance(value, dict):
+            if not all(isinstance(key, str) and isinstance(item, str) for key, item in value.items()):
+                raise ValueError("non-scalar lookup table")
+            for node in self.nodes:
+                if isinstance(node, ast.Name) and node.id == name and isinstance(node.ctx, ast.Load):
+                    if not (self.readonly_use(node) or self.readonly_alias(node) or self.readonly_items(node)):
+                        raise ValueError("mutable or escaping table")
+        elif value is not None and not isinstance(value, str):
+            raise ValueError("unsupported global data")
+        self.inputs.append(self.witness(assignment))
+        self.globals[name] = value
+        return value
+
+    def value(self, node, local, depth=0):
+        if depth > 32:
+            raise ValueError("expression limit")
+        self.inputs.append(self.witness(node))
+        child = lambda item: self.value(item, local, depth + 1)
+        if isinstance(node, ast.Constant) and (node.value is None or isinstance(node.value, str)):
+            result = node.value
+        elif isinstance(node, ast.Name):
+            result = local[node.id] if node.id in local else self.global_value(node.id)
+        elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = child(node.left), child(node.right)
+            if not isinstance(left, str) or not isinstance(right, str):
+                raise ValueError("non-string concatenation")
+            result = left + right
+        elif isinstance(node, ast.JoinedStr):
+            pieces = []
+            for part in node.values:
+                if isinstance(part, ast.FormattedValue):
+                    if part.conversion != -1 or part.format_spec is not None:
+                        raise ValueError("format conversion")
+                    item = child(part.value)
+                else:
+                    item = child(part)
+                if not isinstance(item, str):
+                    raise TypeError("non-string substitution")
+                pieces.append(item)
+            result = "".join(pieces)
+        elif isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load):
+            table, key = child(node.value), child(node.slice)
+            if not isinstance(table, dict) or not isinstance(key, str) or key not in table:
+                raise ValueError("unknown lookup")
+            result = table[key]
+        elif isinstance(node, ast.IfExp):
+            test = node.test
+            if not (isinstance(test, ast.Compare) and len(test.ops) == 1 and isinstance(test.ops[0], ast.Is)
+                    and len(test.comparators) == 1 and isinstance(test.comparators[0], ast.Constant)
+                    and test.comparators[0].value is None):
+                raise ValueError("unsupported conditional")
+            result = child(node.body if child(test.left) is None else node.orelse)
+        else:
+            raise ValueError("unsupported expression")
+        if isinstance(result, str) and len(result) > 1_000_000:
+            raise ValueError("markup expansion limit")
+        return result
+
+    def expand(self, template):
+        function = self.scope(template)
+        if not (isinstance(function, ast.FunctionDef) and self.parents[function] is self.tree
+                and not function.decorator_list and isinstance(function.body[-1], ast.Return)
+                and function.body[-1].value is template and len(function.body) <= 2):
+            raise ValueError("not a bounded markup helper")
+        for node in self.nodes:
+            if (isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+                    and node.id in {"globals", "locals", "vars", "eval", "exec", "getattr", "setattr", "__import__"}):
+                raise ValueError("reflection escapes authored bindings")
+            if isinstance(node, ast.Attribute) and node.attr in {"__dict__", "__globals__", "modules"}:
+                raise ValueError("reflective attribute escapes authored bindings")
+        self.unique_global(function.name, function)
+        calls = []
+        for node in self.nodes:
+            if isinstance(node, ast.Name) and node.id == function.name:
+                parent = self.parents[node]
+                if not (isinstance(node.ctx, ast.Load) and isinstance(parent, ast.Call) and parent.func is node
+                        and self.scope(node) is not function):
+                    raise ValueError("helper alias, mutation or recursion")
+                calls.append(parent)
+        if not calls or len(calls) > 4096:
+            raise ValueError("unbounded helper use set")
+        args = function.args
+        if args.vararg or args.kwarg or args.kwonlyargs:
+            raise ValueError("unsupported helper signature")
+        parameters = args.posonlyargs + args.args
+        names = [param.arg for param in parameters]
+        defaults = dict(zip(names[len(names) - len(args.defaults):], args.defaults, strict=True))
+        for expression in defaults.values():
+            self.value(expression, {})  # Defaults are evaluated even when every call supplies a value.
+        expanded = []
+        for call in sorted(calls, key=lambda item: (item.lineno, item.col_offset)):
+            self.inputs = []
+            self.globals = {}
+            if len(call.args) > len(names):
+                raise ValueError("too many arguments")
+            supplied = dict(zip(names, call.args, strict=False))
+            for keyword in call.keywords:
+                if keyword.arg not in names[len(args.posonlyargs):] or keyword.arg in supplied:
+                    raise ValueError("unknown or duplicate argument")
+                supplied[keyword.arg] = keyword.value
+            local = {}
+            for name in names:
+                expression = supplied.get(name, defaults.get(name))
+                if expression is None:
+                    raise ValueError("missing argument")
+                # A caller-local name must never be mistaken for a module global.
+                for use in ast.walk(expression):
+                    if isinstance(use, ast.Name):
+                        self.unique_global(use.id, next((n.targets[0] for n in self.tree.body
+                            if isinstance(n, ast.Assign) and len(n.targets) == 1
+                            and isinstance(n.targets[0], ast.Name) and n.targets[0].id == use.id), None))
+                local[name] = self.value(expression, {})
+            for statement in function.body[:-1]:
+                if not (isinstance(statement, ast.Assign) and len(statement.targets) == 1
+                        and isinstance(statement.targets[0], ast.Name) and statement.targets[0].id in names):
+                    raise ValueError("unsupported helper body")
+                local[statement.targets[0].id] = self.value(statement.value, local)
+            text = self.value(template, local)
+            expanded.append({"text": text, "line": call.lineno, "dynamic": False, "kind": "html",
+                             "origin": {"template": self.witness(template), "call": self.witness(call),
+                                        "inputs": self.inputs}})
+        return expanded
+
+
 def _python_fragments(source):
     """Parse Python, extracting embedded markup/styles without executing test fixtures."""
     tree = ast.parse(source)
     fragments = []
     parents = {child: node for node in ast.walk(tree) for child in ast.iter_child_nodes(node)}
+    templates = _FinitePythonMarkup(source, tree, parents)
     for node in ast.walk(tree):
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             parent = parents.get(node)
@@ -60,6 +307,12 @@ def _python_fragments(source):
             continue
         javascript = re.search(r"\b(?:const|let|function|class|export|import)\b.*[=({]|\bdocument\.", text)
         if javascript or re.search(r"<[a-zA-Z][^>]*>|[.#\w\]]\s*\{\s*[\w-]+\s*:", text):
+            if dynamic and text.lstrip().startswith("<"):
+                try:
+                    fragments.extend(templates.expand(node))
+                    continue
+                except (ValueError, TypeError, KeyError, RecursionError):
+                    pass  # The original template remains explicit inability below.
             segment = ast.get_source_segment(source, node) or ""
             fragments.append({"text": text if "\n" in segment else text.replace("\n", " "),
                               "line": node.lineno, "dynamic": dynamic,
