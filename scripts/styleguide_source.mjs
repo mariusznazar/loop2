@@ -337,8 +337,8 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
       direct(access.parent)
     );
   };
-  // Publication through the document interface is an explicit boundary. Match
-  // the complete factory body, including the sole fragment alias and its uses.
+  // Match the complete factory body. Its local result uses are checked below,
+  // with the same obligation as direct allocations.
   function documentAllocation(node) {
     let property = node.parent;
     while (property && !ts.isPropertyAssignment(property))
@@ -350,12 +350,13 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
       !ts.isBinaryExpression(assignment) ||
       assignment.operatorToken.kind !== ts.SyntaxKind.EqualsToken ||
       assignment.right !== property.parent ||
+      !ts.isExpressionStatement(assignment.parent) ||
       member(assignment.left) !== "document" ||
       receiver(assignment.left)?.getText(source) !== "globalThis" ||
       symbol(receiver(assignment.left))?.declarations?.length
     )
       return false;
-    return [
+    const matched = [
       "createElement: ($tag) => new $Class($tag)",
       "createElementNS: ($ns, $tag) => new $Class($tag)",
       "createElementNS: ($ns, $tag) => new $Class($tag, $ns)",
@@ -371,12 +372,57 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
               .properties[0],
         )?.get("$Class") === symbol(node.expression),
     );
+    return matched ? property : null;
   }
-  const allocationUses = (node) =>
-    documentAllocation(node) ||
-    (constBinding(node.parent, node)
+  const resultUses = (node) =>
+    constBinding(node.parent, node)
       ? bindingUses(node.parent, transportCall)
-      : transportCall(node));
+      : transportCall(node);
+  function documentUses(factories) {
+    const propertyName = (node) => node.name?.text;
+    const names = new Set([...factories].map((node) => propertyName(node)));
+    const assignments = new Set(
+      [...factories].map((node) => node.parent.parent),
+    );
+    for (const assignment of assignments) {
+      const properties = assignment.right.properties;
+      if (
+        properties.some(
+          (node) =>
+            ts.isSpreadAssignment(node) ||
+            ts.isComputedPropertyName(node.name) ||
+            (names.has(propertyName(node)) && !factories.has(node)),
+        )
+      )
+        return false;
+      for (const name of names) {
+        if (properties.filter((node) => propertyName(node) === name).length > 1)
+          return false;
+      }
+    }
+    const global = (node, name) =>
+      node &&
+      ts.isIdentifier(node) &&
+      node.text === name &&
+      !symbol(node)?.declarations?.length;
+    return all.every((node) => {
+      const parent = node.parent;
+      // A property name is not a reference to the global object or document.
+      if (parent?.name === node && receiver(parent)) return true;
+      if (
+        global(node, "globalThis") &&
+        (receiver(parent) !== node || member(parent) === null)
+      )
+        return false;
+      if (member(node) === "document") {
+        if (!global(receiver(node), "globalThis")) return false;
+      } else if (!global(node, "document")) return true;
+      if (write(node)) return assignments.has(parent) && parent.left === node;
+      if (receiver(parent) !== node || member(parent) === null) return false;
+      if (!names.has(member(parent))) return true;
+      return direct(parent) && resultUses(parent.parent);
+    });
+  }
   for (const owner of all.filter(ts.isClassDeclaration)) {
     const constructor = owner.members.find(ts.isConstructorDeclaration);
     if (
@@ -792,13 +838,16 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
           valid = false;
       }
     }
+    const factories = new Set();
     for (const node of all) {
       if (
         ts.isNewExpression(node) &&
-        descendants.has(symbol(node.expression)) &&
-        !allocationUses(node)
-      )
-        valid = false;
+        descendants.has(symbol(node.expression))
+      ) {
+        const factory = documentAllocation(node);
+        if (factory) factories.add(factory);
+        else if (!resultUses(node)) valid = false;
+      }
       if (
         ts.isIdentifier(node) &&
         descendants.has(symbol(node)) &&
@@ -816,7 +865,7 @@ function recordDOMProof(ts, source, checker, all, member, receiver) {
           valid = false;
       }
     }
-    if (!valid) continue;
+    if (!valid || (factories.size && !documentUses(factories))) continue;
     proven.set(style[0], "record-dom-style");
     for (const fn of forwards) {
       for (const node of all) {

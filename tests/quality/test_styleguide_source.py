@@ -209,6 +209,65 @@ const instance = new {constructor}(); instance.setAttribute('id', 'safe');
                     self.assertEqual(facts['violations'], [])
                     self.assertEqual(sum(s['kind'].startswith('record-dom-') for s in facts['sites']), 3)
 
+    def test_record_dom_factory_results_require_complete_local_use_evidence(self):
+        factory = "globalThis.document = { createElement: (tag) => new RecordNode(tag) };\n"
+        result = "const instance = globalThis.document.createElement('div'); "
+        mutations = {
+            'review factory result mutation': result + "instance[unknown] = external; instance.setAttributeNS(null, 'id', 'safe');",
+            'review factory result escape': result + 'leak(instance);',
+            'result alias': result + 'const alias = instance; alias[unknown] = external;',
+            'direct result escape': "leak(globalThis.document.createElement('div'));",
+            'bare document result': "const instance = document.createElement('div'); leak(instance);",
+            'static computed result': "const instance = globalThis['document']['createElement']('div'); leak(instance);",
+            'wrapped result': "const instance = (document.createElement('div')); leak(instance);",
+            'factory alias': "const make = document.createElement; leak(make('div'));",
+            'factory destructuring': "const {createElement: make} = document; leak(make('div'));",
+            'document alias': "const doc = globalThis.document; leak(doc.createElement('div'));",
+            'global alias': "const root = globalThis; leak(root.document.createElement('div'));",
+            'computed factory dispatch': "leak(document[unknown]('div'));",
+            'computed document dispatch': "leak(globalThis[unknown].createElement('div'));",
+            'factory replacement': 'document.createElement = external;',
+            'document replacement': 'globalThis.document = external;',
+        }
+        for label, use in mutations.items():
+            with self.subTest(case=label):
+                self.write('view/factory-result.py', 'SCRIPT = r"""\n' + self.record_dom() + factory + use + '\n"""\n')
+                facts = self.facts()['files'][0]
+                self.assertTrue(facts['unresolved'], label)
+                self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']), label)
+        for changed_factory in [factory.replace(' };', ', ...external };'),
+                                factory.replace(' };', ', createElement: external };'),
+                                factory.replace(' };', ", 'createElement': external };")]:
+            self.write('view/factory-result.py', 'SCRIPT = r"""\n' + self.record_dom() + changed_factory + '\n"""\n')
+            facts = self.facts()['files'][0]
+            self.assertTrue(facts['unresolved'])
+            self.assertFalse(any(s['kind'].startswith('record-dom-') for s in facts['sites']))
+
+    def test_record_dom_factory_result_callers_preserve_safe_and_appearance_evidence(self):
+        for renamed in [False, True]:
+            constructor, local, tag = ('Vessel', 'piece', 'label') if renamed else ('RecordNode', 'instance', 'tag')
+            for factory, parameters, allocation, arguments in [
+                    ('createElement', tag, tag, "'div'"),
+                    ('createElementNS', 'space, ' + tag, tag + ', space', "null, 'div'"),
+                    ('createDocumentFragment', '', '', '')]:
+                for document in ['document', 'globalThis.document', "globalThis['document']"]:
+                    with self.subTest(renamed=renamed, factory=factory, document=document):
+                        prefix = self.record_dom(renamed) + f"globalThis.document = {{ {factory}: ({parameters}) => new {constructor}({allocation}) }};\n"
+                        use = f"const {local} = {document}.{factory}({arguments}); {local}.setAttributeNS(null, 'id', 'safe');"
+                        self.write('view/factory-safe.py', 'SCRIPT = r"""\n' + prefix + use + '\n"""\n')
+                        facts = self.facts()['files'][0]
+                        self.assertEqual(facts['unresolved'], [])
+                        self.assertEqual(facts['violations'], [])
+                        self.assertEqual(sum(s['kind'].startswith('record-dom-') for s in facts['sites']), 3)
+        prefix = self.record_dom() + "globalThis.document = { createElement: (tag) => new RecordNode(tag) };"
+        for call in ["globalThis.document.createElement('div').setAttribute('fill', '#123456');",
+                     "const instance = globalThis.document.createElement('div'); instance.setAttribute('fill', '#123456');"]:
+            self.write('view/factory-safe.py', 'SCRIPT = r"""\n' + prefix + call + '\n"""\n')
+            facts = self.facts()['files'][0]
+            self.assertTrue(facts['violations'])
+            self.assertTrue(any(d['property'] == 'fill' and d['value'] == '#123456' for d in facts['declarations']))
+            self.assertEqual(sum(s['kind'].startswith('record-dom-') for s in facts['sites']), 3)
+
     def test_record_dom_all_callers_still_expose_appearance_values_and_uncertainty(self):
         callers = [
             ("new RecordNode().setAttribute('fill', '#123456');", 'fill', '#123456'),
