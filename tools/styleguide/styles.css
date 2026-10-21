@@ -11,6 +11,9 @@
   width: 100%;
   margin: 0 auto;
 }
+.styleguide footer a {
+  color: inherit;
+}
 .styleguide h1 {
   font-size: var(--font-size-game-title);
 }

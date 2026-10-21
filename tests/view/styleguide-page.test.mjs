@@ -335,6 +335,37 @@ test("typography and spacing samples consume the supplied scale", (t) => {
   }
 });
 
+// Catches attribution anchors falling back to user-agent colors on a dark page.
+test("actual footer links inherit the text role through a loaded author rule", (t) => {
+  const { element } = construct(t);
+  const html = readFileSync(
+    new URL("tools/styleguide/index.html", root),
+    "utf8",
+  );
+  const stylePaths = new Map([
+    ["./styles.css", "src/browser/view/styles.css"],
+    ["./styleguide.css", "tools/styleguide/styles.css"],
+  ]);
+  const loaded = [
+    ...html.matchAll(/<link\s+rel="stylesheet"\s+href="([^"]+)"/g),
+  ]
+    .map((match) => stylePaths.get(match[1]))
+    .filter(Boolean)
+    .map((path) => readFileSync(new URL(path, root), "utf8"));
+  const [footer] = all(element, (node) => node.tagName === "FOOTER");
+  assert.equal(footer.parentNode, element);
+  assert.ok(hasClass(element, "styleguide"));
+  const anchors = all(footer, (node) => node.tagName === "A");
+  assert.equal(anchors.length, 2);
+  for (const anchor of anchors) {
+    assert.equal(anchor.parentNode, footer);
+    assert.ok(anchor.href.startsWith("https://"));
+  }
+  const css = loaded.join("\n");
+  assert.equal(declarations(css, "footer").color, "var(--text-secondary)");
+  assert.equal(declarations(css, ".styleguide footer a").color, "inherit");
+});
+
 // Catches silent partial rendering when the standalone builder omits/corrupts data.
 test("startup consumes inert supplied token data and reports malformed data visibly", (t) => {
   const { document } = construct(t);
