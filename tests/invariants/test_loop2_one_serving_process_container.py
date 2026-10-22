@@ -1,4 +1,4 @@
-"""Invariant loop2-one-serving-process/2: One Express 5 process in the loop2 container serves both
+"""Invariant loop2-one-serving-process: One Express 5 process in the loop2 container serves both
 the built game and `/api/` account and save requests.
 
 This file checks the loop2 container; `test_loop2_one_serving_process.py` checks the same server
@@ -162,7 +162,7 @@ def node_in_container(name, script, *arguments, user=None):
 class ContainerStartsOneNodeProcess(unittest.TestCase):
 
     def test_image_command_is_exec_form_node(self):
-        # invariant: loop2-one-serving-process/2
+        # invariant: loop2-one-serving-process
         stages, last = final_stage(support.read_required(DOCKERFILE))
         commands = [args for keyword, args, _h in last.instructions if keyword == "CMD"]
         self.assertTrue(commands, f"the last stage of {DOCKERFILE} sets no CMD")
@@ -181,7 +181,7 @@ class ContainerStartsOneNodeProcess(unittest.TestCase):
                                 f"{stage!r} of {DOCKERFILE} sets ENTRYPOINT {entrypoints}")
 
     def test_compose_runs_one_service_with_the_image_command(self):
-        # invariant: loop2-one-serving-process/2
+        # invariant: loop2-one-serving-process
         _top, services = support.compose_outline(support.read_required(COMPOSE_FILE))
         self.assertEqual(len(services), 1, f"{COMPOSE_FILE} has {len(services)} services: "
                                            f"{sorted(services)}")
@@ -201,12 +201,12 @@ class ContainerStartsOneNodeProcess(unittest.TestCase):
 class RunningContainerHasOneServingProcess(unittest.TestCase):
 
     def test_running_container_has_one_listening_node_process(self):
-        # invariant: loop2-one-serving-process/2
+        # invariant: loop2-one-serving-process
         support.read_required(DOCKERFILE)
         support.read_required(COMPOSE_FILE)
         if not docker_answers():
             self.skipTest("no Docker daemon answers; the container part of "
-                          "loop2-one-serving-process/2 stays unchecked")
+                          "loop2-one-serving-process stays unchecked")
         tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
         name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=invariant-check",

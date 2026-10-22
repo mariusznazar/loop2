@@ -1,4 +1,4 @@
-"""Invariant program-rule-pick/1: In each free game minute of a map run, the character starts to
+"""Invariant program-rule-pick: In each free game minute of a map run, the character starts to
 carry out the first program rule whose condition holds and which the character can carry out
 then, and carries out no program rule in a free game minute in which none has both.
 
@@ -15,9 +15,9 @@ Reading of the sentence:
   with that rule's index and action, starting at that minute; carries out no program rule: it is
   `{kind: 'wait'}`;
 - a condition holds: `always` always holds; "fewer than 0 sticks here" never holds;
-- the character can carry out: exploring only on a tile not revealed (exploring-reveal/1); going to
+- the character can carry out: exploring only on a tile not revealed (exploring-reveal); going to
   a resource only where some revealed tile holds some of it and the character does not stand on
-  one that does (walk-feasibility/1); wandering on any tile of the 4 x 4 map Las, every one of which
+  one that does (walk-feasibility); wandering on any tile of the 4 x 4 map Las, every one of which
   has a neighbour.
 
 Scenarios on the map Las (`forest`) with the archetype `elementalMage`, sent at the real time T
@@ -193,7 +193,7 @@ def long_violations(runs, resource):
 class ProgramRulePick(unittest.TestCase):
 
     def test_no_rule_when_none_holds_and_can_be_carried_out(self):
-        # invariant: program-rule-pick/1
+        # invariant: program-rule-pick
         runs = drive(P_NONE_AT_20, 22)
         self.assertEqual(runs[0]["current"], EXPLORING_FROM_0_BY_2,
                          "minute 0: rules 0 and 1 lack one of the two, rule 2 has both")
@@ -206,7 +206,7 @@ class ProgramRulePick(unittest.TestCase):
                              f"minute {minute}: the only rule's condition fails")
 
     def test_the_first_rule_with_both_is_started(self):
-        # invariant: program-rule-pick/1
+        # invariant: program-rule-pick
         first = drive(P_WANDER_FIRST, 0)[0]["current"]["activity"]
         self.assertEqual(first, {"kind": "rule", "ruleIndex": 0, "action": WANDER})
         first = drive(P_EXPLORE_FIRST, 0)[0]["current"]["activity"]
@@ -215,7 +215,7 @@ class ProgramRulePick(unittest.TestCase):
         self.assertEqual(first, {"kind": "rule", "ruleIndex": 1, "action": EXPLORE})
 
     def test_every_free_minute_of_long_runs(self):
-        # invariant: program-rule-pick/1
+        # invariant: program-rule-pick
         for real_ms in (T, T_OTHER):
             for resource in ("berry", "moss"):
                 with self.subTest(real_ms=real_ms, resource=resource):
@@ -228,7 +228,7 @@ class ProgramRulePick(unittest.TestCase):
                                     "a wrong pick among rules 1 to 3 could go unseen")
 
     def test_control_the_comparison_flags_wrong_picks(self):
-        # invariant: program-rule-pick/1
+        # invariant: program-rule-pick
         runs = drive(p_long("berry"), 200)
         self.assertEqual(long_violations(runs, "berry"), [])
         free = [i for i, r in enumerate(runs) if r["current"]["startMinute"] == r["minute"]]

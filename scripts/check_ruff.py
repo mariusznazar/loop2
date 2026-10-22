@@ -15,7 +15,7 @@ from quality_support import QualityError, discover_files, run_check, run_tool
 PARTS = ("browser-view", "simulation", "account-server", "build-tools", "deployment",
          "agent-workflow")
 
-# Frozen membership from ruff-default-rules/1 less D-30's fourteen example rules.
+# Frozen membership from ruff-default-rules less D-30's fourteen example rules.
 BLOCKING = [
     "ASYNC100", "ASYNC105", "ASYNC115", "ASYNC116", "ASYNC210", "ASYNC220", "ASYNC221",
     "ASYNC222", "ASYNC230", "ASYNC251", "B002", "B003", "B004", "B005", "B006", "B008",
@@ -187,7 +187,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--record", type=Path)
     args = parser.parse_args()
-    # invariant: ruff-source-rules/1
+    # invariant: ruff-source-rules
     return run_check("scripts/check_ruff.py", "ruff-source-rules/1",
                      lambda: check(Path(__file__).resolve().parents[1]), record=args.record)
 

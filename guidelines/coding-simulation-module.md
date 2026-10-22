@@ -12,7 +12,7 @@ treści gry. Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/browser/sim/game.ts` | exemplar | D-35@c2db6e62 |
+| `src/browser/sim/game.ts` | exemplar | D-35 |
 | `src/browser/sim/hex.ts` | copy | — |
 | `src/browser/sim/layout.ts` | copy | — |
 | `src/browser/sim/program.ts` | copy | — |
@@ -24,8 +24,8 @@ treści gry. Czytaj również ogólne wytyczne kodowania.
 
 ### Izolacja symulacji
 
-- **Decision:** D-04@3b3dcdc2
-- **Invariant:** simulation-isolation@1f3aec19
+- **Decision:** D-04
+- **Invariant:** simulation-isolation
 - **Good:** Upływ czasu trafia do obliczenia jako argument.
 - **Bad:** Obliczenie odczytuje czas systemowy.
 
@@ -46,8 +46,8 @@ export function elapsed(start: number): number {
 
 ### Niezmienione argumenty
 
-- **Decision:** D-04@3b3dcdc2
-- **Invariant:** simulation-inputs@1480967f
+- **Decision:** D-04
+- **Invariant:** simulation-inputs
 - **Good:** Eksportowana funkcja tworzy wynik bez zapisywania do argumentu.
 - **Bad:** Eksportowana funkcja dodaje pole do przekazanego obiektu.
 

@@ -12,7 +12,7 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/browser/sim/data/resources.ts` | exemplar | D-34@3c028ef9 |
+| `src/browser/sim/data/resources.ts` | exemplar | D-34 |
 | `src/browser/sim/data/actions.ts` | copy | — |
 | `src/browser/sim/data/archetypes.ts` | copy | — |
 | `src/browser/sim/data/balance.ts` | copy | — |
@@ -23,8 +23,8 @@ Czytaj również ogólne wytyczne kodowania.
 
 ### Izolacja symulacji
 
-- **Decision:** D-04@3b3dcdc2
-- **Invariant:** simulation-isolation@1f3aec19
+- **Decision:** D-04
+- **Invariant:** simulation-isolation
 - **Good:** Dane są stałą, niezależną od zegara i środowiska uruchomienia.
 - **Bad:** Dane odczytują czas systemowy podczas importu.
 

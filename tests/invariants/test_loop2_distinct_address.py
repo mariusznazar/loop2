@@ -1,4 +1,4 @@
-"""Invariant loop2-distinct-address/1: The public address of loop2 differs from
+"""Invariant loop2-distinct-address: The public address of loop2 differs from
 `kantarion.bieda.it`.
 
 The check reads the public address of loop2 where the repository declares it — once, as a
@@ -61,14 +61,14 @@ def address_declarations(text):
 class Loop2PublicAddress(unittest.TestCase):
 
     def test_public_address_is_declared_once(self):
-        # invariant: loop2-distinct-address/1
+        # invariant: loop2-distinct-address
         declarations = address_declarations(support.read_required(WORKFLOW))
         self.assertEqual(len(declarations), 1,
                          f"{WORKFLOW} declares loop2's public address {len(declarations)} times, "
                          f"not once: {declarations}")
 
     def test_public_address_host_is_not_the_old_game(self):
-        # invariant: loop2-distinct-address/1
+        # invariant: loop2-distinct-address
         declarations = address_declarations(support.read_required(WORKFLOW))
         self.assertTrue(declarations, f"{WORKFLOW} declares no public address of loop2")
         for number, name, value in declarations:

@@ -1,4 +1,4 @@
-"""Invariant player-map-run-pace/1: Real time passed to the simulation for a map run the player
+"""Invariant player-map-run-pace: Real time passed to the simulation for a map run the player
 starts moves the map run on by one game minute for each whole real second passed while it is not
 paused, and by no game minute for real time passed while it is paused.
 
@@ -172,11 +172,11 @@ class PlayerMapRunPace(unittest.TestCase):
                 self.assertEqual(record["paused"], paused, f"paused after {where}")
 
     def test_whole_unpaused_seconds_move_the_run_on(self):
-        # invariant: player-map-run-pace/1
+        # invariant: player-map-run-pace
         self.run_and_compare(SCENARIO)
 
     def test_control_the_paused_inputs_would_move_an_unpaused_run(self):
-        # invariant: player-map-run-pace/1
+        # invariant: player-map-run-pace
         self.run_and_compare(CONTROL)
 
 

@@ -12,14 +12,14 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/server/app.ts` | exemplar | D-37@c04bd997 |
+| `src/server/app.ts` | exemplar | D-37 |
 
 ## Rules
 
 ### HTTP przez Express
 
-- **Decision:** D-02@06e6d3d8
-- **Invariant:** account-server-express-http@6b29f5b5
+- **Decision:** D-02
+- **Invariant:** account-server-express-http
 - **Good:** Handler HTTP jest rejestrowany w Express 5.
 - **Bad:** Własny handler jest przekazywany bezpośrednio serwerowi Node.js.
 
@@ -42,8 +42,8 @@ export const server = createServer((_request, response) => {
 
 ### Nieznana trasa API
 
-- **Decision:** D-05@db83484a
-- **Invariant:** loop2-api-error-route@a6ff5b60
+- **Decision:** D-05
+- **Invariant:** loop2-api-error-route
 - **Good:** Niepasujące żądanie API otrzymuje błąd JSON.
 - **Bad:** Niepasujące żądanie API otrzymuje stronę HTML.
 

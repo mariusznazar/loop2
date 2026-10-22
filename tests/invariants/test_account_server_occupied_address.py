@@ -1,4 +1,4 @@
-"""Invariant account-server-occupied-address/1: an occupied address prevents readiness."""
+"""Invariant account-server-occupied-address: an occupied address prevents readiness."""
 
 import re
 import shutil
@@ -16,7 +16,7 @@ READY_LINE = re.compile(r"(?m)^Loop: http://127\.0\.0\.1:3000$")
 class AccountServerOccupiedAddress(unittest.TestCase):
 
     def test_occupied_address_exits_without_reporting_ready(self):
-        # invariant: account-server-occupied-address/1
+        # invariant: account-server-occupied-address
         self.assertFalse(support.port_in_use(), "server address is occupied before the control")
         copy = support.built_copy()
         node = shutil.which("node")

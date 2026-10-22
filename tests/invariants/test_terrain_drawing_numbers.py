@@ -1,4 +1,4 @@
-"""Invariant terrain-drawing-numbers/1: The terrain panel's drawing of the game map shows no number
+"""Invariant terrain-drawing-numbers: The terrain panel's drawing of the game map shows no number
 of the stock a tile holds.
 
 The application is built by `npm run build` in a temporary copy of the working tree (the real tree
@@ -417,7 +417,7 @@ def findings(record):
 class TerrainDrawingNumbers(unittest.TestCase):
 
     def test_the_drawing_shows_no_stock(self):
-        # invariant: terrain-drawing-numbers/1
+        # invariant: terrain-drawing-numbers
         copy = support.built_copy()
         panel = copy.file(PANEL_MODULE)
         self.assertTrue(os.path.isfile(panel), f"`npm run build` placed no {PANEL_MODULE}")
@@ -458,7 +458,7 @@ class TerrainDrawingNumbers(unittest.TestCase):
         self.assertEqual(found, [])
 
     def test_control_the_stand_in_document_builds_what_a_panel_means(self):
-        # invariant: terrain-drawing-numbers/1
+        # invariant: terrain-drawing-numbers
         driver = ("import { writeFileSync } from 'node:fs';\n"
                   "import { pathToFileURL } from 'node:url';\n" + FAKE_DOCUMENT + r"""
 const [modulePath, outPath] = process.argv.slice(2);
@@ -468,7 +468,7 @@ writeFileSync(outPath, JSON.stringify(module.made()));
         self.assertEqual(run_driver(driver, [("made.mjs", MADE_UP_PANEL)]), MADE_UP_EXPECTED)
 
     def test_control_the_reading_flags_shown_stock(self):
-        # invariant: terrain-drawing-numbers/1
+        # invariant: terrain-drawing-numbers
         svg = "http://www.w3.org/2000/svg"
         tiles = [{"col": 1, "row": 2, "revealed": True, "stock": {"stick": 12, "berry": 0}}]
 

@@ -1,4 +1,4 @@
-"""Invariant loop2-deploy-trigger-input/1: The deployment command the automation's key runs refuses
+"""Invariant loop2-deploy-trigger-input: The deployment command the automation's key runs refuses
 every input but one commit name of 40 lowercase hexadecimal characters before it fetches, builds or
 changes a container, and deploys only a commit that belongs to `main` as just fetched.
 
@@ -102,31 +102,31 @@ class ForcedCommandRefusesMalformedInput(unittest.TestCase):
                          self.head_before)
 
     def test_each_crafted_value_refused(self):
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         for name, value in REFUSED_INPUTS.items():
             with self.subTest(input=name):
                 self.assert_refused_before_anything(self.fixture.run(ssh_original_command=value))
 
     def test_both_inputs_at_once_refused(self):
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         self.assert_refused_before_anything(self.fixture.run(
             arguments=["0123456789abcdef0123456789abcdef01234567"],
             ssh_original_command="0123456789abcdef0123456789abcdef01234567"))
 
     def test_both_inputs_at_once_refused_with_a_real_commit(self):
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         first = self.fixture.first
         self.assert_refused_before_anything(self.fixture.run(arguments=[first],
                                                              ssh_original_command=first))
 
     def test_no_command_from_the_client_refused(self):
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         self.assert_refused_before_anything(self.fixture.run())
 
     def test_well_formed_value_reaches_the_fetch(self):
         # A positive control of the instruments: the same fixture sees a fetch in git's trace when
         # the value is well formed, so an empty trace above is a refusal, not a lost trace.
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         result = self.fixture.run(ssh_original_command=WELL_FORMED)
         self.assertNotEqual(result.code, EXIT_INPUT_REFUSED, result)
         self.assertIn("fetch", result.git_trace, result)
@@ -152,7 +152,7 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
         self.assertEqual(self.head(), sha)
 
     def test_commit_only_on_another_branch_refused(self):
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.assert_commit_refused(self.fixture.run(ssh_original_command=feature),
                                    self.fixture.first)
@@ -160,7 +160,7 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
     def test_commit_of_another_branch_the_clone_already_holds_refused(self):
         # A human run fetched the other branch, so the clone holds the commit and a
         # remote-tracking ref of it; the forced command still refuses it.
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.fixture.git("-C", self.fixture.checkout, "fetch", "--quiet", "origin",
                          "+refs/heads/*:refs/remotes/origin/*")
@@ -171,7 +171,7 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
     def test_commit_main_no_longer_holds_refused(self):
         # The clone fetched `main` while it held the commit; then `main` was moved back on
         # GitHub. Only `main` as just fetched counts.
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         dropped = self.fixture.commit("main", "dropped from main later")
         self.fixture.git("-C", self.fixture.checkout, "fetch", "--quiet", "origin",
                          "+refs/heads/main:refs/remotes/origin/main")
@@ -182,14 +182,14 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
                                    self.fixture.first)
 
     def test_ancestor_of_main_passes(self):
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         ancestor = self.fixture.commit("main", "an ancestor of main")
         self.fixture.commit("main", "the tip of main")
         result = self.fixture.run(ssh_original_command=ancestor)
         self.assert_passed_input_and_commit(result, ancestor)
 
     def test_tip_of_main_pushed_after_the_clone_passes(self):
-        # invariant: loop2-deploy-trigger-input/1
+        # invariant: loop2-deploy-trigger-input
         tip = self.fixture.commit("main", "pushed after the clone")
         self.assertFalse(self.fixture.clone_has_object(tip))
         result = self.fixture.run(ssh_original_command=tip)

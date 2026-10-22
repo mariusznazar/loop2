@@ -1,4 +1,4 @@
-"""Invariant account-server-runtime/1: The account and save server's TypeScript source and
+"""Invariant account-server-runtime: The account and save server's TypeScript source and
 deployment use Node.js major version 24.
 
 Covers, in the working tree being checked:
@@ -52,14 +52,14 @@ def load_json(relative):
 class NodeMajorInPackageFiles(unittest.TestCase):
 
     def test_package_engines_admit_only_node_24(self):
-        # invariant: account-server-runtime/1
+        # invariant: account-server-runtime
         engines = load_json("package.json").get("engines", {})
         self.assertIn("node", engines, "package.json declares no engines.node")
         self.assertEqual(range_major(engines["node"]), EXPECTED_MAJOR,
                          f"package.json engines.node is {engines['node']!r}")
 
     def test_lockfile_root_engines_admit_only_node_24(self):
-        # invariant: account-server-runtime/1
+        # invariant: account-server-runtime
         root_entry = load_json("package-lock.json").get("packages", {}).get("", {})
         node = root_entry.get("engines", {}).get("node")
         self.assertIsNotNone(node, "package-lock.json's root entry declares no engines.node")
@@ -67,7 +67,7 @@ class NodeMajorInPackageFiles(unittest.TestCase):
                          f"package-lock.json root engines.node is {node!r}")
 
     def test_node_type_definitions_are_major_24(self):
-        # invariant: account-server-runtime/1
+        # invariant: account-server-runtime
         package = load_json("package.json")
         declared = {**package.get("dependencies", {}), **package.get("devDependencies", {})}
         self.assertIn("@types/node", declared, "package.json does not depend on @types/node")
@@ -80,7 +80,7 @@ class NodeMajorInPackageFiles(unittest.TestCase):
                          f"package-lock.json locks @types/node {locked!r}")
 
     def test_server_compilation_uses_node_type_definitions(self):
-        # invariant: account-server-runtime/1
+        # invariant: account-server-runtime
         options = load_json("tsconfig.server.json").get("compilerOptions", {})
         if "types" in options:
             self.assertIn("node", options["types"],
@@ -197,7 +197,7 @@ def node_mentions(relative, text):
 class NodeMajorInDeployment(unittest.TestCase):
 
     def test_deployment_files_name_only_node_24(self):
-        # invariant: account-server-runtime/1
+        # invariant: account-server-runtime
         problems = []
         for relative in support.deployment_files():
             text = support.read_text(os.path.join(support.ROOT, *relative.split("/")))

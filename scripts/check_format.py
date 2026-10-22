@@ -183,7 +183,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--record", type=Path)
     args = parser.parse_args()
-    # invariant: prettier-source-format/1
+    # invariant: prettier-source-format
     return run_check("prettier-source-format", "prettier-source-format/1",
                      lambda: check(Path(__file__).resolve().parents[1]), record=args.record)
 

@@ -1,4 +1,4 @@
-"""Invariant loop2-host-sharing/1: A deployment of loop2 stops, removes, replaces or reconfigures
+"""Invariant loop2-host-sharing: A deployment of loop2 stops, removes, replaces or reconfigures
 no container, image, network or volume on the host other than loop2's own, and the loop2 Compose
 service asks the host for no privilege that a default container lacks.
 
@@ -261,13 +261,13 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
         self.docker = support.docker_commands(self.text)
 
     def test_script_runs_docker_compose(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         compose = [words for _n, words in self.docker if words[:1] == ["compose"]]
         self.assertTrue(compose, f"{DEPLOY_SCRIPT} runs no `docker compose` command, so the "
                                  "commands this check reads cannot be found")
 
     def test_every_compose_command_names_the_loop2_project(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         problems = []
         for number, words in self.docker:
             if words[:1] != ["compose"]:
@@ -284,13 +284,13 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
                                        f"other than `{EXPECTED_PROJECT}`")
 
     def test_nothing_takes_a_project_down(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         found = [f"line {number}: {' '.join(words)}"
                  for number, words in support.shell_commands(self.text) if "down" in words]
         self.assertEqual(found, [], f"{DEPLOY_SCRIPT} takes a Compose project down")
 
     def test_old_deployment_is_only_read(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         problems = []
         docker_lines = {}
         for number, words in self.docker:
@@ -309,14 +309,14 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
                                        "read-only `docker inspect` or `docker ps`")
 
     def test_every_docker_command_is_one_a_deployment_may_run(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         problems = [f"line {number}: docker {' '.join(words)}: {p}"
                     for number, words in self.docker for p in docker_problems(words)]
         self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} runs a Docker command, option or object "
                                        "outside the list a deployment may run")
 
     def test_no_variable_points_docker_elsewhere(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         found = [f"line {number}: {code.strip()}" for number, code in
                  support._logical_lines(self.text) if DOCKER_ENDPOINT_VARIABLES.search(code)]
         self.assertEqual(found, [], f"{DEPLOY_SCRIPT} names a variable that points Docker or "
@@ -330,13 +330,13 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.top, self.services = support.compose_outline(self.text)
 
     def test_compose_top_holds_only_name_and_services(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         others = sorted(k for k in self.top if k not in COMPOSE_TOP_KEYS)
         self.assertEqual(others, [], f"{COMPOSE_FILE} sets top-level keys beyond "
                                      f"{COMPOSE_TOP_KEYS}")
 
     def test_service_sets_only_keys_that_grant_nothing(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         self.assertTrue(self.services, f"{COMPOSE_FILE} defines no service")
         problems = []
         for name, keys in self.services.items():
@@ -350,7 +350,7 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
                                        "container has")
 
     def test_no_docker_socket(self):
-        # invariant: loop2-host-sharing/1
+        # invariant: loop2-host-sharing
         found = [f"line {number}: {line.strip()}"
                  for number, line in enumerate(code_lines(self.text), 1) if "docker.sock" in line]
         self.assertEqual(found, [], f"{COMPOSE_FILE} names the Docker socket")

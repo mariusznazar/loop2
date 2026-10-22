@@ -1,4 +1,4 @@
-"""Invariant account-server-typecheck/1: The account and save server's TypeScript types are
+"""Invariant account-server-typecheck: The account and save server's TypeScript types are
 checked before deployment.
 
 The sentence is about a check, so the check feeds it input made up for it (WAY-61): in a
@@ -51,7 +51,7 @@ import loop2_invariant_support as support
 
 # The made-up input: a value of the wrong type under TypeScript's strict checking.
 DELIBERATE_TYPE_ERROR = (
-    "\n// Appended by the invariant check account-server-typecheck/1.\n"
+    "\n// Appended by the invariant check account-server-typecheck.\n"
     "const invariantCheckDeliberateTypeError: number = \"not a number\";\n"
     "void invariantCheckDeliberateTypeError;\n"
 )
@@ -99,7 +99,7 @@ class ServerTypesCheckedBeforeDeployment(unittest.TestCase):
         return copy
 
     def test_typecheck_command_rejects_server_type_error(self):
-        # invariant: account-server-typecheck/1
+        # invariant: account-server-typecheck
         clean = self.fresh_copy()
         code, output = clean.npm("run", "typecheck")
         self.assertEqual(code, 0, f"`npm run typecheck` fails on the unchanged tree:\n{output}")
@@ -110,7 +110,7 @@ class ServerTypesCheckedBeforeDeployment(unittest.TestCase):
                                      f"type error:\n{output}")
 
     def test_build_refuses_server_type_error(self):
-        # invariant: account-server-typecheck/1
+        # invariant: account-server-typecheck
         clean = self.fresh_copy()
         code, output = clean.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
@@ -206,7 +206,7 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
         self.assertEqual(support.docker_commands(READER_SCRIPT), READER_EXPECTED)
 
     def test_dockerfile_type_checks_before_the_runtime_stage_takes_dist(self):
-        # invariant: account-server-typecheck/1
+        # invariant: account-server-typecheck
         stages = support.dockerfile_stages(support.read_required(DOCKERFILE))
         runtime = stages[-1]
         checking, refused = set(), []
@@ -235,7 +235,7 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
                                 "is built without a stage that runs the type check")
 
     def test_compose_builds_the_image_and_names_none_to_pull(self):
-        # invariant: account-server-typecheck/1
+        # invariant: account-server-typecheck
         _top, services = support.compose_outline(support.read_required(COMPOSE_FILE))
         self.assertTrue(services, f"{COMPOSE_FILE} defines no service")
         for name, keys in services.items():
@@ -250,7 +250,7 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
                                     f"service `{name}` is built from an inline Dockerfile")
 
     def test_deploy_script_builds_before_starting_without_building(self):
-        # invariant: account-server-typecheck/1
+        # invariant: account-server-typecheck
         text = support.read_required(DEPLOY_SCRIPT)
         builds, ups, problems = [], [], []
         for number, words in support.docker_commands(text):
@@ -287,7 +287,7 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
         self.assertEqual(support.executed_docker_commands(ORDER_SCRIPT), ORDER_EXPECTED)
 
     def test_no_other_deployment_route(self):
-        # invariant: account-server-typecheck/1
+        # invariant: account-server-typecheck
         others = [p for p in support.deployment_route_files() if p not in ROUTE_FILES]
         self.assertEqual(others, [], "deployment files exist that this check does not read; "
                                      "extend it to show their route runs the type check first")

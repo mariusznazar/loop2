@@ -1,4 +1,4 @@
-"""Invariant program-closed-lists/1: The simulation refuses a program holding a condition or an
+"""Invariant program-closed-lists: The simulation refuses a program holding a condition or an
 action of the character whose kind the data files of `src/browser/sim/data/` do not list.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
@@ -30,7 +30,7 @@ Controls, so the check can fail: the comparison flags a made-up result in which 
 unlisted kind was taken in, and a made-up result in which the valid program was refused; the
 tripwire fails on made-up data holding a kind not written out, and on data lacking one.
 
-Does NOT cover: whether the simulation acts on the program it takes in (program-rule-pick/1);
+Does NOT cover: whether the simulation acts on the program it takes in (program-rule-pick);
 fields of a listed kind beyond those named above.
 """
 
@@ -202,7 +202,7 @@ def tripwire(condition_kinds, action_kinds):
 class ProgramClosedLists(unittest.TestCase):
 
     def test_programs_with_unlisted_kinds_are_refused(self):
-        # invariant: program-closed-lists/1
+        # invariant: program-closed-lists
         labelled = offers()
         condition_kinds, action_kinds, pairs = drive([VALID] + [p for _, p in labelled])
         self.assertEqual(tripwire(condition_kinds, action_kinds), [])
@@ -213,7 +213,7 @@ class ProgramClosedLists(unittest.TestCase):
         self.assertEqual(found, [])
 
     def test_control_the_comparison_and_the_tripwire_flag_breaks(self):
-        # invariant: program-closed-lists/1
+        # invariant: program-closed-lists
         bad = {"rules": [rule({"kind": "never"}, {"kind": "explore"})]}
         self.assertTrue(refusal_findings("made up", [(True, {"threw": False, "program": bad})]),
                         "an unlisted kind taken in goes unseen")

@@ -1,4 +1,4 @@
-"""Invariant application-build-output/1: Building the application compiles both the browser and the
+"""Invariant application-build-output: Building the application compiles both the browser and the
 server TypeScript configurations.
 
 Building the application is `npm run build`, as README.md gives it. Each run happens in a fresh
@@ -44,7 +44,7 @@ PROBE_NAME = "invariant_check_build_probe"
 
 # Made-up source that compiles under the browser configuration only: a DOM type and `document`.
 BROWSER_PROBE = (
-    "// Written by the invariant check application-build-output/1.\n"
+    "// Written by the invariant check application-build-output.\n"
     "interface InvariantCheckBrowserProbeShape {\n"
     "  readonly marker: string;\n"
     "  readonly root: HTMLElement | null;\n"
@@ -58,7 +58,7 @@ BROWSER_MARKER = "application-build-output-browser-probe"
 
 # Made-up source that compiles under the server configuration only: Node's `process`.
 SERVER_PROBE = (
-    "// Written by the invariant check application-build-output/1.\n"
+    "// Written by the invariant check application-build-output.\n"
     "interface InvariantCheckServerProbeShape {\n"
     "  readonly marker: string;\n"
     "  readonly variable: string | undefined;\n"
@@ -137,8 +137,8 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         self.assertEqual(code, 0, f"`node --check` rejects {relative}:\n{output}")
 
     def test_build_emits_every_source_file_of_both_configurations(self):
-        # invariant: application-build-output/1
-        # invariant: application-build-layout/1
+        # invariant: application-build-output
+        # invariant: application-build-layout
         copy = self.fresh_copy()
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
@@ -151,8 +151,8 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
                     self.assert_javascript(copy, emitted_path(relative, source, out))
 
     def test_build_compiles_made_up_source_under_each_configuration(self):
-        # invariant: application-build-output/1
-        # invariant: application-build-layout/1
+        # invariant: application-build-output
+        # invariant: application-build-layout
         copy = self.fresh_copy()
         for name, (text, _marker) in PROBES.items():
             write_probe(copy, configuration(name)[2], text)
@@ -170,7 +170,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
                                  f"{emitted} still holds TypeScript, so it was not compiled")
 
     def test_each_configuration_rejects_source_only_the_other_accepts(self):
-        # invariant: application-build-output/1
+        # invariant: application-build-output
         for name, crossed_text in CROSSED.items():
             source = configuration(name)[2]
             with self.subTest(configuration=name):

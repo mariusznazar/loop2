@@ -1,4 +1,4 @@
-"""Invariant action-in-progress/1: The character's action in progress lasts its full duration,
+"""Invariant action-in-progress: The character's action in progress lasts its full duration,
 even where the program changes or the condition of another program rule comes to hold before it
 ends.
 
@@ -183,7 +183,7 @@ class ActionInProgress(unittest.TestCase):
                              f"{run['minute']} — {json.dumps(current)}")
 
     def test_actions_last_their_full_duration_through_program_changes(self):
-        # invariant: action-in-progress/1
+        # invariant: action-in-progress
         runs = drive(scenario(MAIN, 25))
         self.assertEqual(sorted(runs), list(range(0, 26)), "the run did not pass minute by minute")
 
@@ -223,7 +223,7 @@ class ActionInProgress(unittest.TestCase):
                              "the activity chosen at minute 25 by the changed program")
 
     def test_control_the_changed_programs_choose_otherwise(self):
-        # invariant: action-in-progress/1
+        # invariant: action-in-progress
         holds_from_start = drive(scenario({0: PA_HOLDS}, 0))
         self.assert_activity(holds_from_start[0], WANDER_FROM_0,
                              "PA_HOLDS at minute 0 (a change taking effect at once would show)")

@@ -1,4 +1,4 @@
-"""Invariant loop2-deploy-keeps-running/1: A deployment that stops before it starts the new
+"""Invariant loop2-deploy-keeps-running: A deployment that stops before it starts the new
 container — at its input, the commit, the lock, the reading of memory and disk, the fetch, the
 checkout, the type check or the build — leaves the running loop2 container in service.
 
@@ -107,45 +107,45 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
         self.assertEqual(off_the_list(result.calls["docker"], build_started), [], result)
 
     def test_stop_at_the_input(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         result = self.run_with_passing_answers(
             ssh_original_command="0123456789ABCDEF0123456789ABCDEF01234567")
         self.assert_stopped_and_kept(result, 2)
 
     def test_stop_at_the_commit(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first,
                                       files={"compose.yaml": b"name: loop2\n"})
         result = self.run_with_passing_answers(ssh_original_command=feature)
         self.assert_stopped_and_kept(result, 3)
 
     def test_stop_at_the_lock(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         self.fixture.answer("flock", exit_code=1)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 4)
 
     def test_stop_at_the_memory_reading(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         support.write_bytes(self.fixture.meminfo, MEMINFO_512_MIB)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 
     def test_stop_at_unreadable_memory(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         support.write_bytes(self.fixture.meminfo, b"MemTotal:        4456448 kB\n")
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 
     def test_stop_at_the_disk_reading(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         self.fixture.answer("df", stdout=DF_1_GIB)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 
     def test_stop_at_unreadable_disk(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         self.fixture.answer("df", exit_code=1)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 
     def test_stop_at_the_fetch(self):
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         unreachable = os.path.join(self.fixture.root, "github-unreachable")
         self.fixture.git("-C", self.fixture.checkout, "remote", "set-url", "origin", unreachable)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 6)
@@ -153,7 +153,7 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
     def test_stop_at_the_checkout(self):
         # A lock on the clone's index leaves the fetch and the commit stage alone and makes the
         # checkout fail.
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         support.write_bytes(os.path.join(self.fixture.checkout, ".git", "index.lock"), b"")
         result = self.run_with_passing_answers()
         self.assert_stopped_and_kept(result, 6)
@@ -161,7 +161,7 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
 
     def test_stop_at_the_build_or_its_type_check(self):
         # The type check runs inside the image build, so its failure is the build's failure.
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         self.fixture.answer("docker", exit_code=1,
                             stdout="#12 ERROR: process \"npm run typecheck\" did not complete "
                                    "successfully: exit code: 2\n",
@@ -170,7 +170,7 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
 
     def test_stop_at_a_commit_without_compose_file(self):
         # A commit from before the deployment existed: no compose.yaml, no script source.
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         old = self.fixture.commit("main", "from before the deployment existed")
         result = self.run_with_passing_answers(ssh_original_command=old)
         self.assert_stopped_and_kept(result, 7, build_started=True)
@@ -178,7 +178,7 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
     def test_reader_finds_the_switch_of_a_deployment_that_gets_there(self):
         # A positive control of the reader: a run with every stage passing issues `up`, and the
         # allow-list of a stop at the build stage does not let it through.
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         result = self.run_with_passing_answers()
         self.assertEqual(result.code, 0, result)
         found = off_the_list(result.calls["docker"], build_started=True)
@@ -187,7 +187,7 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
     def test_reader_on_written_out_calls(self):
         # The reader itself, on calls written out: read-only calls pass, a build passes only at
         # the build stage, and calls that stop, remove or replace the container are found.
-        # invariant: loop2-deploy-keeps-running/1
+        # invariant: loop2-deploy-keeps-running
         read_only = [
             ["inspect", "--type", "container", "--format", "{{ .State.Status }}", "loop2"],
             ["info", "--format", "{{.DockerRootDir}}"],

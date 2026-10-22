@@ -1,4 +1,4 @@
-"""Invariant browser-view-framework/1: The browser view uses TypeScript and browser APIs to render
+"""Invariant browser-view-framework: The browser view uses TypeScript and browser APIs to render
 its screens, with no UI framework in its code or runtime dependencies.
 
 Covers, in the working tree being checked:
@@ -132,7 +132,7 @@ def text_files(directory, root):
 class BrowserSourceIsTypeScript(unittest.TestCase):
 
     def test_browser_source_holds_typescript_and_no_other_code(self):
-        # invariant: browser-view-framework/1
+        # invariant: browser-view-framework
         files = support.files_under(BROWSER_SOURCE, support.ROOT)
         typescript = [p for p in files if p.endswith(TYPESCRIPT_EXTENSIONS)]
         self.assertTrue(typescript, f"{BROWSER_SOURCE} holds no TypeScript file")
@@ -140,14 +140,14 @@ class BrowserSourceIsTypeScript(unittest.TestCase):
         self.assertEqual(foreign, [])
 
     def test_browser_compilation_declares_the_dom_library(self):
-        # invariant: browser-view-framework/1
+        # invariant: browser-view-framework
         libraries = load_json("tsconfig.browser.json").get("compilerOptions", {}).get("lib")
         self.assertIsNotNone(libraries, "tsconfig.browser.json sets no compilerOptions.lib")
         self.assertIn("dom", [str(x).lower() for x in libraries],
                       f"tsconfig.browser.json lib is {libraries!r}, without DOM")
 
     def test_browser_source_renders_through_document_in_code(self):
-        # invariant: browser-view-framework/1
+        # invariant: browser-view-framework
         rendering = [p for p, text in text_files(BROWSER_SOURCE, support.ROOT)
                      if p.endswith(TYPESCRIPT_EXTENSIONS)
                      and DOM_RENDERING_CALL.search(code_only(text))]
@@ -159,7 +159,7 @@ class BrowserSourceIsTypeScript(unittest.TestCase):
 class NoUiFramework(unittest.TestCase):
 
     def test_no_ui_framework_in_runtime_dependencies(self):
-        # invariant: browser-view-framework/1
+        # invariant: browser-view-framework
         declared = set(load_json("package.json").get("dependencies", {}))
         self.assertEqual(sorted(declared & set(UI_FRAMEWORKS)), [])
         locked = set()
@@ -170,7 +170,7 @@ class NoUiFramework(unittest.TestCase):
                          "package-lock.json holds a UI framework outside development")
 
     def test_browser_source_imports_no_ui_framework(self):
-        # invariant: browser-view-framework/1
+        # invariant: browser-view-framework
         found = []
         for relative, text in text_files(BROWSER_SOURCE, support.ROOT):
             for specifier in IMPORT_SPECIFIER.findall(text) + SCRIPT_SOURCE.findall(text):
@@ -181,7 +181,7 @@ class NoUiFramework(unittest.TestCase):
         self.assertEqual(found, [])
 
     def test_built_page_loads_only_its_own_code_and_no_framework(self):
-        # invariant: browser-view-framework/1
+        # invariant: browser-view-framework
         copy = support.built_copy()
         built = list(text_files(BUILT_PAGE, copy.path))
         self.assertTrue([p for p, _ in built if p.endswith((".js", ".mjs"))],

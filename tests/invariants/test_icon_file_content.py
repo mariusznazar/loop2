@@ -1,4 +1,4 @@
-"""Invariant icon-file-content/1: No SVG file directly in `assets/icons/` holds a `script` or
+"""Invariant icon-file-content: No SVG file directly in `assets/icons/` holds a `script` or
 `foreignObject` SVG element, an attribute whose name begins with `on`, or a reference to anything
 outside the file other than the SVG and XLink namespace declarations.
 
@@ -138,7 +138,7 @@ CLEAN = (
 class IconFileContent(unittest.TestCase):
 
     def test_icon_files_hold_nothing_that_runs_or_refers_outside(self):
-        # invariant: icon-file-content/1
+        # invariant: icon-file-content
         files = [p for p in support.listed_files()
                  if p.startswith(ICON_DIRECTORY) and "/" not in p[len(ICON_DIRECTORY):]
                  and p.lower().endswith(".svg")]
@@ -149,7 +149,7 @@ class IconFileContent(unittest.TestCase):
         self.assertEqual(found, [])
 
     def test_control_the_scan_flags_each_forbidden_form(self):
-        # invariant: icon-file-content/1
+        # invariant: icon-file-content
         for text in FLAGGED:
             with self.subTest(svg=text):
                 self.assertTrue(findings("probe.svg", text), f"the scan does not flag {text!r}")

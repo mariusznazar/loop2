@@ -61,7 +61,7 @@ def file_owners(root, tracked):
 class ApplicationPackageLayout(unittest.TestCase):
 
     def test_application_uses_only_the_root_package(self):
-        # invariant: application-package-layout/1
+        # invariant: application-package-layout
         tracked = set(support.listed_files())
         root = Path(support.ROOT)
         # data: package.json

@@ -1,4 +1,4 @@
-"""Invariant move-reach/1: Every move of the character ends with the character on a tile
+"""Invariant move-reach: Every move of the character ends with the character on a tile
 neighbouring the tile the move started from.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
@@ -147,7 +147,7 @@ def violations(runs):
 class MoveReach(unittest.TestCase):
 
     def test_every_move_ends_on_a_neighbour(self):
-        # invariant: move-reach/1
+        # invariant: move-reach
         directions = set()
         for program, real_ms in ((P_WANDER, T), (P_WANDER, T_OTHER), (P_GO, T)):
             with self.subTest(program=json.dumps(program), real_ms=real_ms):
@@ -158,7 +158,7 @@ class MoveReach(unittest.TestCase):
         self.assertGreaterEqual(len(directions), 4, f"the moves go in only {sorted(directions)}")
 
     def test_control_the_comparison_flags_breaks(self):
-        # invariant: move-reach/1
+        # invariant: move-reach
         runs = drive(P_WANDER, 100)
         self.assertEqual(violations(runs)[0], [])
         start = runs[0]

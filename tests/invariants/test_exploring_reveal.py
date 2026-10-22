@@ -1,4 +1,4 @@
-"""Invariant exploring-reveal/1: A program rule that explores reveals the tile the character stands
+"""Invariant exploring-reveal: A program rule that explores reveals the tile the character stands
 on when the exploring ends, and the character cannot carry it out on a revealed tile.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
@@ -161,7 +161,7 @@ def violations(runs):
 class ExploringReveal(unittest.TestCase):
 
     def test_exploring_at_the_entrance(self):
-        # invariant: exploring-reveal/1
+        # invariant: exploring-reveal
         runs = drive(P_ONLY, 25)
         self.assertEqual(runs[0]["character"]["at"], ENTRANCE)
         self.assertEqual(runs[0]["current"],
@@ -178,7 +178,7 @@ class ExploringReveal(unittest.TestCase):
             self.assertEqual(runs[minute]["current"]["activity"], {"kind": "wait"})
 
     def test_long_runs(self):
-        # invariant: exploring-reveal/1
+        # invariant: exploring-reveal
         for program, real_ms in ((P_ROAM, T), (P_ROAM, T_OTHER), (P_GO, T)):
             with self.subTest(program=json.dumps(program), real_ms=real_ms):
                 found, explorings, refused = violations(drive(program, LONG_MINUTES, real_ms))
@@ -187,7 +187,7 @@ class ExploringReveal(unittest.TestCase):
                 self.assertGreater(refused, 10, "too few free minutes on a revealed tile")
 
     def test_control_the_comparison_flags_breaks(self):
-        # invariant: exploring-reveal/1
+        # invariant: exploring-reveal
         runs = drive(P_ROAM, 120)
         self.assertEqual(violations(runs)[0], [])
         # An exploring that ends without revealing: the tile of minute 20 kept unrevealed.

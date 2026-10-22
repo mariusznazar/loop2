@@ -1,4 +1,4 @@
-"""Invariant simulation-inputs/1: No function that a file of the simulation exports changes a value
+"""Invariant simulation-inputs: No function that a file of the simulation exports changes a value
 passed to it.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
@@ -322,7 +322,7 @@ def report():
 class SimulationInputs(unittest.TestCase):
 
     def test_no_exported_function_changes_its_arguments(self):
-        # invariant: simulation-inputs/1
+        # invariant: simulation-inputs
         result = report()
         self.assertEqual(result["changes"], [], "an exported function of the simulation "
                                                 "changed a value passed to it")
@@ -333,7 +333,7 @@ class SimulationInputs(unittest.TestCase):
         self.assertGreater(result["total"], 1000, "the run made too few calls to mean much")
 
     def test_control_the_checker_sees_each_kind_of_change(self):
-        # invariant: simulation-inputs/1
+        # invariant: simulation-inputs
         controls = report()["controls"]
         for name in ("topLevel", "pushRule", "lowerStock", "deleteKey", "addUndefined",
                      "setNaN"):

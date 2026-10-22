@@ -1,4 +1,4 @@
-"""Invariant map-run-tiles/1: When a map run starts, each tile holds, of each resource on its game
+"""Invariant map-run-tiles: When a map run starts, each tile holds, of each resource on its game
 map's list of resources, either none or the stock per tile that the game map's data gives, and
 holds no resource missing from that list.
 
@@ -207,7 +207,7 @@ def violations(start, resources):
 class MapRunTiles(unittest.TestCase):
 
     def test_tiles_at_each_start(self):
-        # invariant: map-run-tiles/1
+        # invariant: map-run-tiles
         result = starts()
         for map_id in MAP_RESOURCES:
             of_map = [s for s in result["starts"] if s["mapId"] == map_id]
@@ -219,7 +219,7 @@ class MapRunTiles(unittest.TestCase):
         self.assertEqual(found, [])
 
     def test_control_the_layouts_can_show_a_break(self):
-        # invariant: map-run-tiles/1
+        # invariant: map-run-tiles
         result = starts()
         for map_id, resources in MAP_RESOURCES.items():
             for resource in resources:
@@ -232,7 +232,7 @@ class MapRunTiles(unittest.TestCase):
                                 f"every tile of {map_id} holds {resource['id']}")
 
     def test_control_single_tile_starts_are_reached(self):
-        # invariant: map-run-tiles/1
+        # invariant: map-run-tiles
         result = starts()
         for real_ms, resource in SINGLE_TILE_TIMES.items():
             start = next(s for s in result["starts"] if s["mapId"] == "forest"
@@ -245,13 +245,13 @@ class MapRunTiles(unittest.TestCase):
             self.assertEqual(violations(start, MAP_RESOURCES["forest"]), [])
 
     def test_tripwire_every_map_and_resource_is_written_out(self):
-        # invariant: map-run-tiles/1
+        # invariant: map-run-tiles
         read = data_maps()
         self.assertTrue(read, "the tripwire read no game map of the data")
         self.assertEqual(not_written_out(read, MAP_RESOURCES), [])
 
     def test_control_the_tripwire_fails_on_what_is_not_written_out(self):
-        # invariant: map-run-tiles/1
+        # invariant: map-run-tiles
         same = {m: [dict(r) for r in rs] for m, rs in MAP_RESOURCES.items()}
         self.assertEqual(not_written_out(same, MAP_RESOURCES), [])
         new_map = dict(same, cave=[{"id": "stone", "stock": 4}])
@@ -263,7 +263,7 @@ class MapRunTiles(unittest.TestCase):
         self.assertTrue(not_written_out(new_stock, MAP_RESOURCES), "a changed stock goes unseen")
 
     def test_control_the_comparison_flags_breaks(self):
-        # invariant: map-run-tiles/1
+        # invariant: map-run-tiles
         result = starts()
         start = result["starts"][0]
         resources = MAP_RESOURCES[start["mapId"]]
