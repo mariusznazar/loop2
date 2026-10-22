@@ -11,10 +11,12 @@ VENV = ROOT / ".runs/quality-venv" / ("Scripts" if WINDOWS else "bin")
 SCRIPT = "{ts,tsx,mts,cts,js,jsx,mjs,cjs}"
 WEB = "{ts,tsx,mts,cts,js,jsx,mjs,cjs,html,css}"
 # The D-32 scope, each pattern within one .gitattributes keeps at LF. A pattern matching no file
-# fails the check, so a directory with no such file yet, as tests/quality, waits for its first.
+# fails the check, but a brace alternative may: tests/quality, with no such file yet, stands
+# beside tests/sim and tests/view, and their HTML and CSS beside their scripts.
 PRETTIER_PATTERNS = [f"src/browser/**/*.{WEB}", f"src/server/**/*.{SCRIPT}",
-                     f"scripts/**/*.{SCRIPT}", f"tests/{{sim,view}}/**/*.{WEB}",
-                     "tests/{http,startup}.test.mjs", "{eslint,prettier}.config.mjs"]
+                     f"scripts/**/*.{SCRIPT}", f"tests/{{sim,view,quality}}/**/*.{SCRIPT}",
+                     f"tests/{{sim,view}}/**/*.{WEB}", "tests/{http,startup}.test.mjs",
+                     "{eslint,prettier}.config.mjs"]
 # Named one by one: review keeps a new standalone Bash script from going unnamed (D-31).
 BASH_SCRIPTS = ["deploy/loop2-deploy"]
 
