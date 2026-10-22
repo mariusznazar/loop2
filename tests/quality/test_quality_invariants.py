@@ -19,12 +19,6 @@ def venv_tool(name):
     return VENV / (name + ".exe" if WINDOWS else name)
 
 
-def fork_point():
-    """The commit the change starts from: `git merge-base HEAD origin/HEAD`."""
-    return subprocess.run(["git", "merge-base", "HEAD", "origin/HEAD"], cwd=ROOT,
-                          capture_output=True, text=True, check=True).stdout.strip()
-
-
 class QualityInvariants(unittest.TestCase):
     """A tool that reports a break or cannot run exits other than 0, and the test fails with
     its output; nothing is skipped."""
@@ -61,8 +55,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_introduced_npm_vulnerabilities(self):
         # invariant: introduced-npm-vulnerabilities
-        self.assert_passes(sys.executable, "-B", "scripts/check_dependencies.py",
-                           "--fork-point", fork_point())
+        self.assert_passes(sys.executable, "-B", "scripts/audit_dependencies.py")
 
 
 if __name__ == "__main__":
