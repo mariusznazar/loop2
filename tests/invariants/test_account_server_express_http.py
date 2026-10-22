@@ -1,4 +1,4 @@
-"""Invariant account-server-express-http/1: The account and save server handles its HTTP routes
+"""Invariant account-server-express-http: The account and save server handles its HTTP routes
 and responses through Express 5.
 
 Covers, in the working tree being checked:
@@ -58,7 +58,7 @@ def major_of(version):
 class ExpressFiveDeclared(unittest.TestCase):
 
     def test_runtime_dependency_on_express_5(self):
-        # invariant: account-server-express-http/1
+        # invariant: account-server-express-http
         dependencies = load_json("package.json").get("dependencies", {})
         self.assertIn("express", dependencies, "express is not a runtime dependency")
         spec = dependencies["express"]
@@ -70,7 +70,7 @@ class ExpressFiveDeclared(unittest.TestCase):
                          f"package-lock.json locks express {locked!r}")
 
     def test_installed_express_is_5(self):
-        # invariant: account-server-express-http/1
+        # invariant: account-server-express-http
         with open(os.path.join(support.ROOT, "node_modules", "express", "package.json"),
                   encoding="utf-8") as handle:
             installed = json.load(handle).get("version", "")
@@ -78,7 +78,7 @@ class ExpressFiveDeclared(unittest.TestCase):
                          f"node_modules holds express {installed!r}")
 
     def test_no_other_http_framework_dependency(self):
-        # invariant: account-server-express-http/1
+        # invariant: account-server-express-http
         dependencies = load_json("package.json").get("dependencies", {})
         self.assertEqual(sorted(set(dependencies) & set(OTHER_HTTP_FRAMEWORKS)), [])
 
@@ -107,21 +107,21 @@ class ExpressInServerSource(unittest.TestCase):
                     os.path.join(support.ROOT, *relative.split("/")))
 
     def test_server_source_imports_express(self):
-        # invariant: account-server-express-http/1
+        # invariant: account-server-express-http
         self.assertTrue(self.sources, "src/server holds no TypeScript file")
         importing = [p for p, text in self.sources.items()
                      if "express" in IMPORT_SPECIFIER.findall(text)]
         self.assertTrue(importing, "no file of src/server imports express")
 
     def test_server_source_uses_no_other_http_framework(self):
-        # invariant: account-server-express-http/1
+        # invariant: account-server-express-http
         found = sorted({(p, package_name(s)) for p, text in self.sources.items()
                         for s in IMPORT_SPECIFIER.findall(text)
                         if package_name(s) in OTHER_HTTP_FRAMEWORKS})
         self.assertEqual(found, [])
 
     def test_server_source_gives_node_http_no_handler_of_its_own(self):
-        # invariant: account-server-express-http/1
+        # invariant: account-server-express-http
         found = sorted(p for p, text in self.sources.items()
                        if RAW_HANDLER.search(text) or REQUEST_LISTENER.search(text))
         self.assertEqual(found, [], "these files hand Node's HTTP server a request handler "
@@ -137,7 +137,7 @@ class ExpressRoutesRunningServer(unittest.TestCase):
         cls.addClassCleanup(cls.server.stop)
 
     def test_every_probe_is_dispatched_by_express_router(self):
-        # invariant: account-server-express-http/1
+        # invariant: account-server-express-http
         for method, path in PROBES:
             with self.subTest(method=method, path=path):
                 support.request(method, path)

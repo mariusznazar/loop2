@@ -27,8 +27,8 @@ class EslintChecks(unittest.TestCase):
 
     def test_expected_membership_matches_whole_authoritative_facts(self):
         text = (ROOT / "foundations/environment_facts.md").read_text(encoding="utf-8")
-        js = text.split("## eslint-recommended-rules/1\n", 1)[1].split("\n- **Holds for:**", 1)[0]
-        ts = text.split("## typescript-eslint-typechecked-rules/1\n", 1)[1].split("\n- **Holds for:**", 1)[0]
+        js = text.split("## eslint-recommended-rules\n", 1)[1].split("\n- **Source:**", 1)[0]
+        ts = text.split("## typescript-eslint-typechecked-rules\n", 1)[1].split("\n- **Source:**", 1)[0]
         enabled, disabled = ts.split(" and disabling ")
         javascript = set(re.findall(r"`([^`]+)`", js)) - {"recommended", "error"}
         additions = set(re.findall(r"`([^`]+)`", enabled)) - {"recommendedTypeChecked", "base", "eslintRecommended", "recommended-type-checked", "error"}

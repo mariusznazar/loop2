@@ -1,4 +1,4 @@
-"""Invariant walk-target/1: A program rule that goes to a resource takes the character one move
+"""Invariant walk-target: A program rule that goes to a resource takes the character one move
 toward one of the revealed tiles holding some of that resource that lie nearest in game minutes of
 walking.
 
@@ -23,7 +23,7 @@ Reading of the sentence:
   tile holds the resource is no move toward one, and one started where the character stands on
   such a tile is none either, since that tile itself lies nearest, at 0 minutes.
 
-Where going to a resource can start at all is walk-feasibility/1, checked in
+Where going to a resource can start at all is walk-feasibility, checked in
 `test_walk_feasibility.py`; this check reads only the goings that were started.
 
 Scenarios on the map Las (`forest`) with the archetype `elementalMage`: for each resource R of
@@ -38,7 +38,7 @@ flags made-up records with a move away from the nearest tiles, a move toward a t
 another revealed one holding the resource, and a move whose end leaves the character elsewhere
 than its target.
 
-Does NOT cover: where going can start (walk-feasibility/1); conditions that can fail; maps other
+Does NOT cover: where going can start (walk-feasibility); conditions that can fail; maps other
 than Las.
 """
 
@@ -222,7 +222,7 @@ def violations(runs, resource):
 class WalkTarget(unittest.TestCase):
 
     def test_going_to_each_resource(self):
-        # invariant: walk-target/1
+        # invariant: walk-target
         totals = {"went": 0, "far": 0}
         for resource in RESOURCES:
             for real_ms in (T, T_OTHER) + MORE:
@@ -237,7 +237,7 @@ class WalkTarget(unittest.TestCase):
         self.assertGreater(totals["far"], 5, f"too few goings toward a far tile: {totals}")
 
     def test_control_the_comparison_flags_breaks(self):
-        # invariant: walk-target/1
+        # invariant: walk-target
         def tile(run, at):
             return next(t for t in run["tiles"] if key(t["at"]) == at)
 

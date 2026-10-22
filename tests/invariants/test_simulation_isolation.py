@@ -1,4 +1,4 @@
-"""Invariant simulation-isolation/1: No file of the simulation imports a file from outside the
+"""Invariant simulation-isolation: No file of the simulation imports a file from outside the
 simulation, or uses the page, a timer, the system time or a global object that the browser or
 Node.js adds to those of the JavaScript language.
 
@@ -609,7 +609,7 @@ def made_up_directory(files):
 class SimulationIsolation(unittest.TestCase):
 
     def test_source_imports_and_uses_nothing_outside_the_language(self):
-        # invariant: simulation-isolation/1
+        # invariant: simulation-isolation
         files = [p for p in support.listed_files() if p.startswith(SOURCE_DIRECTORY)]
         self.assertTrue(files, f"the working tree holds no file under {SOURCE_DIRECTORY}")
         found = []
@@ -619,7 +619,7 @@ class SimulationIsolation(unittest.TestCase):
                                     "a host global or the system time")
 
     def test_control_the_scan_flags_each_forbidden_form(self):
-        # invariant: simulation-isolation/1
+        # invariant: simulation-isolation
         for text in FLAGGED_SOURCES:
             with self.subTest(source=text):
                 self.assertTrue(findings(PROBE, text), f"the scan does not flag {text!r}")
@@ -627,7 +627,7 @@ class SimulationIsolation(unittest.TestCase):
                          "the scan flags forms the sentence allows")
 
     def test_built_simulation_runs_with_the_language_globals_alone(self):
-        # invariant: simulation-isolation/1
+        # invariant: simulation-isolation
         copy = support.built_copy()
         directory = copy.file(BUILT_DIRECTORY)
         self.assertTrue(os.path.isfile(os.path.join(directory, "game.js")),
@@ -646,7 +646,7 @@ class SimulationIsolation(unittest.TestCase):
                             f"{name} was never called on a game with no map run")
 
     def test_control_the_no_run_paths_are_judged(self):
-        # invariant: simulation-isolation/1
+        # invariant: simulation-isolation
         for label, read in NO_RUN_READS.items():
             directory, inner = made_up_directory({"game.js": made_up_game(read)})
             result = harness(inner, {"mode": "game", "steps": GAME_STEPS})
@@ -661,7 +661,7 @@ class SimulationIsolation(unittest.TestCase):
                                                    "to break the sentence")
 
     def test_control_the_harness_fails_each_forbidden_use(self):
-        # invariant: simulation-isolation/1
+        # invariant: simulation-isolation
         for name, text in FAILING_MODULES.items():
             directory, inner = made_up_directory({name: text})
             result = harness(inner, {"mode": "call"})

@@ -1,4 +1,4 @@
-"""Invariant program-world-reference/1: A program the simulation holds names a thing of the world
+"""Invariant program-world-reference: A program the simulation holds names a thing of the world
 only by its kind, never by a number or a position of its own.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
@@ -221,7 +221,7 @@ def findings(label, pair):
 class ProgramWorldReference(unittest.TestCase):
 
     def test_held_programs_name_things_only_by_kind(self):
-        # invariant: program-world-reference/1
+        # invariant: program-world-reference
         pairs = drive([p for p in LEGIT] + [p for _, p in NAMING])
         for program, pair in zip(LEGIT, pairs[:len(LEGIT)]):
             for result in pair:
@@ -237,7 +237,7 @@ class ProgramWorldReference(unittest.TestCase):
         self.assertEqual(found, [])
 
     def test_control_the_reading_flags_numbers_and_positions(self):
-        # invariant: program-world-reference/1
+        # invariant: program-world-reference
         self.assertEqual(naming({"rules": [rule(below("stick", 0), walk("moss")),
                                            rule(below("berry", 50), walk("fiber")),
                                            rule(ALWAYS, {"kind": "explore"})]}), [])

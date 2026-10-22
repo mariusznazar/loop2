@@ -334,7 +334,7 @@ def main():
     parser.add_argument("--record", type=Path)
     arguments = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    # invariant: introduced-npm-vulnerabilities/1
+    # invariant: introduced-npm-vulnerabilities
     return run_check("dependency-audit", "introduced-npm-vulnerabilities/1",
                      lambda: check(root, arguments.fork_point), record=arguments.record)
 

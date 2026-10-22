@@ -1,4 +1,4 @@
-"""Invariant icon-credits/1: For each SVG icon file directly in `assets/icons/`, the game's footer
+"""Invariant icon-credits: For each SVG icon file directly in `assets/icons/`, the game's footer
 shows a credit that names the icon's title as its page on game-icons.net gives it, the icon's
 author, that page and the licence CC BY 3.0, and says how the icon file differs from its source.
 
@@ -348,7 +348,7 @@ def credit_html(stem, author="Delapouite", folder="delapouite", licence=LICENCE,
 class IconCredits(unittest.TestCase):
 
     def test_footer_credits_each_icon_file(self):
-        # invariant: icon-credits/1
+        # invariant: icon-credits
         files = icon_files()
         self.assertTrue(files, f"the working tree holds no SVG file in {ICON_DIRECTORY}")
         copy = support.built_copy()
@@ -369,7 +369,7 @@ class IconCredits(unittest.TestCase):
         self.assertEqual(violations(markup, files), [], f"the footer:\n{markup}")
 
     def test_control_the_stand_in_document_writes_what_a_footer_means(self):
-        # invariant: icon-credits/1
+        # invariant: icon-credits
         work = tempfile.mkdtemp(prefix="loop2-icon-credits-made-")
         try:
             module = os.path.join(work, "made.mjs")
@@ -382,7 +382,7 @@ class IconCredits(unittest.TestCase):
         self.assertEqual(violations(markup, ["fern.svg"]), [])
 
     def test_control_the_comparison_flags_missing_parts(self):
-        # invariant: icon-credits/1
+        # invariant: icon-credits
         files = ["fern.svg", "flax.svg"]
         good = "<footer><ul>" + credit_html("fern") + credit_html("flax") + "</ul></footer>"
         self.assertEqual(violations(good, files), [])

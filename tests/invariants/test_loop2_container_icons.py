@@ -1,4 +1,4 @@
-"""Invariant loop2-container-icons/1: The loop2 container built from the repository serves each SVG
+"""Invariant loop2-container-icons: The loop2 container built from the repository serves each SVG
 icon file directly in `assets/icons/` at the path `/icons/<file name>`, with the same bytes as that
 icon file.
 
@@ -127,7 +127,7 @@ def working_tree_icons():
 class ContainerServesIcons(unittest.TestCase):
 
     def test_container_serves_each_icon_with_the_file_bytes(self):
-        # invariant: loop2-container-icons/1
+        # invariant: loop2-container-icons
         support.read_required(DOCKERFILE)
         icons = working_tree_icons()
         self.assertTrue(icons, f"{ICONS_DIRECTORY}/ holds no file ending in {ICON_SUFFIX}")

@@ -12,7 +12,7 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/browser/view/status-row.ts` | exemplar | D-36@39db0c31 |
+| `src/browser/view/status-row.ts` | exemplar | D-36 |
 | `src/browser/view/app.ts` | copy | — |
 | `src/browser/view/clock.ts` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
@@ -27,8 +27,8 @@ Czytaj również ogólne wytyczne kodowania.
 
 ### TypeScript i DOM
 
-- **Decision:** D-03@fb5aa3b0
-- **Invariant:** browser-view-framework@bf7d386f
+- **Decision:** D-03
+- **Invariant:** browser-view-framework
 - **Good:** Moduł TypeScript tworzy element przez API przeglądarki.
 - **Bad:** Moduł widoku importuje dodatkowy framework UI.
 
@@ -50,8 +50,8 @@ export function createLabel(): HTMLElement {
 
 ### Nazwy treści z danych
 
-- **Decision:** D-18@9cf9e4c8
-- **Invariant:** content-identifiers@a88c3389
+- **Decision:** D-18
+- **Invariant:** content-identifiers
 - **Good:** Widok odczytuje nazwę zasobu z katalogu przez przekazany identyfikator.
 - **Bad:** Widok wpisuje nazwę zasobu bezpośrednio w swoim kodzie.
 

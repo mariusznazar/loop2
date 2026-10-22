@@ -1,4 +1,4 @@
-"""Invariant walk-feasibility/1: The character can carry out a program rule that goes to a resource
+"""Invariant walk-feasibility: The character can carry out a program rule that goes to a resource
 where some revealed tile holds some of that resource and the character does not stand on one that
 does, and nowhere else.
 
@@ -49,7 +49,7 @@ comparison flags made-up records with a going started where no revealed tile hol
 where the character stands on one, where every such tile holds 0, and with no going started where
 it was possible and first.
 
-Does NOT cover: which tile a going heads for (walk-target/1); conditions other than the two
+Does NOT cover: which tile a going heads for (walk-target); conditions other than the two
 above; maps other than Las.
 """
 
@@ -272,7 +272,7 @@ def tile_at(run, at):
 class WalkFeasibility(unittest.TestCase):
 
     def test_going_is_started_where_possible_and_nowhere_else(self):
-        # invariant: walk-feasibility/1
+        # invariant: walk-feasibility
         totals = {"went": 0, "none": 0, "standing": 0}
         for resource in RESOURCES:
             for make, going_index in PROGRAMS:
@@ -289,7 +289,7 @@ class WalkFeasibility(unittest.TestCase):
                                                     f"tile: {totals}")
 
     def test_a_stock_of_zero_is_no_stock(self):
-        # invariant: walk-feasibility/1
+        # invariant: walk-feasibility
         for resource in RESOURCES:
             with self.subTest(resource=resource):
                 cases = {}
@@ -312,7 +312,7 @@ class WalkFeasibility(unittest.TestCase):
                                      f"{name} did not come about at minute {minute}: {counts}")
 
     def test_control_the_comparison_flags_breaks(self):
-        # invariant: walk-feasibility/1
+        # invariant: walk-feasibility
         resource = "berry"
         steps, in_force = steps_for(going_first(resource), LONG_MINUTES, T, False)
         runs = drive(steps)

@@ -1,4 +1,4 @@
-"""Invariant map-run-repeatability/1: Two simulations of one program from one starting game state
+"""Invariant map-run-repeatability: Two simulations of one program from one starting game state
 with one seed give the same map run, game minute by game minute, when they receive the same
 real-time inputs.
 
@@ -180,7 +180,7 @@ def minute(record):
 class MapRunRepeatability(unittest.TestCase):
 
     def test_two_processes_give_the_same_run_minute_by_minute(self):
-        # invariant: map-run-repeatability/1
+        # invariant: map-run-repeatability
         first = records("first", STEPS)
         second = records("second", STEPS)
         self.assertEqual(len(first), len(STEPS))
@@ -193,7 +193,7 @@ class MapRunRepeatability(unittest.TestCase):
                           f"first:  {json.dumps(a)[:2000]}\nsecond: {json.dumps(b)[:2000]}")
 
     def test_restart_with_the_same_program_replays_the_run(self):
-        # invariant: map-run-repeatability/1
+        # invariant: map-run-repeatability
         run = records("first", STEPS)
         sent, restarted = run[SEND_INDEX], run[RESTART_INDEX]
         self.assertEqual(restarted["state"]["run"], sent["state"]["run"],
@@ -210,7 +210,7 @@ class MapRunRepeatability(unittest.TestCase):
                           f"replay: {json.dumps(b)[:2000]}")
 
     def test_controls_the_compared_runs_can_differ(self):
-        # invariant: map-run-repeatability/1
+        # invariant: map-run-repeatability
         run = records("first", STEPS)
         other = records("other-seed", [["newGame"], ["setProgram", P1], ["send", SENT, T_OTHER]])
         self.assertNotEqual(other[-1]["state"]["run"]["tiles"],

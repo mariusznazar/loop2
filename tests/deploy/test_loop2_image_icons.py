@@ -1,4 +1,4 @@
-"""The loop2 image carries the game's icons and serves them (D-27/1, D-05/3, D-14/1).
+"""The loop2 image carries the game's icons and serves them (D-27, D-05, D-14).
 
 `scripts/build.mjs` copies every SVG file of `assets/icons/` into `dist/public/icons/` when the
 application is built, and the image is built by `npm run build` in the Dockerfile's build stage.

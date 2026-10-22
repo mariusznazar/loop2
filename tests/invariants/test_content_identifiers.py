@@ -1,4 +1,4 @@
-"""Invariant content-identifiers/1: No TypeScript file under `src/browser/` outside
+"""Invariant content-identifiers: No TypeScript file under `src/browser/` outside
 `src/browser/sim/data/` names a game map, a resource or an archetype, outside its comments, by the
 identifier or the name that the files of `src/browser/sim/data/` give it.
 
@@ -226,7 +226,7 @@ def findings(relative, text, entries):
 class ContentIdentifiers(unittest.TestCase):
 
     def test_browser_files_outside_the_data_name_no_content(self):
-        # invariant: content-identifiers/1
+        # invariant: content-identifiers
         entries = ENTRIES
         files = [p for p in support.listed_files() if scanned(p)]
         self.assertTrue(files, "no TypeScript file under src/browser/ outside the data")
@@ -238,13 +238,13 @@ class ContentIdentifiers(unittest.TestCase):
                                     "or name")
 
     def test_tripwire_every_data_entry_is_written_out(self):
-        # invariant: content-identifiers/1
+        # invariant: content-identifiers
         read = data_entries()
         self.assertTrue(read, "the tripwire read no entry of the data")
         self.assertEqual(not_written_out(read, ENTRIES), [])
 
     def test_control_the_tripwire_fails_on_an_entry_not_written_out(self):
-        # invariant: content-identifiers/1
+        # invariant: content-identifiers
         self.assertEqual(not_written_out(list(ENTRIES), ENTRIES), [])
         stone = {"kind": "resource", "id": "stone", "name": "kamień"}
         self.assertTrue(not_written_out(list(ENTRIES) + [stone], ENTRIES),
@@ -253,7 +253,7 @@ class ContentIdentifiers(unittest.TestCase):
         self.assertTrue(not_written_out(renamed, ENTRIES), "a renamed map goes unseen")
 
     def test_control_the_scan_flags_named_content(self):
-        # invariant: content-identifiers/1
+        # invariant: content-identifiers
         entries = ENTRIES
         probe = "src/browser/view/probe.ts"
         for entry in entries:

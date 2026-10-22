@@ -1,4 +1,4 @@
-"""Invariant restart-seed/1: A map run restart has the seed of the map run it replaces.
+"""Invariant restart-seed: A map run restart has the seed of the map run it replaces.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
@@ -103,7 +103,7 @@ def drive(steps):
 class RestartSeed(unittest.TestCase):
 
     def test_each_restart_keeps_the_seed_of_the_run_it_replaces(self):
-        # invariant: restart-seed/1
+        # invariant: restart-seed
         records = drive(STEPS)
         restarts = [i for i, step in enumerate(STEPS) if step[0] == "restart"]
         self.assertEqual(len(restarts), 4)
@@ -120,7 +120,7 @@ class RestartSeed(unittest.TestCase):
                              "map run it replaces")
 
     def test_control_sends_take_other_seeds(self):
-        # invariant: restart-seed/1
+        # invariant: restart-seed
         records = drive(CONTROL_STEPS)
         seeds = [records[i]["run"]["seed"] for i, s in enumerate(CONTROL_STEPS) if s[0] == "send"]
         self.assertEqual(len(seeds), 3)

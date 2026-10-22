@@ -7,7 +7,7 @@
 
 Przed każdą zmianą kodu produktu, także skryptów i testów. Stosuj sprawdzenia
 niezmienników wskazanych poniżej przez ich metody zapisane w fundamencie.
-Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28@550e88d6.
+Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 
 ## Kinds of code
 
@@ -22,8 +22,8 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28@550e88d6.
 
 ### Linter
 
-- **Decision:** D-29@cd8014d6 · D-30@19dcd3f6 · D-31@e3145b98
-- **Invariant:** eslint-source-rules@01072719 · eslint-configuration-rules@6a43710f · ruff-source-rules@d7e3e90e · shellcheck-source-rules@007bded4
+- **Decision:** D-29 · D-30 · D-31
+- **Invariant:** eslint-source-rules · eslint-configuration-rules · ruff-source-rules · shellcheck-source-rules
 - **Good:** Nowe pliki spełniają blokujące reguły, a konfiguracja zachowuje przyjęty zestaw i zakres.
 - **Bad:** Kod narusza blokującą regułę albo wycisza ją w źródle lub konfiguracji.
 
@@ -163,8 +163,8 @@ printf '%s\n' $1
 
 ### Formatter
 
-- **Decision:** D-32@7eedf283
-- **Invariant:** prettier-source-format@5a23ca31
+- **Decision:** D-32
+- **Invariant:** prettier-source-format
 - **Good:** Nowy plik ma układ pozostawiany przez przyjęty Prettier i końce linii LF.
 - **Bad:** Nowy plik ma inny układ lub końce linii CRLF.
 
@@ -186,8 +186,8 @@ export const values=[1,2]
 
 ### Dependency audit
 
-- **Decision:** D-33@f820c28f
-- **Invariant:** introduced-npm-vulnerabilities@da4f7801
+- **Decision:** D-33
+- **Invariant:** introduced-npm-vulnerabilities
 - **Good:** Nowa dokładna wersja zależności nie ma pasującego ostrzeżenia od poziomu low.
 - **Bad:** Nowa dokładna wersja zależności ma pasujące ostrzeżenie od poziomu low.
 

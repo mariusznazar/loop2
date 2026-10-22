@@ -1,4 +1,4 @@
-"""Invariant map-run-layout/1: Two map runs of one game map on one seed have the same kinds of
+"""Invariant map-run-layout: Two map runs of one game map on one seed have the same kinds of
 resource present on each tile, whatever their amounts, at every game minute, whatever programs they
 run under.
 
@@ -15,7 +15,7 @@ Reading of the sentence:
 - one seed: the map run's `seed`; two map runs on one seed come about in two ways, and both are
   checked: two games each sent to the map at the same real time T (the first send of a game mixes
   the same last seed with the same real time), and one map run followed by a map run restart under
-  a changed program (a restart keeps its seed, restart-seed/1); that the two seeds are equal is
+  a changed program (a restart keeps its seed, restart-seed); that the two seeds are equal is
   checked before the runs are compared;
 - every game minute: the same minute of each map run, from 0 (the send or the restart) to 300;
 - whatever programs: each pair runs under two different programs written out below, so that the
@@ -205,7 +205,7 @@ class MapRunLayout(unittest.TestCase):
                             f"{label}: no tile holds any resource")
 
     def test_two_sends_on_one_seed_have_one_layout(self):
-        # invariant: map-run-layout/1
+        # invariant: map-run-layout
         for name_one, first, name_two, second in PAIRS:
             for real_ms in (T, T_OTHER) + MORE:
                 with self.subTest(pair=(name_one, name_two), real_ms=real_ms):
@@ -213,7 +213,7 @@ class MapRunLayout(unittest.TestCase):
                     self.check_pair(one, two, f"{name_one} and {name_two} sent at {real_ms}")
 
     def test_a_restart_under_another_program_has_the_same_layout(self):
-        # invariant: map-run-layout/1
+        # invariant: map-run-layout
         for name_one, first, name_two, second in PAIRS:
             for real_ms in (T, T_OTHER) + MORE:
                 with self.subTest(pair=(name_one, name_two), real_ms=real_ms):
@@ -222,7 +222,7 @@ class MapRunLayout(unittest.TestCase):
                                               f"sent at {real_ms}")
 
     def test_control_the_comparison_flags_breaks(self):
-        # invariant: map-run-layout/1
+        # invariant: map-run-layout
         one, two = two_sends(EXPLORE, WANDER, T)
         self.assertEqual(differences(one, two), [])
         other = two_sends(EXPLORE, EXPLORE, T_OTHER)[0]

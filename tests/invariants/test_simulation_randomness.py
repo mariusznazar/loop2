@@ -1,4 +1,4 @@
-"""Invariant simulation-randomness/1: No file of the simulation draws a random number from any
+"""Invariant simulation-randomness: No file of the simulation draws a random number from any
 source other than the generator seeded from the map run's state.
 
 The files of the simulation are the files git tracks or would track under `src/browser/sim/` (the
@@ -388,7 +388,7 @@ class SimulationRandomness(unittest.TestCase):
                          "the simulation called a replaced source of random numbers")
 
     def test_source_names_no_other_source_of_random_numbers(self):
-        # invariant: simulation-randomness/1
+        # invariant: simulation-randomness
         files = [p for p in support.listed_files() if p.startswith(SOURCE_DIRECTORY)]
         self.assertTrue(files, f"the working tree holds no file under {SOURCE_DIRECTORY}, so "
                                "the simulation's source cannot be scanned")
@@ -399,7 +399,7 @@ class SimulationRandomness(unittest.TestCase):
                                     "numbers or a second generator step")
 
     def test_control_the_scan_flags_each_forbidden_form(self):
-        # invariant: simulation-randomness/1
+        # invariant: simulation-randomness
         for text in FLAGGED_SOURCES:
             with self.subTest(source=text):
                 self.assertTrue(findings("src/browser/sim/probe.ts", text),
@@ -411,7 +411,7 @@ class SimulationRandomness(unittest.TestCase):
                          "the scan flags the generator step constant in the generator's file")
 
     def test_run_calls_no_other_source_of_random_numbers(self):
-        # invariant: simulation-randomness/1
+        # invariant: simulation-randomness
         result = drive(support.built_copy(), LONG_RUN)
         self.assert_clean_run(result)
         self.assertIn("game.js", result["modules"])
@@ -422,7 +422,7 @@ class SimulationRandomness(unittest.TestCase):
                                 "the run did not cover the minutes it is meant to")
 
     def test_control_draws_follow_the_seed(self):
-        # invariant: simulation-randomness/1
+        # invariant: simulation-randomness
         copy = support.built_copy()
         first = drive(copy, path_steps(T))
         again = drive(copy, path_steps(T))

@@ -1,4 +1,4 @@
-"""Invariant loop2-container-isolation/1: The loop2 instance runs in a container separate from
+"""Invariant loop2-container-isolation: The loop2 instance runs in a container separate from
 the existing loop instance.
 
 The check reads the repository's `compose.yaml` and `Dockerfile` as they stand and runs nothing;
@@ -58,7 +58,7 @@ def old_names(text):
 class ComposeIsolation(unittest.TestCase):
 
     def test_compose_names_its_own_project_service_and_container(self):
-        # invariant: loop2-container-isolation/1
+        # invariant: loop2-container-isolation
         top, services = support.compose_outline(support.read_required(COMPOSE_FILE))
         self.assertIn("name", top, f"{COMPOSE_FILE} names no Compose project")
         self.assertEqual(top["name"].value, EXPECTED_PROJECT,
@@ -73,7 +73,7 @@ class ComposeIsolation(unittest.TestCase):
                                  f"{keys['container_name']!r}")
 
     def test_compose_shares_nothing_with_another_deployment(self):
-        # invariant: loop2-container-isolation/1
+        # invariant: loop2-container-isolation
         text = support.read_required(COMPOSE_FILE)
         top, services = support.compose_outline(text)
         problems = []
@@ -93,7 +93,7 @@ class ComposeIsolation(unittest.TestCase):
         self.assertEqual(problems, [], f"{COMPOSE_FILE} reaches outside the loop2 container")
 
     def test_dockerfile_names_nothing_of_another_deployment(self):
-        # invariant: loop2-container-isolation/1
+        # invariant: loop2-container-isolation
         text = support.read_required(DOCKERFILE)
         support.dockerfile_stages(text)
         problems = old_names(text)

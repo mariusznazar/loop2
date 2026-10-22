@@ -1,4 +1,4 @@
-"""Invariant loop2-api-error-route/1: An unmatched `/api/` request receives an API error response,
+"""Invariant loop2-api-error-route: An unmatched `/api/` request receives an API error response,
 never the built game's HTML page.
 
 The product is built by `npm run build` in a temporary copy of the working tree and started there
@@ -66,7 +66,7 @@ class UnmatchedApiRequests(unittest.TestCase):
         cls.addClassCleanup(cls.server.stop)
 
     def test_root_serves_the_built_page(self):
-        # invariant: loop2-api-error-route/1
+        # invariant: loop2-api-error-route
         self.assertTrue(self.pages, f"`npm run build` places no HTML file in {BUILT_PAGE}")
         status, _headers, body = support.request("GET", "/", {"Accept": "text/html"})
         self.assertEqual(status, 200)
@@ -75,7 +75,7 @@ class UnmatchedApiRequests(unittest.TestCase):
                       "below would not be made against the page the server serves")
 
     def test_unmatched_api_requests_receive_json_errors_not_the_page(self):
-        # invariant: loop2-api-error-route/1
+        # invariant: loop2-api-error-route
         for path in UNMATCHED_API_PATHS:
             for method in METHODS:
                 for accept in ACCEPT_HEADERS:

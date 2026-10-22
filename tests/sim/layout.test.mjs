@@ -101,7 +101,7 @@ test("drawLayout does not change the map", () => {
   assert.equal(JSON.stringify(map), before);
 });
 
-// Fixed expected values (D-22/1: the generator, the seed mixing and the draw order are a contract).
+// Fixed expected values (D-22: the generator, the seed mixing and the draw order are a contract).
 // Written out once from the code; a change to any of the three fails here.
 test("golden values: the layout stream of seed 1, mixSeed(1, 1000) and the stocks of Las for seed 1", () => {
   let state = streamState(1, "layout");
