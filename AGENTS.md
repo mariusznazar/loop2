@@ -5,6 +5,8 @@
 
 Before changing product code, including scripts and tests, read `guidelines/coding.md`.
 
+Every test of this repository runs with `npm test`.
+
 <!-- the-way:begin -->
 # Pinned the-way process
 

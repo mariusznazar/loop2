@@ -44,7 +44,7 @@ PROBE_NAME = "invariant_check_build_probe"
 
 # Made-up source that compiles under the browser configuration only: a DOM type and `document`.
 BROWSER_PROBE = (
-    "// Written by the invariant check application-build-output/1.\n"
+    "// Written by the invariant check application-build-output.\n"
     "interface InvariantCheckBrowserProbeShape {\n"
     "  readonly marker: string;\n"
     "  readonly root: HTMLElement | null;\n"
@@ -58,7 +58,7 @@ BROWSER_MARKER = "application-build-output-browser-probe"
 
 # Made-up source that compiles under the server configuration only: Node's `process`.
 SERVER_PROBE = (
-    "// Written by the invariant check application-build-output/1.\n"
+    "// Written by the invariant check application-build-output.\n"
     "interface InvariantCheckServerProbeShape {\n"
     "  readonly marker: string;\n"
     "  readonly variable: string | undefined;\n"

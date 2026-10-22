@@ -206,7 +206,7 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
         support.read_required(COMPOSE_FILE)
         if not docker_answers():
             self.skipTest("no Docker daemon answers; the container part of "
-                          "loop2-one-serving-process/2 stays unchecked")
+                          "loop2-one-serving-process stays unchecked")
         tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
         name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=invariant-check",

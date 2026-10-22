@@ -51,7 +51,7 @@ import loop2_invariant_support as support
 
 # The made-up input: a value of the wrong type under TypeScript's strict checking.
 DELIBERATE_TYPE_ERROR = (
-    "\n// Appended by the invariant check account-server-typecheck/1.\n"
+    "\n// Appended by the invariant check account-server-typecheck.\n"
     "const invariantCheckDeliberateTypeError: number = \"not a number\";\n"
     "void invariantCheckDeliberateTypeError;\n"
 )

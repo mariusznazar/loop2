@@ -133,7 +133,7 @@ class ContainerServesIcons(unittest.TestCase):
         self.assertTrue(icons, f"{ICONS_DIRECTORY}/ holds no file ending in {ICON_SUFFIX}")
         if not docker_answers():
             self.skipTest("no Docker daemon answers; whether the loop2 container serves the "
-                          "icons of assets/icons/ (loop2-container-icons/1) stays unchecked")
+                          "icons of assets/icons/ (loop2-container-icons) stays unchecked")
         tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
         name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
         self.addCleanup(docker_run, "image", "rm", "-f", tag)
