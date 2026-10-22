@@ -622,14 +622,14 @@ keep itself, entering through what the product already treats as untrusted.
 
 ### D-28 — Which coding-guideline discipline does loop2 adopt?
 
-Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML, and leaving to review, as D-29 and D-31 settle, a rule turned off in the ESLint configuration in place of a second linter invariant and a `# shellcheck disable=` directive in place of counting it as a break; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares the change with the decision:
-  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals, the two rules left to review and the test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
-  - violates: an additional mandatory test exemplar, automatic Python formatting, a transition-debt check or a further rule of the templates left to review, introduced without a new decision
+  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and the test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
+  - violates: an additional mandatory test exemplar, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
 - **Origin:** none
 
 *Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader exemplar maintenance and additional formatters add work without an established benefit.
@@ -637,15 +637,17 @@ Loop2 adopts the coding-guideline templates of its pinned the-way, while deferri
 
 ### D-29 — Which rules check TypeScript and JavaScript?
 
-Every application, script and test TypeScript and JavaScript file of browser-view, simulation, account-server and build-tools passes local pinned ESLint 10.12.0 run with `--max-warnings 0` on `eslint.config.mjs`, which applies @eslint/js 10.0.1 `recommended` and, for TypeScript, typescript-eslint 8.71.2 flat `recommendedTypeChecked` unchanged, with globals 17.13.0 and TypeScript API 6.0.2 for the parser while application compilation stays on TypeScript 7, all within the one shared npm package and lockfile. That configuration sets `linterOptions.noInlineConfig`, so an inline configuration comment fails the check, and ignores only dependencies, generated files, the submodule and temporary work results; review, in place of a check of the effective configuration, keeps its rules to those sets and its file patterns to that scope. Changing the rule set takes a human-accepted change of this decision.
+Every application, script and test TypeScript and JavaScript file of browser-view, simulation, account-server and build-tools passes local pinned ESLint 10.12.0 run with `--max-warnings 0` on `eslint.config.mjs`, which applies @eslint/js 10.0.1 `recommended` and, for TypeScript, typescript-eslint 8.71.2 flat `recommendedTypeChecked` unchanged, with globals 17.13.0 and TypeScript API 6.0.2 for the parser while application compilation stays on TypeScript 7, all within the one shared npm package and lockfile. That configuration sets `linterOptions.noInlineConfig`, so an inline configuration comment fails the check, and ignores only dependencies, generated files, the submodule and temporary work results, while the check runs with an empty bulk-suppressions file of its own, so an `eslint-suppressions.json` in the repository hides no report; review, in place of a check of the effective configuration, keeps its rules to those sets and its file patterns to that scope. Changing the rule set takes a human-accepted change of this decision.
 
 - **Scope:** browser-view, simulation, account-server, build-tools
 - **Based on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Relations:** derives from D-06
-- **Verification:** invariants: eslint-source-rules · eslint-configuration-rules
+- **Verification:** invariants: eslint-source-rules. An agent compares a change with the decision:
+  - complies: a change to `eslint.config.mjs` that adds the file pattern of a new directory of code in that scope;
+  - violates: a rule set to `off` in `eslint.config.mjs` or an ignore of a source directory, without a human-accepted change of this decision.
 - **Origin:** none
 
-*Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency. With inline configuration turned off, a suppressing comment is itself a failure, and a change that turns a rule off or hides a file stands in the configuration, where review sees it.
+*Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency. With inline configuration turned off, a suppressing comment is itself a failure, with the check's own empty suppressions file a bulk-suppressions file silences nothing, and a change that turns a rule off or hides a file stands in the configuration, where review sees it.
 *Rejected:* A compiler downgrade — gives up the existing compiler choice; an unsupported parser API — risks unreliable type-aware reports; extra style sets — add obligations beyond the accepted set; product-written checks comparing the effective configuration with a frozen rule list and parsing inline directives — far more code to keep than the tool's own setting and a reviewed configuration.
 
 ### D-30 — Which Python rules block a change?

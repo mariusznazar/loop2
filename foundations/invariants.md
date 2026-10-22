@@ -389,7 +389,7 @@ whatever their amounts, at every game minute, whatever programs they run under.
 
 ## eslint-source-rules
 
-No file `eslint.config.mjs` matches breaks a rule that configuration applies or carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning.
+No file `eslint.config.mjs` matches breaks a rule that configuration applies or carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
 
 - **Method:** test
 - **Rests on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
@@ -415,16 +415,6 @@ No Bash script the test of this invariant names gets a ShellCheck 0.11.0 report 
 - **Rests on:** shellcheck-default-bash-checks
 - **Derives from:** D-31
 - **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
-- **Violated:** no
-
-## eslint-configuration-rules
-
-`eslint.config.mjs` matches every TypeScript and JavaScript file in the scope adopted by D-29, applies @eslint/js `recommended` and typescript-eslint `recommendedTypeChecked` unchanged with no rule setting of its own and no ignore beyond dependencies, generated files, the submodule and temporary work results, and no ESLint bulk-suppressions file stands in the repository.
-
-- **Method:** review
-- **Rests on:** none
-- **Derives from:** D-29
-- **Part:** browser-view · simulation · account-server · build-tools
 - **Violated:** no
 
 ## prettier-source-format
@@ -453,3 +443,4 @@ The npm audit of `package-lock.json` reports no advisory of low, moderate, high 
 |---|---|---|
 | guidelines-form | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
 | guidelines-reference-current | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
+| eslint-configuration-rules | withdrawn: no cheap test checks that `eslint.config.mjs` keeps to D-29, so the linter's rule names no invariant for it; the review of each change to that configuration compares it with D-29 | none |

@@ -5,7 +5,7 @@ identifier or the name that the files of `src/browser/sim/data/` give it.
 The identifiers and names are written out below in ENTRIES, transcribed from the files of
 `src/browser/sim/data/`: the keys of `MAPS` (`maps.ts`), `RESOURCES` (`resources.ts`) and
 `ARCHETYPES` (`archetypes.ts`), and the `name` each entry gives. The check does not read the data
-at run time for its expected values (WAY-69), so a map, a resource or an archetype added to the
+at run time for its expected values (WAY-228), so a map, a resource or an archetype added to the
 data is scanned for only once it is written out here; a tripwire reads the data's entries, as
 `npm run build` compiles them in a temporary copy of the working tree, only to fail when one of
 them is not written out here, telling the maintainer to add it. The files scanned are the TypeScript files (`.ts`, `.tsx`, `.mts`,

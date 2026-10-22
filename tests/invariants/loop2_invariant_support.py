@@ -3,7 +3,7 @@ commands run in a temporary copy of the working tree, the built server started o
 the deployment files the repository holds, and readers that take those files apart.
 
 Nothing here computes a value a check expects; the checks write their expected values out as
-literals (WAY-69). This module only runs the product and hands its output back.
+literals (WAY-228). This module only runs the product and hands its output back.
 """
 
 import atexit

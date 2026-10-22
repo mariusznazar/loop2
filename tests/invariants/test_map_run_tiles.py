@@ -13,7 +13,7 @@ Reading of the sentence:
 - the game map's list of resources and its stock per tile: written out below in MAP_RESOURCES,
   transcribed from the entries of `resources` of the game map in `MAPS`
   (`src/browser/sim/data/maps.ts`), each with its `id` and `stock`; the check does not read the
-  data at run time for its expected values (WAY-69), so a game map added to the data is checked
+  data at run time for its expected values (WAY-228), so a game map added to the data is checked
   only once it is written out here, and a stock changed in the data fails the check until it is
   written out anew; a tripwire reads the game maps of `MAPS` (`dist/public/sim/data/maps.js`)
   with their lists of resources and stocks, only to fail when one of them is not written out
