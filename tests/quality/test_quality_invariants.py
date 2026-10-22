@@ -3,6 +3,7 @@
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,8 +40,13 @@ class QualityInvariants(unittest.TestCase):
     def test_eslint_source_rules(self):
         # invariant: eslint-source-rules
         # data: eslint.config.mjs
-        self.assert_passes("node", "node_modules/eslint/bin/eslint.js", "--max-warnings", "0",
-                           ".")
+        # An empty suppressions file of its own keeps any eslint-suppressions.json of the
+        # repository from hiding a report (D-29); a path to no file makes ESLint exit with 2.
+        with tempfile.TemporaryDirectory() as temp:
+            suppressions = Path(temp) / "eslint-suppressions.json"
+            suppressions.write_text("{}\n", encoding="utf-8")
+            self.assert_passes("node", "node_modules/eslint/bin/eslint.js", "--max-warnings",
+                               "0", "--suppressions-location", str(suppressions), ".")
 
     def test_ruff_source_rules(self):
         # invariant: ruff-source-rules
