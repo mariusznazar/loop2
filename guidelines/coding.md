@@ -37,8 +37,8 @@ z `--max-warnings 0`, więc każdy komentarz `eslint-disable` albo `/* eslint �
 oblewa kontrolę. Konfiguracja nie ustawia własnych reguł, ignoruje tylko
 zależności, pliki wygenerowane, submoduł i wyniki tymczasowe, a jej wzorce plików
 obejmują każdy katalog z kodem tych części; obok niej nie stoi plik
-`eslint-suppressions.json`. Tego pilnuje przegląd zmiany według
-eslint-configuration-rules.
+`eslint-suppressions.json`. Tego pilnuje przegląd każdej zmiany konfiguracji
+według D-29.
 
 Python we wszystkich sześciu częściach z kodem sprawdza lokalny Ruff 0.17.1
 z konfiguracją `ruff.toml`: 393 reguły z domyślnego zestawu 407 reguł bez preview
