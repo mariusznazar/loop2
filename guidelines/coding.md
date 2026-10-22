@@ -23,38 +23,43 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 ### Linter
 
 - **Decision:** D-29 · D-30 · D-31
-- **Invariant:** eslint-source-rules · eslint-configuration-rules · ruff-source-rules · shellcheck-source-rules
-- **Good:** Nowe pliki spełniają blokujące reguły, a konfiguracja zachowuje przyjęty zestaw i zakres.
-- **Bad:** Kod narusza blokującą regułę albo wycisza ją w źródle lub konfiguracji.
+- **Invariant:** eslint-source-rules · ruff-source-rules · shellcheck-source-rules
+- **Good:** Nowe pliki spełniają blokujące reguły bez komentarzy wyciszających.
+- **Bad:** Kod narusza blokującą regułę albo wycisza ją komentarzem lub w konfiguracji.
 
 TS/JS aplikacji, skryptów i testów w browser-view, simulation, account-server
-i build-tools sprawdza lokalny ESLint 10.12.0: `recommended` z @eslint/js 10.0.1,
-a dla TS również `recommendedTypeChecked` z typescript-eslint 8.71.2 wraz
-z odziedziczonymi nadpisaniami zgodności. Blokuje pełne 64 reguły JS i 92 aktywne
-reguły TS, bez dodatkowych zestawów stylistycznych i bez reguł przykładowych.
-Parser używa API TypeScript 6.0.2 oraz globals 17.13.0; kompilator aplikacji
-pozostaje TypeScript 7. Konfigurację wskazuje `eslint.config.mjs`.
+i build-tools sprawdza lokalny ESLint 10.12.0 z konfiguracją `eslint.config.mjs`:
+`recommended` z @eslint/js 10.0.1, a dla TS również `recommendedTypeChecked`
+z typescript-eslint 8.71.2, oba bez zmian. Parser używa API TypeScript 6.0.2
+oraz globals 17.13.0; kompilator aplikacji pozostaje TypeScript 7. Konfiguracja
+wyłącza komentarze konfiguracyjne w kodzie (`noInlineConfig`), a ESLint działa
+z `--max-warnings 0`, więc każdy komentarz `eslint-disable` albo `/* eslint … */`
+oblewa kontrolę. Konfiguracja nie ustawia własnych reguł, ignoruje tylko
+zależności, pliki wygenerowane, submoduł i wyniki tymczasowe, a jej wzorce plików
+obejmują każdy katalog z kodem tych części; obok niej nie stoi plik
+`eslint-suppressions.json`. Tego pilnuje przegląd zmiany według
+eslint-configuration-rules.
 
-Python we wszystkich sześciu częściach z kodem sprawdza lokalny Ruff 0.17.1:
-393 reguły z domyślnego zestawu 407 reguł bez preview blokują, a czternaście
-wymienionych w Examples pozostaje przykładami. Metoda przekazuje listę wprost
-i izoluje narzędzie od zewnętrznej konfiguracji. Dotychczasowe `noqa: E402`
-nie wyłącza blokującej reguły tego zestawu.
+Python we wszystkich sześciu częściach z kodem sprawdza lokalny Ruff 0.17.1
+z konfiguracją `ruff.toml`: 393 reguły z domyślnego zestawu 407 reguł bez preview
+blokują, a czternaście wymienionych w Examples pozostaje przykładami. Ruff dostaje
+ten plik wprost i `--ignore-noqa`, więc inna konfiguracja Ruffa w repozytorium
+nie zmienia zestawu, a `# noqa` ani `# ruff: noqa` niczego nie wyciszają. Ruff
+sprawdza pliki `.py` i `.pyi`; skrypt Pythona bez rozszerzenia pomija.
 
 Samodzielne skrypty Bash we wszystkich częściach z kodem, również bez
-rozszerzenia, sprawdza lokalny ShellCheck 0.11.0: domyślne nieopcjonalne kontrole
-i każdy poziom komunikatu, bez reguł przykładowych. Polecenia wewnątrz YAML
-i literałów testów nie są samodzielnymi skryptami Bash.
+rozszerzenia, sprawdza lokalny ShellCheck 0.11.0 z `--norc --shell=bash
+--extended-analysis=true`: domyślne nieopcjonalne kontrole i każdy poziom
+komunikatu, bez reguł przykładowych. Test wymienia skrypty po nazwie: nowy
+skrypt Bash dopisz do listy w `tests/quality/test_quality_invariants.py`.
+Dyrektywa `# shellcheck disable=…` działa, więc jej nie dodawaj; przegląd
+ją odrzuca. Polecenia wewnątrz YAML i literałów testów nie są samodzielnymi
+skryptami Bash.
 
-Zakresy obejmują nowe ścieżki. Zależności, pliki wygenerowane, submoduł
-i tymczasowe wyniki pracy są poza zakresem kodu produktu. Naprawiaj zgłoszenie
-w pliku, zamiast wyciszać blokującą regułę komentarzem. Zmiana zestawu wymaga
-zaakceptowanej przez człowieka zmiany odpowiedniej decyzji. Kontrola ESLint
-sprawdza także faktyczne nazwy, poziomy, opcje reguł i pokrycie plików.
-Ruff przekazuje przyjętą listę bezpośrednio, a ShellCheck pomija zewnętrzne rc
-i opcje środowiska zmieniające zestaw; dyrektywy źródłowe nie mogą go osłabić.
-Instalacja i lockfile są w deklaracjach wskazanych w Where in code;
-metody korzystają z lokalnych wersji, bez pobierania narzędzia przy kontroli.
+Naprawiaj zgłoszenie w pliku, zamiast wyciszać blokującą regułę. Zmiana zestawu
+wymaga zaakceptowanej przez człowieka zmiany odpowiedniej decyzji. Wersje
+narzędzi przypinają deklaracje wskazane w Where in code; testy uruchamiają
+lokalne kopie, bez pobierania narzędzia przy kontroli.
 
 ```good eslint-source-rules scripts/guideline-case.mjs
 export function doubled(value) {
@@ -64,81 +69,10 @@ export function doubled(value) {
 
 ```bad eslint-source-rules scripts/guideline-case.mjs
 export function doubled(value) {
+  // eslint-disable-next-line no-debugger
   debugger;
   return value * 2;
 }
-```
-
-Przypadki konfiguracji zastępują cały jej plik. Poprawny zachowuje zestaw
-i zakres, błędny wyłącza jedną blokującą regułę na końcu konfiguracji.
-
-```good eslint-configuration-rules eslint.config.mjs
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import ts from "typescript";
-import { fileURLToPath } from "node:url";
-const root = fileURLToPath(new URL(".", import.meta.url));
-const ext = "{js,mjs,cjs,jsx,ts,mts,cts,tsx}";
-const typed = "{ts,mts,cts,tsx}";
-const dirs = ["src/browser", "src/server", "scripts", "tests/sim", "tests/view", "tests/quality"];
-const source = [...dirs.map((dir) => `${dir}/**/*.${ext}`), "tests/http.test.mjs", "tests/startup.test.mjs", "eslint.config.mjs", "prettier.config.mjs"];
-const typescript = dirs.map((dir) => `${dir}/**/*.${typed}`);
-const excluded = ["**/node_modules/**", "**/dist/**", ".the-way/**", ".runs/**", ".superpowers/**"];
-function program(configPath, includes, extraOptions = {}) {
-  const config = ts.readConfigFile(fileURLToPath(new URL(configPath, import.meta.url)), ts.sys.readFile);
-  if (config.error) throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, "\n"));
-  const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root);
-  if (parsed.errors.length) throw new Error("Invalid TypeScript configuration");
-  return ts.createProgram({
-    rootNames: ts.sys.readDirectory(root, [".ts", ".mts", ".cts", ".tsx"], excluded, includes),
-    options: { ...parsed.options, noEmit: true, jsx: ts.JsxEmit.Preserve, ...extraOptions },
-  });
-}
-const programs = [program("tsconfig.browser.json", ["src/browser/**/*"]), program("tsconfig.server.json", ["src/server/**/*"]), program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], { types: ["node"] })];
-export default [
-  { ignores: excluded },
-  { ...js.configs.recommended, files: source, languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
-  ...tseslint.configs.recommendedTypeChecked.map((config) => ({ ...config, files: typescript })),
-  { files: typescript, languageOptions: { parserOptions: { programs, tsconfigRootDir: root } } },
-  { files: [`src/browser/**/*.${ext}`], languageOptions: { globals: globals.browser } },
-  { files: [`src/server/**/*.${ext}`, `scripts/**/*.${ext}`, `tests/**/*.${ext}`, "*.config.mjs"], languageOptions: { globals: globals.node } },
-];
-```
-
-```bad eslint-configuration-rules eslint.config.mjs
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import ts from "typescript";
-import { fileURLToPath } from "node:url";
-const root = fileURLToPath(new URL(".", import.meta.url));
-const ext = "{js,mjs,cjs,jsx,ts,mts,cts,tsx}";
-const typed = "{ts,mts,cts,tsx}";
-const dirs = ["src/browser", "src/server", "scripts", "tests/sim", "tests/view", "tests/quality"];
-const source = [...dirs.map((dir) => `${dir}/**/*.${ext}`), "tests/http.test.mjs", "tests/startup.test.mjs", "eslint.config.mjs", "prettier.config.mjs"];
-const typescript = dirs.map((dir) => `${dir}/**/*.${typed}`);
-const excluded = ["**/node_modules/**", "**/dist/**", ".the-way/**", ".runs/**", ".superpowers/**"];
-function program(configPath, includes, extraOptions = {}) {
-  const config = ts.readConfigFile(fileURLToPath(new URL(configPath, import.meta.url)), ts.sys.readFile);
-  if (config.error) throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, "\n"));
-  const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root);
-  if (parsed.errors.length) throw new Error("Invalid TypeScript configuration");
-  return ts.createProgram({
-    rootNames: ts.sys.readDirectory(root, [".ts", ".mts", ".cts", ".tsx"], excluded, includes),
-    options: { ...parsed.options, noEmit: true, jsx: ts.JsxEmit.Preserve, ...extraOptions },
-  });
-}
-const programs = [program("tsconfig.browser.json", ["src/browser/**/*"]), program("tsconfig.server.json", ["src/server/**/*"]), program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], { types: ["node"] })];
-export default [
-  { ignores: excluded },
-  { ...js.configs.recommended, files: source, languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
-  ...tseslint.configs.recommendedTypeChecked.map((config) => ({ ...config, files: typescript })),
-  { files: typescript, languageOptions: { parserOptions: { programs, tsconfigRootDir: root } } },
-  { files: [`src/browser/**/*.${ext}`], languageOptions: { globals: globals.browser } },
-  { files: [`src/server/**/*.${ext}`, `scripts/**/*.${ext}`, `tests/**/*.${ext}`, "*.config.mjs"], languageOptions: { globals: globals.node } },
-  { files: source, rules: { "no-debugger": "off" } },
-];
 ```
 
 ```good ruff-source-rules tests/quality/guideline_case.py
@@ -146,7 +80,7 @@ VALUE = 1
 ```
 
 ```bad ruff-source-rules tests/quality/guideline_case.py
-import os
+import os  # noqa: F401
 
 VALUE = 1
 ```
@@ -165,16 +99,20 @@ printf '%s\n' $1
 
 - **Decision:** D-32
 - **Invariant:** prettier-source-format
-- **Good:** Nowy plik ma układ pozostawiany przez przyjęty Prettier i końce linii LF.
-- **Bad:** Nowy plik ma inny układ lub końce linii CRLF.
+- **Good:** Nowy plik ma układ pozostawiany przez Prettier z ustawieniami domyślnymi i końce linii LF.
+- **Bad:** Nowy plik ma inny układ, końce linii CRLF albo komentarz `prettier-ignore`.
 
 TS/JS aplikacji, skryptów i testów w browser-view, simulation, account-server
-i build-tools oraz HTML/CSS przeglądarki formatuje lokalny Prettier 3.9.10.
-Edytor i kontrola korzystają z `prettier.config.mjs`: przyjęte domyślne ustawienia
-bez opcji eksperymentalnych to dwie spacje, średniki, preferowane podwójne
-cudzysłowy, docelowa szerokość 80 i LF. `.gitattributes` utrzymuje LF również
-na Windows. Zakres obejmuje nowe pliki, bez historycznych wyjątków; nie obejmuje
-Markdown, ikon, plików wygenerowanych, zależności, submodułu i wyników tymczasowych.
+i build-tools oraz HTML/CSS przeglądarki sprawdza `--check` lokalnego Prettiera
+3.9.10 z `--no-config --no-editorconfig --ignore-path .gitignore`: domyślne
+ustawienia bez opcji eksperymentalnych, czyli dwie spacje, średniki, preferowane
+podwójne cudzysłowy, docelowa szerokość 80 i LF. `.prettierignore` nie ukrywa
+pliku. Edytor korzysta z `prettier.config.mjs`, który nie ustawia żadnej opcji,
+więc formatuje tak samo; nie dodawaj do niego opcji. `.gitattributes` utrzymuje
+LF również na Windows. Zakres obejmuje nowe pliki w katalogach wzorców testu,
+bez historycznych wyjątków i bez komentarzy `prettier-ignore`, których pilnuje
+przegląd; nie obejmuje Markdown, ikon, plików wygenerowanych, zależności,
+submodułu i wyników tymczasowych.
 
 ```good prettier-source-format tests/quality/guideline-format.mjs
 export const values = [1, 2];
@@ -188,52 +126,23 @@ export const values=[1,2]
 
 - **Decision:** D-33
 - **Invariant:** introduced-npm-vulnerabilities
-- **Good:** Nowa dokładna wersja zależności nie ma pasującego ostrzeżenia od poziomu low.
-- **Bad:** Nowa dokładna wersja zależności ma pasujące ostrzeżenie od poziomu low.
+- **Good:** Zmieniony plik blokady nie wnosi ostrzeżenia od poziomu low, którego nie było w `{fork-point}`.
+- **Bad:** Nowa wersja zależności wnosi ostrzeżenie od poziomu low, którego nie było w `{fork-point}`.
 
-Lokalny npm 12.2.1 odczytuje bazę npm/GitHub Advisory Database przez publiczny
-rejestr npm. Porównuj rzeczywiste pary nazwa pakietu–wersja z początkiem zmiany
-`{fork-point}`. Audyt obejmuje wszystkie manifesty i lockfile npm w build-tools,
-również nowe ścieżki, zależności bezpośrednie, pośrednie, produkcyjne,
-deweloperskie, opcjonalne i peer. Dopasowuj konkretne ostrzeżenie i jego zakres
-do wersji; poziomy low, moderate, high i critical blokują, info nie blokuje.
+Gdy `package-lock.json` jest taki sam jak w `{fork-point}`, audyt przechodzi
+bez sieci. W przeciwnym razie `scripts/audit_dependencies.py` uruchamia lokalny
+npm 12.2.1 (`npm audit --package-lock-only` przez publiczny rejestr npm) dla
+bieżącego pliku blokady i dla jego wersji z `{fork-point}` i oblewa na każde
+ostrzeżenie npm/GitHub Advisory Database od poziomu low, którego nie było na
+początku zmiany; info nie blokuje. Audyt obejmuje zależności bezpośrednie,
+pośrednie, produkcyjne, deweloperskie, opcjonalne i peer głównego pakietu npm;
+drugi, zagnieżdżony pakiet npm nie jest audytowany.
 
-Niezmieniona para nie blokuje niezwiązanej pracy i nie sygnalizuje w niej swojej
-podatności. Nowe ostrzeżenie może zmienić wynik dla tego samego commita
-wprowadzającego wersję. Brak odpowiedzi oraz niepełne lub nieobsługiwane dane
-nie dają pozytywnego wyniku. Bez sieci można przejść dopiero po pełnym poprawnym
-porównaniu wykazującym brak wprowadzonych par. Próg nie zmienia się automatycznie
-i nie ma terminu rewizji. Zapytanie wysyła nazwy i wersje pakietów bez kodu
-aplikacji. Audyt nie obejmuje runtime, obrazów kontenerów, pakietów systemowych
-ani zależności spoza npm.
-
-Poniższy nowy plik dodaj obok istniejącego manifestu i lockfile danych testowych
-w `tests/quality/fixtures/dependency-audit/`. Oba lockfile są odczytywane;
-manifest dopuszcza wersję każdego przypadku. Nie instaluj tych danych testowych
-jako pakietu aplikacji. Baza jest zmienna: wynik przypadków trzeba potwierdzić
-w chwili sprawdzenia.
-
-```good introduced-npm-vulnerabilities tests/quality/fixtures/dependency-audit/npm-shrinkwrap.json
-{
-  "name": "guideline-audit-fixture",
-  "lockfileVersion": 3,
-  "packages": {
-    "": { "name": "guideline-audit-fixture", "dependencies": { "minimist": "^1.2.0" } },
-    "node_modules/minimist": { "version": "1.2.8" }
-  }
-}
-```
-
-```bad introduced-npm-vulnerabilities tests/quality/fixtures/dependency-audit/npm-shrinkwrap.json
-{
-  "name": "guideline-audit-fixture",
-  "lockfileVersion": 3,
-  "packages": {
-    "": { "name": "guideline-audit-fixture", "dependencies": { "minimist": "^1.2.0" } },
-    "node_modules/minimist": { "version": "1.2.5" }
-  }
-}
-```
+Nieudane zapytanie albo nieczytelny raport nie dają pozytywnego wyniku. Nowe
+ostrzeżenie może zmienić wynik dla tego samego pliku blokady. Próg nie zmienia
+się automatycznie i nie ma terminu rewizji. Zapytanie wysyła nazwy i wersje
+pakietów bez kodu aplikacji. Audyt nie obejmuje runtime, obrazów kontenerów,
+pakietów systemowych ani zależności spoza npm.
 
 ## Examples
 
@@ -326,13 +235,8 @@ obowiązują niezmienniki pełnej zgodności kodu, bez przejściowej kontroli
 - `prettier.config.mjs`
 - `requirements-quality.in`
 - `requirements-quality.txt`
+- `ruff.toml`
 - `.gitattributes`
-- `scripts/check_eslint.py`
-- `scripts/inspect_eslint.mjs`
-- `scripts/check_ruff.py`
-- `scripts/check_shellcheck.py`
-- `scripts/check_format.py`
-- `scripts/check_dependencies.py`
-- `scripts/quality_support.py`
-- `tests/quality/fixtures/dependency-audit/`
+- `scripts/audit_dependencies.py`
+- `tests/quality/test_quality_invariants.py`
 - `tests/sim/time.test.mjs`

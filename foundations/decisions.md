@@ -637,7 +637,7 @@ Loop2 adopts the coding-guideline templates of its pinned the-way, while deferri
 
 ### D-29 — Which rules check TypeScript and JavaScript?
 
-All application, script and test TypeScript and JavaScript files in browser-view, simulation, account-server and build-tools, including new paths, use local pinned ESLint 10.12.0 with @eslint/js 10.0.1 `recommended` and, for TypeScript, typescript-eslint 8.71.2 flat `recommendedTypeChecked` with its inherited compatibility overrides: the full adopted sets of 64 JavaScript and 92 active TypeScript rules block, with no additional stylistic sets or example-only rules. The configuration uses globals 17.13.0 and TypeScript API 6.0.2 for the parser while application compilation stays on TypeScript 7, within the one shared npm package and lockfile; dependencies, generated files, the submodule and temporary work results are outside the source scope. The actual configured rule names, levels and options and complete file scope remain the adopted ones, inline directives cannot suppress a blocking rule or change the set, and changing the set takes a human-accepted change of this decision.
+Every application, script and test TypeScript and JavaScript file of browser-view, simulation, account-server and build-tools passes local pinned ESLint 10.12.0 run with `--max-warnings 0` on `eslint.config.mjs`, which applies @eslint/js 10.0.1 `recommended` and, for TypeScript, typescript-eslint 8.71.2 flat `recommendedTypeChecked` unchanged, with globals 17.13.0 and TypeScript API 6.0.2 for the parser while application compilation stays on TypeScript 7, all within the one shared npm package and lockfile. That configuration sets `linterOptions.noInlineConfig`, so an inline configuration comment fails the check, and ignores only dependencies, generated files, the submodule and temporary work results; review, in place of a check of the effective configuration, keeps its rules to those sets and its file patterns to that scope. Changing the rule set takes a human-accepted change of this decision.
 
 - **Scope:** browser-view, simulation, account-server, build-tools
 - **Based on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
@@ -645,12 +645,12 @@ All application, script and test TypeScript and JavaScript files in browser-view
 - **Verification:** invariants: eslint-source-rules · eslint-configuration-rules
 - **Origin:** none
 
-*Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency.
-*Rejected:* A compiler downgrade — gives up the existing compiler choice; an unsupported parser API — risks unreliable type-aware reports; extra style sets — add obligations beyond the accepted set.
+*Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency. With inline configuration turned off, a suppressing comment is itself a failure, and a change that turns a rule off or hides a file stands in the configuration, where review sees it.
+*Rejected:* A compiler downgrade — gives up the existing compiler choice; an unsupported parser API — risks unreliable type-aware reports; extra style sets — add obligations beyond the accepted set; product-written checks comparing the effective configuration with a frozen rule list and parsing inline directives — far more code to keep than the tool's own setting and a reviewed configuration.
 
 ### D-30 — Which Python rules block a change?
 
-Every Python file in browser-view, simulation, account-server, build-tools, deployment and agent-workflow, including new paths, uses local pinned Ruff 0.17.1 with the complete default nonpreview set minus `PLW1510`, `I001`, `ISC004`, `UP031`, `RUF059`, `PIE808`, `RUF007`, `RUF012`, `PLR0402`, `FURB167`, `RUF100`, `SIM117`, `FURB192`, `SIM102`: the remaining 393 rules block and these fourteen rules remain examples. The check passes the explicit blocking list directly with isolation from external configuration, dependencies, generated files, the submodule and temporary work results are outside its source scope, and inline directives cannot suppress a blocking rule or alter the adopted set. Changing that set takes a human-accepted change of this decision.
+Every `.py` and `.pyi` file Ruff finds in browser-view, simulation, account-server, build-tools, deployment and agent-workflow passes local pinned Ruff 0.17.1 run with `--config ruff.toml --ignore-noqa`, where `ruff.toml` requires that version, turns preview off, excludes the submodule and temporary work results and selects the complete default nonpreview set minus `PLW1510`, `I001`, `ISC004`, `UP031`, `RUF059`, `PIE808`, `RUF007`, `RUF012`, `PLR0402`, `FURB167`, `RUF100`, `SIM117`, `FURB192`, `SIM102`: the remaining 393 rules block and these fourteen rules remain examples. The explicit configuration file holds for every file whatever other Ruff configuration stands in the repository, and no suppression comment takes effect. Changing that set takes a human-accepted change of this decision.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** ruff-default-rules
@@ -658,38 +658,42 @@ Every Python file in browser-view, simulation, account-server, build-tools, depl
 - **Verification:** invariants: ruff-source-rules
 - **Origin:** none
 
-*Rationale:* The selected subset retains useful defect reports while leaving reports that offer no worthwhile code change as examples; direct isolated selection keeps configuration from quietly changing that boundary.
-*Rejected:* The entire default set as blocking — forces unhelpful rewrites; no Python linter — leaves useful defect reports unchecked.
+*Rationale:* The selected subset retains useful defect reports while leaving reports that offer no worthwhile code change as examples; one explicit configuration keeps other configuration from quietly changing that boundary, and a suppression comment the tool ignores does no harm.
+*Rejected:* The entire default set as blocking — forces unhelpful rewrites; no Python linter — leaves useful defect reports unchecked; product-written checks passing the list file by file and failing on the mere presence of a suppression comment — far more code to keep than a configuration file and the tool's own flag.
 
 ### D-31 — Which Bash rules block a change?
 
-Every standalone Bash script in the code parts, including new paths and extensionless scripts, uses local pinned ShellCheck 0.11.0 with its default nonoptional Bash checks and every diagnostic severity, with no example-only rules. Embedded commands in YAML or test literals are outside this standalone-script scope, while external rc files, environment options and source directives cannot suppress a blocking check or change the adopted set. Changing that set takes a human-accepted change of this decision.
+Every standalone Bash script in the code parts, extensionless scripts included, passes local pinned ShellCheck 0.11.0 run on it by name with `--norc --shell=bash --extended-analysis=true` at its default `style` severity: its default nonoptional Bash checks and every diagnostic severity, with no example-only rules. Embedded commands in YAML or test literals are outside this standalone-script scope, and review keeps a new script from going unnamed and a `# shellcheck` directive that disables a check or changes the set out of the scripts. Changing that set takes a human-accepted change of this decision.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** shellcheck-default-bash-checks
 - **Relations:** none
-- **Verification:** invariants: shellcheck-source-rules
+- **Verification:** invariants: shellcheck-source-rules. An agent compares a change with the decision:
+  - complies: a new Bash script named in the test of shellcheck-source-rules, with no `# shellcheck` directive;
+  - violates: a `# shellcheck disable=SC2086` line, or a new Bash script that test does not name.
 - **Origin:** none
 
-*Rationale:* The default checks cover shell defects without adding optional stylistic obligations; keeping source and environment controls from weakening them makes a successful result meaningful.
-*Rejected:* No Bash linter — leaves shell defects unchecked; enabling optional checks — adds obligations outside the accepted set.
+*Rationale:* The default checks cover shell defects without adding optional stylistic obligations; the flags keep rc files and directives from changing the shell or the analysis, and the few standalone scripts change seldom enough for review to see a new one or a disabling directive.
+*Rejected:* No Bash linter — leaves shell defects unchecked; enabling optional checks — adds obligations outside the accepted set; product-written checks discovering scripts by their first line and classifying each directive — far more code to keep than a named list and review.
 
 ### D-32 — How is web code formatted?
 
-All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server and build-tools and browser HTML and CSS use local pinned Prettier 3.9.10 with its default nonexperimental configuration: two spaces, semicolons, preferred double quotes, target width 80 and LF on every platform. New paths have the same scope, Markdown, icons, generated files, dependencies, the submodule and temporary work results are excluded, and existing covered code has no formatting exception. The editor and check share one explicit configuration, and narrow repository attributes preserve LF for that scope on Windows.
+All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server and build-tools and browser HTML and CSS pass `--check` of local pinned Prettier 3.9.10 run with `--no-config --no-editorconfig --ignore-path .gitignore`: its default nonexperimental options — two spaces, semicolons, preferred double quotes, target width 80 and LF on every platform — with no ignore file of its own able to hide a file; Markdown, icons, generated files, dependencies, the submodule and temporary work results are excluded. The editor's `prettier.config.mjs` sets no option, narrow repository attributes preserve LF for that scope on Windows, and review keeps the check's file patterns to that scope and `prettier-ignore` comments out of covered code.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: prettier-source-format
+- **Verification:** invariants: prettier-source-format. An agent compares a change with the decision:
+  - complies: a new browser module formatted by Prettier with no option set;
+  - violates: a `// prettier-ignore` comment, or an option added to `prettier.config.mjs`.
 - **Origin:** none
 
-*Rationale:* One formatter and shared settings remove repeated layout choices and platform-dependent line endings; the initial whole-scope reformatting is accepted to avoid lasting exceptions.
-*Rejected:* Per-file historic exceptions — preserve recurring format differences; Python and Bash formatting now — adds tools and unmeasured rewrites beyond the accepted scope.
+*Rationale:* One formatter and its default settings remove repeated layout choices and platform-dependent line endings; the initial whole-scope reformatting is accepted to avoid lasting exceptions.
+*Rejected:* Per-file historic exceptions — preserve recurring format differences; Python and Bash formatting now — adds tools and unmeasured rewrites beyond the accepted scope; product-written checks feeding each file to the formatter's programming interface and comparing its settings and repository attributes — far more code to keep than the tool's own flags.
 
 ### D-33 — Which introduced dependency vulnerabilities block a change?
 
-The dependency audit uses local pinned npm 12.2.1 and the npm/GitHub Advisory Database through the public npm registry to block each actual npm package-name/version pair introduced against {fork-point} with a matching known vulnerability at low, moderate, high or critical severity when the check runs; info does not block and unchanged pairs do not block unrelated work. The comparison covers every npm manifest and lockfile in build-tools, new paths included, and direct, transitive, production, development, optional and peer dependencies, matching concrete advisories and their ranges to the introduced versions rather than using a package-wide highest severity; an unavailable, incomplete or unsupported result gives no successful verdict, while a complete valid comparison proving no introduced pair can pass without a network request. The request sends package names and versions without application code, runtime and container-image, operating-system and non-npm dependencies are outside this audit, and the low threshold has no automatic revision or scheduled threshold review.
+The dependency audit passes without a network request where `package-lock.json` equals its version at {fork-point}, and otherwise fails on each advisory of low, moderate, high or critical severity that local pinned npm 12.2.1, run as `npm audit --json --package-lock-only --audit-level=low --include=dev --include=optional --include=peer --registry=https://registry.npmjs.org/`, reports for that lockfile and not for its version at {fork-point}, reading the npm/GitHub Advisory Database through the public npm registry when the check runs. A failed request or an unreadable report fails the audit; info does not block, and the low threshold has no automatic revision or scheduled threshold review. The audit covers the root npm package of build-tools with its direct, transitive, production, development, optional and peer dependencies, sending package names and versions without application code, while nested npm packages and runtime, container-image, operating-system and non-npm dependencies are outside it.
 
 - **Scope:** build-tools
 - **Based on:** none
@@ -697,8 +701,8 @@ The dependency audit uses local pinned npm 12.2.1 and the npm/GitHub Advisory Da
 - **Verification:** invariants: introduced-npm-vulnerabilities
 - **Origin:** none
 
-*Rationale:* A low threshold starts conservatively while comparison of introduced versions keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same introduced version, and matching advisory ranges adds parsing work.
-*Rejected:* Moderate, high or critical thresholds — accept known lower-severity vulnerabilities in introduced versions; auditing unchanged versions as blockers — stops unrelated work; trusting only audit exit status or a package-wide severity — can attribute a vulnerability to the wrong installed version.
+*Rationale:* A low threshold starts conservatively while comparison with the start of the change keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same lockfile. The registry matches each advisory's range to the locked versions itself, so comparing the advisories reported before and after the change needs no parsing of ranges, at the price of letting a further copy of an already reported vulnerable package through.
+*Rejected:* Moderate, high or critical thresholds — accept known lower-severity vulnerabilities in introduced versions; auditing unchanged versions as blockers — stops unrelated work; trusting the audit's exit status alone — reads a failed request as a finding and compares nothing; a product-written audit matching advisory ranges to each introduced package-name/version pair — far more code to keep than comparing what the tool reports.
 
 ### D-34 — Which file is the exemplar for content data?
 
