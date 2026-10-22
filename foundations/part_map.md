@@ -68,6 +68,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   tests/quality/**
   eslint.config.mjs
   prettier.config.mjs
+  ruff.toml
   requirements-quality.in
   requirements-quality.txt
   .gitignore

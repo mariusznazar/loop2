@@ -79,6 +79,7 @@ const programs = [
 
 export default [
   { ignores: excluded },
+  { linterOptions: { noInlineConfig: true } },
   {
     ...js.configs.recommended,
     files: sourceFiles,
