@@ -49,6 +49,8 @@ Ruff ma zgłosić `ruff 0.17.1`, a ShellCheck linię `version: 0.11.0`. Paczka `
 - `python -B scripts/check_format.py --record .runs/format.jsonl` sprawdza format i LF. Edytor używa tego samego `prettier.config.mjs`; wybierz lokalny Prettier i nie nadpisuj jego ustawień osobno.
 - `python -B scripts/check_dependencies.py --fork-point <commit-początku-zmiany> --record .runs/dependency-audit.jsonl` porównuje nowe rzeczywiste pary nazwa–wersja z początkiem zmiany i odpytuje publiczny rejestr npm przez lokalny npm. Podaj niezmienny commit początku zmiany jako podstawę porównania.
 
+`npm test` uruchamia każdą z tych kontroli bez `--record` przez `tests/quality/test_quality_invariants.py`. Audyt dostaje wtedy jako początek zmiany `git merge-base HEAD` z gałęzią, którą wskazuje `origin/HEAD`.
+
 Kod zakończenia kontroli to `0` dla wyniku pozytywnego, `1` dla wykrytego naruszenia i `2`, gdy nie udało się wiarygodnie wykonać kontroli. Pliki wyników w `.runs/` są lokalne i ignorowane przez Git. ESLint obejmuje również nowe warianty TS/JS w częściach z kodem; pomocnicze programy API TS6 w jego konfiguracji dają informację o typach także skryptom i testom poza konfiguracjami kompilacji aplikacji. Python i Bash nie są automatycznie formatowane.
 
 ## Co pokazuje strona
@@ -69,11 +71,11 @@ Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmieni
 
 `npm run dev` buduje aplikację i uruchamia serwer. Nie obserwuje plików: po edycji zatrzymaj proces przez Ctrl+C i ponów komendę.
 
-`npm test` buduje aplikację i wykonuje testy HTTP, test błędu startu przy zajętym porcie 3000 oraz testy symulacji i widoku w Node, bez przeglądarki.
+`npm test` to jedno polecenie wszystkich testów. Buduje aplikację i wykonuje testy HTTP, test błędu startu przy zajętym porcie 3000 oraz testy symulacji i widoku w Node, bez przeglądarki. Potem uruchamia testy w Pythonie z każdego katalogu `tests/` (niezmienniki, wdrożenie, jakość, praca agenta) przez `python -B .the-way/gate/run_tests.py` i sprawdza fundament przez `python -B .the-way/elements/common/foundation_check.py`. Pierwszy błąd zatrzymuje dalsze kroki. Wymaga Pythona 3.14 na `PATH` jako `python`, zainicjowanego submodułu `.the-way`, środowiska `.runs/quality-venv` opisanego wyżej i dostępu do rejestru npm.
 
 W przeglądarce sprawdź, że `/main.js` ładuje się bez błędu, konsola nie zawiera błędów wykonania, a strona pokazuje panel „Program”, wysyłanie maga i stopkę z wzmiankami; po „Wyślij” — wiersz stanu z minutą rosnącą co sekundę oraz panel terenu z listą kafelków.
 
-Testy wdrożenia: `python -B .the-way/gate/run_tests.py tests/deploy` i `python -B .the-way/gate/run_tests.py tests/agent_workflow`.
+Testy jednego katalogu, np. wdrożenia: `python -B .the-way/gate/run_tests.py tests/deploy`.
 
 Nieznane `/api`, `/api/` i ścieżki pod `/api/` otrzymują 404 JSON. Pozostałe brakujące ścieżki otrzymują zwykłe 404. Serwer podaje wyłącznie `dist/public`.
 
