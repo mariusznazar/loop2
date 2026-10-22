@@ -5,16 +5,24 @@
 The part draws the game's screens in the browser.
 
 - **Files:** src/browser/*.ts
+  src/browser/*.css
   src/browser/index.html
   src/browser/view/**
+  src/browser/kitchen-sink/**
   assets/icons/**
+  assets/fonts/**
   tests/view/**
   tests/invariants/test_browser_view_framework.py
   tests/invariants/test_icon_file_content.py
   tests/invariants/test_icon_credits.py
   tests/invariants/test_terrain_drawing_numbers.py
+  tests/invariants/test_browser_view_token_values.py
+  tests/invariants/test_browser_view_focus_outline.py
+  tests/invariants/test_design_token_contrast.py
+  tests/invariants/test_design_token_sources.py
 - **Depends on:** simulation
 - **Trust boundary:** assets/icons/**
+  assets/fonts/**
 
 ## simulation
 
@@ -64,6 +72,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   /package-lock.json
   tsconfig.browser.json
   tsconfig.server.json
+  tsconfig.kitchen-sink.json
   scripts/**
   tests/quality/**
   eslint.config.mjs
@@ -78,9 +87,11 @@ The part installs dependencies, checks code quality and types, audits introduced
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
+  tests/invariants/test_application_build_kitchen_sink.py
 - **Depends on:** browser-view · simulation · account-server · product-foundation
 - **Trust boundary:** package-lock.json
   scripts/audit_dependencies.py
+  scripts/kitchen-sink.mjs
 
 ## agent-workflow
 
@@ -94,6 +105,7 @@ The part directs and records the work performed on this repository.
   .the-way
   tests/agent_workflow/**
   guidelines/**
+  src/browser/AGENTS.md
 - **Depends on:** product-foundation · deployment
 - **Trust boundary:** none
 
@@ -140,6 +152,7 @@ the test server.
 | the container image registry | them → us | untrusted |
 | the GitHub repository the server fetches over its read-only key | them → us | trusted |
 | game-icons.net | them → us | untrusted |
+| github.com/vercel/geist-font | them → us | untrusted |
 
 ## Files left out on purpose
 

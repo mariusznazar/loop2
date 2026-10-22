@@ -437,6 +437,56 @@ The npm audit of `package-lock.json` reports no advisory of low, moderate, high 
 - **Part:** build-tools
 - **Violated:** no
 
+## browser-view-token-values
+
+No file of the part browser-view other than `src/browser/tokens.css` holds in its text a value written in place of a design token, as D-43 defines it.
+
+- **Method:** test
+- **Rests on:** css-colour-values
+- **Derives from:** D-43
+- **Part:** browser-view
+- **Violated:** no
+
+## browser-view-focus-outline
+
+In the stylesheets of the part browser-view, `outline` and the `outline-*` properties are declared only in rules whose selector is `:focus-visible`, each drawing the outline from the role `focus`, `src/browser/styles.css` holds such a rule, and only the rule of `src/browser/kitchen-sink/kitchen-sink.css` has one more selector beside `:focus-visible`, that of the page's sample of the focused state.
+
+- **Method:** test
+- **Rests on:** wcag-focus-visible
+- **Derives from:** D-42 · D-47
+- **Part:** browser-view
+- **Violated:** no
+
+## design-token-contrast
+
+In `src/browser/tokens.css`, each of `text-strong`, `text`, `text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change` has a contrast ratio of at least 4.5:1 against each of `page`, `panel` and `highlight`, `control-border` and `focus` have at least 3:1 against each of those three, `character` has at least 3:1 against `tile-revealed` and against `tile-hidden`, and `tile-revealed` has at least 3:1 against `tile-hidden`, each ratio computed from the values of those roles as WCAG 2.2 defines the contrast ratio.
+
+- **Method:** test
+- **Rests on:** wcag-text-contrast · wcag-non-text-contrast · wcag-contrast-ratio
+- **Derives from:** D-39 · D-40 · D-41 · D-42
+- **Part:** browser-view
+- **Violated:** no
+
+## design-token-sources
+
+The text of `src/browser/tokens.css` holds no rule but one `:root` rule of custom properties and `@font-face` rules, and each of their declarations is followed, on the line of the `;` that ends it, by a comment opening with `Source:` and some further text.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-38
+- **Part:** browser-view
+- **Violated:** no
+
+## application-build-kitchen-sink
+
+Nothing `npm run build` writes holds the kitchen-sink page of the browser view or code compiled from `src/browser/kitchen-sink/`.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-45
+- **Part:** build-tools · browser-view
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
