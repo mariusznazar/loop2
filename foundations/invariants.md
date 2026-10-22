@@ -409,7 +409,7 @@ No `.py` or `.pyi` file Ruff 0.17.1 finds under `ruff.toml` breaks a rule that f
 
 ## shellcheck-source-rules
 
-No standalone Bash script in the scope adopted by D-31 gets a ShellCheck 0.11.0 report at any severity, with rc files ignored, Bash as its shell and extended analysis on.
+No Bash script the test of this invariant names gets a ShellCheck 0.11.0 report at any severity, with rc files ignored, Bash as its shell and extended analysis on.
 
 - **Method:** test
 - **Rests on:** shellcheck-default-bash-checks
@@ -429,7 +429,7 @@ No standalone Bash script in the scope adopted by D-31 gets a ShellCheck 0.11.0 
 
 ## prettier-source-format
 
-Every file in the scope adopted by D-32 stands as Prettier 3.9.10 leaves it with its default options, LF line endings included.
+Every file the patterns of this invariant's test match stands as Prettier 3.9.10 leaves it with its default options, LF line endings included.
 
 - **Method:** test
 - **Rests on:** none

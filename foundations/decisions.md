@@ -622,14 +622,14 @@ keep itself, entering through what the product already treats as untrusted.
 
 ### D-28 — Which coding-guideline discipline does loop2 adopt?
 
-Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML, and leaving to review, as D-29 and D-31 settle, a rule turned off in the ESLint configuration in place of a second linter invariant and a `# shellcheck disable=` directive in place of counting it as a break; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares the change with the decision:
-  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
-  - violates: an additional mandatory test exemplar, automatic Python formatting or a transition-debt check introduced without a new decision
+  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals, the two rules left to review and the test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
+  - violates: an additional mandatory test exemplar, automatic Python formatting, a transition-debt check or a further rule of the templates left to review, introduced without a new decision
 - **Origin:** none
 
 *Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader exemplar maintenance and additional formatters add work without an established benefit.
