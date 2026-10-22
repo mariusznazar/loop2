@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 class EslintChecks(unittest.TestCase):
     def setUp(self):
+        (ROOT / ".runs").mkdir(exist_ok=True)
         path = ROOT / "scripts/check_eslint.py"
         self.assertTrue(path.is_file(), "ESLint method is not implemented")
         spec = importlib.util.spec_from_file_location("check_eslint", path)
