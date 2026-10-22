@@ -1,5 +1,0 @@
-{
-  "name": "guideline-audit-fixture",
-  "private": true,
-  "dependencies": { "minimist": "^1.2.0" }
-}

@@ -389,7 +389,7 @@ whatever their amounts, at every game minute, whatever programs they run under.
 
 ## eslint-source-rules
 
-No TypeScript or JavaScript file in the scope adopted by D-29 violates a blocking ESLint 10.12.0 rule or uses an inline directive to suppress one or change the adopted rule set.
+No file `eslint.config.mjs` matches breaks a rule that configuration applies or carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning.
 
 - **Method:** test
 - **Rests on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
@@ -399,7 +399,7 @@ No TypeScript or JavaScript file in the scope adopted by D-29 violates a blockin
 
 ## ruff-source-rules
 
-No Python file in the scope adopted by D-30 violates a blocking Ruff 0.17.1 rule or uses an inline directive to suppress one or change the adopted rule set.
+No `.py` or `.pyi` file Ruff 0.17.1 finds under `ruff.toml` breaks a rule that file selects, whatever suppression comment it carries.
 
 - **Method:** test
 - **Rests on:** ruff-default-rules
@@ -409,7 +409,7 @@ No Python file in the scope adopted by D-30 violates a blocking Ruff 0.17.1 rule
 
 ## shellcheck-source-rules
 
-No standalone Bash script in the scope adopted by D-31 violates a blocking ShellCheck 0.11.0 check or uses a source directive to suppress one or change the adopted set.
+No Bash script the test of this invariant names gets a ShellCheck 0.11.0 report at any severity, with rc files ignored, Bash as its shell and extended analysis on.
 
 - **Method:** test
 - **Rests on:** shellcheck-default-bash-checks
@@ -419,17 +419,17 @@ No standalone Bash script in the scope adopted by D-31 violates a blocking Shell
 
 ## eslint-configuration-rules
 
-The effective ESLint 10.12.0 configuration preserves exactly the rule names, levels, options and complete TypeScript and JavaScript file scope adopted by D-29.
+`eslint.config.mjs` matches every TypeScript and JavaScript file in the scope adopted by D-29, applies @eslint/js `recommended` and typescript-eslint `recommendedTypeChecked` unchanged with no rule setting of its own and no ignore beyond dependencies, generated files, the submodule and temporary work results, and no ESLint bulk-suppressions file stands in the repository.
 
-- **Method:** test
-- **Rests on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
+- **Method:** review
+- **Rests on:** none
 - **Derives from:** D-29
 - **Part:** browser-view · simulation · account-server · build-tools
 - **Violated:** no
 
 ## prettier-source-format
 
-Every file in the scope adopted by D-32 has the formatting produced by the adopted Prettier 3.9.10 configuration and LF line endings on every platform.
+Every file the patterns of this invariant's test match stands as Prettier 3.9.10 leaves it with its default options, LF line endings included.
 
 - **Method:** test
 - **Rests on:** none
@@ -439,7 +439,7 @@ Every file in the scope adopted by D-32 has the formatting produced by the adopt
 
 ## introduced-npm-vulnerabilities
 
-The change against {fork-point} introduces no actual npm package-name/version pair in the scope adopted by D-33 with a matching known vulnerability of low, moderate, high or critical severity in the npm/GitHub Advisory Database read when the check runs, and an unavailable, incomplete or unsupported result gives no successful verdict.
+The npm audit of `package-lock.json` reports no advisory of low, moderate, high or critical severity that the audit of its version at {fork-point} does not report, as the npm/GitHub Advisory Database stands when the check runs.
 
 - **Method:** test
 - **Rests on:** none

@@ -68,6 +68,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   tests/quality/**
   eslint.config.mjs
   prettier.config.mjs
+  ruff.toml
   requirements-quality.in
   requirements-quality.txt
   .gitignore
@@ -79,7 +80,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   tests/invariants/test_application_package_layout.py
 - **Depends on:** browser-view · simulation · account-server · product-foundation
 - **Trust boundary:** package-lock.json
-  scripts/check_dependencies.py
+  scripts/audit_dependencies.py
 
 ## agent-workflow
 

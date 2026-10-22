@@ -40,18 +40,9 @@ python3 -m venv .runs/quality-venv
 .runs/quality-venv/bin/shellcheck --version
 ```
 
-Ruff ma zgłosić `ruff 0.17.1`, a ShellCheck linię `version: 0.11.0`. Paczka `shellcheck-py==0.11.0.1` dostarcza ten plik wykonywalny ShellCheck; jej końcowe `.1` jest wersją opakowania Python. Kontrole poniżej korzystają bezpośrednio z tych lokalnych plików w `.runs/quality-venv`, bez pobierania narzędzi podczas sprawdzania. Po zmianie przypiętych narzędzi ponów instalację z pliku blokady i sprawdź obie wersje.
+Ruff ma zgłosić `ruff 0.17.1`, a ShellCheck linię `version: 0.11.0`. Paczka `shellcheck-py==0.11.0.1` dostarcza ten plik wykonywalny ShellCheck; jej końcowe `.1` jest wersją opakowania Python. Po zmianie przypiętych narzędzi ponów instalację z pliku blokady i sprawdź obie wersje.
 
-- `python -B scripts/check_eslint.py --configuration --record .runs/eslint-configuration.jsonl` sprawdza kompletną efektywną konfigurację TS/JS.
-- `python -B scripts/check_eslint.py --record .runs/eslint.jsonl` sprawdza źródła i wyciszenia reguł.
-- `python -B scripts/check_ruff.py --record .runs/ruff.jsonl` sprawdza źródła Python oraz wyciszenia blokujących reguł.
-- `python -B scripts/check_shellcheck.py --record .runs/shellcheck.jsonl` sprawdza samodzielne skrypty Bash oraz dyrektywy zmieniające przyjęty zestaw kontroli.
-- `python -B scripts/check_format.py --record .runs/format.jsonl` sprawdza format i LF. Edytor używa tego samego `prettier.config.mjs`; wybierz lokalny Prettier i nie nadpisuj jego ustawień osobno.
-- `python -B scripts/check_dependencies.py --fork-point <commit-początku-zmiany> --record .runs/dependency-audit.jsonl` porównuje nowe rzeczywiste pary nazwa–wersja z początkiem zmiany i odpytuje publiczny rejestr npm przez lokalny npm. Podaj niezmienny commit początku zmiany jako podstawę porównania.
-
-`npm test` uruchamia każdą z tych kontroli bez `--record` przez `tests/quality/test_quality_invariants.py`. Audyt dostaje wtedy jako początek zmiany `git merge-base HEAD` z gałęzią, którą wskazuje `origin/HEAD`.
-
-Kod zakończenia kontroli to `0` dla wyniku pozytywnego, `1` dla wykrytego naruszenia i `2`, gdy nie udało się wiarygodnie wykonać kontroli. Pliki wyników w `.runs/` są lokalne i ignorowane przez Git. ESLint obejmuje również nowe warianty TS/JS w częściach z kodem; pomocnicze programy API TS6 w jego konfiguracji dają informację o typach także skryptom i testom poza konfiguracjami kompilacji aplikacji. Python i Bash nie są automatycznie formatowane.
+Kontrole kodu uruchamia `npm test` przez `tests/quality/test_quality_invariants.py`, wprost z lokalnych kopii w `node_modules` i `.runs/quality-venv`, bez pobierania narzędzi podczas sprawdzania. ESLint i Ruff czytają `eslint.config.mjs` i `ruff.toml`; Prettier sprawdza na ustawieniach domyślnych. Flagi stoją w tym teście. Edytor używa `prettier.config.mjs`, który nie ustawia żadnej opcji; wybierz lokalny Prettier i nie nadpisuj jego ustawień osobno. Audyt zależności (`scripts/audit_dependencies.py`) odpytuje publiczny rejestr npm tylko wtedy, gdy `package-lock.json` różni się od wersji w `git merge-base HEAD origin/HEAD`, i porównuje wtedy zgłoszenia `npm audit` obu plików blokady. ESLint obejmuje również nowe pliki TS/JS w katalogach wskazanych w jego konfiguracji; pomocnicze programy API TS6 w jego konfiguracji dają informację o typach także skryptom i testom poza konfiguracjami kompilacji aplikacji. Python i Bash nie są automatycznie formatowane.
 
 ## Co pokazuje strona
 
@@ -71,7 +62,7 @@ Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmieni
 
 `npm run dev` buduje aplikację i uruchamia serwer. Nie obserwuje plików: po edycji zatrzymaj proces przez Ctrl+C i ponów komendę.
 
-`npm test` to jedno polecenie wszystkich testów. Buduje aplikację i wykonuje testy HTTP, test błędu startu przy zajętym porcie 3000 oraz testy symulacji i widoku w Node, bez przeglądarki. Potem uruchamia testy w Pythonie z każdego katalogu `tests/` (niezmienniki, wdrożenie, jakość, praca agenta) przez `python -B .the-way/gate/run_tests.py` i sprawdza fundament przez `python -B .the-way/elements/common/foundation_check.py`. Pierwszy błąd zatrzymuje dalsze kroki. Wymaga Pythona 3.14 na `PATH` jako `python`, zainicjowanego submodułu `.the-way`, środowiska `.runs/quality-venv` opisanego wyżej i dostępu do rejestru npm.
+`npm test` to jedno polecenie wszystkich testów. Buduje aplikację i wykonuje testy HTTP, test błędu startu przy zajętym porcie 3000 oraz testy symulacji i widoku w Node, bez przeglądarki. Potem uruchamia testy w Pythonie z każdego katalogu `tests/` (niezmienniki, wdrożenie, jakość, praca agenta) przez `python -B .the-way/gate/run_tests.py` i sprawdza fundament przez `python -B .the-way/elements/common/foundation_check.py`. Pierwszy błąd zatrzymuje dalsze kroki. Wymaga Pythona 3.14 na `PATH` jako `python`, zainicjowanego submodułu `.the-way`, środowiska `.runs/quality-venv` opisanego wyżej, a gdy zmiana dotyka `package-lock.json` — także dostępu do rejestru npm.
 
 W przeglądarce sprawdź, że `/main.js` ładuje się bez błędu, konsola nie zawiera błędów wykonania, a strona pokazuje panel „Program”, wysyłanie maga i stopkę z wzmiankami; po „Wyślij” — wiersz stanu z minutą rosnącą co sekundę oraz panel terenu z listą kafelków.
 
