@@ -15,7 +15,7 @@ bez odstępstw zgodnie z D-38.
 |---|---|---|---|---|
 | `page` | background | Tu jest gra. | `text` | D-40 |
 | `panel` | background | To osobny, wydzielony blok. | `text` | D-40 |
-| `highlight` | background | Ten wiersz albo tor jest zaznaczony. | `text` | D-40 |
+| `highlight` | background | Ten wiersz albo tor jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
 | `divider` | other | Tu kończy się jedna sekcja, a zaczyna następna. | — | D-40 |
 | `control-border` | other | To da się kliknąć albo wpisać. | — | D-40 |
 | `selected` | other | To jest wybrane w swojej grupie. | — | D-40 |
@@ -64,10 +64,13 @@ zmiany plików `browser-view` czyta użyte role wobec ich decyzji.
 
 Rolę rodzaju `background` zapisuj zawsze razem z rolą rodzaju `text`, która
 stoi na niej w tabeli Roles: element, któremu styl nadaje tło `page`, `panel`
-albo `highlight`, dostaje kolor tekstu `text`. Jego części o innym znaczeniu
-biorą swoją rolę tekstu, bo każda rola rodzaju `text` stoi na tych trzech tłach
-(D-39, D-40). Wartości każdej pary trzyma w kodzie reguła Contrast of every
-pair. Przegląd zmiany tabeli Roles czyta każde tło z jego tekstem.
+albo `highlight`, dostaje kolor tekstu `text`, chyba że ma już inną rolę
+tekstu. Element albo jego część z inną rolą tekstu zachowuje ją na każdym
+z tych trzech teł, bo każda rola rodzaju `text` stoi na wszystkich trzech
+(D-39, D-40): przycisk niszczący pod kursorem ma dalej tekst w `danger`,
+a przycisk wybrany w grupie — w `text-strong`. Wartości każdej pary trzyma
+w kodzie reguła Contrast of every pair. Przegląd zmiany tabeli Roles czyta
+każde tło z jego tekstem.
 
 ### No value in place of a design token
 
@@ -164,7 +167,7 @@ stanów:
 
 - default — kontrolka nie ma własnego tła, widać tło pod nią; tekst w `text`,
   ramka w `control-border`;
-- hover — tło `highlight`, ramka bez zmiany;
+- hover — tło `highlight` (D-40), ramka i rola tekstu bez zmiany;
 - visible focus — obwódka z reguły Visible focus;
 - disabled — tekst w `text-disabled`;
 - error — w polach przyjmujących wpis ramka i komunikat pod polem w `warning`;
