@@ -9,7 +9,7 @@ Reading of the sentence:
 - the lists: the kinds of condition are the keys of `CONDITIONS` (`conditions.ts`), the kinds of
   action of the character the keys of `ACTIONS` (`actions.ts`); they are written out below in
   CONDITION_KINDS and ACTION_KINDS, transcribed from the data, and the check does not read the data
-  for its expected values (WAY-69). A tripwire reads the keys of both, as `npm run build` compiles
+  for its expected values (WAY-228). A tripwire reads the keys of both, as `npm run build` compiles
   them, only to fail when they differ from what is written out here, in either direction: a kind
   added to the data, or one taken out of it, is a foundation step for this check;
 - a condition whose kind the data do not list: a condition whose `kind` is no key of CONDITIONS
