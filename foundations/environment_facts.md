@@ -155,13 +155,25 @@ WCAG 2.2 defines the contrast ratio of two colours as (L1 + 0.05) / (L2 + 0.05),
 
 The vercel/geist-font repository licenses its font software, Geist Sans and Geist Mono among it, under the SIL Open Font License, Version 1.1.
 
-- **Source:** https://raw.githubusercontent.com/vercel/geist-font/d1d9ce6e929a35f0e24b7cd10573f17db58196a0/readme.md § second heading — "Geist Sans, Geist Mono & Geist Pixel" · § License — "This Font Software is licensed under the SIL Open Font License, Version 1.1."; read 2026-10-23
+- **Source:** https://raw.githubusercontent.com/vercel/geist-font/1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4/readme.md § second heading — "Geist Sans, Geist Mono & Geist Pixel" · § License — "This Font Software is licensed under the SIL Open Font License, Version 1.1."; read 2026-10-23
 
 ## css-colour-values
 
 CSS Color Module Level 4 represents a colour in CSS by the `<color>` type — a hexadecimal colour, a colour function, a named colour, `transparent`, `currentColor` or a system colour — its named colours of section 6.1 and its system colours of section 6.2 being keywords matched without regard to ASCII case, and user agents also support the deprecated system colours of its Appendix A.
 
 - **Source:** https://www.w3.org/TR/2026/CRD-css-color-4-20261022/ § 4.1 The <color> syntax — "Colors in CSS are represented by the <color> type:" · "<color> = <color-base> | currentColor | <system-color> <color-base> = <hex-color> | <color-function> | <named-color> | transparent <color-function> = <rgb()> | <rgba()> | <hsl()> | <hsla()> | <hwb()> | <lab()> | <lch()> | <oklab()> | <oklch()> | <color()>" · § 6.1 Named Colors — "CSS defines a large set of named colors, so that common colors can be written and read more easily. A <named-color> is written as an <ident>, accepted anywhere a <color> is. As usual for CSS-defined <ident>s, all of these keywords are ASCII case-insensitive." · § 6.2 System Colors — "The <system-color> keywords are defined as follows:" · "Note: As with all other keywords, these names are ASCII case-insensitive. They are shown here with mixed capitalization for legibility." · § Appendix A: Deprecated CSS System Colors — "Earlier versions of CSS defined several additional system colors." · "User agents must support these keywords, and to mitigate fingerprinting must map them to the (undeprecated) system colors as listed below. Authors must not use these keywords."; read 2026-10-23
+
+## css-font-family-names
+
+CSS Fonts Module Level 4 gives the property `font-family` a list of font family names and generic family names, the generic family keywords being `serif`, `sans-serif`, `system-ui`, `cursive`, `fantasy`, `math`, `monospace`, `ui-serif`, `ui-sans-serif`, `ui-monospace` and `ui-rounded` and the functions `generic(fangsong)`, `generic(kai)`, `generic(khmer-mul)` and `generic(nastaliq)`, and it requires a font family name that is the same as such a keyword or as a CSS-wide keyword to be quoted, user agents not taking those keywords as a font family name.
+
+- **Source:** https://www.w3.org/TR/2026/WD-css-fonts-4-20261022/ § 2.1 Font family: the font-family property — "This property specifies a prioritized list of font family names or generic family names." · § 2.1.1 Syntax of <font-family-name> — "Font family names that happen to be the same as a font-family keyword value (e.g. CSS-wide keywords such as inherit, or <generic-font-family> keywords such as serif) must be quoted to prevent confusion with the keywords of the same names. UAs must not consider these keywords as matching the <font-family-name> type." · § 2.1.2 Syntax of <generic-font-family> — "<generic-font-family> = <generic-font-script-specific>| <generic-font-complete> | <generic-font-incomplete> <generic-font-script-specific> = generic(fangsong) | generic(kai) | generic(khmer-mul) | generic(nastaliq) <generic-font-complete> = serif | sans-serif | system-ui | cursive | fantasy | math | monospace <generic-font-incomplete> = ui-serif | ui-sans-serif | ui-monospace | ui-rounded"; read 2026-10-23
+
+## css-wide-keywords
+
+CSS Cascading and Inheritance Level 5 defines five CSS-wide property values, the keywords `initial`, `inherit`, `unset`, `revert` and `revert-layer`, which all CSS properties can accept.
+
+- **Source:** https://www.w3.org/TR/2022/CR-css-cascade-5-20220113/ § 7.3 Explicit Defaulting — "Several CSS-wide property values are defined below; declaring a property to have these values explicitly specifies a particular defaulting behavior. As specified in CSS Values and Units [css-values-3], all CSS properties can accept these values." · § 7.3.1 — "Resetting a Property: the initial keyword" · § 7.3.2 — "Explicit Inheritance: the inherit keyword" · § 7.3.3 — "Erasing All Declarations: the unset keyword" · § 7.3.4 — "Rolling Back Cascade Origins: the revert keyword" · § 7.3.5 — "Rolling Back Cascade Layers: the revert-layer keyword"; read 2026-10-23
 
 ## Withdrawn identifiers
 

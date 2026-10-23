@@ -1,7 +1,7 @@
 """Invariant design-token-sources: The text of `src/browser/tokens.css` holds no rule but one
 `:root` rule of custom properties and `@font-face` rules, and each of their declarations is
-followed, on the line of the `;` that ends it, by a comment opening with `Source:` and some
-further text.
+followed on the line of the `;` that ends it, with nothing but spaces or tabs between, by a
+comment opening with `Source:` and some further text.
 
 The file is read from the working tree as text. The check says that each entry is there, not that
 it is true.

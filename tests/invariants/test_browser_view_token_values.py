@@ -34,7 +34,8 @@ Reading of the sentence:
   `grid-template-rows` and `grid-template`;
 - in styles, a font name: in a value of `font-family`, a quoted string, or an identifier other
   than the function name `var`, a generic family keyword of CSS Fonts 4 § 2.1.5 and a CSS-wide
-  keyword of CSS Cascade 5 § 7.3 (both lists below; read 2026-10-23 from
+  keyword of CSS Cascade 5 § 7.3, as the environment facts `css-font-family-names` and
+  `css-wide-keywords` give them (both lists below; read 2026-10-23 from
   https://www.w3.org/TR/2026/WD-css-fonts-4-20261022/ and
   https://www.w3.org/TR/2022/CR-css-cascade-5-20220113/), a `generic()` family left out with its
   argument; in a value of `font`, a quoted string;

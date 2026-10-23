@@ -442,14 +442,14 @@ The npm audit of `package-lock.json` reports no advisory of low, moderate, high 
 No file of the part browser-view other than `src/browser/tokens.css` holds in its text a value written in place of a design token, as D-43 defines it.
 
 - **Method:** test
-- **Rests on:** css-colour-values
+- **Rests on:** css-colour-values · css-font-family-names · css-wide-keywords
 - **Derives from:** D-43
 - **Part:** browser-view
 - **Violated:** no
 
 ## browser-view-focus-outline
 
-In the stylesheets of the part browser-view, `outline` and the `outline-*` properties are declared only in rules whose selector is `:focus-visible`, each drawing the outline from the role `focus`, `src/browser/styles.css` holds such a rule, and only the rule of `src/browser/kitchen-sink/kitchen-sink.css` has one more selector beside `:focus-visible`, that of the page's sample of the focused state.
+In the stylesheets of the part browser-view, `outline` and the `outline-*` properties are declared only in rules whose selector is `:focus-visible` or, in `src/browser/kitchen-sink/kitchen-sink.css` alone, `:focus-visible` and one more selector, that of the page's sample of the focused state, each such rule drawing the outline from the role `focus`, and `src/browser/styles.css` holds such a rule whose selector is `:focus-visible` alone.
 
 - **Method:** test
 - **Rests on:** wcag-focus-visible
@@ -469,7 +469,7 @@ In `src/browser/tokens.css`, each of `text-strong`, `text`, `text-secondary`, `t
 
 ## design-token-sources
 
-The text of `src/browser/tokens.css` holds no rule but one `:root` rule of custom properties and `@font-face` rules, and each of their declarations is followed, on the line of the `;` that ends it, by a comment opening with `Source:` and some further text.
+The text of `src/browser/tokens.css` holds no rule but one `:root` rule of custom properties and `@font-face` rules, and each of their declarations is followed on the line of the `;` that ends it, with nothing but spaces or tabs between, by a comment opening with `Source:` and some further text.
 
 - **Method:** test
 - **Rests on:** none

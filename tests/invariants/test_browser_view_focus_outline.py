@@ -1,8 +1,8 @@
 """Invariant browser-view-focus-outline: In the stylesheets of the part browser-view, `outline`
-and the `outline-*` properties are declared only in rules whose selector is `:focus-visible`, each
-drawing the outline from the role `focus`, `src/browser/styles.css` holds such a rule, and only
-the rule of `src/browser/kitchen-sink/kitchen-sink.css` has one more selector beside
-`:focus-visible`, that of the page's sample of the focused state.
+and the `outline-*` properties are declared only in rules whose selector is `:focus-visible` or,
+in `src/browser/kitchen-sink/kitchen-sink.css` alone, `:focus-visible` and one more selector, that
+of the page's sample of the focused state, each such rule drawing the outline from the role
+`focus`, and `src/browser/styles.css` holds such a rule whose selector is `:focus-visible` alone.
 
 The stylesheets are read from the working tree as text; nothing is rendered and no cascade is
 computed.

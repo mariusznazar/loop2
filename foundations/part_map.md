@@ -2,7 +2,7 @@
 
 ## browser-view
 
-The part draws the game's screens in the browser.
+The part draws the game's screens in the browser, and the kitchen-sink page that shows their shared controls, roles and tiles in every state.
 
 - **Files:** src/browser/*.ts
   src/browser/*.css
@@ -66,7 +66,7 @@ The part is the account and save server: it serves the built game and handles th
 
 ## build-tools
 
-The part installs dependencies, checks code quality and types, audits introduced dependency versions and builds and launches the application.
+The part installs dependencies, checks code quality and types, audits introduced dependency versions and builds and launches the application, and builds and serves the browser view's kitchen-sink page on the developer's machine.
 
 - **Files:** /package.json
   /package-lock.json

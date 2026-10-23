@@ -74,7 +74,7 @@ każde tło z jego tekstem.
 
 ### No value in place of a design token
 
-- **Decision:** D-43
+- **Decision:** D-43 · D-46 · D-48
 - **Invariant:** browser-view-token-values
 - **Good:** Odstęp w arkuszu stylów zapisany przez `var()` z tokenu skali odstępów.
 - **Bad:** Moduł TypeScript wpisuje do stylu elementu kolor zapisany szesnastkowo.
@@ -84,7 +84,7 @@ projektowych pliku `src/browser/tokens.css`, w stylach przez `var(--…)`. Każd
 rola z tabeli Roles jest tam własnością `--<rola>`; każda inna wartość wyglądu —
 stos czcionek, rozmiar tekstu, stopień skali odstępów, grubość ramki, belki
 albo linii, wzór przerywania, krycie, waga czcionki — własnością nazwaną po
-tym, do czego służy, nigdy po kolorze ani po samej liczbie.
+tym, do czego służy, nigdy po kolorze ani po samej liczbie (D-48).
 
 W plikach części poza plikiem tokenów wartością wpisaną zamiast tokenu jest:
 

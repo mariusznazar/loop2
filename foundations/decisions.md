@@ -783,18 +783,18 @@ Loop2 adopts the styleguide template of its pinned the-way, with no departure, f
 
 ### D-39 — What do the signal colours of the browser view mean?
 
-In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something will not be carried out or is not saved, a wrong entry in a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel` and `highlight`.
+In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel` and `highlight`.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the message under a number field holding a wrong entry, written in `warning`; the text of the button „Zakończ” in `danger`;
-  - violates: the message of a wrong entry in a field written in `danger`; `discovery` used for a message that the player changed the program.
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger`;
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B
 
 *Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision.
-*Rejected:* a wrong entry in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss.
+*Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss.
 
 ### D-40 — What do the neutral roles of the browser view mean?
 
@@ -813,18 +813,18 @@ In the browser view the background `page` means that here is the game, `panel` a
 
 ### D-41 — What do the roles of the terrain grid and of keyboard focus mean?
 
-In the browser view `character` means that here is the character and here it is going, the target of its step told from its place by shape, a thin dashed line in place of a thick solid one, never by colour; `tile-hidden` means a place not yet known, `tile-revealed` a place known, whose icons say what lies there, and `tile-edge` the border between tiles of either kind. `link-highlight` means that this tile and this row of the list of revealed tiles are the same place, `depleted` that what was here is gone, and `focus` that here is where the player is, using the game by keyboard.
+In the browser view `character` means that here is the character and here it is going, the target of its current move told from its place by shape, a thin dashed line in place of a thick solid one, never by colour; `tile-hidden` means a place not yet known, `tile-revealed` a place known, whose icons say what lies there, and `tile-edge` the border between tiles of either kind. `link-highlight` means that this tile and this row of the list of revealed tiles are the same place, `depleted` that what was here is gone, and `focus` that here is where the player is, using the game by keyboard.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the target of the step drawn as a thin dashed line in `character`; a hovered tile and its row marked by a line in `link-highlight`, the tile's own colour unchanged;
-  - violates: the target of the step drawn in a colour of its own; a hovered tile filled with another colour.
+  - complies: the target of the current move drawn as a thin dashed line in `character`; a hovered tile and its row marked by a line in `link-highlight`, the tile's own colour unchanged;
+  - violates: the target of the current move drawn in a colour of its own; a hovered tile filled with another colour.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q7. Jakie role ma siatka terenu i fokus klawiatury?", "Q10. Jak wyglądają siatka terenu, podświetlenie powiązania, wyczerpane i fokus?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C
 
-*Rationale:* The character's place and the target of its step are one figure, the character and where it goes, so one role carries both, with one meaning, and the drawing tells them apart by shape. The tiles keep the grid of loop: unknown tiles dark and empty, known ones lighter with the icons of their resources, an icon dimmed at a stock of zero.
-*Rejected:* a colour of its own for the target of the step — a second colour for one figure.
+*Rationale:* The character's place and the target of its current move are one figure, the character and where it goes, so one role carries both, with one meaning, and the drawing tells them apart by shape. The tiles keep the grid of loop: unknown tiles dark and empty, known ones lighter with the icons of their resources, an icon dimmed at a stock of zero.
+*Rejected:* a colour of its own for the target of the current move — a second colour for one figure.
 
 ### D-42 — Which accessibility requirements does the browser view keep?
 
@@ -849,7 +849,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** invariants: browser-view-token-values. For values the text of a file does not show, an agent compares a change with the decision:
-  - complies: a gap of the stylesheet written as `var(--space-8)`; the radius of a tile computed in TypeScript; `line-height: 1.4`;
+  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`;
   - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Co liczy się jako wartość wpisana zamiast tokenu projektowego?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point D
 
@@ -888,14 +888,14 @@ The kitchen-sink page of the browser view is built from `src/browser/kitchen-sin
 
 ### D-46 — Which fonts does the browser view use, and where do they come from?
 
-The fonts of the browser view are Geist and Geist Mono, whose web-font files and licence file are taken from a release of github.com/vercel/geist-font into `assets/fonts/`, outside the directory the account and save server serves, and copied into that directory when the application is built. The game loads fonts only from those files, never from another server.
+The fonts of the browser view are Geist and Geist Mono, whose web-font files and licence file are taken from a release of github.com/vercel/geist-font into `assets/fonts/`, outside the directory the account and save server serves, and copied into that directory when the application is built. The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono and every other text in Geist.
 
 - **Scope:** browser-view, build-tools, deployment
 - **Based on:** geist-licence · npm package `geist` 1.8.2, its peer dependencies (https://registry.npmjs.org/geist/1.8.2 § peerDependencies — "{"next":">=13.2.0"}"; read 2026-10-23)
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`;
-  - violates: a stylesheet that loads a font from Google Fonts or another CDN; font files taken from the npm package `geist`.
+  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the status row set in Geist Mono;
+  - violates: a stylesheet that loads a font from Google Fonts or another CDN; font files taken from the npm package `geist`; the headings of the panels set in Geist Mono.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jakie czcionki, rozmiary i odstępy?"
 
 *Rationale:* The look loop2 starts from uses Geist and Geist Mono. Fonts kept in the product's files load from the game's own server, change only by a change of the repository and stand beside the licence they are released under; kept apart from what the server serves, as the icons are, they reach the player only through the build.
@@ -915,3 +915,18 @@ A control of the browser view is every HTML element the browser lets the keyboar
 
 *Rationale:* One rule reaches every element the keyboard reaches without the code marking it, so a new control or link shows its focus with nothing added. A control that needs another outline takes a change of this decision, and an outline turned off in an unusual way is found only by review.
 *Rejected:* a class on each control; the shared controls alone, without links — the links of the footer would show no focus.
+
+### D-48 — How are the design tokens of the browser view named?
+
+In the file of design tokens of the browser view, each role of its styleguide's table of roles is the custom property `--<role>`, under the role's own name, and every other value of appearance is a custom property named by what it is for, never by its colour or by its number alone.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-38
+- **Verification:** an agent compares a change with the decision:
+  - complies: `--text-label` for the role `text-label`; `--space-s` for a size of the spacing scale; `--font-size-label` for the size of labels;
+  - violates: `--space-8` for the spacing of 8 px; `--zinc-900` for the background `page`; `--yellow` for the role `discovery`.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q18. Jak nazywają się role w kodzie i czy jakieś odstępstwa zostają celowo?"
+
+*Rationale:* A value may change while its meaning stays, so a name that tells what the value is for stays true when the value changes, and the change stays in the one place that holds the value; a name telling a colour or a number turns false with the first such change, or takes a rename in every style that reads it.
+*Rejected:* names by the value — a colour's name or the number of pixels of a spacing — each change of a value renames the property in every style.
