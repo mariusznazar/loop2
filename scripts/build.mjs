@@ -27,6 +27,22 @@ if (!checkOnly) {
     new URL("src/browser/index.html", root),
     new URL("dist/public/index.html", root),
   );
+  for (const name of await readdir(new URL("src/browser/", root))) {
+    if (name.endsWith(".css"))
+      await copyFile(
+        new URL(`src/browser/${name}`, root),
+        new URL(`dist/public/${name}`, root),
+      );
+  }
+  const fontsOut = new URL("dist/public/fonts/", root);
+  await mkdir(fontsOut, { recursive: true });
+  for (const name of await readdir(new URL("assets/fonts/", root))) {
+    if (name.endsWith(".woff2") || name === "OFL.txt")
+      await copyFile(
+        new URL(`assets/fonts/${name}`, root),
+        new URL(name, fontsOut),
+      );
+  }
   const iconsOut = new URL("dist/public/icons/", root);
   await mkdir(iconsOut, { recursive: true });
   for (const name of await readdir(new URL("assets/icons/", root))) {

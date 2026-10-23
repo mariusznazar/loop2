@@ -8,7 +8,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 1. `npm ci` — instalacja według pliku blokady.
 2. `npm run typecheck` — kontrola typów przeglądarki i serwera bez emisji plików.
-3. `npm run build` — kompilacja obu części oraz skopiowanie HTML i ikon do `dist/public`.
+3. `npm run build` — kompilacja obu części oraz skopiowanie do `dist/public` HTML-a, arkuszy stylów z `src/browser/`, ikon z `assets/icons/` i czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`).
 4. `npm start` — uruchomienie zbudowanego serwera.
 5. Otwórz http://127.0.0.1:3000.
 

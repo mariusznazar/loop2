@@ -1,5 +1,8 @@
 deploy/** text eol=lf
 
+# Font files and their licence keep the bytes of the Geist release they come from.
+assets/fonts/** -text
+
 # Web code and browser markup use the shared Prettier LF format.
 src/browser/**/*.ts text eol=lf
 src/browser/**/*.mts text eol=lf
