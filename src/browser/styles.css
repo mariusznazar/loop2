@@ -62,30 +62,82 @@ header h1 {
   min-height: 120px;
 }
 
-/* Controls as the browser makes them, on the dark backgrounds: no background of their own. */
-button,
-select,
-input {
+/*
+ * The shared controls of src/browser/view/controls/ in their states (styleguide rule "States of
+ * shared controls", D-44): no background of their own, text in `text`, frame in `control-border`;
+ * under the pointer the background `highlight` with frame and text role unchanged; focus by the
+ * one :focus-visible rule above; disabled text in `text-disabled`. Loading applies to none.
+ */
+.button,
+.select-list,
+.input-field input {
   font: inherit;
   color: var(--text);
   background: transparent;
   border: var(--frame-width) solid var(--control-border);
 }
 
-button {
-  padding: var(--space-xs) var(--space-m);
+.select-list,
+.input-field input {
+  padding: var(--space-2xs) var(--space-xs);
+}
+
+.button {
+  padding: var(--space-2xs) var(--space-s);
+  font-size: var(--font-size-detail);
   cursor: pointer;
 }
 
-button:hover,
-select:hover,
-input:hover {
+/* The destructive button: „Zakończ”, „Usuń”, „Restart” (D-44). */
+.button.destructive {
+  color: var(--danger);
+}
+
+/* The button selected in its group (D-40). */
+.button.selected {
+  color: var(--text-strong);
+  border-color: var(--selected);
+}
+
+.button:hover:not(:disabled),
+.select-list:hover:not(:disabled),
+.input-field input:hover:not(:disabled) {
   background: var(--highlight);
 }
 
-select option {
+.button:disabled,
+.select-list:disabled,
+.input-field input:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.select-list option {
   color: var(--text);
   background: var(--panel);
+}
+
+/* The number and text fields: the input with the message of its error under it. */
+.input-field {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+}
+
+/* Empty: the hint of an empty field in `text-label`. */
+.input-field input::placeholder {
+  color: var(--text-label);
+}
+
+/* Error: frame and message under the field in `warning` (D-39). */
+.input-field.error input {
+  border-color: var(--warning);
+}
+
+.input-field-message {
+  margin-top: var(--space-2xs);
+  font-size: var(--font-size-detail);
+  color: var(--warning);
 }
 
 .program-editor h2 {
@@ -111,10 +163,6 @@ select option {
 
 .rule input[type="number"] {
   width: 4em;
-}
-
-.rule button {
-  padding: var(--space-2xs) var(--space-s);
 }
 
 .send-entry p {
