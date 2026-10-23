@@ -1,5 +1,0 @@
-
-> loop2@0.0.0 start
-> node dist/server/main.js
-
-Loop: http://127.0.0.1:3000

@@ -1,6 +1,0 @@
-test_container_serves_each_icon_with_the_file_bytes (test_loop2_container_icons.ContainerServesIcons.test_container_serves_each_icon_with_the_file_bytes) ... ok
-
-----------------------------------------------------------------------
-Ran 1 test in 24.524s
-
-OK
