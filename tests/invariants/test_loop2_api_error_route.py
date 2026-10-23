@@ -2,7 +2,8 @@
 never the built game's HTML page.
 
 The product is built by `npm run build` in a temporary copy of the working tree and started there
-by `npm start` on 127.0.0.1:3000, as README.md gives them; the real tree is never written.
+by `npm start`, as README.md gives them, on 127.0.0.1 and a port the system names free, given to it
+in `LOOP2_LISTEN_PORT`; the real tree is never written.
 
 Reading of the sentence:
 - an unmatched `/api/` request: a request whose path begins with `/api/` and names no route — the
@@ -68,7 +69,7 @@ class UnmatchedApiRequests(unittest.TestCase):
     def test_root_serves_the_built_page(self):
         # invariant: loop2-api-error-route
         self.assertTrue(self.pages, f"`npm run build` places no HTML file in {BUILT_PAGE}")
-        status, _headers, body = support.request("GET", "/", {"Accept": "text/html"})
+        status, _headers, body = self.server.request("GET", "/", {"Accept": "text/html"})
         self.assertEqual(status, 200)
         self.assertIn(body, list(self.pages.values()),
                       f"GET / does not return any of {sorted(self.pages)}, so the comparison "
@@ -85,7 +86,7 @@ class UnmatchedApiRequests(unittest.TestCase):
                         if method == "POST":
                             headers["Content-Type"] = "application/json"
                             body = POST_BODY
-                        status, response_headers, data = support.request(
+                        status, response_headers, data = self.server.request(
                             method, path, headers, body)
                         kind = media_type(response_headers)
                         start = data.lstrip()[:64].lower()

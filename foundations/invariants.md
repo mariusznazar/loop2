@@ -98,7 +98,7 @@ When the account and save server's listening address is already in use, the serv
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** recovered from code — src/server/main.ts, the server's `error` handler, which prints the failure and sets exit code 1, while the readiness line is printed only on `listening`; tests/startup.test.mjs, the test "exits with an error instead of reporting ready when port 3000 is occupied"
+- **Derives from:** recovered from code — src/server/main.ts, the server's `error` handler, which prints the failure and sets exit code 1, while the readiness line is printed only on `listening`; tests/startup.test.mjs, the test "exits with an error instead of reporting ready when its listening port is occupied"
 - **Part:** account-server · build-tools
 - **Violated:** no
 

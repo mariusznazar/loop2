@@ -13,6 +13,19 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "invariants"))
 import loop2_invariant_support as support
 
+# Stand-ins for `npm start`, run by Python: each reads the address the server is given from
+# LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT and answers as the built server does.
+READY_CHILD = ("import os,sys,time; "
+               "print('Loop: http://' + os.environ['LOOP2_LISTEN_HOST'] + ':' "
+               "+ os.environ['LOOP2_LISTEN_PORT']); "
+               "print('child err', file=sys.stderr); time.sleep(60)")
+TAKEN_CHILD = ("import os,sys; "
+               "a = os.environ['LOOP2_LISTEN_HOST'] + ':' + os.environ['LOOP2_LISTEN_PORT']; "
+               "print('Loop could not start on ' + a + ': EADDRINUSE listen EADDRINUSE: '"
+               " 'address already in use ' + a, file=sys.stderr); sys.exit(1)")
+FAILING_CHILD = "import sys; print('Loop could not start: something else', file=sys.stderr); " \
+                "sys.exit(1)"
+
 
 class ServerResources(unittest.TestCase):
     def setUp(self):
@@ -71,6 +84,7 @@ class ServerResources(unittest.TestCase):
         server = support.Server.__new__(support.Server)
         server.log_dir = self.make_log_dir(prefix="partial-")
         server.process = None
+        server.port = None
         server._logs = ExitStack()
         self.addCleanup(server._logs.close)
         server._stdout = server._logs.enter_context(
@@ -78,20 +92,25 @@ class ServerResources(unittest.TestCase):
         server.stop()
         self.assert_released()
 
-    def test_live_server_keeps_both_logs_open_until_stop(self):
+    def start_children(self, *scripts):
+        """A stand-in for support.popen that starts, at each call, a Python child running the
+        next of scripts, and records the environment each call was given."""
         real_popen = support.popen
+        remaining = list(scripts)
+        environments = []
 
         def start_child(_args, cwd, **options):
-            process = real_popen([sys.executable, "-u", "-c",
-                                  "import sys,time; print('child out'); "
-                                  "print('child err',file=sys.stderr); time.sleep(60)"],
-                                 cwd, **options)
+            environments.append(options.get("env") or {})
+            process = real_popen([sys.executable, "-u", "-c", remaining.pop(0)], cwd, **options)
             self.addCleanup(self.reap, process)
             return process
 
+        return start_child, environments
+
+    def test_live_server_keeps_both_logs_open_until_stop(self):
+        start_child, _environments = self.start_children(READY_CHILD)
         with patch.object(support, "popen", start_child):
-            with patch.object(support, "port_in_use", side_effect=[False, True]):
-                server = support.Server(self.copy)
+            server = support.Server(self.copy)
         self.addCleanup(server.stop)
         self.assertFalse(server._stdout.closed)
         self.assertFalse(server._stderr.closed)
@@ -104,10 +123,50 @@ class ServerResources(unittest.TestCase):
         self.assertIsNotNone(server.process.poll())
         self.assert_released()
 
+    def test_start_gives_the_server_a_free_port_on_127_0_0_1(self):
+        start_child, environments = self.start_children(READY_CHILD)
+        with patch.object(support, "popen", start_child), \
+                patch.object(support, "free_port", return_value=50123):
+            server = support.Server(self.copy)
+        self.addCleanup(server.stop)
+        self.assertEqual(server.port, 50123)
+        self.assertEqual([(e.get("LOOP2_LISTEN_HOST"), e.get("LOOP2_LISTEN_PORT"))
+                          for e in environments], [("127.0.0.1", "50123")])
+
+    def test_start_whose_port_was_taken_runs_once_more_on_another_port(self):
+        start_child, environments = self.start_children(TAKEN_CHILD, READY_CHILD)
+        with patch.object(support, "popen", start_child), \
+                patch.object(support, "free_port", side_effect=[50001, 50002]):
+            server = support.Server(self.copy)
+        self.addCleanup(server.stop)
+        self.assertEqual(server.port, 50002)
+        self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments],
+                         ["50001", "50002"])
+
+    def test_port_taken_twice_fails_without_a_third_start(self):
+        start_child, environments = self.start_children(TAKEN_CHILD, TAKEN_CHILD, READY_CHILD)
+        with patch.object(support, "popen", start_child), \
+                patch.object(support, "free_port", side_effect=[50001, 50002, 50003]):
+            with self.assertRaisesRegex(AssertionError, "taken in each of 2 attempts"):
+                support.Server(self.copy)
+        self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments],
+                         ["50001", "50002"])
+        self.assert_released()
+
+    def test_exit_for_another_reason_is_not_started_again(self):
+        start_child, environments = self.start_children(FAILING_CHILD, READY_CHILD)
+        with patch.object(support, "popen", start_child), \
+                patch.object(support, "free_port", side_effect=[50001, 50002]):
+            with self.assertRaisesRegex(AssertionError, "exited 1 before reporting ready"):
+                support.Server(self.copy)
+        self.assertEqual([e.get("LOOP2_LISTEN_PORT") for e in environments], ["50001"])
+        self.assert_released()
+
     def test_stop_releases_logs_when_process_cleanup_reports_failure(self):
         server = support.Server.__new__(support.Server)
         server.log_dir = self.make_log_dir(prefix="stop-failure-")
         server.process = object()
+        server.port = None
         server._logs = ExitStack()
         self.addCleanup(server._logs.close)
         for name in ("stdout.txt", "stderr.txt"):

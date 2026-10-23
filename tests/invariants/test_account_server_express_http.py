@@ -140,7 +140,7 @@ class ExpressRoutesRunningServer(unittest.TestCase):
         # invariant: account-server-express-http
         for method, path in PROBES:
             with self.subTest(method=method, path=path):
-                support.request(method, path)
+                self.server.request(method, path)
                 line = re.compile(r"(?:^|\s)router dispatching " + re.escape(method) + " "
                                   + re.escape(path) + r"(?:\s|$)", re.MULTILINE)
                 deadline = time.monotonic() + DISPATCH_WAIT
