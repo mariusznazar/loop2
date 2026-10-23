@@ -1,0 +1,101 @@
+/*
+ * Design tokens of the browser view: every value of appearance the game's styles read, by
+ * var(--…). Each declaration names its source in a comment after its `;`
+ * (guidelines/styleguide-browser-view.md, "Every value with its source"). "The task" is the task
+ * "Styleguide loop2" (styleguide_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania) and
+ * Q-numbers are its questions; "loop" is the running game https://kantarion.bieda.it/, read
+ * 2026-10-20 from the rendered page.
+ */
+:root {
+  /* Backgrounds */
+  --page: #09090b; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the background of the page (the task, Q9) */
+  --panel: #18181b; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the background of the chronicle and of the end of a map run (the task, Q9) */
+  --highlight: #27272a; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the highlighted row and the unfilled part of the progress bar (the task, Q9) */
+
+  /* Lines and frames */
+  --divider: #27272a; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the lines between sections (the task, Q9) */
+  --control-border: #71717b; /* Source: changed for the threshold 3:1 of D-42 (WCAG 2.2 1.4.11) on page, panel and highlight, which loop's frame #3f3f46 misses: the colour of labels of loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page (the task, Q8, Q9) */
+  --selected: #d4d4d8; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the frame of the selected button (the task, Q19 C) */
+
+  /* Text */
+  --text-strong: #f4f4f5; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: names and headings (the task, Q9) */
+  --text: #d4d4d8; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: content text (the task, Q9) */
+  --text-secondary: #9f9fa9; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: descriptions (the task, Q9) */
+  --text-label: #8d8d97; /* Source: changed for the threshold 4.5:1 of D-42 (WCAG 2.2 1.4.3) on page, panel and highlight: the darkest shade of loop's label grey with at least 4.5:1 on the three, in place of loop's #71717b (labels, inactive tabs) and #52525c (dates, section labels), https://kantarion.bieda.it/ read 2026-10-20 from the rendered page (the task, Q8, Q9) */
+  --text-disabled: #52525c; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: disabled things (the task, Q9) */
+
+  /* Signal colours */
+  --positive: #00bc7d; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: „POTEM” and the vertical bar at the left edge of the rule being carried out (the task, Q9) */
+  --warning: #fe9a00; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: „żadna reguła nie pasuje — postać stanie” (the task, Q9) */
+  --danger: #ff6467; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: „marznie”, „głoduje”, „Postać zamarzła.” (the task, Q9) */
+  --discovery: #ffd230; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: „Odkryto: …” (the task, Q9) */
+  --player-change: #c4b4ff; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: „Dodano regułę…” in the chronicle (the task, Q9) */
+
+  /* Terrain grid and focus */
+  --character: #ffd230; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the outline of the character's tile (the task, Q9) */
+  --tile-hidden: #18181b; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: an unrevealed tile of the terrain grid (the task, Q10) */
+  --tile-revealed: #71717b; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A (the task, Q10) */
+  --tile-edge: #27272a; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the edge of a tile (the task, Q10, Q19 C) */
+  --link-highlight: #f4f4f5; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A: a thin line around the tile and at the left edge of its row (the task, Q10) */
+  --depleted: 0.35; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A: a depleted icon at 35% opacity (the task, Q10) */
+  --focus: #f4f4f5; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A: the focus outline (the task, Q10) */
+
+  /* Fonts */
+  --font-family-text:
+    "Geist", sans-serif; /* Source: settled in the task, Q11: Geist, as in loop */
+  --font-family-mono:
+    "Geist Mono", monospace; /* Source: settled in the task, Q11: Geist Mono, as in loop, for the chronicle and the run's clock */
+  --font-weight-body: 400; /* Source: settled in the task, Q11 and Q19 C: the weight 400 of loop */
+  --font-weight-emphasis: 500; /* Source: settled in the task, Q11 and Q19 C: the weight 500 of loop */
+
+  /* Text sizes */
+  --font-size-label: 11px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: dates and labels (the task, Q11) */
+  --font-size-detail: 12px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: buttons, descriptions and the chronicle (the task, Q11) */
+  --font-size-body: 13px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the menu and content text (the task, Q11) */
+  --font-size-heading: 14px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: names and the headings of panels (the task, Q11) */
+  --font-size-map-title: 15px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the title of the map (the task, Q11) */
+  --font-size-game-title: 16px; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the name of the game (the task, Q11) */
+
+  /* Spacing scale */
+  --space-2xs: 2px; /* Source: settled in the task, Q11: the spacing scale 2, 4, 8, 12, 16, 24, 32 px */
+  --space-xs: 4px; /* Source: settled in the task, Q11: the spacing scale 2, 4, 8, 12, 16, 24, 32 px */
+  --space-s: 8px; /* Source: settled in the task, Q11: the spacing scale 2, 4, 8, 12, 16, 24, 32 px */
+  --space-m: 12px; /* Source: settled in the task, Q11: the spacing scale 2, 4, 8, 12, 16, 24, 32 px */
+  --space-l: 16px; /* Source: settled in the task, Q11: the spacing scale 2, 4, 8, 12, 16, 24, 32 px */
+  --space-xl: 24px; /* Source: settled in the task, Q11: the spacing scale 2, 4, 8, 12, 16, 24, 32 px, its step 24 px included */
+  --space-2xl: 32px; /* Source: settled in the task, Q11: the spacing scale 2, 4, 8, 12, 16, 24, 32 px */
+
+  /* Lines */
+  --frame-width: 1px; /* Source: settled in the task, Q11: frames 1 px */
+  --bar-width: 2px; /* Source: settled in the task, Q11: bars, the vertical lines at the left edge of a row, 2 px */
+  --character-outline-width: 4px; /* Source: settled in the task, Q19 C: the character's outline 4 px, as in the preview of Q10 */
+  --step-target-width: 2px; /* Source: settled in the task, Q19 C: the step target 2 px, as in the preview of Q10 */
+  --step-target-dash: 5 4; /* Source: settled in the task, Q19 C: the step target's dash pattern 5/4, as in the preview of Q10 */
+  --link-highlight-width: 1.5px; /* Source: settled in the task, Q19 C: the link highlight 1.5 px, as in the preview of Q10 */
+  --focus-width: 2px; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A: an outline of 2 px (the task, Q10) */
+  --focus-offset: 2px; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A: the outline set 2 px off the control (the task, Q10) */
+}
+
+@font-face {
+  font-family: "Geist"; /* Source: the family Geist of release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4 */
+  src: url("/fonts/Geist-Regular.woff2") format("woff2"); /* Source: geist-font/Geist/webfonts/Geist-Regular.woff2 of geist-font-v1.8.2.zip, release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4, kept in assets/fonts/ */
+  font-weight: 400; /* Source: the weight 400 settled in the task, Q19 C, of the release's Regular file */
+}
+
+@font-face {
+  font-family: "Geist"; /* Source: the family Geist of release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4 */
+  src: url("/fonts/Geist-Medium.woff2") format("woff2"); /* Source: geist-font/Geist/webfonts/Geist-Medium.woff2 of geist-font-v1.8.2.zip, release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4, kept in assets/fonts/ */
+  font-weight: 500; /* Source: the weight 500 settled in the task, Q19 C, of the release's Medium file */
+}
+
+@font-face {
+  font-family: "Geist Mono"; /* Source: the family Geist Mono of release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4 */
+  src: url("/fonts/GeistMono-Regular.woff2") format("woff2"); /* Source: geist-font/GeistMono/webfonts/GeistMono-Regular.woff2 of geist-font-v1.8.2.zip, release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4, kept in assets/fonts/ */
+  font-weight: 400; /* Source: the weight 400 settled in the task, Q19 C, of the release's Regular file */
+}
+
+@font-face {
+  font-family: "Geist Mono"; /* Source: the family Geist Mono of release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4 */
+  src: url("/fonts/GeistMono-Medium.woff2") format("woff2"); /* Source: geist-font/GeistMono/webfonts/GeistMono-Medium.woff2 of geist-font-v1.8.2.zip, release v1.8.2 of https://github.com/vercel/geist-font, commit 1d6dfdb6e58c0ddd841c1e24e59aef01ec3916e4, kept in assets/fonts/ */
+  font-weight: 500; /* Source: the weight 500 settled in the task, Q19 C, of the release's Medium file */
+}

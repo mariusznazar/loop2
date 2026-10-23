@@ -4,7 +4,10 @@ server TypeScript configurations.
 Building the application is `npm run build`, as README.md gives it. Each run happens in a fresh
 temporary copy of the working tree, which holds no `dist` (git ignores it, so the copy leaves it
 out); the real tree is never written. The two configurations, their source and their output
-directories are written out below as literals, not read from the configurations at run time.
+directories are written out below as literals, not read from the configurations at run time. The
+browser configuration's source is `src/browser` without `src/browser/kitchen-sink/`, the sources
+of the kitchen-sink page, which `tsconfig.browser.json` excludes and a configuration of their own
+compiles outside the application's build (D-45).
 
 Covers:
 - on the unchanged copy, `npm run build` exits 0 and, for each configuration, emits a JavaScript
@@ -22,8 +25,10 @@ Covers:
   configuration lacks, so that a failure for another reason does not count.
 
 Does NOT cover: what the compiled code does when run; files the build copies rather than compiles
-(the HTML page); a configuration other than the two named; whether the build's output is
-up to date with sources changed after it ran.
+(the HTML page); a configuration other than the two named; the kitchen-sink page's sources,
+left out of the browser's source here, and whether the build leaves them out of its output
+(application-build-kitchen-sink); whether the build's output is up to date with sources changed
+after it ran.
 """
 
 import os
@@ -38,6 +43,9 @@ CONFIGURATIONS = (
     ("browser", "tsconfig.browser.json", "src/browser", "dist/public"),
     ("server", "tsconfig.server.json", "src/server", "dist/server"),
 )
+# Directories of a configuration's source directory that are not its source: the kitchen-sink
+# page's sources, which tsconfig.browser.json excludes (D-45).
+LEFT_OUT = {"browser": ("src/browser/kitchen-sink/",), "server": ()}
 EMITTED_EXTENSION = {".ts": ".js", ".mts": ".mjs", ".cts": ".cjs"}
 
 PROBE_NAME = "invariant_check_build_probe"
@@ -144,7 +152,8 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
         for name, _config, source, out in CONFIGURATIONS:
             sources = [p for p in support.files_under(source, copy.path)
-                       if p.endswith(tuple(EMITTED_EXTENSION)) and not p.endswith(".d.ts")]
+                       if p.endswith(tuple(EMITTED_EXTENSION)) and not p.endswith(".d.ts")
+                       and not p.startswith(LEFT_OUT[name])]
             with self.subTest(configuration=name):
                 self.assertTrue(sources, f"{source} holds no TypeScript file")
                 for relative in sources:

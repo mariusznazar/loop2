@@ -10,5 +10,6 @@
     "rootDir": "src/browser",
     "outDir": "dist/public"
   },
-  "include": ["src/browser/**/*.ts"]
+  "include": ["src/browser/**/*.ts"],
+  "exclude": ["src/browser/kitchen-sink/**"]
 }

@@ -10,6 +10,14 @@ import type {
   ProgramRule,
   ResourceId,
 } from "../sim/types.js";
+import { createButton } from "./controls/button.js";
+import { createNumberField } from "./controls/number-field.js";
+import {
+  createSelectList,
+  setSelectOptions,
+  type SelectOption,
+} from "./controls/select-list.js";
+import type { Field } from "./controls/text-field.js";
 import { sendTargets } from "./send-panel.js";
 
 type ConditionKind = Condition["kind"];
@@ -222,7 +230,7 @@ export function focusAfter(
 type RowView = {
   element: HTMLLIElement;
   condition: HTMLSelectElement;
-  value: HTMLInputElement;
+  value: Field;
   conditionResource: HTMLSelectElement;
   action: HTMLSelectElement;
   actionResource: HTMLSelectElement;
@@ -237,24 +245,6 @@ export type ProgramEditor = {
   update(state: GameState): void;
 };
 
-function button(text: string, label?: string): HTMLButtonElement {
-  const element = document.createElement("button");
-  element.type = "button";
-  element.textContent = text;
-  if (label) element.setAttribute("aria-label", label);
-  return element;
-}
-
-function select(
-  label: string,
-  options: ReadonlyArray<[string, string]>,
-): HTMLSelectElement {
-  const element = document.createElement("select");
-  element.setAttribute("aria-label", label);
-  for (const [value, text] of options) element.add(new Option(text, value));
-  return element;
-}
-
 /** Fills a resource select with the offered resources, plus `value` when it is not among them. */
 function fillResources(
   element: HTMLSelectElement,
@@ -263,8 +253,9 @@ function fillResources(
 ): void {
   const ids =
     value !== null && !offered.includes(value) ? [...offered, value] : offered;
-  element.replaceChildren(
-    ...ids.map((id) => new Option(RESOURCES[id].name, id)),
+  setSelectOptions(
+    element,
+    ids.map((id): SelectOption => [id, RESOURCES[id].name]),
   );
 }
 
@@ -296,14 +287,14 @@ export function createProgramEditor(
   heading.textContent = "Program";
   const list = document.createElement("ol");
   list.className = "rules";
-  const addButton = button("Dodaj regułę");
+  const addButton = createButton("Dodaj regułę");
   element.append(heading, list, addButton);
 
   const conditionOptions = Object.entries(CONDITIONS).map(
-    ([kind, def]): [string, string] => [kind, def.label],
+    ([kind, def]): SelectOption => [kind, def.label],
   );
   const actionOptions = Object.entries(ACTIONS).map(
-    ([kind, def]): [string, string] => [kind, def.label],
+    ([kind, def]): SelectOption => [kind, def.label],
   );
 
   let program: Program = { rules: [] };
@@ -336,26 +327,27 @@ export function createProgramEditor(
   function createRow(index: number): RowView {
     const row: RowView = {
       element: document.createElement("li"),
-      condition: select("Warunek", conditionOptions),
-      value: document.createElement("input"),
-      conditionResource: select("Zasób warunku", []),
-      action: select("Akcja", actionOptions),
-      actionResource: select("Zasób akcji", []),
-      up: button("↑", "W górę"),
-      down: button("↓", "W dół"),
-      remove: button("Usuń"),
+      condition: createSelectList("Warunek", conditionOptions),
+      value: createNumberField({
+        label: "Liczba",
+        min: NUMBER.min,
+        max: NUMBER.max,
+        step: NUMBER.step,
+      }),
+      conditionResource: createSelectList("Zasób warunku"),
+      action: createSelectList("Akcja", actionOptions),
+      actionResource: createSelectList("Zasób akcji"),
+      up: createButton("↑", { label: "W górę" }),
+      down: createButton("↓", { label: "W dół" }),
+      // „Usuń” deletes the program rule: a destructive button (D-44).
+      remove: createButton("Usuń", { kind: "destructive" }),
     };
     row.element.className = "rule";
-    row.value.type = "number";
-    row.value.min = String(NUMBER.min);
-    row.value.max = String(NUMBER.max);
-    row.value.step = String(NUMBER.step);
-    row.value.setAttribute("aria-label", "Liczba");
     const arrow = document.createElement("span");
     arrow.textContent = "→";
     row.element.append(
       row.condition,
-      row.value,
+      row.value.element,
       row.conditionResource,
       arrow,
       row.action,
@@ -375,11 +367,11 @@ export function createProgramEditor(
         ),
       );
     });
-    row.value.addEventListener("change", () => {
+    row.value.input.addEventListener("change", () => {
       const condition = program.rules[index]?.condition;
       if (condition?.kind !== "hereBelow") return;
-      const field = readNumberField(row.value.value, condition.value);
-      row.value.value = String(field.value);
+      const field = readNumberField(row.value.input.value, condition.value);
+      row.value.input.value = String(field.value);
       if (field.commit) edit(withConditionValue(program, index, field.value));
     });
     row.conditionResource.addEventListener("change", () => {
@@ -423,11 +415,11 @@ export function createProgramEditor(
     if (row.condition.value !== condition.kind)
       row.condition.value = condition.kind;
     const below = condition.kind === "hereBelow";
-    row.value.hidden = !below;
+    row.value.element.hidden = !below;
     row.conditionResource.hidden = !below;
     if (below) {
       const text = String(condition.value);
-      if (row.value.value !== text) row.value.value = text;
+      if (row.value.input.value !== text) row.value.input.value = text;
       showResource(row.conditionResource, offered, condition.resource);
     }
     if (row.action.value !== action.kind) row.action.value = action.kind;

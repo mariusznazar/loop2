@@ -1,0 +1,127 @@
+/*
+ * The kitchen-sink page's own stylesheet (D-45), read after tokens.css and the game's styles.css:
+ * the page's layout and the samples of states the page cannot hold — hover and focus — drawn as
+ * the game draws them, from the design tokens by var(--…). It holds no value in place of a token
+ * (D-43); widths and heights are layout dimensions D-43 leaves out.
+ */
+
+/*
+ * The one rule of the game drawing keyboard focus (styles.css, D-47), repeated with the selector
+ * of the page's sample of the focused state, its only other selector.
+ */
+:focus-visible,
+.sample-focus {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+
+/* The sample of the state under the pointer: the background `highlight`, as styles.css draws it. */
+.button.sample-hover,
+.select-list.sample-hover,
+.input-field input.sample-hover {
+  background: var(--highlight);
+}
+
+/* A section may be narrower than its table, which then scrolls inside its panel. */
+.sample-section {
+  min-width: 0;
+  margin-bottom: var(--space-xl);
+}
+
+.sample-section h2 {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.sample-panel {
+  background: var(--panel);
+  color: var(--text);
+  border: var(--frame-width) solid var(--divider);
+  padding: var(--space-m) var(--space-l);
+  overflow-x: auto;
+}
+
+.sample-table {
+  border-collapse: collapse;
+}
+
+.sample-table th,
+.sample-table td {
+  padding: var(--space-s) var(--space-m) var(--space-s) 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.sample-table thead th {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+  border-bottom: var(--frame-width) solid var(--divider);
+}
+
+.sample-table tbody th {
+  font-weight: var(--font-weight-body);
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+/* The fields keep one width in every column of the table, as the program editor sets its own. */
+.sample-table .input-field input {
+  width: 120px;
+}
+
+/* The reason a state does not apply to a control. */
+.sample-reason {
+  display: block;
+  max-width: 160px;
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+.role-sample {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* A background with the text that stands on it, or a role of text on a background. */
+.role-surface {
+  padding: var(--space-xs) var(--space-s);
+  color: var(--text);
+  border: var(--frame-width) solid var(--divider);
+}
+
+.role-swatch {
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+  border: var(--frame-width) solid var(--divider);
+}
+
+.role-icon.dimmed {
+  opacity: var(--depleted);
+}
+
+.tile-samples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-l);
+}
+
+.tile-sample {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  max-width: 220px;
+  margin: 0;
+}
+
+.tile-sample figcaption {
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}

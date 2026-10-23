@@ -1,0 +1,296 @@
+/*
+ * The game's stylesheet: every style of its screens, reading each value of appearance from the
+ * design tokens of tokens.css by var(--…) (guidelines/styleguide-browser-view.md). Layout values
+ * D-43 leaves out stand here: line-height, the @media threshold, widths and heights, and the
+ * sizes of the columns of the layout grid.
+ */
+[hidden] {
+  display: none !important;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0 var(--space-l);
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--page);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The one rule of the game drawing keyboard focus, on every element the keyboard reaches (D-47). */
+:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+
+header h1 {
+  margin: var(--space-l) 0;
+  font-size: var(--font-size-game-title);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.columns {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.program-panel,
+.map-column {
+  background: var(--panel);
+  color: var(--text);
+  border: var(--frame-width) solid var(--divider);
+  padding: var(--space-m) var(--space-l);
+  min-height: 120px;
+}
+
+/*
+ * The shared controls of src/browser/view/controls/ in their states (styleguide rule "States of
+ * shared controls", D-44): no background of their own, text in `text`, frame in `control-border`;
+ * under the pointer the background `highlight` with frame and text role unchanged; focus by the
+ * one :focus-visible rule above; disabled text in `text-disabled`. Loading applies to none.
+ */
+.button,
+.select-list,
+.input-field input {
+  font: inherit;
+  color: var(--text);
+  background: transparent;
+  border: var(--frame-width) solid var(--control-border);
+}
+
+.select-list,
+.input-field input {
+  padding: var(--space-2xs) var(--space-xs);
+}
+
+.button {
+  padding: var(--space-2xs) var(--space-s);
+  font-size: var(--font-size-detail);
+  cursor: pointer;
+}
+
+/* The destructive button: „Zakończ”, „Usuń”, „Restart” (D-44). */
+.button.destructive {
+  color: var(--danger);
+}
+
+/* The button selected in its group (D-40). */
+.button.selected {
+  color: var(--text-strong);
+  border-color: var(--selected);
+}
+
+.button:hover:not(:disabled),
+.select-list:hover:not(:disabled),
+.input-field input:hover:not(:disabled) {
+  background: var(--highlight);
+}
+
+.button:disabled,
+.select-list:disabled,
+.input-field input:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.select-list option {
+  color: var(--text);
+  background: var(--panel);
+}
+
+/* The number and text fields: the input with the message of its error under it. */
+.input-field {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+}
+
+/* Empty: the hint of an empty field in `text-label`. */
+.input-field input::placeholder {
+  color: var(--text-label);
+}
+
+/* Error: frame and message under the field in `warning` (D-39). */
+.input-field.error input {
+  border-color: var(--warning);
+}
+
+.input-field-message {
+  margin-top: var(--space-2xs);
+  font-size: var(--font-size-detail);
+  color: var(--warning);
+}
+
+.program-editor h2 {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.rules {
+  margin: 0 0 var(--space-m);
+  padding-left: var(--space-xl);
+}
+
+.rule {
+  margin-bottom: var(--space-s);
+}
+
+.rule > * {
+  margin: 0 var(--space-xs) var(--space-xs) 0;
+  vertical-align: middle;
+}
+
+.rule input[type="number"] {
+  width: 4em;
+}
+
+.send-entry p {
+  margin: 0 0 var(--space-s);
+}
+
+.send-character {
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+/* The run's clock: the minute of the map run and what the character does. */
+.status-text {
+  margin: 0;
+  margin-right: auto;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.terrain-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-l);
+  margin-top: var(--space-m);
+}
+
+.terrain-drawing {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.terrain-drawing .tile polygon {
+  fill: var(--tile-hidden);
+  stroke: var(--tile-edge);
+  stroke-width: var(--frame-width);
+}
+
+.terrain-drawing .tile.revealed polygon {
+  fill: var(--tile-revealed);
+}
+
+.terrain-drawing .icon.dimmed {
+  opacity: var(--depleted);
+}
+
+.terrain-drawing .outline {
+  fill: none;
+  pointer-events: none;
+  stroke-linejoin: round;
+}
+
+.terrain-drawing .outline.character {
+  stroke: var(--character);
+  stroke-width: var(--character-outline-width);
+}
+
+.terrain-drawing .outline.step-target {
+  stroke: var(--character);
+  stroke-width: var(--step-target-width);
+  stroke-dasharray: var(--step-target-dash);
+}
+
+/* The line around the hovered tile, drawn above every tile and outline (D-19, D-41). */
+.terrain-drawing .outline.link-highlight {
+  stroke: var(--link-highlight);
+  stroke-width: var(--link-highlight-width);
+}
+
+.tile-list {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-list th,
+.tile-list td {
+  padding: var(--space-2xs) var(--space-s);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tile-list thead th {
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+  border-bottom: var(--frame-width) solid var(--divider);
+}
+
+.tile-list thead img {
+  vertical-align: middle;
+}
+
+.tile-list tbody th {
+  text-align: left;
+  font-weight: var(--font-weight-body);
+  border-left: var(--link-highlight-width) solid transparent;
+}
+
+.tile-list tbody td {
+  color: var(--text-strong);
+}
+
+/* The line at the left edge of the hovered tile's row, the row's colours unchanged. */
+.tile-list tbody tr.hovered th {
+  border-left-color: var(--link-highlight);
+}
+
+footer {
+  margin-top: var(--space-xl);
+  padding: var(--space-m) 0 var(--space-l);
+  border-top: var(--frame-width) solid var(--divider);
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+.credits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.credits a {
+  color: inherit;
+}

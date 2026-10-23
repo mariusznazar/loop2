@@ -83,11 +83,11 @@ test("the check passes an svg holding only the two allowed namespace declaration
   assert.deepEqual(violations(svg), []);
 });
 
-/** The one colour the icon shapes are drawn in, dark on the light revealed tile. */
-const DARK = "#2b2b2b";
+/** The one colour the icon shapes are drawn in, light on the grey revealed tile. */
+const LIGHT = "#f4f4f5";
 const ALLOWED_ATTRIBUTES = ["xmlns", "viewBox", "d", "fill"];
 
-test("every icon file is a dark shape without a background: svg and path elements, allowed attributes only", () => {
+test("every icon file is a light shape without a background: svg and path elements, allowed attributes only", () => {
   assert.ok(files.length > 0, "no icon files found");
   for (const name of files) {
     const svg = readFileSync(ICONS + name, "utf8");
@@ -107,13 +107,13 @@ test("every icon file is a dark shape without a background: svg and path element
     for (const path of paths)
       assert.match(
         path[1],
-        new RegExp(`\\sfill="${DARK}"`),
-        `${name}: a path not filled ${DARK}`,
+        new RegExp(`\\sfill="${LIGHT}"`),
+        `${name}: a path not filled ${LIGHT}`,
       );
   }
 });
 
-const CHANGES = "zmienione (bez tła, ciemny kolor)";
+const CHANGES = "zmienione (bez tła, jasny kolor)";
 
 test("each icon credit records that the file was changed from its source", () => {
   for (const [icon, credit] of Object.entries(ICON_CREDITS))

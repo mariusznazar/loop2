@@ -622,18 +622,18 @@ keep itself, entering through what the product already treats as untrusted.
 
 ### D-28 — Which coding-guideline discipline does loop2 adopt?
 
-Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points and HTML; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points, HTML and CSS; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares the change with the decision:
   - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and the test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
-  - violates: an additional mandatory test exemplar, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
+  - violates: an additional mandatory test exemplar, a stylesheet exemplar or guidelines of their own for stylesheets, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
 - **Origin:** none
 
-*Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader exemplar maintenance and additional formatters add work without an established benefit.
-*Rejected:* A complete exemplar audit and automatic formatting for every language — more maintenance and unmeasured reformatting work; transitional lint debt — an extra mechanism where full-compliance source invariants already apply.
+*Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader exemplar maintenance and additional formatters add work without an established benefit. The rules of the browser view's stylesheets that a cheap test keeps already stand in its styleguide, so a kind of their own would add no rule; a second stylesheet then has no designated model.
+*Rejected:* A complete exemplar audit and automatic formatting for every language — more maintenance and unmeasured reformatting work; transitional lint debt — an extra mechanism where full-compliance source invariants already apply; CSS as a kind of its own with an exemplar and kind guidelines — its only rules a test keeps stand in the styleguide.
 
 ### D-29 — Which rules check TypeScript and JavaScript?
 
@@ -765,3 +765,168 @@ The exemplar for kind `http-application` is `src/server/app.ts`, and its kind gu
 
 *Rationale:* Separating creation from listening gives a concrete model that is easy to test, without settling the architecture of future account and saved-game features.
 *Rejected:* A new factory-structure check — enforces an example as architecture; no exemplar — leaves the existing testable assembly model implicit.
+
+### D-38 — Which styleguide discipline does loop2 adopt for the browser view?
+
+Loop2 adopts the styleguide template of its pinned the-way, with no departure, for the user interface the part browser-view draws: its styleguide holds every rule and example the template requires, in the template's order, and drops none.
+
+- **Scope:** browser-view, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: design-token-sources. An agent compares a change with the decision:
+  - complies: `guidelines/styleguide-browser-view.md` holding the nine required rules in the template's order, each with its decision, its invariant or `none`, and the examples *Mockups* and *Plan of a user-interface change*;
+  - violates: a required rule dropped from the styleguide, or another departure from the template's form, without a decision of the log that gives its reason.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q18. Jak nazywają się role w kodzie i czy jakieś odstępstwa zostają celowo?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point H
+
+*Rationale:* Without a styleguide each screen of the MVP adds values written straight into its styles, and the look of the game drifts with every task; the template gives the rules every screen is compared with, and loop2 keeps no exception to them on purpose.
+*Rejected:* a styleguide departing from the template — loop2 holds no exception it wants to keep.
+
+### D-39 — What do the signal colours of the browser view mean?
+
+In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel` and `highlight`.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger`;
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B
+
+*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision.
+*Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss.
+
+### D-40 — What do the neutral roles of the browser view mean?
+
+In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, and `selected` that this is the one chosen in its group. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel` and `highlight`, and `text` is the text each of the three backgrounds is written with.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
+  - complies: the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged;
+  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C
+
+*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename.
+*Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings.
+
+### D-41 — What do the roles of the terrain grid and of keyboard focus mean?
+
+In the browser view `character` means that here is the character and here it is going, the target of its current move told from its place by shape, a thin dashed line in place of a thick solid one, never by colour; `tile-hidden` means a place not yet known, `tile-revealed` a place known, whose icons say what lies there, and `tile-edge` the border between tiles of either kind. `link-highlight` means that this tile and this row of the list of revealed tiles are the same place, `depleted` that what was here is gone, and `focus` that here is where the player is, using the game by keyboard.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
+  - complies: the target of the current move drawn as a thin dashed line in `character`; a hovered tile and its row marked by a line in `link-highlight`, the tile's own colour unchanged;
+  - violates: the target of the current move drawn in a colour of its own; a hovered tile filled with another colour.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q7. Jakie role ma siatka terenu i fokus klawiatury?", "Q10. Jak wyglądają siatka terenu, podświetlenie powiązania, wyczerpane i fokus?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C
+
+*Rationale:* The character's place and the target of its current move are one figure, the character and where it goes, so one role carries both, with one meaning, and the drawing tells them apart by shape. The tiles keep the grid of loop: unknown tiles dark and empty, known ones lighter with the icons of their resources, an icon dimmed at a stock of zero.
+*Rejected:* a colour of its own for the target of the current move — a second colour for one figure.
+
+### D-42 — Which accessibility requirements does the browser view keep?
+
+For now every screen of the browser view keeps three success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel` and `highlight`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so has `tile-revealed` against `tile-hidden`.
+
+- **Scope:** browser-view
+- **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-focus-visible
+- **Relations:** none
+- **Verification:** invariants: design-token-contrast · browser-view-focus-outline. An agent compares a change with the decision:
+  - complies: a review that judges a new screen's contrast and focus by the three criteria and nothing more of WCAG;
+  - violates: a review that holds a change back for a success criterion of WCAG other than the three, without a change of this decision.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Czy prawo albo umowa wiąże dostępność interfejsu loop2?", "Q6. Jaki standard dostępności przyjmuje interfejs loop2?" and "Q8. Do jakiego kontrastu sprawdzenie trzyma każdą parę?"
+
+*Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component.
+*Rejected:* the whole of WCAG 2.2 at level AA — more requirements than the product takes on for now.
+
+### D-43 — What counts in the browser view as a value written in place of a design token?
+
+In the files of the part browser-view other than its file of design tokens, a value written in place of a design token is a colour in any notation — hexadecimal, functional, a named colour or a system colour — in styles and in TypeScript and, in styles, a size or spacing in `px`, `rem` or `em`, a font name, or a unitless stroke width, dash pattern, opacity or font weight, those four unitless kinds being all. None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing computed in TypeScript, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, whose colour stands in the file and is changed by hand when the value of `text-strong` changes.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-38
+- **Verification:** invariants: browser-view-token-values. For values the text of a file does not show, an agent compares a change with the decision:
+  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`;
+  - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Co liczy się jako wartość wpisana zamiast tokenu projektowego?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point D
+
+*Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, and the icon files, which hold their colour themselves, so a change of `text-strong` reaches them only by hand.
+*Rejected:* the icons coloured from a design token rather than in their files; a gentler check counting no more such values than before the change — the screens are moved onto the tokens at once.
+
+### D-44 — Which controls do the screens of the browser view build on?
+
+The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń” and „Restart” are destructive buttons. The state of loading applies to no shared control while none of them waits for a server.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-38
+- **Verification:** an agent compares a change with the decision:
+  - complies: the button „Wyślij” of a new screen made with the shared button;
+  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?"
+
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run or deletes a program rule. The game computes in the browser and waits for no server, so no control has a state of loading until a task adds one that waits.
+*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen.
+
+### D-45 — Where does the browser view's kitchen-sink page stand?
+
+The kitchen-sink page of the browser view is built from `src/browser/kitchen-sink/` and opened on the developer's machine by its own command, `npm run kitchen-sink`, and nothing `npm run build` writes, which is what reaches the test server, holds it. The page shows every shared control in each of its states or the reason a state does not apply, every role, and samples of tiles in each state drawn with the roles, never a drawing of the game from a game state.
+
+- **Scope:** browser-view, build-tools
+- **Based on:** none
+- **Relations:** derives from D-38
+- **Verification:** invariants: application-build-kitchen-sink. An agent compares a change with the decision:
+  - complies: the page compiled into `dist/kitchen-sink/` and served on the developer's machine alone;
+  - violates: the page drawing the terrain panel from a game state put together by hand; the page served by the account server in a development mode.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q13. Gdzie stoi strona wszystkich stanów i jak nie trafia na serwer testowy?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point A
+
+*Rationale:* The test server deploys what `npm run build` writes, and the account server serves the whole of its output, so a page kept out of that build never reaches players. Samples drawn with the roles show every state of a tile without a game state made by hand, which no function of the simulation returned (D-04).
+*Rejected:* the page in the application's build, served by the account server in a development mode — it would stand among what the test server serves.
+
+### D-46 — Which fonts does the browser view use, and where do they come from?
+
+The fonts of the browser view are Geist and Geist Mono, whose web-font files and licence file are taken from a release of github.com/vercel/geist-font into `assets/fonts/`, outside the directory the account and save server serves, and copied into that directory when the application is built. The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono and every other text in Geist.
+
+- **Scope:** browser-view, build-tools, deployment
+- **Based on:** geist-licence · npm package `geist` 1.8.2, its peer dependencies (https://registry.npmjs.org/geist/1.8.2 § peerDependencies — "{"next":">=13.2.0"}"; read 2026-10-23)
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the status row set in Geist Mono;
+  - violates: a stylesheet that loads a font from Google Fonts or another CDN; font files taken from the npm package `geist`; the headings of the panels set in Geist Mono.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jakie czcionki, rozmiary i odstępy?"
+
+*Rationale:* The look loop2 starts from uses Geist and Geist Mono. Fonts kept in the product's files load from the game's own server, change only by a change of the repository and stand beside the licence they are released under; kept apart from what the server serves, as the icons are, they reach the player only through the build.
+*Rejected:* the system's own fonts — the look of loop is lost; fonts loaded from Google Fonts or a CDN — the game would fetch from another server; the npm package `geist` — its release declares Next.js as a peer dependency, and its files would stand among the installed dependencies rather than in the product's files.
+
+### D-47 — Which elements of the browser view are controls, and how does their focus show?
+
+A control of the browser view is every HTML element the browser lets the keyboard reach, links included, and the code marks none. One `:focus-visible` rule of the game's stylesheet draws the focus of every control from the role `focus`, and no other style or code of the part browser-view sets `outline` or an `outline-*` property, except that the kitchen-sink page's stylesheet repeats that rule with one more selector, for its sample of the focused state.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-42
+- **Verification:** invariants: browser-view-focus-outline. An agent compares a change with the decision:
+  - complies: a link of the footer showing the outline of `focus` when the keyboard reaches it;
+  - violates: a class added to the controls to give them their focus; `outline: none` on a shared button; an outline set from TypeScript.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q21. Które elementy są kontrolkami dla testu widocznego fokusu i jak kod je oznacza?" and "Q22. Jak brzmią niezmienniki i decyzja fokusu po krytyce?"
+
+*Rationale:* One rule reaches every element the keyboard reaches without the code marking it, so a new control or link shows its focus with nothing added. A control that needs another outline takes a change of this decision, and an outline turned off in an unusual way is found only by review.
+*Rejected:* a class on each control; the shared controls alone, without links — the links of the footer would show no focus.
+
+### D-48 — How are the design tokens of the browser view named?
+
+In the file of design tokens of the browser view, each role of its styleguide's table of roles is the custom property `--<role>`, under the role's own name, and every other value of appearance is a custom property named by what it is for, never by its colour or by its number alone.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-38
+- **Verification:** an agent compares a change with the decision:
+  - complies: `--text-label` for the role `text-label`; `--space-s` for a size of the spacing scale; `--font-size-label` for the size of labels;
+  - violates: `--space-8` for the spacing of 8 px; `--zinc-900` for the background `page`; `--yellow` for the role `discovery`.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q18. Jak nazywają się role w kodzie i czy jakieś odstępstwa zostają celowo?"
+
+*Rationale:* A value may change while its meaning stays, so a name that tells what the value is for stays true when the value changes, and the change stays in the one place that holds the value; a name telling a colour or a number turns false with the first such change, or takes a rename in every style that reads it.
+*Rejected:* names by the value — a colour's name or the number of pixels of a spacing — each change of a value renames the property in every style.

@@ -8,7 +8,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 1. `npm ci` — instalacja według pliku blokady.
 2. `npm run typecheck` — kontrola typów przeglądarki i serwera bez emisji plików.
-3. `npm run build` — kompilacja obu części oraz skopiowanie HTML i ikon do `dist/public`.
+3. `npm run build` — kompilacja obu części oraz skopiowanie do `dist/public` HTML-a, arkuszy stylów leżących bezpośrednio w `src/browser/`, ikon z `assets/icons/` i czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`).
 4. `npm start` — uruchomienie zbudowanego serwera.
 5. Otwórz http://127.0.0.1:3000.
 
@@ -50,13 +50,17 @@ Kontrole kodu uruchamia `npm test` przez `tests/quality/test_quality_invariants.
 - **Wysyłanie** (prawa kolumna, gdy nie trwa przejście): postać „Mag żywiołów”, „Mapa: Las” i przycisk „Wyślij”. Każde wysłanie losuje nowy układ mapy.
 - **Wiersz stanu** (w trakcie przejścia): „Minuta {minuta} · {bieżąca akcja}”, z dopiskiem „ (pauza)” przy zatrzymanym czasie, oraz przyciski „Pauza”/„Wznów”, „Restart” (od minuty zero, ten sam układ, bieżący program) i „Zakończ” (powrót do wysyłania). Czas płynie minutą gry na sekundę realną.
 - **Panel terenu** pod wierszem stanu: rysunek całej mapy 4 × 4 z sześciokątnych kafelków — nieodsłonięte ciemne i puste, odsłonięte jaśniejsze z ikonami zasobów bez liczb, ikona przygaszona przy zapasie zero, gruby bursztynowy obrys na kafelku postaci i kreskowany na celu bieżącego kroku. Obok stoi lista odsłoniętych kafelków: etykieta `(kolumna, wiersz)` i zapas każdego zasobu mapy, „—” gdy kafelek go nie ma. Rysunek nie reaguje na kliknięcia; najechanie na kafelek podświetla jego wiersz listy, a najechanie na wiersz — jego kafelek.
-- **Stopka**: wzmianki o autorach ikon — dla każdej „{zasób}: „{tytuł ikony}”, {autor}, game-icons.net, CC BY 3.0, zmienione (bez tła, ciemny kolor)” z odnośnikami do źródła ikony i licencji.
+- **Stopka**: wzmianki o autorach ikon — dla każdej „{zasób}: „{tytuł ikony}”, {autor}, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)” z odnośnikami do źródła ikony i licencji.
 
 Stan gry żyje tylko w pamięci strony: przeładowanie zaczyna od nowa, z pustym programem i bez przejścia.
 
 ## Ikony
 
-Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmienione względem źródła: usunięte czarne tło, kształt w ciemnym kolorze. Ich źródła leżą w `assets/icons`, poza katalogiem podawanym przez serwer; `npm run build` kopiuje je do `dist/public/icons`. Tytuły ikon trzymają dane zasobów w `src/browser/sim/data/resources.ts`, obok nazwy pliku ikony; autorów ikon i commit źródła trzyma `src/browser/view/credits.ts`, a stopka strony pokazuje wymagane wzmianki.
+Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmienione względem źródła: usunięte czarne tło, kształt w jasnym kolorze. Ich źródła leżą w `assets/icons`, poza katalogiem podawanym przez serwer; `npm run build` kopiuje je do `dist/public/icons`. Tytuły ikon trzymają dane zasobów w `src/browser/sim/data/resources.ts`, obok nazwy pliku ikony; autorów ikon i commit źródła trzyma `src/browser/view/credits.ts`, a stopka strony pokazuje wymagane wzmianki.
+
+## Strona wszystkich stanów
+
+`npm run kitchen-sink` buduje stronę wszystkich stanów z `src/browser/kitchen-sink/` — każdą wspólną kontrolkę w każdym stanie albo z powodem, dla którego stan jej nie dotyczy, każdą rolę koloru i próbki kafelków — do `dist/kitchen-sink/`, podaje ją na 127.0.0.1 pod portem wybranym przez system, wypisuje jej adres i otwiera go w domyślnej przeglądarce; gdy przeglądarka się nie otworzy, wejdź na wypisany adres. Zakończ przez Ctrl+C. `npm run kitchen-sink -- --build-only` tylko składa `dist/kitchen-sink/`, bez serwera i przeglądarki. Komenda nie pisze nic poza `dist/kitchen-sink/`. `npm run build` nie zawiera tej strony, więc nie trafia ona na serwer testowy; jej arkusz stylów leży w `src/browser/kitchen-sink/`, poza arkuszami kopiowanymi do `dist/public`.
 
 ## Praca lokalna i sprawdzenie
 

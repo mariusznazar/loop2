@@ -5,6 +5,10 @@
 
 Before changing product code, including scripts and tests, read `guidelines/coding.md`.
 
+Before changing a file of the part `browser-view`, read `guidelines/styleguide-browser-view.md`; the part's files are listed in `foundations/part_map.md`.
+
+When working in `src/browser/`, read `src/browser/AGENTS.md`.
+
 Every test of this repository runs with `npm test`.
 
 <!-- the-way:begin -->
