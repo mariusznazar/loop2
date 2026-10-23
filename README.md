@@ -8,7 +8,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 
 1. `npm ci` — instalacja według pliku blokady.
 2. `npm run typecheck` — kontrola typów przeglądarki i serwera bez emisji plików.
-3. `npm run build` — kompilacja obu części oraz skopiowanie do `dist/public` HTML-a, arkuszy stylów z `src/browser/`, ikon z `assets/icons/` i czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`).
+3. `npm run build` — kompilacja obu części oraz skopiowanie do `dist/public` HTML-a, arkuszy stylów leżących bezpośrednio w `src/browser/`, ikon z `assets/icons/` i czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`).
 4. `npm start` — uruchomienie zbudowanego serwera.
 5. Otwórz http://127.0.0.1:3000.
 
@@ -57,6 +57,10 @@ Stan gry żyje tylko w pamięci strony: przeładowanie zaczyna od nowa, z pustym
 ## Ikony
 
 Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmienione względem źródła: usunięte czarne tło, kształt w jasnym kolorze. Ich źródła leżą w `assets/icons`, poza katalogiem podawanym przez serwer; `npm run build` kopiuje je do `dist/public/icons`. Tytuły ikon trzymają dane zasobów w `src/browser/sim/data/resources.ts`, obok nazwy pliku ikony; autorów ikon i commit źródła trzyma `src/browser/view/credits.ts`, a stopka strony pokazuje wymagane wzmianki.
+
+## Strona wszystkich stanów
+
+`npm run kitchen-sink` buduje stronę wszystkich stanów z `src/browser/kitchen-sink/` — każdą wspólną kontrolkę w każdym stanie albo z powodem, dla którego stan jej nie dotyczy, każdą rolę koloru i próbki kafelków — do `dist/kitchen-sink/`, podaje ją na 127.0.0.1 pod portem wybranym przez system, wypisuje jej adres i otwiera go w domyślnej przeglądarce; gdy przeglądarka się nie otworzy, wejdź na wypisany adres. Zakończ przez Ctrl+C. `npm run kitchen-sink -- --build-only` tylko składa `dist/kitchen-sink/`, bez serwera i przeglądarki. Komenda nie pisze nic poza `dist/kitchen-sink/`. `npm run build` nie zawiera tej strony, więc nie trafia ona na serwer testowy; jej arkusz stylów leży w `src/browser/kitchen-sink/`, poza arkuszami kopiowanymi do `dist/public`.
 
 ## Praca lokalna i sprawdzenie
 

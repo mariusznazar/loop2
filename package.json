@@ -9,6 +9,7 @@
   "scripts": {
     "typecheck": "node scripts/build.mjs --check",
     "build": "node scripts/build.mjs",
+    "kitchen-sink": "node scripts/kitchen-sink.mjs",
     "start": "node dist/server/main.js",
     "dev": "npm run build && npm start",
     "test": "npm run build && node --test tests/http.test.mjs tests/startup.test.mjs \"tests/sim/*.test.mjs\" \"tests/view/*.test.mjs\" && python -B .the-way/gate/run_tests.py && python -B .the-way/elements/common/foundation_check.py"
