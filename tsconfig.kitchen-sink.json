@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.browser.json",
+  "compilerOptions": {
+    "outDir": "dist/kitchen-sink"
+  },
+  "include": ["src/browser/kitchen-sink/*.ts"],
+  "exclude": []
+}
