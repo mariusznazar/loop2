@@ -1,0 +1,6 @@
+foundations/part_map.md:11: the pattern `src/browser/kitchen-sink/**` in the *Files* of `browser-view` matches no file git tracks
+foundations/part_map.md:75: the pattern `tsconfig.kitchen-sink.json` in the *Files* of `build-tools` matches no file git tracks
+foundations/part_map.md:90: the pattern `tests/invariants/test_application_build_kitchen_sink.py` in the *Files* of `build-tools` matches no file git tracks
+foundations/part_map.md:94: the pattern `scripts/kitchen-sink.mjs` in the *Trust boundary* of `build-tools` matches no file git tracks
+foundations/part_map.md:108: the pattern `src/browser/AGENTS.md` in the *Files* of `agent-workflow` matches no file git tracks
+5 errors

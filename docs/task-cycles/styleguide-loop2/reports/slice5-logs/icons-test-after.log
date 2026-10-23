@@ -1,0 +1,32 @@
+✔ every icon file passes the untrusted-input rules (22.9897ms)
+✔ the check rejects an svg holding a script (0.1353ms)
+✔ the check rejects an svg holding an onload attribute (0.0708ms)
+✔ the check rejects an svg holding a foreignObject (0.0634ms)
+✔ the check rejects an svg holding an external href (0.0992ms)
+✔ the check rejects an svg holding an external xlink:href (0.0764ms)
+✔ the check rejects an svg holding an external url( (0.0917ms)
+✔ the check rejects an svg holding a data: URI (0.0489ms)
+✔ the check rejects an svg holding a protocol-relative address (0.058ms)
+✔ the check rejects an svg holding an xmlns with another value (0.1269ms)
+✔ the check rejects an svg holding a <!DOCTYPE (0.092ms)
+✔ the check rejects an svg holding an <!ENTITY (0.0494ms)
+✔ the check rejects an svg holding an <?xml-stylesheet (0.0888ms)
+✔ the check rejects an svg holding a <style element (0.0424ms)
+✔ the check rejects an svg holding an @import (0.0856ms)
+✔ the check rejects an svg holding an unquoted href (0.0574ms)
+✔ the check rejects an svg holding an unquoted xlink:href (0.0344ms)
+✔ the check passes an svg holding only the two allowed namespace declarations (0.0989ms)
+✔ every icon file is a light shape without a background: svg and path elements, allowed attributes only (0.7956ms)
+✔ each icon credit records that the file was changed from its source (0.1047ms)
+✔ each footer line names the icon by its title on game-icons.net and says after the licence that it was changed (1.0377ms)
+✔ the footer links open in a new tab, without opener or referrer (0.1597ms)
+✔ each icon named in the resources data exists as a file (0.1938ms)
+✔ each icon file has a credit with an author and the source commit (0.16ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 109.4402

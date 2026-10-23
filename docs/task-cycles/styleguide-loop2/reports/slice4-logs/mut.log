@@ -1,0 +1,22 @@
+...F
+======================================================================
+FAIL: test_no_file_of_the_part_holds_a_value_in_place_of_a_token (test_browser_view_token_values.BrowserViewTokenValues.test_no_file_of_the_part_holds_a_value_in_place_of_a_token)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-wt\styleguide-loop2\tests\invariants\test_browser_view_token_values.py", line 534, in test_no_file_of_the_part_holds_a_value_in_place_of_a_token
+    self.assertEqual(found, [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: Lists differ: ['src/browser/index.html: line 10: style a[37 chars]90b'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'src/browser/index.html: line 10: style attribute: background: the colour #09090b'
+
++ []
+- ['src/browser/index.html: line 10: style attribute: background: the colour '
+-  '#09090b']
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.099s
+
+FAILED (failures=1)
