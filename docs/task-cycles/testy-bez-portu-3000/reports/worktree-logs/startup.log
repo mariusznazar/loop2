@@ -1,0 +1,15 @@
+✔ exits with an error instead of reporting ready when its listening port is occupied (153.0417ms)
+✔ listens on the address given by LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT (126.4953ms)
+✔ rejects LOOP2_LISTEN_PORT="0" without a readiness line (108.442ms)
+✔ rejects LOOP2_LISTEN_PORT="65536" without a readiness line (266.1014ms)
+✔ rejects LOOP2_LISTEN_PORT="abc" without a readiness line (106.5822ms)
+✔ rejects LOOP2_LISTEN_PORT="3000x" without a readiness line (108.9322ms)
+✔ rejects LOOP2_LISTEN_PORT="" without a readiness line (106.3321ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1039.2935

@@ -1,0 +1,6 @@
+test_server_without_listen_variables_takes_127_0_0_1_3000 (test_account_server_default_address.AccountServerDefaultAddress.test_server_without_listen_variables_takes_127_0_0_1_3000) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 2.754s
+
+OK

@@ -1,0 +1,37 @@
+test_installed_express_is_5 (test_account_server_express_http.ExpressFiveDeclared.test_installed_express_is_5) ... ok
+test_no_other_http_framework_dependency (test_account_server_express_http.ExpressFiveDeclared.test_no_other_http_framework_dependency) ... ok
+test_runtime_dependency_on_express_5 (test_account_server_express_http.ExpressFiveDeclared.test_runtime_dependency_on_express_5) ... ok
+test_server_source_gives_node_http_no_handler_of_its_own (test_account_server_express_http.ExpressInServerSource.test_server_source_gives_node_http_no_handler_of_its_own) ... ok
+test_server_source_imports_express (test_account_server_express_http.ExpressInServerSource.test_server_source_imports_express) ... ok
+test_server_source_uses_no_other_http_framework (test_account_server_express_http.ExpressInServerSource.test_server_source_uses_no_other_http_framework) ... ok
+test_every_probe_is_dispatched_by_express_router (test_account_server_express_http.ExpressRoutesRunningServer.test_every_probe_is_dispatched_by_express_router) ... ok
+test_root_serves_the_built_page (test_loop2_api_error_route.UnmatchedApiRequests.test_root_serves_the_built_page) ... ok
+test_unmatched_api_requests_receive_json_errors_not_the_page (test_loop2_api_error_route.UnmatchedApiRequests.test_unmatched_api_requests_receive_json_errors_not_the_page) ... ok
+test_occupied_address_exits_without_reporting_ready (test_account_server_occupied_address.AccountServerOccupiedAddress.test_occupied_address_exits_without_reporting_ready) ... ok
+test_server_without_listen_variables_takes_127_0_0_1_3000 (test_account_server_default_address.AccountServerDefaultAddress.test_server_without_listen_variables_takes_127_0_0_1_3000) ... ok
+setUpClass (test_loop2_one_serving_process.OneExpressProcessServesGameAndApi) ... ERROR
+
+======================================================================
+ERROR: setUpClass (test_loop2_one_serving_process.OneExpressProcessServesGameAndApi)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-wt\testy-bez-portu-3000\tests\invariants\test_loop2_one_serving_process.py", line 177, in setUpClass
+    cls.listeners = tcp_listeners()
+                    ~~~~~~~~~~~~~^^
+  File "C:\Storage\repos\loop2-wt\testy-bez-portu-3000\tests\invariants\test_loop2_one_serving_process.py", line 118, in tcp_listeners
+    raise AssertionError("Get-NetTCPConnection failed: "
+                         + result.stderr.decode("utf-8", "replace"))
+AssertionError: Get-NetTCPConnection failed: Get-NetTCPConnection : No MSFT_NetTCPConnection objects found with property 'State' equal to 'Listen'.  Verify the valu
+e of the property and retry.
+At line:1 char:1
++ Get-NetTCPConnection -State Listen | ForEach-Object { '{0} {1} {2}' - ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (Listen:State) [Get-NetTCPConnection], CimJobException
+    + FullyQualifiedErrorId : CmdletizationQuery_NotFound_State,Get-NetTCPConnection
+ 
+
+
+----------------------------------------------------------------------
+Ran 11 tests in 26.472s
+
+FAILED (errors=1)

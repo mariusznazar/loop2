@@ -1,0 +1,89 @@
+Product: C:\Storage\repos\loop2-wt\testy-bez-portu-3000
+Process commit: 86b78ad780aa8e97a9619fb7277cb64da50fb74a
+Submodule URL: https://github.com/mariusznazar/the-way.git
+MOVE .the-way from 1bc9a169b5e3729d6ccffc5119e9406b6c525cab to 86b78ad780aa8e97a9619fb7277cb64da50fb74a (checks it out and stages the gitlink)
+KEEP foundations/decisions.md
+KEEP foundations/invariants.md
+KEEP foundations/glossary.md
+KEEP foundations/part_map.md
+KEEP foundations/environment_facts.md
+REPLACE .claude/skills/the-way-record-decision/SKILL.md
+
+REPLACE .agents/skills/the-way-record-decision/SKILL.md
+
+REPLACE .claude/skills/the-way-record-invariant/SKILL.md
+
+REPLACE .agents/skills/the-way-record-invariant/SKILL.md
+
+REPLACE .claude/skills/the-way-record-glossary-term/SKILL.md
+
+REPLACE .agents/skills/the-way-record-glossary-term/SKILL.md
+
+REPLACE .claude/skills/the-way-update-part-map/SKILL.md
+
+REPLACE .agents/skills/the-way-update-part-map/SKILL.md
+
+REPLACE .claude/skills/the-way-record-environment-fact/SKILL.md
+
+REPLACE .agents/skills/the-way-record-environment-fact/SKILL.md
+
+REPLACE .claude/skills/the-way-find-foundation-entries/SKILL.md
+
+REPLACE .agents/skills/the-way-find-foundation-entries/SKILL.md
+
+REPLACE .claude/skills/the-way-define-project/SKILL.md
+
+REPLACE .agents/skills/the-way-define-project/SKILL.md
+
+REPLACE .claude/skills/the-way-plan-project/SKILL.md
+
+REPLACE .agents/skills/the-way-plan-project/SKILL.md
+
+REPLACE .claude/skills/the-way-lead-project/SKILL.md
+
+REPLACE .agents/skills/the-way-lead-project/SKILL.md
+
+REPLACE .claude/skills/the-way-settle-technology/SKILL.md
+
+REPLACE .agents/skills/the-way-settle-technology/SKILL.md
+
+REPLACE .claude/skills/the-way-refine-task/SKILL.md
+
+REPLACE .agents/skills/the-way-refine-task/SKILL.md
+
+REPLACE .claude/skills/the-way-implement-task/SKILL.md
+
+REPLACE .agents/skills/the-way-implement-task/SKILL.md
+
+REPLACE .claude/skills/the-way-plan-task/SKILL.md
+
+REPLACE .agents/skills/the-way-plan-task/SKILL.md
+
+REPLACE .claude/skills/the-way-write-spec/SKILL.md
+
+REPLACE .agents/skills/the-way-write-spec/SKILL.md
+
+REPLACE .claude/skills/the-way-make-change/SKILL.md
+
+REPLACE .agents/skills/the-way-make-change/SKILL.md
+
+REPLACE .claude/skills/the-way-review-change/SKILL.md
+
+REPLACE .agents/skills/the-way-review-change/SKILL.md
+
+REPLACE .claude/skills/the-way-critique/SKILL.md
+
+REPLACE .agents/skills/the-way-critique/SKILL.md
+
+REPLACE .claude/skills/the-way-maintain-styleguide/SKILL.md
+
+REPLACE .agents/skills/the-way-maintain-styleguide/SKILL.md
+
+REPLACE .claude/skills/the-way-maintain-coding-guidelines/SKILL.md
+
+REPLACE .agents/skills/the-way-maintain-coding-guidelines/SKILL.md
+
+KEEP AGENTS.md
+KEEP .gitignore
+KEEP CLAUDE.md
+Preview only. Run again with --apply to confirm and write.
