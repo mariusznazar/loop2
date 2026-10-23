@@ -33,6 +33,9 @@ export function createTerrainPanel(): TerrainPanel {
   element.className = "terrain-panel";
   const drawing = document.createElementNS(SVG_NS, "svg");
   drawing.classList.add("terrain-drawing");
+  // The line around the hovered tile; drawn last, so no neighbour or outline covers it.
+  const hoverLine = svgElement("polygon", { class: "outline link-highlight" });
+  let tilePoints = new Map<string, string>();
   let hovered: string | null = null;
   const list = createTileListView((key) => setHovered(key));
   element.append(drawing, list.element);
@@ -59,6 +62,13 @@ export function createTerrainPanel(): TerrainPanel {
         marked.getAttribute("data-tile") === hovered,
       );
     }
+    const points = hovered === null ? undefined : tilePoints.get(hovered);
+    if (points === undefined) {
+      hoverLine.remove();
+      return;
+    }
+    hoverLine.setAttribute("points", points);
+    drawing.append(hoverLine);
   }
 
   function drawPicture(picture: TerrainPicture): void {
@@ -67,6 +77,9 @@ export function createTerrainPanel(): TerrainPanel {
     drawing.setAttribute("width", String(width));
     drawing.setAttribute("height", String(height));
     drawing.setAttribute("viewBox", `${-MARGIN} ${-MARGIN} ${width} ${height}`);
+    tilePoints = new Map(
+      picture.tiles.map((tile) => [tileKey(tile), tile.points]),
+    );
     const tiles = picture.tiles.map((tile) => {
       const group = svgElement("g", {
         "data-tile": tileKey(tile),
