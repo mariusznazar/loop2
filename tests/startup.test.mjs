@@ -4,48 +4,6 @@ import { createServer } from "node:net";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-test("exits with an error instead of reporting ready when port 3000 is occupied", async () => {
-  const blocker = createServer();
-  let ownsBlocker = false;
-  await new Promise((resolve, reject) => {
-    blocker.once("error", (error) => {
-      if (error.code === "EADDRINUSE") resolve();
-      else reject(error);
-    });
-    blocker.listen(3000, "127.0.0.1", () => {
-      ownsBlocker = true;
-      resolve();
-    });
-  });
-
-  try {
-    const entryPoint = fileURLToPath(
-      new URL("../dist/server/main.js", import.meta.url),
-    );
-    const result = spawnSync(process.execPath, [entryPoint], {
-      encoding: "utf8",
-      timeout: 5000,
-    });
-
-    assert.equal(result.error, undefined, result.error?.message);
-    assert.notEqual(
-      result.status,
-      0,
-      "server process must report a startup failure",
-    );
-    assert.match(
-      result.stderr,
-      /127\.0\.0\.1:3000.*EADDRINUSE|EADDRINUSE.*127\.0\.0\.1:3000/,
-    );
-    assert.doesNotMatch(result.stdout, /Loop: http:\/\/127\.0\.0\.1:3000/);
-  } finally {
-    if (ownsBlocker)
-      await new Promise((resolve, reject) =>
-        blocker.close((error) => (error ? reject(error) : resolve())),
-      );
-  }
-});
-
 const entryPoint = fileURLToPath(
   new URL("../dist/server/main.js", import.meta.url),
 );
@@ -57,6 +15,44 @@ async function freePort() {
   await new Promise((resolve) => probe.close(resolve));
   return port;
 }
+
+test("exits with an error instead of reporting ready when its listening port is occupied", async () => {
+  const blocker = createServer();
+  await new Promise((resolve, reject) => {
+    blocker.once("error", reject);
+    blocker.listen(0, "127.0.0.1", resolve);
+  });
+  const { port } = blocker.address();
+
+  try {
+    const result = spawnSync(process.execPath, [entryPoint], {
+      encoding: "utf8",
+      timeout: 5000,
+      env: {
+        ...process.env,
+        LOOP2_LISTEN_HOST: "127.0.0.1",
+        LOOP2_LISTEN_PORT: String(port),
+      },
+    });
+
+    assert.equal(result.error, undefined, result.error?.message);
+    assert.notEqual(
+      result.status,
+      0,
+      "server process must report a startup failure",
+    );
+    assert.match(
+      result.stderr,
+      new RegExp(String.raw`127\.0\.0\.1:${port}(?!\d)`),
+    );
+    assert.match(result.stderr, /EADDRINUSE/);
+    assert.doesNotMatch(result.stdout, /Loop: http:/);
+  } finally {
+    await new Promise((resolve, reject) =>
+      blocker.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
 
 test("listens on the address given by LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT", async () => {
   const port = await freePort();

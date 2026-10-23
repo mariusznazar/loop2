@@ -98,7 +98,7 @@ When the account and save server's listening address is already in use, the serv
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** recovered from code — src/server/main.ts, the server's `error` handler, which prints the failure and sets exit code 1, while the readiness line is printed only on `listening`; tests/startup.test.mjs, the test "exits with an error instead of reporting ready when port 3000 is occupied"
+- **Derives from:** recovered from code — src/server/main.ts, the server's `error` handler, which prints the failure and sets exit code 1, while the readiness line is printed only on `listening`; tests/startup.test.mjs, the test "exits with an error instead of reporting ready when its listening port is occupied"
 - **Part:** account-server · build-tools
 - **Violated:** no
 
@@ -485,6 +485,16 @@ Nothing `npm run build` writes holds the kitchen-sink page of the browser view o
 - **Rests on:** none
 - **Derives from:** D-45
 - **Part:** build-tools · browser-view
+- **Violated:** no
+
+## account-server-default-address
+
+The account and save server started with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set either prints its readiness line `Loop: http://127.0.0.1:3000` or exits with a non-zero code and a message naming `127.0.0.1:3000` as an address already in use.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** recovered from code — src/server/main.ts, the defaults `127.0.0.1` of `LOOP2_LISTEN_HOST` and `3000` of `LOOP2_LISTEN_PORT`, the readiness line printed on `listening`, and the `error` handler, which prints the failure with the address and sets exit code 1
+- **Part:** account-server · build-tools
 - **Violated:** no
 
 ## Withdrawn identifiers

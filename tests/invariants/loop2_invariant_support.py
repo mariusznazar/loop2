@@ -1,5 +1,5 @@
 """Shared support for loop2's invariant checks: the repository root, the product's own npm
-commands run in a temporary copy of the working tree, the built server started on its port, and
+commands run in a temporary copy of the working tree, the built server started on a free port, and
 the deployment files the repository holds, and readers that take those files apart.
 
 Nothing here computes a value a check expects; the checks write their expected values out as
@@ -23,12 +23,13 @@ import time
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-# The address and port README.md gives for the started server.
+# The address the started server listens on. Its port is not fixed: each start takes a port the
+# system names free at that moment (D-49).
 HOST = "127.0.0.1"
-PORT = 3000
 
 COMMAND_TIMEOUT = 300  # seconds for one npm command (ci, build, typecheck)
-START_TIMEOUT = 30     # seconds for the started server to accept a connection
+START_TIMEOUT = 30     # seconds for the started server to report ready
+START_ATTEMPTS = 2     # a start whose free port another process took in the meantime runs once more
 HTTP_TIMEOUT = 10      # seconds for one HTTP request
 
 # Paths of the working tree left out of a copy: the-way's own checkout and run records.
@@ -226,7 +227,15 @@ def built_copy():
 # --- the started server ---------------------------------------------------------------------
 
 
-def port_in_use(host=HOST, port=PORT):
+def free_port(host=HOST):
+    """A TCP port on host that the system names free now. The port is released before it is
+    returned, so another process may take it before the server listens on it."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.bind((host, 0))
+        return probe.getsockname()[1]
+
+
+def port_in_use(port, host=HOST):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.settimeout(1)
         return probe.connect_ex((host, port)) == 0
@@ -239,49 +248,77 @@ def _server_logs(stdout_path, stderr_path):
 
 
 class Server:
-    """Start a built copy through `npm start` in its root. stdout and stderr go to files;
-    stop() kills the whole process tree."""
+    """Start a built copy through `npm start` in its root, on HOST and a port the system names
+    free, given to it in LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT; `port` is that port. The server
+    is ready when it prints its readiness line for that address. A start that exits naming its
+    port as in use (EADDRINUSE), because another process took the port after the system named it
+    free, runs once more on another free port. stdout and stderr go to files; stop() kills the
+    whole process tree."""
 
     def __init__(self, copy, extra_env=None):
-        if port_in_use():
-            raise AssertionError(
-                f"port {PORT} on {HOST} is already in use before the server starts; "
-                "stop whatever holds it and run again")
         self.copy = copy
-        env = dict(os.environ)
-        env.update(extra_env or {})
         self.log_dir = tempfile.mkdtemp(prefix="loop2-server-log-")
         self.stdout_path = os.path.join(self.log_dir, "stdout.txt")
         self.stderr_path = os.path.join(self.log_dir, "stderr.txt")
         self._logs = ExitStack()
         self.process = None
+        self.port = None
         try:
             self._stdout, self._stderr = self._logs.enter_context(
                 _server_logs(self.stdout_path, self.stderr_path))
-            self.process = popen([npm(), "start"], copy.path, env=env,
-                                 stdout=self._stdout, stderr=self._stderr)
-            deadline = time.monotonic() + START_TIMEOUT
-            while True:
-                if self.process.poll() is not None:
-                    raise AssertionError(
-                        f"`npm start` exited {self.process.returncode} before accepting "
-                        f"connections:\n{self.output()}")
-                if port_in_use():
+            for attempt in range(1, START_ATTEMPTS + 1):
+                if self._start(extra_env):
                     break
-                if time.monotonic() > deadline:
+                if attempt == START_ATTEMPTS:
                     raise AssertionError(
-                        f"`npm start` accepted no connection on {HOST}:{PORT} within "
-                        f"{START_TIMEOUT} s:\n{self.output()}")
-                time.sleep(0.2)
+                        f"`npm start` found its free port taken in each of {START_ATTEMPTS} "
+                        f"attempts:\n{self.output()}")
+                kill_tree(self.process)
+                self.process = None
         except BaseException:
             self.stop(report_held_port=False)
             raise
+
+    def _start(self, extra_env):
+        """Start `npm start` on a free port and wait until it reports ready (True) or exits
+        naming its port as in use (False); any other exit, or no readiness line within
+        START_TIMEOUT, raises AssertionError."""
+        self.port = free_port()
+        env = dict(os.environ)
+        env.update(extra_env or {})
+        env.update({"LOOP2_LISTEN_HOST": HOST, "LOOP2_LISTEN_PORT": str(self.port)})
+        address = re.escape(f"{HOST}:{self.port}")
+        ready = re.compile(r"(?m)^Loop: http://" + address + r"\s*$")
+        occupied = re.compile(r"EADDRINUSE.*" + address + r"(?!\d)")
+        before = len(self.stderr())
+        self.process = popen([npm(), "start"], self.copy.path, env=env,
+                             stdout=self._stdout, stderr=self._stderr)
+        deadline = time.monotonic() + START_TIMEOUT
+        while True:
+            exited = self.process.poll() is not None
+            if ready.search(self.stdout()):
+                return True
+            if exited:
+                if occupied.search(self.stderr()[before:]):
+                    return False
+                raise AssertionError(
+                    f"`npm start` exited {self.process.returncode} before reporting ready on "
+                    f"{HOST}:{self.port}:\n{self.output()}")
+            if time.monotonic() > deadline:
+                raise AssertionError(
+                    f"`npm start` reported no readiness on {HOST}:{self.port} within "
+                    f"{START_TIMEOUT} s:\n{self.output()}")
+            time.sleep(0.2)
 
     def output(self):
         self._stdout.flush()
         self._stderr.flush()
         return ("--- stdout ---\n" + read_text(self.stdout_path)
                 + "\n--- stderr ---\n" + read_text(self.stderr_path))
+
+    def stdout(self):
+        self._stdout.flush()
+        return read_text(self.stdout_path)
 
     def stderr(self):
         self._stderr.flush()
@@ -295,23 +332,23 @@ class Server:
             self._logs.close()
             shutil.rmtree(self.log_dir, ignore_errors=True)
             deadline = time.monotonic() + 15
-            while port_in_use() and time.monotonic() < deadline:
+            while self.port is not None and port_in_use(self.port) and \
+                    time.monotonic() < deadline:
                 time.sleep(0.2)
-        if report_held_port and port_in_use():
-            raise AssertionError(f"port {PORT} on {HOST} is still held 15 s after the server "
-                                 "and everything it started were killed")
+        if report_held_port and self.port is not None and port_in_use(self.port):
+            raise AssertionError(f"port {self.port} on {HOST} is still held 15 s after the "
+                                 "server and everything it started were killed")
 
-
-def request(method, path, headers=None, body=None):
-    """(status, headers as a lower-cased dict, body bytes) of one request to the server."""
-    connection = http.client.HTTPConnection(HOST, PORT, timeout=HTTP_TIMEOUT)
-    try:
-        connection.request(method, path, body=body, headers=headers or {})
-        response = connection.getresponse()
-        data = response.read()
-        return response.status, {k.lower(): v for k, v in response.getheaders()}, data
-    finally:
-        connection.close()
+    def request(self, method, path, headers=None, body=None):
+        """(status, headers as a lower-cased dict, body bytes) of one request to the server."""
+        connection = http.client.HTTPConnection(HOST, self.port, timeout=HTTP_TIMEOUT)
+        try:
+            connection.request(method, path, body=body, headers=headers or {})
+            response = connection.getresponse()
+            data = response.read()
+            return response.status, {k.lower(): v for k, v in response.getheaders()}, data
+        finally:
+            connection.close()
 
 
 # --- deployment files -----------------------------------------------------------------------

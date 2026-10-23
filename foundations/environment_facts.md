@@ -175,6 +175,12 @@ CSS Cascading and Inheritance Level 5 defines five CSS-wide property values, the
 
 - **Source:** https://www.w3.org/TR/2022/CR-css-cascade-5-20220113/ § 7.3 Explicit Defaulting — "Several CSS-wide property values are defined below; declaring a property to have these values explicitly specifies a particular defaulting behavior. As specified in CSS Values and Units [css-values-3], all CSS properties can accept these values." · § 7.3.1 — "Resetting a Property: the initial keyword" · § 7.3.2 — "Explicit Inheritance: the inherit keyword" · § 7.3.3 — "Erasing All Declarations: the unset keyword" · § 7.3.4 — "Rolling Back Cascade Origins: the revert keyword" · § 7.3.5 — "Rolling Back Cascade Layers: the revert-layer keyword"; read 2026-10-23
 
+## node-listen-port-zero
+
+A Node.js `net` server told to listen on port 0 gets from the operating system an arbitrary unused port.
+
+- **Source:** https://nodejs.org/download/release/v24.17.0/docs/api/net.html § Class: net.Server, server.listen([port[, host[, backlog]]][, callback]) — "If port is omitted or is 0, the operating system will assign an arbitrary unused port, which can be retrieved by using server.address().port after the 'listening' event has been emitted."; read 2026-10-23
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

@@ -7,8 +7,9 @@ image's command, its one Compose service and the processes in the running contai
 by `test_loop2_one_serving_process_container.py`.
 
 The product is built by `npm run build` in a temporary copy of the working tree and started there
-by `npm start` on 127.0.0.1:3000, as README.md gives them; the real tree is never written. The
-server runs with the debug output of Express 5's router switched on (`DEBUG=router`).
+by `npm start`, as README.md gives them, on 127.0.0.1 and a port the system names free, given to it
+in `LOOP2_LISTEN_PORT`; the real tree is never written. The server runs with the debug output of
+Express 5's router switched on (`DEBUG=router`).
 
 Reading of the sentence:
 - the built game: every file `npm run build` places in `dist/public` (what the build produces for
@@ -17,9 +18,10 @@ Reading of the sentence:
 - `/api/` requests: with no account route yet, requests to paths below `/api/` made up so that no
   route can mean them. They are served when the server answers them with an HTTP response; what
   that response must be is loop2-api-error-route's, and is not checked here;
-- one process: among the processes `npm start` starts, exactly one listens on TCP port 3000, no
-  process of that tree listens on any other TCP port, and the listening process has started no
-  process of its own — so no second process can take part of the requests behind it;
+- one process: among the processes `npm start` starts, exactly one listens on the TCP port the
+  check gave the server, no process of that tree listens on any other TCP port, and the listening
+  process has started no process of its own — so no second process can take part of the requests
+  behind it;
 - Express 5: the copy's installed `express` is of major version 5, and Express 5's router (the
   `router` package, debug namespace `router`) logs `dispatching <METHOD> <path>` for every
   request above — the game's files and the `/api/` paths alike. Express 4 logs under
@@ -32,8 +34,7 @@ errors (loop2-api-error-route).
 
 Platform: on Windows the processes and listeners are read through PowerShell
 (`Get-CimInstance Win32_Process`, `Get-NetTCPConnection`); elsewhere through `ps` and `lsof`.
-Another agent may hold port 3000 for a while: the check waits for the port to be free, up to
-PORT_WAIT seconds, before it starts the server, and never touches a process it did not start.
+The check never touches a process it did not start.
 """
 
 import json
@@ -54,7 +55,6 @@ UNMATCHED_API_PATHS = (
 BROWSER_ACCEPT = {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
 DEBUG_ENV = {"DEBUG": "router", "DEBUG_COLORS": "no"}
 DISPATCH_WAIT = 5   # seconds for the debug line of a request to reach the log
-PORT_WAIT = 300     # seconds to wait for a port held by a process this check did not start
 
 
 # --- processes and listeners ---------------------------------------------------------------
@@ -140,12 +140,6 @@ def tcp_listeners():
     return listeners
 
 
-def wait_for_free_port():
-    deadline = time.monotonic() + PORT_WAIT
-    while support.port_in_use() and time.monotonic() < deadline:
-        time.sleep(2)
-
-
 # --- the check -------------------------------------------------------------------------------
 
 
@@ -167,17 +161,16 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
     def setUpClass(cls):
         cls.copy = support.built_copy()
         cls.game = built_game_files(cls.copy)
-        wait_for_free_port()
         cls.server = support.Server(cls.copy, extra_env=DEBUG_ENV)
         cls.addClassCleanup(cls.server.stop)
         # Every request the check makes, answered before the processes are read.
         cls.answers = {}
         for relative in cls.game:
-            cls.answers[url_path(relative)] = support.request("GET", url_path(relative),
-                                                              BROWSER_ACCEPT)
-        cls.answers["/"] = support.request("GET", "/", BROWSER_ACCEPT)
+            cls.answers[url_path(relative)] = cls.server.request("GET", url_path(relative),
+                                                                 BROWSER_ACCEPT)
+        cls.answers["/"] = cls.server.request("GET", "/", BROWSER_ACCEPT)
         for path in UNMATCHED_API_PATHS:
-            cls.answers[path] = support.request("GET", path, BROWSER_ACCEPT)
+            cls.answers[path] = cls.server.request("GET", path, BROWSER_ACCEPT)
         cls.table = _processes()
         cls.tree = descendants(cls.table, cls.server.process.pid, cls.server.process.loop2_started)
         cls.tree_and_root = [cls.server.process.pid] + cls.tree
@@ -214,12 +207,12 @@ class OneExpressProcessServesGameAndApi(unittest.TestCase):
         # invariant: loop2-one-serving-process
         tree = set(self.tree_and_root)
         on_port = sorted({pid for pid, _address, port in self.listeners
-                          if pid in tree and port == support.PORT})
+                          if pid in tree and port == self.server.port})
         self.assertEqual(len(on_port), 1,
                          f"processes of the tree `npm start` started that listen on port "
-                         f"{support.PORT}: {self.describe(on_port)}")
+                         f"{self.server.port}: {self.describe(on_port)}")
         elsewhere = sorted({(pid, address, port) for pid, address, port in self.listeners
-                            if pid in tree and port != support.PORT})
+                            if pid in tree and port != self.server.port})
         self.assertEqual(elsewhere, [], "processes of the started tree listen on other ports, "
                                         "where a second serving process could stand")
         listener = on_port[0]
