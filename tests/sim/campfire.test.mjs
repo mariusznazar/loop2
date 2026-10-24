@@ -13,8 +13,8 @@ import { newGame, send, setProgram } from "../../dist/public/sim/game.js";
 import { actionFeasible } from "../../dist/public/sim/program.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 
-// The campfire, the burning stick and eating (task, To do 7–12; D-26, D-56, D-61, D-62, D-64,
-// D-65). Every number below is written out by hand from the task: crafting lasts 20 game minutes
+// The campfire, the burning stick and eating (task, To do 7–12; D-26, D-63, D-68, D-69, D-71,
+// D-72). Every number below is written out by hand from the task: crafting lasts 20 game minutes
 // and uses 6 sticks, lighting a campfire 5 minutes and 2 sticks and gives it 60 minutes of
 // burning, lighting a stick 5 minutes and the stick, which burns 3 minutes, feeding 5 minutes and
 // one stick, which adds 20 minutes, eating 5 minutes and one berry, which gives 25 satiety, not

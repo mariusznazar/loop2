@@ -291,7 +291,7 @@ header h1 {
   color: var(--text-strong);
 }
 
-/* The state of the tile's campfire and burning items: content to read, after the stock (D-63). */
+/* The state of the tile's campfire and burning items: content to read, after the stock (D-70). */
 .tile-list tbody td.tile-fire {
   text-align: left;
   color: var(--text);

@@ -5,7 +5,7 @@ import { createButton } from "./controls/button.js";
 
 const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
 const PAUSED_SUFFIX = " (pauza)";
-/** What the status row says of a map run ended in death, by its cause (D-54, D-55). */
+/** What the status row says of a map run ended in death, by its cause (D-61, D-62). */
 const DEATH_TEXTS: Record<DeathCause, string> = {
   cold: "Mag zamarzł",
   hunger: "Mag umarł z głodu",
@@ -36,7 +36,7 @@ export function statusText(run: MapRun, paused: boolean): string {
 
 /**
  * The pause button's text: „Pauza” for a running map run, „Wznów” for a paused one, and null after
- * the character's death, when time stands still and the button is gone (D-55). Pure.
+ * the character's death, when time stands still and the button is gone (D-62). Pure.
  */
 export function pauseLabel(state: GameState): string | null {
   if (state.run?.death) return null;

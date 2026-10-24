@@ -13,7 +13,7 @@ import { TRAITS } from "../../dist/public/sim/data/traits.js";
 import { newGame, restart, send } from "../../dist/public/sim/game.js";
 import { newMapRun } from "../../dist/public/sim/run.js";
 
-// The numbers below are written out by hand: a new character carries carrying capacity 15 (D-57),
+// The numbers below are written out by hand: a new character carries carrying capacity 15 (D-64),
 // and the backpack's cap counts the pieces of all items together.
 
 const [mapId, forest] = Object.entries(MAPS)[0];

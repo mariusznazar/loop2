@@ -126,10 +126,10 @@ function startActivity(
 type Gathering = Pick<MapRun, "tiles" | "character" | "gatherRandom">;
 
 /**
- * The end of a gathering of `resource`, step 5 of D-64: one draw from the gathering generator. A
+ * The end of a gathering of `resource`, step 5 of D-71: one draw from the gathering generator. A
  * hit, with the data's chance, moves one piece from the character's tile into the backpack as the
  * item of that resource — where the tile still holds a piece and the backpack has room, so never
- * more than lies on the tile —; a miss changes neither (D-59). A tile gathered to 0 pieces keeps
+ * more than lies on the tile —; a miss changes neither (D-66). A tile gathered to 0 pieces keeps
  * the key of its resource.
  */
 function finishGathering(state: Gathering, resource: ResourceId): Gathering {
@@ -172,12 +172,12 @@ type Landing = Pick<
 >;
 
 /**
- * The end of crafting, lighting, feeding or eating, step 5 of D-64: its effect takes hold and the
+ * The end of crafting, lighting, feeding or eating, step 5 of D-71: its effect takes hold and the
  * pieces it uses leave the backpack, together. The pieces are those the data marks for the use,
  * chosen by `itemFor`. Crafting puts an unlit campfire on the character's tile; lighting gives the
  * campfire there its minutes of burning; lighting an item puts one piece of it burning on the
  * tile; feeding adds the fuel's minutes to the campfire there, whatever its minutes left, 0
- * included (D-62, D-64); eating adds the food's satiety, not above the starting satiety (D-52).
+ * included (D-69, D-71); eating adds the food's satiety, not above the starting satiety (D-59).
  * Where what the action needs is no longer there, nothing changes.
  */
 function finishUse(state: Landing, action: Action): Landing {
@@ -299,7 +299,7 @@ export function newMapRun(
 }
 
 /**
- * One game minute, in the order of D-64. First the body, warmed by what burns on its tile; where
+ * One game minute, in the order of D-71. First the body, warmed by what burns on its tile; where
  * the character dies, the step stops there: what burns and the tiles stay as they stood, the
  * current activity too, giving no finish, and no program rule is picked. Otherwise what burns
  * loses a minute and the tiles renew their stock; then, when the current activity ends in this

@@ -957,7 +957,7 @@ Every start of the loop2 server process by a loop2 test on the machine that runs
 *Rationale:* Runs of the tests side by side on one machine, or a run beside another process holding a fixed port, collide on that port, and the run that loses passes only when it is repeated; a port the system names free at each start gives every start a port of its own. A short window remains between the system naming the port free and the server listening on it, in which another process may take the port; starting once more on another free port eases it. The single test of the default address keeps the address a person starts the server on under a test, and it passes whether or not that address is free.
 *Rejected:* a port read from a variable for the tests, 3000 when the variable is unset — runs side by side still collide unless someone sets the variable in one of them; a free port that a variable may override — adds a setting no need has been found for; no test of the default address — a change of the address a person starts the server on would pass unnoticed.
 
-### D-50 — In what unit does a character's warmth stand?
+### D-57 — In what unit does a character's warmth stand?
 
 In the MVP a character's warmth is its body temperature in degrees Celsius, counted with tenths.
 
@@ -972,7 +972,7 @@ In the MVP a character's warmth is its body temperature in degrees Celsius, coun
 *Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from; they serve the MVP and may change after it.
 *Rejected:* warmth on a scale of its own, as points or a percentage — the ambient temperature of a game map would have to be converted into it; whole degrees — a condition on warmth could not tell apart states the body passes through within one degree.
 
-### D-51 — What cools a character's body?
+### D-58 — What cools a character's body?
 
 In the MVP a character's body cools in each game minute by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data.
 
@@ -987,7 +987,7 @@ In the MVP a character's body cools in each game minute by more, the further the
 *Rationale:* The cold of a game map is among what makes it hard, so a colder game map is made by a change of its own data, as D-18 sets for the game's content, and one rule of cooling makes a mild game map gentle and a cold one harsh. The list of what a game map's data holds in D-24 does not name the ambient temperature, and does not rule it out.
 *Rejected:* one ambient temperature in the game's balance for every game map — a colder game map would take a change beyond its own data.
 
-### D-52 — How far do warming and eating raise a character's warmth and satiety?
+### D-59 — How far do warming and eating raise a character's warmth and satiety?
 
 In the MVP warming raises a character's body temperature up to its starting body temperature, and eating raises its satiety up to its starting satiety.
 
@@ -1002,7 +1002,7 @@ In the MVP warming raises a character's body temperature up to its starting body
 *Rationale:* Warmth and satiety are needs that fall with time, and their starting values are the state of a character in want of nothing. A surplus stored above them would let a program stay away from a campfire and from berries for longer than the game map's numbers say, which decides how hard Las is to pass.
 *Rejected:* warming and eating above the starting value, kept as a reserve — a program could hold out far longer away from a campfire and berries, and Las would be easier than its numbers say.
 
-### D-53 — When does a character lose and regain health?
+### D-60 — When does a character lose and regain health?
 
 In the MVP a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health.
 
@@ -1017,7 +1017,7 @@ In the MVP a character loses health in each game minute in which it is chilled �
 *Rationale:* Cold and hunger are two wants, so a program that neglects both pays for both, and health that comes back by itself in a game minute free of both lets a program recover by tending to the character's needs. A streak of game minutes free of a loss to cold or hunger, and the wounds of combat, build on this rule.
 *Rejected:* cold and hunger counted once together — neglecting both would cost no more than neglecting one; health that does not come back by itself — every loss would stay until the map run ends.
 
-### D-54 — When does a character die, and of what?
+### D-61 — When does a character die, and of what?
 
 In the MVP a character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise.
 
@@ -1032,7 +1032,7 @@ In the MVP a character dies in the game minute in which its health reaches zero,
 *Rationale:* Health at zero ends the map run in the game minute it happens, whatever the character is doing, so the state the player reads after death is the state of that minute. The character's action in progress lasts its full duration while the map run goes on; death ends the map run, and the character's action with it, as the player ending a map run does. A death names one cause, so the player reads one reason for it, and a death of another kind, such as of wounds, takes a cause of its own.
 *Rejected:* death waiting for the end of the character's action in progress — the character would go on acting with no health left, and the state shown would not be that of the moment of death.
 
-### D-55 — What does the screen show, and what can the player do, after a character's death?
+### D-62 — What does the screen show, and what can the player do, after a character's death?
 
 In the MVP, after a character's death the screen stays on the state of the game minute of death and time stands still, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character.
 
@@ -1047,7 +1047,7 @@ In the MVP, after a character's death the screen stays on the state of the game 
 *Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen from which the player sends the character, whatever that screen becomes.
 *Rejected:* going back to sending the character at once after death — the player loses the state that explains the death.
 
-### D-56 — How does a character light a campfire or a stick?
+### D-63 — How does a character light a campfire or a stick?
 
 In the MVP a character lights a campfire and a stick with „Zapal”, an ordinary action of the character whose price is the sticks it uses, until task 9 of the MVP plan, plomyk, turns lighting into the mage's spell Płomyk, paid with nature energy.
 
@@ -1062,7 +1062,7 @@ In the MVP a character lights a campfire and a stick with „Zapal”, an ordina
 *Rationale:* The MVP's plan gives lighting a fire to this stage of the game, before the mage has nature energy, while the game's concept makes lighting a spell paid with that energy; an ordinary action of the character paid with sticks lets a program light a fire now and leaves one action for the spell to take over. Accepted with it: until the spell exists, lighting costs no more than sticks, so Las is easier than it is meant to be, and the spell changes how an existing action works, which asks again whether a well-built program survives.
 *Rejected:* lighting as the spell Płomyk from the start, with a price in nature energy — the game has no nature energy yet.
 
-### D-57 — What does the backpack's cap count, and what sets its height?
+### D-64 — What does the backpack's cap count, and what sets its height?
 
 In the MVP the backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity.
 
@@ -1077,7 +1077,7 @@ In the MVP the backpack's cap counts the pieces of all items together, and its h
 *Rationale:* The MVP caps the backpack at a count of pieces taken together. Carrying capacity belongs to the character, apart from a stricter cap a game map may add, and it acts beyond one action of the character — on gathering and on packing for a trip — so it describes the character. The team's chest takes the same rule of counting.
 *Rejected:* a cap counted for each kind of item, or by weight — a rule of capacity other than the one the team's chest takes; the cap as a number of the game map or of the map run — the character's capacity would change with the place it goes to.
 
-### D-58 — What does a full backpack do to gathering?
+### D-65 — What does a full backpack do to gathering?
 
 In the MVP a character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then.
 
@@ -1092,7 +1092,7 @@ In the MVP a character carries out a gathering while its backpack holds fewer pi
 *Rationale:* A gathering that could bring nothing is no action of the character to carry out, so the program moves on to a program rule that does something, as a group of program rules passes on to the next.
 *Rejected:* a gathering carried out with a full backpack, its piece lost — the character would spend the gathering's time for nothing and the program would hold on to the program rule.
 
-### D-59 — What does a missed gathering do?
+### D-66 — What does a missed gathering do?
 
 In the MVP a gathering may miss, and a missed gathering leaves the tile's stock as it was and puts no piece into the backpack.
 
@@ -1107,7 +1107,7 @@ In the MVP a gathering may miss, and a missed gathering leaves the tile's stock 
 *Rationale:* A miss costs the character the time of the gathering, and the stock stays for the next try, so luck changes how long gathering takes rather than how much a tile gives.
 *Rejected:* a miss that uses up a piece of the tile's stock — luck would drain tiles, and a gathering that brought nothing would still have changed the world.
 
-### D-60 — How does a tile's stock renew?
+### D-67 — How does a tile's stock renew?
 
 In the MVP a tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece, given in the game map's data and counted from the map run's game minute zero, up to its starting stock.
 
@@ -1122,7 +1122,7 @@ In the MVP a tile holding fewer pieces of a resource than its starting stock gai
 *Rationale:* A gathered tile recovers at the pace its game map sets, so gathering is a choice of where and when, and the bound keeps a tile from growing past what the layout gave it, also over the hours of a player's absence that the game counts later. Counted from the start of the map run, renewal needs no record of its own for each tile, and the pieces a span of game minutes brings follow from the span by arithmetic, as counting the hours of a player's absence needs. Accepted with it: a tile that falls below its starting stock shortly before a multiple of the time to renew gains its piece back sooner than that time.
 *Rejected:* renewal with no upper bound — a tile left alone would grow on and on, also over the hours of a player's absence; a clock for each tile and resource, started by its first missing piece — closer to the time passed since the loss, but a record for each tile and resource in the map run's state.
 
-### D-61 — What becomes of a campfire that burns out?
+### D-68 — What becomes of a campfire that burns out?
 
 In the MVP a campfire that burns out stays on its tile, extinguished, and can be lit again.
 
@@ -1137,7 +1137,7 @@ In the MVP a campfire that burns out stays on its tile, extinguished, and can be
 *Rationale:* A campfire built from sticks stays a place the character can return to and light again for less than building anew, and a program can lead the character back to it.
 *Rejected:* a campfire that disappears when it burns out — every fire would have to be built again.
 
-### D-62 — How much does feeding add to a burning campfire?
+### D-69 — How much does feeding add to a burning campfire?
 
 In the MVP each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning to those the campfire has left then, however many those are, zero included, so a campfire that burnt out during the feeding burns again.
 
@@ -1152,7 +1152,7 @@ In the MVP each feeding of a campfire burning at the feeding's start adds, at th
 *Rationale:* Feeding is paid with fuel piece by piece, so a program that gathers enough can keep its fire burning for hours ahead. A feeding takes effect at its end, as every action of the character does, and lands on the campfire it was started at, so a program rule that feeds a campfire with fewer minutes left than a feeding lasts feeds it. Accepted with it: a campfire that burns out during a feeding burns again for one piece of fuel, fewer sticks than „Zapal — ognisko” uses.
 *Rejected:* a ceiling on the minutes of burning — a program could not feed its fire far ahead; a feeding that adds nothing where its campfire burnt out before the feeding's end — a program rule feeding a campfire with few minutes left would not feed it; the fuel taken and added at the feeding's start — the one action of the character whose effect would take hold at its start.
 
-### D-63 — How does the browser view show a campfire?
+### D-70 — How does the browser view show a campfire?
 
 In the MVP a campfire shows on the terrain panel's drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
 
@@ -1167,7 +1167,7 @@ In the MVP a campfire shows on the terrain panel's drawing of the game map as an
 *Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands. Accepted with it: the drawing alone does not tell a burning campfire from an extinguished one.
 *Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further.
 
-### D-64 — In what order does a game minute of a map run take effect?
+### D-71 — In what order does a game minute of a map run take effect?
 
 In the MVP, a game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and the program picks a program rule from what that minute has made.
 
@@ -1182,7 +1182,7 @@ In the MVP, a game minute of a map run takes effect in this order: first the cha
 *Rationale:* The world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so every effect of an action of the character acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel.
 *Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it.
 
-### D-65 — Where does a character craft a campfire and light a stick?
+### D-72 — Where does a character craft a campfire and light a stick?
 
 In the MVP a character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick.
 

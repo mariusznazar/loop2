@@ -174,7 +174,7 @@ test("the step target is outlined only while a move runs", () => {
   assert.ok(seenMove);
 });
 
-// The campfire on the drawing (task, To do 15; D-19, D-41, D-63). The program below, on a backpack
+// The campfire on the drawing (task, To do 15; D-19, D-41, D-70). The program below, on a backpack
 // of 9 sticks, explores the entrance (20 minutes, to minute 20), crafts a campfire there (20
 // minutes and 6 sticks, to minute 40), lights it (5 minutes and 2 sticks, to minute 45; it burns
 // 60 minutes, to minute 105) and lights a stick (5 minutes and the last stick, to minute 50; it

@@ -32,7 +32,7 @@ export function warmthAt(
 }
 
 /**
- * The world in game minute `minute`, steps 3–4 of D-64. What burns loses a minute: a campfire at
+ * The world in game minute `minute`, steps 3–4 of D-71. What burns loses a minute: a campfire at
  * 0 minutes is extinguished and stays on its tile, an item at 0 minutes is gone. Then, for each
  * resource of the map whose renewal time `minute` is a whole multiple of, every tile holding that
  * resource below the map's stock per tile gains one piece; a tile at 0 pieces keeps its resource.

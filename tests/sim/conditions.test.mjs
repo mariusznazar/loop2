@@ -13,7 +13,7 @@ import { conditionHolds } from "../../dist/public/sim/program.js";
 import { newMapRun } from "../../dist/public/sim/run.js";
 
 // The conditions on the body, the backpack and the campfire (task, To do 12–13; spec Decision 3;
-// D-26, D-50). Every number below is written out by hand from the spec's table: „Temperatura
+// D-26, D-57). Every number below is written out by hand from the spec's table: „Temperatura
 // poniżej” takes 30.0 to 37.0 °C in steps of 0.1, „Sytość poniżej” 0 to 100 %, „Zapas poniżej”
 // 0 to 50 pieces, „Zostało mniej niż — ognisko” 0 to 120 minutes and „Tu leży mniej niż” 0 to 50
 // pieces, each of these four in steps of 1; „Z dala od — ognisko” takes no number.

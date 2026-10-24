@@ -503,7 +503,7 @@ A map run advanced by a span of game minutes reaches the same game state, with t
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-04 · D-64
+- **Derives from:** D-04 · D-71
 - **Part:** simulation
 - **Violated:** no
 

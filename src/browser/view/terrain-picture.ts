@@ -30,7 +30,7 @@ export type PictureTile = {
   icons: PictureIcon[];
   /**
    * The icon of the campfire standing on the tile, burning or extinguished alike, or null: the
-   * drawing tells neither its state nor its minutes (D-19, D-63), and never dims it (D-41).
+   * drawing tells neither its state nor its minutes (D-19, D-70), and never dims it (D-41).
    */
   campfire: PictureIconPlace | null;
   outline: "character" | "stepTarget" | null;
@@ -96,7 +96,7 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
     const present = tile.revealed
       ? resourceOrder.filter((id) => Object.hasOwn(tile.stock, id))
       : [];
-    // A campfire stands only on a revealed tile (D-65); its icon follows the resources' icons.
+    // A campfire stands only on a revealed tile (D-72); its icon follows the resources' icons.
     const hasCampfire =
       tile.revealed && run.campfires.some((c) => sameHex(c.at, tile.at));
     const places = iconPlaces(

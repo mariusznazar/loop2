@@ -13,7 +13,7 @@ import { actionFeasible } from "../../dist/public/sim/program.js";
 import { streamState } from "../../dist/public/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 
-// „Zbierz — <zasób mapy>” (task, To do 5; D-25, D-57 to D-59, D-64). The numbers below are written
+// „Zbierz — <zasób mapy>” (task, To do 5; D-25, D-64 to D-66, D-71). The numbers below are written
 // out by hand: a gathering lasts 10 game minutes and succeeds in 7 tries of 10, the backpack holds
 // 15 pieces of all items together. The gathering's one draw is worked out here apart from the
 // simulation: one mulberry32 step over the map run's gathering state, written out below from the

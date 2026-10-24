@@ -27,7 +27,7 @@ function svgElement<K extends keyof SVGElementTagNameMap>(
  * The drawing is a picture, not a control: it has no click handling, and hovering is its only
  * interaction — a hovered tile highlights its row in the list and a hovered row its tile. The
  * hovered tile's key is the only state the view keeps, and it survives redraws. A campfire shows on
- * the drawing as its icon alone; its state and a burning stick stand in its tile's row (D-63).
+ * the drawing as its icon alone; its state and a burning stick stand in its tile's row (D-70).
  */
 export function createTerrainPanel(): TerrainPanel {
   const element = document.createElement("div");
@@ -99,7 +99,7 @@ export function createTerrainPanel(): TerrainPanel {
           }),
         );
       }
-      // Burning or extinguished, the campfire is still there: never dimmed (D-41, D-63).
+      // Burning or extinguished, the campfire is still there: never dimmed (D-41, D-70).
       if (tile.campfire) {
         group.append(
           svgElement("image", {

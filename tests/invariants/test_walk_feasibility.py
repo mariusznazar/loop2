@@ -35,7 +35,7 @@ stick, berry, moss and fiber, on the seeds of the real times T, T_OTHER and MORE
   GOING_FIRST(R) above, on the first of the seeds T, T_OTHER and MORE that holds each case, the
   state of the game minute before a free minute is changed before that minute passes. The free
   minute is no whole multiple of R's renewal time on Las (RENEW_MINUTES below), since in such a
-  minute the tiles renew their stock before the program picks (D-60, D-64) and a stock written
+  minute the tiles renew their stock before the program picks (D-67, D-71) and a stock written
   over to 0 would hold a piece again when the going is picked or passed over:
   - ZERO_ALL: the stock of R on every tile that holds R is set to 0, at a minute before a going
     was started — so no tile holds some, and the going must be passed over;
