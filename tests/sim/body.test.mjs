@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { bodyMinute } from "../../dist/public/sim/body.js";
 import {
   advanceMinutes,
+  createCharacter,
   end,
   newGame,
   passRealTime,
@@ -18,8 +18,9 @@ import {
 // 0.35 for chilled (below 35.0 °C) and 0.35 for starving (below 30), and rises by 0.05 otherwise.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
-const SENT = { mapId, archetypeId };
+// The first character a new game creates takes the id 1.
+const characterId = 1;
+const SENT = { mapId, characterId };
 const REAL_MS = 1760000000000;
 
 const ALWAYS = { kind: "always" };
@@ -37,7 +38,11 @@ const EXPLORING = { rules: [rule({ kind: "explore" })] };
 
 /** A game sent to Las with the program; the run stands at minute 0. */
 function sent(program = MIXED) {
-  return send(setProgram(newGame(), program).state, SENT, REAL_MS).state;
+  return send(
+    createCharacter(setProgram(newGame(), program).state, "Ala").state,
+    SENT,
+    REAL_MS,
+  ).state;
 }
 
 /** A game sent to Las whose body is replaced at minute 0 (explore runs until minute 20). */
@@ -265,4 +270,10 @@ test("restart and end take a map run ended in death as one in progress", () => {
   const ended = end(dead);
   assert.equal(ended.state.run, null);
   assert.deepEqual(ended.events, [{ kind: "mapRunEnded" }]);
+  // „Zakończ” after death leads to the headquarters (D-53, D-62): no map run, the team as it was,
+  // and the same character sent from there again.
+  assert.deepEqual(ended.state.team, dead.team);
+  const again = send(ended.state, SENT, REAL_MS + 1000).state;
+  assert.equal(again.run.character.id, characterId);
+  assert.equal(again.run.death, null);
 });

@@ -2,11 +2,11 @@
 // at death the minute and the cause, with no pause button (task ognisko-i-jedzenie, To do 3).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { RESOURCES } from "../../dist/public/sim/data/resources.js";
 import {
   advanceMinutes,
+  createCharacter,
   newGame,
   send,
   setPaused,
@@ -16,14 +16,15 @@ import { pauseLabel, statusText } from "../../dist/public/view/status-row.js";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
-  archetypeId: Object.keys(ARCHETYPES)[0],
+  // The first character a new game creates takes the id 1.
+  characterId: 1,
 };
 const ALWAYS = { kind: "always" };
 
 /** A game with a map run started by `send` under the given program rules. */
 function sent(rules) {
   const program = setProgram(newGame(), { rules }).state;
-  return send(program, SENT, 1760000000000).state;
+  return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
 }
 
 /** The same game with the map run's current activity replaced by a rule's action. */

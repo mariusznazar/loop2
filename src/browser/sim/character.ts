@@ -1,6 +1,6 @@
 import { ITEMS, type ItemId } from "./data/items.js";
 import { TRAITS } from "./data/traits.js";
-import type { Backpack, Character, Traits } from "./types.js";
+import type { Backpack, RunCharacter, Traits } from "./types.js";
 
 /** The traits of a new character, from the data; the one place traits are made. */
 export function newTraits(): Traits {
@@ -20,6 +20,6 @@ export function backpackCount(backpack: Backpack): number {
 }
 
 /** The backpack's cap: the character's carrying capacity. */
-export function backpackCap(character: Pick<Character, "traits">): number {
+export function backpackCap(character: Pick<RunCharacter, "traits">): number {
   return character.traits.carryingCapacity;
 }

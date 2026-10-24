@@ -15,7 +15,7 @@ function joined(body) {
 /** The character of a map run with the given backpack and carrying capacity. */
 function character(backpack, carryingCapacity = 15) {
   return {
-    archetypeId: "elementalMage",
+    id: 1,
     at: { q: 0, r: 0 },
     traits: { carryingCapacity },
     backpack: { stick: 0, berry: 0, moss: 0, fiber: 0, ...backpack },

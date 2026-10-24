@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
 import { ITEMS } from "../../dist/public/sim/data/items.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
@@ -17,7 +16,8 @@ import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 // one piece every 30 minutes and berries every 40, up to a stock of 12 sticks and 8 berries.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
+// The first character a new game creates takes the id 1.
+const characterId = 1;
 const entrance = offsetToAxial(forest.entrance.col, forest.entrance.row);
 const [stick, berry] = forest.resources.map((resource) => resource.id);
 const lightable = Object.keys(ITEMS).find((id) => ITEMS[id].lightable);
@@ -33,7 +33,7 @@ const body = (temperature, satiety, health) => ({
 
 /** A map run of Las at minute 0, with the given fields replaced. */
 function handMade(fields = {}) {
-  const { run } = newMapRun(forest, 3, IDLE, { mapId, archetypeId });
+  const { run } = newMapRun(forest, 3, IDLE, { mapId, characterId });
   return { ...run, ...fields };
 }
 
@@ -239,7 +239,7 @@ test("a resource whose map data gives no time to renew does not renew, while the
       current = stepMinute(current, noStickRenewal, IDLE).run;
     return current;
   };
-  let start = newMapRun(noStickRenewal, 3, IDLE, { mapId, archetypeId }).run;
+  let start = newMapRun(noStickRenewal, 3, IDLE, { mapId, characterId }).run;
   const { withStick, withBerry } = renewalTiles(start);
   const [below, empty] = withStick;
   start = setStock(start, below, stick, 10);

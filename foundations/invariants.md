@@ -497,6 +497,16 @@ The account and save server started with neither `LOOP2_LISTEN_HOST` nor `LOOP2_
 - **Part:** account-server · build-tools
 - **Violated:** no
 
+## character-team
+
+Every character belongs to exactly one team.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-50
+- **Part:** every
+- **Violated:** no
+
 ## minute-span-split
 
 A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the character's death.

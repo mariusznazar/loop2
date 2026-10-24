@@ -4,13 +4,14 @@ into calls of the simulation, up to and including the character's death.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send`,
-`advanceMinutes` and `passRealTime`, each returning `{state, events}`. After every call the script
-records the JSON of the whole game state and the events that call gave.
+script this check writes to a temporary directory: `newGame`, `setProgram`, `createCharacter`,
+`send`, `advanceMinutes` and `passRealTime`, each returning `{state, events}`. After every call
+the script records the JSON of the whole game state and the events that call gave.
 
 Reading of the sentence:
-- a span of game minutes: the SPAN minutes after a send of the map Las (`forest`) with the
-  archetype `elementalMage`, at the real time and with the program of a scenario below;
+- a span of game minutes: the SPAN minutes after a send to the map Las (`forest`) of a character
+  created in a new game, of the archetype `elementalMage`, at the real time and with the program
+  of a scenario below;
 - calls of the simulation: the calls that pass game minutes, `advanceMinutes(state, n)` and
   `passRealTime(state, ms)` (1000 ms of real time is one game minute);
 - the same game state at every game minute: one minute a call is the reference; for every other
@@ -55,7 +56,9 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
 
 # Real times, in ms, given to `send`; the seed derives from them.
 ALIVE_REAL_MS = 1760000800000
@@ -178,6 +181,7 @@ const out = {};
 for (const [key, { program, sent, realMs, calls }] of Object.entries(runs)) {
   let state = game.newGame();
   state = game.setProgram(state, program).state;
+  state = game.createCharacter(state, 'Ala').state;
   state = game.send(state, sent, realMs).state;
   const records = [{ state: JSON.parse(JSON.stringify(state)), events: [] }];
   for (const [name, arg] of calls) {

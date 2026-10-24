@@ -72,9 +72,12 @@ export type Body = {
 /** Pieces held of each item; an item not held stands at 0. */
 export type Backpack = Record<ItemId, number>;
 
-/** The character of a map run: who it is, where it stands, what it is and what it carries. */
-export type Character = {
-  archetypeId: ArchetypeId;
+/**
+ * The character of a map run: the team's character it is, by its id, where it stands, its own copy
+ * of the character's traits for the map run and what it carries.
+ */
+export type RunCharacter = {
+  id: CharacterId;
   at: Hex;
   traits: Traits;
   backpack: Backpack;
@@ -108,7 +111,7 @@ export type MapRun = {
   minute: number;
   /** Row-major: row 0 col 0, row 0 col 1, ... */
   tiles: Tile[];
-  character: Character;
+  character: RunCharacter;
   body: Body;
   /** None at start. */
   campfires: Campfire[];
@@ -124,9 +127,28 @@ export type MapRun = {
   death: Death | null;
 };
 
+/** Tells the characters of the team apart; two characters may share a name. */
+export type CharacterId = number;
+
+/** A character of the player's team. */
+export type Character = {
+  id: CharacterId;
+  name: string;
+  archetypeId: ArchetypeId;
+};
+
+/** The team's chest: pieces held, by resource; a key absent holds none. */
+export type Chest = { pieces: Partial<Record<ResourceId, number>> };
+
+/** The player's one team: its characters in the order they were created, and its chest. */
+export type Team = { characters: Character[]; chest: Chest };
+
 export type GameState = {
   program: Program;
-  /** null = sending screen. */
+  team: Team;
+  /** The id the next created character takes. */
+  nextCharacterId: CharacterId;
+  /** null = the headquarters. */
   run: MapRun | null;
   /** Seed of the latest send; INITIAL_SEED at start. */
   lastSeed: number;

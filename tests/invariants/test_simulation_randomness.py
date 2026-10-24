@@ -18,11 +18,11 @@ Covers:
 - dynamic: a Node script replaces `Math.random`, `crypto.getRandomValues`, `crypto.randomUUID`
   and the random functions of `node:crypto` with functions that count their calls and throw,
   first proving each replacement fires on a direct call, then imports every module under
-  `dist/public/sim/` and drives the public functions of `game.js`: a send, 240 game
-  minutes with a program whose only rule is to wander, then a program mixing every action of the
-  closed list (gathering, which draws from the gathering generator, included), a restart, an end
-  and a second send, no map run going past game minute 240; no input may raise and no replaced
-  function may be called;
+  `dist/public/sim/` and drives the public functions of `game.js`: a character created, a send,
+  240 game minutes with a program whose only rule is to wander, then a program mixing every action
+  of the closed list (gathering, which draws from the gathering generator, included), a restart,
+  an end and a second send, no map run going past game minute 240; no input may raise and no
+  replaced function may be called;
 - control: two sends with different real times give different wandering paths over the same 200
   game minutes, and a send repeated with the same real time gives the same path, so the draws
   depend on the seed's generator; likewise, with the program mixing every action, the gathering
@@ -263,13 +263,16 @@ MIXED = {"rules": [
     rule(ALWAYS, gather("berry")),
     rule(ALWAYS, {"kind": "wander"}),
 ]}
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 
 PATH_MINUTES = 200
 LONG_RUN = (
-    [["newGame"], ["setProgram", WANDER_ONLY], ["send", SENT, T]]
+    [["newGame"], CREATE, ["setProgram", WANDER_ONLY], ["send", SENT, T]]
     + [["advanceMinutes", 1]] * PATH_MINUTES
     + [["advanceMinutes", 30], ["passRealTime", 5000],
        ["setProgram", MIXED], ["advanceMinutes", 5],
@@ -280,7 +283,7 @@ LONG_RUN_MINUTES_BEFORE_RESTART = 240
 
 
 def path_steps(real_ms, program=WANDER_ONLY):
-    return ([["newGame"], ["setProgram", program], ["send", SENT, real_ms]]
+    return ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
             + [["advanceMinutes", 1]] * PATH_MINUTES)
 
 

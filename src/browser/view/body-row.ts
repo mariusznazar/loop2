@@ -1,7 +1,7 @@
 import { backpackCap, backpackCount } from "../sim/character.js";
 import { BALANCE } from "../sim/data/balance.js";
 import { ITEMS, type ItemId } from "../sim/data/items.js";
-import type { Body, Character, GameState } from "../sim/types.js";
+import type { Body, GameState, RunCharacter } from "../sim/types.js";
 
 const SEPARATOR = " · ";
 
@@ -40,7 +40,7 @@ export function bodyValues(body: Body): BodyValue[] {
  * The backpack's text: „Plecak {pieces}/{cap}”, then each item held with its pieces, in the
  * items' order in the data, names from the data. Pure.
  */
-export function backpackText(character: Character): string {
+export function backpackText(character: RunCharacter): string {
   const head = `Plecak ${backpackCount(character.backpack)}/${backpackCap(character)}`;
   const held = (Object.keys(ITEMS) as ItemId[])
     .filter((id) => character.backpack[id] > 0)

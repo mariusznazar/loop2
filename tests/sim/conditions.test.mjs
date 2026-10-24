@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { ITEMS } from "../../dist/public/sim/data/items.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
@@ -8,7 +7,12 @@ import {
   offsetToAxial,
   sameHex,
 } from "../../dist/public/sim/hex.js";
-import { newGame, send, setProgram } from "../../dist/public/sim/game.js";
+import {
+  createCharacter,
+  newGame,
+  send,
+  setProgram,
+} from "../../dist/public/sim/game.js";
 import { conditionHolds } from "../../dist/public/sim/program.js";
 import { newMapRun } from "../../dist/public/sim/run.js";
 
@@ -19,11 +23,12 @@ import { newMapRun } from "../../dist/public/sim/run.js";
 // pieces, each of these four in steps of 1; „Z dala od — ognisko” takes no number.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
+// The first character a new game creates takes the id 1.
+const characterId = 1;
 const [resource] = forest.resources.map((each) => each.id);
 const [firstItem, secondItem] = Object.keys(ITEMS);
 const entrance = offsetToAxial(forest.entrance.col, forest.entrance.row);
-const SENT = { mapId, archetypeId };
+const SENT = { mapId, characterId };
 const REAL_MS = 1760000000000;
 
 const ALWAYS = { kind: "always" };
@@ -38,7 +43,7 @@ const hereBelow = (value) => ({ kind: "hereBelow", resource, value });
 
 /** A map run of Las at minute 0 with no program rules, with the given fields replaced. */
 function handMade(fields = {}) {
-  const { run } = newMapRun(forest, 3, { rules: [] }, { mapId, archetypeId });
+  const { run } = newMapRun(forest, 3, { rules: [] }, { mapId, characterId });
   return { ...run, ...fields };
 }
 
@@ -183,14 +188,22 @@ test("„Z dala od — ognisko” holds where no campfire stands on the characte
 /** The program `setProgram` holds after taking `condition` in, on the sending screen and in a run. */
 function held(condition) {
   const program = { rules: [rule(condition, EXPLORE)] };
-  const running = send(newGame(), SENT, REAL_MS).state;
+  const running = send(
+    createCharacter(newGame(), "Ala").state,
+    SENT,
+    REAL_MS,
+  ).state;
   return [newGame(), running].map(
     (state) => setProgram(state, program).state.program.rules[0].condition,
   );
 }
 
 function refused(condition) {
-  const running = send(newGame(), SENT, REAL_MS).state;
+  const running = send(
+    createCharacter(newGame(), "Ala").state,
+    SENT,
+    REAL_MS,
+  ).state;
   for (const state of [newGame(), running]) {
     assert.throws(
       () => setProgram(state, { rules: [rule(condition, EXPLORE)] }),

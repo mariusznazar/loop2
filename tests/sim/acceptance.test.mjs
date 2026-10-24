@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
+  createCharacter,
   newGame,
   send,
   setProgram,
@@ -19,9 +19,10 @@ import {
 // so 88.45 − 0.7 × 126 = 0.25 at minute 242 and below zero in minute 243, while chilled.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
+// The first character a new game creates takes the id 1.
+const characterId = 1;
 const [stick, berry] = forest.resources.map((resource) => resource.id);
-const SENT = { mapId, archetypeId };
+const SENT = { mapId, characterId };
 
 const ALIVE_REAL_MS = 1760000800000;
 const ALIVE_SEED = 1946377216;
@@ -60,7 +61,10 @@ const EMPTY_PROGRAM = { rules: [] };
 
 /** The game sent to Las with the program on the named seed, then advanced by `minutes`. */
 function played(program, minutes) {
-  const ready = setProgram(newGame(), program).state;
+  const ready = createCharacter(
+    setProgram(newGame(), program).state,
+    "Ala",
+  ).state;
   const sent = send(ready, SENT, ALIVE_REAL_MS).state;
   return advanceMinutes(sent, minutes);
 }
@@ -78,7 +82,11 @@ function finishedKinds(events) {
 
 test("the map is Las and the send takes the seed named here", () => {
   assert.equal(forest.name, "Las");
-  const sent = send(newGame(), SENT, ALIVE_REAL_MS).state;
+  const sent = send(
+    createCharacter(newGame(), "Ala").state,
+    SENT,
+    ALIVE_REAL_MS,
+  ).state;
   assert.equal(sent.run.seed, ALIVE_SEED);
 });
 

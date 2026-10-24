@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { INITIAL_SEED } from "../../dist/public/sim/data/balance.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
+  createCharacter,
   end,
   newGame,
   passRealTime,
@@ -16,8 +16,8 @@ import {
 import { mixSeed } from "../../dist/public/sim/random.js";
 
 const mapId = Object.keys(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
-const SENT = { mapId, archetypeId };
+// The first character a new game creates takes the id 1.
+const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;
 const LATER_MS = 1760000123456;
 
@@ -29,12 +29,15 @@ const WANDER_FIRST = {
 };
 
 function sent(program = EXPLORING, realMs = REAL_MS) {
-  return send(setProgram(newGame(), program).state, SENT, realMs);
+  const game = createCharacter(setProgram(newGame(), program).state, "Ala");
+  return send(game.state, SENT, realMs);
 }
 
-test("a new game has an empty program, no map run, the initial seed and no pause", () => {
+test("a new game has an empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
   assert.deepEqual(newGame(), {
     program: { rules: [] },
+    team: { characters: [], chest: { pieces: {} } },
+    nextCharacterId: 1,
     run: null,
     lastSeed: INITIAL_SEED,
     paused: false,
@@ -49,7 +52,7 @@ test("a send starts a map run at minute 0 with the seed mixed from the last seed
   assert.equal(state.run.seed, seed);
   assert.equal(state.run.minute, 0);
   assert.equal(state.run.mapId, mapId);
-  assert.equal(state.run.character.archetypeId, archetypeId);
+  assert.equal(state.run.character.id, SENT.characterId);
   assert.equal(state.paused, false);
   assert.equal(state.realMsCarry, 0);
   assert.deepEqual(state.program, EXPLORING);
@@ -133,6 +136,8 @@ test("Zakończ ends the map run, keeps the program and the last seed", () => {
   const { state: ended, events } = end(state);
   assert.deepEqual(ended, {
     program: EXPLORING,
+    team: state.team,
+    nextCharacterId: state.nextCharacterId,
     run: null,
     lastSeed: state.lastSeed,
     paused: false,

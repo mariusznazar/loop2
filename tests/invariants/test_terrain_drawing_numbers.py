@@ -8,9 +8,10 @@ such as `className`, `dataset` and `scope` reflected to attributes, class lists,
 `[attr]`, `[attr=value]`, `.class`, a tag and descendants of these, for `querySelectorAll` and
 `closest`), builds the terrain panel with `createTerrainPanel()` of the built
 `dist/public/view/terrain-panel.js`, as the game's view does, and drives the simulation of the
-built `dist/public/sim/game.js` (`newGame`, `setProgram`, `send`, `advanceMinutes`), handing the
-panel each game state at the minutes below through its `update`. After each update it writes out
-the panel's element as a tree, with the map run's tiles; the check reads both.
+built `dist/public/sim/game.js` (`newGame`, `createCharacter`, `setProgram`, `send`,
+`advanceMinutes`), handing the panel each game state at the minutes below through its `update`.
+After each update it writes out the panel's element as a tree, with the map run's tiles; the check
+reads both.
 
 Reading of the sentence:
 - the terrain panel: the element `createTerrainPanel()` returns, which a built module of the game's
@@ -60,7 +61,10 @@ import loop2_invariant_support as support
 GAME_MODULE = "dist/public/sim/game.js"
 PANEL_MODULE = "dist/public/view/terrain-panel.js"
 VIEW_DIRECTORY = "dist/public"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 MINUTES = 240
@@ -317,8 +321,8 @@ def drawings(real_ms):
     for path, module in ((game, GAME_MODULE), (panel, PANEL_MODULE)):
         if not os.path.isfile(path):
             raise AssertionError(f"`npm run build` placed no {module}")
-    steps = [["newGame"], ["setProgram", ROAM], ["draw", "before a send"], ["send", SENT, real_ms],
-             ["draw", "minute 0"]]
+    steps = [["newGame"], CREATE, ["setProgram", ROAM], ["draw", "before a send"],
+             ["send", SENT, real_ms], ["draw", "minute 0"]]
     for minute in range(1, MINUTES + 1):
         steps.append(["advanceMinutes", 1])
         if minute % EVERY == 0:

@@ -162,8 +162,8 @@ test("the archetype and the pace are in data", () => {
 
 // Validation of ids and programs against the data (spec 4.5): the ids come from the data files.
 const [firstMapId, firstMap] = Object.entries(MAPS)[0];
-const firstArchetypeId = Object.keys(ARCHETYPES)[0];
-const SENT = { mapId: firstMapId, archetypeId: firstArchetypeId };
+// The first character a new game creates takes the id 1.
+const SENT = { mapId: firstMapId, characterId: 1 };
 const REAL_MS = 1760000000000;
 const ALWAYS = { kind: "always" };
 const EXPLORE = { kind: "explore" };
@@ -172,7 +172,7 @@ const below = (resource, value) => ({ kind: "hereBelow", resource, value });
 const walkTo = (resource) => ({ kind: "walkTo", resource });
 
 test("setProgram accepts every resource of the map data list, in conditions and in walks", async () => {
-  const { newGame, send, setProgram } =
+  const { createCharacter, newGame, send, setProgram } =
     await import("../../dist/public/sim/game.js");
   const rules = firstMap.resources.flatMap(({ id }) => [
     rule(below(id, 3), EXPLORE),
@@ -180,7 +180,11 @@ test("setProgram accepts every resource of the map data list, in conditions and 
   ]);
   const program = { rules };
   assert.deepEqual(setProgram(newGame(), program).state.program, program);
-  const running = send(newGame(), SENT, REAL_MS).state;
+  const running = send(
+    createCharacter(newGame(), "Ala").state,
+    SENT,
+    REAL_MS,
+  ).state;
   assert.deepEqual(setProgram(running, program).state.program, program);
 });
 
@@ -203,9 +207,13 @@ test("setProgram accepts the empty program, both actions without a resource and 
 });
 
 test("setProgram rejects a resource id outside the map data list", async () => {
-  const { newGame, send, setProgram } =
+  const { createCharacter, newGame, send, setProgram } =
     await import("../../dist/public/sim/game.js");
-  const running = send(newGame(), SENT, REAL_MS).state;
+  const running = send(
+    createCharacter(newGame(), "Ala").state,
+    SENT,
+    REAL_MS,
+  ).state;
   for (const resource of ["granite", "toString", "", undefined]) {
     for (const state of [newGame(), running]) {
       assert.throws(
@@ -258,22 +266,23 @@ test("a refused program leaves the game unchanged", async () => {
   assert.deepEqual(state.program, { rules: [rule(ALWAYS, EXPLORE)] });
 });
 
-test("send rejects a map or an archetype id not in the data", async () => {
-  const { newGame, send } = await import("../../dist/public/sim/game.js");
+test("send rejects a map id not in the data and a character id not in the team", async () => {
+  const { createCharacter, newGame, send } =
+    await import("../../dist/public/sim/game.js");
+  const game = createCharacter(newGame(), "Ala").state;
   for (const ids of [
-    { mapId: "nowhere", archetypeId: firstArchetypeId },
-    { mapId: "toString", archetypeId: firstArchetypeId },
-    { mapId: firstMapId, archetypeId: "knight" },
-    { mapId: firstMapId, archetypeId: "__proto__" },
-    { mapId: undefined, archetypeId: firstArchetypeId },
+    { mapId: "nowhere", characterId: 1 },
+    { mapId: "toString", characterId: 1 },
+    { mapId: undefined, characterId: 1 },
+    { mapId: firstMapId, characterId: 2 },
+    { mapId: firstMapId, characterId: 0 },
+    { mapId: firstMapId, characterId: "1" },
+    { mapId: firstMapId, characterId: undefined },
   ]) {
-    assert.throws(
-      () => send(newGame(), ids, REAL_MS),
-      Error,
-      JSON.stringify(ids),
-    );
+    assert.throws(() => send(game, ids, REAL_MS), Error, JSON.stringify(ids));
   }
-  assert.equal(send(newGame(), SENT, REAL_MS).state.run.mapId, firstMapId);
+  assert.throws(() => send(newGame(), SENT, REAL_MS), Error, "an empty team");
+  assert.equal(send(game, SENT, REAL_MS).state.run.mapId, firstMapId);
 });
 
 // Every activity must last at least one game minute (D-18: a map can be added through data alone).

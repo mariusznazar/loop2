@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   hexDistance,
@@ -16,7 +15,8 @@ import { nextRandom, streamState } from "../../dist/public/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 
 const [mapId, map] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
+// The id of a character of the team, which the map run carries.
+const characterId = 1;
 const [stick] = map.resources.map((resource) => resource.id);
 const entrance = offsetToAxial(map.entrance.col, map.entrance.row);
 
@@ -30,7 +30,7 @@ const EXPLORING = program(rule(ALWAYS, EXPLORE));
 const WANDERING = program(rule(ALWAYS, WANDER));
 
 function start(seed = 3, startProgram = EXPLORING) {
-  return newMapRun(map, seed, startProgram, { mapId, archetypeId });
+  return newMapRun(map, seed, startProgram, { mapId, characterId });
 }
 
 /** The run with every tile changed by `change(tile)` (a copy). */
@@ -75,7 +75,7 @@ test("a map run starts at minute 0 on the entrance with the first activity chose
   assert.equal(run.mapId, mapId);
   assert.equal(run.seed, 5);
   assert.equal(run.minute, 0);
-  assert.equal(run.character.archetypeId, archetypeId);
+  assert.equal(run.character.id, characterId);
   assert.deepEqual(run.character.at, entrance);
   assert.equal(run.wanderRandom, streamState(5, "wander"));
   assert.equal(hereOf(run).revealed, false);

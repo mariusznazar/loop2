@@ -13,13 +13,13 @@ Reading of the sentence:
 - changes: a key added, removed or given another value, at any depth.
 
 Inputs (written out below, or reached by driving `game.js` from them):
-- game states: a new game, the game after `setProgram`, after a send of the map `forest` with the
-  archetype `elementalMage`, at every game minute of 240 minutes of a program using every
-  condition kind and every action kind (sent at the real time T, on which it gathers, eats, builds
-  a campfire and lights it within those minutes, and stays alive), paused, after real time, after
-  a restart and after an end;
-- for the functions of `game.js`: each of those states with programs, sends, real times, minutes
-  and pause flags written out below;
+- game states: a new game, the game after `setProgram`, after a character created, after a send
+  of that character to the map `forest`, at every game minute of 240 minutes of a program using
+  every condition kind and every action kind (sent at the real time T, on which it gathers, eats,
+  builds a campfire and lights it within those minutes, and stays alive), paused, after real time,
+  after a restart and after an end;
+- for the functions of `game.js`: each of those states with names typed for a new character,
+  programs, sends, real times, minutes and pause flags written out below;
 - for the functions taking a map run: the map runs of those states, and copies of some of them
   with a stick burning on the character's tile, with a body one game minute from death and with
   the character dead; the map `forest` as the data module `maps.js` gives it; conditions of every
@@ -58,8 +58,8 @@ BUILT_DIRECTORY = "dist/public/sim"
 
 # Every exported function this check calls with inputs chosen for it, by module.
 TABLE = {
-    "game.js": ["newGame", "setProgram", "send", "restart", "end", "setPaused", "passRealTime",
-                "advanceMinutes"],
+    "game.js": ["newGame", "characterName", "createCharacter", "setProgram", "send", "restart",
+                "end", "setPaused", "passRealTime", "advanceMinutes"],
     "hex.js": ["offsetToAxial", "sameHex", "hexDistance", "tileAt", "neighbours", "nearestTile",
                "hexCenter", "hexCorners", "tileLabel"],
     "layout.js": ["drawLayout"],
@@ -138,7 +138,11 @@ PROGRAMS = [
     ]},
     {"rules": [rule(ALWAYS, {"kind": "wander"})]},
 ]
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+# Names typed for a new character: plain, with white space around it, and empty once trimmed.
+NAMES = ["Ala", "  Ola ", "", "   "]
 # On this real time the program above builds its campfire by game minute 140 and lights it by 190.
 T = 1760000800000
 T_OTHER = 1760000123456
@@ -147,6 +151,7 @@ SEEDS = [0, 1, 204219582, 4294967295]
 
 INPUTS = {
     "actions": ACTIONS, "conditions": CONDITIONS, "programs": PROGRAMS, "sent": SENT,
+    "names": NAMES,
     "t": T, "tOther": T_OTHER, "minutes": MINUTES, "seeds": SEEDS, "resources": list(RESOURCES),
     "streams": ["layout", "wander", "gather"], "realMs": [0, 999, 1000, 61000],
     "advance": [0, 1, 25], "sizes": [1, 24], "offsets": [[0, 0], [1, 1], [3, 2], [-1, 5]],
@@ -253,6 +258,7 @@ const states = [];
 let state = g.newGame();
 states.push(state);
 state = g.setProgram(state, clone(I.programs[1])).state; states.push(state);
+state = g.createCharacter(state, I.names[0]).state; states.push(state);
 state = g.send(state, clone(I.sent), I.t).state; states.push(state);
 for (let m = 0; m < I.minutes; m += 1) { state = g.advanceMinutes(state, 1).state; states.push(state); }
 state = g.passRealTime(state, 6000).state; states.push(state);
@@ -277,7 +283,9 @@ const sample = (list, count) => list.filter((_, i) => i % Math.max(1, Math.floor
 
 // game.js
 call('game.js', 'newGame', []);
+for (const name of I.names) call('game.js', 'characterName', [name]);
 for (const s of sample(states, 40)) {
+  for (const name of I.names) call('game.js', 'createCharacter', [s, name]);
   for (const p of I.programs) call('game.js', 'setProgram', [s, clone(p)]);
   call('game.js', 'send', [s, clone(I.sent), I.t]);
   call('game.js', 'send', [s, clone(I.sent), I.tOther]);

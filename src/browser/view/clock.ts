@@ -1,5 +1,5 @@
 import { passRealTime, send, type GameResult } from "../sim/game.js";
-import type { ArchetypeId, GameState, MapId } from "../sim/types.js";
+import type { CharacterId, GameState, MapId } from "../sim/types.js";
 
 /** Access to the one game state the app holds; `apply` replaces it with a simulation result. */
 export type GameStore = {
@@ -11,7 +11,7 @@ export type Clock = {
   /** Passes the real time elapsed since the clock's previous reading to the simulation now. */
   flush(): void;
   /** Sends a character, passing the real date to the simulation as the send's real time. */
-  send(ids: { mapId: MapId; archetypeId: ArchetypeId }): void;
+  send(ids: { mapId: MapId; characterId: CharacterId }): void;
 };
 
 const TICK_MS = 200;

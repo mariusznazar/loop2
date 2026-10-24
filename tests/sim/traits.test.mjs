@@ -6,19 +6,24 @@ import {
   newBackpack,
   newTraits,
 } from "../../dist/public/sim/character.js";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { ITEMS } from "../../dist/public/sim/data/items.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { TRAITS } from "../../dist/public/sim/data/traits.js";
-import { newGame, restart, send } from "../../dist/public/sim/game.js";
+import {
+  createCharacter,
+  newGame,
+  restart,
+  send,
+} from "../../dist/public/sim/game.js";
 import { newMapRun } from "../../dist/public/sim/run.js";
 
 // The numbers below are written out by hand: a new character carries carrying capacity 15 (D-64),
 // and the backpack's cap counts the pieces of all items together.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
-const SENT = { mapId, archetypeId };
+// The first character a new game creates takes the id 1.
+const characterId = 1;
+const SENT = { mapId, characterId };
 const REAL_MS = 1760000000000;
 const NO_RULES = { rules: [] };
 
@@ -28,7 +33,7 @@ function emptyBackpack() {
 }
 
 function sent() {
-  return send(newGame(), SENT, REAL_MS).state;
+  return send(createCharacter(newGame(), "Ala").state, SENT, REAL_MS).state;
 }
 
 test("a sent map run's character carries carrying capacity 15 and an empty backpack with cap 15", () => {

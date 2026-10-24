@@ -4,9 +4,9 @@ then, and carries out no program rule in a free game minute in which none has bo
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send` and
-`advanceMinutes` one game minute at a time. After every input the script records the JSON of the
-map run.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
+`send` and `advanceMinutes` one game minute at a time. After every input the script records the
+JSON of the map run.
 
 Reading of the sentence:
 - a free game minute: the minute at which the activity before it ends, and minute 0 of the map
@@ -56,7 +56,10 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 
@@ -127,7 +130,7 @@ def node():
 
 def drive(program, minutes, real_ms=T):
     """The map run after the send and after each of `minutes` game minutes, by minute."""
-    steps = ([["newGame"], ["setProgram", program], ["send", SENT, real_ms]]
+    steps = ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
              + [["advanceMinutes", 1]] * minutes)
     game = support.built_copy().file(GAME_MODULE)
     if not os.path.isfile(game):

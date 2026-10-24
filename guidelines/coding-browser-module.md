@@ -17,8 +17,8 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/clock.ts` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
 | `src/browser/view/footer.ts` | copy | — |
+| `src/browser/view/headquarters.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | copy | — |
-| `src/browser/view/send-panel.ts` | copy | — |
 | `src/browser/view/terrain-panel.ts` | copy | — |
 | `src/browser/view/terrain-picture.ts` | copy | — |
 | `src/browser/view/tile-list.ts` | copy | — |

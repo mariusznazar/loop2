@@ -77,3 +77,10 @@ In the MVP, an extinguished campfire is a campfire standing on its tile with no 
 left, whether it has burnt out or has not been lit yet.
 
 - **Not:** none
+
+## headquarters
+
+The headquarters is the screen of the game outside a map run that shows the player's team with its
+characters and its chest.
+
+- **Not:** none

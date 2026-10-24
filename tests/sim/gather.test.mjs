@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { offsetToAxial, sameHex, tileAt } from "../../dist/public/sim/hex.js";
 import {
+  createCharacter,
   newGame,
   restart,
   send,
@@ -20,7 +20,8 @@ import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 // published algorithm, and the gathering hits where the value lies below 0.7.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
+// The first character a new game creates takes the id 1.
+const characterId = 1;
 const [stick, berry, moss] = forest.resources.map((resource) => resource.id);
 const entrance = offsetToAxial(forest.entrance.col, forest.entrance.row);
 
@@ -42,7 +43,7 @@ function mulberry32(state) {
 
 /** A map run of Las at minute 0 with no program rules, with the given fields replaced. */
 function handMade(fields = {}) {
-  const { run } = newMapRun(forest, 3, IDLE, { mapId, archetypeId });
+  const { run } = newMapRun(forest, 3, IDLE, { mapId, characterId });
   return { ...run, ...fields };
 }
 
@@ -158,7 +159,7 @@ test("a gathering lasts 10 game minutes, takes nothing at its start and draws no
 
 test("a map run starts its gathering generator from its seed, apart from the other streams", () => {
   for (const seed of [1, 3, 77]) {
-    const { run } = newMapRun(forest, seed, IDLE, { mapId, archetypeId });
+    const { run } = newMapRun(forest, seed, IDLE, { mapId, characterId });
     assert.equal(run.gatherRandom, streamState(seed, "gather"), `seed ${seed}`);
     assert.notEqual(run.gatherRandom, streamState(seed, "wander"));
     assert.notEqual(run.gatherRandom, streamState(seed, "layout"));
@@ -313,8 +314,8 @@ test("the wander stream gives the same draws with and without gathering", () => 
 test("a map run restart starts the gathering generator anew from the seed", () => {
   const rules = [rule(ALWAYS, gather(stick))];
   const sent = send(
-    setProgram(newGame(), { rules }).state,
-    { mapId, archetypeId },
+    createCharacter(setProgram(newGame(), { rules }).state, "Ala").state,
+    { mapId, characterId },
     1760000000000,
   ).state;
   const seed = sent.run.seed;
@@ -330,7 +331,11 @@ test("the program check takes „Zbierz” with a resource of the map and refuse
   assert.deepEqual(taken.state.program, {
     rules: [rule(ALWAYS, gather(moss))],
   });
-  const during = send(newGame(), { mapId, archetypeId }, 1760000000000).state;
+  const during = send(
+    createCharacter(newGame(), "Ala").state,
+    { mapId, characterId },
+    1760000000000,
+  ).state;
   assert.deepEqual(
     setProgram(during, { rules: [rule(ALWAYS, gather(berry))] }).state.program,
     { rules: [rule(ALWAYS, gather(berry))] },

@@ -23,8 +23,8 @@ import { warmthAt, worldMinute } from "./world.js";
 import type {
   Action,
   Activity,
-  ArchetypeId,
   Backpack,
+  CharacterId,
   CurrentActivity,
   DeathCause,
   Hex,
@@ -265,7 +265,7 @@ export function newMapRun(
   map: MapDef,
   seed: number,
   program: Program,
-  ids: { mapId: MapId; archetypeId: ArchetypeId },
+  ids: { mapId: MapId; characterId: CharacterId },
   traits: Traits = newTraits(),
 ): { run: MapRun; events: GameEvent[] } {
   const { tiles, entrance } = drawLayout(map, seed);
@@ -275,7 +275,7 @@ export function newMapRun(
     minute: 0,
     tiles,
     character: {
-      archetypeId: ids.archetypeId,
+      id: ids.characterId,
       at: entrance,
       traits: { ...traits },
       backpack: newBackpack(),

@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   hexDistance,
@@ -9,7 +8,12 @@ import {
   offsetToAxial,
   sameHex,
 } from "../../dist/public/sim/hex.js";
-import { newGame, send, setProgram } from "../../dist/public/sim/game.js";
+import {
+  createCharacter,
+  newGame,
+  send,
+  setProgram,
+} from "../../dist/public/sim/game.js";
 import { actionFeasible } from "../../dist/public/sim/program.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 
@@ -22,7 +26,8 @@ import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 // warms the character on its tile by 0.5 °C and a burning stick by 0.15 °C a minute.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
+// The first character a new game creates takes the id 1.
+const characterId = 1;
 const [stick, berry, moss] = forest.resources.map((resource) => resource.id);
 const entrance = offsetToAxial(forest.entrance.col, forest.entrance.row);
 
@@ -47,7 +52,7 @@ const body = (temperature, satiety, health) => ({
 
 /** A map run of Las at minute 0 with no program rules, with the given fields replaced. */
 function handMade(fields = {}) {
-  const { run } = newMapRun(forest, 3, IDLE, { mapId, archetypeId });
+  const { run } = newMapRun(forest, 3, IDLE, { mapId, characterId });
   return { ...run, ...fields };
 }
 
@@ -522,7 +527,11 @@ test("the action ending in the minute of death takes no effect", () => {
 
 test("the program check takes the six actions before sending and during a map run", () => {
   const rules = NEW_ACTIONS.map((action) => rule(ALWAYS, action));
-  const during = send(newGame(), { mapId, archetypeId }, 1760000000000).state;
+  const during = send(
+    createCharacter(newGame(), "Ala").state,
+    { mapId, characterId },
+    1760000000000,
+  ).state;
   for (const state of [newGame(), during]) {
     assert.deepEqual(setProgram(state, { rules }).state.program, { rules });
   }

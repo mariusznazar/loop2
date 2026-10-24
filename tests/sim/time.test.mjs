@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
+  createCharacter,
   newGame,
   passRealTime,
   send,
@@ -12,8 +12,8 @@ import {
 } from "../../dist/public/sim/game.js";
 
 const mapId = Object.keys(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
-const SENT = { mapId, archetypeId };
+// The first character a new game creates takes the id 1.
+const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;
 
 const EXPLORING = {
@@ -22,7 +22,8 @@ const EXPLORING = {
 
 /** A game sent to the first map with a program that explores; the run stands at minute 0. */
 function sent(program = EXPLORING) {
-  return send(setProgram(newGame(), program).state, SENT, REAL_MS).state;
+  const game = createCharacter(setProgram(newGame(), program).state, "Ala");
+  return send(game.state, SENT, REAL_MS).state;
 }
 
 /** Feeds the real-time inputs one after another; returns the last state and all events. */

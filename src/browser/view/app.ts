@@ -1,4 +1,5 @@
 import {
+  createCharacter,
   end,
   newGame,
   restart,
@@ -10,8 +11,8 @@ import type { GameState } from "../sim/types.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createFooter } from "./footer.js";
+import { createHeadquarters } from "./headquarters.js";
 import { createProgramEditor } from "./program-editor.js";
-import { createSendPanel } from "./send-panel.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
 
@@ -32,8 +33,8 @@ export function startApp(root: HTMLElement): void {
   // Left column: the program panel, always visible.
   const programPanel = document.createElement("section");
   programPanel.className = "program-panel";
-  // Right column: the send panel without a map run; during one the status row, the row of the body
-  // and the backpack under it, and the terrain panel.
+  // Right column: the headquarters without a map run; during one the status row, the row of the
+  // body and the backpack under it, and the terrain panel.
   const mapColumn = document.createElement("section");
   mapColumn.className = "map-column";
   const runPanel = document.createElement("div");
@@ -69,8 +70,13 @@ export function startApp(root: HTMLElement): void {
   };
   const clock = startClock(store);
 
-  const sendPanel = createSendPanel((target) => {
-    if (!state.run) clock.send(target);
+  const headquarters = createHeadquarters({
+    create(name) {
+      store.apply(createCharacter(state, name));
+    },
+    send(characterId, mapId) {
+      if (!state.run) clock.send({ mapId, characterId });
+    },
   });
   const statusRow = createStatusRow({
     togglePause() {
@@ -88,11 +94,12 @@ export function startApp(root: HTMLElement): void {
   });
   const bodyRow = createBodyRow();
   runPanel.append(statusRow.element, bodyRow.element, terrainPanel.element);
-  mapColumn.append(sendPanel, runPanel);
+  mapColumn.append(headquarters.element, runPanel);
 
   function renderMapColumn(): void {
-    sendPanel.hidden = state.run !== null;
+    headquarters.element.hidden = state.run !== null;
     runPanel.hidden = state.run === null;
+    headquarters.update(state);
     statusRow.update(state);
     bodyRow.update(state);
     terrainPanel.update(state);
