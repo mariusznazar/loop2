@@ -502,7 +502,8 @@ character's action by hand.
   would also bind which kinds the closed list holds, which this decision leaves open, an agent
   compares the change with the decision:
   - complies: a condition picker listing the conditions of the closed list, each with the resource
-    and the whole number it takes
+    and the whole number it takes; a condition on the character's temperature taking 36.5, a number
+    with tenths, from a number field of the picker
   - violates: a text field taking a condition as an expression; a kind of condition added to the
     closed list that takes a formula as text
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14, D15 and D9 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character act by its program?"
@@ -1108,18 +1109,18 @@ In the MVP a gathering may miss, and a missed gathering leaves the tile's stock 
 
 ### D-60 — How does a tile's stock renew?
 
-In the MVP a tile holding fewer pieces of a resource than its starting stock gains one piece of it each time the resource's time to renew one piece, given in the game map's data, passes, up to its starting stock.
+In the MVP a tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece, given in the game map's data and counted from the map run's game minute zero, up to its starting stock.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-24
 - **Verification:** an agent compares a change with the decision:
-  - complies: a tile of Las emptied of sticks holding a stick again once the sticks' time to renew one piece has passed; a tile at its starting stock gaining nothing;
-  - violates: a tile growing above its starting stock; a tile refilled to its starting stock at once.
+  - complies: a tile of Las whose sticks fall below its starting stock in game minute 45 gaining a stick in game minute 60 and another in game minute 90, sticks renewing one piece in 30 game minutes; a tile at its starting stock gaining nothing;
+  - violates: a tile growing above its starting stock; a tile refilled to its starting stock at once; a tile whose sticks fall below its starting stock in game minute 45 waiting for its own 30 game minutes and gaining its first stick in game minute 75.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
 
-*Rationale:* A gathered tile recovers at the pace its game map sets, so gathering is a choice of where and when, and the bound keeps a tile from growing past what the layout gave it, also over the hours of a player's absence that the game counts later.
-*Rejected:* renewal with no upper bound — a tile left alone would grow on and on, also over the hours of a player's absence.
+*Rationale:* A gathered tile recovers at the pace its game map sets, so gathering is a choice of where and when, and the bound keeps a tile from growing past what the layout gave it, also over the hours of a player's absence that the game counts later. Counted from the start of the map run, renewal needs no record of its own for each tile, and the pieces a span of game minutes brings follow from the span by arithmetic, as counting the hours of a player's absence needs. Accepted with it: a tile that falls below its starting stock shortly before a multiple of the time to renew gains its piece back sooner than that time.
+*Rejected:* renewal with no upper bound — a tile left alone would grow on and on, also over the hours of a player's absence; a clock for each tile and resource, started by its first missing piece — closer to the time passed since the loss, but a record for each tile and resource in the map run's state.
 
 ### D-61 — What becomes of a campfire that burns out?
 
@@ -1138,18 +1139,18 @@ In the MVP a campfire that burns out stays on its tile, extinguished, and can be
 
 ### D-62 — How much does feeding add to a burning campfire?
 
-In the MVP each feeding of a burning campfire adds its minutes of burning to those the campfire has left, however many those are.
+In the MVP each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning to those the campfire has left then, however many those are, zero included, so a campfire that burnt out during the feeding burns again.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: a campfire with 150 minutes left burning 170 after a feeding that adds 20;
-  - violates: a feeding that stops at a ceiling of minutes of burning.
+  - complies: a campfire with 150 minutes left at a feeding's end burning 170 after a feeding that adds 20; a campfire with 3 minutes left at the start of a feeding of 5 game minutes burning 20 minutes after it;
+  - violates: a feeding that stops at a ceiling of minutes of burning; a feeding that adds nothing to a campfire that burnt out during it.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
 
-*Rationale:* Feeding is paid with fuel piece by piece, so a program that gathers enough can keep its fire burning for hours ahead.
-*Rejected:* a ceiling on the minutes of burning — a program could not feed its fire far ahead.
+*Rationale:* Feeding is paid with fuel piece by piece, so a program that gathers enough can keep its fire burning for hours ahead. A feeding takes effect at its end, as every action of the character does, and lands on the campfire it was started at, so a program rule that feeds a campfire with fewer minutes left than a feeding lasts feeds it. Accepted with it: a campfire that burns out during a feeding burns again for one piece of fuel, fewer sticks than „Zapal — ognisko” uses.
+*Rejected:* a ceiling on the minutes of burning — a program could not feed its fire far ahead; a feeding that adds nothing where its campfire burnt out before the feeding's end — a program rule feeding a campfire with few minutes left would not feed it; the fuel taken and added at the feeding's start — the one action of the character whose effect would take hold at its start.
 
 ### D-63 — How does the browser view show a campfire?
 

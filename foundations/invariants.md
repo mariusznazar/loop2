@@ -176,8 +176,8 @@ from the map run's state.
 
 ## action-in-progress
 
-The character's action in progress lasts its full duration, even where the program changes or the
-condition of another program rule comes to hold before it ends.
+The character's action in progress lasts its full duration unless its map run ends first, even where
+the program changes or the condition of another program rule comes to hold before it ends.
 
 - **Method:** test
 - **Rests on:** none
@@ -187,9 +187,9 @@ condition of another program rule comes to hold before it ends.
 
 ## player-map-run-pace
 
-Real time passed to the simulation for a map run the player starts moves the map run on by one game
-minute for each whole real second passed while it is not paused, and by no game minute for real
-time passed while it is paused.
+Real time passed to the simulation for a map run the player starts moves the map run on, until it
+ends, by one game minute for each whole real second passed while it is not paused, and by no game
+minute for real time passed while it is paused.
 
 - **Method:** test
 - **Rests on:** none

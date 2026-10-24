@@ -67,6 +67,13 @@ that still stands on the screen.
 ## free game minute
 
 A free game minute is a game minute of a map run at which the map run starts, or at which the
-character's action or the character's waiting ends.
+character's action or the character's waiting ends and the map run goes on.
+
+- **Not:** none
+
+## extinguished campfire
+
+An extinguished campfire is a campfire standing on its tile with no minutes of burning left,
+whether it has burnt out or has not been lit yet.
 
 - **Not:** none
