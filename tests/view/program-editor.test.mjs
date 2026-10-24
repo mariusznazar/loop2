@@ -39,6 +39,14 @@ const ALWAYS_WALK = {
   action: { kind: "walkTo", resource: "moss" },
 };
 const THREE = { rules: [ALWAYS_EXPLORE, BELOW_WANDER, ALWAYS_WALK] };
+/** The actions on the campfire and the backpack, which name nothing. */
+const CAMPFIRE_AND_BACKPACK = [
+  "craftCampfire",
+  "lightCampfire",
+  "lightItem",
+  "feedCampfire",
+  "eat",
+];
 
 /** A deep copy, to show that an edit leaves its input as it was. */
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -186,6 +194,23 @@ test("switching the action to „Zbierz” takes the map's first resource, and i
   assert.equal(withActionKind(THREE, 0, "gather", []), null);
 });
 
+test("„Idź — ognisko” and the actions on the campfire and the backpack are offered without a target", () => {
+  for (const kind of ["walkToCampfire", ...CAMPFIRE_AND_BACKPACK]) {
+    const switched = withActionKind(THREE, 2, kind, LAS);
+    assert.deepEqual(switched.rules[2], {
+      condition: { kind: "always" },
+      action: { kind },
+    });
+    assert.equal(withActionResource(switched, 2, "stick"), null, kind);
+    assert.equal(withActionKind(switched, 2, kind, LAS), null, kind);
+    assert.deepEqual(
+      withActionKind(THREE, 0, kind, []).rules[0].action,
+      { kind },
+      `${kind} needs no resource of the map`,
+    );
+  }
+});
+
 test("choosing a resource or a number changes only that rule; the same choice commits nothing", () => {
   const before = copy(THREE);
   assert.deepEqual(withConditionResource(THREE, 1, "fiber"), {
@@ -234,7 +259,14 @@ test("every program the editor builds passes setProgram, before sending and duri
   const conditionKinds = Object.keys(CONDITIONS);
   const actionKinds = Object.keys(ACTIONS);
   assert.deepEqual(conditionKinds, ["always", "hereBelow"]);
-  assert.deepEqual(actionKinds, ["explore", "wander", "walkTo", "gather"]);
+  assert.deepEqual(actionKinds, [
+    "explore",
+    "wander",
+    "walkTo",
+    "walkToCampfire",
+    "gather",
+    ...CAMPFIRE_AND_BACKPACK,
+  ]);
 
   // Every pair of kinds, every resource in every slot, and the number at its ends and outside them.
   let program = { rules: [] };

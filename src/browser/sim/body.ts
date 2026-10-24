@@ -23,6 +23,17 @@ export function startingBody(): Body {
   };
 }
 
+/** The body after eating a piece that gives `satiety`: satiety rises, not above the starting one. */
+export function eatenBody(body: Body, satiety: number): Body {
+  return {
+    ...body,
+    satiety: Math.min(
+      BALANCE.body.startSatiety,
+      decimal(body.satiety + satiety),
+    ),
+  };
+}
+
 /**
  * One game minute of the body: the warmth of what burns on the character's tile less the cooling
  * of the map's ambient temperature, capped at the starting temperature; satiety falls, not below

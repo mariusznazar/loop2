@@ -1,4 +1,4 @@
-import { bodyMinute, startingBody } from "./body.js";
+import { bodyMinute, eatenBody, startingBody } from "./body.js";
 import {
   backpackCap,
   backpackCount,
@@ -7,15 +7,24 @@ import {
 } from "./character.js";
 import { ACTIONS } from "./data/actions.js";
 import { BALANCE } from "./data/balance.js";
+import { CAMPFIRE } from "./data/campfire.js";
+import { ITEMS } from "./data/items.js";
 import type { MapDef } from "./data/maps.js";
 import { neighbours, sameHex, tileAt } from "./hex.js";
 import { drawLayout } from "./layout.js";
-import { chooseActivity, walkTarget } from "./program.js";
+import {
+  campfireTarget,
+  chooseActivity,
+  itemFor,
+  walkTarget,
+} from "./program.js";
 import { nextRandom, streamState } from "./random.js";
 import { warmthAt, worldMinute } from "./world.js";
 import type {
+  Action,
   Activity,
   ArchetypeId,
+  Backpack,
   CurrentActivity,
   DeathCause,
   Hex,
@@ -73,14 +82,24 @@ function startActivity(
         minutes = target.stepMinutes;
         break;
       }
-      case "walkTo": {
-        const next = walkTarget(run, action.resource)!.next;
+      case "walkTo":
+      case "walkToCampfire": {
+        const target =
+          action.kind === "walkTo"
+            ? walkTarget(run, action.resource)
+            : campfireTarget(run);
+        const next = target!.next;
         stepTo = { ...next };
         minutes = tileAt(run.tiles, next)!.stepMinutes;
         break;
       }
       case "gather":
-        minutes = ACTIONS.gather.minutes;
+      case "craftCampfire":
+      case "lightCampfire":
+      case "lightItem":
+      case "feedCampfire":
+      case "eat":
+        minutes = ACTIONS[action.kind].minutes;
         break;
     }
   }
@@ -139,6 +158,103 @@ function finishGathering(state: Gathering, resource: ResourceId): Gathering {
     },
     gatherRandom: draw.state,
   };
+}
+
+/** The backpack with `count` pieces of `item` taken out. */
+function without(backpack: Backpack, item: ItemId, count: number): Backpack {
+  return { ...backpack, [item]: backpack[item] - count };
+}
+
+/** What the end of an action of the character on the campfire or the backpack changes. */
+type Landing = Pick<
+  MapRun,
+  "character" | "body" | "campfires" | "burningItems"
+>;
+
+/**
+ * The end of crafting, lighting, feeding or eating, step 5 of D-64: its effect takes hold and the
+ * pieces it uses leave the backpack, together. The pieces are those the data marks for the use,
+ * chosen by `itemFor`. Crafting puts an unlit campfire on the character's tile; lighting gives the
+ * campfire there its minutes of burning; lighting an item puts one piece of it burning on the
+ * tile; feeding adds the fuel's minutes to the campfire there, whatever its minutes left, 0
+ * included (D-62, D-64); eating adds the food's satiety, not above the starting satiety (D-52).
+ * Where what the action needs is no longer there, nothing changes.
+ */
+function finishUse(state: Landing, action: Action): Landing {
+  const { character } = state;
+  const at = character.at;
+  const here = state.campfires.find((campfire) => sameHex(campfire.at, at));
+  const backpack = character.backpack;
+  const using = (item: ItemId, count: number) => ({
+    ...character,
+    backpack: without(backpack, item, count),
+  });
+  switch (action.kind) {
+    case "craftCampfire": {
+      const { item, count } = CAMPFIRE.craft;
+      if (here || backpack[item] < count) return state;
+      return {
+        ...state,
+        character: using(item, count),
+        campfires: [...state.campfires, { at: { ...at }, minutesLeft: 0 }],
+      };
+    }
+    case "lightCampfire": {
+      const { item, count } = CAMPFIRE.light;
+      if (!here || here.minutesLeft > 0 || backpack[item] < count) return state;
+      return {
+        ...state,
+        character: using(item, count),
+        campfires: state.campfires.map((campfire) =>
+          campfire === here
+            ? { ...campfire, minutesLeft: CAMPFIRE.burnMinutes }
+            : campfire,
+        ),
+      };
+    }
+    case "lightItem": {
+      const item = itemFor(backpack, "lightable");
+      const lightable = item && ITEMS[item].lightable;
+      if (!item || !lightable) return state;
+      return {
+        ...state,
+        character: using(item, 1),
+        burningItems: [
+          ...state.burningItems,
+          { item, at: { ...at }, minutesLeft: lightable.burnMinutes },
+        ],
+      };
+    }
+    case "feedCampfire": {
+      const item = itemFor(backpack, "fuel");
+      const fuel = item && ITEMS[item].fuel;
+      if (!here || !item || !fuel) return state;
+      return {
+        ...state,
+        character: using(item, 1),
+        campfires: state.campfires.map((campfire) =>
+          campfire === here
+            ? {
+                ...campfire,
+                minutesLeft: campfire.minutesLeft + fuel.burnMinutes,
+              }
+            : campfire,
+        ),
+      };
+    }
+    case "eat": {
+      const item = itemFor(backpack, "food");
+      const food = item && ITEMS[item].food;
+      if (!item || !food) return state;
+      return {
+        ...state,
+        character: using(item, 1),
+        body: eatenBody(state.body, food.satiety),
+      };
+    }
+    default:
+      return state;
+  }
 }
 
 /**
@@ -219,6 +335,12 @@ export function stepMinute(
   let tiles = world.tiles;
   let character = run.character;
   let gatherRandom = run.gatherRandom;
+  let landed: Landing = {
+    character,
+    body,
+    campfires: world.campfires,
+    burningItems: world.burningItems,
+  };
 
   if (finished.activity.kind === "rule") {
     const action = finished.activity.action;
@@ -243,6 +365,9 @@ export function stepMinute(
         from: { ...run.character.at },
         to: { ...to },
       });
+    } else {
+      landed = finishUse(landed, action);
+      character = landed.character;
     }
   }
 
@@ -252,9 +377,9 @@ export function stepMinute(
     minute,
     tiles,
     character,
-    body,
-    campfires: world.campfires,
-    burningItems: world.burningItems,
+    body: landed.body,
+    campfires: landed.campfires,
+    burningItems: landed.burningItems,
     wanderRandom: run.wanderRandom,
     gatherRandom,
     death: null,

@@ -22,7 +22,11 @@ import { sendTargets } from "./send-panel.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
-/** An action that names a resource of the map: „Idź” and „Zbierz”. */
+/**
+ * An action that names a resource of the map: „Idź” and „Zbierz”. Every other action names
+ * nothing — „Idź — ognisko” and the actions on the campfire and the backpack among them, whose
+ * campfire and pieces the simulation picks — so the editor offers it without a target.
+ */
 type ResourceAction = Extract<Action, { resource: ResourceId }>;
 
 const RESOURCE_ACTION_KINDS: readonly ActionKind[] = ["walkTo", "gather"];
@@ -282,7 +286,7 @@ function showResource(
  * Builds the program panel: heading „Program”, one row per program rule — condition select, for
  * „Tu leży mniej niż” a number field and a resource select, „→”, action select, for „Idź” and
  * „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Labels and
- * resources come from the data. Each edit commits a whole new program through `commit` on `change`; the
+ * resources come from the data: the action select offers every action of the closed list. Each edit commits a whole new program through `commit` on `change`; the
  * editor never writes the game state. Rows are rebuilt only after a structural edit, so the control
  * being edited keeps focus while the state changes.
  */

@@ -17,7 +17,13 @@ export type Action =
   | { kind: "explore" }
   | { kind: "wander" }
   | { kind: "walkTo"; resource: ResourceId }
-  | { kind: "gather"; resource: ResourceId };
+  | { kind: "walkToCampfire" }
+  | { kind: "gather"; resource: ResourceId }
+  | { kind: "craftCampfire" }
+  | { kind: "lightCampfire" }
+  | { kind: "lightItem" }
+  | { kind: "feedCampfire" }
+  | { kind: "eat" };
 
 export type ProgramRule = { condition: Condition; action: Action };
 

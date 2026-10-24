@@ -104,6 +104,20 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
         kind: "gather",
         resource: checkResource(value.resource, allowed),
       };
+    // The actions on the campfire and the backpack name nothing: the simulation picks the
+    // campfire on the character's tile, or the nearest one, and the pieces they use.
+    case "walkToCampfire":
+      return { kind: "walkToCampfire" };
+    case "craftCampfire":
+      return { kind: "craftCampfire" };
+    case "lightCampfire":
+      return { kind: "lightCampfire" };
+    case "lightItem":
+      return { kind: "lightItem" };
+    case "feedCampfire":
+      return { kind: "feedCampfire" };
+    case "eat":
+      return { kind: "eat" };
     default:
       throw new Error(
         `program: action kind ${String(value.kind)} is not on the closed list`,
