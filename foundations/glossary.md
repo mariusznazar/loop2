@@ -73,7 +73,7 @@ character's action or the character's waiting ends and the map run goes on.
 
 ## extinguished campfire
 
-An extinguished campfire is a campfire standing on its tile with no minutes of burning left,
-whether it has burnt out or has not been lit yet.
+In the MVP, an extinguished campfire is a campfire standing on its tile with no minutes of burning
+left, whether it has burnt out or has not been lit yet.
 
 - **Not:** none
