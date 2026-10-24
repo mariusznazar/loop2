@@ -58,7 +58,7 @@ A program rule is a pair held by a program: a condition and an action of a chara
 
 ## map run restart
 
-In the MVP, a map run restart is a map run of the same character on the same game map, which the
+A map run restart is a map run of the same character on the same game map, which the
 player starts in place of the map run in progress or of a map run ended in the character's death
 that still stands on the screen.
 
@@ -73,7 +73,7 @@ character's action or the character's waiting ends and the map run goes on.
 
 ## extinguished campfire
 
-In the MVP, an extinguished campfire is a campfire standing on its tile with no minutes of burning
+An extinguished campfire is a campfire standing on its tile with no minutes of burning
 left, whether it has burnt out or has not been lit yet.
 
 - **Not:** none
