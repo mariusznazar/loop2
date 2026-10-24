@@ -543,16 +543,19 @@ but tests nothing in the game.
 
 A move onto a neighbouring tile is an ordinary action of the character, after which the program
 picks a program rule anew, as after any action of the character. Exploring reveals the tile the
-character stands on, cannot be repeated on a revealed tile and brings no item.
+character stands on, cannot be repeated on a revealed tile and brings no item, and gathering takes
+only from a revealed tile, as much as lies on it.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** invariants: exploring-reveal · move-reach. For a journey kept as a route and for
-  exploring that brings an item, an agent compares the change with the decision:
+- **Verification:** invariants: exploring-reveal · move-reach. For a journey kept as a route, for
+  exploring that brings an item and for where gathering takes from, an agent compares the change
+  with the decision:
   - complies: "Go — stick" taking one move toward the nearest known tile with sticks, then the
-    program choosing again
-  - violates: a journey stored as a route; exploring that brings a stick
+    program choosing again; a gathering on a revealed tile holding one stick taking that stick
+  - violates: a journey stored as a route; exploring that brings a stick; a gathering on a tile not
+    yet revealed; a gathering that takes a stick from a revealed tile holding none
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D33 and §5 "Postać stoi na jednym kafelku" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character move?"
 
 *Rationale:* the character reacts to the world between moves, and the state grows by nothing but
@@ -566,26 +569,33 @@ that brings an item.
 A program points at a thing of the world only as the nearest known one of its kind, counted in game
 minutes of walking, never by a number of its own. An action of the character that goes to a thing of
 the world can be carried out where a thing of its kind is known and the character does not stand on
-one, and nowhere else: there it has nothing to go to.
+one, and nowhere else: there it has nothing to go to. A tile holds at most one campfire, which warms
+only that tile.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
 - **Verification:** invariants: walk-target · walk-feasibility · program-world-reference. For things
-  of the world other than resources on tiles, an agent compares the change with the decision:
+  of the world other than resources on tiles, and for campfires on a tile, an agent compares the
+  change with the decision:
   - complies: "Go — stick" taking one move toward the nearest known tile with sticks; "Go — stick"
-    passed over while the character stands on a known tile with sticks
+    passed over while the character stands on a known tile with sticks; "Go — campfire" taking one
+    move toward the nearest campfire
   - violates: a program rule naming "tile 7"; "Go — stick" sending the character off the known tile
-    with sticks it stands on toward another one
+    with sticks it stands on toward another one; a program rule naming "campfire 2"; a second
+    campfire made on a tile that has one; a campfire warming a character on a neighbouring tile
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D34 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a program point at things of the world?"
 
-*Rationale:* the layout of a game map differs on every seed, so a number given to a tile means nothing
-that lasts, while "the nearest" means the same on every map run. Where nothing of the kind is known,
-or the character already stands on such a thing, the nearest one is nowhere to go to; the program
-then passes over the program rule and picks a later one, as it does for any action of the character
-that cannot be carried out.
+*Rationale:* the layout of a game map differs on every seed, and campfires arise in a different
+order on every seed, so a number given to a tile or a campfire means nothing that lasts, while "the
+nearest" means the same on every map run. Where nothing of the kind is known, or the character
+already stands on such a thing, the nearest one is nowhere to go to; the program then passes over
+the program rule and picks a later one, as it does for any action of the character that cannot be
+carried out. A second campfire on one tile warms nothing above the ceiling of warmth and spoils the
+reading of the conditions about the fire.
 *Rejected:* numbering tiles in program rules — a program is written before the map run, and the
-layout is drawn at its start.
+layout is drawn at its start; numbering the campfires in program rules — a program is written before
+the map run, and the campfires arise during it.
 
 ### D-27 — Where do the game's icons come from?
 
@@ -945,3 +955,243 @@ Every start of the loop2 server process by a loop2 test on the machine that runs
 
 *Rationale:* Runs of the tests side by side on one machine, or a run beside another process holding a fixed port, collide on that port, and the run that loses passes only when it is repeated; a port the system names free at each start gives every start a port of its own. A short window remains between the system naming the port free and the server listening on it, in which another process may take the port; starting once more on another free port eases it. The single test of the default address keeps the address a person starts the server on under a test, and it passes whether or not that address is free.
 *Rejected:* a port read from a variable for the tests, 3000 when the variable is unset — runs side by side still collide unless someone sets the variable in one of them; a free port that a variable may override — adds a setting no need has been found for; no test of the default address — a change of the address a person starts the server on would pass unnoticed.
+
+### D-50 — In what unit does a character's warmth stand?
+
+In the MVP a character's warmth is its body temperature in degrees Celsius, counted with tenths.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the body row reading „Temperatura 36,8 °C”; a program rule whose condition „Temperatura poniżej N °C” takes 35.5;
+  - violates: warmth shown as points or as a percentage; a condition on warmth that refuses 35.5 as no whole number.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8. Jak działają ciepło, sytość i zdrowie — w jakiej jednostce gracz widzi ciepło i z jakimi liczbami?"
+
+*Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from; they serve the MVP and may change after it.
+*Rejected:* warmth on a scale of its own, as points or a percentage — the ambient temperature of a game map would have to be converted into it; whole degrees — a condition on warmth could not tell apart states the body passes through within one degree.
+
+### D-51 — What cools a character's body?
+
+In the MVP a character's body cools in each game minute by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-24
+- **Verification:** an agent compares a change with the decision:
+  - complies: Las given its ambient temperature in its row of the game maps' data; a game map with a lower ambient temperature cooling the body faster than Las;
+  - violates: one ambient temperature in the data of the game's balance, shared by every game map; a body cooling by the same amount on two game maps of different ambient temperatures.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8. Jak działają ciepło, sytość i zdrowie — w jakiej jednostce gracz widzi ciepło i z jakimi liczbami?"
+
+*Rationale:* The cold of a game map is part of what makes it hard, so a colder game map is made by a change of its own data, as D-18 sets for the game's content, and one rule of cooling makes a mild game map gentle and a cold one harsh. The list of what a game map's data holds in D-24 does not name the ambient temperature, and does not rule it out.
+*Rejected:* one ambient temperature in the game's balance for every game map — a colder game map would take a change beyond its own data.
+
+### D-52 — How far do warming and eating raise a character's warmth and satiety?
+
+In the MVP warming raises a character's body temperature up to its starting body temperature, and eating raises its satiety up to its starting satiety.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a mage at 36.9 °C beside a burning campfire reaching 37.0 °C and staying there; a berry eaten at satiety 90 bringing it to 100;
+  - violates: a mage warmed to 37.4 °C beside a campfire; satiety above 100 after a meal.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8. Jak działają ciepło, sytość i zdrowie — w jakiej jednostce gracz widzi ciepło i z jakimi liczbami?" and "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
+
+*Rationale:* Warmth and satiety are needs that fall with time, and their starting values are the state of a character in want of nothing. A surplus stored above them would let a program stay away from a campfire and from berries for longer than the game map's numbers say, which decides how hard Las is to pass.
+*Rejected:* warming and eating above the starting value, kept as a reserve — a program could hold out far longer away from a campfire and berries, and Las would be easier than its numbers say.
+
+### D-53 — When does a character lose and regain health?
+
+In the MVP a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a mage both chilled and starving losing in a game minute the loss of chill and the loss of hunger together; health rising in a game minute in which the mage is warm and fed, and stopping at full health;
+  - violates: a mage both chilled and starving losing no more than a mage that is chilled; health coming back in a game minute in which the mage is starving.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8. Jak działają ciepło, sytość i zdrowie — w jakiej jednostce gracz widzi ciepło i z jakimi liczbami?"
+
+*Rationale:* Cold and hunger are two wants, so a program that neglects both pays for both, and health that comes back by itself in a game minute free of both lets a program recover by tending to the character's needs. A streak of game minutes free of a loss to cold or hunger, and the wounds of combat, build on this rule.
+*Rejected:* cold and hunger counted once together — neglecting both would cost no more than neglecting one; health that does not come back by itself — every loss would stay until the map run ends.
+
+### D-54 — When does a character die, and of what?
+
+In the MVP a character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the map run ending in the game minute health reaches zero while a gathering started five game minutes before is still under way; a mage both chilled and starving in the game minute of death dying of cold;
+  - violates: death waiting for the character's action in progress to end; a starving mage that is not chilled dying of cold.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?"
+
+*Rationale:* Health at zero ends the map run in the game minute it happens, whatever the character is doing, so the state the player reads after death is the state of that minute. The character's action in progress lasts its full duration while the map run goes on; death ends the map run, and the action with it, as the player ending a map run does. A death names one cause, so the player reads one reason for it, and a death of another kind, such as of wounds, takes a cause of its own.
+*Rejected:* death waiting for the end of the character's action in progress — the character would go on acting with no health left, and the state shown would not be that of the moment of death.
+
+### D-55 — What does the screen show, and what can the player do, after a character's death?
+
+In the MVP, after a character's death the screen stays on the state of the game minute of death and time stands still, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: after a death of cold in game minute 312 the status row reads „Minuta 312 · Mag zamarzł”, „Pauza” is gone, the game minute stays at 312, and „Restart” starts game minute zero on the same seed;
+  - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?"
+
+*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen from which the player sends the character, whatever that screen becomes.
+*Rejected:* going back to sending the character at once after death — the player loses the state that explains the death.
+
+### D-56 — How does a character light a campfire or a stick?
+
+In the MVP a character lights a campfire and a stick with „Zapal”, an ordinary action of the character whose price is the sticks it uses, until task 9 of the MVP plan, plomyk, turns lighting into the mage's spell Płomyk, paid with nature energy.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zapal — ognisko” using two sticks from the backpack and nothing more;
+  - violates: „Zapal” asking for nature energy, or for another price the game does not have yet.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Czym i za co mag zapala ognisko w tym zadaniu, skoro zapalanie ognia jest w koncepcji czarem maga Płomyk, płaconym energią natury, którą wnosi dopiero zadanie 9?"
+
+*Rationale:* The MVP's plan gives lighting a fire to this stage of the game, before the mage has nature energy, while the game's concept makes lighting a spell paid with that energy; an ordinary action paid with sticks lets a program light a fire now and leaves one action for the spell to take over. Accepted with it: until the spell exists, lighting costs no more than sticks, so Las is easier than it is meant to be, and the spell changes how an existing action works, which asks again whether a well-built program survives.
+*Rejected:* lighting as the spell Płomyk from the start, with a price in nature energy — the game has no nature energy yet.
+
+### D-57 — What does the backpack's cap count, and what sets its height?
+
+In the MVP the backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a backpack holding 5 sticks and 10 berries full at a carrying capacity of 15; „Plecak 7/15” taking its 15 from the character's carrying capacity;
+  - violates: a cap for each kind of item; the backpack's cap written in a game map's data or as a number of the map run.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Czy udźwig plecaka — pułap 15 sztuk — jest cechą postaci, czy liczbą przejścia albo mapy?" · definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § In scope, point 12
+
+*Rationale:* The MVP caps the backpack at a count of pieces taken together. Carrying capacity belongs to the character, apart from a stricter cap a game map may add, and it acts beyond one action of the character — on gathering and on packing for a trip — so it describes the character. The team's chest takes the same rule of counting.
+*Rejected:* a cap counted for each kind of item, or by weight — a rule of capacity other than the one the team's chest takes; the cap as a number of the game map or of the map run — the character's capacity would change with the place it goes to.
+
+### D-58 — What does a full backpack do to gathering?
+
+In the MVP a character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-23
+- **Verification:** an agent compares a change with the decision:
+  - complies: a program rule „Zbierz — patyk” passed over with 15 pieces of 15 in the backpack, and the next program rule carried out;
+  - violates: a gathering carried out with a full backpack, its piece thrown away.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
+
+*Rationale:* A gathering that could bring nothing is no action the character carries out, so the program moves on to a program rule that does something, as a group of program rules passes on to the next.
+*Rejected:* a gathering carried out with a full backpack, its piece lost — the character would spend the gathering's time for nothing and the program would hold on to the program rule.
+
+### D-59 — What does a missed gathering do?
+
+In the MVP a gathering may miss, and a missed gathering leaves the tile's stock as it was and puts no piece into the backpack.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a missed gathering on a tile with 3 sticks leaving 3 sticks there and the backpack as it was;
+  - violates: a missed gathering taking a stick from the tile.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?" · definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § In scope, point 12
+
+*Rationale:* A miss costs the character the time of the gathering, and the stock stays for the next try, so luck changes how long gathering takes rather than how much a tile gives.
+*Rejected:* a miss that uses up a piece of the tile's stock — luck would drain tiles, and a gathering that brought nothing would still have changed the world.
+
+### D-60 — How does a tile's stock renew?
+
+In the MVP a tile holding fewer pieces of a resource than its starting stock gains one piece of it each time the resource's time to renew one piece, given in the game map's data, passes, up to its starting stock.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-24
+- **Verification:** an agent compares a change with the decision:
+  - complies: a tile of Las emptied of sticks holding a stick again once the sticks' time to renew one piece has passed; a tile at its starting stock gaining nothing;
+  - violates: a tile growing above its starting stock; a tile refilled to its starting stock at once.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
+
+*Rationale:* A gathered tile recovers at the pace its game map sets, so gathering is a choice of where and when, and the bound keeps a tile from growing past what the layout gave it, also over the hours of a player's absence that the game counts later.
+*Rejected:* renewal with no upper bound — a tile left alone would grow on and on, also over the hours of a player's absence.
+
+### D-61 — What becomes of a campfire that burns out?
+
+In the MVP a campfire that burns out stays on its tile, extinguished, and can be lit again.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zapal — ognisko” carried out at an extinguished campfire; „Idź — ognisko” leading to an extinguished campfire as to a known one;
+  - violates: a campfire that disappears once its minutes of burning run out.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
+
+*Rationale:* A campfire built from sticks stays a place the character can return to and light again for less than building anew, and a program can lead the character back to it.
+*Rejected:* a campfire that disappears when it burns out — every fire would have to be built again.
+
+### D-62 — How much does feeding add to a burning campfire?
+
+In the MVP each feeding of a burning campfire adds its minutes of burning to those the campfire has left, however many those are.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a campfire with 150 minutes left burning 170 after a feeding that adds 20;
+  - violates: a feeding that stops at a ceiling of minutes of burning.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
+
+*Rationale:* Feeding is paid with fuel piece by piece, so a program that gathers enough can keep its fire burning for hours ahead.
+*Rejected:* a ceiling on the minutes of burning — a program could not feed its fire far ahead.
+
+### D-63 — How does the browser view show a campfire?
+
+In the MVP a campfire shows on the terrain panel's drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-19
+- **Verification:** an agent compares a change with the decision:
+  - complies: a tile's row reading „ognisko — płonie, zostało 42 min”, and the campfire's icon on that tile of the drawing;
+  - violates: the minutes left written on the drawing beside the campfire's icon.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jak ekran pokazuje ciepło, sytość, zdrowie, plecak i ognisko?"
+
+*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands. Accepted with it: the drawing alone does not tell a burning campfire from an extinguished one.
+*Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further.
+
+### D-64 — In what order does a game minute of a map run take effect?
+
+In the MVP, a game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and the program picks a program rule from what that minute has made.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-04 · D-23
+- **Verification:** invariants: minute-span-split. An agent compares a change with the decision:
+  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character;
+  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry"
+
+*Rationale:* The world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so every effect of an action of the character acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel.
+*Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it.
+
+### D-65 — Where does a character craft a campfire and light a stick?
+
+In the MVP a character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-25
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Wytwórz — ognisko” passed over after „Wędruj” onto a tile not yet revealed, and carried out once „Eksploruj” has revealed it;
+  - violates: a campfire or a burning stick standing on a tile not yet revealed.
+- **Origin:** none
+
+*Rationale:* Every campfire and every burning stick then stands on a revealed tile, so the drawing shows the campfire's icon and the list of revealed tiles shows its state and the burning stick's, as for the stock a gathering takes from; the list of revealed tiles and the drawing keep the meanings they have. Accepted with it: a program that crafts a campfire or lights a stick after wandering onto a tile not yet revealed passes on to its next program rule.
+*Rejected:* a campfire shown on a tile not yet revealed — the list of revealed tiles and the role `tile-hidden` would change their meaning; a campfire left on a tile not yet revealed with nothing showing it — its state and its icon would stand nowhere.
