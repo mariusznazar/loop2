@@ -36,6 +36,7 @@ export function warmthAt(
  * 0 minutes is extinguished and stays on its tile, an item at 0 minutes is gone. Then, for each
  * resource of the map whose renewal time `minute` is a whole multiple of, every tile holding that
  * resource below the map's stock per tile gains one piece; a tile at 0 pieces keeps its resource.
+ * A resource the map gives no renewal time does not renew.
  */
 export function worldMinute(world: World, map: MapDef, minute: number): World {
   const campfires = world.campfires.map((campfire) =>
@@ -48,7 +49,9 @@ export function worldMinute(world: World, map: MapDef, minute: number): World {
     .filter((burning) => burning.minutesLeft > 0);
 
   const renewing = map.resources.filter(
-    (resource) => minute % resource.renewMinutes === 0,
+    (resource) =>
+      resource.renewMinutes !== undefined &&
+      minute % resource.renewMinutes === 0,
   );
   const tiles =
     renewing.length === 0

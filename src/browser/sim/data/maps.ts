@@ -6,7 +6,8 @@ export type MapResourceDef = {
   density: number;
   /** Stock of a tile that holds the resource. */
   stock: number;
-  renewMinutes: number;
+  /** Game minutes to renew one piece on a tile; left out, the resource does not renew. */
+  renewMinutes?: number;
 };
 
 export type MapDef = {

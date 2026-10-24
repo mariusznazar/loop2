@@ -223,6 +223,49 @@ test("a tile below its stock of sticks gains one piece at minute 30 and none abo
   assert.deepEqual(sticks(at90), [12, 3, 12], "none above its stock");
 });
 
+test("a resource whose map data gives no time to renew does not renew, while the others renew", () => {
+  // A hand-made map: Las with the sticks' time to renew left out of its data.
+  const noStickRenewal = {
+    ...forest,
+    resources: forest.resources.map((resource) => {
+      if (resource.id !== stick) return resource;
+      const { id, density, stock } = resource;
+      return { id, density, stock };
+    }),
+  };
+  const step = (run, minutes) => {
+    let current = run;
+    for (let i = 0; i < minutes; i += 1)
+      current = stepMinute(current, noStickRenewal, IDLE).run;
+    return current;
+  };
+  let start = newMapRun(noStickRenewal, 3, IDLE, { mapId, archetypeId }).run;
+  const { withStick, withBerry } = renewalTiles(start);
+  const [below, empty] = withStick;
+  start = setStock(start, below, stick, 10);
+  start = setStock(start, empty, stick, 0);
+  start = setStock(start, withBerry, berry, 5);
+
+  for (const [minutes, berries] of [
+    [1, 5],
+    [30, 5],
+    [40, 6],
+    [120, 8],
+  ]) {
+    const run = step(start, minutes);
+    assert.deepEqual(
+      [run.tiles[below].stock[stick], run.tiles[empty].stock[stick]],
+      [10, 0],
+      `sticks at minute ${minutes}`,
+    );
+    assert.equal(
+      run.tiles[withBerry].stock[berry],
+      berries,
+      `berries at minute ${minutes}`,
+    );
+  }
+});
+
 test("in the minute of death nothing burns down and no tile renews", () => {
   // Chilled at 30 °C, health falls by 0.35 a minute: 10.5 reaches 0 in minute 30.
   const { withStick } = renewalTiles(handMade());
