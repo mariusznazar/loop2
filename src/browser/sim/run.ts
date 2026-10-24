@@ -1,4 +1,5 @@
 import { bodyMinute, startingBody } from "./body.js";
+import { newBackpack, newTraits } from "./character.js";
 import { ACTIONS } from "./data/actions.js";
 import { BALANCE } from "./data/balance.js";
 import type { MapDef } from "./data/maps.js";
@@ -15,6 +16,7 @@ import type {
   MapId,
   MapRun,
   Program,
+  Traits,
 } from "./types.js";
 
 /** What happened in the simulation, minute-stamped, in order of occurrence. */
@@ -90,12 +92,16 @@ function startActivity(
   };
 }
 
-/** A new map run at minute 0: the layout drawn from the seed, the first activity chosen. */
+/**
+ * A new map run at minute 0: the layout drawn from the seed, the first activity chosen. The
+ * character carries the given traits, or those of a new character, and an empty backpack.
+ */
 export function newMapRun(
   map: MapDef,
   seed: number,
   program: Program,
   ids: { mapId: MapId; archetypeId: ArchetypeId },
+  traits: Traits = newTraits(),
 ): { run: MapRun; events: GameEvent[] } {
   const { tiles, entrance } = drawLayout(map, seed);
   const base = {
@@ -103,7 +109,12 @@ export function newMapRun(
     seed,
     minute: 0,
     tiles,
-    character: { archetypeId: ids.archetypeId, at: entrance },
+    character: {
+      archetypeId: ids.archetypeId,
+      at: entrance,
+      traits: { ...traits },
+      backpack: newBackpack(),
+    },
     body: startingBody(),
     wanderRandom: streamState(seed, "wander"),
     death: null,

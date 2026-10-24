@@ -1,8 +1,10 @@
 import type { ArchetypeId } from "./data/archetypes.js";
+import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
+import type { Traits } from "./data/traits.js";
 
-export type { ArchetypeId, MapId, ResourceId };
+export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
 
 /** Axial hex coordinates. */
 export type Hex = { q: number; r: number };
@@ -54,6 +56,17 @@ export type Body = {
   health: number;
 };
 
+/** Pieces held of each item; an item not held stands at 0. */
+export type Backpack = Record<ItemId, number>;
+
+/** The character of a map run: who it is, where it stands, what it is and what it carries. */
+export type Character = {
+  archetypeId: ArchetypeId;
+  at: Hex;
+  traits: Traits;
+  backpack: Backpack;
+};
+
 export type DeathCause = "cold" | "hunger";
 
 /** The end of a map run in the character's death. */
@@ -67,7 +80,7 @@ export type MapRun = {
   minute: number;
   /** Row-major: row 0 col 0, row 0 col 1, ... */
   tiles: Tile[];
-  character: { archetypeId: ArchetypeId; at: Hex };
+  character: Character;
   body: Body;
   /** Always set while the run exists; kept as it stood when the character dies. */
   current: CurrentActivity;

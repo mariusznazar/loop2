@@ -1,3 +1,4 @@
+import { newTraits } from "./character.js";
 import { ARCHETYPES } from "./data/archetypes.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
 import { CONDITIONS } from "./data/conditions.js";
@@ -14,6 +15,7 @@ import type {
   Program,
   ProgramRule,
   ResourceId,
+  Traits,
 } from "./types.js";
 
 export type { GameEvent };
@@ -133,11 +135,15 @@ function startRun(
   mapId: MapId,
   archetypeId: ArchetypeId,
   seed: number,
+  traits: Traits,
 ): GameResult {
-  const started = newMapRun(mapOf(mapId), seed, state.program, {
-    mapId,
-    archetypeId,
-  });
+  const started = newMapRun(
+    mapOf(mapId),
+    seed,
+    state.program,
+    { mapId, archetypeId },
+    traits,
+  );
   return {
     state: { ...state, run: started.run, paused: false, realMsCarry: 0 },
     events: [{ kind: "mapRunStarted", seed }, ...started.events],
@@ -183,12 +189,18 @@ export function send(
     throw new Error(`send: no archetype ${String(archetypeId)}`);
   }
   const seed = mixSeed(state.lastSeed, realMs);
-  return startRun({ ...state, lastSeed: seed }, mapId, archetypeId, seed);
+  return startRun(
+    { ...state, lastSeed: seed },
+    mapId,
+    archetypeId,
+    seed,
+    newTraits(),
+  );
 }
 
 /**
  * Ends the map run in progress, or one ended in death, and starts a new one of the same map,
- * character and seed.
+ * character, traits and seed.
  */
 export function restart(state: GameState): GameResult {
   const run = requireRun(state, "restart");
@@ -197,6 +209,7 @@ export function restart(state: GameState): GameResult {
     run.mapId,
     run.character.archetypeId,
     run.seed,
+    run.character.traits,
   );
   return {
     state: started.state,
