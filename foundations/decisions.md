@@ -152,9 +152,9 @@ player's saved state.
 *Rejected:* the server computing the game itself — a second home for the simulation and many
 times the work.
 
-### D-08 — Where does the MVP run?
+### D-08 — Where does the game run?
 
-The MVP game and its account and save server run in a dedicated loop2 container on Mikrus, at a
+The game and its account and save server run in a dedicated loop2 container on Mikrus, at a
 public address different from `kantarion.bieda.it`. The existing loop container remains untouched.
 
 - **Scope:** deployment
@@ -980,7 +980,7 @@ second kind of chest and an exception everywhere it is read.
 
 ### D-51 — What team does a new game start with?
 
-In the MVP a new game starts with an empty team, and the player creates the first character in the
+A new game starts with an empty team, and the player creates the first character in the
 headquarters before sending any character to a game map.
 
 - **Scope:** simulation, browser-view
@@ -993,14 +993,13 @@ headquarters before sending any character to a game map.
 - **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "1. Czy nowa gra zaczyna się z jedną gotową postacią maga żywiołów w drużynie, czy z pustą drużyną, w której gracz zakłada pierwszą postać w siedzibie?"
 
 *Rationale:* every character of the team is then one the player created and named, the first one
-included, so creating a character is the first thing the player does in a new game. The choice is
-made for the MVP and stays open to change.
+included, so creating a character is the first thing the player does in a new game.
 *Rejected:* a new game with one ready-made elemental mage in the team — a character the player
 neither created nor named.
 
 ### D-52 — How is a character named?
 
-In the MVP a character has a name, which the player types when creating it; a name that is empty,
+A character has a name, which the player types when creating it; a name that is empty,
 also once the white space at its start and end is trimmed, creates no character, and two
 characters may bear the same name.
 
@@ -1024,7 +1023,7 @@ a name keeping white space at its start or end — it looks on the list as the s
 
 ### D-53 — Where does the player send a character from, and where does „Zakończ” lead?
 
-In the MVP the player sends a character to a game map from the headquarters, and „Zakończ” returns
+The player sends a character to a game map from the headquarters, and „Zakończ” returns
 to the headquarters.
 
 - **Scope:** browser-view
@@ -1046,7 +1045,7 @@ send from one screen and see the team on another.
 
 ### D-54 — In what order do the characters of the team stand?
 
-In the MVP the characters of the team stand on its list in the order they were created.
+The characters of the team stand on its list in the order they were created.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -1065,28 +1064,27 @@ move the others.
 
 ### D-55 — How many manual map runs go on at a time?
 
-In the MVP the game holds one manual map run at a time: while one character is in a map run, the
-game sends no other.
+The game holds one manual map run at a time: while one character is in a manual map run, the game
+sends no other on a manual map run.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: `send` refusing a second character while a map run goes on; „Wyślij” beside the other
-    characters inactive wherever the headquarters shows during a map run
-  - violates: a game state holding a map run for each character; a second character sent while the
-    first one's map run goes on
+  - complies: `send` refusing a second character while a manual map run goes on; „Wyślij” beside the
+    other characters inactive wherever the headquarters shows during a manual map run
+  - violates: a second character sent on a manual map run while the first one's goes on
 - **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Czy kilka postaci drużyny może naraz być w ręcznym przejściu mapy?" and "12. Czy po zadaniu 18 ręczne przejście dalej ma trwać jedno naraz?"
 
-*Rationale:* the game state keeps one map run as the team grows, and the player follows one map run
-at a time beside the program panel. Earning loops, which go on side by side, stand beside the one
-manual map run rather than in its place.
-*Rejected:* manual map runs of several characters at once — the game state would hold a map run for
-each character, and the screen one for each.
+*Rationale:* the game state keeps one manual map run as the team grows, and the player follows one
+map run at a time beside the program panel. Earning loops, which go on side by side, stand beside
+the one manual map run rather than in its place.
+*Rejected:* manual map runs of several characters at once — the game state would hold a manual map
+run for each character, and the screen one for each.
 
 ### D-56 — How does the game state tell one character from another?
 
-In the MVP each character carries a number the game gives it when the character is created, one
+Each character carries a number the game gives it when the character is created, one
 more than the number the game state gave last, so the numbers of two characters of one game
 differ. A map run names the team's character it carries by that number.
 
@@ -1113,7 +1111,7 @@ from the generators of a map run.
 
 ### D-57 — In what unit does a character's warmth stand?
 
-In the MVP a character's warmth is its body temperature in degrees Celsius, counted with tenths.
+A character's warmth is its body temperature in degrees Celsius, counted with tenths.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -1123,12 +1121,12 @@ In the MVP a character's warmth is its body temperature in degrees Celsius, coun
   - violates: warmth shown as points or as a percentage; a condition on warmth that refuses 35.5 as no whole number.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8. Jak działają ciepło, sytość i zdrowie — w jakiej jednostce gracz widzi ciepło i z jakimi liczbami?"
 
-*Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from; they serve the MVP and may change after it.
+*Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from.
 *Rejected:* warmth on a scale of its own, as points or a percentage — the ambient temperature of a game map would have to be converted into it; whole degrees — a condition on warmth could not tell apart states the body passes through within one degree.
 
 ### D-58 — What cools a character's body?
 
-In the MVP a character's body cools in each game minute by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data.
+A character's body cools in each game minute by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1143,7 +1141,7 @@ In the MVP a character's body cools in each game minute by more, the further the
 
 ### D-59 — How far do warming and eating raise a character's warmth and satiety?
 
-In the MVP warming raises a character's body temperature up to its starting body temperature, and eating raises its satiety up to its starting satiety.
+Warming raises a character's body temperature up to its starting body temperature, and eating raises its satiety up to its starting satiety.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1158,7 +1156,7 @@ In the MVP warming raises a character's body temperature up to its starting body
 
 ### D-60 — When does a character lose and regain health?
 
-In the MVP a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health.
+A character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1173,7 +1171,7 @@ In the MVP a character loses health in each game minute in which it is chilled �
 
 ### D-61 — When does a character die, and of what?
 
-In the MVP a character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise.
+A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1188,7 +1186,7 @@ In the MVP a character dies in the game minute in which its health reaches zero,
 
 ### D-62 — What does the screen show, and what can the player do, after a character's death?
 
-In the MVP, after a character's death the screen stays on the state of the game minute of death and time stands still, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character.
+After a character's death the screen stays on the state of the game minute of death and time stands still, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -1203,14 +1201,14 @@ In the MVP, after a character's death the screen stays on the state of the game 
 
 ### D-63 — How does a character light a campfire or a stick?
 
-In the MVP a character lights a campfire and a stick with „Zapal”, an ordinary action of the character whose price is the sticks it uses, until task 9 of the MVP plan, plomyk, turns lighting into the mage's spell Płomyk, paid with nature energy.
+A character lights a campfire and a stick with „Zapal”, an ordinary action of the character whose price is the sticks it uses.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: „Zapal — ognisko” using two sticks from the backpack and nothing more;
-  - violates: „Zapal” asking for nature energy, or for another price the game does not have yet.
+  - violates: „Zapal” using no sticks, or asking for a price besides the sticks it uses.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Czym i za co mag zapala ognisko w tym zadaniu, skoro zapalanie ognia jest w koncepcji czarem maga Płomyk, płaconym energią natury, którą wnosi dopiero zadanie 9?"
 
 *Rationale:* The MVP's plan gives lighting a fire to this stage of the game, before the mage has nature energy, while the game's concept makes lighting a spell paid with that energy; an ordinary action of the character paid with sticks lets a program light a fire now and leaves one action for the spell to take over. Accepted with it: until the spell exists, lighting costs no more than sticks, so Las is easier than it is meant to be, and the spell changes how an existing action works, which asks again whether a well-built program survives.
@@ -1218,22 +1216,22 @@ In the MVP a character lights a campfire and a stick with „Zapal”, an ordina
 
 ### D-64 — What does the backpack's cap count, and what sets its height?
 
-In the MVP the backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity.
+The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: a backpack holding 5 sticks and 10 berries full at a carrying capacity of 15; „Plecak 7/15” taking its 15 from the character's carrying capacity;
-  - violates: a cap for each kind of item; the backpack's cap written in a game map's data or as a number of the map run.
+  - violates: a cap for each kind of item; the backpack's cap taken from a game map's data or from a number of the map run in place of the character's carrying capacity.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Czy udźwig plecaka — pułap 15 sztuk — jest cechą postaci, czy liczbą przejścia albo mapy?" · definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § In scope, point 12
 
-*Rationale:* The MVP caps the backpack at a count of pieces taken together. Carrying capacity belongs to the character, apart from a stricter cap a game map may add, and it acts beyond one action of the character — on gathering and on packing for a trip — so it describes the character. The team's chest takes the same rule of counting.
+*Rationale:* The MVP definition caps the backpack at a count of pieces taken together. Carrying capacity belongs to the character, apart from a stricter cap a game map may add, and it acts beyond one action of the character — on gathering and on packing for a trip — so it describes the character. The team's chest takes the same rule of counting.
 *Rejected:* a cap counted for each kind of item, or by weight — a rule of capacity other than the one the team's chest takes; the cap as a number of the game map or of the map run — the character's capacity would change with the place it goes to.
 
 ### D-65 — What does a full backpack do to gathering?
 
-In the MVP a character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then.
+A character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1248,7 +1246,7 @@ In the MVP a character carries out a gathering while its backpack holds fewer pi
 
 ### D-66 — What does a missed gathering do?
 
-In the MVP a gathering may miss, and a missed gathering leaves the tile's stock as it was and puts no piece into the backpack.
+A gathering may miss, and a missed gathering leaves the tile's stock as it was and puts no piece into the backpack.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1263,7 +1261,7 @@ In the MVP a gathering may miss, and a missed gathering leaves the tile's stock 
 
 ### D-67 — How does a tile's stock renew?
 
-In the MVP a tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece, given in the game map's data and counted from the map run's game minute zero, up to its starting stock.
+A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece, given in the game map's data and counted from the map run's game minute zero, up to its starting stock.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1278,7 +1276,7 @@ In the MVP a tile holding fewer pieces of a resource than its starting stock gai
 
 ### D-68 — What becomes of a campfire that burns out?
 
-In the MVP a campfire that burns out stays on its tile, extinguished, and can be lit again.
+A campfire that burns out stays on its tile, extinguished, and can be lit again.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1293,7 +1291,7 @@ In the MVP a campfire that burns out stays on its tile, extinguished, and can be
 
 ### D-69 — How much does feeding add to a burning campfire?
 
-In the MVP each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning to those the campfire has left then, however many those are, zero included, so a campfire that burnt out during the feeding burns again.
+Each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning to those the campfire has left then, however many those are, zero included, so a campfire that burnt out during the feeding burns again.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1308,7 +1306,7 @@ In the MVP each feeding of a campfire burning at the feeding's start adds, at th
 
 ### D-70 — How does the browser view show a campfire?
 
-In the MVP a campfire shows on the terrain panel's drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
+A campfire shows on the terrain panel's drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -1323,7 +1321,7 @@ In the MVP a campfire shows on the terrain panel's drawing of the game map as an
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
-In the MVP, a game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and the program picks a program rule from what that minute has made.
+A game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and the program picks a program rule from what that minute has made.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1338,7 +1336,7 @@ In the MVP, a game minute of a map run takes effect in this order: first the cha
 
 ### D-72 — Where does a character craft a campfire and light a stick?
 
-In the MVP a character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick.
+A character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick.
 
 - **Scope:** simulation
 - **Based on:** none
