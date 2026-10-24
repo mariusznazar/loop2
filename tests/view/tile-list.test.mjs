@@ -1,10 +1,10 @@
 // The list of revealed tiles beside the terrain drawing (spec section 5, choices C4 and C5).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
+  createCharacter,
   newGame,
   send,
   setProgram,
@@ -13,14 +13,15 @@ import { tileList } from "../../dist/public/view/tile-list.js";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
-  archetypeId: Object.keys(ARCHETYPES)[0],
+  // The first character a new game creates takes the id 1.
+  characterId: 1,
 };
 const ALWAYS = { kind: "always" };
 const EXPLORE = [{ condition: ALWAYS, action: { kind: "explore" } }];
 
 function sent(rules = EXPLORE) {
   const program = setProgram(newGame(), { rules }).state;
-  return send(program, SENT, 1760000000000).state;
+  return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
 }
 
 /** The map's resource ids in the map's order: r[0] … r[3]. */

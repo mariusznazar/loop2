@@ -4,9 +4,9 @@ run under.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send`, `restart` and
-`advanceMinutes` one game minute at a time. After every input the script records the JSON of the
-map run.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
+`send`, `restart` and `advanceMinutes` one game minute at a time. After every input the script
+records the JSON of the map run.
 
 Reading of the sentence:
 - the resources on a tile: which resources the tile's `stock` holds — the keys of `stock`, a
@@ -50,7 +50,10 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 MORE = (1760000200000, 1760000300000, 1760000400000)
@@ -144,9 +147,9 @@ def drive(steps):
 def two_sends(first, second, real_ms):
     """Two games, each sent at `real_ms`: one under `first`, one under `second` (replaced by
     `first` at CHANGE_AT)."""
-    one = drive([["newGame"], ["setProgram", first], ["send", SENT, real_ms]]
+    one = drive([["newGame"], CREATE, ["setProgram", first], ["send", SENT, real_ms]]
                 + minutes(first, first))
-    two = drive([["newGame"], ["setProgram", second], ["send", SENT, real_ms]]
+    two = drive([["newGame"], CREATE, ["setProgram", second], ["send", SENT, real_ms]]
                 + minutes(second, first))
     return one[0], two[0]
 
@@ -154,7 +157,7 @@ def two_sends(first, second, real_ms):
 def restarted(first, second, real_ms):
     """One game: a map run under `first`, then a restart under `second` (replaced by `first` at
     CHANGE_AT)."""
-    runs = drive([["newGame"], ["setProgram", first], ["send", SENT, real_ms]]
+    runs = drive([["newGame"], CREATE, ["setProgram", first], ["send", SENT, real_ms]]
                  + minutes(first, first)
                  + [["setProgram", second], ["restart"]] + minutes(second, first))
     if len(runs) != 2:

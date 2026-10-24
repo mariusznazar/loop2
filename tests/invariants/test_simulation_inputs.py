@@ -13,11 +13,12 @@ Reading of the sentence:
 - changes: a key added, removed or given another value, at any depth.
 
 Inputs (written out below, or reached by driving `game.js` from them):
-- game states: a new game, the game after `setProgram`, after a send of the map `forest` with the
-  archetype `elementalMage`, at every game minute of 300 minutes of a program using every
-  condition kind and every action kind, paused, after real time, after a restart and after an end;
-- for the functions of `game.js`: each of those states with programs, sends, real times, minutes
-  and pause flags written out below;
+- game states: a new game, the game after `setProgram`, after a character created, after a send
+  of that character to the map `forest`, at every game minute of 300 minutes of a program using
+  every condition kind and every action kind, paused, after real time, after a restart and after
+  an end;
+- for the functions of `game.js`: each of those states with names typed for a new character,
+  programs, sends, real times, minutes and pause flags written out below;
 - for the functions taking a map run: the map runs of those states, the map `forest` as the data
   module `maps.js` gives it, the conditions `always` and "fewer than N here" for each resource and
   N in 0, 1, 7, 50, the actions explore, wander and go to each resource, the programs below;
@@ -49,8 +50,8 @@ BUILT_DIRECTORY = "dist/public/sim"
 
 # Every exported function this check calls with inputs chosen for it, by module.
 TABLE = {
-    "game.js": ["newGame", "setProgram", "send", "restart", "end", "setPaused", "passRealTime",
-                "advanceMinutes"],
+    "game.js": ["newGame", "characterName", "createCharacter", "setProgram", "send", "restart",
+                "end", "setPaused", "passRealTime", "advanceMinutes"],
     "hex.js": ["offsetToAxial", "sameHex", "hexDistance", "tileAt", "neighbours", "nearestTile",
                "hexCenter", "hexCorners", "tileLabel"],
     "layout.js": ["drawLayout"],
@@ -81,7 +82,11 @@ PROGRAMS = [
     ]},
     {"rules": [{"condition": ALWAYS, "action": {"kind": "wander"}}]},
 ]
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+# Names typed for a new character: plain, with white space around it, and empty once trimmed.
+NAMES = ["Ala", "  Ola ", "", "   "]
 T = 1760000000000
 T_OTHER = 1760000123456
 MINUTES = 300
@@ -89,6 +94,7 @@ SEEDS = [0, 1, 204219582, 4294967295]
 
 INPUTS = {
     "actions": ACTIONS, "conditions": CONDITIONS, "programs": PROGRAMS, "sent": SENT,
+    "names": NAMES,
     "t": T, "tOther": T_OTHER, "minutes": MINUTES, "seeds": SEEDS, "resources": list(RESOURCES),
     "streams": ["layout", "wander"], "realMs": [0, 999, 1000, 61000], "advance": [0, 1, 25],
     "sizes": [1, 24], "offsets": [[0, 0], [1, 1], [3, 2], [-1, 5]],
@@ -193,6 +199,7 @@ const states = [];
 let state = g.newGame();
 states.push(state);
 state = g.setProgram(state, clone(I.programs[1])).state; states.push(state);
+state = g.createCharacter(state, I.names[0]).state; states.push(state);
 state = g.send(state, clone(I.sent), I.t).state; states.push(state);
 for (let m = 0; m < I.minutes; m += 1) { state = g.advanceMinutes(state, 1).state; states.push(state); }
 state = g.passRealTime(state, 61000).state; states.push(state);
@@ -207,7 +214,9 @@ const sample = (list, count) => list.filter((_, i) => i % Math.max(1, Math.floor
 
 // game.js
 call('game.js', 'newGame', []);
+for (const name of I.names) call('game.js', 'characterName', [name]);
 for (const s of sample(states, 40)) {
+  for (const name of I.names) call('game.js', 'createCharacter', [s, name]);
   for (const p of I.programs) call('game.js', 'setProgram', [s, clone(p)]);
   call('game.js', 'send', [s, clone(I.sent), I.t]);
   call('game.js', 'send', [s, clone(I.sent), I.tOther]);

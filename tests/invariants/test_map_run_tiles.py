@@ -21,8 +21,9 @@ Reading of the sentence:
 - a tile holds of a resource: `tile.stock[id]`; holds none: the key is missing, or its value is 0;
 - holds no resource missing from that list: every key of `tile.stock` is an `id` of the list.
 
-Scenarios: for every game map of MAP_RESOURCES, with the archetype `elementalMage`, a send at each
-of 15 real times written out below, then 50 game minutes, a restart, an end and a second send
+Scenarios: for every game map of MAP_RESOURCES, with a character created in a new game, of the
+archetype `elementalMage`, a send at each of 15 real times written out below, then 50 game
+minutes, a restart, an end and a second send
 (whose seed comes from the first), so 45 map run starts for each game map. Three of the real times
 (SINGLE_TILE_TIMES) give, on Las, a map run in which berry, fiber or moss stands on one tile
 alone, the outcome of a layout that places on one tile a resource its draw left on none.
@@ -60,7 +61,8 @@ MAP_RESOURCES = {
     "forest": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
                {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
 }
-ARCHETYPE = "elementalMage"
+# The name of the character sent; the first character a new game creates takes the id 1.
+CHARACTER_NAME = "Ala"
 # Real times of a send from a new game whose map run of Las holds a resource on one tile alone —
 # the outcome a layout gives where the draw left the resource on no tile and it is placed on one
 # tile all the same, a case a few starts in a thousand reach: berry, fiber and moss in turn.
@@ -81,20 +83,21 @@ import { pathToFileURL } from 'node:url';
 const [simDirectory, configPath, outPath] = process.argv.slice(2);
 const config = JSON.parse(readFileSync(configPath, 'utf8'));
 const game = await import(pathToFileURL(join(simDirectory, 'game.js')).href);
-const archetypeId = config.archetypeId;
+const characterId = 1;
 const out = { starts: [] };
 for (const mapId of config.mapIds) {
   for (const realMs of config.realTimes) {
     let state = game.setProgram(game.newGame(), config.program).state;
+    state = game.createCharacter(state, config.characterName).state;
     const record = (how) => out.starts.push({ mapId, how, realMs,
       tiles: JSON.parse(JSON.stringify(state.run.tiles)) });
-    state = game.send(state, { mapId, archetypeId }, realMs).state;
+    state = game.send(state, { mapId, characterId }, realMs).state;
     record('send');
     state = game.advanceMinutes(state, 50).state;
     state = game.restart(state).state;
     record('restart');
     state = game.end(state).state;
-    state = game.send(state, { mapId, archetypeId }, realMs + 1000).state;
+    state = game.send(state, { mapId, characterId }, realMs + 1000).state;
     record('second send');
   }
 }
@@ -125,7 +128,8 @@ def starts():
             with open(script, "w", encoding="utf-8", newline="\n") as handle:
                 handle.write(DRIVER)
             with open(config, "w", encoding="utf-8", newline="\n") as handle:
-                json.dump({"realTimes": REAL_TIMES, "program": PROGRAM, "archetypeId": ARCHETYPE,
+                json.dump({"realTimes": REAL_TIMES, "program": PROGRAM,
+                           "characterName": CHARACTER_NAME,
                            "mapIds": list(MAP_RESOURCES)}, handle)
             code, output = support.run([node(), script, directory, config, out_path], work)
             if code != 0:

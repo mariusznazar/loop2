@@ -18,7 +18,7 @@ import {
   type SelectOption,
 } from "./controls/select-list.js";
 import type { Field } from "./controls/text-field.js";
-import { sendTargets } from "./send-panel.js";
+import { sendMaps } from "./headquarters.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
@@ -35,10 +35,10 @@ const NUMBER = CONDITIONS.hereBelow;
 
 /**
  * The resources the resource selects offer, in the map's order: the run's map's during a map run,
- * otherwise the map shown in the send panel. Pure.
+ * otherwise the first map the headquarters sends characters to. Pure.
  */
 export function offeredResources(state: GameState): ResourceId[] {
-  const mapId = state.run ? state.run.mapId : sendTargets()[0]?.mapId;
+  const mapId = state.run ? state.run.mapId : sendMaps()[0];
   if (mapId === undefined) return [];
   return MAPS[mapId].resources.map((resource) => resource.id);
 }

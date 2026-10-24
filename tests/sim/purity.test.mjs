@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
+  createCharacter,
   end,
   newGame,
   passRealTime,
@@ -14,9 +14,9 @@ import {
 } from "../../dist/public/sim/game.js";
 
 const [mapId, map] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
 const [stick, berry] = map.resources.map((resource) => resource.id);
-const SENT = { mapId, archetypeId };
+// The first character a new game creates takes the id 1.
+const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;
 
 const ALWAYS = { kind: "always" };
@@ -52,7 +52,7 @@ function assertPure(name, fn, ...inputs) {
 }
 
 function freshGame() {
-  return setProgram(newGame(), PROGRAM).state;
+  return createCharacter(setProgram(newGame(), PROGRAM).state, "Ala").state;
 }
 
 /** A game mid-run: some minutes passed, a revealed tile, a carry of real time. */
@@ -63,6 +63,8 @@ function midRun() {
 }
 
 test("no public function of the game changes its inputs", () => {
+  assertPure("createCharacter", createCharacter, freshGame(), "  Ola ");
+  assertPure("createCharacter during a run", createCharacter, midRun(), "Ela");
   assertPure("setProgram", setProgram, newGame(), structuredClone(PROGRAM));
   assertPure(
     "setProgram with a run",

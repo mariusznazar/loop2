@@ -4,9 +4,9 @@ paused, and by no game minute for real time passed while it is paused.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send`,
-`passRealTime`, `setPaused`, `restart` and `end`, each returning `{state, events}`. After every
-input the script records the map run's game minute and whether the game is paused.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
+`send`, `passRealTime`, `setPaused`, `restart` and `end`, each returning `{state, events}`. After
+every input the script records the map run's game minute and whether the game is paused.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
@@ -39,7 +39,10 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 PROGRAM = {"rules": [
@@ -56,7 +59,7 @@ def passed(ms):
 PAUSE = ["setPaused", True]
 RESUME = ["setPaused", False]
 
-START = [["newGame"], ["setProgram", PROGRAM], ["send", SENT, T]]
+START = [["newGame"], CREATE, ["setProgram", PROGRAM], ["send", SENT, T]]
 
 # (input, the map run's game minute after it, whether the game is paused after it). Steps whose
 # expected minute is None leave no map run.

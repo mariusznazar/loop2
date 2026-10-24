@@ -3,7 +3,8 @@ action of the character whose kind the data files of `src/browser/sim/data/` do 
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram` and `send`.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram` and
+`send`.
 
 Reading of the sentence:
 - the lists: the kinds of condition are the keys of `CONDITIONS` (`conditions.ts`), the kinds of
@@ -21,8 +22,9 @@ Reading of the sentence:
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
   with valid fields, is taken in as offered (the control that shows refusal is no blanket refusal).
 
-Every offer is made twice: on the sending screen (no map run) and during a map run of Las
-(`forest`) with the archetype `elementalMage`, sent at the real time T. The unlisted kind stands
+Every offer is made twice: in the headquarters (no map run) and during a map run of Las
+(`forest`) of a character created in a new game, of the archetype `elementalMage`, sent at the
+real time T. The unlisted kind stands
 in rule 1 of three, between two valid rules, once bare and once with the fields a listed kind
 takes (`resource`, `value`), so that a reader that guesses a kind from its fields is caught.
 
@@ -45,7 +47,9 @@ import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
 BUILT_DATA = "dist/public/sim/data"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
 T = 1760000000000
 
 # The kinds the data files list today: the keys of CONDITIONS (conditions.ts) and of ACTIONS
@@ -95,6 +99,7 @@ const { base, sent, realMs, offers } = JSON.parse(readFileSync(offersPath, 'utf8
 const results = [];
 for (const { withRun, program } of offers) {
   let state = game.setProgram(game.newGame(), base).state;
+  state = game.createCharacter(state, 'Ala').state;
   if (withRun) state = game.send(state, sent, realMs).state;
   try {
     const after = game.setProgram(state, program).state;
@@ -175,14 +180,14 @@ def taken_in(result):
 
 
 def refusal_findings(label, pairs):
-    return [f"{label} ({'during a map run' if with_run else 'on the sending screen'}): taken in "
+    return [f"{label} ({'during a map run' if with_run else 'in the headquarters'}): taken in "
             f"as {json.dumps(result['program'])}"
             for with_run, result in pairs if taken_in(result)]
 
 
 def acceptance_findings(pairs, expected):
     return [f"the valid program was not taken in as offered "
-            f"({'during a map run' if with_run else 'on the sending screen'}): {json.dumps(result)}"
+            f"({'during a map run' if with_run else 'in the headquarters'}): {json.dumps(result)}"
             for with_run, result in pairs
             if result["threw"] or result["program"] != expected]
 

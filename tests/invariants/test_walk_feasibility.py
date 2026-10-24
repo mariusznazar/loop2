@@ -4,9 +4,9 @@ does, and nowhere else.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send` and
-`advanceMinutes` one game minute at a time. After every input the script records the JSON of the
-map run.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
+`send` and `advanceMinutes` one game minute at a time. After every input the script records the
+JSON of the map run.
 
 Reading of the sentence:
 - can carry out: at a free game minute (one at which the map run starts or at which the
@@ -63,7 +63,10 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 MORE = (1760000200000, 1760000300000, 1760000400000)
@@ -133,7 +136,8 @@ def node():
 
 def steps_for(prog, minutes, real_ms, roam_spells):
     """(steps, for each game minute whether `prog` was in force when it began)."""
-    steps = [["newGame"], ["setProgram", ROAM if roam_spells else prog], ["send", SENT, real_ms]]
+    steps = [["newGame"], CREATE, ["setProgram", ROAM if roam_spells else prog],
+             ["send", SENT, real_ms]]
     in_force = [not roam_spells]
     for minute in range(1, minutes + 1):
         if roam_spells and minute % SPELL_MINUTES == 0:

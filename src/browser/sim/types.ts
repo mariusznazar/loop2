@@ -53,16 +53,36 @@ export type MapRun = {
   minute: number;
   /** Row-major: row 0 col 0, row 0 col 1, ... */
   tiles: Tile[];
-  character: { archetypeId: ArchetypeId; at: Hex };
+  /** The team's character in the map run, by its id, and the tile it stands on. */
+  character: { id: CharacterId; at: Hex };
   /** Always set while the run exists. */
   current: CurrentActivity;
   /** Generator state of the wander stream. */
   wanderRandom: number;
 };
 
+/** Tells the characters of the team apart; two characters may share a name. */
+export type CharacterId = number;
+
+/** A character of the player's team. */
+export type Character = {
+  id: CharacterId;
+  name: string;
+  archetypeId: ArchetypeId;
+};
+
+/** The team's chest: pieces held, by resource; a key absent holds none. */
+export type Chest = { pieces: Partial<Record<ResourceId, number>> };
+
+/** The player's one team: its characters in the order they were created, and its chest. */
+export type Team = { characters: Character[]; chest: Chest };
+
 export type GameState = {
   program: Program;
-  /** null = sending screen. */
+  team: Team;
+  /** The id the next created character takes. */
+  nextCharacterId: CharacterId;
+  /** null = the headquarters. */
   run: MapRun | null;
   /** Seed of the latest send; INITIAL_SEED at start. */
   lastSeed: number;

@@ -4,9 +4,9 @@ ends.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send` and
-`advanceMinutes` one game minute at a time, each returning `{state, events}`. After every input
-the script records the JSON of the map run.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
+`send` and `advanceMinutes` one game minute at a time, each returning `{state, events}`. After
+every input the script records the JSON of the map run.
 
 Reading of the sentence:
 - the character's action in progress: the map run's `current` activity (the action a program rule
@@ -54,7 +54,10 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 
 # The entrance of Las, (column 1, row 1), as `maps.ts` gives it (D-24), in the axial coordinates
@@ -85,7 +88,7 @@ MINUTE = ["advanceMinutes", 1]
 def scenario(changes, last_minute):
     """Steps: a new game with PA (or the program changes[0]), a send, then one game minute at a
     time up to last_minute, with `setProgram` before the minute step given in changes."""
-    steps = [["newGame"], ["setProgram", changes.get(0, PA)], ["send", SENT, T]]
+    steps = [["newGame"], CREATE, ["setProgram", changes.get(0, PA)], ["send", SENT, T]]
     for minute in range(1, last_minute + 1):
         if minute - 1 in changes and minute - 1 != 0:
             steps.append(["setProgram", changes[minute - 1]])

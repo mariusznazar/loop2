@@ -31,7 +31,8 @@ Covers:
   `console` and `WebAssembly`, which `node:vm` adds, removed — with `Date` replaced by one that
   throws on `Date.now()`, `Date()` and `new Date()`; every import is resolved by the script and
   any specifier resolving outside `dist/public/sim/` is recorded and refused. It then drives the
-  public functions of `game.js` through a send, a mixed program for 400 game minutes, real time,
+  public functions of `game.js` through a character created, a send, a mixed program for 400 game
+  minutes, real time,
   a pause, a restart, an end and a second send. No module may fail to load, no input may raise
   and no refused import or guarded call may be recorded;
 - a control of the dynamic harness: made-up modules that call `setTimeout`, read `document`,
@@ -473,16 +474,20 @@ MIXED = {"rules": [
     {"condition": ALWAYS, "action": {"kind": "explore"}},
     {"condition": ALWAYS, "action": {"kind": "wander"}},
 ]}
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 # Inputs on the paths with no map run: before the first send and after an end.
 NO_RUN = [["setPaused", True], ["passRealTime", 5000], ["setPaused", False],
           ["passRealTime", 1500], ["advanceMinutes", 3], ["setProgram", MIXED], ["restart"],
           ["end"]]
-NO_RUN_FUNCTIONS = ("setPaused", "passRealTime", "advanceMinutes", "setProgram", "restart", "end")
+NO_RUN_FUNCTIONS = ("createCharacter", "setPaused", "passRealTime", "advanceMinutes", "setProgram",
+                    "restart", "end")
 GAME_STEPS = (
-    [["newGame"]] + NO_RUN + [["setProgram", MIXED], ["send", SENT, T]]
+    [["newGame"], CREATE] + NO_RUN + [["setProgram", MIXED], ["send", SENT, T]]
     + [["advanceMinutes", 1]] * 400
     + [["passRealTime", 61000], ["setPaused", True], ["passRealTime", 5000],
        ["advanceMinutes", 5], ["setPaused", False], ["restart"], ["advanceMinutes", 100],
@@ -518,6 +523,7 @@ MADE_UP_GAME = r"""
 const pass = (state) => ({ state, events: [] });
 const noRun = (state) => { NO_RUN_READ return pass(state); };
 export function newGame() { return { run: null, paused: false }; }
+export function createCharacter(state) { return noRun(state); }
 export function setProgram(state, program) { return pass({ ...state, program }); }
 export function send(state) { return pass({ ...state, run: { minute: 0 } }); }
 export function restart(state) {

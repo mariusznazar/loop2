@@ -165,13 +165,58 @@ header h1 {
   width: 4em;
 }
 
-.send-entry p {
+.headquarters h2 {
   margin: 0 0 var(--space-s);
-}
-
-.send-character {
+  font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
   color: var(--text-strong);
+}
+
+/* The sections „Drużyna” and „Skrzynka”: their names in `text-label` (D-40). */
+.headquarters-section {
+  margin-bottom: var(--space-m);
+}
+
+.headquarters-section h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+/* An empty team or chest: a note in `text-secondary` (D-40). */
+.headquarters-empty {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
+}
+
+.team-list,
+.chest-list {
+  list-style: none;
+  margin: 0 0 var(--space-s);
+  padding: 0;
+}
+
+.team-member,
+.character-creation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-xs);
+}
+
+.team-member-name {
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.team-member-archetype {
+  color: var(--text-secondary);
+}
+
+.character-creation-label {
+  color: var(--text-label);
 }
 
 .status-row {

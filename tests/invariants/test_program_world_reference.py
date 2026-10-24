@@ -3,8 +3,8 @@ only by its kind, never by a number or a position of its own.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send` and
-`advanceMinutes`.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
+`send` and `advanceMinutes`.
 
 Reading of the sentence:
 - a program the simulation holds: the program in the game state (`state.program`) after
@@ -26,8 +26,9 @@ Reading of the sentence:
   throws, or the state keeps the program it had) or held without it — which the reading above
   checks of every program held.
 
-Offers, each made on the sending screen and during a map run of Las (`forest`) with the archetype
-`elementalMage` sent at the real time T, after the program BASE: the valid programs in LEGIT; and
+Offers, each made in the headquarters and during a map run of Las (`forest`) of a character
+created in a new game, of the archetype `elementalMage`, sent at the real time T, after the program
+BASE: the valid programs in LEGIT; and
 programs in NAMING, each of which names a tile or a resource by a number or a position — a
 `walkTo` with a coordinate pair, a tile's number, a column and row, an index of a tile, a number
 of its own, a resource given by its index or as a tile's label; a `hereBelow` with a coordinate
@@ -53,7 +54,9 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
 T = 1760000000000
 RESOURCE_IDS = ("stick", "berry", "moss", "fiber")
 # The kinds of condition whose `value` is a whole number compared with a stock.
@@ -119,6 +122,7 @@ const results = [];
 for (const program of offers) {
   for (const withRun of [false, true]) {
     let state = game.setProgram(game.newGame(), base).state;
+    state = game.createCharacter(state, 'Ala').state;
     if (withRun) state = game.send(state, sent, realMs).state;
     const held = [];
     let threw = null;
@@ -210,7 +214,7 @@ def naming(program):
 def findings(label, pair):
     found = []
     for result in pair:
-        where = "during a map run" if result["withRun"] else "on the sending screen"
+        where = "during a map run" if result["withRun"] else "in the headquarters"
         for moment, held in zip(("taken in", "after a send", f"after {ADVANCE} minutes"),
                                 result["held"]):
             for item in naming(held):
