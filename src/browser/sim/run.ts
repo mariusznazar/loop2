@@ -7,6 +7,7 @@ import { neighbours, sameHex, tileAt } from "./hex.js";
 import { drawLayout } from "./layout.js";
 import { chooseActivity, walkTarget } from "./program.js";
 import { nextRandom, streamState } from "./random.js";
+import { warmthAt, worldMinute } from "./world.js";
 import type {
   Activity,
   ArchetypeId,
@@ -116,6 +117,8 @@ export function newMapRun(
       backpack: newBackpack(),
     },
     body: startingBody(),
+    campfires: [],
+    burningItems: [],
     wanderRandom: streamState(seed, "wander"),
     death: null,
   };
@@ -131,11 +134,12 @@ export function newMapRun(
 }
 
 /**
- * One game minute, in the order of D-64. First the body; where the character dies, the step stops
- * there: the current activity stays as it stood, gives no finish, and no program rule is picked.
- * Otherwise, when the current activity ends in this minute, its finish applies and the next
- * activity is chosen in the same minute with the program given now. A map run ended in death
- * passes no minute. Inputs are not changed.
+ * One game minute, in the order of D-64. First the body, warmed by what burns on its tile; where
+ * the character dies, the step stops there: what burns and the tiles stay as they stood, the
+ * current activity too, giving no finish, and no program rule is picked. Otherwise what burns
+ * loses a minute and the tiles renew their stock; then, when the current activity ends in this
+ * minute, its finish applies and the next activity is chosen in the same minute with the program
+ * given now. A map run ended in death passes no minute. Inputs are not changed.
  */
 export function stepMinute(
   run: MapRun,
@@ -144,8 +148,7 @@ export function stepMinute(
 ): { run: MapRun; events: GameEvent[] } {
   if (run.death) return { run, events: [] };
   const minute = run.minute + 1;
-  // Nothing burns yet, so no warmth stands on any tile.
-  const lived = bodyMinute(run.body, 0, map);
+  const lived = bodyMinute(run.body, warmthAt(run, run.character.at), map);
   if (lived.death) {
     const cause = lived.death;
     return {
@@ -154,23 +157,24 @@ export function stepMinute(
     };
   }
   const body = lived.body;
+  const world = worldMinute(run, map, minute);
   // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
   // instead of never; for every duration of 1 minute or more the two are the same.
   if (minute < run.current.endMinute)
-    return { run: { ...run, minute, body }, events: [] };
+    return { run: { ...run, minute, body, ...world }, events: [] };
 
   const finished = run.current;
   const events: GameEvent[] = [
     { kind: "activityFinished", minute, activity: finished.activity },
   ];
-  let tiles = run.tiles;
+  let tiles = world.tiles;
   let character = run.character;
 
   if (finished.activity.kind === "rule") {
     const action = finished.activity.action;
     if (action.kind === "explore") {
       const at = run.character.at;
-      tiles = run.tiles.map((tile) =>
+      tiles = world.tiles.map((tile) =>
         sameHex(tile.at, at) ? { ...tile, revealed: true } : tile,
       );
       events.push({ kind: "tileRevealed", minute, at: { ...at } });
@@ -193,6 +197,8 @@ export function stepMinute(
     tiles,
     character,
     body,
+    campfires: world.campfires,
+    burningItems: world.burningItems,
     wanderRandom: run.wanderRandom,
     death: null,
   };

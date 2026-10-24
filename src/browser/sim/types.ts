@@ -67,6 +67,21 @@ export type Character = {
   backpack: Backpack;
 };
 
+/** A campfire standing on its tile; a tile holds at most one. */
+export type Campfire = {
+  at: Hex;
+  /** Minutes of burning left; 0 means extinguished, standing on its tile unlit. */
+  minutesLeft: number;
+};
+
+/** A lit piece of an item burning on its tile; gone once its minutes run out. */
+export type BurningItem = {
+  item: ItemId;
+  at: Hex;
+  /** Greater than 0. */
+  minutesLeft: number;
+};
+
 export type DeathCause = "cold" | "hunger";
 
 /** The end of a map run in the character's death. */
@@ -82,6 +97,10 @@ export type MapRun = {
   tiles: Tile[];
   character: Character;
   body: Body;
+  /** None at start. */
+  campfires: Campfire[];
+  /** None at start. */
+  burningItems: BurningItem[];
   /** Always set while the run exists; kept as it stood when the character dies. */
   current: CurrentActivity;
   /** Generator state of the wander stream. */
