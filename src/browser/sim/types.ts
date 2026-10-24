@@ -45,6 +45,20 @@ export type CurrentActivity = {
   stepTo: Hex | null;
 };
 
+/** The character's body; each number rounded to six decimal places. */
+export type Body = {
+  /** Degrees Celsius. */
+  temperature: number;
+  /** Percent. */
+  satiety: number;
+  health: number;
+};
+
+export type DeathCause = "cold" | "hunger";
+
+/** The end of a map run in the character's death. */
+export type Death = { minute: number; cause: DeathCause };
+
 export type MapRun = {
   mapId: MapId;
   /** uint32 */
@@ -54,10 +68,13 @@ export type MapRun = {
   /** Row-major: row 0 col 0, row 0 col 1, ... */
   tiles: Tile[];
   character: { archetypeId: ArchetypeId; at: Hex };
-  /** Always set while the run exists. */
+  body: Body;
+  /** Always set while the run exists; kept as it stood when the character dies. */
   current: CurrentActivity;
   /** Generator state of the wander stream. */
   wanderRandom: number;
+  /** Set once the character dies; then no game minute passes. */
+  death: Death | null;
 };
 
 export type GameState = {

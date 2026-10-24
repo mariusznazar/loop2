@@ -186,7 +186,10 @@ export function send(
   return startRun({ ...state, lastSeed: seed }, mapId, archetypeId, seed);
 }
 
-/** Ends the map run in progress and starts a new one of the same map, character and seed. */
+/**
+ * Ends the map run in progress, or one ended in death, and starts a new one of the same map,
+ * character and seed.
+ */
 export function restart(state: GameState): GameResult {
   const run = requireRun(state, "restart");
   const started = startRun(
@@ -201,7 +204,7 @@ export function restart(state: GameState): GameResult {
   };
 }
 
-/** Ends the map run in progress; the program and the last seed stay. */
+/** Ends the map run in progress, or one ended in death; the program and the last seed stay. */
 export function end(state: GameState): GameResult {
   requireRun(state, "end");
   return {
@@ -217,13 +220,15 @@ export function setPaused(state: GameState, paused: boolean): GameResult {
 }
 
 /**
- * The only way real time enters the simulation. Ignored without a map run, while paused, or when
- * realMs is not a finite number above zero; otherwise every whole scaled second becomes a game
- * minute and the rest carries over to the next call.
+ * The only way real time enters the simulation. Ignored without a map run, with one ended in
+ * death, while paused, or when realMs is not a finite number above zero; otherwise every whole
+ * scaled second becomes a game minute and the rest carries over to the next call. Where the
+ * character dies, time stops there and nothing carries over.
  */
 export function passRealTime(state: GameState, realMs: number): GameResult {
   if (
     !state.run ||
+    state.run.death ||
     state.paused ||
     typeof realMs !== "number" ||
     !Number.isFinite(realMs) ||
@@ -234,10 +239,15 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
   const total = state.realMsCarry + realMs * BALANCE.gameMinutesPerRealSecond;
   const minutes = Math.floor(total / MS_PER_SECOND);
   const carried = { ...state, realMsCarry: total - minutes * MS_PER_SECOND };
-  return advanceMinutes(carried, minutes);
+  const result = advanceMinutes(carried, minutes);
+  if (!result.state.run?.death) return result;
+  return { state: { ...result.state, realMsCarry: 0 }, events: result.events };
 }
 
-/** A span of game minutes: the minute step repeated, with the current program; also while paused. */
+/**
+ * A span of game minutes: the minute step repeated, with the current program; also while paused.
+ * A span that reaches the character's death stops there; a map run ended in death changes nothing.
+ */
 export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (
     typeof minutes !== "number" ||
@@ -248,7 +258,8 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
       `advanceMinutes: ${String(minutes)} is not a whole number of minutes from 0 up`,
     );
   }
-  if (!state.run || minutes === 0) return { state, events: [] };
+  if (!state.run || state.run.death || minutes === 0)
+    return { state, events: [] };
   const map = mapOf(state.run.mapId);
   const events: GameEvent[] = [];
   let run = state.run;
@@ -256,6 +267,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     const stepped = stepMinute(run, map, state.program);
     run = stepped.run;
     events.push(...stepped.events);
+    if (run.death) break;
   }
   return { state: { ...state, run }, events };
 }

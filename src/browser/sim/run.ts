@@ -1,3 +1,4 @@
+import { bodyMinute, startingBody } from "./body.js";
 import { ACTIONS } from "./data/actions.js";
 import { BALANCE } from "./data/balance.js";
 import type { MapDef } from "./data/maps.js";
@@ -9,6 +10,7 @@ import type {
   Activity,
   ArchetypeId,
   CurrentActivity,
+  DeathCause,
   Hex,
   MapId,
   MapRun,
@@ -27,7 +29,8 @@ export type GameEvent =
     }
   | { kind: "activityFinished"; minute: number; activity: Activity }
   | { kind: "tileRevealed"; minute: number; at: Hex }
-  | { kind: "moved"; minute: number; from: Hex; to: Hex };
+  | { kind: "moved"; minute: number; from: Hex; to: Hex }
+  | { kind: "characterDied"; minute: number; cause: DeathCause };
 
 /**
  * Chooses the next activity at the run's minute with the given program and starts it.
@@ -101,7 +104,9 @@ export function newMapRun(
     minute: 0,
     tiles,
     character: { archetypeId: ids.archetypeId, at: entrance },
+    body: startingBody(),
     wanderRandom: streamState(seed, "wander"),
+    death: null,
   };
   const started = startActivity(base, map, program);
   return {
@@ -115,19 +120,33 @@ export function newMapRun(
 }
 
 /**
- * One game minute. When the current activity ends in this minute, its finish applies and the
- * next activity is chosen in the same minute with the program given now. Inputs are not changed.
+ * One game minute, in the order of D-64. First the body; where the character dies, the step stops
+ * there: the current activity stays as it stood, gives no finish, and no program rule is picked.
+ * Otherwise, when the current activity ends in this minute, its finish applies and the next
+ * activity is chosen in the same minute with the program given now. A map run ended in death
+ * passes no minute. Inputs are not changed.
  */
 export function stepMinute(
   run: MapRun,
   map: MapDef,
   program: Program,
 ): { run: MapRun; events: GameEvent[] } {
+  if (run.death) return { run, events: [] };
   const minute = run.minute + 1;
+  // Nothing burns yet, so no warmth stands on any tile.
+  const lived = bodyMinute(run.body, 0, map);
+  if (lived.death) {
+    const cause = lived.death;
+    return {
+      run: { ...run, minute, body: lived.body, death: { minute, cause } },
+      events: [{ kind: "characterDied", minute, cause }],
+    };
+  }
+  const body = lived.body;
   // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
   // instead of never; for every duration of 1 minute or more the two are the same.
   if (minute < run.current.endMinute)
-    return { run: { ...run, minute }, events: [] };
+    return { run: { ...run, minute, body }, events: [] };
 
   const finished = run.current;
   const events: GameEvent[] = [
@@ -162,7 +181,9 @@ export function stepMinute(
     minute,
     tiles,
     character,
+    body,
     wanderRandom: run.wanderRandom,
+    death: null,
   };
   const started = startActivity(base, map, program);
   events.push(started.event);
