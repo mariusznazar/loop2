@@ -41,4 +41,9 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
     sourceUrl: "https://game-icons.net/1x1/delapouite/flax.html",
     changes: CHANGES,
   },
+  campfire: {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/campfire.html",
+    changes: CHANGES,
+  },
 };

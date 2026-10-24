@@ -1,20 +1,35 @@
 import type { ArchetypeId } from "./data/archetypes.js";
+import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
+import type { Traits } from "./data/traits.js";
 
-export type { ArchetypeId, MapId, ResourceId };
+export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
 
 /** Axial hex coordinates. */
 export type Hex = { q: number; r: number };
 
+/** A condition of a program rule; `value` is the number it compares with, on its kind's step. */
 export type Condition =
   | { kind: "always" }
-  | { kind: "hereBelow"; resource: ResourceId; value: number };
+  | { kind: "hereBelow"; resource: ResourceId; value: number }
+  | { kind: "temperatureBelow"; value: number }
+  | { kind: "satietyBelow"; value: number }
+  | { kind: "itemBelow"; item: ItemId; value: number }
+  | { kind: "campfireLeftBelow"; value: number }
+  | { kind: "awayFromCampfire" };
 
 export type Action =
   | { kind: "explore" }
   | { kind: "wander" }
-  | { kind: "walkTo"; resource: ResourceId };
+  | { kind: "walkTo"; resource: ResourceId }
+  | { kind: "walkToCampfire" }
+  | { kind: "gather"; resource: ResourceId }
+  | { kind: "craftCampfire" }
+  | { kind: "lightCampfire" }
+  | { kind: "lightItem" }
+  | { kind: "feedCampfire" }
+  | { kind: "eat" };
 
 export type ProgramRule = { condition: Condition; action: Action };
 
@@ -45,6 +60,49 @@ export type CurrentActivity = {
   stepTo: Hex | null;
 };
 
+/** The character's body; each number rounded to six decimal places. */
+export type Body = {
+  /** Degrees Celsius. */
+  temperature: number;
+  /** Percent. */
+  satiety: number;
+  health: number;
+};
+
+/** Pieces held of each item; an item not held stands at 0. */
+export type Backpack = Record<ItemId, number>;
+
+/**
+ * The character of a map run: the team's character it is, by its id, where it stands, its own copy
+ * of the character's traits for the map run and what it carries.
+ */
+export type RunCharacter = {
+  id: CharacterId;
+  at: Hex;
+  traits: Traits;
+  backpack: Backpack;
+};
+
+/** A campfire standing on its tile; a tile holds at most one. */
+export type Campfire = {
+  at: Hex;
+  /** Minutes of burning left; 0 means extinguished, standing on its tile unlit. */
+  minutesLeft: number;
+};
+
+/** A lit piece of an item burning on its tile; gone once its minutes run out. */
+export type BurningItem = {
+  item: ItemId;
+  at: Hex;
+  /** Greater than 0. */
+  minutesLeft: number;
+};
+
+export type DeathCause = "cold" | "hunger";
+
+/** The end of a map run in the character's death. */
+export type Death = { minute: number; cause: DeathCause };
+
 export type MapRun = {
   mapId: MapId;
   /** uint32 */
@@ -53,22 +111,31 @@ export type MapRun = {
   minute: number;
   /** Row-major: row 0 col 0, row 0 col 1, ... */
   tiles: Tile[];
-  /** The team's character in the map run, by its id, and the tile it stands on. */
-  character: { id: CharacterId; at: Hex };
-  /** Always set while the run exists. */
+  character: RunCharacter;
+  body: Body;
+  /** None at start. */
+  campfires: Campfire[];
+  /** None at start. */
+  burningItems: BurningItem[];
+  /** Always set while the run exists; kept as it stood when the character dies. */
   current: CurrentActivity;
   /** Generator state of the wander stream. */
   wanderRandom: number;
+  /** Generator state of the gathering stream. */
+  gatherRandom: number;
+  /** Set once the character dies; then no game minute passes. */
+  death: Death | null;
 };
 
 /** Tells the characters of the team apart; two characters may share a name. */
 export type CharacterId = number;
 
-/** A character of the player's team. */
+/** A character of the player's team; its traits are made when it is created and saved with it. */
 export type Character = {
   id: CharacterId;
   name: string;
   archetypeId: ArchetypeId;
+  traits: Traits;
 };
 
 /** The team's chest: pieces held, by resource; a key absent holds none. */

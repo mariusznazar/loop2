@@ -31,7 +31,7 @@ Covers:
   `console` and `WebAssembly`, which `node:vm` adds, removed — with `Date` replaced by one that
   throws on `Date.now()`, `Date()` and `new Date()`; every import is resolved by the script and
   any specifier resolving outside `dist/public/sim/` is recorded and refused. It then drives the
-  public functions of `game.js` through a character created, a send, a mixed program for 400 game
+  public functions of `game.js` through a character created, a send, a mixed program for 150 game
   minutes, real time,
   a pause, a restart, an end and a second send. No module may fail to load, no input may raise
   and no refused import or guarded call may be recorded;
@@ -488,7 +488,7 @@ NO_RUN_FUNCTIONS = ("createCharacter", "setPaused", "passRealTime", "advanceMinu
                     "restart", "end")
 GAME_STEPS = (
     [["newGame"], CREATE] + NO_RUN + [["setProgram", MIXED], ["send", SENT, T]]
-    + [["advanceMinutes", 1]] * 400
+    + [["advanceMinutes", 1]] * 150
     + [["passRealTime", 61000], ["setPaused", True], ["passRealTime", 5000],
        ["advanceMinutes", 5], ["setPaused", False], ["restart"], ["advanceMinutes", 100],
        ["end"]]
@@ -645,8 +645,8 @@ class SimulationIsolation(unittest.TestCase):
                                                    "the system time or uses a host global")
         self.assertIn("game.js", result["modules"])
         self.assertEqual(len(result["records"]), len(GAME_STEPS))
-        self.assertEqual(result["records"][FIRST_SEND + 400]["minute"], 400,
-                         "the driven run did not reach game minute 400")
+        self.assertEqual(result["records"][FIRST_SEND + 150]["minute"], 150,
+                         "the driven run did not reach game minute 150")
         for name in NO_RUN_FUNCTIONS:
             self.assertTrue(any(r["step"] == name and not r["hadRun"] for r in result["records"]),
                             f"{name} was never called on a game with no map run")

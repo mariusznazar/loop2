@@ -56,10 +56,10 @@ Cloudflare establishes IPv6 TCP connections to port 18080 on the test server.
 
 ## game-icons-licence
 
-The game-icons/icons repository provides the icons of its contributor Delapouite under Creative
-Commons 3.0 BY.
+The game-icons/icons repository provides the icons of its contributors Delapouite and Lorc under
+Creative Commons 3.0 BY.
 
-- **Source:** https://raw.githubusercontent.com/game-icons/icons/82d948812bfe3f269ef8f731dcdb07b08160edc4/license.txt § first line — "Icons provided under the Creative Commons 3.0 BY or CC0 if mentioned below." · § list of contributors — "Delapouite, http://delapouite.com"; read 2026-10-13
+- **Source:** https://raw.githubusercontent.com/game-icons/icons/82d948812bfe3f269ef8f731dcdb07b08160edc4/license.txt § first line — "Icons provided under the Creative Commons 3.0 BY or CC0 if mentioned below." · § list of contributors — "Lorc, http://lorcblog.blogspot.com" · § list of contributors — "Delapouite, http://delapouite.com"; read 2026-10-24
 
 ## cc-by-3-adaptation-credit
 
@@ -102,6 +102,12 @@ The page of Delapouite's icon `fern` on game-icons.net names the icon "Fern icon
 The page of Delapouite's icon `flax` on game-icons.net names the icon "Flax icon".
 
 - **Source:** https://game-icons.net/1x1/delapouite/flax.html (archived: https://web.archive.org/web/20250617202006/https://game-icons.net/1x1/delapouite/flax.html, 2025-06-17) § heading — "Flax icon"; read 2026-10-13
+
+## game-icons-campfire-title
+
+The page of Lorc's icon `campfire` on game-icons.net names the icon "Campfire icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/campfire.html (archived: https://web.archive.org/web/20260621235751/https://game-icons.net/1x1/lorc/campfire.html, 2026-06-21) § heading — "Campfire icon"; read 2026-10-24
 
 ## eslint-recommended-rules
 

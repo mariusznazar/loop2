@@ -6,7 +6,8 @@ export type MapResourceDef = {
   density: number;
   /** Stock of a tile that holds the resource. */
   stock: number;
-  renewMinutes: number;
+  /** Game minutes to renew one piece on a tile; left out, the resource does not renew. */
+  renewMinutes?: number;
 };
 
 export type MapDef = {
@@ -14,6 +15,8 @@ export type MapDef = {
   width: number;
   height: number;
   entrance: { col: number; row: number };
+  /** Degrees Celsius; a body cools the further this lies below its starting temperature. */
+  ambientTemperature: number;
   /** Game minutes to enter a tile. */
   stepMinutes: number;
   /** Order is part of the layout contract: reordering changes every seed's layout. */
@@ -26,6 +29,7 @@ export const MAPS = {
     width: 4,
     height: 4,
     entrance: { col: 1, row: 1 },
+    ambientTemperature: 25,
     stepMinutes: 5,
     resources: [
       { id: "stick", density: 0.7, stock: 12, renewMinutes: 30 },

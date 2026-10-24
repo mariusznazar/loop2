@@ -333,13 +333,13 @@ test("walking by program reaches the stock step by step and stays there", () => 
   for (const move of moves) assert.equal(hexDistance(move.from, move.to), 1);
 });
 
-test("the run never ends by itself: steps keep coming for hours", () => {
+test("no step ends the run by itself: steps keep coming for four hours", () => {
   const end = steps(
     start(4, program(rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER))).run,
-    600,
+    240,
     WANDERING,
   ).run;
-  assert.equal(end.minute, 600);
+  assert.equal(end.minute, 240);
   assert.ok(end.current.endMinute > end.minute);
 });
 
@@ -350,8 +350,8 @@ test("the same run and program give the same steps", () => {
     rule(ALWAYS, WANDER),
   );
   assert.deepEqual(
-    steps(start(11, mixed).run, 300, mixed),
-    steps(start(11, mixed).run, 300, mixed),
+    steps(start(11, mixed).run, 240, mixed),
+    steps(start(11, mixed).run, 240, mixed),
   );
 });
 

@@ -1,7 +1,9 @@
+import { newTraits } from "./character.js";
 import { CREATED_ARCHETYPE } from "./data/archetypes.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
-import { CONDITIONS } from "./data/conditions.js";
+import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
+import { conditionNumber, onStep } from "./program.js";
 import { mixSeed } from "./random.js";
 import { newMapRun, stepMinute, type GameEvent } from "./run.js";
 import type {
@@ -10,11 +12,13 @@ import type {
   CharacterId,
   Condition,
   GameState,
+  ItemId,
   MapId,
   MapRun,
   Program,
   ProgramRule,
   ResourceId,
+  Traits,
 } from "./types.js";
 
 export type { GameEvent };
@@ -52,6 +56,50 @@ function checkResource(
   return value as ResourceId;
 }
 
+/** An item of the data, bound to no map. */
+function checkItem(value: unknown): ItemId {
+  if (typeof value !== "string" || !Object.hasOwn(ITEMS, value)) {
+    throw new Error(
+      `program: item ${String(value)} is not an item of the data`,
+    );
+  }
+  return value as ItemId;
+}
+
+/**
+ * How far a number may lie from its step's grid and still be taken, as a part of the step: binary
+ * rounding, never a number the player could type.
+ */
+const STEP_TOLERANCE = 1e-9;
+
+/**
+ * The number of a condition of `kind`: a finite number from the kind's minimum to its maximum, on
+ * its step counted from the minimum, held as the decimal of that step.
+ */
+function checkNumber(kind: Condition["kind"], value: unknown): number {
+  const number = conditionNumber(kind);
+  if (!number)
+    throw new Error(`program: condition kind ${kind} takes no number`);
+  const { min, max, step } = number;
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    value < min ||
+    value > max
+  ) {
+    throw new Error(
+      `program: ${String(value)} is not a number from ${min} to ${max}`,
+    );
+  }
+  const held = onStep(value, number);
+  if (Math.abs(value - held) > step * STEP_TOLERANCE) {
+    throw new Error(
+      `program: ${String(value)} does not lie on the step ${step} from ${min}`,
+    );
+  }
+  return held;
+}
+
 function checkCondition(
   value: unknown,
   allowed: ReadonlySet<string>,
@@ -61,24 +109,25 @@ function checkCondition(
     case "always":
       return { kind: "always" };
     case "hereBelow": {
-      const { min, max } = CONDITIONS.hereBelow;
-      const number = value.value;
-      if (
-        typeof number !== "number" ||
-        !Number.isInteger(number) ||
-        number < min ||
-        number > max
-      ) {
-        throw new Error(
-          `program: ${String(number)} is not a whole number from ${min} to ${max}`,
-        );
-      }
+      const number = checkNumber("hereBelow", value.value);
       return {
         kind: "hereBelow",
         resource: checkResource(value.resource, allowed),
         value: number,
       };
     }
+    case "itemBelow": {
+      const number = checkNumber("itemBelow", value.value);
+      return { kind: "itemBelow", item: checkItem(value.item), value: number };
+    }
+    // The body's conditions and those on the campfire name nothing: the simulation reads the
+    // character's body, and the campfire on its tile or the nearest one.
+    case "temperatureBelow":
+    case "satietyBelow":
+    case "campfireLeftBelow":
+      return { kind: value.kind, value: checkNumber(value.kind, value.value) };
+    case "awayFromCampfire":
+      return { kind: "awayFromCampfire" };
     default:
       throw new Error(
         `program: condition kind ${String(value.kind)} is not on the closed list`,
@@ -98,6 +147,25 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
         kind: "walkTo",
         resource: checkResource(value.resource, allowed),
       };
+    case "gather":
+      return {
+        kind: "gather",
+        resource: checkResource(value.resource, allowed),
+      };
+    // The actions on the campfire and the backpack name nothing: the simulation picks the
+    // campfire on the character's tile, or the nearest one, and the pieces they use.
+    case "walkToCampfire":
+      return { kind: "walkToCampfire" };
+    case "craftCampfire":
+      return { kind: "craftCampfire" };
+    case "lightCampfire":
+      return { kind: "lightCampfire" };
+    case "lightItem":
+      return { kind: "lightItem" };
+    case "feedCampfire":
+      return { kind: "feedCampfire" };
+    case "eat":
+      return { kind: "eat" };
     default:
       throw new Error(
         `program: action kind ${String(value.kind)} is not on the closed list`,
@@ -134,11 +202,15 @@ function startRun(
   mapId: MapId,
   characterId: CharacterId,
   seed: number,
+  traits: Traits,
 ): GameResult {
-  const started = newMapRun(mapOf(mapId), seed, state.program, {
-    mapId,
-    characterId,
-  });
+  const started = newMapRun(
+    mapOf(mapId),
+    seed,
+    state.program,
+    { mapId, characterId },
+    traits,
+  );
   return {
     state: { ...state, run: started.run, paused: false, realMsCarry: 0 },
     events: [{ kind: "mapRunStarted", seed }, ...started.events],
@@ -181,7 +253,8 @@ export function characterName(text: string): string | null {
 
 /**
  * Creates a character named `name`, trimmed as `characterName` gives it, in the archetype of created
- * characters, at the end of the team's list; throws on a name that is empty once trimmed.
+ * characters and with the traits of a new character, at the end of the team's list; throws on a
+ * name that is empty once trimmed.
  */
 export function createCharacter(state: GameState, name: string): GameResult {
   const trimmed = typeof name === "string" ? characterName(name) : null;
@@ -190,6 +263,7 @@ export function createCharacter(state: GameState, name: string): GameResult {
     id: state.nextCharacterId,
     name: trimmed,
     archetypeId: CREATED_ARCHETYPE,
+    traits: newTraits(),
   };
   return {
     state: {
@@ -206,7 +280,8 @@ export function createCharacter(state: GameState, name: string): GameResult {
 
 /**
  * Sends a character of the team to a map: a new map run at minute 0, seeded from the last seed and
- * real time. Throws while a map run is in progress, so one map run goes on at a time.
+ * real time, its character carrying its own copy of the traits of the team's character sent.
+ * Throws while a map run is in progress, so one map run goes on at a time.
  */
 export function send(
   state: GameState,
@@ -217,23 +292,37 @@ export function send(
   const { mapId, characterId } = ids;
   if (typeof mapId !== "string" || !Object.hasOwn(MAPS, mapId))
     throw new Error(`send: no map ${String(mapId)}`);
-  if (!state.team.characters.some((character) => character.id === characterId))
+  const sent = state.team.characters.find(
+    (character) => character.id === characterId,
+  );
+  if (!sent)
     throw new Error(`send: no character ${String(characterId)} in the team`);
   const seed = mixSeed(state.lastSeed, realMs);
-  return startRun({ ...state, lastSeed: seed }, mapId, characterId, seed);
+  return startRun({ ...state, lastSeed: seed }, mapId, characterId, seed, {
+    ...sent.traits,
+  });
 }
 
-/** Ends the map run in progress and starts a new one of the same map, character and seed. */
+/**
+ * Ends the map run in progress, or one ended in death, and starts a new one of the same map,
+ * character, traits and seed.
+ */
 export function restart(state: GameState): GameResult {
   const run = requireRun(state, "restart");
-  const started = startRun(state, run.mapId, run.character.id, run.seed);
+  const started = startRun(
+    state,
+    run.mapId,
+    run.character.id,
+    run.seed,
+    run.character.traits,
+  );
   return {
     state: started.state,
     events: [{ kind: "mapRunEnded" }, ...started.events],
   };
 }
 
-/** Ends the map run in progress; the program and the last seed stay. */
+/** Ends the map run in progress, or one ended in death; the program and the last seed stay. */
 export function end(state: GameState): GameResult {
   requireRun(state, "end");
   return {
@@ -249,13 +338,15 @@ export function setPaused(state: GameState, paused: boolean): GameResult {
 }
 
 /**
- * The only way real time enters the simulation. Ignored without a map run, while paused, or when
- * realMs is not a finite number above zero; otherwise every whole scaled second becomes a game
- * minute and the rest carries over to the next call.
+ * The only way real time enters the simulation. Ignored without a map run, with one ended in
+ * death, while paused, or when realMs is not a finite number above zero; otherwise every whole
+ * scaled second becomes a game minute and the rest carries over to the next call. Where the
+ * character dies, time stops there and nothing carries over.
  */
 export function passRealTime(state: GameState, realMs: number): GameResult {
   if (
     !state.run ||
+    state.run.death ||
     state.paused ||
     typeof realMs !== "number" ||
     !Number.isFinite(realMs) ||
@@ -266,10 +357,15 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
   const total = state.realMsCarry + realMs * BALANCE.gameMinutesPerRealSecond;
   const minutes = Math.floor(total / MS_PER_SECOND);
   const carried = { ...state, realMsCarry: total - minutes * MS_PER_SECOND };
-  return advanceMinutes(carried, minutes);
+  const result = advanceMinutes(carried, minutes);
+  if (!result.state.run?.death) return result;
+  return { state: { ...result.state, realMsCarry: 0 }, events: result.events };
 }
 
-/** A span of game minutes: the minute step repeated, with the current program; also while paused. */
+/**
+ * A span of game minutes: the minute step repeated, with the current program; also while paused.
+ * A span that reaches the character's death stops there; a map run ended in death changes nothing.
+ */
 export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (
     typeof minutes !== "number" ||
@@ -280,7 +376,8 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
       `advanceMinutes: ${String(minutes)} is not a whole number of minutes from 0 up`,
     );
   }
-  if (!state.run || minutes === 0) return { state, events: [] };
+  if (!state.run || state.run.death || minutes === 0)
+    return { state, events: [] };
   const map = mapOf(state.run.mapId);
   const events: GameEvent[] = [];
   let run = state.run;
@@ -288,6 +385,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     const stepped = stepMinute(run, map, state.program);
     run = stepped.run;
     events.push(...stepped.events);
+    if (run.death) break;
   }
   return { state: { ...state, run }, events };
 }

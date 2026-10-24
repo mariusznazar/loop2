@@ -1,17 +1,22 @@
+import { CAMPFIRE } from "../sim/data/campfire.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type { ResourceId } from "../sim/data/resources.js";
 import { hexCenter, hexCorners, sameHex } from "../sim/hex.js";
 import type { GameState } from "../sim/types.js";
 
-export type PictureIcon = {
-  resource: ResourceId;
+/** Where an icon is drawn. */
+export type PictureIconPlace = {
   /** URL of the icon file. */
   href: string;
   /** Top-left corner and side of the square the icon is drawn in. */
   x: number;
   y: number;
   size: number;
+};
+
+export type PictureIcon = PictureIconPlace & {
+  resource: ResourceId;
   /** The tile's stock of the resource is 0. */
   dimmed: boolean;
 };
@@ -23,6 +28,11 @@ export type PictureTile = {
   points: string;
   revealed: boolean;
   icons: PictureIcon[];
+  /**
+   * The icon of the campfire standing on the tile, burning or extinguished alike, or null: the
+   * drawing tells neither its state nor its minutes (D-19, D-70), and never dims it (D-41).
+   */
+  campfire: PictureIconPlace | null;
   outline: "character" | "stepTarget" | null;
 };
 
@@ -35,7 +45,32 @@ export type TerrainPicture = {
   tiles: PictureTile[];
 };
 
-/** The terrain of the map run as plain data for drawing; pure, no DOM, no stock numbers. */
+/**
+ * Places `count` icons on a tile centred at cx, cy: two a row, centred, in a square of side
+ * `box`; an icon's side is half the box, or a third of it where the icons take three rows.
+ */
+function iconPlaces(
+  count: number,
+  cx: number,
+  cy: number,
+  box: number,
+): { x: number; y: number; size: number }[] {
+  const rows = Math.ceil(count / 2);
+  const size = box / Math.max(2, rows);
+  return Array.from({ length: count }, (_, i) => {
+    const inRow = Math.min(2, count - Math.floor(i / 2) * 2);
+    return {
+      x: cx + (i % 2) * size - (inRow * size) / 2,
+      y: cy + Math.floor(i / 2) * size - (rows * size) / 2,
+      size,
+    };
+  });
+}
+
+/**
+ * The terrain of the map run as plain data for drawing; pure, no DOM, no number of stock or of a
+ * campfire's minutes. A burning stick is not drawn: it stands only in the list of revealed tiles.
+ */
 export function terrainPicture(state: GameState, size = 24): TerrainPicture {
   const run = state.run;
   if (!run) return { width: 0, height: 0, offsetX: 0, offsetY: 0, tiles: [] };
@@ -51,30 +86,34 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
   const resourceOrder: ResourceId[] = MAPS[run.mapId].resources.map(
     ({ id }) => id,
   );
-  const iconSize = size * 0.7;
+  // The square the icons of a tile share: two icons of side 0.7 × size a row.
+  const iconBox = size * 1.4;
   const tiles = run.tiles.map((tile, index): PictureTile => {
     const centre = centres[index];
     const cx = centre.x + offsetX;
     const cy = centre.y + offsetY;
     const points = corners.map((k) => `${cx + k.x},${cy + k.y}`).join(" ");
-    const present = resourceOrder.filter((id) => Object.hasOwn(tile.stock, id));
-    // Two icons per row, centred on the tile.
-    const icons = tile.revealed
-      ? present.map((resource, i): PictureIcon => {
-          const inRow = Math.min(2, present.length - Math.floor(i / 2) * 2);
-          const rows = Math.ceil(present.length / 2);
-          const x = cx + (i % 2) * iconSize - (inRow * iconSize) / 2;
-          const y = cy + Math.floor(i / 2) * iconSize - (rows * iconSize) / 2;
-          return {
-            resource,
-            href: `/icons/${RESOURCES[resource].icon}.svg`,
-            x,
-            y,
-            size: iconSize,
-            dimmed: tile.stock[resource] === 0,
-          };
-        })
+    const present = tile.revealed
+      ? resourceOrder.filter((id) => Object.hasOwn(tile.stock, id))
       : [];
+    // A campfire stands only on a revealed tile (D-72); its icon follows the resources' icons.
+    const hasCampfire =
+      tile.revealed && run.campfires.some((c) => sameHex(c.at, tile.at));
+    const places = iconPlaces(
+      present.length + (hasCampfire ? 1 : 0),
+      cx,
+      cy,
+      iconBox,
+    );
+    const icons = present.map((resource, i): PictureIcon => ({
+      resource,
+      href: `/icons/${RESOURCES[resource].icon}.svg`,
+      ...places[i],
+      dimmed: tile.stock[resource] === 0,
+    }));
+    const campfire = hasCampfire
+      ? { href: `/icons/${CAMPFIRE.icon}.svg`, ...places[present.length] }
+      : null;
     const outline = sameHex(tile.at, run.character.at)
       ? "character"
       : run.current.stepTo && sameHex(tile.at, run.current.stepTo)
@@ -86,6 +125,7 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
       points,
       revealed: tile.revealed,
       icons,
+      campfire,
       outline,
     };
   });

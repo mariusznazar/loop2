@@ -19,12 +19,15 @@ Covers:
   and the random functions of `node:crypto` with functions that count their calls and throw,
   first proving each replacement fires on a direct call, then imports every module under
   `dist/public/sim/` and drives the public functions of `game.js`: a character created, a send,
-  more than 2000 game minutes with a program whose only rule is to wander, then a program mixing
-  every action, a restart, an end and a second send; no input may raise and no replaced function
-  may be called;
+  240 game minutes with a program whose only rule is to wander, then a program mixing every action
+  of the closed list (gathering, which draws from the gathering generator, included), a restart,
+  an end and a second send, no map run going past game minute 240; no input may raise and no
+  replaced function may be called;
 - control: two sends with different real times give different wandering paths over the same 200
   game minutes, and a send repeated with the same real time gives the same path, so the draws
-  depend on the seed's generator.
+  depend on the seed's generator; likewise, with the program mixing every action, the gathering
+  generator's state moves on as the character gathers, a send repeated with the same real time
+  gives the same gatherings, piece by piece, and a send with another real time other ones.
 
 Does NOT cover: a home-made generator seeded from something other than the map run's state that
 uses none of the names above and not the mulberry32 constant; randomness reached through names
@@ -218,11 +221,47 @@ CLEAN_SOURCE = (
 # D-23, actions of D-25 and D-26.
 ALWAYS = {"kind": "always"}
 WANDER_ONLY = {"rules": [{"condition": ALWAYS, "action": {"kind": "wander"}}]}
+
+
+def rule(condition, action):
+    return {"condition": condition, "action": action}
+
+
+def below(kind, value):
+    return {"kind": kind, "value": value}
+
+
+def item_below(item, value):
+    return {"kind": "itemBelow", "item": item, "value": value}
+
+
+def gather(resource):
+    return {"kind": "gather", "resource": resource}
+
+
+def walk_to(resource):
+    return {"kind": "walkTo", "resource": resource}
+
+
+# Every action of the closed list: the acceptance program of tests/sim/acceptance.test.mjs.
 MIXED = {"rules": [
-    {"condition": {"kind": "hereBelow", "resource": "stick", "value": 1},
-     "action": {"kind": "explore"}},
-    {"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
-    {"condition": ALWAYS, "action": {"kind": "wander"}},
+    rule(below("satietyBelow", 35), {"kind": "eat"}),
+    rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
+    rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
+    rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
+    rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
+    rule(item_below("berry", 1), gather("berry")),
+    rule(item_below("berry", 1), walk_to("berry")),
+    rule({"kind": "hereBelow", "resource": "berry", "value": 1}, {"kind": "explore"}),
+    rule(item_below("berry", 1), {"kind": "wander"}),
+    rule(item_below("stick", 8), gather("stick")),
+    rule(item_below("stick", 8), walk_to("stick")),
+    rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
+    rule(ALWAYS, {"kind": "explore"}),
+    rule({"kind": "awayFromCampfire"}, {"kind": "walkToCampfire"}),
+    rule(ALWAYS, gather("stick")),
+    rule(ALWAYS, gather("berry")),
+    rule(ALWAYS, {"kind": "wander"}),
 ]}
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
@@ -235,16 +274,16 @@ PATH_MINUTES = 200
 LONG_RUN = (
     [["newGame"], CREATE, ["setProgram", WANDER_ONLY], ["send", SENT, T]]
     + [["advanceMinutes", 1]] * PATH_MINUTES
-    + [["advanceMinutes", 1800], ["passRealTime", 60000],
-       ["setProgram", MIXED], ["advanceMinutes", 200],
-       ["restart"], ["advanceMinutes", 300], ["end"],
-       ["send", SENT, T_OTHER], ["advanceMinutes", 300]]
+    + [["advanceMinutes", 30], ["passRealTime", 5000],
+       ["setProgram", MIXED], ["advanceMinutes", 5],
+       ["restart"], ["advanceMinutes", 200], ["end"],
+       ["send", SENT, T_OTHER], ["advanceMinutes", 200]]
 )
-LONG_RUN_MINUTES_BEFORE_RESTART = 2000
+LONG_RUN_MINUTES_BEFORE_RESTART = 240
 
 
-def path_steps(real_ms):
-    return ([["newGame"], CREATE, ["setProgram", WANDER_ONLY], ["send", SENT, real_ms]]
+def path_steps(real_ms, program=WANDER_ONLY):
+    return ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
             + [["advanceMinutes", 1]] * PATH_MINUTES)
 
 
@@ -336,7 +375,9 @@ try {
     }
     const run = state.run;
     result.records.push({ step: name, minute: run ? run.minute : null,
-                          at: run ? run.character.at : null });
+                          at: run ? run.character.at : null,
+                          backpack: run ? run.character.backpack : null,
+                          gatherRandom: run ? run.gatherRandom : null });
   }
 } catch (error) {
   result.error = String(error && error.stack || error);
@@ -378,6 +419,11 @@ def drive(copy, steps):
 
 def wander_path(result):
     return [json.dumps(r["at"], sort_keys=True) for r in result["records"][3:]]
+
+
+def gatherings(result):
+    """The backpack after each game minute of the run, from its send on."""
+    return [json.dumps(r["backpack"], sort_keys=True) for r in result["records"][2:]]
 
 
 class SimulationRandomness(unittest.TestCase):
@@ -440,6 +486,24 @@ class SimulationRandomness(unittest.TestCase):
         self.assertNotEqual(wander_path(other), path,
                             f"sends with real times {T} and {T_OTHER} give the same wandering "
                             "path, so the draws do not show a dependence on the seed")
+
+
+    def test_control_gathering_draws_follow_the_seed(self):
+        # invariant: simulation-randomness
+        copy = support.built_copy()
+        first = drive(copy, path_steps(T, MIXED))
+        again = drive(copy, path_steps(T, MIXED))
+        other = drive(copy, path_steps(T_OTHER, MIXED))
+        for result in (first, again, other):
+            self.assert_clean_run(result)
+        states = {r["gatherRandom"] for r in first["records"][2:]}
+        self.assertGreater(len(states), 3, "the gathering generator never moves on")
+        self.assertGreater(len(set(gatherings(first))), 3, "the character gathers no piece")
+        self.assertEqual(gatherings(again), gatherings(first),
+                         "two sends with the same real time give different gatherings")
+        self.assertNotEqual(gatherings(other), gatherings(first),
+                            f"sends with real times {T} and {T_OTHER} give the same gatherings, "
+                            "so the draws do not show a dependence on the seed")
 
 
 if __name__ == "__main__":

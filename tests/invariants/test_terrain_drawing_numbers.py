@@ -30,9 +30,9 @@ Reading of the sentence:
   resource whose stock is 0, are no number.
 
 States handed to the panel, on the map Las (`forest`) with the archetype `elementalMage`, sent at
-the real times T and T_OTHER under "always → explore", "always → wander", over 600 game minutes:
+the real times T and T_OTHER under "always → explore", "always → wander", over 240 game minutes:
 the game before a send, minute 0, and every 20th minute; and, since the simulation does not reach
-a stock of 0 today, the state of minute 600 with the stock of the first resource on every revealed
+a stock of 0 today, the state of minute 240 with the stock of the first resource on every revealed
 tile that holds it set to 0, handed to the panel as it is.
 
 Controls, so the check can fail: the stand-in `document`, given a made-up panel built with
@@ -67,7 +67,7 @@ SENT = {"mapId": "forest", "characterId": 1}
 CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
-MINUTES = 600
+MINUTES = 240
 EVERY = 20
 ALWAYS = {"kind": "always"}
 ROAM = {"rules": [{"condition": ALWAYS, "action": {"kind": "explore"}},

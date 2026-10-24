@@ -26,7 +26,8 @@ function svgElement<K extends keyof SVGElementTagNameMap>(
  * Builds the terrain panel: the drawing of the map run and, beside it, the list of revealed tiles.
  * The drawing is a picture, not a control: it has no click handling, and hovering is its only
  * interaction — a hovered tile highlights its row in the list and a hovered row its tile. The
- * hovered tile's key is the only state the view keeps, and it survives redraws.
+ * hovered tile's key is the only state the view keeps, and it survives redraws. A campfire shows on
+ * the drawing as its icon alone; its state and a burning stick stand in its tile's row (D-70).
  */
 export function createTerrainPanel(): TerrainPanel {
   const element = document.createElement("div");
@@ -95,6 +96,19 @@ export function createTerrainPanel(): TerrainPanel {
             width: icon.size,
             height: icon.size,
             class: icon.dimmed ? "icon dimmed" : "icon",
+          }),
+        );
+      }
+      // Burning or extinguished, the campfire is still there: never dimmed (D-41, D-70).
+      if (tile.campfire) {
+        group.append(
+          svgElement("image", {
+            href: tile.campfire.href,
+            x: tile.campfire.x,
+            y: tile.campfire.y,
+            width: tile.campfire.size,
+            height: tile.campfire.size,
+            class: "icon",
           }),
         );
       }

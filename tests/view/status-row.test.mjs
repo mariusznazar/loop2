@@ -1,4 +1,5 @@
-// The status row's text (spec section 5): „Minuta {minute} · {activity}”, „ (pauza)” while paused.
+// The status row's text (spec section 5): „Minuta {minute} · {activity}”, „ (pauza)” while paused;
+// at death the minute and the cause, with no pause button (task ognisko-i-jedzenie, To do 3).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
@@ -11,7 +12,7 @@ import {
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
-import { statusText } from "../../dist/public/view/status-row.js";
+import { pauseLabel, statusText } from "../../dist/public/view/status-row.js";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -101,4 +102,138 @@ test("a paused map run gets „ (pauza)” appended, and loses it when resumed",
     statusText(resumed.run, resumed.paused),
     "Minuta 3 · Eksploruje",
   );
+});
+
+/** The same game with its map run ended in death of the given cause at the given minute. */
+function dead(state, minute, cause) {
+  return {
+    ...state,
+    run: { ...state.run, minute, death: { minute, cause } },
+  };
+}
+
+test("gathering shows „Zbiera: ” and the resource's name from data, for each resource", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  for (const id of Object.keys(RESOURCES)) {
+    const gathering = doing(state, { kind: "gather", resource: id });
+    assert.equal(
+      statusText(gathering.run, false),
+      `Minuta 0 · Zbiera: ${RESOURCES[id].name}`,
+    );
+  }
+  assert.equal(
+    statusText(doing(state, { kind: "gather", resource: "berry" }).run, false),
+    "Minuta 0 · Zbiera: jagoda",
+  );
+});
+
+test("an action without a target shows its status text from data alone", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const expected = {
+    walkToCampfire: "Idzie do ogniska",
+    craftCampfire: "Wytwarza ognisko",
+    lightCampfire: "Zapala ognisko",
+    lightItem: "Zapala patyk",
+    feedCampfire: "Zasila ognisko",
+    eat: "Je jagodę",
+  };
+  for (const [kind, text] of Object.entries(expected)) {
+    assert.equal(
+      statusText(doing(state, { kind }).run, false),
+      `Minuta 0 · ${text}`,
+    );
+  }
+});
+
+test("a death of cold reads „Minuta <n> · Mag zamarzł”, of hunger „Mag umarł z głodu”", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  assert.equal(
+    statusText(dead(state, 312, "cold").run, false),
+    "Minuta 312 · Mag zamarzł",
+  );
+  assert.equal(
+    statusText(dead(state, 287, "hunger").run, false),
+    "Minuta 287 · Mag umarł z głodu",
+  );
+});
+
+test("after death no „ (pauza)” is appended, even to a paused game", () => {
+  const state = setPaused(
+    sent([{ condition: ALWAYS, action: { kind: "explore" } }]),
+    true,
+  ).state;
+  assert.equal(
+    statusText(dead(state, 312, "cold").run, true),
+    "Minuta 312 · Mag zamarzł",
+  );
+});
+
+test("„Pauza” while running, „Wznów” while paused, and no pause button after death", () => {
+  const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  assert.equal(pauseLabel(running), "Pauza");
+  const paused = setPaused(running, true).state;
+  assert.equal(pauseLabel(paused), "Wznów");
+  assert.equal(pauseLabel(dead(running, 312, "cold")), null);
+  assert.equal(pauseLabel(dead(paused, 312, "hunger")), null);
+});
+
+test("a mage left without a program dies, and the status row reads the minute of its death", () => {
+  const ended = advanceMinutes(sent([]), 1000).state;
+  assert.ok(ended.run.death, "the mage died within 1000 minutes");
+  assert.ok(ended.run.death.minute < 1000);
+  assert.equal(ended.run.death.cause, "cold");
+  assert.equal(
+    statusText(ended.run, ended.paused),
+    `Minuta ${ended.run.minute} · Mag zamarzł`,
+  );
+  assert.equal(pauseLabel(ended), null);
+});
+
+/** A document making elements with just what the status row and its buttons use. */
+function fakeDocument() {
+  return {
+    createElement(tag) {
+      return {
+        tag,
+        children: [],
+        textContent: "",
+        hidden: false,
+        className: "",
+        classList: { add() {}, toggle() {} },
+        setAttribute() {},
+        addEventListener() {},
+        append(...items) {
+          this.children.push(...items);
+        },
+      };
+    },
+  };
+}
+
+test("on the screen the pause button is hidden after death; „Restart” and „Zakończ” stay", async () => {
+  const { createStatusRow } =
+    await import("../../dist/public/view/status-row.js");
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const row = createStatusRow({
+      togglePause() {},
+      restart() {},
+      end() {},
+    });
+    const [text, pause, restartButton, endButton] = row.element.children;
+    const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+    row.update(running);
+    assert.equal(pause.hidden, false);
+    assert.equal(pause.textContent, "Pauza");
+    row.update(dead(running, 312, "cold"));
+    assert.equal(text.textContent, "Minuta 312 · Mag zamarzł");
+    assert.equal(pause.hidden, true);
+    assert.equal(restartButton.hidden, false);
+    assert.equal(endButton.hidden, false);
+    assert.equal(restartButton.textContent, "Restart");
+    assert.equal(endButton.textContent, "Zakończ");
+  } finally {
+    globalThis.document = saved;
+  }
 });

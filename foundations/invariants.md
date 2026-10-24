@@ -176,8 +176,8 @@ from the map run's state.
 
 ## action-in-progress
 
-The character's action in progress lasts its full duration, even where the program changes or the
-condition of another program rule comes to hold before it ends.
+The character's action in progress lasts its full duration unless its map run ends first, even where
+the program changes or the condition of another program rule comes to hold before it ends.
 
 - **Method:** test
 - **Rests on:** none
@@ -187,9 +187,9 @@ condition of another program rule comes to hold before it ends.
 
 ## player-map-run-pace
 
-Real time passed to the simulation for a map run the player starts moves the map run on by one game
-minute for each whole real second passed while it is not paused, and by no game minute for real
-time passed while it is paused.
+Real time passed to the simulation for a map run the player starts moves the map run on, until it
+ends, by one game minute for each whole real second passed while it is not paused, and by no game
+minute for real time passed while it is paused.
 
 - **Method:** test
 - **Rests on:** none
@@ -317,7 +317,7 @@ the icon's title as its page on game-icons.net gives it, the icon's author, that
 licence CC BY 3.0, and says how the icon file differs from its source.
 
 - **Method:** test
-- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title
+- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title
 - **Derives from:** D-27
 - **Part:** browser-view · simulation
 - **Violated:** no
@@ -505,6 +505,16 @@ Every character belongs to exactly one team.
 - **Rests on:** none
 - **Derives from:** D-50
 - **Part:** every
+- **Violated:** no
+
+## minute-span-split
+
+A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the character's death.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-04 · D-71
+- **Part:** simulation
 - **Violated:** no
 
 ## Withdrawn identifiers

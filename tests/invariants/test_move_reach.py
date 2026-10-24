@@ -16,7 +16,7 @@ Reading of the sentence:
   those at its start minute by one of the six offsets written out below; and the character's tile
   changes only at the end minute of a move.
 
-Scenarios on the map Las (`forest`) with the archetype `elementalMage`, 600 game minutes each:
+Scenarios on the map Las (`forest`) with the archetype `elementalMage`, 240 game minutes each:
 "always → wander" on the seeds of two real times T and T_OTHER, and "always → go to berry",
 "always → explore", "always → wander" on the seed of T.
 
@@ -58,7 +58,7 @@ def rule(condition, action):
 P_WANDER = {"rules": [rule(ALWAYS, {"kind": "wander"})]}
 P_GO = {"rules": [rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
                   rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
-LONG_MINUTES = 600
+LONG_MINUTES = 240
 
 DRIVER = r"""
 import { readFileSync, writeFileSync } from 'node:fs';

@@ -234,6 +234,25 @@ header h1 {
   font-variant-numeric: tabular-nums;
 }
 
+/* The row of the body and the backpack under the status row. */
+.body-row {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-l);
+  margin-top: var(--space-xs);
+}
+
+.body-text,
+.backpack-text {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A value below the threshold of chill or hunger: the character may be lost (D-39). */
+.body-value.danger {
+  color: var(--danger);
+}
+
 .terrain-panel {
   display: flex;
   flex-wrap: wrap;
@@ -315,6 +334,12 @@ header h1 {
 
 .tile-list tbody td {
   color: var(--text-strong);
+}
+
+/* The state of the tile's campfire and burning items: content to read, after the stock (D-70). */
+.tile-list tbody td.tile-fire {
+  text-align: left;
+  color: var(--text);
 }
 
 /* The line at the left edge of the hovered tile's row, the row's colours unchanged. */

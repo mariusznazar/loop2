@@ -6,6 +6,9 @@ import { ACTIONS } from "../../dist/public/sim/data/actions.js";
 import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
 import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { BALANCE, INITIAL_SEED } from "../../dist/public/sim/data/balance.js";
+import { ITEMS } from "../../dist/public/sim/data/items.js";
+import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
+import { TRAITS } from "../../dist/public/sim/data/traits.js";
 
 test("the map Las has the size, entrance, step and resources of the task", () => {
   const forest = MAPS.forest;
@@ -77,6 +80,77 @@ test("conditions carry labels and the value range of hereBelow", () => {
     max: 50,
     step: 1,
   });
+});
+
+test("Las has an ambient temperature of 25 degrees in its map data", () => {
+  assert.equal(MAPS.forest.ambientTemperature, 25);
+  for (const [id, map] of Object.entries(MAPS)) {
+    assert.equal(typeof map.ambientTemperature, "number", id);
+  }
+});
+
+test("the body starts at its caps and the rates and thresholds are the task's", () => {
+  assert.deepEqual(BALANCE.body, {
+    startTemperature: 37.0,
+    startSatiety: 100,
+    startHealth: 100,
+    coolingPerDegreeBelow: 0.002,
+    satietyLossPerMinute: 0.6,
+    chilledBelow: 35.0,
+    starvingBelow: 30,
+    healthLossChilled: 0.35,
+    healthLossStarving: 0.35,
+    healthRegain: 0.05,
+  });
+  assert.equal(BALANCE.gatherChance, 0.7);
+});
+
+test("the cooling in Las is 0.024 degrees a minute, as the task works it out", () => {
+  const { startTemperature, coolingPerDegreeBelow } = BALANCE.body;
+  const perMinute =
+    (startTemperature - MAPS.forest.ambientTemperature) * coolingPerDegreeBelow;
+  assert.ok(Math.abs(perMinute - 0.024) < 1e-9, String(perMinute));
+});
+
+test("a new character's traits hold carrying capacity 15, apart from the archetype", () => {
+  assert.deepEqual(TRAITS, { carryingCapacity: 15 });
+  for (const archetype of Object.values(ARCHETYPES)) {
+    assert.ok(!("carryingCapacity" in archetype));
+  }
+});
+
+test("the items are the four resources of Las, with their uses", () => {
+  assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
+  assert.deepEqual(ITEMS.stick, {
+    name: "patyk",
+    fuel: { burnMinutes: 20 },
+    lightable: { burnMinutes: 3, warmth: 0.15 },
+  });
+  assert.deepEqual(ITEMS.berry, { name: "jagoda", food: { satiety: 25 } });
+  assert.deepEqual(ITEMS.moss, { name: "mech" });
+  assert.deepEqual(ITEMS.fiber, { name: "włókno" });
+});
+
+test("the campfire holds its name, costs, burning minutes, warmth and icon", () => {
+  assert.deepEqual(CAMPFIRE, {
+    name: "ognisko",
+    craft: { item: "stick", count: 6 },
+    light: { item: "stick", count: 2 },
+    burnMinutes: 60,
+    warmth: 0.5,
+    icon: "campfire",
+    iconTitle: "Campfire icon",
+  });
+});
+
+test("every item and every item of the campfire names an item of the data", () => {
+  for (const [id, item] of Object.entries(ITEMS)) {
+    assert.ok(id in RESOURCES, `item ${id} is a resource of the data`);
+    assert.equal(item.name, RESOURCES[id].name, id);
+  }
+  for (const resource of MAPS.forest.resources) assert.ok(resource.id in ITEMS);
+  assert.ok(CAMPFIRE.craft.item in ITEMS);
+  assert.ok(CAMPFIRE.light.item in ITEMS);
 });
 
 test("the archetype and the pace are in data", () => {

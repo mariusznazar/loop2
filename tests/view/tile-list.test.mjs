@@ -116,3 +116,197 @@ test("a fresh map run lists nothing; exploring the entrance lists that tile with
     ),
   );
 });
+
+// The campfire and a burning stick in the row of their tile (task, To do 15; spec Decision 5;
+// D-70). The program below, on a backpack of 9 sticks, explores the entrance (20 minutes, to
+// minute 20), crafts a campfire there (20 minutes and 6 sticks, to minute 40), lights it (5
+// minutes and 2 sticks, to minute 45; it burns 60 minutes, to minute 105) and lights a stick (5
+// minutes and the last stick, to minute 50; it burns 3 minutes, to minute 53).
+const FIRE_PROGRAM = [
+  { condition: ALWAYS, action: { kind: "craftCampfire" } },
+  { condition: ALWAYS, action: { kind: "lightCampfire" } },
+  { condition: ALWAYS, action: { kind: "lightItem" } },
+  { condition: ALWAYS, action: { kind: "explore" } },
+];
+
+/** The map run of FIRE_PROGRAM, its backpack holding 9 sticks, at each of the given minutes. */
+function fireRun(...minutes) {
+  const start = sent(FIRE_PROGRAM);
+  let state = {
+    ...start,
+    run: {
+      ...start.run,
+      character: {
+        ...start.run.character,
+        backpack: { ...start.run.character.backpack, [r[0]]: 9 },
+      },
+    },
+  };
+  const states = [];
+  for (const minute of minutes) {
+    state = advanceMinutes(state, minute - state.run.minute).state;
+    states.push(state);
+  }
+  return states;
+}
+
+test("a tile's row gives its campfire's state: burning with the minutes left, or extinguished", () => {
+  const [before, burning, extinguished] = fireRun(30, 63, 110);
+  const fire = (state) =>
+    tileList(state).rows.map((row) => [row.label, row.fire]);
+  assert.deepEqual(fire(before), [["(1, 1)", []]]);
+  assert.deepEqual(fire(burning), [
+    ["(1, 1)", ["ognisko — płonie, zostało 42 min"]],
+  ]);
+  assert.deepEqual(fire(extinguished), [["(1, 1)", ["ognisko — wygasłe"]]]);
+});
+
+test("a burning stick stands in its tile's row after the campfire, and only while it burns", () => {
+  const states = fireRun(50, 52, 53);
+  assert.deepEqual(
+    states.map((state) => tileList(state).rows.map((row) => row.fire)),
+    [
+      [["ognisko — płonie, zostało 55 min", "patyk — płonie, zostało 3 min"]],
+      [["ognisko — płonie, zostało 53 min", "patyk — płonie, zostało 1 min"]],
+      [["ognisko — płonie, zostało 52 min"]],
+    ],
+  );
+});
+
+test("the campfire's state leaves the row's stock as it was", () => {
+  const [burning] = fireRun(63);
+  const entrance = burning.run.tiles.find((t) => t.col === 1 && t.row === 1);
+  assert.deepEqual(
+    tileList(burning).rows[0].cells,
+    r.map((id) =>
+      Object.hasOwn(entrance.stock, id) ? String(entrance.stock[id]) : "—",
+    ),
+  );
+});
+
+/** A stand-in for the DOM calls of the terrain panel: no browser in Node. */
+function fakeDocument() {
+  function element(tag) {
+    const attributes = {};
+    const node = {
+      tag,
+      attributes,
+      children: [],
+      parent: null,
+      dataset: new Proxy(
+        {},
+        {
+          get: (_t, key) => attributes[`data-${String(key)}`],
+          set: (_t, key, value) => {
+            attributes[`data-${String(key)}`] = String(value);
+            return true;
+          },
+        },
+      ),
+      classList: {
+        add: (...names) => {
+          const set = new Set((attributes.class ?? "").split(" "));
+          for (const name of names) set.add(name);
+          attributes.class = [...set].filter(Boolean).join(" ");
+        },
+        toggle: (name, force) => {
+          const set = new Set((attributes.class ?? "").split(" "));
+          if (force) set.add(name);
+          else set.delete(name);
+          attributes.class = [...set].filter(Boolean).join(" ");
+        },
+      },
+      set className(value) {
+        attributes.class = value;
+      },
+      get textContent() {
+        return node.children
+          .map((child) =>
+            typeof child === "string" ? child : child.textContent,
+          )
+          .join("");
+      },
+      set textContent(value) {
+        node.replaceChildren(String(value));
+      },
+      setAttribute(name, value) {
+        attributes[name] = String(value);
+      },
+      getAttribute(name) {
+        return attributes[name] ?? null;
+      },
+      addEventListener() {},
+      append(...items) {
+        for (const item of items) {
+          if (typeof item !== "string") {
+            item.remove();
+            item.parent = node;
+          }
+          node.children.push(item);
+        }
+      },
+      replaceChildren(...items) {
+        node.children = [];
+        node.append(...items);
+      },
+      remove() {
+        if (node.parent)
+          node.parent.children = node.parent.children.filter((c) => c !== node);
+        node.parent = null;
+      },
+      querySelectorAll(selector) {
+        const name = /^\[([\w-]+)\]$/.exec(selector)[1];
+        const found = [];
+        const visit = (n) => {
+          for (const child of n.children)
+            if (typeof child !== "string") {
+              if (name in child.attributes) found.push(child);
+              visit(child);
+            }
+        };
+        visit(node);
+        return found;
+      },
+    };
+    return node;
+  }
+  return {
+    createElement: (tag) => element(tag),
+    createElementNS: (_ns, tag) => element(tag),
+  };
+}
+
+const descendants = (node) =>
+  node.children
+    .filter((child) => typeof child !== "string")
+    .flatMap((child) => [child, ...descendants(child)]);
+
+test("on the panel the campfire's icon stands in its tile and the state in the row of the same key", async () => {
+  const { createTerrainPanel } =
+    await import("../../dist/public/view/terrain-panel.js");
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const panel = createTerrainPanel();
+    for (const [state, text] of [
+      [fireRun(63)[0], "ognisko — płonie, zostało 42 min"],
+      [fireRun(110)[0], "ognisko — wygasłe"],
+    ]) {
+      panel.update(state);
+      const all = descendants(panel.element);
+      const icons = all.filter(
+        (e) => e.attributes.href === "/icons/campfire.svg",
+      );
+      assert.equal(icons.length, 1);
+      const [icon] = icons;
+      assert.equal(icon.attributes.class, "icon");
+      assert.equal(icon.parent.attributes["data-tile"], "1,1");
+      const row = all.find(
+        (e) => e.tag === "tr" && e.attributes["data-tile"] === "1,1",
+      );
+      assert.ok(row.textContent.includes(text), row.textContent);
+    }
+  } finally {
+    globalThis.document = saved;
+  }
+});
