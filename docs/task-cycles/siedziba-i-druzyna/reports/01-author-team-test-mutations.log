@@ -1,0 +1,225 @@
+== mutation: s/const name = text.trim();/const name = text;/
+✔ a created character joins the end of the team's list as an elemental mage, in the order of creation (1.2865ms)
+✔ two characters may share a name and stay two characters (0.1575ms)
+✖ the name loses the white space at its start and end, and keeps the white space inside (1.016ms)
+✖ a name empty once trimmed creates no character (0.4979ms)
+✔ the team's chest is empty in a new game and stays empty through creating, sending and ending (1.079ms)
+✔ the send sends the chosen character of the team, and a restart keeps it (0.8704ms)
+✔ while one character's map run goes on, no other character of the team is sent (0.225ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.7764
+
+✖ failing tests:
+
+test at tests\sim\team.test.mjs:51:1
+✖ the name loses the white space at its start and end, and keeps the white space inside (1.016ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   '  Ala ',
+  +   '\tOla\n',
+  +   ' Ala Ma Kota '
+  -   'Ala',
+  -   'Ola',
+  -   'Ala Ma Kota'
+    ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/siedziba-i-druzyna/tests/sim/team.test.mjs:53:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ '  Ala ', '\tOla\n', ' Ala Ma Kota ' ],
+    expected: [ 'Ala', 'Ola', 'Ala Ma Kota' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:61:1
+✖ a name empty once trimmed creates no character (0.4979ms)
+  AssertionError [ERR_ASSERTION]: " "
+  
+  ' ' !== null
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/siedziba-i-druzyna/tests/sim/team.test.mjs:64:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: ' ',
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+exit 1
+== mutation: s/characters: \[...state.team.characters, character\]/characters: [character, ...state.team.characters]/
+✖ a created character joins the end of the team's list as an elemental mage, in the order of creation (2.3338ms)
+✖ two characters may share a name and stay two characters (0.3367ms)
+✖ the name loses the white space at its start and end, and keeps the white space inside (0.2345ms)
+✔ a name empty once trimmed creates no character (0.4965ms)
+✔ the team's chest is empty in a new game and stays empty through creating, sending and ending (1.8327ms)
+✔ the send sends the chosen character of the team, and a restart keeps it (0.3026ms)
+✔ while one character's map run goes on, no other character of the team is sent (0.1995ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 4
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.8191
+
+✖ failing tests:
+
+test at tests\sim\team.test.mjs:30:1
+✖ a created character joins the end of the team's list as an elemental mage, in the order of creation (2.3338ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      {
+        archetypeId: 'elementalMage',
+  +     id: 3,
+  +     name: 'Ela'
+  -     id: 1,
+  -     name: 'Ala'
+      },
+      {
+        archetypeId: 'elementalMage',
+        id: 2,
+        name: 'Ola'
+  ...
+        archetypeId: 'elementalMage',
+  +     id: 1,
+  +     name: 'Ala'
+  -     id: 3,
+  -     name: 'Ela'
+      }
+    ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/siedziba-i-druzyna/tests/sim/team.test.mjs:32:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { id: 3, name: 'Ela', archetypeId: 'elementalMage' }, { id: 2, name: 'Ola', archetypeId: 'elementalMage' }, { id: 1, name: 'Ala', archetypeId: 'elementalMage' } ],
+    expected: [ { id: 1, name: 'Ala', archetypeId: 'elementalMage' }, { id: 2, name: 'Ola', archetypeId: 'elementalMage' }, { id: 3, name: 'Ela', archetypeId: 'elementalMage' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:40:1
+✖ two characters may share a name and stay two characters (0.3367ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      [
+  +     2,
+  -     1,
+        'Ala'
+      ],
+      [
+  +     1,
+  -     2,
+        'Ala'
+      ]
+    ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/siedziba-i-druzyna/tests/sim/team.test.mjs:42:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 2, 'Ala' ], [ 1, 'Ala' ] ],
+    expected: [ [ 1, 'Ala' ], [ 2, 'Ala' ] ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\team.test.mjs:51:1
+✖ the name loses the white space at its start and end, and keeps the white space inside (0.2345ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   'Ala Ma Kota',
+  +   'Ola',
+      'Ala',
+  -   'Ola',
+  -   'Ala Ma Kota'
+    ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/siedziba-i-druzyna/tests/sim/team.test.mjs:53:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Ala Ma Kota', 'Ola', 'Ala' ],
+    expected: [ 'Ala', 'Ola', 'Ala Ma Kota' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+exit 1
+== mutation: s/if (state.run) throw new Error("send: a map run is in progress");/\/\/ none/
+✔ a created character joins the end of the team's list as an elemental mage, in the order of creation (1.1934ms)
+✔ two characters may share a name and stay two characters (0.1546ms)
+✔ the name loses the white space at its start and end, and keeps the white space inside (0.1151ms)
+✔ a name empty once trimmed creates no character (0.3928ms)
+✔ the team's chest is empty in a new game and stays empty through creating, sending and ending (0.9976ms)
+✔ the send sends the chosen character of the team, and a restart keeps it (0.7945ms)
+✖ while one character's map run goes on, no other character of the team is sent (0.5175ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75.3959
+
+✖ failing tests:
+
+test at tests\sim\team.test.mjs:94:1
+✖ while one character's map run goes on, no other character of the team is sent (0.5175ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception (Error): a second character sent during a map run
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/siedziba-i-druzyna/tests/sim/team.test.mjs:97:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
+exit 1
