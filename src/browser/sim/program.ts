@@ -1,3 +1,4 @@
+import { backpackCap, backpackCount } from "./character.js";
 import { nearestTile, neighbours, tileAt } from "./hex.js";
 import type { MapDef } from "./data/maps.js";
 import type {
@@ -64,6 +65,11 @@ export function actionFeasible(
       const target = walkTarget(run, action.resource);
       return target !== null && target.minutes > 0;
     }
+    case "gather":
+      return (
+        stockHere(run, action.resource) > 0 &&
+        backpackCount(run.character.backpack) < backpackCap(run.character)
+      );
   }
 }
 

@@ -16,7 +16,8 @@ export type Condition =
 export type Action =
   | { kind: "explore" }
   | { kind: "wander" }
-  | { kind: "walkTo"; resource: ResourceId };
+  | { kind: "walkTo"; resource: ResourceId }
+  | { kind: "gather"; resource: ResourceId };
 
 export type ProgramRule = { condition: Condition; action: Action };
 
@@ -105,6 +106,8 @@ export type MapRun = {
   current: CurrentActivity;
   /** Generator state of the wander stream. */
   wanderRandom: number;
+  /** Generator state of the gathering stream. */
+  gatherRandom: number;
   /** Set once the character dies; then no game minute passes. */
   death: Death | null;
 };

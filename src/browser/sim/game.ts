@@ -99,6 +99,11 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
         kind: "walkTo",
         resource: checkResource(value.resource, allowed),
       };
+    case "gather":
+      return {
+        kind: "gather",
+        resource: checkResource(value.resource, allowed),
+      };
     default:
       throw new Error(
         `program: action kind ${String(value.kind)} is not on the closed list`,

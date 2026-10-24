@@ -1,5 +1,10 @@
 import { bodyMinute, startingBody } from "./body.js";
-import { newBackpack, newTraits } from "./character.js";
+import {
+  backpackCap,
+  backpackCount,
+  newBackpack,
+  newTraits,
+} from "./character.js";
 import { ACTIONS } from "./data/actions.js";
 import { BALANCE } from "./data/balance.js";
 import type { MapDef } from "./data/maps.js";
@@ -14,9 +19,11 @@ import type {
   CurrentActivity,
   DeathCause,
   Hex,
+  ItemId,
   MapId,
   MapRun,
   Program,
+  ResourceId,
   Traits,
 } from "./types.js";
 
@@ -72,6 +79,9 @@ function startActivity(
         minutes = tileAt(run.tiles, next)!.stepMinutes;
         break;
       }
+      case "gather":
+        minutes = ACTIONS.gather.minutes;
+        break;
     }
   }
 
@@ -90,6 +100,44 @@ function startActivity(
       activity,
       stepTo: stepTo && { ...stepTo },
     },
+  };
+}
+
+/** What the end of a gathering changes. */
+type Gathering = Pick<MapRun, "tiles" | "character" | "gatherRandom">;
+
+/**
+ * The end of a gathering of `resource`, step 5 of D-64: one draw from the gathering generator. A
+ * hit, with the data's chance, moves one piece from the character's tile into the backpack as the
+ * item of that resource — where the tile still holds a piece and the backpack has room, so never
+ * more than lies on the tile —; a miss changes neither (D-59). A tile gathered to 0 pieces keeps
+ * the key of its resource.
+ */
+function finishGathering(state: Gathering, resource: ResourceId): Gathering {
+  const draw = nextRandom(state.gatherRandom);
+  const { character } = state;
+  const here = tileAt(state.tiles, character.at);
+  const pieces = here?.revealed ? (here.stock[resource] ?? 0) : 0;
+  const hit = draw.value < BALANCE.gatherChance;
+  if (
+    !hit ||
+    pieces <= 0 ||
+    backpackCount(character.backpack) >= backpackCap(character)
+  )
+    return { ...state, gatherRandom: draw.state };
+  // The item of a resource is the item of the same identifier (items.ts).
+  const item: ItemId = resource;
+  return {
+    tiles: state.tiles.map((tile) =>
+      tile === here
+        ? { ...tile, stock: { ...tile.stock, [resource]: pieces - 1 } }
+        : tile,
+    ),
+    character: {
+      ...character,
+      backpack: { ...character.backpack, [item]: character.backpack[item] + 1 },
+    },
+    gatherRandom: draw.state,
   };
 }
 
@@ -120,6 +168,7 @@ export function newMapRun(
     campfires: [],
     burningItems: [],
     wanderRandom: streamState(seed, "wander"),
+    gatherRandom: streamState(seed, "gather"),
     death: null,
   };
   const started = startActivity(base, map, program);
@@ -169,10 +218,17 @@ export function stepMinute(
   ];
   let tiles = world.tiles;
   let character = run.character;
+  let gatherRandom = run.gatherRandom;
 
   if (finished.activity.kind === "rule") {
     const action = finished.activity.action;
-    if (action.kind === "explore") {
+    if (action.kind === "gather") {
+      const gathered = finishGathering(
+        { tiles, character, gatherRandom },
+        action.resource,
+      );
+      ({ tiles, character, gatherRandom } = gathered);
+    } else if (action.kind === "explore") {
       const at = run.character.at;
       tiles = world.tiles.map((tile) =>
         sameHex(tile.at, at) ? { ...tile, revealed: true } : tile,
@@ -200,6 +256,7 @@ export function stepMinute(
     campfires: world.campfires,
     burningItems: world.burningItems,
     wanderRandom: run.wanderRandom,
+    gatherRandom,
     death: null,
   };
   const started = startActivity(base, map, program);

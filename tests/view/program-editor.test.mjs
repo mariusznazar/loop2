@@ -161,6 +161,31 @@ test("switching the action to „Idź” takes the map's first resource; other k
   assert.equal(withActionKind(THREE, 0, "explore", LAS), null);
 });
 
+test("switching the action to „Zbierz” takes the map's first resource, and its resource can be chosen", () => {
+  const gathering = withActionKind(THREE, 0, "gather", LAS);
+  assert.deepEqual(gathering.rules[0], {
+    condition: { kind: "always" },
+    action: { kind: "gather", resource: "stick" },
+  });
+  assert.deepEqual(
+    withActionKind(THREE, 2, "gather", ["berry", "stick"]).rules[2].action,
+    { kind: "gather", resource: "berry" },
+  );
+  assert.deepEqual(withActionResource(gathering, 0, "fiber").rules[0].action, {
+    kind: "gather",
+    resource: "fiber",
+  });
+  assert.equal(withActionResource(gathering, 0, "stick"), null);
+  assert.equal(withActionKind(gathering, 0, "gather", LAS), null);
+  assert.deepEqual(
+    withActionKind(gathering, 0, "wander", LAS).rules[0].action,
+    {
+      kind: "wander",
+    },
+  );
+  assert.equal(withActionKind(THREE, 0, "gather", []), null);
+});
+
 test("choosing a resource or a number changes only that rule; the same choice commits nothing", () => {
   const before = copy(THREE);
   assert.deepEqual(withConditionResource(THREE, 1, "fiber"), {
@@ -209,7 +234,7 @@ test("every program the editor builds passes setProgram, before sending and duri
   const conditionKinds = Object.keys(CONDITIONS);
   const actionKinds = Object.keys(ACTIONS);
   assert.deepEqual(conditionKinds, ["always", "hereBelow"]);
-  assert.deepEqual(actionKinds, ["explore", "wander", "walkTo"]);
+  assert.deepEqual(actionKinds, ["explore", "wander", "walkTo", "gather"]);
 
   // Every pair of kinds, every resource in every slot, and the number at its ends and outside them.
   let program = { rules: [] };
@@ -229,7 +254,7 @@ test("every program the editor builds passes setProgram, before sending and duri
       for (const resource of resources) {
         if (conditionKind === "hereBelow")
           keep(withConditionResource(program, last, resource));
-        if (actionKind === "walkTo")
+        if (actionKind === "walkTo" || actionKind === "gather")
           keep(withActionResource(program, last, resource));
       }
       if (conditionKind === "hereBelow") {

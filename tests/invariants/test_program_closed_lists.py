@@ -51,7 +51,7 @@ T = 1760000000000
 # The kinds the data files list today: the keys of CONDITIONS (conditions.ts) and of ACTIONS
 # (actions.ts).
 CONDITION_KINDS = ("always", "hereBelow")
-ACTION_KINDS = ("explore", "wander", "walkTo")
+ACTION_KINDS = ("explore", "wander", "walkTo", "gather")
 
 ALWAYS = {"kind": "always"}
 
@@ -68,6 +68,7 @@ VALID = {"rules": [
     rule(ALWAYS, {"kind": "explore"}),
     rule({"kind": "hereBelow", "resource": "stick", "value": 3}, {"kind": "wander"}),
     rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+    rule(ALWAYS, {"kind": "gather", "resource": "moss"}),
 ]}
 
 # Kinds no data file lists: made-up kinds, letter-case variants, names every JavaScript object
@@ -75,9 +76,10 @@ VALID = {"rules": [
 MISSING = "__missing__"
 UNLISTED_CONDITION_KINDS = ("never", "hereAbove", "hereAtLeast", "stockBelow", "Always", "ALWAYS",
                             "herebelow", "", "toString", "constructor", "__proto__",
-                            "hasOwnProperty", "explore", "wander", "walkTo", MISSING, None, 0,
-                            ["always"])
-UNLISTED_ACTION_KINDS = ("gather", "rest", "walkToTile", "goTo", "Explore", "WANDER", "walkto", "",
+                            "hasOwnProperty", "explore", "wander", "walkTo", "gather", MISSING,
+                            None, 0, ["always"])
+UNLISTED_ACTION_KINDS = ("collect", "gatherAll", "Gather", "rest", "walkToTile", "goTo", "Explore",
+                         "WANDER", "walkto", "",
                          "toString", "constructor", "__proto__", "valueOf", "always",
                          "hereBelow", MISSING, None, 1, ["explore"])
 # Fields a listed kind takes, given to an unlisted one in the second offer of each kind.

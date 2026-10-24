@@ -10,4 +10,5 @@ export const ACTIONS = {
   explore: { label: "Eksploruj", status: "Eksploruje", minutes: 20 },
   wander: { label: "Wędruj", status: "Wędruje", minutes: null },
   walkTo: { label: "Idź", status: "Idzie po", minutes: null },
+  gather: { label: "Zbierz", status: "Zbiera", minutes: 10 },
 } as const satisfies Record<string, ActionDef>;

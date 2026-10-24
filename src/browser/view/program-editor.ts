@@ -22,6 +22,18 @@ import { sendTargets } from "./send-panel.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
+/** An action that names a resource of the map: „Idź” and „Zbierz”. */
+type ResourceAction = Extract<Action, { resource: ResourceId }>;
+
+const RESOURCE_ACTION_KINDS: readonly ActionKind[] = ["walkTo", "gather"];
+
+function takesResource(kind: ActionKind): kind is ResourceAction["kind"] {
+  return RESOURCE_ACTION_KINDS.includes(kind);
+}
+
+function namesResource(action: Action): action is ResourceAction {
+  return takesResource(action.kind);
+}
 
 /** A control of a rule's row, or the button „Dodaj regułę”, that gets focus after a structural edit. */
 export type FocusTarget =
@@ -128,8 +140,8 @@ export function withConditionKind(
 }
 
 /**
- * The rule's action switched to `kind`; an action that names a resource takes the first of
- * `resources`. Null when the kind is already chosen.
+ * The rule's action switched to `kind`; an action that names a resource — „Idź”, „Zbierz” — takes
+ * the first of `resources`. Null when the kind is already chosen.
  */
 export function withActionKind(
   program: Program,
@@ -139,7 +151,7 @@ export function withActionKind(
 ): Program | null {
   const rule = program.rules[index];
   if (!rule || rule.action.kind === kind) return null;
-  if (kind !== "walkTo")
+  if (!takesResource(kind))
     return replaceRule(program, index, { ...rule, action: { kind } });
   const resource = resources[0];
   if (resource === undefined) return null;
@@ -191,11 +203,7 @@ export function withActionResource(
   resource: ResourceId,
 ): Program | null {
   const rule = program.rules[index];
-  if (
-    !rule ||
-    rule.action.kind !== "walkTo" ||
-    rule.action.resource === resource
-  )
+  if (!rule || !namesResource(rule.action) || rule.action.resource === resource)
     return null;
   return replaceRule(program, index, {
     ...rule,
@@ -272,9 +280,9 @@ function showResource(
 
 /**
  * Builds the program panel: heading „Program”, one row per program rule — condition select, for
- * „Tu leży mniej niż” a number field and a resource select, „→”, action select, for „Idź” a
- * resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Labels and resources
- * come from the data. Each edit commits a whole new program through `commit` on `change`; the
+ * „Tu leży mniej niż” a number field and a resource select, „→”, action select, for „Idź” and
+ * „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Labels and
+ * resources come from the data. Each edit commits a whole new program through `commit` on `change`; the
  * editor never writes the game state. Rows are rebuilt only after a structural edit, so the control
  * being edited keeps focus while the state changes.
  */
@@ -423,9 +431,9 @@ export function createProgramEditor(
       showResource(row.conditionResource, offered, condition.resource);
     }
     if (row.action.value !== action.kind) row.action.value = action.kind;
-    const walking = action.kind === "walkTo";
-    row.actionResource.hidden = !walking;
-    if (walking) showResource(row.actionResource, offered, action.resource);
+    row.actionResource.hidden = !namesResource(action);
+    if (namesResource(action))
+      showResource(row.actionResource, offered, action.resource);
   }
 
   function focusTarget(target: FocusTarget): void {
