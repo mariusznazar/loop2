@@ -1072,3 +1072,30 @@ at a time beside the program panel. Earning loops, which go on side by side, sta
 manual map run rather than in its place.
 *Rejected:* manual map runs of several characters at once — the game state would hold a map run for
 each character, and the screen one for each.
+
+### D-56 — How does the game state tell one character from another?
+
+In the MVP each character carries a number the game gives it when the character is created, one
+more than the number the game state gave last, so the numbers of two characters of one game
+differ. A map run names the team's character it carries by that number.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-52
+- **Verification:** an agent compares a change with the decision:
+  - complies: the third character created carrying the number 3, whatever its name; a map run of
+    that character holding the number 3; a saved game that keeps the number the game state gives
+    next
+  - violates: a character found by its name or by its place on the team's list; a map run holding
+    a copy of the character's name or archetype in place of its number; a number given anew to a
+    character created after another left the team
+- **Origin:** none
+
+*Rationale:* two characters may bear one name, and a character's place on the list moves when a
+character before it leaves, so neither tells a character apart for long; a number given once, at
+creation, keeps pointing at the same character in a saved game and when time away is computed
+character by character. Counting up keeps the number out of the simulation's randomness, which
+serves map runs.
+*Rejected:* the name — two characters may share it; the place on the team's list — it moves when a
+character before it leaves; a number drawn at random — every random draw of the simulation comes
+from the generators of a map run.
