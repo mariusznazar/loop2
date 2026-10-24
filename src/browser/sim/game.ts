@@ -1,4 +1,4 @@
-import { ARCHETYPES } from "./data/archetypes.js";
+import { CREATED_ARCHETYPE } from "./data/archetypes.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
 import { CONDITIONS } from "./data/conditions.js";
 import { MAPS, type MapDef } from "./data/maps.js";
@@ -6,7 +6,8 @@ import { mixSeed } from "./random.js";
 import { newMapRun, stepMinute, type GameEvent } from "./run.js";
 import type {
   Action,
-  ArchetypeId,
+  Character,
+  CharacterId,
   Condition,
   GameState,
   MapId,
@@ -131,12 +132,12 @@ function requireRun(state: GameState, name: string): MapRun {
 function startRun(
   state: GameState,
   mapId: MapId,
-  archetypeId: ArchetypeId,
+  characterId: CharacterId,
   seed: number,
 ): GameResult {
   const started = newMapRun(mapOf(mapId), seed, state.program, {
     mapId,
-    archetypeId,
+    characterId,
   });
   return {
     state: { ...state, run: started.run, paused: false, realMsCarry: 0 },
@@ -144,10 +145,13 @@ function startRun(
   };
 }
 
-/** The game as it stands before anything is done: no program rules, no map run. */
+/** The game as it stands before anything is done: no program rules, a team with no character
+ * and an empty chest, no map run. */
 export function newGame(): GameState {
   return {
     program: { rules: [] },
+    team: { characters: [], chest: { pieces: {} } },
+    nextCharacterId: 1,
     run: null,
     lastSeed: INITIAL_SEED,
     paused: false,
@@ -166,35 +170,63 @@ export function setProgram(state: GameState, program: Program): GameResult {
   };
 }
 
-/** Sends a character to a map: a new map run at minute 0, seeded from the last seed and real time. */
+/**
+ * The name a character created from `text` takes: the text without white space at its start and
+ * end, or null where nothing is left, a name that creates no character.
+ */
+export function characterName(text: string): string | null {
+  const name = text.trim();
+  return name === "" ? null : name;
+}
+
+/**
+ * Creates a character named `name`, trimmed as `characterName` gives it, in the archetype of created
+ * characters, at the end of the team's list; throws on a name that is empty once trimmed.
+ */
+export function createCharacter(state: GameState, name: string): GameResult {
+  const trimmed = typeof name === "string" ? characterName(name) : null;
+  if (trimmed === null) throw new Error("createCharacter: the name is empty");
+  const character: Character = {
+    id: state.nextCharacterId,
+    name: trimmed,
+    archetypeId: CREATED_ARCHETYPE,
+  };
+  return {
+    state: {
+      ...state,
+      team: {
+        ...state.team,
+        characters: [...state.team.characters, character],
+      },
+      nextCharacterId: state.nextCharacterId + 1,
+    },
+    events: [],
+  };
+}
+
+/**
+ * Sends a character of the team to a map: a new map run at minute 0, seeded from the last seed and
+ * real time. Throws while a map run is in progress, so one map run goes on at a time.
+ */
 export function send(
   state: GameState,
-  ids: { mapId: MapId; archetypeId: ArchetypeId },
+  ids: { mapId: MapId; characterId: CharacterId },
   realMs: number,
 ): GameResult {
   if (state.run) throw new Error("send: a map run is in progress");
-  const { mapId, archetypeId } = ids;
+  const { mapId, characterId } = ids;
   if (typeof mapId !== "string" || !Object.hasOwn(MAPS, mapId))
     throw new Error(`send: no map ${String(mapId)}`);
-  if (
-    typeof archetypeId !== "string" ||
-    !Object.hasOwn(ARCHETYPES, archetypeId)
-  ) {
-    throw new Error(`send: no archetype ${String(archetypeId)}`);
-  }
+  if (!state.team.characters.some((character) => character.id === characterId))
+    throw new Error(`send: no character ${String(characterId)} in the team`);
   const seed = mixSeed(state.lastSeed, realMs);
-  return startRun({ ...state, lastSeed: seed }, mapId, archetypeId, seed);
+  return startRun({ ...state, lastSeed: seed }, mapId, characterId, seed);
 }
 
 /** Ends the map run in progress and starts a new one of the same map, character and seed. */
 export function restart(state: GameState): GameResult {
   const run = requireRun(state, "restart");
-  const started = startRun(
-    state,
-    run.mapId,
-    run.character.archetypeId,
-    run.seed,
-  );
+  const started = startRun(state, run.mapId, run.character.id, run.seed);
   return {
     state: started.state,
     events: [{ kind: "mapRunEnded" }, ...started.events],

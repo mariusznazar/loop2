@@ -7,7 +7,7 @@ import { chooseActivity, walkTarget } from "./program.js";
 import { nextRandom, streamState } from "./random.js";
 import type {
   Activity,
-  ArchetypeId,
+  CharacterId,
   CurrentActivity,
   Hex,
   MapId,
@@ -92,7 +92,7 @@ export function newMapRun(
   map: MapDef,
   seed: number,
   program: Program,
-  ids: { mapId: MapId; archetypeId: ArchetypeId },
+  ids: { mapId: MapId; characterId: CharacterId },
 ): { run: MapRun; events: GameEvent[] } {
   const { tiles, entrance } = drawLayout(map, seed);
   const base = {
@@ -100,7 +100,7 @@ export function newMapRun(
     seed,
     minute: 0,
     tiles,
-    character: { archetypeId: ids.archetypeId, at: entrance },
+    character: { id: ids.characterId, at: entrance },
     wanderRandom: streamState(seed, "wander"),
   };
   const started = startActivity(base, map, program);

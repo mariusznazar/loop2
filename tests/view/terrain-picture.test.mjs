@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { RESOURCES } from "../../dist/public/sim/data/resources.js";
 import {
   advanceMinutes,
+  createCharacter,
   newGame,
   send,
   setProgram,
@@ -14,13 +14,14 @@ import { terrainPicture } from "../../dist/public/view/terrain-picture.js";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
-  archetypeId: Object.keys(ARCHETYPES)[0],
+  // The first character a new game creates takes the id 1.
+  characterId: 1,
 };
 const ALWAYS = { kind: "always" };
 
 function sent(rules = [{ condition: ALWAYS, action: { kind: "explore" } }]) {
   const program = setProgram(newGame(), { rules }).state;
-  return send(program, SENT, 1760000000000).state;
+  return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
 }
 
 test("a game without a map run has an empty picture", () => {

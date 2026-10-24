@@ -2,9 +2,9 @@
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
-script this check writes to a temporary directory: `newGame`, `setProgram`, `send`,
-`advanceMinutes`, `passRealTime`, `setPaused`, `restart` and `end`. After every input the script
-records the JSON of the map run.
+script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
+`send`, `advanceMinutes`, `passRealTime`, `setPaused`, `restart` and `end`. After every input the
+script records the JSON of the map run.
 
 Reading of the sentence:
 - a restart: the map run in the state `restart` returns; the map run it replaces: the map run of
@@ -34,7 +34,10 @@ import unittest
 import loop2_invariant_support as support
 
 GAME_MODULE = "dist/public/sim/game.js"
-SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
+# The map sent to, as the data files name it (D-18), and the character sent: the first one a
+# new game creates, which takes the id 1.
+SENT = {"mapId": "forest", "characterId": 1}
+CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 ALWAYS = {"kind": "always"}
@@ -44,14 +47,14 @@ P2 = {"rules": [{"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "
                 {"condition": ALWAYS, "action": {"kind": "wander"}}]}
 
 STEPS = [
-    ["newGame"], ["setProgram", P1], ["send", SENT, T],
+    ["newGame"], CREATE, ["setProgram", P1], ["send", SENT, T],
     ["advanceMinutes", 30], ["restart"],
     ["advanceMinutes", 20], ["passRealTime", 15000], ["setPaused", True],
     ["passRealTime", 9000], ["setPaused", False], ["advanceMinutes", 10],
     ["setProgram", P2], ["restart"], ["restart"],
     ["end"], ["send", SENT, T_OTHER], ["advanceMinutes", 20], ["restart"],
 ]
-CONTROL_STEPS = [["newGame"], ["setProgram", P1], ["send", SENT, T], ["end"],
+CONTROL_STEPS = [["newGame"], CREATE, ["setProgram", P1], ["send", SENT, T], ["end"],
                  ["send", SENT, T], ["end"], ["send", SENT, T_OTHER]]
 
 DRIVER = r"""
@@ -127,7 +130,7 @@ class RestartSeed(unittest.TestCase):
         self.assertEqual(len(set(seeds)), 3, f"sends gave the seeds {seeds}, so a restart taking "
                                              "a new seed as a send does could go unseen")
         main = drive(STEPS)
-        first, second = main[2]["run"]["seed"], main[15]["run"]["seed"]
+        first, second = main[3]["run"]["seed"], main[16]["run"]["seed"]
         self.assertNotEqual(first, second, "the two sends of the scenario share a seed")
 
 

@@ -3,10 +3,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { newGame, send, setProgram } from "../../dist/public/sim/game.js";
+import {
+  createCharacter,
+  newGame,
+  send,
+  setProgram,
+} from "../../dist/public/sim/game.js";
 import {
   addRule,
   focusAfter,
@@ -23,7 +27,8 @@ import {
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
-  archetypeId: Object.keys(ARCHETYPES)[0],
+  // The first character a new game creates takes the id 1.
+  characterId: 1,
 };
 const LAS = ["stick", "berry", "moss", "fiber"];
 const ALWAYS_EXPLORE = {
@@ -191,7 +196,11 @@ test("choosing a resource or a number changes only that rule; the same choice co
 test("the resource lists offer the shown map's resources before sending and the run's map's during a run, in order", () => {
   const game = newGame();
   assert.deepEqual(offeredResources(game), LAS);
-  const running = send(game, SENT, 1760000000000).state;
+  const running = send(
+    createCharacter(game, "Ala").state,
+    SENT,
+    1760000000000,
+  ).state;
   assert.deepEqual(offeredResources(running), LAS);
 });
 
@@ -251,7 +260,11 @@ test("every program the editor builds passes setProgram, before sending and duri
   assert.ok(built.length > 30, `only ${built.length} programs built`);
 
   const before = newGame();
-  const during = send(newGame(), SENT, 1760000000000).state;
+  const during = send(
+    createCharacter(newGame(), "Ala").state,
+    SENT,
+    1760000000000,
+  ).state;
   for (const candidate of built) {
     for (const state of [before, during]) {
       const result = setProgram(state, candidate);

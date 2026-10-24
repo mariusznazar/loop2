@@ -69,3 +69,10 @@ A free game minute is a game minute of a map run at which the map run starts, or
 character's action or the character's waiting ends.
 
 - **Not:** none
+
+## headquarters
+
+The headquarters is the screen of the game outside a map run that shows the player's team with its
+characters and its chest.
+
+- **Not:** none

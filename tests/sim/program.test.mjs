@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
 import { BALANCE } from "../../dist/public/sim/data/balance.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { sameHex } from "../../dist/public/sim/hex.js";
@@ -12,7 +11,8 @@ import {
 import { newMapRun } from "../../dist/public/sim/run.js";
 
 const [mapId, map] = Object.entries(MAPS)[0];
-const archetypeId = Object.keys(ARCHETYPES)[0];
+// The id of a character of the team, which the map run carries.
+const characterId = 1;
 const [stick, berry] = map.resources.map((resource) => resource.id);
 
 const ALWAYS = { kind: "always" };
@@ -25,7 +25,7 @@ const program = (...rules) => ({ rules });
 
 /** A fresh map run of the first map at minute 0, its first activity chosen by `startProgram`. */
 function freshRun(seed = 3, startProgram = program()) {
-  return newMapRun(map, seed, startProgram, { mapId, archetypeId }).run;
+  return newMapRun(map, seed, startProgram, { mapId, characterId }).run;
 }
 
 /** The run with the character's tile replaced by `change(tile)`. */
@@ -130,7 +130,7 @@ test("with no applicable rule the character waits", () => {
 
 test("a wait lasts waitMinutes, one game minute", () => {
   assert.equal(BALANCE.waitMinutes, 1);
-  const { run } = newMapRun(map, 3, program(), { mapId, archetypeId });
+  const { run } = newMapRun(map, 3, program(), { mapId, characterId });
   assert.deepEqual(run.current, {
     activity: { kind: "wait" },
     startMinute: 0,
