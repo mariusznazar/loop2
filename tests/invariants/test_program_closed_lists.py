@@ -50,7 +50,8 @@ T = 1760000000000
 
 # The kinds the data files list today: the keys of CONDITIONS (conditions.ts) and of ACTIONS
 # (actions.ts).
-CONDITION_KINDS = ("always", "hereBelow")
+CONDITION_KINDS = ("always", "hereBelow", "temperatureBelow", "satietyBelow", "itemBelow",
+                   "campfireLeftBelow", "awayFromCampfire")
 ACTION_KINDS = ("explore", "wander", "walkTo", "walkToCampfire", "gather", "craftCampfire",
                 "lightCampfire", "lightItem", "feedCampfire", "eat")
 
@@ -69,6 +70,11 @@ VALID = {"rules": [
     rule(ALWAYS, {"kind": "explore"}),
     rule({"kind": "hereBelow", "resource": "stick", "value": 3}, {"kind": "wander"}),
     rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+    rule({"kind": "temperatureBelow", "value": 36.5}, {"kind": "wander"}),
+    rule({"kind": "satietyBelow", "value": 50}, {"kind": "wander"}),
+    rule({"kind": "itemBelow", "item": "berry", "value": 8}, {"kind": "wander"}),
+    rule({"kind": "campfireLeftBelow", "value": 20}, {"kind": "wander"}),
+    rule({"kind": "awayFromCampfire"}, {"kind": "wander"}),
     rule(ALWAYS, {"kind": "gather", "resource": "moss"}),
     rule(ALWAYS, {"kind": "walkToCampfire"}),
     rule(ALWAYS, {"kind": "craftCampfire"}),

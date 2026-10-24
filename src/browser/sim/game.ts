@@ -1,8 +1,9 @@
 import { newTraits } from "./character.js";
 import { ARCHETYPES } from "./data/archetypes.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
-import { CONDITIONS } from "./data/conditions.js";
+import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
+import { conditionNumber, onStep } from "./program.js";
 import { mixSeed } from "./random.js";
 import { newMapRun, stepMinute, type GameEvent } from "./run.js";
 import type {
@@ -10,6 +11,7 @@ import type {
   ArchetypeId,
   Condition,
   GameState,
+  ItemId,
   MapId,
   MapRun,
   Program,
@@ -53,6 +55,50 @@ function checkResource(
   return value as ResourceId;
 }
 
+/** An item of the data, bound to no map. */
+function checkItem(value: unknown): ItemId {
+  if (typeof value !== "string" || !Object.hasOwn(ITEMS, value)) {
+    throw new Error(
+      `program: item ${String(value)} is not an item of the data`,
+    );
+  }
+  return value as ItemId;
+}
+
+/**
+ * How far a number may lie from its step's grid and still be taken, as a part of the step: binary
+ * rounding, never a number the player could type.
+ */
+const STEP_TOLERANCE = 1e-9;
+
+/**
+ * The number of a condition of `kind`: a finite number from the kind's minimum to its maximum, on
+ * its step counted from the minimum, held as the decimal of that step.
+ */
+function checkNumber(kind: Condition["kind"], value: unknown): number {
+  const number = conditionNumber(kind);
+  if (!number)
+    throw new Error(`program: condition kind ${kind} takes no number`);
+  const { min, max, step } = number;
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    value < min ||
+    value > max
+  ) {
+    throw new Error(
+      `program: ${String(value)} is not a number from ${min} to ${max}`,
+    );
+  }
+  const held = onStep(value, number);
+  if (Math.abs(value - held) > step * STEP_TOLERANCE) {
+    throw new Error(
+      `program: ${String(value)} does not lie on the step ${step} from ${min}`,
+    );
+  }
+  return held;
+}
+
 function checkCondition(
   value: unknown,
   allowed: ReadonlySet<string>,
@@ -62,24 +108,25 @@ function checkCondition(
     case "always":
       return { kind: "always" };
     case "hereBelow": {
-      const { min, max } = CONDITIONS.hereBelow;
-      const number = value.value;
-      if (
-        typeof number !== "number" ||
-        !Number.isInteger(number) ||
-        number < min ||
-        number > max
-      ) {
-        throw new Error(
-          `program: ${String(number)} is not a whole number from ${min} to ${max}`,
-        );
-      }
+      const number = checkNumber("hereBelow", value.value);
       return {
         kind: "hereBelow",
         resource: checkResource(value.resource, allowed),
         value: number,
       };
     }
+    case "itemBelow": {
+      const number = checkNumber("itemBelow", value.value);
+      return { kind: "itemBelow", item: checkItem(value.item), value: number };
+    }
+    // The body's conditions and those on the campfire name nothing: the simulation reads the
+    // character's body, and the campfire on its tile or the nearest one.
+    case "temperatureBelow":
+    case "satietyBelow":
+    case "campfireLeftBelow":
+      return { kind: value.kind, value: checkNumber(value.kind, value.value) };
+    case "awayFromCampfire":
+      return { kind: "awayFromCampfire" };
     default:
       throw new Error(
         `program: condition kind ${String(value.kind)} is not on the closed list`,

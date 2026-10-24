@@ -1,11 +1,18 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import { CONDITIONS } from "../sim/data/conditions.js";
+import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
+import {
+  conditionNumber,
+  onStep,
+  type ConditionNumber,
+} from "../sim/program.js";
 import type {
   Action,
   Condition,
   GameState,
+  ItemId,
   Program,
   ProgramRule,
   ResourceId,
@@ -47,7 +54,14 @@ export type FocusTarget =
 /** An edit that changes the rows: „Dodaj regułę”, „Usuń”, „↑”, „↓”. */
 export type StructuralEdit = "add" | "remove" | "up" | "down";
 
-const NUMBER = CONDITIONS.hereBelow;
+/**
+ * The items „Zapas poniżej” offers, in the data's order: every item of the data, bound to no map,
+ * since an item can reach the backpack from elsewhere than the map's tiles.
+ */
+const OFFERED_ITEMS = Object.keys(ITEMS) as ItemId[];
+
+/** The range a row's number field is made with, before `showRule` sets that of the rule's kind. */
+const UNSET_RANGE = { min: 0, max: 0, step: 1 };
 
 /**
  * The resources the resource selects offer, in the map's order: the run's map's during a map run,
@@ -60,20 +74,41 @@ export function offeredResources(state: GameState): ResourceId[] {
 }
 
 /**
- * The number field's commit rule: text holding no finite number keeps the previous value and
- * commits nothing; otherwise the number is rounded to a whole number and clamped to the data's
- * range, and committed when it differs from the previous value. `value` is what the field shows.
+ * The number field's commit rule, by the number the rule's condition kind takes: text holding no
+ * finite number keeps the previous value and commits nothing; otherwise the number is rounded to
+ * the kind's step, clamped to its range and kept as the decimal the program check keeps, and
+ * committed when it differs from the previous value. `value` is what the field shows.
  */
 export function readNumberField(
   text: string,
   previous: number,
+  number: ConditionNumber,
 ): { value: number; commit: boolean } {
   const parsed = text.trim() === "" ? Number.NaN : Number(text);
   if (!Number.isFinite(parsed)) return { value: previous, commit: false };
-  // `+ 0` turns a rounded -0 into 0.
-  const value =
-    Math.min(NUMBER.max, Math.max(NUMBER.min, Math.round(parsed))) + 0;
+  const value = Math.min(
+    number.max,
+    Math.max(number.min, onStep(parsed, number)),
+  );
   return { value, commit: value !== previous };
+}
+
+/**
+ * Sets the number field's range and step to those of the condition kind's number, only where they
+ * differ; a kind that takes no number leaves them as they are.
+ */
+export function showFieldRange(
+  input: Pick<HTMLInputElement, "min" | "max" | "step">,
+  kind: ConditionKind,
+): void {
+  const number = conditionNumber(kind);
+  if (!number) return;
+  const min = String(number.min);
+  const max = String(number.max);
+  const step = String(number.step);
+  if (input.min !== min) input.min = min;
+  if (input.max !== max) input.max = max;
+  if (input.step !== step) input.step = step;
 }
 
 /** The program with one rule replaced; the input is not changed. */
@@ -122,8 +157,37 @@ export function moveRule(
 }
 
 /**
- * The rule's condition switched to `kind`; a condition that names a resource takes the first of
- * `resources` and the data's default number. Null when the kind is already chosen.
+ * A new condition of `kind`: a kind that takes a number starts with the data's default, one that
+ * names a resource with the first of `resources`, „Zapas poniżej” with the first item of the data.
+ * Null where there is nothing to name.
+ */
+function newCondition(
+  kind: ConditionKind,
+  resources: readonly ResourceId[],
+): Condition | null {
+  if (kind === "always" || kind === "awayFromCampfire") return { kind };
+  const value = conditionNumber(kind)?.defaultValue;
+  if (value === undefined) return null;
+  switch (kind) {
+    case "hereBelow": {
+      const resource = resources[0];
+      return resource === undefined ? null : { kind, resource, value };
+    }
+    case "itemBelow": {
+      const item = OFFERED_ITEMS[0];
+      return item === undefined ? null : { kind, item, value };
+    }
+    case "temperatureBelow":
+    case "satietyBelow":
+    case "campfireLeftBelow":
+      return { kind, value };
+  }
+}
+
+/**
+ * The rule's condition switched to `kind`, with the data's default number; a condition that names
+ * a resource takes the first of `resources`, „Zapas poniżej” the first item of the data. Null when
+ * the kind is already chosen.
  */
 export function withConditionKind(
   program: Program,
@@ -133,14 +197,9 @@ export function withConditionKind(
 ): Program | null {
   const rule = program.rules[index];
   if (!rule || rule.condition.kind === kind) return null;
-  if (kind === "always")
-    return replaceRule(program, index, { ...rule, condition: { kind } });
-  const resource = resources[0];
-  if (resource === undefined) return null;
-  return replaceRule(program, index, {
-    ...rule,
-    condition: { kind, resource, value: NUMBER.defaultValue },
-  });
+  const condition = newCondition(kind, resources);
+  if (!condition) return null;
+  return replaceRule(program, index, { ...rule, condition });
 }
 
 /**
@@ -181,6 +240,25 @@ export function withConditionResource(
   });
 }
 
+/** The item of the rule's „Zapas poniżej”; null when unchanged or the condition names none. */
+export function withConditionItem(
+  program: Program,
+  index: number,
+  item: ItemId,
+): Program | null {
+  const rule = program.rules[index];
+  if (
+    !rule ||
+    rule.condition.kind !== "itemBelow" ||
+    rule.condition.item === item
+  )
+    return null;
+  return replaceRule(program, index, {
+    ...rule,
+    condition: { ...rule.condition, item },
+  });
+}
+
 /** The number of the rule's condition; null when unchanged or the condition takes none. */
 export function withConditionValue(
   program: Program,
@@ -188,11 +266,7 @@ export function withConditionValue(
   value: number,
 ): Program | null {
   const rule = program.rules[index];
-  if (
-    !rule ||
-    rule.condition.kind !== "hereBelow" ||
-    rule.condition.value === value
-  )
+  if (!rule || !("value" in rule.condition) || rule.condition.value === value)
     return null;
   return replaceRule(program, index, {
     ...rule,
@@ -244,6 +318,7 @@ type RowView = {
   condition: HTMLSelectElement;
   value: Field;
   conditionResource: HTMLSelectElement;
+  conditionItem: HTMLSelectElement;
   action: HTMLSelectElement;
   actionResource: HTMLSelectElement;
   up: HTMLButtonElement;
@@ -283,10 +358,12 @@ function showResource(
 }
 
 /**
- * Builds the program panel: heading „Program”, one row per program rule — condition select, for
- * „Tu leży mniej niż” a number field and a resource select, „→”, action select, for „Idź” and
- * „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Labels and
- * resources come from the data: the action select offers every action of the closed list. Each edit commits a whole new program through `commit` on `change`; the
+ * Builds the program panel: heading „Program”, one row per program rule — condition select, for a
+ * condition that takes a number a number field with the range and step of its kind, for „Tu leży
+ * mniej niż” a resource select, for „Zapas poniżej” an item select, „→”, action select, for „Idź”
+ * and „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Labels,
+ * numbers, resources and items come from the data: the condition and action selects offer every
+ * kind of the closed lists. Each edit commits a whole new program through `commit` on `change`; the
  * editor never writes the game state. Rows are rebuilt only after a structural edit, so the control
  * being edited keeps focus while the state changes.
  */
@@ -308,6 +385,10 @@ export function createProgramEditor(
   const actionOptions = Object.entries(ACTIONS).map(
     ([kind, def]): SelectOption => [kind, def.label],
   );
+  const itemOptions = OFFERED_ITEMS.map((id): SelectOption => [
+    id,
+    ITEMS[id].name,
+  ]);
 
   let program: Program = { rules: [] };
   let offered: ResourceId[] = [];
@@ -340,13 +421,9 @@ export function createProgramEditor(
     const row: RowView = {
       element: document.createElement("li"),
       condition: createSelectList("Warunek", conditionOptions),
-      value: createNumberField({
-        label: "Liczba",
-        min: NUMBER.min,
-        max: NUMBER.max,
-        step: NUMBER.step,
-      }),
+      value: createNumberField({ label: "Liczba", ...UNSET_RANGE }),
       conditionResource: createSelectList("Zasób warunku"),
+      conditionItem: createSelectList("Przedmiot warunku", itemOptions),
       action: createSelectList("Akcja", actionOptions),
       actionResource: createSelectList("Zasób akcji"),
       up: createButton("↑", { label: "W górę" }),
@@ -361,6 +438,7 @@ export function createProgramEditor(
       row.condition,
       row.value.element,
       row.conditionResource,
+      row.conditionItem,
       arrow,
       row.action,
       row.actionResource,
@@ -381,8 +459,14 @@ export function createProgramEditor(
     });
     row.value.input.addEventListener("change", () => {
       const condition = program.rules[index]?.condition;
-      if (condition?.kind !== "hereBelow") return;
-      const field = readNumberField(row.value.input.value, condition.value);
+      if (!condition || !("value" in condition)) return;
+      const number = conditionNumber(condition.kind);
+      if (!number) return;
+      const field = readNumberField(
+        row.value.input.value,
+        condition.value,
+        number,
+      );
       row.value.input.value = String(field.value);
       if (field.commit) edit(withConditionValue(program, index, field.value));
     });
@@ -393,6 +477,11 @@ export function createProgramEditor(
           index,
           row.conditionResource.value as ResourceId,
         ),
+      );
+    });
+    row.conditionItem.addEventListener("change", () => {
+      edit(
+        withConditionItem(program, index, row.conditionItem.value as ItemId),
       );
     });
     row.action.addEventListener("change", () => {
@@ -426,14 +515,21 @@ export function createProgramEditor(
     const { condition, action } = rule;
     if (row.condition.value !== condition.kind)
       row.condition.value = condition.kind;
-    const below = condition.kind === "hereBelow";
-    row.value.element.hidden = !below;
-    row.conditionResource.hidden = !below;
-    if (below) {
+    row.value.element.hidden = !("value" in condition);
+    if ("value" in condition) {
+      showFieldRange(row.value.input, condition.kind);
       const text = String(condition.value);
       if (row.value.input.value !== text) row.value.input.value = text;
-      showResource(row.conditionResource, offered, condition.resource);
     }
+    row.conditionResource.hidden = condition.kind !== "hereBelow";
+    if (condition.kind === "hereBelow")
+      showResource(row.conditionResource, offered, condition.resource);
+    row.conditionItem.hidden = condition.kind !== "itemBelow";
+    if (
+      condition.kind === "itemBelow" &&
+      row.conditionItem.value !== condition.item
+    )
+      row.conditionItem.value = condition.item;
     if (row.action.value !== action.kind) row.action.value = action.kind;
     row.actionResource.hidden = !namesResource(action);
     if (namesResource(action))

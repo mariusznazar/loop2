@@ -1,5 +1,6 @@
 import { backpackCap, backpackCount } from "./character.js";
 import { CAMPFIRE } from "./data/campfire.js";
+import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
 import type { MapDef } from "./data/maps.js";
@@ -18,7 +19,54 @@ import type {
 } from "./types.js";
 
 /** The part of a map run the program reads: never the generator, never the current activity. */
-export type RunView = Pick<MapRun, "tiles" | "character" | "campfires">;
+export type RunView = Pick<
+  MapRun,
+  "tiles" | "character" | "campfires" | "body"
+>;
+
+/** The number a kind of condition takes, from the conditions' data. */
+export type ConditionNumber = {
+  defaultValue: number;
+  min: number;
+  max: number;
+  /** The numbers taken lie on this step counted from `min`. */
+  step: number;
+};
+
+/** The number a kind of condition takes; null for a kind that takes none. */
+export function conditionNumber(
+  kind: Condition["kind"],
+): ConditionNumber | null {
+  const def: ConditionDef = CONDITIONS[kind];
+  const { defaultValue, min, max, step } = def;
+  if (
+    defaultValue === undefined ||
+    min === undefined ||
+    max === undefined ||
+    step === undefined
+  )
+    return null;
+  return { defaultValue, min, max, step };
+}
+
+/** Decimal places a step has: 1 for 0.1, 0 for 1. */
+function stepPlaces(step: number): number {
+  return String(step).split(".")[1]?.length ?? 0;
+}
+
+/**
+ * `value` on the nearest point of the step counted from the minimum, as the decimal with as many
+ * places as the step has — 36.6, never 36.60000000000001. The range is not applied.
+ */
+export function onStep(value: number, number: ConditionNumber): number {
+  const steps = Math.round((value - number.min) / number.step);
+  // `+ 0` turns a -0 into 0.
+  return (
+    Number(
+      (number.min + steps * number.step).toFixed(stepPlaces(number.step)),
+    ) + 0
+  );
+}
 
 /** What an item can be used for, as items.ts marks it. */
 export type ItemUse = "fuel" | "food" | "lightable";
@@ -61,6 +109,19 @@ function stockHere(run: RunView, resource: ResourceId): number {
   return here.stock[resource] ?? 0;
 }
 
+/**
+ * Minutes of burning left to the nearest campfire by game minutes of walking, the one on the
+ * character's tile included; 0 where there is none or it is extinguished.
+ */
+function nearestCampfireMinutes(run: RunView): number {
+  const target = campfireTarget(run);
+  if (!target) return 0;
+  const campfire = run.campfires.find((each) =>
+    sameHex(each.at, target.tile.at),
+  );
+  return campfire?.minutesLeft ?? 0;
+}
+
 /** Whether a condition of a program rule holds now. */
 export function conditionHolds(
   run: RunView,
@@ -72,6 +133,16 @@ export function conditionHolds(
       return true;
     case "hereBelow":
       return stockHere(run, condition.resource) < condition.value;
+    case "temperatureBelow":
+      return run.body.temperature < condition.value;
+    case "satietyBelow":
+      return run.body.satiety < condition.value;
+    case "itemBelow":
+      return run.character.backpack[condition.item] < condition.value;
+    case "campfireLeftBelow":
+      return nearestCampfireMinutes(run) < condition.value;
+    case "awayFromCampfire":
+      return campfireHere(run) === undefined;
   }
 }
 

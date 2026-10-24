@@ -9,9 +9,15 @@ export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
 /** Axial hex coordinates. */
 export type Hex = { q: number; r: number };
 
+/** A condition of a program rule; `value` is the number it compares with, on its kind's step. */
 export type Condition =
   | { kind: "always" }
-  | { kind: "hereBelow"; resource: ResourceId; value: number };
+  | { kind: "hereBelow"; resource: ResourceId; value: number }
+  | { kind: "temperatureBelow"; value: number }
+  | { kind: "satietyBelow"; value: number }
+  | { kind: "itemBelow"; item: ItemId; value: number }
+  | { kind: "campfireLeftBelow"; value: number }
+  | { kind: "awayFromCampfire" };
 
 export type Action =
   | { kind: "explore" }
