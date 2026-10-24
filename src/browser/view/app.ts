@@ -7,6 +7,7 @@ import {
   type GameResult,
 } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";
+import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createFooter } from "./footer.js";
 import { createProgramEditor } from "./program-editor.js";
@@ -31,7 +32,8 @@ export function startApp(root: HTMLElement): void {
   // Left column: the program panel, always visible.
   const programPanel = document.createElement("section");
   programPanel.className = "program-panel";
-  // Right column: the send panel without a map run; the status row and terrain panel during one.
+  // Right column: the send panel without a map run; during one the status row, the row of the body
+  // and the backpack under it, and the terrain panel.
   const mapColumn = document.createElement("section");
   mapColumn.className = "map-column";
   const runPanel = document.createElement("div");
@@ -84,13 +86,15 @@ export function startApp(root: HTMLElement): void {
       if (state.run) store.apply(end(state));
     },
   });
-  runPanel.append(statusRow.element, terrainPanel.element);
+  const bodyRow = createBodyRow();
+  runPanel.append(statusRow.element, bodyRow.element, terrainPanel.element);
   mapColumn.append(sendPanel, runPanel);
 
   function renderMapColumn(): void {
     sendPanel.hidden = state.run !== null;
     runPanel.hidden = state.run === null;
     statusRow.update(state);
+    bodyRow.update(state);
     terrainPanel.update(state);
   }
 
