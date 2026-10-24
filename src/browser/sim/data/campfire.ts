@@ -11,6 +11,10 @@ export type CampfireDef = {
   burnMinutes: number;
   /** Degrees Celsius a minute it warms the character standing on its tile. */
   warmth: number;
+  /** File name in assets/icons, without the extension. */
+  icon: string;
+  /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
+  iconTitle: string;
 };
 
 export const CAMPFIRE = {
@@ -19,4 +23,6 @@ export const CAMPFIRE = {
   light: { item: "stick", count: 2 },
   burnMinutes: 60,
   warmth: 0.5,
+  icon: "campfire",
+  iconTitle: "Campfire icon",
 } as const satisfies CampfireDef;

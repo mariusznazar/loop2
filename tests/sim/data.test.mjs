@@ -131,13 +131,15 @@ test("the items are the four resources of Las, with their uses", () => {
   assert.deepEqual(ITEMS.fiber, { name: "włókno" });
 });
 
-test("the campfire holds its name, costs, burning minutes and warmth", () => {
+test("the campfire holds its name, costs, burning minutes, warmth and icon", () => {
   assert.deepEqual(CAMPFIRE, {
     name: "ognisko",
     craft: { item: "stick", count: 6 },
     light: { item: "stick", count: 2 },
     burnMinutes: 60,
     warmth: 0.5,
+    icon: "campfire",
+    iconTitle: "Campfire icon",
   });
 });
 

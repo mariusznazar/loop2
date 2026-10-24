@@ -9,6 +9,7 @@ import {
   ICON_SOURCE_COMMIT,
 } from "../../dist/public/view/credits.js";
 import { RESOURCES } from "../../dist/public/sim/data/resources.js";
+import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
 
 const ICONS = fileURLToPath(new URL("../../assets/icons/", import.meta.url));
 
@@ -160,23 +161,42 @@ const TITLES = {
   "berry-bush": "Berry bush icon",
   fern: "Fern icon",
   flax: "Flax icon",
+  campfire: "Campfire icon",
 };
+
+/** Everything the data gives an icon, in the footer's order: the resources, then the campfire. */
+const NAMED = [...Object.values(RESOURCES), CAMPFIRE];
 
 test("each footer line names the icon by its title on game-icons.net and says after the licence that it was changed", async () => {
   const { items, credits } = await builtFooter();
-  const resources = Object.values(RESOURCES);
   assert.ok(credits.length > 0);
-  assert.equal(items.length, resources.length);
+  assert.equal(items.length, NAMED.length);
   assert.equal(items.length, credits.length);
   items.forEach((item, i) => {
     const credit = credits[i];
-    const title = TITLES[resources[i].icon];
-    assert.ok(title, resources[i].icon);
+    const title = TITLES[NAMED[i].icon];
+    assert.ok(title, NAMED[i].icon);
     assert.equal(
       textOf(item),
-      `${resources[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${CHANGES}`,
+      `${NAMED[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${CHANGES}`,
     );
   });
+});
+
+test("the footer credits the campfire's icon, by Lorc, after the four resources' icons", async () => {
+  const { items } = await builtFooter();
+  assert.equal(items.length, 5);
+  assert.equal(
+    textOf(items[4]),
+    "ognisko: „Campfire icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  const links = items[4].children.filter((node) => typeof node !== "string");
+  assert.equal(links[0].href, "https://game-icons.net/1x1/lorc/campfire.html");
+});
+
+test("the campfire's data names the icon file campfire.svg and its title on game-icons.net", () => {
+  assert.equal(CAMPFIRE.icon, "campfire");
+  assert.equal(CAMPFIRE.iconTitle, "Campfire icon");
 });
 
 test("the footer links open in a new tab, without opener or referrer", async () => {
@@ -191,23 +211,19 @@ test("the footer links open in a new tab, without opener or referrer", async () 
   }
 });
 
-test("each icon named in the resources data exists as a file", () => {
-  const names = Object.values(RESOURCES).map((resource) => resource.icon);
-  assert.ok(names.length > 0);
+test("each icon the data names, the campfire's included, exists as a file", () => {
+  const names = NAMED.map((named) => named.icon);
+  assert.ok(names.includes(CAMPFIRE.icon));
   for (const icon of names) assert.ok(existsSync(`${ICONS}${icon}.svg`), icon);
 });
 
 test("each icon file has a credit with an author and the source commit", () => {
   assert.match(ICON_SOURCE_COMMIT, /^[0-9a-f]{40}$/);
-  for (const resource of Object.values(RESOURCES)) {
-    const credit = ICON_CREDITS[resource.icon];
-    assert.ok(credit, resource.icon);
-    assert.ok(credit.author.length > 0, resource.icon);
-    assert.match(
-      credit.sourceUrl,
-      /^https:\/\/game-icons\.net\//,
-      resource.icon,
-    );
+  for (const named of NAMED) {
+    const credit = ICON_CREDITS[named.icon];
+    assert.ok(credit, named.icon);
+    assert.ok(credit.author.length > 0, named.icon);
+    assert.match(credit.sourceUrl, /^https:\/\/game-icons\.net\//, named.icon);
   }
   for (const name of files)
     assert.ok(ICON_CREDITS[name.replace(/\.svg$/, "")], name);

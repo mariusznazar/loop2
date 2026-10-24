@@ -66,15 +66,17 @@ AUTHORS = {
     "berry-bush.svg": "Delapouite",
     "fern.svg": "Delapouite",
     "flax.svg": "Delapouite",
+    "campfire.svg": "Lorc",
 }
 # Titles of the current icon files, as the headings of their pages on game-icons.net give them
 # (the environment facts game-icons-wood-stick-title, game-icons-berry-bush-title,
-# game-icons-fern-title and game-icons-flax-title).
+# game-icons-fern-title, game-icons-flax-title and game-icons-campfire-title).
 TITLES = {
     "wood-stick.svg": "Wood stick icon",
     "berry-bush.svg": "Berry bush icon",
     "fern.svg": "Fern icon",
     "flax.svg": "Flax icon",
+    "campfire.svg": "Campfire icon",
 }
 
 FAKE_DOCUMENT = r"""

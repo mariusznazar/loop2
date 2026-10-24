@@ -1,11 +1,12 @@
+import { CAMPFIRE } from "../sim/data/campfire.js";
 import { RESOURCES } from "../sim/data/resources.js";
-import type { ResourceId } from "../sim/types.js";
 import { ICON_CREDITS, ICON_LICENCE } from "./credits.js";
 
-/** One line of the footer: the credit of a resource's icon. */
+/** One line of the footer: the credit of the icon of something the data names. */
 export type FooterCredit = {
-  resourceName: string;
-  /** Title of the icon, as its page on game-icons.net gives it; from the resource data. */
+  /** Name of what the icon shows, from the data. */
+  name: string;
+  /** Title of the icon, as its page on game-icons.net gives it; from the data. */
   title: string;
   author: string;
   sourceUrl: string;
@@ -17,16 +18,21 @@ export type FooterCredit = {
 
 const SOURCE_SITE = "game-icons.net";
 
-/** The icon credits, one per resource in the data's order. Pure. */
+/** Something the data gives an icon: its name, its icon file and the icon's title. */
+type WithIcon = { name: string; icon: string; iconTitle: string };
+
+/** Everything the data gives an icon, in the footer's order: the resources, then the campfire. */
+const WITH_ICONS: readonly WithIcon[] = [...Object.values(RESOURCES), CAMPFIRE];
+
+/** The icon credits, one per icon the data names, in the order of WITH_ICONS. Pure. */
 export function footerCredits(): FooterCredit[] {
-  return (Object.keys(RESOURCES) as ResourceId[]).map((id) => {
-    const resource = RESOURCES[id];
-    const credit = ICON_CREDITS[resource.icon];
+  return WITH_ICONS.map((named) => {
+    const credit = ICON_CREDITS[named.icon];
     if (!credit)
-      throw new Error(`footer: no credit for the icon ${resource.icon}`);
+      throw new Error(`footer: no credit for the icon ${named.icon}`);
     return {
-      resourceName: resource.name,
-      title: resource.iconTitle,
+      name: named.name,
+      title: named.iconTitle,
       author: credit.author,
       sourceUrl: credit.sourceUrl,
       licenceName: ICON_LICENCE.name,
@@ -46,7 +52,7 @@ function link(text: string, href: string): HTMLAnchorElement {
 }
 
 /**
- * Builds the footer: per icon „{resource name}: „{title}”, {author}, game-icons.net, CC BY 3.0, {changes}”,
+ * Builds the footer: per icon „{name}: „{title}”, {author}, game-icons.net, CC BY 3.0, {changes}”,
  * linking the icon's source page and the licence in a new tab, so the run in this page is kept.
  */
 export function createFooter(): HTMLElement {
@@ -56,7 +62,7 @@ export function createFooter(): HTMLElement {
   for (const credit of footerCredits()) {
     const item = document.createElement("li");
     item.append(
-      `${credit.resourceName}: „${credit.title}”, ${credit.author}, `,
+      `${credit.name}: „${credit.title}”, ${credit.author}, `,
       link(SOURCE_SITE, credit.sourceUrl),
       ", ",
       link(credit.licenceName, credit.licenceUrl),

@@ -317,7 +317,7 @@ the icon's title as its page on game-icons.net gives it, the icon's author, that
 licence CC BY 3.0, and says how the icon file differs from its source.
 
 - **Method:** test
-- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title
+- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title
 - **Derives from:** D-27
 - **Part:** browser-view · simulation
 - **Violated:** no
