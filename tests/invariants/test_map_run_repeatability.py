@@ -13,8 +13,8 @@ Reading of the sentence:
   to the map with the real time T below, so that both simulations take the seed the send derives
   from the same game state and the same T;
 - the same real-time inputs: one fixed list of inputs written out below — 1000 ms passes of real
-  time covering more than 230 game minutes, a pause with real time passed while paused and a
-  resume, four 250 ms passes, and a change of the program to P2 in the middle;
+  time covering more than 230 game minutes and fewer than 240, a pause with real time passed while
+  paused and a resume, four 250 ms passes, and a change of the program to P2 in the middle;
 - the same map run game minute by game minute: the recorded state and events after each input are
   equal, input by input, which with 1000 ms inputs is minute by minute.
 
@@ -56,10 +56,19 @@ def rule(condition, action):
 
 
 ALWAYS = {"kind": "always"}
+AWAY = {"kind": "awayFromCampfire"}
 
 
 def here_below(resource, value):
     return {"kind": "hereBelow", "resource": resource, "value": value}
+
+
+def below(kind, value):
+    return {"kind": kind, "value": value}
+
+
+def item_below(item, value):
+    return {"kind": "itemBelow", "item": item, "value": value}
 
 
 EXPLORE = {"kind": "explore"}
@@ -70,14 +79,35 @@ def walk_to(resource):
     return {"kind": "walkTo", "resource": resource}
 
 
-# The starting program: every condition kind and every action kind.
+def gather(resource):
+    return {"kind": "gather", "resource": resource}
+
+
+# The starting program: every condition kind and every action kind (the acceptance program of
+# tests/sim/acceptance.test.mjs).
 P1 = {"rules": [
-    rule(here_below("stick", 1), EXPLORE),
-    rule(ALWAYS, walk_to("berry")),
+    rule(below("satietyBelow", 35), {"kind": "eat"}),
+    rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
+    rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
+    rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
+    rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
+    rule(item_below("berry", 1), gather("berry")),
+    rule(item_below("berry", 1), walk_to("berry")),
+    rule(here_below("berry", 1), EXPLORE),
+    rule(item_below("berry", 1), WANDER),
+    rule(item_below("stick", 8), gather("stick")),
+    rule(item_below("stick", 8), walk_to("stick")),
+    rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
+    rule(ALWAYS, EXPLORE),
+    rule(AWAY, {"kind": "walkToCampfire"}),
+    rule(ALWAYS, gather("stick")),
+    rule(ALWAYS, gather("berry")),
     rule(ALWAYS, WANDER),
 ]}
 # The program set in the middle of the scenario.
 P2 = {"rules": [
+    rule(below("satietyBelow", 50), {"kind": "eat"}),
+    rule(item_below("stick", 3), gather("stick")),
     rule(here_below("fiber", 2), walk_to("stick")),
     rule(ALWAYS, WANDER),
     rule(ALWAYS, EXPLORE),

@@ -14,15 +14,24 @@ Reading of the sentence:
 
 Inputs (written out below, or reached by driving `game.js` from them):
 - game states: a new game, the game after `setProgram`, after a send of the map `forest` with the
-  archetype `elementalMage`, at every game minute of 170 minutes of a program using every
-  condition kind and every action kind, paused, after real time, after a restart and after an end;
+  archetype `elementalMage`, at every game minute of 240 minutes of a program using every
+  condition kind and every action kind (sent at the real time T, on which it gathers, eats, builds
+  a campfire and lights it within those minutes, and stays alive), paused, after real time, after
+  a restart and after an end;
 - for the functions of `game.js`: each of those states with programs, sends, real times, minutes
   and pause flags written out below;
-- for the functions taking a map run: the map runs of those states, the map `forest` as the data
-  module `maps.js` gives it, the conditions `always` and "fewer than N here" for each resource and
-  N in 0, 1, 7, 50, the actions explore, wander and go to each resource, the programs below;
+- for the functions taking a map run: the map runs of those states, and copies of some of them
+  with a stick burning on the character's tile, with a body one game minute from death and with
+  the character dead; the map `forest` as the data module `maps.js` gives it; conditions of every
+  kind of the closed list (`always`, "fewer than N here" for each resource and N in 0, 1, 7, 50,
+  the body's, the backpack's for each item, the campfire's), actions of every kind (explore,
+  wander, go to and gather each resource, every action on the campfire and the backpack), and the
+  programs below;
+- for the functions of the body, the backpack, the world and the program's helpers: the bodies,
+  backpacks, characters and campfires of those map runs, warmths, satieties, minutes, the uses of
+  an item and the kinds of condition;
 - for the hex functions: the tiles of the runs, their coordinates, predicates, sizes;
-- for the random functions: seeds, real times and both streams;
+- for the random functions: seeds, real times and every stream: layout, wander and gathering;
 - every exported function the table below does not name (a later one, for one) is called with
   every combination, up to 400 per function, of a pool of the values above, as many as its
   declared arity; errors it throws are allowed, changes are not.
@@ -54,44 +63,95 @@ TABLE = {
     "hex.js": ["offsetToAxial", "sameHex", "hexDistance", "tileAt", "neighbours", "nearestTile",
                "hexCenter", "hexCorners", "tileLabel"],
     "layout.js": ["drawLayout"],
-    "program.js": ["conditionHolds", "walkTarget", "actionFeasible", "chooseActivity"],
+    "program.js": ["conditionHolds", "walkTarget", "actionFeasible", "chooseActivity",
+                   "conditionNumber", "onStep", "itemFor", "campfireTarget"],
     "random.js": ["nextRandom", "streamState", "mixSeed"],
     "run.js": ["newMapRun", "stepMinute"],
+    "body.js": ["startingBody", "eatenBody", "bodyMinute"],
+    "character.js": ["newTraits", "newBackpack", "backpackCount", "backpackCap"],
+    "world.js": ["warmthAt", "worldMinute"],
 }
 
 RESOURCES = ("stick", "berry", "moss", "fiber")
+ITEMS = RESOURCES  # the items of the backpack are the resources of Las
 ALWAYS = {"kind": "always"}
+AWAY = {"kind": "awayFromCampfire"}
 
 
 def here_below(resource, value):
     return {"kind": "hereBelow", "resource": resource, "value": value}
 
 
-ACTIONS = [{"kind": "explore"}, {"kind": "wander"}] + [
-    {"kind": "walkTo", "resource": r} for r in RESOURCES]
-CONDITIONS = [ALWAYS] + [here_below(r, v) for r in RESOURCES for v in (0, 1, 7, 50)]
+def below(kind, value):
+    return {"kind": kind, "value": value}
+
+
+def item_below(item, value):
+    return {"kind": "itemBelow", "item": item, "value": value}
+
+
+def rule(condition, action):
+    return {"condition": condition, "action": action}
+
+
+def gather(resource):
+    return {"kind": "gather", "resource": resource}
+
+
+def walk_to(resource):
+    return {"kind": "walkTo", "resource": resource}
+
+
+CAMPFIRE_ACTIONS = [{"kind": kind} for kind in (
+    "walkToCampfire", "craftCampfire", "lightCampfire", "lightItem", "feedCampfire", "eat")]
+ACTIONS = ([{"kind": "explore"}, {"kind": "wander"}] + [walk_to(r) for r in RESOURCES]
+           + [gather(r) for r in RESOURCES] + CAMPFIRE_ACTIONS)
+CONDITIONS = ([ALWAYS] + [here_below(r, v) for r in RESOURCES for v in (0, 1, 7, 50)]
+              + [below("temperatureBelow", v) for v in (30, 35.2, 36.5, 37)]
+              + [below("satietyBelow", v) for v in (0, 30, 50, 100)]
+              + [item_below(i, v) for i in ITEMS for v in (0, 1, 8)]
+              + [below("campfireLeftBelow", v) for v in (0, 1, 20, 120)] + [AWAY])
+CONDITION_KINDS = ["always", "hereBelow", "temperatureBelow", "satietyBelow", "itemBelow",
+                   "campfireLeftBelow", "awayFromCampfire"]
 PROGRAMS = [
     {"rules": []},
+    # Every condition kind and every action kind: the acceptance program of
+    # tests/sim/acceptance.test.mjs.
     {"rules": [
-        {"condition": here_below("stick", 7), "action": {"kind": "explore"}},
-        {"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
-        {"condition": here_below("moss", 50), "action": {"kind": "walkTo", "resource": "moss"}},
-        {"condition": ALWAYS, "action": {"kind": "explore"}},
-        {"condition": ALWAYS, "action": {"kind": "wander"}},
+        rule(below("satietyBelow", 35), {"kind": "eat"}),
+        rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
+        rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
+        rule(below("temperatureBelow", 35.2), {"kind": "walkToCampfire"}),
+        rule(below("campfireLeftBelow", 1), {"kind": "craftCampfire"}),
+        rule(item_below("berry", 1), gather("berry")),
+        rule(item_below("berry", 1), walk_to("berry")),
+        rule(here_below("berry", 1), {"kind": "explore"}),
+        rule(item_below("berry", 1), {"kind": "wander"}),
+        rule(item_below("stick", 8), gather("stick")),
+        rule(item_below("stick", 8), walk_to("stick")),
+        rule(below("temperatureBelow", 36), {"kind": "lightItem"}),
+        rule(ALWAYS, {"kind": "explore"}),
+        rule(AWAY, {"kind": "walkToCampfire"}),
+        rule(ALWAYS, gather("stick")),
+        rule(ALWAYS, gather("berry")),
+        rule(ALWAYS, {"kind": "wander"}),
     ]},
-    {"rules": [{"condition": ALWAYS, "action": {"kind": "wander"}}]},
+    {"rules": [rule(ALWAYS, {"kind": "wander"})]},
 ]
 SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
-T = 1760000000000
+# On this real time the program above builds its campfire by game minute 140 and lights it by 190.
+T = 1760000800000
 T_OTHER = 1760000123456
-MINUTES = 170
+MINUTES = 240
 SEEDS = [0, 1, 204219582, 4294967295]
 
 INPUTS = {
     "actions": ACTIONS, "conditions": CONDITIONS, "programs": PROGRAMS, "sent": SENT,
     "t": T, "tOther": T_OTHER, "minutes": MINUTES, "seeds": SEEDS, "resources": list(RESOURCES),
-    "streams": ["layout", "wander"], "realMs": [0, 999, 1000, 61000], "advance": [0, 1, 25],
-    "sizes": [1, 24], "offsets": [[0, 0], [1, 1], [3, 2], [-1, 5]],
+    "streams": ["layout", "wander", "gather"], "realMs": [0, 999, 1000, 61000],
+    "advance": [0, 1, 25], "sizes": [1, 24], "offsets": [[0, 0], [1, 1], [3, 2], [-1, 5]],
+    "conditionKinds": CONDITION_KINDS, "uses": ["fuel", "food", "lightable"],
+    "warmths": [0, 0.15, 0.5, 0.65], "satieties": [0, 25], "renewalMinutes": [1, 119, 120],
 }
 
 DRIVER = r"""
@@ -203,6 +263,16 @@ state = g.restart(state).state; states.push(state);
 state = g.advanceMinutes(state, 40).state; states.push(state);
 const ended = g.end(state).state; states.push(ended);
 const runs = states.filter((s) => s.run).map((s) => s.run);
+// Copies of runs reaching what the scenario does not: a stick burning on the character's tile, a
+// body one game minute from death, a dead character.
+const withCampfire = runs.filter((run) => run.campfires.length > 0);
+for (const run of [runs[5], withCampfire[withCampfire.length - 1]]) {
+  const at = clone(run.character.at);
+  runs.push({ ...clone(run), burningItems: [{ item: 'stick', at, minutesLeft: 1 },
+    { item: 'stick', at, minutesLeft: 3 }] });
+  runs.push({ ...clone(run), body: { temperature: 34.9, satiety: 29.5, health: 0.5 } });
+  runs.push({ ...clone(run), death: { minute: run.minute, cause: 'cold' } });
+}
 const sample = (list, count) => list.filter((_, i) => i % Math.max(1, Math.floor(list.length / count)) === 0);
 
 // game.js
@@ -251,6 +321,31 @@ for (const run of sample(runs, 60)) {
   for (const c of I.conditions) call('program.js', 'conditionHolds', [run, MAP, clone(c)]);
   for (const a of I.actions) call('program.js', 'actionFeasible', [run, MAP, clone(a)]);
   for (const r of I.resources) call('program.js', 'walkTarget', [run, r]);
+}
+// body.js, character.js, world.js and the program's helpers
+call('body.js', 'startingBody', []);
+call('character.js', 'newTraits', []);
+call('character.js', 'newBackpack', []);
+for (const run of sample(runs, 60).concat(runs.slice(-6))) {
+  for (const satiety of I.satieties) call('body.js', 'eatenBody', [run.body, satiety]);
+  for (const warmth of I.warmths) call('body.js', 'bodyMinute', [run.body, warmth, MAP]);
+  call('character.js', 'backpackCount', [run.character.backpack]);
+  call('character.js', 'backpackCap', [run.character]);
+  call('world.js', 'warmthAt', [run, run.character.at]);
+  for (const campfire of run.campfires) call('world.js', 'warmthAt', [run, campfire.at]);
+  for (const minute of I.renewalMinutes) call('world.js', 'worldMinute', [run, MAP, minute]);
+  call('world.js', 'worldMinute', [run, MAP, run.minute + 1]);
+  call('program.js', 'campfireTarget', [run]);
+  for (const use of I.uses) call('program.js', 'itemFor', [run.character.backpack, use]);
+}
+for (const kind of I.conditionKinds) {
+  call('program.js', 'conditionNumber', [kind]);
+  const number = ns['program.js'].conditionNumber(kind);
+  if (number) {
+    for (const value of [number.min, number.defaultValue, 36.55]) {
+      call('program.js', 'onStep', [value, number]);
+    }
+  }
 }
 // The program and the map kept across calls: pass the same objects many times.
 const shared = clone(I.programs[1]);

@@ -31,9 +31,12 @@ stick, berry, moss and fiber, on the seeds of the real times T, T_OTHER and MORE
   minutes with ROAM ("always → explore", "always → wander"), so that the character roams away
   before it goes again; 240 game minutes. Free minutes under ROAM are checked too: there no rule
   goes to R, so none may be started;
-- a stock of 0, which the simulation does not reach today: in the runs of GOING_FIRST(R) above,
-  on the first of the seeds T, T_OTHER and MORE that holds each case, the state of the game minute
-  before a free minute is changed before that minute passes:
+- a stock of 0, which the programs above, gathering nothing, never reach: in the runs of
+  GOING_FIRST(R) above, on the first of the seeds T, T_OTHER and MORE that holds each case, the
+  state of the game minute before a free minute is changed before that minute passes. The free
+  minute is no whole multiple of R's renewal time on Las (RENEW_MINUTES below), since in such a
+  minute the tiles renew their stock before the program picks (D-60, D-64) and a stock written
+  over to 0 would hold a piece again when the going is picked or passed over:
   - ZERO_ALL: the stock of R on every tile that holds R is set to 0, at a minute before a going
     was started — so no tile holds some, and the going must be passed over;
   - ZERO_HERE: the stock of R on the tile the character stands on at the free minute is set to 0,
@@ -69,6 +72,9 @@ T_OTHER = 1760000123456
 MORE = (1760000200000, 1760000300000, 1760000400000, 1760000500000, 1760000600000,
         1760000700000, 1760000800000, 1760000900000, 1760001000000)
 RESOURCES = ("stick", "berry", "moss", "fiber")
+# Game minutes in which a tile of Las below its stock gains a piece of each resource, as the map's
+# data gives them: renewal falls in every game minute that is a whole multiple of these.
+RENEW_MINUTES = {"stick": 30, "berry": 40, "moss": 60, "fiber": 60}
 
 ALWAYS = {"kind": "always"}
 NEVER = {"kind": "hereBelow", "resource": "stick", "value": 0}
@@ -243,7 +249,8 @@ def advance_index(steps):
 
 def zero_cases(runs, resource, in_force):
     """{(case, free minute M): the stocks to write over in the state of minute M - 1}, for the
-    first minute of each case under the program with the going rule first:
+    first minute of each case under the program with the going rule first, M no whole multiple of
+    the resource's renewal time:
     - "zero none": a going was started at M; every stock of the resource is set to 0;
     - "zero here": the going was passed over at M because the character stood on a tile holding
       some while another revealed tile held some; that tile's stock is set to 0."""
@@ -252,6 +259,8 @@ def zero_cases(runs, resource, in_force):
         minute = run["minute"]
         if run["current"]["startMinute"] != minute or not in_force[minute]:
             continue
+        if minute % RENEW_MINUTES[resource] == 0:
+            continue  # renewal would give the zeroed tiles a piece back before the pick
         before = runs[minute - 1]
         here = key(run["character"]["at"])
         holding = [key(t["at"]) for t in run["tiles"] if holds_some(t, resource)]
