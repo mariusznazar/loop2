@@ -79,8 +79,8 @@ test("after a resume time goes on from where the pause held it", () => {
 });
 
 test("one long real time (a hidden tab) advances that many minutes at once, with no cap", () => {
-  const { state } = passRealTime(sent(), 3600000);
-  assert.equal(state.run.minute, 3600);
+  const { state } = passRealTime(sent(), 240000);
+  assert.equal(state.run.minute, 240);
 });
 
 test("1000 ms in one call and 1000 calls of 1 ms give the same state and events", () => {

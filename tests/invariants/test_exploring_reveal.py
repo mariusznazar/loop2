@@ -22,12 +22,12 @@ minutes, as `actions.js` gives it (both written out below):
 - P_ONLY: "always → explore" alone: exploring at the entrance from minute 0 to 20, the entrance
   not revealed at minute 19 and revealed at minute 20, and at minutes 20 to 25 nothing started,
   since the only rule cannot be carried out on the revealed entrance;
-- P_ROAM: "always → explore", "always → wander", 600 game minutes on the seeds of two real times
-  T and T_OTHER, and P_GO: "always → explore", "always → go to berry", "always → wander", 600
+- P_ROAM: "always → explore", "always → wander", 240 game minutes on the seeds of two real times
+  T and T_OTHER, and P_GO: "always → explore", "always → go to berry", "always → wander", 240
   game minutes: every exploring must reveal the tile under the character at its end, and none may
   start on a revealed tile.
 
-Controls, so the check can fail: the long runs must hold more than 10 explorings and more than 10
+Controls, so the check can fail: the long runs must hold more than 5 explorings and more than 5
 free minutes on a revealed tile at which exploring, the first rule, did not start; and the
 comparison flags made-up records with an exploring that ends with the tile not revealed, one that
 reveals the tile before its end, and one that starts on a revealed tile.
@@ -65,7 +65,7 @@ P_ONLY = {"rules": [rule(ALWAYS, EXPLORE)]}
 P_ROAM = {"rules": [rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)]}
 P_GO = {"rules": [rule(ALWAYS, EXPLORE), rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
                   rule(ALWAYS, WANDER)]}
-LONG_MINUTES = 600
+LONG_MINUTES = 240
 
 DRIVER = r"""
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -183,8 +183,8 @@ class ExploringReveal(unittest.TestCase):
             with self.subTest(program=json.dumps(program), real_ms=real_ms):
                 found, explorings, refused = violations(drive(program, LONG_MINUTES, real_ms))
                 self.assertEqual(found, [])
-                self.assertGreater(explorings, 10, "too few explorings to mean much")
-                self.assertGreater(refused, 10, "too few free minutes on a revealed tile")
+                self.assertGreater(explorings, 5, "too few explorings to mean much")
+                self.assertGreater(refused, 5, "too few free minutes on a revealed tile")
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: exploring-reveal

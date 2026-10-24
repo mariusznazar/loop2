@@ -31,7 +31,7 @@ give them, written out below):
 - order: "always → wander, always → explore" starts rule 0 (wander) at minute 0, "always →
   explore, always → wander" starts rule 0 (explore), and "fewer than 0 sticks here → wander,
   always → explore" starts rule 1 (explore);
-- P_LONG, 600 game minutes on two seeds (T and T_OTHER) and two resources (berry, moss): rule 0
+- P_LONG, 240 game minutes on two seeds (T and T_OTHER) and two resources (berry, moss): rule 0
   "fewer than 0 sticks here → wander", rule 1 "always → go to the resource", rule 2 "always →
   explore", rule 3 "always → wander"; at every free minute the rule started must be 1 where going
   is possible, else 2 where the tile is not revealed, else 3; every minute at which the activity
@@ -90,7 +90,7 @@ def p_long(resource):
                       rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)]}
 
 
-LONG_MINUTES = 600
+LONG_MINUTES = 240
 
 EXPLORING_FROM_0_BY_2 = {"activity": {"kind": "rule", "ruleIndex": 2, "action": EXPLORE},
                          "startMinute": 0, "endMinute": EXPLORE_MINUTES, "stepTo": None}

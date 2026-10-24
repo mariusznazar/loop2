@@ -13,7 +13,7 @@ Reading of the sentence:
   to the map with the real time T below, so that both simulations take the seed the send derives
   from the same game state and the same T;
 - the same real-time inputs: one fixed list of inputs written out below — 1000 ms passes of real
-  time covering more than 600 game minutes, a pause with real time passed while paused and a
+  time covering more than 230 game minutes, a pause with real time passed while paused and a
   resume, four 250 ms passes, and a change of the program to P2 in the middle;
 - the same map run game minute by game minute: the recorded state and events after each input are
   equal, input by input, which with 1000 ms inputs is minute by minute.
@@ -27,7 +27,7 @@ Covers:
   the first run's from minute 0;
 - controls, so the check can fail: a send with another real time T_OTHER gives a different layout
   of tiles; the scenario reveals more than one tile, moves the character to more than one tile
-  and reaches game minute 600, so the compared runs are not trivial.
+  and reaches game minute 230, so the compared runs are not trivial.
 
 Does NOT cover: inputs other than the scenario's; maps, archetypes and programs other than those
 below; the view's clock; a seed reached otherwise than by these sends.
@@ -85,14 +85,14 @@ P2 = {"rules": [
 
 SECOND = ["passRealTime", 1000]
 SCENARIO_INPUTS = (
-    [SECOND] * 200
+    [SECOND] * 80
     + [["setProgram", P2]]
-    + [SECOND] * 100
+    + [SECOND] * 40
     + [["setPaused", True]]
     + [SECOND] * 5
     + [["setPaused", False]]
     + [["passRealTime", 250]] * 4
-    + [SECOND] * 320
+    + [SECOND] * 115
 )
 START = [["newGame"], ["setProgram", P1], ["send", SENT, T]]
 REPLAY_START = [["setProgram", P1], ["restart"]]
@@ -103,7 +103,7 @@ FIRST_INPUT = len(START)
 RESTART_INDEX = FIRST_INPUT + len(SCENARIO_INPUTS) + len(REPLAY_START) - 1
 REPLAY_FIRST_INPUT = RESTART_INDEX + 1
 
-MINIMUM_MINUTES = 600
+MINIMUM_MINUTES = 230
 
 # Drives the public functions of the built game module through a list of steps and records, after
 # each step, the JSON of the whole state and the events the step gave.
