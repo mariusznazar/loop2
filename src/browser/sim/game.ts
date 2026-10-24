@@ -253,7 +253,8 @@ export function characterName(text: string): string | null {
 
 /**
  * Creates a character named `name`, trimmed as `characterName` gives it, in the archetype of created
- * characters, at the end of the team's list; throws on a name that is empty once trimmed.
+ * characters and with the traits of a new character, at the end of the team's list; throws on a
+ * name that is empty once trimmed.
  */
 export function createCharacter(state: GameState, name: string): GameResult {
   const trimmed = typeof name === "string" ? characterName(name) : null;
@@ -262,6 +263,7 @@ export function createCharacter(state: GameState, name: string): GameResult {
     id: state.nextCharacterId,
     name: trimmed,
     archetypeId: CREATED_ARCHETYPE,
+    traits: newTraits(),
   };
   return {
     state: {
@@ -278,8 +280,8 @@ export function createCharacter(state: GameState, name: string): GameResult {
 
 /**
  * Sends a character of the team to a map: a new map run at minute 0, seeded from the last seed and
- * real time, its character carrying the traits of a new character. Throws while a map run is in
- * progress, so one map run goes on at a time.
+ * real time, its character carrying its own copy of the traits of the team's character sent.
+ * Throws while a map run is in progress, so one map run goes on at a time.
  */
 export function send(
   state: GameState,
@@ -290,16 +292,15 @@ export function send(
   const { mapId, characterId } = ids;
   if (typeof mapId !== "string" || !Object.hasOwn(MAPS, mapId))
     throw new Error(`send: no map ${String(mapId)}`);
-  if (!state.team.characters.some((character) => character.id === characterId))
+  const sent = state.team.characters.find(
+    (character) => character.id === characterId,
+  );
+  if (!sent)
     throw new Error(`send: no character ${String(characterId)} in the team`);
   const seed = mixSeed(state.lastSeed, realMs);
-  return startRun(
-    { ...state, lastSeed: seed },
-    mapId,
-    characterId,
-    seed,
-    newTraits(),
-  );
+  return startRun({ ...state, lastSeed: seed }, mapId, characterId, seed, {
+    ...sent.traits,
+  });
 }
 
 /**

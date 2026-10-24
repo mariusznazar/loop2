@@ -30,9 +30,24 @@ function created(...names) {
 test("a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
   const state = created("Ala", "Ola", "Ela");
   assert.deepEqual(state.team.characters, [
-    { id: 1, name: "Ala", archetypeId: "elementalMage" },
-    { id: 2, name: "Ola", archetypeId: "elementalMage" },
-    { id: 3, name: "Ela", archetypeId: "elementalMage" },
+    {
+      id: 1,
+      name: "Ala",
+      archetypeId: "elementalMage",
+      traits: { carryingCapacity: 15 },
+    },
+    {
+      id: 2,
+      name: "Ola",
+      archetypeId: "elementalMage",
+      traits: { carryingCapacity: 15 },
+    },
+    {
+      id: 3,
+      name: "Ela",
+      archetypeId: "elementalMage",
+      traits: { carryingCapacity: 15 },
+    },
   ]);
   assert.equal(state.nextCharacterId, 4);
 });

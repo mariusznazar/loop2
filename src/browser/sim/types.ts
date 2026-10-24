@@ -130,11 +130,12 @@ export type MapRun = {
 /** Tells the characters of the team apart; two characters may share a name. */
 export type CharacterId = number;
 
-/** A character of the player's team. */
+/** A character of the player's team; its traits are made when it is created and saved with it. */
 export type Character = {
   id: CharacterId;
   name: string;
   archetypeId: ArchetypeId;
+  traits: Traits;
 };
 
 /** The team's chest: pieces held, by resource; a key absent holds none. */

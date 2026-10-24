@@ -118,3 +118,57 @@ test("newMapRun takes the traits it is given, and a new character's without them
   assert.deepEqual(absent.character.traits, { carryingCapacity: 15 });
   assert.deepEqual(absent.character.backpack, emptyBackpack());
 });
+
+test("a created character carries carrying capacity 15 in the team", () => {
+  const { characters } = createCharacter(newGame(), "Ala").state.team;
+  assert.deepEqual(characters[0].traits, { carryingCapacity: 15 });
+  const second = createCharacter(createCharacter(newGame(), "Ala").state, "Ola")
+    .state.team.characters;
+  assert.notEqual(second[0].traits, second[1].traits);
+  assert.notEqual(second[0].traits, TRAITS);
+});
+
+/** A game whose team's only character carries carrying capacity 4. */
+function withCarrier() {
+  const game = createCharacter(newGame(), "Ala").state;
+  const [character] = game.team.characters;
+  return {
+    ...game,
+    team: {
+      ...game.team,
+      characters: [{ ...character, traits: { carryingCapacity: 4 } }],
+    },
+  };
+}
+
+test("the map run of a sent character carries that character's traits, also where they differ from a new character's", () => {
+  const run = send(withCarrier(), SENT, REAL_MS).state.run;
+  assert.equal(run.character.id, characterId);
+  assert.deepEqual(run.character.traits, { carryingCapacity: 4 });
+  assert.equal(backpackCap(run.character), 4);
+});
+
+test("the map run holds its own copy of the traits, so changing the team's traits leaves it alone", () => {
+  const game = withCarrier();
+  const run = send(game, SENT, REAL_MS).state.run;
+  assert.notEqual(run.character.traits, game.team.characters[0].traits);
+  const changed = {
+    ...game,
+    team: {
+      ...game.team,
+      characters: [
+        { ...game.team.characters[0], traits: { carryingCapacity: 9 } },
+      ],
+    },
+    run,
+  };
+  const restarted = restart(changed).state.run.character;
+  assert.deepEqual(restarted.traits, { carryingCapacity: 4 });
+  assert.equal(restarted.id, characterId);
+});
+
+test("the sending leaves the team's character as it was", () => {
+  const game = withCarrier();
+  const after = send(game, SENT, REAL_MS).state;
+  assert.deepEqual(after.team, game.team);
+});
