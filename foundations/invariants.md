@@ -497,6 +497,16 @@ The account and save server started with neither `LOOP2_LISTEN_HOST` nor `LOOP2_
 - **Part:** account-server · build-tools
 - **Violated:** no
 
+## character-team
+
+Every character belongs to exactly one team.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-50
+- **Part:** every
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

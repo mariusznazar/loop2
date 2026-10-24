@@ -945,3 +945,130 @@ Every start of the loop2 server process by a loop2 test on the machine that runs
 
 *Rationale:* Runs of the tests side by side on one machine, or a run beside another process holding a fixed port, collide on that port, and the run that loses passes only when it is repeated; a port the system names free at each start gives every start a port of its own. A short window remains between the system naming the port free and the server listening on it, in which another process may take the port; starting once more on another free port eases it. The single test of the default address keeps the address a person starts the server on under a test, and it passes whether or not that address is free.
 *Rejected:* a port read from a variable for the tests, 3000 when the variable is unset — runs side by side still collide unless someone sets the variable in one of them; a free port that a variable may override — adds a setting no need has been found for; no test of the default address — a change of the address a person starts the server on would pass unnoticed.
+
+### D-50 — Whose is the chest?
+
+The chest belongs to a team. Each character belongs to exactly one team, and a character has no
+chest of its own.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: character-team. For the chest, an agent compares a change with the
+  decision:
+  - complies: a lone character shown with the chest of its one-member team
+  - violates: a character with a personal chest beside the team's; a character outside every team
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D37 and §4 "Kierunek: przedmioty krążą między mapami" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Whose is the chest?"
+
+*Rationale:* a team of one behaves exactly as a lone character with a chest of its own; the shared
+chest is the one mechanism of cooperation — one character brings stone out of one map, another
+takes it to the next.
+*Rejected:* the player's chest — assigning a character to a team would change nothing; the
+character's chest — no cooperation at all; a character outside a team with a personal chest — a
+second kind of chest and an exception everywhere it is read.
+
+### D-51 — What team does a new game start with?
+
+In the MVP a new game starts with an empty team, and the player creates the first character in the
+headquarters before sending any character to a game map.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new game whose state holds a team with no character, the headquarters showing the
+    team as empty beside the creation of a character
+  - violates: a new game whose team holds a ready-made elemental mage
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "1. Czy nowa gra zaczyna się z jedną gotową postacią maga żywiołów w drużynie, czy z pustą drużyną, w której gracz zakłada pierwszą postać w siedzibie?"
+
+*Rationale:* every character of the team is then one the player created and named, the first one
+included, so creating a character is the first thing the player does in a new game. The choice is
+made for the MVP and stays open to change.
+*Rejected:* a new game with one ready-made elemental mage in the team — a character the player
+neither created nor named.
+
+### D-52 — How is a character named?
+
+In the MVP a character has a name, which the player types when creating it; a name that is empty,
+also once the white space at its start and end is trimmed, creates no character, and two
+characters may bear the same name.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: „ Ala ” typed creating a character named „Ala”; two characters named „Ala” on the
+    team's list; a name of spaces alone creating no character, with the message under the name
+    field in `warning`
+  - violates: a character created with an empty name; a second „Ala” refused; a map run or a saved
+    game that names its character by its name
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "2. Czy postać ma imię, a jeśli tak — kto je nadaje i jakie imię jest dopuszczalne?" and "10. Czy imię złożone z samych spacji jest puste, tak że nie zakłada postaci?"
+
+*Rationale:* the name is what the player tells characters apart by on the team's list, and a name
+that looks empty does not do that. Nothing asks for a limit on its length or for names that
+differ, so two characters bearing one name stay two characters, which the game tells apart by
+something other than the name.
+*Rejected:* a name of white space alone taken as a name — it tells no character apart on the list;
+a name keeping white space at its start or end — it looks on the list as the same name without it.
+
+### D-53 — Where does the player send a character from, and where does „Zakończ” lead?
+
+In the MVP the player sends a character to a game map from the headquarters, and „Zakończ” returns
+to the headquarters.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the button „Wyślij” beside each character of the headquarters; „Zakończ” of a map
+    run bringing back the headquarters in the place the map run stood
+  - violates: a panel for sending characters standing apart from the headquarters; „Zakończ”
+    leading to a screen other than the headquarters
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny"
+
+*Rationale:* the headquarters stands above the screen of a map run as the screen the game opens
+on, so a character goes out to a game map from it and the player comes back to it. The
+headquarters and the map run share one place beside the program panel, and the other sections of
+the headquarters join it later.
+*Rejected:* a screen for sending characters of its own beside the headquarters — the player would
+send from one screen and see the team on another.
+
+### D-54 — In what order do the characters of the team stand?
+
+In the MVP the characters of the team stand on its list in the order they were created.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the character created third standing third on the team's list, in the game state and
+    in the headquarters
+  - violates: the list sorted by name; a character created last put at the head of the list
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?"
+
+*Rationale:* the order of creation is one the player sets by creating characters, which no other
+event of the game changes, so a character keeps its place on the list and the player finds it
+there again.
+*Rejected:* the list sorted by name — two characters may bear one name, and a new character would
+move the others.
+
+### D-55 — How many manual map runs go on at a time?
+
+In the MVP the game holds one manual map run at a time: while one character is in a map run, the
+game sends no other.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: `send` refusing a second character while a map run goes on; „Wyślij” beside the other
+    characters inactive wherever the headquarters shows during a map run
+  - violates: a game state holding a map run for each character; a second character sent while the
+    first one's map run goes on
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Czy kilka postaci drużyny może naraz być w ręcznym przejściu mapy?" and "12. Czy po zadaniu 18 ręczne przejście dalej ma trwać jedno naraz?"
+
+*Rationale:* the game state keeps one map run as the team grows, and the player follows one map run
+at a time beside the program panel. Earning loops, which go on side by side, stand beside the one
+manual map run rather than in its place.
+*Rejected:* manual map runs of several characters at once — the game state would hold a map run for
+each character, and the screen one for each.
