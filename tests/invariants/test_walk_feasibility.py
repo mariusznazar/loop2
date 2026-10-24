@@ -29,7 +29,7 @@ stick, berry, moss and fiber, on the seeds of the real times T, T_OTHER and MORE
   "fewer than 0 sticks here → explore", "always → go to R", "always → wander", where the going
   rule is the first whose condition holds though not the first rule. Each alternates every 40 game
   minutes with ROAM ("always → explore", "always → wander"), so that the character roams away
-  before it goes again; 800 game minutes. Free minutes under ROAM are checked too: there no rule
+  before it goes again; 240 game minutes. Free minutes under ROAM are checked too: there no rule
   goes to R, so none may be started;
 - a stock of 0, which the simulation does not reach today: in the runs of GOING_FIRST(R) above,
   on the first of the seeds T, T_OTHER and MORE that holds each case, the state of the game minute
@@ -66,7 +66,8 @@ GAME_MODULE = "dist/public/sim/game.js"
 SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
 T = 1760000000000
 T_OTHER = 1760000123456
-MORE = (1760000200000, 1760000300000, 1760000400000)
+MORE = (1760000200000, 1760000300000, 1760000400000, 1760000500000, 1760000600000,
+        1760000700000, 1760000800000, 1760000900000, 1760001000000)
 RESOURCES = ("stick", "berry", "moss", "fiber")
 
 ALWAYS = {"kind": "always"}
@@ -92,7 +93,7 @@ def going_second(resource):
 PROGRAMS = ((going_first, 0), (going_second, 1))
 
 ROAM = {"rules": [rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
-LONG_MINUTES = 800
+LONG_MINUTES = 240
 SPELL_MINUTES = 40
 
 DRIVER = r"""

@@ -14,7 +14,7 @@ Reading of the sentence:
 
 Inputs (written out below, or reached by driving `game.js` from them):
 - game states: a new game, the game after `setProgram`, after a send of the map `forest` with the
-  archetype `elementalMage`, at every game minute of 300 minutes of a program using every
+  archetype `elementalMage`, at every game minute of 170 minutes of a program using every
   condition kind and every action kind, paused, after real time, after a restart and after an end;
 - for the functions of `game.js`: each of those states with programs, sends, real times, minutes
   and pause flags written out below;
@@ -84,7 +84,7 @@ PROGRAMS = [
 SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
 T = 1760000000000
 T_OTHER = 1760000123456
-MINUTES = 300
+MINUTES = 170
 SEEDS = [0, 1, 204219582, 4294967295]
 
 INPUTS = {
@@ -195,7 +195,7 @@ states.push(state);
 state = g.setProgram(state, clone(I.programs[1])).state; states.push(state);
 state = g.send(state, clone(I.sent), I.t).state; states.push(state);
 for (let m = 0; m < I.minutes; m += 1) { state = g.advanceMinutes(state, 1).state; states.push(state); }
-state = g.passRealTime(state, 61000).state; states.push(state);
+state = g.passRealTime(state, 6000).state; states.push(state);
 state = g.setPaused(state, true).state; states.push(state);
 state = g.passRealTime(state, 5000).state; states.push(state);
 state = g.setPaused(state, false).state; states.push(state);

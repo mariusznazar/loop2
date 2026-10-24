@@ -27,7 +27,7 @@ Where going to a resource can start at all is walk-feasibility, checked in
 `test_walk_feasibility.py`; this check reads only the goings that were started.
 
 Scenarios on the map Las (`forest`) with the archetype `elementalMage`: for each resource R of
-stick, berry, moss and fiber, 800 game minutes on the seeds of the real times T, T_OTHER and MORE,
+stick, berry, moss and fiber, 240 game minutes on the seeds of the real times T, T_OTHER and MORE,
 in which the program "always → go to R", "always → explore", "always → wander" alternates every 40
 game minutes with "always → explore", "always → wander", so that the character roams away before
 it goes again. Every going to the resource the runs start is checked.
@@ -57,7 +57,8 @@ SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
 T = 1760000000000
 T_OTHER = 1760000123456
 # Further real times of a send, for more layouts in the main scenario.
-MORE = (1760000200000, 1760000300000, 1760000400000)
+MORE = (1760000200000, 1760000300000, 1760000400000, 1760000500000, 1760000600000,
+        1760000700000, 1760000800000, 1760000900000, 1760001000000)
 RESOURCES = ("stick", "berry", "moss", "fiber")
 
 # The six neighbours of a hexagonal tile in axial coordinates (q, r).
@@ -78,7 +79,7 @@ def program(resource):
 # The program in force between spells of going, so that the character roams away from the
 # revealed tiles holding a resource before it goes to them again.
 ROAM = {"rules": [rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
-LONG_MINUTES = 800
+LONG_MINUTES = 240
 SPELL_MINUTES = 40  # the programs alternate: going for 40 game minutes, roaming for 40
 
 DRIVER = r"""

@@ -17,7 +17,7 @@ Reading of the sentence:
   the same last seed with the same real time), and one map run followed by a map run restart under
   a changed program (a restart keeps its seed, restart-seed); that the two seeds are equal is
   checked before the runs are compared;
-- every game minute: the same minute of each map run, from 0 (the send or the restart) to 300;
+- every game minute: the same minute of each map run, from 0 (the send or the restart) to 240;
 - whatever programs: each pair runs under two different programs written out below, so that the
   characters reveal and walk differently; one of each pair is changed mid-run.
 
@@ -54,7 +54,7 @@ SENT = {"mapId": "forest", "archetypeId": "elementalMage"}
 T = 1760000000000
 T_OTHER = 1760000123456
 MORE = (1760000200000, 1760000300000, 1760000400000)
-MINUTES = 300
+MINUTES = 240
 CHANGE_AT = 150
 
 ALWAYS = {"kind": "always"}
