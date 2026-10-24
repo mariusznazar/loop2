@@ -1,6 +1,6 @@
-"""Invariant action-in-progress: The character's action in progress lasts its full duration,
-even where the program changes or the condition of another program rule comes to hold before it
-ends.
+"""Invariant action-in-progress: The character's action in progress lasts its full duration
+unless its map run ends first, even where the program changes or the condition of another program
+rule comes to hold before it ends.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
@@ -17,7 +17,9 @@ Reading of the sentence:
   carried out whose condition did not hold now holds and whose action can start; in the simulation
   this check drives, a condition changes only through the program or at the end of an action, so it
   comes to hold here through a change of the rule's value;
-- the program changes: `setProgram` with a different program.
+- the program changes: `setProgram` with a different program;
+- unless its map run ends first: the map runs below pass at most 45 game minutes, and none ends
+  within them; a map run ended in the character's death is the invariant `minute-span-split`'s.
 
 Scenario (map Las, entrance tile at column 1, row 1, which starts unrevealed; exploring lasts 20
 game minutes and a step onto a tile of Las lasts 5, as the data files `actions.ts` and

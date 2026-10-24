@@ -1,6 +1,6 @@
 """Invariant player-map-run-pace: Real time passed to the simulation for a map run the player
-starts moves the map run on by one game minute for each whole real second passed while it is not
-paused, and by no game minute for real time passed while it is paused.
+starts moves the map run on, until it ends, by one game minute for each whole real second passed
+while it is not paused, and by no game minute for real time passed while it is paused.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
@@ -17,7 +17,9 @@ Reading of the sentence:
   while not paused — parts of a second carry over from one input to the next, and real time
   passed to an earlier map run counts for none of a later one;
 - by no game minute while paused: real time passed between `setPaused(true)` and
-  `setPaused(false)` leaves the minute where it is, and does not count towards the next second.
+  `setPaused(false)` leaves the minute where it is, and does not count towards the next second;
+- until it ends: the map runs below pass at most 212 game minutes, and none ends within them; a
+  map run ended in the character's death is the invariant `minute-span-split`'s.
 
 The expected minute after each input is written out beside it below.
 
