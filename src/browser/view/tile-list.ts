@@ -1,11 +1,15 @@
+import { CAMPFIRE } from "../sim/data/campfire.js";
+import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type { ResourceId } from "../sim/data/resources.js";
-import { tileLabel } from "../sim/hex.js";
-import type { GameState } from "../sim/types.js";
+import { sameHex, tileLabel } from "../sim/hex.js";
+import type { GameState, MapRun, Tile } from "../sim/types.js";
 
 /** Shown in a cell for a resource the tile does not have (choice C5). */
 const ABSENT = "—";
+/** Between the texts of the campfire and the burning items of one row. */
+const SEPARATOR = " · ";
 
 export type TileListColumn = {
   resource: ResourceId;
@@ -22,9 +26,35 @@ export type TileListRow = {
   label: string;
   /** The tile's stock per column, „—” where the tile lacks the resource. */
   cells: string[];
+  /**
+   * The state of the tile's campfire, then of each item burning on it, in the map run's order:
+   * „ognisko — płonie, zostało 42 min”, „ognisko — wygasłe”, „patyk — płonie, zostało 2 min”,
+   * names from the data (task, To do 15; spec Decision 5). Empty where nothing stands there.
+   */
+  fire: string[];
 };
 
 export type TileList = { columns: TileListColumn[]; rows: TileListRow[] };
+
+const burningText = (name: string, minutesLeft: number): string =>
+  `${name} — płonie, zostało ${minutesLeft} min`;
+
+/** The texts of the campfire and the burning items standing on `tile`. */
+function fireOn(run: MapRun, tile: Tile): string[] {
+  const campfires = run.campfires
+    .filter((campfire) => sameHex(campfire.at, tile.at))
+    .map((campfire) =>
+      campfire.minutesLeft > 0
+        ? burningText(CAMPFIRE.name, campfire.minutesLeft)
+        : `${CAMPFIRE.name} — wygasłe`,
+    );
+  const items = run.burningItems
+    .filter((burning) => sameHex(burning.at, tile.at))
+    .map((burning) =>
+      burningText(ITEMS[burning.item].name, burning.minutesLeft),
+    );
+  return [...campfires, ...items];
+}
 
 /**
  * The list of revealed tiles beside the terrain drawing: one column per resource of the map run's
@@ -48,6 +78,7 @@ export function tileList(state: GameState): TileList {
         const stock = tile.stock[resource];
         return stock === undefined ? ABSENT : String(stock);
       }),
+      fire: fireOn(run, tile),
     }));
   return { columns, rows };
 }
@@ -101,6 +132,8 @@ export function createTileListView(
         cell.append(icon, ` ${column.name}`);
         headRow.append(cell);
       }
+      // The column of the campfire and the burning items has no heading: each text names its thing.
+      headRow.append(document.createElement("th"));
       head.replaceChildren(headRow);
       body.replaceChildren(
         ...list.rows.map((row) => {
@@ -115,6 +148,10 @@ export function createTileListView(
             cell.textContent = value;
             line.append(cell);
           }
+          const fire = document.createElement("td");
+          fire.className = "tile-fire";
+          fire.textContent = row.fire.join(SEPARATOR);
+          line.append(fire);
           return line;
         }),
       );

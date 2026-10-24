@@ -291,6 +291,12 @@ header h1 {
   color: var(--text-strong);
 }
 
+/* The state of the tile's campfire and burning items: content to read, after the stock (D-63). */
+.tile-list tbody td.tile-fire {
+  text-align: left;
+  color: var(--text);
+}
+
 /* The line at the left edge of the hovered tile's row, the row's colours unchanged. */
 .tile-list tbody tr.hovered th {
   border-left-color: var(--link-highlight);
