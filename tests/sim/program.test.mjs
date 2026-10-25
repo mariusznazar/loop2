@@ -1,3 +1,11 @@
+import {
+  newGame,
+  setProgram,
+  createCharacter,
+  send,
+  advanceMinutes,
+} from "../../dist/public/sim/game.js";
+import { programFromRules } from "./program-fixture.mjs";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { BALANCE } from "../../dist/public/sim/data/balance.js";
@@ -21,7 +29,7 @@ const WANDER = { kind: "wander" };
 const below = (resource, value) => ({ kind: "hereBelow", resource, value });
 const walkTo = (resource) => ({ kind: "walkTo", resource });
 const rule = (condition, action) => ({ condition, action });
-const program = (...rules) => ({ rules });
+const program = programFromRules;
 
 /** A fresh map run of the first map at minute 0, its first activity chosen by `startProgram`. */
 function freshRun(seed = 3, startProgram = program()) {
@@ -90,7 +98,7 @@ test("the first rule whose condition holds and whose action is feasible wins", (
     map,
     program(rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)),
   );
-  assert.deepEqual(chosen, { kind: "rule", ruleIndex: 0, action: EXPLORE });
+  assert.deepEqual(chosen, { kind: "rule", ruleId: 1, action: EXPLORE });
 });
 
 test("a rule whose condition does not hold is skipped", () => {
@@ -100,7 +108,7 @@ test("a rule whose condition does not hold is skipped", () => {
     map,
     program(rule(below(stick, 0), WANDER), rule(ALWAYS, EXPLORE)),
   );
-  assert.deepEqual(chosen, { kind: "rule", ruleIndex: 1, action: EXPLORE });
+  assert.deepEqual(chosen, { kind: "rule", ruleId: 2, action: EXPLORE });
 });
 
 test("a rule whose action is not feasible is skipped", () => {
@@ -110,7 +118,7 @@ test("a rule whose action is not feasible is skipped", () => {
     map,
     program(rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)),
   );
-  assert.deepEqual(chosen, { kind: "rule", ruleIndex: 1, action: WANDER });
+  assert.deepEqual(chosen, { kind: "rule", ruleId: 2, action: WANDER });
 });
 
 test("with no applicable rule the character waits", () => {
@@ -152,5 +160,218 @@ test("feasibility and choice do not draw from the wander generator", () => {
 test("the chosen action is a copy, not the program rule itself", () => {
   const rules = program(rule(ALWAYS, EXPLORE));
   const chosen = chooseActivity(freshRun(), map, rules);
-  assert.notEqual(chosen.action, rules.rules[0].action);
+  assert.notEqual(chosen.action, rules.groups[0].rules[0].action);
+});
+
+// D-23, D-90 and D-91: groups gate ordered rules; a new game gives a first empty group.
+const group = (id, condition, rules) => ({
+  id,
+  name: `Group ${id}`,
+  condition,
+  rules,
+});
+const grouped = (...groups) => ({ nextGroupId: 100, nextRuleId: 1000, groups });
+const identified = (id, condition, action) => ({ id, condition, action });
+
+test("a new game starts with one empty Program group under always", () => {
+  const initial = newGame().program;
+  assert.ok(
+    Array.isArray(initial.groups),
+    "the program is an ordered list of groups",
+  );
+  assert.equal(initial.groups.length, 1);
+  assert.equal(initial.groups[0].name, "Program");
+  assert.deepEqual(initial.groups[0].condition, ALWAYS);
+  assert.deepEqual(initial.groups[0].rules, []);
+  assert.ok(initial.nextGroupId > initial.groups[0].id);
+  assert.ok(initial.nextRuleId > 0);
+  assert.equal(Object.hasOwn(initial, "rules"), false);
+});
+
+test("group order skips false, empty and infeasible groups and then takes the first qualifying rule", () => {
+  const candidate = grouped(
+    group(7, below(stick, 0), [identified(71, ALWAYS, WANDER)]),
+    group(5, ALWAYS, []),
+    group(4, ALWAYS, [identified(42, ALWAYS, walkTo(stick))]),
+    group(2, ALWAYS, [
+      identified(23, below(stick, 0), WANDER),
+      identified(24, ALWAYS, EXPLORE),
+      identified(25, ALWAYS, WANDER),
+    ]),
+    group(1, ALWAYS, [identified(11, ALWAYS, WANDER)]),
+  );
+  let accepted;
+  assert.doesNotThrow(() => {
+    accepted = setProgram(newGame(), candidate).state.program;
+  });
+  assert.deepEqual(chooseActivity(freshRun(), map, accepted), {
+    kind: "rule",
+    ruleId: 24,
+    action: EXPLORE,
+  });
+});
+
+test("all empty groups and an empty list of groups leave the character waiting", () => {
+  for (const candidate of [
+    grouped(),
+    grouped(group(8, ALWAYS, []), group(3, ALWAYS, [])),
+  ]) {
+    let accepted;
+    assert.doesNotThrow(() => {
+      accepted = setProgram(newGame(), candidate).state.program;
+    });
+    assert.deepEqual(chooseActivity(freshRun(), map, accepted), {
+      kind: "wait",
+    });
+  }
+});
+
+test("identical rule contents keep distinct identities when groups and rules move", () => {
+  const first = identified(91, ALWAYS, EXPLORE);
+  const second = identified(17, ALWAYS, EXPLORE);
+  const candidate = grouped(
+    group(3, ALWAYS, [first, second]),
+    group(7, ALWAYS, []),
+  );
+  let accepted;
+  assert.doesNotThrow(() => {
+    accepted = setProgram(newGame(), candidate).state.program;
+  });
+  assert.equal(chooseActivity(freshRun(), map, accepted).ruleId, 91);
+  const moved = {
+    ...accepted,
+    groups: [group(7, ALWAYS, [second]), group(3, ALWAYS, [first])],
+  };
+  assert.equal(chooseActivity(freshRun(), map, moved).ruleId, 17);
+  assert.deepEqual(
+    accepted.groups[0].rules.map((entry) => entry.id),
+    [91, 17],
+  );
+});
+
+test("group conditions use the same legal number, resource and item values as rules", () => {
+  const conditions = [
+    ALWAYS,
+    below(stick, 3),
+    { kind: "temperatureBelow", value: 36.5 },
+    { kind: "satietyBelow", value: 50 },
+    { kind: "itemBelow", item: "berry", value: 8 },
+    { kind: "campfireLeftBelow", value: 20 },
+    { kind: "awayFromCampfire" },
+  ];
+  for (const condition of conditions) {
+    const candidate = grouped(
+      group(5, condition, [identified(9, ALWAYS, EXPLORE)]),
+    );
+    let accepted;
+    assert.doesNotThrow(() => {
+      accepted = setProgram(newGame(), candidate).state.program;
+    });
+    assert.deepEqual(accepted, candidate);
+  }
+});
+
+test("group conditions refuse unknown kinds and invalid fields while accepting a legal control", () => {
+  const valid = grouped(group(5, ALWAYS, []));
+  assert.doesNotThrow(() => setProgram(newGame(), valid));
+  for (const condition of [
+    { kind: "unknown" },
+    { kind: "hereBelow", resource: "unknown", value: 3 },
+    { kind: "itemBelow", item: "unknown", value: 8 },
+    { kind: "temperatureBelow", value: 36.55 },
+    { kind: "hereBelow", resource: stick, value: -1 },
+    { kind: "satietyBelow", value: Infinity },
+  ]) {
+    assert.throws(() =>
+      setProgram(newGame(), grouped(group(5, condition, []))),
+    );
+  }
+});
+
+test("program identities are unique positive integers below the next identity counters", () => {
+  const valid = grouped(
+    group(3, ALWAYS, [identified(7, ALWAYS, EXPLORE)]),
+    group(5, ALWAYS, [identified(9, ALWAYS, WANDER)]),
+  );
+  assert.doesNotThrow(() => setProgram(newGame(), valid));
+  const corruptions = [
+    (p) => {
+      p.groups[1].id = 3;
+    },
+    (p) => {
+      p.groups[1].rules[0].id = 7;
+    },
+    (p) => {
+      p.groups[0].id = 0;
+    },
+    (p) => {
+      p.groups[0].rules[0].id = -1;
+    },
+    (p) => {
+      p.groups[0].rules[0].id = 1.5;
+    },
+    (p) => {
+      p.nextGroupId = 5;
+    },
+    (p) => {
+      p.nextRuleId = 9;
+    },
+    (p) => {
+      p.nextRuleId = Number.MAX_SAFE_INTEGER + 1;
+    },
+    (p) => {
+      delete p.nextGroupId;
+    },
+    (p) => {
+      p.groups[0].groups = [];
+    },
+    (p) => {
+      p.groups[0].rules = "bad list";
+    },
+    (p) => {
+      p.groups = null;
+    },
+  ];
+  for (const corrupt of corruptions) {
+    const candidate = structuredClone(valid);
+    corrupt(candidate);
+    assert.throws(() => setProgram(newGame(), candidate));
+  }
+});
+
+test("editing, deleting or transferring a started rule leaves its action running to completion", () => {
+  // D-20: rule identity records the origin; the running action is its own copy.
+  const candidate = grouped(
+    group(3, ALWAYS, [identified(7, ALWAYS, EXPLORE)]),
+    group(5, ALWAYS, []),
+  );
+  let state;
+  assert.doesNotThrow(() => {
+    state = setProgram(
+      createCharacter(newGame(), "Ala").state,
+      candidate,
+    ).state;
+  });
+  state = send(state, { mapId, characterId }, 1760000000000).state;
+  const original = structuredClone(state.run.current);
+  const replacements = [
+    grouped(group(3, ALWAYS, [identified(7, ALWAYS, WANDER)])),
+    grouped(group(3, ALWAYS, [])),
+    grouped(
+      group(3, ALWAYS, []),
+      group(5, below(stick, 0), [identified(7, ALWAYS, EXPLORE)]),
+    ),
+  ];
+  for (const replacement of replacements) {
+    const edited = setProgram(state, replacement).state;
+    const beforeEnd = advanceMinutes(edited, original.endMinute - 1).state;
+    assert.deepEqual(beforeEnd.run.current, original);
+    const finished = advanceMinutes(beforeEnd, 1);
+    assert.ok(finished.events.some((event) => event.kind === "tileRevealed"));
+    assert.deepEqual(
+      finished.events.find((event) => event.kind === "activityFinished")
+        .activity,
+      { kind: "rule", ruleId: 7, action: EXPLORE },
+    );
+  }
 });

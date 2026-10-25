@@ -12,10 +12,12 @@ import type {
   Action,
   Condition,
   GameState,
+  GroupId,
   ItemId,
   Program,
   ProgramRule,
   ResourceId,
+  RuleGroup,
 } from "../sim/types.js";
 import { createButton } from "./controls/button.js";
 import { createNumberField } from "./controls/number-field.js";
@@ -48,8 +50,12 @@ function namesResource(action: Action): action is ResourceAction {
 
 /** A control of a rule's row, or the button „Dodaj regułę”, that gets focus after a structural edit. */
 export type FocusTarget =
-  | { row: number; control: "condition" | "up" | "down" | "remove" }
-  | { control: "add" };
+  | {
+      groupId: GroupId;
+      row: number;
+      control: "condition" | "up" | "down" | "remove";
+    }
+  | { groupId: GroupId; control: "add" };
 
 /** An edit that changes the rows: „Dodaj regułę”, „Usuń”, „↑”, „↓”. */
 export type StructuralEdit = "add" | "remove" | "up" | "down";
@@ -111,49 +117,87 @@ export function showFieldRange(
   if (input.step !== step) input.step = step;
 }
 
-/** The program with one rule replaced; the input is not changed. */
+/** The program with only the named group's rules replaced. */
+function replaceRules(
+  program: Program,
+  groupId: GroupId,
+  rules: ProgramRule[],
+): Program {
+  return {
+    ...program,
+    groups: program.groups.map((group) =>
+      group.id === groupId ? { ...group, rules } : group,
+    ),
+  };
+}
+
+/** The program with one rule replaced; the input and rule identity are kept. */
 function replaceRule(
   program: Program,
+  groupId: GroupId,
   index: number,
   rule: ProgramRule,
 ): Program {
+  const group = program.groups.find((each) => each.id === groupId)!;
+  return replaceRules(
+    program,
+    groupId,
+    group.rules.map((each, at) => (at === index ? rule : each)),
+  );
+}
+
+/** „Dodaj regułę”: append „Zawsze → Eksploruj” to the named group with a fresh identity. */
+export function addRule(program: Program, groupId: GroupId): Program | null {
+  const group = program.groups.find((each) => each.id === groupId);
+  if (!group) return null;
   return {
-    rules: program.rules.map((each, at) => (at === index ? rule : each)),
+    ...replaceRules(program, groupId, [
+      ...group.rules,
+      {
+        id: program.nextRuleId,
+        condition: { kind: "always" },
+        action: { kind: "explore" },
+      },
+    ]),
+    nextRuleId: program.nextRuleId + 1,
   };
 }
 
-/** „Dodaj regułę”: the program with „Zawsze → Eksploruj” appended. */
-export function addRule(program: Program): Program {
-  return {
-    rules: [
-      ...program.rules,
-      { condition: { kind: "always" }, action: { kind: "explore" } },
-    ],
-  };
+/** „Usuń”: remove only the rule at `index` in the named group. */
+export function removeRule(
+  program: Program,
+  groupId: GroupId,
+  index: number,
+): Program | null {
+  const group = program.groups.find((each) => each.id === groupId);
+  if (!group?.rules[index]) return null;
+  return replaceRules(
+    program,
+    groupId,
+    group.rules.filter((_, at) => at !== index),
+  );
 }
 
-/** „Usuń”: the program without the rule at `index`. */
-export function removeRule(program: Program, index: number): Program {
-  return { rules: program.rules.filter((_, at) => at !== index) };
-}
-
-/** „↑” (offset -1) or „↓” (offset 1): the rule swapped with its neighbour; null past either end. */
+/** Swap with the neighbour in the same group; null past either end. */
 export function moveRule(
   program: Program,
+  groupId: GroupId,
   index: number,
   offset: -1 | 1,
 ): Program | null {
+  const group = program.groups.find((each) => each.id === groupId);
   const other = index + offset;
   if (
+    !group ||
     index < 0 ||
     other < 0 ||
-    index >= program.rules.length ||
-    other >= program.rules.length
+    index >= group.rules.length ||
+    other >= group.rules.length
   )
     return null;
-  const rules = [...program.rules];
+  const rules = [...group.rules];
   [rules[index], rules[other]] = [rules[other], rules[index]];
-  return { rules };
+  return replaceRules(program, groupId, rules);
 }
 
 /**
@@ -191,15 +235,18 @@ function newCondition(
  */
 export function withConditionKind(
   program: Program,
+  groupId: GroupId,
   index: number,
   kind: ConditionKind,
   resources: readonly ResourceId[],
 ): Program | null {
-  const rule = program.rules[index];
+  const rule = program.groups.find((group) => group.id === groupId)?.rules[
+    index
+  ];
   if (!rule || rule.condition.kind === kind) return null;
   const condition = newCondition(kind, resources);
   if (!condition) return null;
-  return replaceRule(program, index, { ...rule, condition });
+  return replaceRule(program, groupId, index, { ...rule, condition });
 }
 
 /**
@@ -208,33 +255,42 @@ export function withConditionKind(
  */
 export function withActionKind(
   program: Program,
+  groupId: GroupId,
   index: number,
   kind: ActionKind,
   resources: readonly ResourceId[],
 ): Program | null {
-  const rule = program.rules[index];
+  const rule = program.groups.find((group) => group.id === groupId)?.rules[
+    index
+  ];
   if (!rule || rule.action.kind === kind) return null;
   if (!takesResource(kind))
-    return replaceRule(program, index, { ...rule, action: { kind } });
+    return replaceRule(program, groupId, index, { ...rule, action: { kind } });
   const resource = resources[0];
   if (resource === undefined) return null;
-  return replaceRule(program, index, { ...rule, action: { kind, resource } });
+  return replaceRule(program, groupId, index, {
+    ...rule,
+    action: { kind, resource },
+  });
 }
 
 /** The resource of the rule's condition; null when unchanged or the condition names none. */
 export function withConditionResource(
   program: Program,
+  groupId: GroupId,
   index: number,
   resource: ResourceId,
 ): Program | null {
-  const rule = program.rules[index];
+  const rule = program.groups.find((group) => group.id === groupId)?.rules[
+    index
+  ];
   if (
     !rule ||
     rule.condition.kind !== "hereBelow" ||
     rule.condition.resource === resource
   )
     return null;
-  return replaceRule(program, index, {
+  return replaceRule(program, groupId, index, {
     ...rule,
     condition: { ...rule.condition, resource },
   });
@@ -243,17 +299,20 @@ export function withConditionResource(
 /** The item of the rule's „Zapas poniżej”; null when unchanged or the condition names none. */
 export function withConditionItem(
   program: Program,
+  groupId: GroupId,
   index: number,
   item: ItemId,
 ): Program | null {
-  const rule = program.rules[index];
+  const rule = program.groups.find((group) => group.id === groupId)?.rules[
+    index
+  ];
   if (
     !rule ||
     rule.condition.kind !== "itemBelow" ||
     rule.condition.item === item
   )
     return null;
-  return replaceRule(program, index, {
+  return replaceRule(program, groupId, index, {
     ...rule,
     condition: { ...rule.condition, item },
   });
@@ -262,13 +321,16 @@ export function withConditionItem(
 /** The number of the rule's condition; null when unchanged or the condition takes none. */
 export function withConditionValue(
   program: Program,
+  groupId: GroupId,
   index: number,
   value: number,
 ): Program | null {
-  const rule = program.rules[index];
+  const rule = program.groups.find((group) => group.id === groupId)?.rules[
+    index
+  ];
   if (!rule || !("value" in rule.condition) || rule.condition.value === value)
     return null;
-  return replaceRule(program, index, {
+  return replaceRule(program, groupId, index, {
     ...rule,
     condition: { ...rule.condition, value },
   });
@@ -277,13 +339,16 @@ export function withConditionValue(
 /** The resource of the rule's action; null when unchanged or the action names none. */
 export function withActionResource(
   program: Program,
+  groupId: GroupId,
   index: number,
   resource: ResourceId,
 ): Program | null {
-  const rule = program.rules[index];
+  const rule = program.groups.find((group) => group.id === groupId)?.rules[
+    index
+  ];
   if (!rule || !namesResource(rule.action) || rule.action.resource === resource)
     return null;
-  return replaceRule(program, index, {
+  return replaceRule(program, groupId, index, {
     ...rule,
     action: { ...rule.action, resource },
   });
@@ -296,20 +361,21 @@ export function withActionResource(
  */
 export function focusAfter(
   edit: StructuralEdit,
+  groupId: GroupId,
   index: number,
   ruleCount: number,
 ): FocusTarget {
   switch (edit) {
     case "up":
-      return { row: index - 1, control: "up" };
+      return { groupId, row: index - 1, control: "up" };
     case "down":
-      return { row: index + 1, control: "down" };
+      return { groupId, row: index + 1, control: "down" };
     case "remove":
       return index < ruleCount
-        ? { row: index, control: "remove" }
-        : { control: "add" };
+        ? { groupId, row: index, control: "remove" }
+        : { groupId, control: "add" };
     case "add":
-      return { row: index, control: "condition" };
+      return { groupId, row: index, control: "condition" };
   }
 }
 
@@ -358,8 +424,9 @@ function showResource(
 }
 
 /**
- * Builds the program panel: heading „Program”, one row per program rule — condition select, for a
- * condition that takes a number a number field with the range and step of its kind, for „Tu leży
+ * Builds the program panel: heading „Program”, each named group and its condition, one row per
+ * program rule — condition select, for a condition that takes a number a number field with the
+ * range and step of its kind, for „Tu leży
  * mniej niż” a resource select, for „Zapas poniżej” an item select, „→”, action select, for „Idź”
  * and „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Labels,
  * numbers, resources and items come from the data: the condition and action selects offer every
@@ -374,10 +441,8 @@ export function createProgramEditor(
   element.className = "program-editor";
   const heading = document.createElement("h2");
   heading.textContent = "Program";
-  const list = document.createElement("ol");
-  list.className = "rules";
-  const addButton = createButton("Dodaj regułę");
-  element.append(heading, list, addButton);
+  const groupsElement = document.createElement("div");
+  element.append(heading, groupsElement);
 
   const conditionOptions = Object.entries(CONDITIONS).map(
     ([kind, def]): SelectOption => [kind, def.label],
@@ -390,34 +455,74 @@ export function createProgramEditor(
     ITEMS[id].name,
   ]);
 
-  let program: Program = { rules: [] };
+  let program: Program = { groups: [], nextGroupId: 1, nextRuleId: 1 };
   let offered: ResourceId[] = [];
-  let rows: RowView[] = [];
+  let groups: {
+    id: GroupId;
+    element: HTMLElement;
+    name: HTMLElement;
+    condition: HTMLElement;
+    add: HTMLButtonElement;
+    rows: RowView[];
+    ruleIds: number[];
+  }[] = [];
   let rebuild = true;
   let pendingFocus: FocusTarget | null = null;
 
   /** Commits an edit's program; a structural edit asks for a rebuild and where focus goes after it. */
   function edit(
     next: Program | null,
-    structural?: { edit: StructuralEdit; index: number },
+    structural?: { edit: StructuralEdit; groupId: GroupId; index: number },
   ): void {
     if (!next) return;
     if (structural) {
       rebuild = true;
       pendingFocus = focusAfter(
         structural.edit,
+        structural.groupId,
         structural.index,
-        next.rules.length,
+        next.groups.find((group) => group.id === structural.groupId)!.rules
+          .length,
       );
     }
     commit(next);
   }
 
-  addButton.addEventListener("click", () => {
-    edit(addRule(program), { edit: "add", index: program.rules.length });
-  });
+  function createGroup(group: RuleGroup): (typeof groups)[number] {
+    const section = document.createElement("section");
+    const name = document.createElement("h3");
+    const condition = document.createElement("p");
+    const list = document.createElement("ol");
+    list.className = "rules";
+    const add = createButton("Dodaj regułę");
+    const rows = group.rules.map((_, index) => createRow(group.id, index));
+    for (const row of rows) {
+      fillResources(row.conditionResource, offered, null);
+      fillResources(row.actionResource, offered, null);
+    }
+    list.append(...rows.map((row) => row.element));
+    section.append(name, condition, list, add);
+    add.addEventListener("click", () => {
+      const current = program.groups.find((each) => each.id === group.id);
+      if (current)
+        edit(addRule(program, group.id), {
+          edit: "add",
+          groupId: group.id,
+          index: current.rules.length,
+        });
+    });
+    return {
+      id: group.id,
+      element: section,
+      name,
+      condition,
+      add,
+      rows,
+      ruleIds: group.rules.map((rule) => rule.id),
+    };
+  }
 
-  function createRow(index: number): RowView {
+  function createRow(groupId: GroupId, index: number): RowView {
     const row: RowView = {
       element: document.createElement("li"),
       condition: createSelectList("Warunek", conditionOptions),
@@ -451,6 +556,7 @@ export function createProgramEditor(
       edit(
         withConditionKind(
           program,
+          groupId,
           index,
           row.condition.value as ConditionKind,
           offered,
@@ -458,7 +564,8 @@ export function createProgramEditor(
       );
     });
     row.value.input.addEventListener("change", () => {
-      const condition = program.rules[index]?.condition;
+      const condition = program.groups.find((group) => group.id === groupId)
+        ?.rules[index]?.condition;
       if (!condition || !("value" in condition)) return;
       const number = conditionNumber(condition.kind);
       if (!number) return;
@@ -468,12 +575,14 @@ export function createProgramEditor(
         number,
       );
       row.value.input.value = String(field.value);
-      if (field.commit) edit(withConditionValue(program, index, field.value));
+      if (field.commit)
+        edit(withConditionValue(program, groupId, index, field.value));
     });
     row.conditionResource.addEventListener("change", () => {
       edit(
         withConditionResource(
           program,
+          groupId,
           index,
           row.conditionResource.value as ResourceId,
         ),
@@ -481,31 +590,55 @@ export function createProgramEditor(
     });
     row.conditionItem.addEventListener("change", () => {
       edit(
-        withConditionItem(program, index, row.conditionItem.value as ItemId),
+        withConditionItem(
+          program,
+          groupId,
+          index,
+          row.conditionItem.value as ItemId,
+        ),
       );
     });
     row.action.addEventListener("change", () => {
       edit(
-        withActionKind(program, index, row.action.value as ActionKind, offered),
+        withActionKind(
+          program,
+          groupId,
+          index,
+          row.action.value as ActionKind,
+          offered,
+        ),
       );
     });
     row.actionResource.addEventListener("change", () => {
       edit(
         withActionResource(
           program,
+          groupId,
           index,
           row.actionResource.value as ResourceId,
         ),
       );
     });
     row.up.addEventListener("click", () =>
-      edit(moveRule(program, index, -1), { edit: "up", index }),
+      edit(moveRule(program, groupId, index, -1), {
+        edit: "up",
+        groupId,
+        index,
+      }),
     );
     row.down.addEventListener("click", () =>
-      edit(moveRule(program, index, 1), { edit: "down", index }),
+      edit(moveRule(program, groupId, index, 1), {
+        edit: "down",
+        groupId,
+        index,
+      }),
     );
     row.remove.addEventListener("click", () =>
-      edit(removeRule(program, index), { edit: "remove", index }),
+      edit(removeRule(program, groupId, index), {
+        edit: "remove",
+        groupId,
+        index,
+      }),
     );
     return row;
   }
@@ -537,11 +670,13 @@ export function createProgramEditor(
   }
 
   function focusTarget(target: FocusTarget): void {
+    const group = groups.find((each) => each.id === target.groupId);
+    if (!group) return;
     if (target.control === "add") {
-      addButton.focus();
+      group.add.focus();
       return;
     }
-    rows[target.row]?.[target.control].focus();
+    group.rows[target.row]?.[target.control].focus();
   }
 
   return {
@@ -551,16 +686,32 @@ export function createProgramEditor(
       if (nextOffered.join() !== offered.join()) rebuild = true;
       offered = nextOffered;
       program = state.program;
-      if (rebuild || rows.length !== program.rules.length) {
-        rows = program.rules.map((_, index) => createRow(index));
-        for (const row of rows)
-          fillResources(row.conditionResource, offered, null);
-        for (const row of rows)
-          fillResources(row.actionResource, offered, null);
-        list.replaceChildren(...rows.map((row) => row.element));
+      if (
+        rebuild ||
+        groups.length !== program.groups.length ||
+        program.groups.some(
+          (group, index) =>
+            groups[index].id !== group.id ||
+            groups[index].ruleIds.join() !==
+              group.rules.map((rule) => rule.id).join(),
+        )
+      ) {
+        groups = program.groups.map(createGroup);
+        groupsElement.replaceChildren(...groups.map((group) => group.element));
         rebuild = false;
       }
-      program.rules.forEach((rule, index) => showRule(rows[index], rule));
+      program.groups.forEach((group, index) => {
+        const view = groups[index];
+        view.name.textContent = group.name;
+        const condition = group.condition;
+        const parts: string[] = [CONDITIONS[condition.kind].label];
+        if ("value" in condition) parts.push(String(condition.value));
+        if ("resource" in condition)
+          parts.push(RESOURCES[condition.resource].name);
+        if ("item" in condition) parts.push(ITEMS[condition.item].name);
+        view.condition.textContent = parts.join(" · ");
+        group.rules.forEach((rule, at) => showRule(view.rows[at], rule));
+      });
       if (pendingFocus) {
         const target = pendingFocus;
         pendingFocus = null;

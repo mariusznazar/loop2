@@ -173,22 +173,63 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
   }
 }
 
+/** A positive safe integer, so a stored identity remains exact. */
+function checkIdentity(value: unknown): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1)
+    throw new Error("program: an identity is not a positive safe integer");
+  return value;
+}
+
+/** Each identity occurs once and precedes its next-identity counter. */
+function uniqueIdentity(
+  value: unknown,
+  next: number,
+  seen: Set<number>,
+): number {
+  const id = checkIdentity(value);
+  if (id >= next || seen.has(id))
+    throw new Error(
+      "program: an identity is duplicated or reaches its next counter",
+    );
+  seen.add(id);
+  return id;
+}
+
 /** A copy of the program built from the closed list; throws on anything outside it. */
 function checkProgram(value: unknown, run: MapRun | null): Program {
-  if (!isObject(value) || !Array.isArray(value.rules))
-    throw new Error("program: no list of rules");
+  if (!isObject(value) || !Array.isArray(value.groups))
+    throw new Error("program: no list of groups");
+  const nextGroupId = checkIdentity(value.nextGroupId);
+  const nextRuleId = checkIdentity(value.nextRuleId);
   const allowed = allowedResources(run);
-  const rules = value.rules.map((rule: unknown): ProgramRule => {
-    if (!isObject(rule))
+  const groupIds = new Set<number>();
+  const ruleIds = new Set<number>();
+  const groups = value.groups.map((group: unknown) => {
+    if (
+      !isObject(group) ||
+      typeof group.name !== "string" ||
+      !Array.isArray(group.rules) ||
+      Object.hasOwn(group, "groups")
+    )
       throw new Error(
-        "program: a rule is not a pair of a condition and an action",
+        "program: a group must hold a name and a list of rules at one level",
       );
-    return {
-      condition: checkCondition(rule.condition, allowed),
-      action: checkAction(rule.action, allowed),
-    };
+    const id = uniqueIdentity(group.id, nextGroupId, groupIds);
+    const condition = checkCondition(group.condition, allowed);
+    const rules = group.rules.map((rule: unknown): ProgramRule => {
+      if (!isObject(rule))
+        throw new Error(
+          "program: a rule is not a pair of a condition and an action",
+        );
+      return {
+        id: uniqueIdentity(rule.id, nextRuleId, ruleIds),
+        condition: checkCondition(rule.condition, allowed),
+        action: checkAction(rule.action, allowed),
+      };
+    });
+    return { id, name: group.name, condition, rules };
   });
-  return { rules };
+  return { groups, nextGroupId, nextRuleId };
 }
 
 function requireRun(state: GameState, name: string): MapRun {
@@ -221,7 +262,13 @@ function startRun(
  * and an empty chest, no map run. */
 export function newGame(): GameState {
   return {
-    program: { rules: [] },
+    program: {
+      groups: [
+        { id: 1, name: "Program", condition: { kind: "always" }, rules: [] },
+      ],
+      nextGroupId: 2,
+      nextRuleId: 1,
+    },
     team: { characters: [], chest: { pieces: {} } },
     nextCharacterId: 1,
     run: null,
