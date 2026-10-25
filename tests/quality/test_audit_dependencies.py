@@ -57,6 +57,7 @@ class DependencyAudit(unittest.TestCase):
         self.assertEqual(self.audit(), 1)
 
     def test_counts_each_advisory_of_low_or_higher_severity(self):
+        # invariant: dependency-audit-refusal
         report = {"vulnerabilities": {
             "a": {"via": [{"name": "a", "source": 1, "severity": "low"},
                           {"name": "a", "source": 2, "severity": "info"}]},

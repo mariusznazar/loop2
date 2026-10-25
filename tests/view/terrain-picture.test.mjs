@@ -9,7 +9,6 @@ import {
   send,
   setProgram,
 } from "../../dist/public/sim/game.js";
-import { hexCenter, hexCorners } from "../../dist/public/sim/hex.js";
 import { terrainPicture } from "../../dist/public/view/terrain-picture.js";
 
 const SENT = {
@@ -46,19 +45,60 @@ test("all tiles are drawn from minute 0, unrevealed ones without icons", () => {
   assert.ok(picture.width > 0 && picture.height > 0);
 });
 
-test("polygon points come from the hex centre and corners at the given size", () => {
+test("regular hexagons meet their neighbours along sides without gaps or overlap", () => {
+  // D-24 and accepted task przewodnik_testow_loop2.md, Q7b1: shape and adjacency,
+  // independent of rotation, translation, vertex order and the product's geometry helpers.
   const state = sent();
-  const size = 10;
-  const picture = terrainPicture(state, size);
-  const first = picture.tiles[0];
-  const source = state.run.tiles[0];
-  const centre = hexCenter(source.at, size);
-  const points = hexCorners(size).map(
-    (c) =>
-      `${c.x + centre.x + picture.offsetX},${c.y + centre.y + picture.offsetY}`,
+  const tiles = [
+    { col: 0, row: 0, at: { q: 0, r: 0 } },
+    { col: 1, row: 0, at: { q: 1, r: 0 } },
+    { col: 0, row: 1, at: { q: 0, r: 1 } },
+  ].map((tile) => ({ ...tile, revealed: false, stock: {}, stepMinutes: 5 }));
+  const picture = terrainPicture(
+    { ...state, run: { ...state.run, tiles } },
+    10,
   );
-  assert.equal(first.points, points.join(" "));
-  assert.notEqual(terrainPicture(state, 24).tiles[0].points, first.points);
+  const polygons = picture.tiles.map((tile) =>
+    tile.points.split(" ").map((pair) => pair.split(",").map(Number)),
+  );
+  const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const close = (actual, expected) =>
+    assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} != ${expected}`);
+  const centres = polygons.map((points) => [
+    points.reduce((sum, point) => sum + point[0], 0) / points.length,
+    points.reduce((sum, point) => sum + point[1], 0) / points.length,
+  ]);
+  assert.equal(polygons.length, 3);
+  for (const [index, points] of polygons.entries()) {
+    assert.equal(points.length, 6);
+    assert.equal(new Set(points.map((point) => point.join(","))).size, 6);
+    for (let vertex = 0; vertex < 6; vertex += 1) {
+      // A regular hexagon's side equals its circumradius; both are 10 here.
+      close(distance(points[vertex], centres[index]), 10);
+      close(distance(points[vertex], points[(vertex + 1) % 6]), 10);
+    }
+  }
+  // These three axial tiles are pairwise neighbours, covering all three side directions.
+  for (const [a, b] of [
+    [0, 1],
+    [0, 2],
+    [1, 2],
+  ]) {
+    const shared = polygons[a].filter((point) =>
+      polygons[b].some((other) => distance(point, other) < 1e-9),
+    );
+    assert.equal(shared.length, 2, `neighbours ${a}, ${b} must share a side`);
+    close(distance(shared[0], shared[1]), 10);
+    // Two apothems: 2 * sqrt(10^2 - 5^2) = 10 * sqrt(3).
+    close(distance(centres[a], centres[b]), 10 * Math.sqrt(3));
+    const side = (point) =>
+      (shared[1][0] - shared[0][0]) * (point[1] - shared[0][1]) -
+      (shared[1][1] - shared[0][1]) * (point[0] - shared[0][0]);
+    assert.ok(
+      side(centres[a]) * side(centres[b]) < 0,
+      "interiors must not overlap",
+    );
+  }
 });
 
 test("every polygon lies inside the picture", () => {

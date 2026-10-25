@@ -11,7 +11,7 @@ import {
   tileAt,
 } from "../../dist/public/sim/hex.js";
 import { actionFeasible } from "../../dist/public/sim/program.js";
-import { nextRandom, streamState } from "../../dist/public/sim/random.js";
+import { streamState } from "../../dist/public/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
 
 const [mapId, map] = Object.entries(MAPS)[0];
@@ -161,46 +161,91 @@ test("a program change during an explore does not interrupt it", () => {
 });
 
 test("Wędruj prefers an unrevealed neighbour", () => {
-  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+  // Accepted task przewodnik_testow_loop2.md, Q7c: a hidden neighbour takes precedence.
+  // The six neighbours of axial (1, 1) are written independently of product helpers.
+  const neighbours = [
+    { q: 2, r: 1 },
+    { q: 2, r: 0 },
+    { q: 1, r: 0 },
+    { q: 0, r: 1 },
+    { q: 0, r: 2 },
+    { q: 1, r: 2 },
+  ];
+  for (const [seed, hidden] of [
+    [1, { q: 2, r: 1 }],
+    [2, { q: 2, r: 0 }],
+    [3, { q: 1, r: 0 }],
+    [4, { q: 0, r: 1 }],
+    [5, { q: 0, r: 2 }],
+    [6, { q: 1, r: 2 }],
+    [7, { q: 2, r: 1 }],
+    [8, { q: 0, r: 2 }],
+  ]) {
     const run = start(seed).run;
-    const around = neighbours(run.tiles, entrance);
-    const hidden = around[seed % around.length].at;
-    const prepared = mapTiles(run, (tile) => ({
-      ...tile,
-      revealed: !sameHex(tile.at, hidden),
+    const tiles = [{ q: 1, r: 1 }, ...neighbours].map((at) => ({
+      at,
+      col: at.q + Math.floor(at.r / 2),
+      row: at.r,
+      stock: {},
+      stepMinutes: 5,
+      revealed: !(at.q === hidden.q && at.r === hidden.r),
     }));
+    const prepared = {
+      ...run,
+      tiles,
+      character: { ...run.character, at: { q: 1, r: 1 } },
+    };
     const next = stepMinute(freeNextMinute(prepared), map, WANDERING).run;
     assert.deepEqual(next.current.stepTo, hidden, `seed ${seed}`);
   }
 });
 
 test("Wędruj goes to some neighbour when all are revealed", () => {
+  // Six allowed axial neighbours, independently enumerated; neither neighbours()
+  // nor hexDistance() supplies the expected result of the product's selection.
+  const neighbours = [
+    { q: 2, r: 1 },
+    { q: 2, r: 0 },
+    { q: 1, r: 0 },
+    { q: 0, r: 1 },
+    { q: 0, r: 2 },
+    { q: 1, r: 2 },
+  ];
   for (const seed of [1, 2, 3, 4, 5]) {
-    const run = mapTiles(start(seed).run, (tile) => ({
-      ...tile,
+    const initial = start(seed).run;
+    const tiles = [{ q: 1, r: 1 }, ...neighbours].map((at) => ({
+      at,
+      col: at.q + Math.floor(at.r / 2),
+      row: at.r,
+      stock: {},
+      stepMinutes: 5,
       revealed: true,
     }));
+    const run = {
+      ...initial,
+      tiles,
+      character: { ...initial.character, at: { q: 1, r: 1 } },
+    };
     const next = stepMinute(freeNextMinute(run), map, WANDERING).run;
-    assert.equal(hexDistance(next.current.stepTo, entrance), 1, `seed ${seed}`);
     assert.ok(
-      tileAt(run.tiles, next.current.stepTo),
-      `seed ${seed}: target off the map`,
+      neighbours.some(
+        (at) =>
+          at.q === next.current.stepTo.q && at.r === next.current.stepTo.r,
+      ),
+      `seed ${seed}: target must be one of the six neighbours on this map`,
     );
   }
 });
 
-test("starting Wędruj draws once: candidates[floor(u × n)] in tile-list order", () => {
-  const run = start(9).run;
-  const candidates = neighbours(run.tiles, entrance).filter(
-    (tile) => !tile.revealed,
-  );
-  const draw = nextRandom(run.wanderRandom);
+test("starting Wędruj consumes exactly one draw", () => {
+  // Accepted task przewodnik_testow_loop2.md, Q7c quotes concept line 1261 for one draw.
+  // Independent Mulberry32 fixture: state advances by 0x6d2b79f5 modulo 2^32, so
+  // starting from 0 gives 0x6d2b79f5 after one draw. No product helper computes it.
+  // Source: https://github.com/bryc/code/blob/master/jshash/PRNGs.md#mulberry32
+  // A different generator may replace this fixture; it does not fix target selection.
+  const run = { ...start(9).run, wanderRandom: 0 };
   const next = stepMinute(freeNextMinute(run), map, WANDERING).run;
-  assert.equal(next.wanderRandom, draw.state);
-  assert.deepEqual(
-    next.current.stepTo,
-    candidates[Math.floor(draw.value * candidates.length)].at,
-  );
+  assert.equal(next.wanderRandom, 0x6d2b79f5);
 });
 
 test("Wędruj is not feasible with no neighbour on the map", () => {

@@ -633,17 +633,17 @@ keep itself, entering through what the product already treats as untrusted.
 
 ### D-28 — Which coding-guideline discipline does loop2 adopt?
 
-Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for tests, building, deployment, entry points, HTML and CSS; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding guidelines cover all code and give `tests/sim/time.test.mjs` as a test example without creating a formal test kind.
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for building, deployment, entry points, HTML and CSS; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding quality checks cover all code, tests included, while testing rules and exemplars by level stand in `guidelines/testing.md`, together with the explicit-time example from `tests/sim/time.test.mjs`, which is no additional exemplar.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares the change with the decision:
-  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and the test example, and use full-compliance source invariants without a transitional per-file no-regression invariant
-  - violates: an additional mandatory test exemplar, a stylesheet exemplar or guidelines of their own for stylesheets, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
+  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and direct test authors to the testing guidelines, and use full-compliance source invariants without a transitional per-file no-regression invariant
+  - violates: a stylesheet exemplar or guidelines of their own for stylesheets, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
 - **Origin:** none
 
-*Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader exemplar maintenance and additional formatters add work without an established benefit. The rules of the browser view's stylesheets that a cheap test keeps already stand in its styleguide, so a kind of their own would add no rule; a second stylesheet then has no designated model.
+*Rationale:* The selected discipline gives code common checks and a small set of useful exemplars; broader coding-exemplar maintenance and additional formatters add work without an established benefit. The rules of the browser view's stylesheets that a cheap test keeps already stand in its styleguide, so a kind of their own would add no rule; a second stylesheet then has no designated model.
 *Rejected:* A complete exemplar audit and automatic formatting for every language — more maintenance and unmeasured reformatting work; transitional lint debt — an extra mechanism where full-compliance source invariants already apply; CSS as a kind of its own with an exemplar and kind guidelines — its only rules a test keeps stand in the styleguide.
 
 ### D-29 — Which rules check TypeScript and JavaScript?
@@ -711,7 +711,7 @@ The dependency audit passes without a network request where `package-lock.json` 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: introduced-npm-vulnerabilities
+- **Verification:** invariants: introduced-npm-vulnerabilities · dependency-audit-refusal
 - **Origin:** none
 
 *Rationale:* A low threshold starts conservatively while comparison with the start of the change keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same lockfile. The registry matches each advisory's range to the locked versions itself, so comparing the advisories reported before and after the change needs no parsing of ranges, at the price of letting a further copy of an already reported vulnerable package through.
@@ -889,7 +889,7 @@ The kitchen-sink page of the browser view is built from `src/browser/kitchen-sin
 - **Scope:** browser-view, build-tools
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** invariants: application-build-kitchen-sink. An agent compares a change with the decision:
+- **Verification:** invariants: application-build-kitchen-sink · preview-server-access. An agent compares a change with the decision:
   - complies: the page compiled into `dist/kitchen-sink/` and served on the developer's machine alone;
   - violates: the page drawing the terrain panel from a game state put together by hand; the page served by the account server in a development mode.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q13. Gdzie stoi strona wszystkich stanów i jak nie trafia na serwer testowy?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point A
@@ -904,7 +904,7 @@ The fonts of the browser view are Geist and Geist Mono, whose web-font files and
 - **Scope:** browser-view, build-tools, deployment
 - **Based on:** geist-licence · npm package `geist` 1.8.2, its peer dependencies (https://registry.npmjs.org/geist/1.8.2 § peerDependencies — "{"next":">=13.2.0"}"; read 2026-10-23)
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: font-file-provenance. An agent compares a change with the decision:
   - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the status row set in Geist Mono;
   - violates: a stylesheet that loads a font from Google Fonts or another CDN; font files taken from the npm package `geist`; the headings of the panels set in Geist Mono.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jakie czcionki, rozmiary i odstępy?"
@@ -1348,3 +1348,224 @@ A character crafts a campfire and lights a stick on a revealed tile, as it gathe
 
 *Rationale:* Every campfire and every burning stick then stands on a revealed tile, so the drawing shows the campfire's icon and the list of revealed tiles shows its state and the burning stick's, as for the stock a gathering takes from; the list of revealed tiles and the drawing keep the meanings they have. Accepted with it: a program that crafts a campfire or lights a stick after wandering onto a tile not yet revealed passes on to its next program rule.
 *Rejected:* a campfire shown on a tile not yet revealed — the list of revealed tiles and the role `tile-hidden` would change their meaning; a campfire left on a tile not yet revealed with nothing showing it — its state and its icon would stand nowhere.
+
+### D-73 — Which testing discipline does loop2 adopt?
+
+Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78 and D-79. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4
+
+*Rationale:* A common discipline makes the choice of a useful test and an independent expected value reviewable without prescribing proportions of test levels.
+*Rejected:* Guidelines treated only as suggestions — leave each author to choose which obligations hold.
+
+### D-74 — When are tests on generated inputs considered?
+
+Tests on generated inputs are considered only when the task author names a game rule and a concrete risk from combinations of inputs that a few readable examples do not adequately protect. That task chooses the tool and settles its maintenance cost.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** narrows D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4b and Q4g
+
+*Rationale:* The complexity of the game and the risk being protected justify generated inputs; the ability to generate them alone does not.
+*Rejected:* Adding property tests whenever a universal statement can be made — adds dependencies and maintenance without an established need; returning when needed without a stated condition — leaves the choice unconstrained.
+
+### D-75 — When are complete player journeys tested in a real browser?
+
+Permanent tests of complete player journeys in a real browser are deferred, and a changed journey is checked manually. Automation is reconsidered when a critical-journey defect escapes smaller tests or repeated manual checking becomes a significant task cost; that task settles the tool and scope.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** narrows D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10c
+
+*Rationale:* Manual checks keep the initial testing discipline proportionate to the game, at the cost of evidence of one run rather than permanent protection against recurrence.
+*Rejected:* Automating every critical journey at once — adds a browser environment and test maintenance before their cost is justified.
+
+### D-76 — When do fonts and the preview server gain refusal tests?
+
+Permanent refusal tests for font files and the local interface preview server are deferred until the first task changing the respective boundary, which introduces its refusal test and changes its invariant to method test. Until then, review checks font provenance and that the preview server serves only its own directory and only on the developer's machine.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** narrows D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q6c and Q6g
+
+*Rationale:* Keeping the guideline work bounded leaves these boundaries dependent on review, which can miss a defect; absence of a test proves neither refusal nor a vulnerability.
+*Rejected:* Adding both refusal tests with the guidelines — expands the work and requires a choice of font verification.
+
+### D-77 — How are tests selected and limited as a whole?
+
+Tests run through full `npm test`, without selection of a level, file or case and without a configuration file limiting the whole run. Selection and a whole-run limit are reconsidered on a concrete problem with diagnosis time or a hanging run; new or changed tests still bound their own waiting.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** narrows D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5m
+
+*Rationale:* One entry point keeps the existing run intact, at the cost of slower diagnosis and the possibility that an operation with no local limit hangs.
+*Rejected:* Adding selection and a central limit with the guidelines — expands the work into orchestration across languages.
+
+### D-78 — How is one test case shaped?
+
+A new or changed test case has a name describing its behaviour and condition, and readable preparation, action and assertion phases protecting one behaviour; it may use a table of explicitly named variants of that behaviour. It neither reproduces the product algorithm nor chooses its expectation from the obtained result.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** narrows D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5k
+
+*Rationale:* Named variants keep one behaviour readable without duplicating its preparation; combining unrelated behaviours obscures the cause of a failure.
+*Rejected:* No logic at all in a test — excludes readable tables of crafted inputs; one large scenario for unrelated behaviours — obscures which behaviour failed.
+
+### D-79 — How is the npm registry response contract checked?
+
+The npm registry, the only foreign service the tested code talks to, has no separate contract test: the real dependency audit in the gate checks its response format under D-33. Tests of the audit use controlled responses to force errors, and an unreadable real response fails the audit.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** narrows D-73 · derives from D-33
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4n
+
+*Rationale:* The real operation checks the format without a second check of the same agreement; a controlled response proves only the reaction to that response.
+*Rejected:* A separate registry contract test — adds maintenance without further protection.
+
+### D-80 — What establishes a game-balance expectation?
+
+A test of a game parameter, such as survival time, progress rate or map difficulty, may check calculations on concrete numbers, but takes its expectation from an agreed requirement. Current parameters or the simulation's current result are not themselves evidence of correctness.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q3
+
+*Rationale:* Protecting agreed relationships and limits avoids preserving an accidental balance as a requirement; without an agreed difficulty the tests cannot judge whether a map is too easy or hard.
+*Rejected:* Freezing the current simulation outcome — treats present behaviour as the intended balance.
+
+### D-81 — At which levels do loop2 tests stand?
+
+Loop2 tests stand at three levels: unit test and integration test as defined in its glossary, and smoke test in its ordinary meaning. A smoke test starts the built application through its entry point or a container and checks readiness or a simple response, without proving a complete game journey; a level follows the resources exercised, not the test directory.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5e-Q5g and Q5n
+
+*Rationale:* The levels distinguish calculations from real connections and packaging, so a missing environment names which evidence is absent.
+*Rejected:* A separate unit test for every function — ties tests to code decomposition; treating imports as an application startup — leaves packaging and entry points untested.
+
+### D-82 — Which product documents supply test expectations?
+
+Test expectations may come from the loop2 foundation, accepted task documents in `C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/` and its `_zadania/` directory in state ready for cycle or completed, and the approved `definicja_mvp_loop2.md` there. The draft `koncepcja_projektowa.md` is a source only in a passage quoted by an accepted document; a test comment locating a documentary expectation names its file and line.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5p
+
+*Rationale:* Accepted requirements carry expectations without making every expected number a foundation decision; an agent without access to the external documents sees their location but cannot verify their text.
+*Rejected:* Foundation alone — forces every expected number into a decision; a draft concept as an unrestricted source — treats unsettled ideas as requirements.
+
+### D-83 — Where are tests written and how do they enter the gate?
+
+Tests keep Node and Python, their existing directories, and the names `*.test.mjs` and `test_*.py`. Every `*.test.mjs` file under `tests/` is selected by `npm test`, and a new `test_*.py` file is counted as covered by the gate only after its execution there is verified.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73
+- **Verification:** invariants: node-test-selection
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5a and Q5r
+
+*Rationale:* Keeping the conventions avoids moving tests without changing their protection, while explicit inclusion checks prevent a new file being silently omitted.
+*Rejected:* Migrating the tools and directories for uniformity — requires movement and coverage checks without a change to game behaviour; inclusion by review alone — depends on a reviewer noticing an omitted file.
+
+### D-84 — Which real mechanisms do new or changed tests exercise?
+
+A new or changed simulation test supplies explicit state, elapsed time and seed and uses the real game random generator without waiting for game minutes on the computer. A test of file or HTTP failure uses real temporary files or a real local server, waits for a readiness event or condition with a time limit and error handling, and cleans up its files, servers and processes even after failure; polling a condition is allowed, and controlled responses test reactions to forced failures without proving the replaced operation. The HTTP helper in `tests/http.test.mjs` takes these waiting and cleanup rules when that helper changes.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73 · derives from D-04 · derives from D-22
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5b-Q5d and Q7
+
+*Rationale:* Real mechanisms reveal failures that their substitutes hide, while explicit time and readiness keep a run independent of computer speed; preparation and cleanup cost more than fixed sleeps.
+*Rejected:* A substitute for the mechanism whose failure is being tested — cannot demonstrate that failure; sleeping a fixed span as proof of readiness — depends on machine speed.
+
+### D-85 — Which cases are the exemplars of the test levels?
+
+The unit exemplar is the case "the count of a hand-made backpack is the pieces of all items together" in `tests/sim/traits.test.mjs`, for explicit data and independent arithmetic, not time or a whole game. The integration exemplar is "raw and encoded traversal cannot expose files outside dist/public" in `tests/http.test.mjs`, for real requests and visible refusal, not the whole file or its timeout and cleanup helpers. The smoke exemplar is `test_occupied_address_exits_without_reporting_ready` in `tests/invariants/test_account_server_occupied_address.py`, for normal-start controls around forced refusal, not full HTTP, container or gameplay evidence.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-81
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5h-Q5j
+
+*Rationale:* Selected cases show useful patterns without treating every neighbouring case or helper as approved practice; their limits remain part of the selection.
+*Rejected:* New examples covering every rule at once — add test work; rules without examples — leave later authors no concrete model.
+
+### D-86 — Which files may a visitor obtain from the public server?
+
+Every visitor may retrieve the built game's files from its public directory and no file outside it. A request outside that directory, with a raw or encoded path, receives 400, 403 or 404 with neither that file's content nor the game's page.
+
+- **Scope:** account-server
+- **Based on:** none
+- **Relations:** derives from D-05
+- **Verification:** invariants: public-file-access
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q6b and Q6f
+
+*Rationale:* A public game requires no account to fetch its assets, while the public directory bounds what the server exposes.
+*Rejected:* Keeping the permission only implicit in a test — leaves later authors without the rule that justifies refusal.
+
+### D-87 — When are whole-screen pixel comparisons used?
+
+Whole screens are not preserved by pixel-by-pixel image comparison, while agreed appearance rules keep their checks and a changed appearance is inspected in a browser. Image comparison is reconsidered on a concrete visual defect or an agreed requirement for an exact layout; this exclusion does not cover the safety of external icons or fonts.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10b
+
+*Rationale:* Avoiding whole-screen references saves maintenance and judgement of intended differences, while leaving some visual differences for a person to catch.
+*Rejected:* Whole-screen comparisons without a demonstrated need — require reference images and repeated judgement of deliberate changes.
+
+### D-88 — How are real browser events, focus and SVG checked?
+
+Real browser events, focus and SVG rendering are checked manually after a change and are not automated; tests using a hand-made document model prove only its modelled logic. Automation is reconsidered on a defect that the model missed or together with the player-journey automation of D-75, and this exclusion never covers a trust boundary.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10d
+
+*Rationale:* A document model provides quick logic checks but cannot establish the browser's behaviour; until automation is justified a person catches event and focus defects.
+*Rejected:* Treating a document model as real-browser evidence — claims protection the model cannot give.
+
+### D-89 — Who revisits a deliberate testing exclusion?
+
+For a change touching a category deliberately left without tests, its author and reviewer check the category's condition of return, including complete player journeys, whole-screen comparisons and real browser events, focus and SVG.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-73 · derives from D-75 · derives from D-87 · derives from D-88
+- **Verification:** none
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10a-Q10d
+
+*Rationale:* An exclusion can outlive its reason unless the changes that reach it revisit that reason.
+*Rejected:* Keeping exclusions without a check on relevant changes — lets a temporary trade-off become a permanent blind spot.

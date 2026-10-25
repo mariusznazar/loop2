@@ -517,6 +517,56 @@ A map run advanced by a span of game minutes reaches the same game state, with t
 - **Part:** simulation
 - **Violated:** no
 
+## public-file-access
+
+A request for a file outside the public directory, using a raw or encoded path, receives 400, 403 or 404 with neither that file's content nor the game's page.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-86
+- **Part:** account-server
+- **Violated:** no
+
+## dependency-audit-refusal
+
+The dependency audit fails when its request fails, its report is unreadable, or it reports a blocking advisory absent from the lockfile at "{fork-point}".
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-33
+- **Part:** build-tools
+- **Violated:** no
+
+## font-file-provenance
+
+Font files in `assets/fonts/` come only from a release of github.com/vercel/geist-font.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-46
+- **Part:** browser-view
+- **Violated:** no
+
+## preview-server-access
+
+The interface preview server serves only files from `dist/kitchen-sink/` and only on the developer's machine.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-45
+- **Part:** build-tools
+- **Violated:** no
+
+## node-test-selection
+
+Every `*.test.mjs` file under `tests/` is selected for execution by `npm test`.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-83
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

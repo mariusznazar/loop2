@@ -210,19 +210,12 @@ na `min`.
 
 Zagnieżdżone warunki mogą pokazywać dwa osobne etapy sprawdzania.
 
-### Test z jawnym czasem
-
-`tests/sim/time.test.mjs` pokazuje konkretne wejście i oczekiwany wynik bez
-czekania na zegar. Test „1000 ms of real time moves the run on by one game minute”
-wywołuje `passRealTime(sent(), 1000)` i sprawdza minutę 1 oraz resztę czasu 0.
-Inne przypadki tego pliku obejmują przenoszenie ułamków sekundy i pauzę.
-To przykład testu, bez osobnego formalnego rodzaju testów.
-
 ### Odłożone rodzaje i formatowanie
 
-Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce testów
-Node/Python, budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są
-odłożone. CSS nie ma własnego wzorca ani własnych wytycznych rodzaju; reguły
+Zasady testowania, wzorce według poziomów i przykład jawnego czasu określa
+`guidelines/testing.md`. Ogólne kontrole jakości kodu obejmują też pliki testów.
+Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce
+budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone. CSS nie ma własnego wzorca ani własnych wytycznych rodzaju; reguły
 arkuszy stylów, których pilnuje test, stoją w
 `guidelines/styleguide-browser-view.md`.
 Wzorce sesji, zapisu gry i poczty powstaną przy pierwszych implementacjach.
@@ -243,4 +236,3 @@ obowiązują niezmienniki pełnej zgodności kodu, bez przejściowej kontroli
 - `.gitattributes`
 - `scripts/audit_dependencies.py`
 - `tests/quality/test_quality_invariants.py`
-- `tests/sim/time.test.mjs`
