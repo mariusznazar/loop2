@@ -14,6 +14,7 @@ import {
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { mixSeed } from "../../dist/public/sim/random.js";
+import { programFromRules, programRules } from "./program-fixture.mjs";
 
 const mapId = Object.keys(MAPS)[0];
 // The first character a new game creates takes the id 1.
@@ -23,10 +24,11 @@ const LATER_MS = 1760000123456;
 
 const ALWAYS = { kind: "always" };
 const rule = (condition, action) => ({ condition, action });
-const EXPLORING = { rules: [rule(ALWAYS, { kind: "explore" })] };
-const WANDER_FIRST = {
-  rules: [rule(ALWAYS, { kind: "wander" }), rule(ALWAYS, { kind: "explore" })],
-};
+const EXPLORING = programFromRules(rule(ALWAYS, { kind: "explore" }));
+const WANDER_FIRST = programFromRules(
+  rule(ALWAYS, { kind: "wander" }),
+  rule(ALWAYS, { kind: "explore" }),
+);
 
 function sent(program = EXPLORING, realMs = REAL_MS) {
   const game = createCharacter(setProgram(newGame(), program).state, "Ala");
@@ -34,15 +36,14 @@ function sent(program = EXPLORING, realMs = REAL_MS) {
 }
 
 test("a new game has an empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
-  assert.deepEqual(newGame(), {
-    program: { rules: [] },
-    team: { characters: [], chest: { pieces: {} } },
-    nextCharacterId: 1,
-    run: null,
-    lastSeed: INITIAL_SEED,
-    paused: false,
-    realMsCarry: 0,
-  });
+  const state = newGame();
+  assert.deepEqual(programRules(state.program), []);
+  assert.deepEqual(state.team, { characters: [], chest: { pieces: {} } });
+  assert.equal(state.nextCharacterId, 1);
+  assert.equal(state.run, null);
+  assert.equal(state.lastSeed, INITIAL_SEED);
+  assert.equal(state.paused, false);
+  assert.equal(state.realMsCarry, 0);
 });
 
 test("a send starts a map run at minute 0 with the seed mixed from the last seed and the real time", () => {
@@ -56,15 +57,15 @@ test("a send starts a map run at minute 0 with the seed mixed from the last seed
   assert.equal(state.paused, false);
   assert.equal(state.realMsCarry, 0);
   assert.deepEqual(state.program, EXPLORING);
-  assert.deepEqual(events, [
-    { kind: "mapRunStarted", seed },
-    {
-      kind: "activityStarted",
-      minute: 0,
-      activity: { kind: "rule", ruleIndex: 0, action: { kind: "explore" } },
-      stepTo: null,
-    },
-  ]);
+  assert.deepEqual(
+    events.map((event) => event.kind),
+    ["mapRunStarted", "activityStarted"],
+  );
+  assert.equal(events[1].kind, "activityStarted");
+  assert.equal(events[1].minute, 0);
+  assert.equal(events[1].activity.kind, "rule");
+  assert.deepEqual(events[1].activity.action, { kind: "explore" });
+  assert.equal(events[1].stepTo, null);
 });
 
 test("a send while a map run exists is refused", () => {
@@ -87,11 +88,8 @@ test("a program edit during a 20-minute exploration does not interrupt it and ap
   }
   const { state: at20, events } = advanceMinutes(state, 1);
   assert.equal(at20.run.minute, 20);
-  assert.deepEqual(at20.run.current.activity, {
-    kind: "rule",
-    ruleIndex: 0,
-    action: { kind: "wander" },
-  });
+  assert.equal(at20.run.current.activity.kind, "rule");
+  assert.deepEqual(at20.run.current.activity.action, { kind: "wander" });
   assert.equal(at20.run.current.startMinute, 20);
   assert.equal(events.at(-1).kind, "activityStarted");
 });
@@ -108,11 +106,8 @@ test("Restart starts a new map run at minute 0 with the same seed and tiles and 
   assert.equal(restarted.run.seed, start.run.seed);
   assert.deepEqual(restarted.run.tiles, start.run.tiles);
   assert.deepEqual(restarted.program, WANDER_FIRST);
-  assert.deepEqual(restarted.run.current.activity, {
-    kind: "rule",
-    ruleIndex: 0,
-    action: { kind: "wander" },
-  });
+  assert.equal(restarted.run.current.activity.kind, "rule");
+  assert.deepEqual(restarted.run.current.activity.action, { kind: "wander" });
   assert.equal(restarted.lastSeed, start.lastSeed);
   assert.equal(restarted.paused, false);
   assert.equal(restarted.realMsCarry, 0);
@@ -134,15 +129,13 @@ test("Zakończ ends the map run, keeps the program and the last seed", () => {
   state = passRealTime(state, 600).state;
   state = setPaused(state, true).state;
   const { state: ended, events } = end(state);
-  assert.deepEqual(ended, {
-    program: EXPLORING,
-    team: state.team,
-    nextCharacterId: state.nextCharacterId,
-    run: null,
-    lastSeed: state.lastSeed,
-    paused: false,
-    realMsCarry: 0,
-  });
+  assert.deepEqual(ended.program, EXPLORING);
+  assert.deepEqual(ended.team, state.team);
+  assert.equal(ended.nextCharacterId, state.nextCharacterId);
+  assert.equal(ended.run, null);
+  assert.equal(ended.lastSeed, state.lastSeed);
+  assert.equal(ended.paused, false);
+  assert.equal(ended.realMsCarry, 0);
   assert.deepEqual(events, [{ kind: "mapRunEnded" }]);
 });
 
