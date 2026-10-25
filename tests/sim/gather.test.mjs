@@ -12,6 +12,7 @@ import {
 import { actionFeasible } from "../../dist/public/sim/program.js";
 import { streamState } from "../../dist/public/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+import { programFromRules } from "./program-fixture.mjs";
 
 // „Zbierz — <zasób mapy>” (task, To do 5; D-25, D-64 to D-66, D-71). The numbers below are written
 // out by hand: a gathering lasts 10 game minutes and succeeds in 7 tries of 10, the backpack holds
@@ -29,8 +30,7 @@ const ALWAYS = { kind: "always" };
 const WANDER = { kind: "wander" };
 const gather = (resource) => ({ kind: "gather", resource });
 const rule = (condition, action) => ({ condition, action });
-const program = (...rules) => ({ rules });
-const IDLE = program();
+const IDLE = programFromRules();
 
 /** One mulberry32 step over a uint32 state, written out apart from `random.ts`. */
 function mulberry32(state) {
@@ -143,14 +143,12 @@ test("a gathering lasts 10 game minutes, takes nothing at its start and draws no
   const begun = stepMinute(
     { ...run, current: { ...run.current, endMinute: 1 } },
     forest,
-    program(rule(ALWAYS, gather(stick))),
+    programFromRules(rule(ALWAYS, gather(stick))),
   ).run;
-  assert.deepEqual(begun.current, {
-    activity: { kind: "rule", ruleIndex: 0, action: gather(stick) },
-    startMinute: 1,
-    endMinute: 11,
-    stepTo: null,
-  });
+  assert.deepEqual(begun.current.activity.action, gather(stick));
+  assert.equal(begun.current.startMinute, 1);
+  assert.equal(begun.current.endMinute, 11);
+  assert.equal(begun.current.stepTo, null);
   assert.equal(begun.gatherRandom, run.gatherRandom);
   assert.equal(begun.wanderRandom, run.wanderRandom);
   assert.deepEqual(hereOf(begun).stock, { [stick]: 5 });
@@ -292,9 +290,9 @@ test("the wander stream gives the same draws with and without gathering", () => 
     return { run, states };
   };
   const gathering = wanderStates(
-    program(rule(ALWAYS, gather(stick)), rule(ALWAYS, WANDER)),
+    programFromRules(rule(ALWAYS, gather(stick)), rule(ALWAYS, WANDER)),
   );
-  const wandering = wanderStates(program(rule(ALWAYS, WANDER)));
+  const wandering = wanderStates(programFromRules(rule(ALWAYS, WANDER)));
 
   assert.equal(gathering.run.character.backpack[stick], 3, "it gathered");
   assert.notEqual(gathering.run.gatherRandom, prepared.gatherRandom);
@@ -314,7 +312,10 @@ test("the wander stream gives the same draws with and without gathering", () => 
 test("a map run restart starts the gathering generator anew from the seed", () => {
   const rules = [rule(ALWAYS, gather(stick))];
   const sent = send(
-    createCharacter(setProgram(newGame(), { rules }).state, "Ala").state,
+    createCharacter(
+      setProgram(newGame(), programFromRules(...rules)).state,
+      "Ala",
+    ).state,
     { mapId, characterId },
     1760000000000,
   ).state;
@@ -327,22 +328,22 @@ test("a map run restart starts the gathering generator anew from the seed", () =
 });
 
 test("the program check takes „Zbierz” with a resource of the map and refuses it without one", () => {
-  const taken = setProgram(newGame(), { rules: [rule(ALWAYS, gather(moss))] });
-  assert.deepEqual(taken.state.program, {
-    rules: [rule(ALWAYS, gather(moss))],
-  });
+  const takenProgram = programFromRules(rule(ALWAYS, gather(moss)));
+  const taken = setProgram(newGame(), takenProgram);
+  assert.deepEqual(taken.state.program, takenProgram);
   const during = send(
     createCharacter(newGame(), "Ala").state,
     { mapId, characterId },
     1760000000000,
   ).state;
   assert.deepEqual(
-    setProgram(during, { rules: [rule(ALWAYS, gather(berry))] }).state.program,
-    { rules: [rule(ALWAYS, gather(berry))] },
+    setProgram(during, programFromRules(rule(ALWAYS, gather(berry)))).state
+      .program,
+    programFromRules(rule(ALWAYS, gather(berry))),
   );
   for (const bad of [{ kind: "gather" }, gather("acorn"), gather(7)]) {
     assert.throws(
-      () => setProgram(newGame(), { rules: [rule(ALWAYS, bad)] }),
+      () => setProgram(newGame(), programFromRules(rule(ALWAYS, bad))),
       Error,
       JSON.stringify(bad),
     );

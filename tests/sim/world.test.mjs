@@ -9,6 +9,7 @@ import {
   tileAt,
 } from "../../dist/public/sim/hex.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+import { programFromRules } from "./program-fixture.mjs";
 
 // Every expected number below is worked out by hand from the task's numbers: on Las the body
 // cools by 0.002 × (37 − 25) = 0.024 °C a minute; a burning campfire warms the character on its
@@ -23,7 +24,7 @@ const [stick, berry] = forest.resources.map((resource) => resource.id);
 const lightable = Object.keys(ITEMS).find((id) => ITEMS[id].lightable);
 
 /** A program with no rules: the character waits on its tile every minute. */
-const IDLE = { rules: [] };
+const IDLE = programFromRules();
 
 const body = (temperature, satiety, health) => ({
   temperature,

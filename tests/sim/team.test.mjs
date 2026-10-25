@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { programFromRules } from "./program-fixture.mjs";
 import {
   advanceMinutes,
   characterName,
@@ -16,9 +17,10 @@ import {
 const mapId = Object.keys(MAPS)[0];
 const REAL_MS = 1760000000000;
 const LATER_MS = 1760000123456;
-const EXPLORING = {
-  rules: [{ condition: { kind: "always" }, action: { kind: "explore" } }],
-};
+const EXPLORING = programFromRules({
+  condition: { kind: "always" },
+  action: { kind: "explore" },
+});
 
 /** A new game with characters created under the given names, in that order. */
 function created(...names) {
