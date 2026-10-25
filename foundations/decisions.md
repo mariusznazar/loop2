@@ -490,9 +490,12 @@ for every kind of draw — a draw of one kind shifts the draws of every other ki
 ### D-23 — How does a character act by its program?
 
 A character acts only by its program: in each free game minute it carries out the first program
-rule whose condition holds and whose action of the character can be carried out then. Conditions are
-chosen from a closed list, never written as expressions, and the player has no way to carry out a
-character's action by hand.
+rule whose condition holds and whose action of the character can be carried out then, taking rule
+groups in order, each only while its condition holds, and a rule group whose condition holds but
+which holds nothing that can be carried out passes on. Conditions are chosen from a closed list,
+never written as expressions, rule groups stand one level deep, and the player has no way to carry
+out a character's action by hand. Which piece of an item an action uses — which fuel goes into a
+campfire — the simulation chooses, not the program.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -503,16 +506,22 @@ character's action by hand.
   compares the change with the decision:
   - complies: a condition picker listing the conditions of the closed list, each with the resource
     and the whole number it takes; a condition on the character's temperature taking 36.5, a number
-    with tenths, from a number field of the picker
+    with tenths, from a number field of the picker; a rule group "when very cold" above a rule group
+    "when chilly"
   - violates: a text field taking a condition as an expression; a kind of condition added to the
-    closed list that takes a formula as text
+    closed list that takes a formula as text; a button that makes the character eat now; a rule
+    group inside a rule group; a program rule naming which stick to burn
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14, D15 and D9 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character act by its program?"
 
 *Rationale:* the game is the writing of behaviour, so carrying out a character's action by hand
 would get round its own core. Priorities with threshold sliders are decoration: different settings
-end a game map identically, since only the order of the character's actions counts.
+end a game map identically, since only the order of the character's actions counts. A rule group
+gives what a flat list cannot — two conditions joined — so two strategies for two depths of one
+crisis can be written, and a rule group that passes on keeps an empty one from stopping the
+character.
 *Rejected:* priorities with threshold sliders — decoration; conditions written as expressions — the
-player starts writing queries instead of arranging behaviour.
+player starts writing queries instead of arranging behaviour; a separate editor for combat — a
+second mechanism for the same thing; nested rule groups — one level is enough.
 
 ### D-24 — What is a game map made of?
 
@@ -1569,3 +1578,93 @@ For a change touching a category deliberately left without tests, its author and
 
 *Rationale:* An exclusion can outlive its reason unless the changes that reach it revisit that reason.
 *Rejected:* Keeping exclusions without a check on relevant changes — lets a temporary trade-off become a permanent blind spot.
+
+### D-90 — Where do the program rules of a program belong?
+
+A program is an ordered list of rule groups, and every program rule belongs to exactly one of
+those groups; the game has no program rule standing outside a rule group.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-23
+- **Verification:** an agent compares a change with the decision:
+  - complies: moving a program rule from one rule group to another leaves it in the destination
+    group and removes it from the source group
+  - violates: a program rule held outside the program's rule groups or in two groups at once
+- **Origin:** none
+
+*Rationale:* One place for each program rule gives its condition a clear enclosing condition and
+its priority a place in the same order, also when the player moves it between groups.
+*Rejected:* program rules beside rule groups — adds another place for a rule and another case for
+the editor and for choosing the next action.
+
+### D-91 — What program does a new game start with?
+
+A new game starts with one empty rule group named „Program”, whose condition is „Zawsze”.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-90
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new game showing the empty „Program” group with its „Dodaj regułę” control and the
+    condition „Zawsze”
+  - violates: a new game with no rule group, or a program rule already placed in its initial group
+- **Origin:** none
+
+*Rationale:* The first group gives the player a place to put the first rule, and its condition
+lets that rule act according to its own condition before the player needs to arrange groups.
+*Rejected:* starting with no group — the player has to create a group before writing a first
+rule; starting with a ready-made rule — the initial behaviour is not one the player wrote.
+
+### D-92 — What counts as one firing of a program rule?
+
+One firing of a program rule is the start of its action, so an action lasting many game minutes
+counts once, and in combat each turn in which the program rule starts a combat action adds one
+firing to that rule's count.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-23
+- **Verification:** an agent compares a change with the decision:
+  - complies: an exploration lasting twenty game minutes adding one firing when it starts; each
+    combat turn in which a rule starts a combat action adding one firing
+  - violates: a count growing each game minute of the same action; a combat action adding no
+    firing because its duration is zero game minutes
+- **Origin:** none
+
+*Rationale:* The count tells the player how often the program chose a rule, so the duration of
+the chosen action does not change how often it was chosen. A combat turn has the same meaning
+of a choice even when its action takes no game minutes.
+*Rejected:* counting the minutes of an action — longer actions would look more often chosen;
+counting completed actions — a rule whose action was cut short by death would look unused.
+
+### D-93 — What does a program rule show the player?
+
+During a map run every program rule shows how many times it fired in that map run, written as a
+number followed by „×”, such as „3×”. The count starts from zero at the start of each map run,
+a map run restart included, and when the program rule's condition or action changes; it survives
+reordering the rule, moving it to another rule group, and changing its group's condition or name.
+Before the game's first map run the rules show no counts, and after a map run ends, in death or
+through „Zakończ”, its counts remain beside the rules until the next send or map run restart,
+subject to the same reset on a change of a rule's content.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-92
+- **Verification:** an agent compares a change with the decision:
+  - complies: a program rule moved up or into another group keeping its count; a changed group
+    condition leaving its rules' counts intact; a rule whose condition changed starting again
+    from zero; counts retained after death and after „Zakończ”, reset on the next send or restart
+  - violates: counts kept per position in the list; a rename of a group resetting its rules'
+    counts; a count shown before the first map run; „Zakończ” hiding the completed run's counts
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14
+
+*Rationale:* The count is the sign that a program rule is dead — one standing too low is caught
+by one above it and stays silent for a whole map run. A program rule whose content changed is
+another program rule, so its count starts again, while its group and its place arrange when the
+same rule can act. Keeping the last run's counts lets the player inspect the program after that
+run ends. Accepted with it: a count earned under a group's former condition remains when the
+condition changes, and the next run gives a fresh picture of the edited program.
+*Rejected:* counts per position — moving a rule would attach another rule's history to it;
+resetting on a move or group edit — arranging the same rules would erase their history; hiding
+the counts after „Zakończ” — the player would lose the completed run's evidence while editing.

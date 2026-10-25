@@ -24,8 +24,8 @@ the character's death or the player stopping it.
 
 ## program
 
-A program is the written behaviour by which a character acts, made of ordered program rules and
-holding a trip plan.
+A program is the written behaviour by which a character acts, made of ordered rule groups whose
+program rules are ordered within each group, and holding a trip plan.
 
 - **Not:** none
 
@@ -53,6 +53,12 @@ the port at which its server is reached.
 ## program rule
 
 A program rule is a pair held by a program: a condition and an action of a character.
+
+- **Not:** none
+
+## rule group
+
+A rule group is a named set of program rules under a condition of its own.
 
 - **Not:** none
 
