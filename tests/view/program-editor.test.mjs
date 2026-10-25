@@ -7,13 +7,16 @@ import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
 import { ITEMS } from "../../dist/public/sim/data/items.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
+  advanceMinutes,
   createCharacter,
+  end,
   newGame,
   send,
   setProgram,
 } from "../../dist/public/sim/game.js";
 import {
   addRule,
+  createProgramEditor,
   focusAfter,
   moveRule,
   offeredResources,
@@ -81,6 +84,124 @@ const copy = (value) => JSON.parse(JSON.stringify(value));
 test("importing the editor touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");
   assert.equal(typeof addRule, "function");
+});
+
+/** Only the DOM operations used by the editor. Real events/focus are checked in the browser. */
+function editorDocument() {
+  return {
+    createElement(tag) {
+      return {
+        tag,
+        children: [],
+        value: "",
+        textContent: "",
+        hidden: false,
+        className: "",
+        classList: { add() {} },
+        setAttribute() {},
+        addEventListener() {},
+        focus() {},
+        append(...items) {
+          this.children.push(...items);
+        },
+        replaceChildren(...items) {
+          this.children = items;
+        },
+        get options() {
+          return this.children;
+        },
+      };
+    },
+  };
+}
+
+function descendants(element) {
+  return [element, ...element.children.flatMap(descendants)];
+}
+
+test("count-only refresh changes count text without writing field values or replacing controls", () => {
+  const savedDocument = globalThis.document;
+  const savedOption = globalThis.Option;
+  globalThis.document = editorDocument();
+  globalThis.Option = class {
+    constructor(text, value) {
+      this.textContent = text;
+      this.value = value;
+      this.children = [];
+    }
+  };
+  try {
+    const program = structuredClone(THREE);
+    program.groups[0].rules[1].condition = {
+      kind: "itemBelow",
+      item: "stick",
+      value: 2,
+    };
+    const state = createCharacter(
+      setProgram(newGame(), program).state,
+      "Ala",
+    ).state;
+    const editor = createProgramEditor(() =>
+      assert.fail("count update committed a program"),
+    );
+    editor.update(state);
+    const elements = descendants(editor.element);
+    const counts = elements.filter(
+      (element) => element.className === "rule-count",
+    );
+    assert.equal(counts.length, 3);
+    assert.ok(
+      counts.every((count) => count.hidden && count.textContent === ""),
+    );
+    const fields = elements.filter((element) =>
+      ["input", "select"].includes(element.tag),
+    );
+    const number = fields.filter((field) => field.tag === "input")[1];
+    number.value = "3e";
+    const originalValues = fields.map((field) => field.value);
+    for (const field of fields) {
+      const value = field.value;
+      Object.defineProperty(field, "value", {
+        get: () => value,
+        set: () => {
+          assert.fail("count-only refresh wrote a field value");
+        },
+      });
+    }
+    for (const element of elements) {
+      element.replaceChildren = () =>
+        assert.fail("count-only refresh replaced children");
+      element.focus = () => assert.fail("count-only refresh changed focus");
+    }
+    const running = send(state, SENT, 1760000000000).state;
+    editor.updateCounts(running.ruleCounts);
+    assert.deepEqual(
+      counts.map((count) => count.textContent),
+      ["1×", "0×", "0×"],
+    );
+    assert.ok(counts.every((count) => !count.hidden));
+    const later = advanceMinutes(running, 20).state;
+    editor.updateCounts(later.ruleCounts);
+    assert.deepEqual(
+      counts.map((count) => count.textContent),
+      ["1×", "1×", "0×"],
+    );
+    editor.updateCounts(end(later).state.ruleCounts);
+    assert.deepEqual(
+      counts.map((count) => count.textContent),
+      ["1×", "1×", "0×"],
+    );
+    assert.deepEqual(
+      fields.map((field) => field.value),
+      originalValues,
+    );
+    assert.deepEqual(descendants(editor.element), elements);
+  } finally {
+    if (savedDocument === undefined) delete globalThis.document;
+    else globalThis.document = savedDocument;
+    if (savedOption === undefined) delete globalThis.Option;
+    else globalThis.Option = savedOption;
+  }
 });
 
 test("the number field: empty or not a number keeps the previous value and commits nothing", () => {

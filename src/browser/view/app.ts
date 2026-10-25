@@ -58,13 +58,15 @@ export function startApp(root: HTMLElement): void {
       const previous = state;
       state = result.state;
       renderMapColumn();
-      // The editor updates only when the program or the run's map changes, never on a clock tick,
-      // so ticking cannot take focus from its controls.
+      // Content updates only on a program/map change. A tick or restart updates counts alone,
+      // leaving partial field input and focus intact.
       if (
         state.program !== previous.program ||
         state.run?.mapId !== previous.run?.mapId
       ) {
         programEditor.update(state);
+      } else {
+        programEditor.updateCounts(state.ruleCounts);
       }
     },
   };

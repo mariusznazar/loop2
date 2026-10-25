@@ -381,6 +381,7 @@ export function focusAfter(
 
 type RowView = {
   element: HTMLLIElement;
+  count: HTMLSpanElement;
   condition: HTMLSelectElement;
   value: Field;
   conditionResource: HTMLSelectElement;
@@ -396,6 +397,8 @@ export type ProgramEditor = {
   element: HTMLElement;
   /** Shows the given game state's program; call when the program or the run's map changes. */
   update(state: GameState): void;
+  /** Refreshes counts alone; never writes a field value, rebuilds rows or changes focus. */
+  updateCounts(counts: GameState["ruleCounts"]): void;
 };
 
 /** Fills a resource select with the offered resources, plus `value` when it is not among them. */
@@ -525,6 +528,7 @@ export function createProgramEditor(
   function createRow(groupId: GroupId, index: number): RowView {
     const row: RowView = {
       element: document.createElement("li"),
+      count: document.createElement("span"),
       condition: createSelectList("Warunek", conditionOptions),
       value: createNumberField({ label: "Liczba", ...UNSET_RANGE }),
       conditionResource: createSelectList("Zasób warunku"),
@@ -537,6 +541,7 @@ export function createProgramEditor(
       remove: createButton("Usuń", { kind: "destructive" }),
     };
     row.element.className = "rule";
+    row.count.className = "rule-count";
     const arrow = document.createElement("span");
     arrow.textContent = "→";
     row.element.append(
@@ -547,6 +552,7 @@ export function createProgramEditor(
       arrow,
       row.action,
       row.actionResource,
+      row.count,
       row.up,
       row.down,
       row.remove,
@@ -679,8 +685,20 @@ export function createProgramEditor(
     group.rows[target.row]?.[target.control].focus();
   }
 
+  function updateCounts(counts: GameState["ruleCounts"]): void {
+    for (const group of groups) {
+      group.rows.forEach((row, index) => {
+        const text =
+          counts === null ? "" : `${counts[group.ruleIds[index]] ?? 0}×`;
+        row.count.hidden = counts === null;
+        if (row.count.textContent !== text) row.count.textContent = text;
+      });
+    }
+  }
+
   return {
     element,
+    updateCounts,
     update(state: GameState): void {
       const nextOffered = offeredResources(state);
       if (nextOffered.join() !== offered.join()) rebuild = true;
@@ -712,6 +730,7 @@ export function createProgramEditor(
         view.condition.textContent = parts.join(" · ");
         group.rules.forEach((rule, at) => showRule(view.rows[at], rule));
       });
+      updateCounts(state.ruleCounts);
       if (pendingFocus) {
         const target = pendingFocus;
         pendingFocus = null;

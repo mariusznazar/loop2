@@ -162,6 +162,8 @@ export type Team = { characters: Character[]; chest: Chest };
 
 export type GameState = {
   program: Program;
+  /** Starts per rule in the current or last map run; null before the first run. */
+  ruleCounts: Record<RuleId, number> | null;
   team: Team;
   /** The id the next created character takes. */
   nextCharacterId: CharacterId;
