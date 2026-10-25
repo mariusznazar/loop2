@@ -1,0 +1,97 @@
+D-73: exit 1
+foundations/decisions.md:1354: `D-74` names no decision of the log
+foundations/decisions.md:1354: `D-75` names no decision of the log
+foundations/decisions.md:1354: `D-76` names no decision of the log
+foundations/decisions.md:1354: `D-77` names no decision of the log
+foundations/decisions.md:1354: `D-78` names no decision of the log
+foundations/decisions.md:1354: `D-79` names no decision of the log
+6 errors
+D-74: exit 1
+foundations/decisions.md:1354: `D-75` names no decision of the log
+foundations/decisions.md:1354: `D-76` names no decision of the log
+foundations/decisions.md:1354: `D-77` names no decision of the log
+foundations/decisions.md:1354: `D-78` names no decision of the log
+foundations/decisions.md:1354: `D-79` names no decision of the log
+5 errors
+D-75: exit 1
+foundations/decisions.md:1354: `D-76` names no decision of the log
+foundations/decisions.md:1354: `D-77` names no decision of the log
+foundations/decisions.md:1354: `D-78` names no decision of the log
+foundations/decisions.md:1354: `D-79` names no decision of the log
+4 errors
+D-76: exit 1
+foundations/decisions.md:1354: `D-77` names no decision of the log
+foundations/decisions.md:1354: `D-78` names no decision of the log
+foundations/decisions.md:1354: `D-79` names no decision of the log
+3 errors
+D-77: exit 1
+foundations/decisions.md:1354: `D-78` names no decision of the log
+foundations/decisions.md:1354: `D-79` names no decision of the log
+2 errors
+D-78: exit 1
+foundations/decisions.md:1354: `D-79` names no decision of the log
+1 error
+D-79: exit 0
+0 errors
+D-80: exit 0
+0 errors
+D-81: exit 0
+0 errors
+D-82: exit 0
+0 errors
+D-83: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+1 error
+D-84: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+1 error
+D-85: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+1 error
+D-86: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+foundations/decisions.md:1528: `public-file-access` names no invariant
+2 errors
+D-87: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+foundations/decisions.md:1528: `public-file-access` names no invariant
+2 errors
+D-88: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+foundations/decisions.md:1528: `public-file-access` names no invariant
+2 errors
+D-89: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+foundations/decisions.md:1528: `public-file-access` names no invariant
+2 errors
+D-28 and reciprocal verification links: exit 1
+foundations/decisions.md:714: `dependency-audit-refusal` names no invariant
+foundations/decisions.md:892: `preview-server-access` names no invariant
+foundations/decisions.md:907: `font-file-provenance` names no invariant
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+foundations/decisions.md:1528: `public-file-access` names no invariant
+5 errors
+public-file-access: exit 1
+foundations/decisions.md:714: `dependency-audit-refusal` names no invariant
+foundations/decisions.md:892: `preview-server-access` names no invariant
+foundations/decisions.md:907: `font-file-provenance` names no invariant
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+4 errors
+dependency-audit-refusal: exit 1
+foundations/decisions.md:892: `preview-server-access` names no invariant
+foundations/decisions.md:907: `font-file-provenance` names no invariant
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+3 errors
+font-file-provenance: exit 1
+foundations/decisions.md:892: `preview-server-access` names no invariant
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+2 errors
+preview-server-access: exit 1
+foundations/decisions.md:1489: `node-test-selection` names no invariant
+1 error
+node-test-selection: exit 0
+0 errors
+unit test: exit 0
+0 errors
+integration test: exit 0
+0 errors
