@@ -32,6 +32,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -41,10 +42,10 @@ CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
 ALWAYS = {"kind": "always"}
-P1 = {"rules": [{"condition": ALWAYS, "action": {"kind": "explore"}},
-                {"condition": ALWAYS, "action": {"kind": "wander"}}]}
-P2 = {"rules": [{"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
-                {"condition": ALWAYS, "action": {"kind": "wander"}}]}
+P1 = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
+                        {"condition": ALWAYS, "action": {"kind": "wander"}}])
+P2 = program_from_rules([{"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
+                        {"condition": ALWAYS, "action": {"kind": "wander"}}])
 
 STEPS = [
     ["newGame"], CREATE, ["setProgram", P1], ["send", SENT, T],

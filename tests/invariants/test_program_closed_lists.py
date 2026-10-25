@@ -44,6 +44,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules, program_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 BUILT_DATA = "dist/public/sim/data"
@@ -67,10 +68,10 @@ def rule(condition, action):
 
 
 # The program in force before each offer.
-BASE = {"rules": [rule(ALWAYS, {"kind": "wander"})]}
+BASE = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
 
 # A program holding every listed kind, each with valid fields.
-VALID = {"rules": [
+VALID = program_from_rules([
     rule(ALWAYS, {"kind": "explore"}),
     rule({"kind": "hereBelow", "resource": "stick", "value": 3}, {"kind": "wander"}),
     rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
@@ -86,7 +87,7 @@ VALID = {"rules": [
     rule(ALWAYS, {"kind": "lightItem"}),
     rule(ALWAYS, {"kind": "feedCampfire"}),
     rule(ALWAYS, {"kind": "eat"}),
-]}
+])
 
 # Kinds no data file lists: made-up kinds, letter-case variants, names every JavaScript object
 # answers to, the other list's kinds, the empty string, and kinds that are no string.
@@ -151,12 +152,12 @@ def offers():
         for fields in ({}, PLAUSIBLE_FIELDS):
             bad = rule(with_kind(kind, fields), {"kind": "explore"})
             found.append((f"condition kind {kind!r} with fields {fields}",
-                          {"rules": [VALID["rules"][0], bad, VALID["rules"][2]]}))
+                          program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]])))
     for kind in UNLISTED_ACTION_KINDS:
         for fields in ({}, PLAUSIBLE_FIELDS):
             bad = rule(ALWAYS, with_kind(kind, fields))
             found.append((f"action kind {kind!r} with fields {fields}",
-                          {"rules": [VALID["rules"][0], bad, VALID["rules"][2]]}))
+                          program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]])))
     return found
 
 
@@ -235,7 +236,7 @@ class ProgramClosedLists(unittest.TestCase):
 
     def test_control_the_comparison_and_the_tripwire_flag_breaks(self):
         # invariant: program-closed-lists
-        bad = {"rules": [rule({"kind": "never"}, {"kind": "explore"})]}
+        bad = program_from_rules([rule({"kind": "never"}, {"kind": "explore"})])
         self.assertTrue(refusal_findings("made up", [(True, {"threw": False, "program": bad})]),
                         "an unlisted kind taken in goes unseen")
         self.assertEqual(refusal_findings("made up", [(True, {"threw": True, "error": "x"}),

@@ -53,6 +53,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 BUILT_DIRECTORY = "dist/public/sim"
 
@@ -114,10 +115,10 @@ CONDITIONS = ([ALWAYS] + [here_below(r, v) for r in RESOURCES for v in (0, 1, 7,
 CONDITION_KINDS = ["always", "hereBelow", "temperatureBelow", "satietyBelow", "itemBelow",
                    "campfireLeftBelow", "awayFromCampfire"]
 PROGRAMS = [
-    {"rules": []},
+    program_from_rules([]),
     # Every condition kind and every action kind: the acceptance program of
     # tests/sim/acceptance.test.mjs.
-    {"rules": [
+    program_from_rules([
         rule(below("satietyBelow", 35), {"kind": "eat"}),
         rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
         rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
@@ -135,8 +136,8 @@ PROGRAMS = [
         rule(ALWAYS, gather("stick")),
         rule(ALWAYS, gather("berry")),
         rule(ALWAYS, {"kind": "wander"}),
-    ]},
-    {"rules": [rule(ALWAYS, {"kind": "wander"})]},
+    ]),
+    program_from_rules([rule(ALWAYS, {"kind": "wander"})]),
 ]
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
@@ -211,7 +212,7 @@ const check = (label, fn, args) => {
   return changed.length > 0;
 };
 
-// --- controls of the checker ---
+// --- controls of the checker (not passed to the product) ---
 const makeState = () => ({ program: { rules: [{ condition: { kind: 'always' }, action: { kind: 'wander' } }] },
   run: { tiles: [{ at: { q: 0, r: 0 }, stock: { stick: 3 } }], minute: 1 }, paused: false, lastSeed: 1 });
 const controls = {

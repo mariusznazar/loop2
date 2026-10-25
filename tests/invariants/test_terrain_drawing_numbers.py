@@ -57,6 +57,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 PANEL_MODULE = "dist/public/view/terrain-panel.js"
@@ -70,8 +71,8 @@ T_OTHER = 1760000123456
 MINUTES = 240
 EVERY = 20
 ALWAYS = {"kind": "always"}
-ROAM = {"rules": [{"condition": ALWAYS, "action": {"kind": "explore"}},
-                  {"condition": ALWAYS, "action": {"kind": "wander"}}]}
+ROAM = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
+                          {"condition": ALWAYS, "action": {"kind": "wander"}}])
 # The attributes a browser shows for an element or reads out as its name or description.
 SHOWN_ATTRIBUTES = ("title", "aria-label", "aria-description", "aria-roledescription",
                     "aria-valuetext", "aria-valuenow", "aria-placeholder", "alt", "placeholder",
