@@ -40,6 +40,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 
@@ -87,7 +88,7 @@ def gather(resource):
 
 # The starting program: every condition kind and every action kind (the acceptance program of
 # tests/sim/acceptance.test.mjs).
-P1 = {"rules": [
+P1 = program_from_rules([
     rule(below("satietyBelow", 35), {"kind": "eat"}),
     rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
     rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
@@ -105,15 +106,15 @@ P1 = {"rules": [
     rule(ALWAYS, gather("stick")),
     rule(ALWAYS, gather("berry")),
     rule(ALWAYS, WANDER),
-]}
+])
 # The program set in the middle of the scenario.
-P2 = {"rules": [
+P2 = program_from_rules([
     rule(below("satietyBelow", 50), {"kind": "eat"}),
     rule(item_below("stick", 3), gather("stick")),
     rule(here_below("fiber", 2), walk_to("stick")),
     rule(ALWAYS, WANDER),
     rule(ALWAYS, EXPLORE),
-]}
+])
 
 SECOND = ["passRealTime", 1000]
 SCENARIO_INPUTS = (

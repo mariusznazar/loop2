@@ -53,6 +53,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 BUILT_DIRECTORY = "dist/public/sim"
 # The game maps and, for each, its list of resources with the stock per tile, as
@@ -71,8 +72,8 @@ REAL_TIMES = (1760000000000, 1760000123456, 1760000200000, 1760000300000, 176000
               1760000500000, 1, 86400000, 1700000000000, 1800000000000, 1760000000001,
               1765432109876) + tuple(SINGLE_TILE_TIMES)
 ALWAYS = {"kind": "always"}
-PROGRAM = {"rules": [{"condition": ALWAYS, "action": {"kind": "explore"}},
-                     {"condition": ALWAYS, "action": {"kind": "wander"}}]}
+PROGRAM = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
+                              {"condition": ALWAYS, "action": {"kind": "wander"}}])
 STARTS_PER_TIME = 3
 
 DRIVER = r"""

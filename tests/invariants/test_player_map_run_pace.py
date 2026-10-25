@@ -39,6 +39,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -47,11 +48,11 @@ SENT = {"mapId": "forest", "characterId": 1}
 CREATE = ["createCharacter", "Ala"]
 T = 1760000000000
 T_OTHER = 1760000123456
-PROGRAM = {"rules": [
+PROGRAM = program_from_rules([
     {"condition": {"kind": "hereBelow", "resource": "stick", "value": 1},
      "action": {"kind": "explore"}},
     {"condition": {"kind": "always"}, "action": {"kind": "wander"}},
-]}
+])
 
 
 def passed(ms):
