@@ -13,7 +13,7 @@ import {
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { pauseLabel, statusText } from "../../dist/public/view/status-row.js";
-import { programFromRules } from "../sim/program-fixture.mjs";
+import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -32,7 +32,7 @@ function sent(rules) {
 function doing(state, action) {
   const current = {
     ...state.run.current,
-    activity: { kind: "rule", ruleIndex: 0, action },
+    activity: ruleActivity(action),
   };
   return { ...state, run: { ...state.run, current } };
 }

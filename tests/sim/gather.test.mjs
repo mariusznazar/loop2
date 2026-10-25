@@ -12,7 +12,7 @@ import {
 import { actionFeasible } from "../../dist/public/sim/program.js";
 import { streamState } from "../../dist/public/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
-import { programFromRules } from "./program-fixture.mjs";
+import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // „Zbierz — <zasób mapy>” (task, To do 5; D-25, D-64 to D-66, D-71). The numbers below are written
 // out by hand: a gathering lasts 10 game minutes and succeeds in 7 tries of 10, the backpack holds
@@ -76,7 +76,7 @@ function gatheringEndingNext(run, resource) {
   return {
     ...run,
     current: {
-      activity: { kind: "rule", ruleIndex: 0, action: gather(resource) },
+      activity: ruleActivity(gather(resource)),
       startMinute: run.minute - 9,
       endMinute: run.minute + 1,
       stepTo: null,

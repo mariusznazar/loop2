@@ -16,7 +16,7 @@ import {
 } from "../../dist/public/sim/game.js";
 import { actionFeasible } from "../../dist/public/sim/program.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
-import { programFromRules } from "./program-fixture.mjs";
+import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // The campfire, the burning stick and eating (task, To do 7–12; D-26, D-63, D-68, D-69, D-71,
 // D-72). Every number below is written out by hand from the task: crafting lasts 20 game minutes
@@ -110,7 +110,7 @@ function endingNext(run, action) {
   return {
     ...run,
     current: {
-      activity: { kind: "rule", ruleIndex: 0, action },
+      activity: ruleActivity(action),
       startMinute: run.minute - 4,
       endMinute: run.minute + 1,
       stepTo: null,

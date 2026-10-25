@@ -9,3 +9,7 @@ export function programWithRules(rules) {
 export function programRules(program) {
   return program.rules;
 }
+
+export function ruleActivity(action) {
+  return { kind: "rule", ruleIndex: 0, action };
+}

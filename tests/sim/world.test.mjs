@@ -9,7 +9,7 @@ import {
   tileAt,
 } from "../../dist/public/sim/hex.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
-import { programFromRules } from "./program-fixture.mjs";
+import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // Every expected number below is worked out by hand from the task's numbers: on Las the body
 // cools by 0.002 × (37 − 25) = 0.024 °C a minute; a burning campfire warms the character on its
@@ -301,7 +301,7 @@ test("an exploring that ends in a minute of renewal reveals its tile and keeps t
   const start = setStock(
     handMade({
       current: {
-        activity: { kind: "rule", ruleIndex: 0, action: { kind: "explore" } },
+        activity: ruleActivity({ kind: "explore" }),
         startMinute: 0,
         endMinute: 30,
         stepTo: null,
