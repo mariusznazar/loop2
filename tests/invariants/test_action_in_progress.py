@@ -10,9 +10,10 @@ every input the script records the JSON of the map run.
 
 Reading of the sentence:
 - the character's action in progress: the map run's `current` activity (the action a program rule
-  starts, D-23, D-25), with its start and end minute; its full duration: it stays the same
-  activity, with the same end minute, at every game minute before that end minute, and the next
-  activity starts at that end minute;
+  starts, D-23, D-25); its full duration: its action kind and end minute remain unchanged,
+  its effect occurs only at that end minute, and the next action follows the changed
+  program then. Rule indices and the full activity representation are not requirements;
+  this reading follows accepted task przewodnik_testow_loop2.md, Q7a;
 - the condition of another program rule comes to hold: a program rule other than the one being
   carried out whose condition did not hold now holds and whose action can start; in the simulation
   this check drives, a condition changes only through the program or at the end of an action, so it
@@ -100,25 +101,6 @@ def scenario(changes, last_minute):
 
 MAIN = {0: PA, 5: PA_HOLDS, 22: PC}
 
-# The activity at minute 0 of the main scenario, written out.
-EXPLORATION_FROM_0 = {
-    "activity": {"kind": "rule", "ruleIndex": 1, "action": EXPLORE},
-    "startMinute": 0, "endMinute": 20, "stepTo": None,
-}
-EXPLORATION_FROM_25 = {
-    "activity": {"kind": "rule", "ruleIndex": 0, "action": EXPLORE},
-    "startMinute": 25, "endMinute": 45, "stepTo": None,
-}
-# Wandering by rule 0: its target tile is a draw, so it is checked apart from the rest.
-WANDER_FROM_20 = {"activity": {"kind": "rule", "ruleIndex": 0, "action": WANDER},
-                  "startMinute": 20, "endMinute": 25}
-WANDER_FROM_0 = {"activity": {"kind": "rule", "ruleIndex": 0, "action": WANDER},
-                 "startMinute": 0, "endMinute": 5}
-WANDER_FROM_25 = {"activity": {"kind": "rule", "ruleIndex": 0, "action": WANDER},
-                  "startMinute": 25, "endMinute": 30}
-WAIT_FROM_20 = {"activity": {"kind": "wait"}, "startMinute": 20, "endMinute": 21,
-                "stepTo": None}
-
 DRIVER = r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -180,25 +162,25 @@ def entrance_tile(run):
 
 class ActionInProgress(unittest.TestCase):
 
-    def assert_activity(self, run, expected, message):
+    def assert_action_until(self, run, kind, end_minute, message):
         current = run["current"]
-        for key, value in expected.items():
-            self.assertEqual(current.get(key), value,
-                             f"{message}: `{key}` of the current activity at minute "
-                             f"{run['minute']} — {json.dumps(current)}")
+        activity = current["activity"]
+        action = activity.get("action", activity)["kind"]
+        self.assertEqual(action, kind, message)
+        self.assertEqual(current["endMinute"], end_minute, message)
 
     def test_actions_last_their_full_duration_through_program_changes(self):
         # invariant: action-in-progress
         runs = drive(scenario(MAIN, 25))
         self.assertEqual(sorted(runs), list(range(0, 26)), "the run did not pass minute by minute")
 
-        self.assert_activity(runs[0], EXPLORATION_FROM_0, "the exploration at minute 0")
+        self.assert_action_until(runs[0], "explore", 20, "the exploration at minute 0")
         self.assertEqual(runs[0]["character"]["at"], ENTRANCE)
         for minute in range(1, 20):
             run = runs[minute]
-            self.assertEqual(run["current"], runs[0]["current"],
-                             f"at minute {minute} the exploration started at minute 0 was "
-                             f"replaced, after the program changed at minute 5")
+            self.assert_action_until(run, "explore", 20,
+                                     f"at minute {minute} the exploration started at minute 0 was "
+                                     f"replaced, after the program changed at minute 5")
             self.assertFalse(entrance_tile(run)["revealed"],
                              f"the entrance tile is revealed at minute {minute}, before the "
                              "exploration's 20 minutes")
@@ -208,38 +190,38 @@ class ActionInProgress(unittest.TestCase):
         at_20 = runs[20]
         self.assertTrue(entrance_tile(at_20)["revealed"],
                         "the exploration did not end at minute 20")
-        self.assert_activity(at_20, WANDER_FROM_20,
-                             "the activity chosen at minute 20 by the changed program")
+        self.assert_action_until(at_20, "wander", 25,
+                                 "the activity chosen at minute 20 by the changed program")
         target = at_20["current"]["stepTo"]
         self.assertIsNotNone(target, "the wandering started at minute 20 has no target tile")
         self.assertNotEqual(target, ENTRANCE)
         for minute in range(21, 25):
             run = runs[minute]
-            self.assertEqual(run["current"], at_20["current"],
-                             f"at minute {minute} the step started at minute 20 was replaced, "
-                             "after the program changed at minute 22")
+            self.assert_action_until(run, "wander", 25,
+                                     f"at minute {minute} the step started at minute 20 was replaced, "
+                                     "after the program changed at minute 22")
             self.assertEqual(run["character"]["at"], ENTRANCE,
                              f"the character reached its target before minute 25, at {minute}")
 
         at_25 = runs[25]
         self.assertEqual(at_25["character"]["at"], target,
                          "the character is not on the step's target at minute 25")
-        self.assert_activity(at_25, EXPLORATION_FROM_25,
-                             "the activity chosen at minute 25 by the changed program")
+        self.assert_action_until(at_25, "explore", 45,
+                                 "the activity chosen at minute 25 by the changed program")
 
     def test_control_the_changed_programs_choose_otherwise(self):
         # invariant: action-in-progress
         holds_from_start = drive(scenario({0: PA_HOLDS}, 0))
-        self.assert_activity(holds_from_start[0], WANDER_FROM_0,
-                             "PA_HOLDS at minute 0 (a change taking effect at once would show)")
+        self.assert_action_until(holds_from_start[0], "wander", 5,
+                                 "PA_HOLDS at minute 0 (a change taking effect at once would show)")
 
         kept = drive(scenario({0: PA}, 20))
-        self.assert_activity(kept[20], WAIT_FROM_20,
-                             "PA kept through minute 20 (no rule applies on the revealed tile)")
+        self.assert_action_until(kept[20], "wait", 21,
+                                 "PA kept through minute 20 (no rule applies on the revealed tile)")
 
         holds_kept = drive(scenario({0: PA, 5: PA_HOLDS}, 25))
-        self.assert_activity(holds_kept[25], WANDER_FROM_25,
-                             "PA_HOLDS kept through minute 25")
+        self.assert_action_until(holds_kept[25], "wander", 30,
+                                 "PA_HOLDS kept through minute 25")
 
 
 if __name__ == "__main__":

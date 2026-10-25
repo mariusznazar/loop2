@@ -84,3 +84,15 @@ The headquarters is the screen of the game outside a map run that shows the play
 characters and its chest.
 
 - **Not:** none
+
+## unit test
+
+A unit test executes simulation rules or view logic in memory, possibly across several functions, without network, files holding test data, processes or a browser.
+
+- **Not:** none
+
+## integration test
+
+An integration test checks a specific operation or connection using real files, local HTTP or processes, including scripts checking repository files.
+
+- **Not:** none

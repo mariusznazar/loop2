@@ -121,6 +121,7 @@ test("ordinary missing routes and files do not become the home page or API", asy
 });
 
 test("raw and encoded traversal cannot expose files outside dist/public", async () => {
+  // invariant: public-file-access
   for (const path of [
     "/package.json",
     "/tsconfig.server.json",
