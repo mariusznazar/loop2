@@ -1,0 +1,35 @@
+﻿
+// D-90 and the task's group-bound arrows: edits target a group identity, never its position.
+test("rule edits preserve other groups, group boundaries and identities", () => {
+  const first = { id: 8, name: "First", condition: { kind: "always" }, rules: [ALWAYS_EXPLORE] };
+  const second = { id: 3, name: "Second", condition: { kind: "hereBelow", resource: "stick", value: 2 }, rules: [BELOW_WANDER, ALWAYS_WALK] };
+  const input = { groups: [first, second], nextGroupId: 9, nextRuleId: 11 };
+  const before = copy(input);
+  const added = addRule(input, 3);
+  assert.deepEqual(added.groups[0], first);
+  assert.equal(added.groups[1].id, 3);
+  assert.equal(added.groups[1].name, "Second");
+  assert.deepEqual(added.groups[1].condition, second.condition);
+  assert.deepEqual(added.groups[1].rules, [BELOW_WANDER, ALWAYS_WALK, {id: 11, condition: {kind: "always"}, action: {kind: "explore"}}]);
+  assert.equal(added.nextRuleId, 12);
+  assert.equal(added.nextGroupId, 9);
+  const moved = moveRule(input, 3, 0, 1);
+  assert.deepEqual(moved.groups[0], first);
+  assert.deepEqual(moved.groups[1].rules, [ALWAYS_WALK, BELOW_WANDER]);
+  assert.equal(moveRule(input, 8, 0, 1), null);
+  assert.equal(moveRule(input, 3, 0, -1), null);
+  assert.equal(moveRule(input, 3, 1, 1), null);
+  const changed = withConditionValue(input, 3, 0, 9);
+  assert.deepEqual(changed.groups[0], first);
+  assert.equal(changed.groups[1].rules[0].id, 2);
+  assert.equal(changed.groups[1].rules[0].condition.value, 9);
+  assert.deepEqual(changed.groups[1].rules[1], ALWAYS_WALK);
+  const removed = removeRule(input, 3, 0);
+  assert.deepEqual(removed.groups[0], first);
+  assert.deepEqual(removed.groups[1].rules, [ALWAYS_WALK]);
+  assert.equal(addRule(removed, 3).groups[1].rules[1].id, 11, "deletion does not reuse a rule identity");
+  assert.deepEqual(input, before);
+  for (const candidate of [added, moved, changed, removed]) {
+    assert.deepEqual(setProgram(newGame(), candidate).state.program, candidate);
+  }
+});
