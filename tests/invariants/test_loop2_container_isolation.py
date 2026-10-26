@@ -6,7 +6,7 @@ no Docker is needed.
 
 Reading of the sentence:
 - the loop2 instance runs in a container of its own: `compose.yaml` names its own Compose project
-  `loop2`, its service `app` and the container `loop2`;
+  `loop2`, application `app`/`loop2` and connector `cloudflared`/`loop2-cloudflared`;
 - separate from the existing loop instance: nothing in `compose.yaml` or the Dockerfile reaches
   into the old instance or shares with another container — no volume, no external network or
   volume, no network, PID, IPC, UTS or user namespace set to share (`network_mode`, `pid`, `ipc`,
@@ -31,7 +31,7 @@ DOCKERFILE = "Dockerfile"
 
 EXPECTED_PROJECT = "loop2"
 EXPECTED_SERVICE = "app"
-EXPECTED_CONTAINER = "loop2"
+EXPECTED_CONTAINERS = {"app": "loop2", "cloudflared": "loop2-cloudflared"}
 
 # A name of the old deployment, in the text of a file: `loop` standing alone or followed by `-`,
 # `_`, `/` or `.`, never `loop2`.
@@ -65,10 +65,11 @@ class ComposeIsolation(unittest.TestCase):
                          f"{COMPOSE_FILE} names the project {top['name']!r}")
         self.assertIn(EXPECTED_SERVICE, services,
                       f"{COMPOSE_FILE} has no service `{EXPECTED_SERVICE}`: {sorted(services)}")
+        self.assertEqual(set(services), set(EXPECTED_CONTAINERS))
         for name, keys in services.items():
             with self.subTest(service=name):
                 self.assertIn("container_name", keys, f"service `{name}` names no container")
-                self.assertEqual(keys["container_name"].value, EXPECTED_CONTAINER,
+                self.assertEqual(keys["container_name"].value, EXPECTED_CONTAINERS[name],
                                  f"service `{name}` names the container "
                                  f"{keys['container_name']!r}")
 

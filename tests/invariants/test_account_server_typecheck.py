@@ -18,7 +18,8 @@ Covers:
     `npm run typecheck` as a command of its own, joined to the rest of the RUN only by `&&` — no
     `;`, `||`, `|` or `&` that would let the RUN go on after a failed type check — and the last
     stage takes `dist/` with `COPY --from` of a stage that cannot be built without that RUN;
-  - `compose.yaml`: every service is built (`build:`, from the repository's `Dockerfile`) and
+  - `compose.yaml`: app builds from `Dockerfile`, cloudflared from its restricted connector
+    wrapper (checked by account-server-runtime), and each service
     names no `image:` that Compose could pull or reuse instead;
   - `deploy/loop2-deploy`: in the order the script runs its commands — its top-level flow,
     each call of a function it defines read as that function's body — the first
@@ -62,7 +63,8 @@ DOCKERFILE = "Dockerfile"
 COMPOSE_FILE = "compose.yaml"
 WORKFLOW = ".github/workflows/deploy.yml"
 DEPLOY_SCRIPT = "deploy/loop2-deploy"
-ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT)
+ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT,
+               "deploy/cloudflared.Dockerfile")
 
 TYPECHECK_COMMAND = ["npm", "run", "typecheck"]
 BUILT_OUTPUT = "dist"
@@ -237,14 +239,15 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
     def test_compose_builds_the_image_and_names_none_to_pull(self):
         # invariant: account-server-typecheck
         _top, services = support.compose_outline(support.read_required(COMPOSE_FILE))
-        self.assertTrue(services, f"{COMPOSE_FILE} defines no service")
+        self.assertEqual(set(services), {"app", "cloudflared"})
         for name, keys in services.items():
             with self.subTest(service=name):
                 self.assertNotIn("image", keys, f"service `{name}` names an image to pull")
                 self.assertIn("build", keys, f"service `{name}` is not built")
                 build = support.block_text(keys["build"])
                 files = re.findall(r"^\s*dockerfile\s*:\s*[\"']?([^\"'\s]+)", build, re.MULTILINE)
-                self.assertTrue(all(f in (DOCKERFILE, "./" + DOCKERFILE) for f in files),
+                expected = DOCKERFILE if name == "app" else "deploy/cloudflared.Dockerfile"
+                self.assertEqual(files, [expected],
                                 f"service `{name}` is built from {files}")
                 self.assertNotRegex(build, re.compile(r"^\s*dockerfile_inline\s*:", re.MULTILINE),
                                     f"service `{name}` is built from an inline Dockerfile")

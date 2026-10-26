@@ -1,96 +1,142 @@
 # Setup, secrets and rotation
 
-Everything here is done by the human, on the server or in GitHub and Cloudflare. Access values (the
-server name, SSH port, run account, key material, addresses) live in the owner's private note outside
-the repository; this file refers to them by role or secret name and never holds one.
+All changes here are the human's. Access values and key material live in the owner's private
+note, never in repository files, request text, shell history or shared logs.
 
-## The two input paths of `loop2-deploy`
+## Initial host provisioning
 
-| Path | How it is recognised | Accepts |
+These prerequisites are separate from the tunnel transition's H1–H5 below; an already
+provisioned host keeps its existing keys and checkout.
+
+The run account owns `/srv/loop2`, has Docker/Compose access, can write
+`/var/log/loop2-deploy.log` and can create `/run/loop2-deploy.lock`. For a non-root account,
+create the log with that owner and configure `tmpfiles.d` to recreate the owned lock at boot;
+otherwise the cleared `/run` directory causes exit 4.
+
+Generate a repository key under this account, add its public half as a read-only GitHub Deploy
+key and configure an SSH alias for GitHub using that identity. Clone to `/srv/loop2` with
+`origin` using the alias. Install the exact target commit's script as described below.
+
+Create the separate automation key and append its public line to the account's
+`authorized_keys`, preserving other entries:
+`restrict,command="/usr/local/bin/loop2-deploy" ssh-... <public key>`.
+Verify that exact restriction prefix. Set the five GitHub secrets below, then remove the
+automation private key from the server. The installed script stays root-owned, mode 0755,
+outside the checkout; deployment never updates it.
+
+| Input path | Recognition | Accepted commits |
 |---|---|---|
-| forced command | `SSH_ORIGINAL_COMMAND` is set: the commit name arrives as the SSH command, no argument | commits of `main` only |
-| human run | `SSH_ORIGINAL_COMMAND` unset: the commit name is the one argument | commits of any branch |
+| Automation forced command | `SSH_ORIGINAL_COMMAND` set, no argument | `main` only |
+| Human run | `SSH_ORIGINAL_COMMAND` unset, one argument | any branch of the repository |
 
-Both take exactly one commit name of 40 lowercase hex characters; anything else exits 2 before git or
-Docker runs.
+Both accept exactly one lowercase 40-hex commit name; all other input exits 2 before Git or Docker.
 
-## The run account
+## H1–H5: switching from the published port to the tunnel
 
-The account that runs the script (it owns `/srv/loop2` and holds the automation key's login) needs:
+Perform these at the blocked draft request before merging. H1 and H2 leave public traffic
+unchanged. **From H3 until completion and merge, merge nothing else to `main`.** Every merge
+deploys automatically with the installed script, so this window includes corrections. Keep the
+pre-transition running application SHA and previous script in the private operational record.
 
-- Docker access (it can run `docker` and `docker compose`);
-- write access to the checkout `/srv/loop2`;
-- write access to the log `/var/log/loop2-deploy.log`;
-- the ability to create the lock `/run/loop2-deploy.lock`.
+1. **H1 — Cloudflare:** create a remotely managed loop2 tunnel and receive its token. Leave it
+   without a published application hostname. No old-game route or zone-wide setting changes.
+2. **H2 — token:** create `/etc/loop2` with the deployment account as owner, numeric group 65532,
+   mode 0750. Put the token into `/etc/loop2/cloudflared-token`, same owner/group, mode 0640,
+   using a private editor or secure input; never paste a token into command arguments or a
+   logged shell command. Keep its second copy in the owner's private note. Root and the owner
+   can read it; group 65532 can read the file and traverse the directory; other users cannot.
+   The pinned image runs as 65532:65532. Compose mounts the file read-only for the connector
+   at `/run/secrets/cloudflare_tunnel_token`; it grants nothing to `app`. File-backed Compose
+   secret `uid`/`gid`/`mode` settings do not remap host permissions, so do not substitute them
+   for these host permissions or make the file world-readable.
+3. **H3 — exact script:** fetch the request branch as the run account and extract the script
+   from the request's exact full SHA, not the checkout's current file. Validate it and preserve
+   the pre-transition installed copy once as `/usr/local/bin/loop2-deploy.previous`, then
+   install root-owned 0755. Use the procedure below. During corrections retain that same
+   pre-transition `.previous`; reinstall from the corrected request head without overwriting it.
+4. **H4 — deploy:** the human runs `loop2-deploy <request head sha>` with
+   `SSH_ORIGINAL_COMMAND` unset. Both services must pass health and the internal HTTP probe.
+   The old public route stops working now because there is no published application port;
+   an outage until H5 is expected. Read the applied and enforced limits by the narrow commands
+   in `SKILL.md`: application 512 MiB and connector 256 MiB. These are chosen bounds, not
+   measured demand; a failing limit or restart loop is resolved before acceptance.
+5. **H5 — route and acceptance:** remove the proxied AAAA record `loop2`, its hostname-scoped
+   Origin Rule (port 18080), and its hostname-scoped Configuration Rule (Flexible). Publish
+   `loop2.mariusznazar.com` on the tunnel with service `http://app:3000`, producing its proxied
+   CNAME to `<tunnel UUID>.cfargotunnel.com`. AAAA and CNAME cannot coexist at the same name.
+   Check the public game page and an unknown `/api/` path (JSON 404, not HTML); from outside
+   the host, request the former game port 18080 at the host IPv6 from the private note and
+   confirm the connection is refused or times out while the public page works. Confirm
+   `https://kantarion.bieda.it/` works and `loop` and `foundryvtt` remain untouched. Report
+   these observations and both memory limits before acceptance and merge.
 
-An account with root rights meets the last two as they are. A non-root account also needs the log file
-created and made writable for it, and a `tmpfiles.d` entry that creates `/run/loop2-deploy.lock` at
-boot with the account as owner (`/run` is cleared at boot); without it exit 4 appears at once.
+After merge, inspect the automated deployment of the merge commit. H4 proves connection
+readiness and internal HTTP; only H5 proves the public route. A missing real token or remote
+observation is unchecked, never a passing local test. Abandonment and rollback are in
+`troubleshooting.md`; do not merge an unrelated change to end the transition window.
 
-## The five human actions, in order, all before the merge
+## Installing a script from an exact commit
 
-The merge's push starts the workflow immediately, so the setup comes first, at the blocked draft
-request.
+Fetch the target branch as the run account so its full target SHA exists locally. A fetch
+changes the host and is the human's. Set `target_sha` to that exact SHA, and extract safely:
 
-1. **Cloudflare:** a proxied AAAA record `loop2` pointing at the server's IPv6 address, an Origin Rule
-   for `loop2.mariusznazar.com` only that overrides the destination port to 18080, and a Configuration
-   Rule scoped to that hostname setting encryption to Flexible. No zone-wide change, no change to the
-   old game's route.
-2. **Read-only repository key:** generate a key on the server under the run account, add its public
-   half to the loop2 repository as a Deploy key without write access, and add an SSH alias for GitHub
-   that uses it (a `Host` entry in the account's SSH config pointing at github.com with that identity
-   file), so the checkout's `origin` uses the alias.
-3. **Clone and install:** clone the repository to `/srv/loop2` as the run account, fetch the task
-   branch, and install the script from the request's head commit:
-   `git -C /srv/loop2 show <request head sha>:deploy/loop2-deploy > /tmp/loop2-deploy.new`, then
-   `bash -n /tmp/loop2-deploy.new`, then install it root-owned, mode 0755, as
-   `/usr/local/bin/loop2-deploy`. `main` holds no script yet. When a correction changes
-   `deploy/loop2-deploy` before the merge, the human reinstalls from the new request head the same way.
-4. **Automation key and secrets:** create the automation key, append its line to the run account's
-   `authorized_keys` without removing existing entries, set the five GitHub secrets (below) with the
-   pinned host-key lines, and delete the private key from the server. Verify that the entry reads
-   exactly `restrict,command="/usr/local/bin/loop2-deploy" ssh-... <key>`; that prefix is the real
-   guarantee that the key can only start a rebuild, so check it by reading the file.
-5. **First deployment and checks:** run `loop2-deploy <request head sha>` (human path) on the server.
-   Then check `http://127.0.0.1:18080/` on the host, reachability of port 18080 over the host's IPv6,
-   `https://loop2.mariusznazar.com/`, that `https://kantarion.bieda.it/` still works, and the applied
-   memory limit: `docker inspect --type container loop2`, `HostConfig.Memory` expected 536870912
-   (512 MiB), and observe the enforced limit too: the container's cgroup `memory.max` or the limit
-   column of `docker stats --no-stream loop2`. Report the observations back; a failing IPv6 route, port or limit is revised before the
-   change is accepted.
+```sh
+script_tmp=$(mktemp)
+git -C /srv/loop2 show "${target_sha}:deploy/loop2-deploy" > "$script_tmp" &&
+  bash -n "$script_tmp"
+```
 
-After the merge, the workflow run of the merge commit is the first automated deployment. If it
-fails, see `troubleshooting.md`.
+Continue only if both commands succeeded. Review the difference against the installed script.
+On the first H3 only, preserve it with
+`cp -p /usr/local/bin/loop2-deploy /usr/local/bin/loop2-deploy.previous`; if that backup already
+exists, first establish which copy is the pre-transition one and preserve it. Do not overwrite
+the recovery copy during corrections. With root privileges, install the checked temporary file:
+
+```sh
+install -o root -g root -m 0755 "$script_tmp" /usr/local/bin/loop2-deploy
+rm -- "$script_tmp"
+```
+
+Run Git as the account owning the checkout and the install/copy with the required privileges;
+the role labels here are not server usernames. Keep the target SHA for the subsequent human
+deployment. The installed-script comparison merely warns, so selecting the correct script is
+part of this procedure, especially across a route change.
 
 ## The five GitHub secrets
 
-Set under the repository's Actions secrets. The workflow reads them under the names below.
-
 | Secret | Holds |
 |---|---|
-| `DEPLOY_HOST` | a name that reaches the server over IPv4; GitHub's runners reach SSH over IPv4 only, and the name's port must be the one mapped to the server's SSH |
-| `DEPLOY_PORT` | the SSH port of that name |
-| `DEPLOY_USER` | the run account's login name |
-| `DEPLOY_SSH_KEY` | the automation key's private half, base64-encoded in one line |
-| `DEPLOY_KNOWN_HOSTS` | the pinned host-key lines for `DEPLOY_HOST`; because the port is not 22, each line uses the `[host]:port` form for that name and port |
+| `DEPLOY_HOST` | server name reachable over IPv4 by Actions, with its mapped SSH port |
+| `DEPLOY_PORT` | SSH port for that name |
+| `DEPLOY_USER` | run account login |
+| `DEPLOY_SSH_KEY` | automation private key, base64 in one line |
+| `DEPLOY_KNOWN_HOSTS` | pinned host-key lines, `[host]:port` for the configured non-default port |
 
-The public addresses the workflow probes are the `LOOP2_PUBLIC_URL` and `OLD_GAME_URL` variables at
-the top of `deploy.yml`, not secrets. Obtain the host-key lines from the server itself
-(`ssh-keyscan` over IPv4 against the name and port, compared with the host's own key files), never
-from a first connection's prompt.
+Obtain host-key lines from the server and compare an IPv4 `ssh-keyscan` result to its own key
+files, never accept a first connection's prompt blindly. Workflow variables `LOOP2_PUBLIC_URL`
+and `OLD_GAME_URL` are public URLs, not secrets. The tunnel token is a runtime server file,
+not an additional GitHub secret; the existing automation key transports only a commit name.
 
-## Rotation (each a human sequence)
+## Rotation — human sequences
 
-- **Automation key:** create a new key, append its `restrict,command=...` line to `authorized_keys`,
-  update `DEPLOY_SSH_KEY`, run a deployment (a push, or re-run the workflow), then remove the old
-  line and delete the private key from the server.
-- **Deploy key:** generate a new key on the server, add it as a read-only Deploy key to the
-  repository, point the SSH alias at it, check with `git -C /srv/loop2 fetch`, then delete the old
-  Deploy key in GitHub and the old file on the server.
-- **Pinned host key:** after the server's host key changes, rebuild the `DEPLOY_KNOWN_HOSTS` lines
-  from the server (as above) and replace the secret. Until then every run fails at SSH.
+- **Tunnel token:** read the currently running application revision label (not checkout HEAD),
+  refresh the token in Cloudflare, replace the server file with owner/group/mode as in H2 and
+  update the private copy. Deploy that running application SHA using the installed script.
+  Deployment force-recreates both services even for the same SHA, remounting an atomically
+  replaced file and establishing a new connector connection. Verify readiness and the public
+  page/API. This rebuild/recreate causes the normal short outage. A plain Compose restart is
+  not this rotation procedure; an existing connection may remain active after token refresh.
+- **Automation key:** append the new restricted public key, replace `DEPLOY_SSH_KEY`, verify a
+  deployment, then remove the old authorized line and server copy of the private key.
+- **Repository Deploy key:** add a new read-only key, update the SSH alias, verify a fetch,
+  then remove the old key from GitHub and the server.
+- **Pinned host key:** verify the new host key from the server and replace
+  `DEPLOY_KNOWN_HOSTS`; SSH fails until the pinned key matches.
 
-## Reinstalling the script
+## Sources
 
-Needed after any merge that changes `deploy/loop2-deploy`; the script never updates itself.
-"Installed-script warning" in `troubleshooting.md` gives the procedure that keeps the previous copy.
+- Token-file and connection parameters: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/configure-tunnels/run-parameters/
+- File-backed secret permissions: https://docs.docker.com/reference/compose-file/services/#secrets
+- Token refresh: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/configure-tunnels/remote-tunnel-permissions/
+- Tunnel DNS: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/routing-to-tunnel/dns/
+- Same-name DNS records: https://developers.cloudflare.com/dns/manage-dns-records/troubleshooting/records-with-same-name/

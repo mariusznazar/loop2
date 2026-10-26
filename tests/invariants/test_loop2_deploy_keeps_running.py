@@ -1,6 +1,6 @@
 """Invariant loop2-deploy-keeps-running: A deployment that stops before it starts the new
 container — at its input, the commit, the lock, the reading of memory and disk, the fetch, the
-checkout, the type check or the build — leaves the running loop2 container in service.
+checkout, the type check or the build — leaves the running loop2 containers in service.
 
 The check drives the repository's script `deploy/loop2-deploy` as a black box through the seam of
 `tests/deploy/deploy_script_support.py`: a temporary copy in which only the marked constants block
@@ -10,13 +10,13 @@ every run a loop2 container is running: the docker stub answers the script's que
 revision label.
 
 Reading of the sentence:
-- a deployment that stops before it starts the new container: each stop is made to happen in turn
+- a deployment that stops before it starts the new containers: each stop is made to happen in turn
   — a malformed input, a commit of no accepted branch, a held lock, too little or unreadable
   memory, too little or unreadable disk, a failed fetch, a failed checkout, a failed build, a commit
   with no `compose.yaml` — and the run must end with that stage's non-zero exit. The type check
   runs inside the image build (the Dockerfile's `npm run typecheck`), so the script sees a failed
   type check as one failed `docker compose … build`; one test covers both;
-- leaves the running loop2 container in service: every docker call the run recorded is on an
+- leaves the running loop2 containers in service: every docker call the run recorded is on an
   allow-list of calls that only read (READ_ONLY_DOCKER, and READ_ONLY_COMPOSE for
   `docker compose <options> <subcommand>`); a stop at the build stage may also have called
   `docker compose … build`, which makes an image and touches no container. Any other call — `up`,
@@ -25,7 +25,7 @@ Reading of the sentence:
 
 Does NOT cover: the real container on the server (nothing runs there); a container stopped by
 something other than a docker call (a signal to its process, the kernel killing it for lack of
-memory); a stop after the new container starts, which the sentence leaves out.
+memory); a stop after the new containers start, which the sentence leaves out.
 
 A positive control runs a deployment that gets through to the switch and asserts the same reader
 finds its `up` off the list, so an empty finding above is the script's, not the reader's.
@@ -73,7 +73,7 @@ def compose_subcommand(arguments):
 
 
 def off_the_list(calls, build_started):
-    """The docker calls that are not on the allow-list of a stop before the new container."""
+    """The docker calls that are not on the allow-list of a stop before the new containers."""
     allowed_compose = READ_ONLY_COMPOSE | ({BUILD} if build_started else set())
     found = []
     for call in calls:
@@ -209,6 +209,7 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
             ["stop", "loop2"],
             ["update", "--memory", "6m", "loop2"],
             ["container", "kill", "loop2"],
+            ["container", "kill", "loop2-cloudflared"],
             ["image", "prune", "--force", "--filter",
              "label=org.opencontainers.image.title=loop2"],
             ["compose"],

@@ -8,8 +8,37 @@ services:
       dockerfile: Dockerfile
       args:
         LOOP2_COMMIT: ${LOOP2_COMMIT:-unknown}
-    ports:
-      - "18080:3000"
     mem_limit: 512m
     restart: unless-stopped
     init: true
+
+  cloudflared:
+    container_name: loop2-cloudflared
+    build:
+      context: .
+      dockerfile: deploy/cloudflared.Dockerfile
+    command:
+      - tunnel
+      - --protocol
+      - http2
+      - --edge-ip-version
+      - "4"
+      - --metrics
+      - 127.0.0.1:2000
+      - run
+      - --token-file
+      - /run/secrets/cloudflare_tunnel_token
+    secrets:
+      - cloudflare_tunnel_token
+    mem_limit: 256m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cloudflared", "tunnel", "--metrics", "127.0.0.1:2000", "ready"]
+      interval: 5s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+secrets:
+  cloudflare_tunnel_token:
+    file: /etc/loop2/cloudflared-token

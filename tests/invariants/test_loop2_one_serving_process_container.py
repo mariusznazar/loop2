@@ -5,13 +5,13 @@ This file checks the loop2 container; `test_loop2_one_serving_process.py` checks
 as `npm start` starts it outside any container.
 
 Reading of the sentence:
-- the loop2 container: the one service of `compose.yaml`, built from the repository's
+- the loop2 container: the `app` service of `compose.yaml`, built from the repository's
   `Dockerfile`. Whether Compose adds an init process (`init: true`) is not read: the Docker part
   runs the image with an init process of its own, and an init process is not counted either way;
 - one process: the image's last stage starts `node` directly — an exec-form `CMD` whose program
   is `node`, no `ENTRYPOINT` of the Dockerfile's own (the Node.js image's entrypoint script
   replaces itself with the command it is given), and no `command` or `entrypoint` set in Compose —
-  and Compose runs one container of it: one service, with no `scale` or `replicas` above 1;
+  and Compose runs one container of the application: its service, with no `scale` or `replicas` above 1;
 - in the running container, counted where a Docker daemon answers: among the container's
   processes exactly one holds a listening TCP socket, before the requests below and after them,
   it is `node`, and it has started no process of its own. The init process and the health
@@ -180,12 +180,11 @@ class ContainerStartsOneNodeProcess(unittest.TestCase):
                 self.assertTrue(all(support.exec_form(a) == [] for a in entrypoints),
                                 f"{stage!r} of {DOCKERFILE} sets ENTRYPOINT {entrypoints}")
 
-    def test_compose_runs_one_service_with_the_image_command(self):
+    def test_compose_runs_one_application_with_the_image_command(self):
         # invariant: loop2-one-serving-process
         _top, services = support.compose_outline(support.read_required(COMPOSE_FILE))
-        self.assertEqual(len(services), 1, f"{COMPOSE_FILE} has {len(services)} services: "
-                                           f"{sorted(services)}")
-        for name, keys in services.items():
+        self.assertEqual(set(services), {"app", "cloudflared"})
+        for name, keys in (("app", services["app"]),):
             for key in ("command", "entrypoint"):
                 self.assertNotIn(key, keys, f"service `{name}` overrides the image with `{key}`")
             if "scale" in keys:
@@ -241,6 +240,19 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
                         f"GET / in the container returns no HTML page: {answers['/']}")
         self.assertTrue(100 <= answers[UNMATCHED_API_PATH]["status"] <= 599,
                         f"GET {UNMATCHED_API_PATH} in the container: {answers[UNMATCHED_API_PATH]}")
+
+        # Exercise the actual deployment probe in the real application container,
+        # which has no host port. Controlled Docker answers elsewhere only check decisions.
+        deploy_commands = support.docker_commands(support.read_required("deploy/loop2-deploy"))
+        probes = [words for _line, words in deploy_commands if words[:1] == ["exec"]]
+        self.assertEqual(len(probes), 1)
+        self.assertEqual(probes[0][:4], ["exec", "loop2", "node", "-e"])
+        code, output = docker_run("exec", name, *probes[0][2:], timeout=15)
+        self.assertEqual(code, 0, output)
+        rows = output.strip().splitlines()
+        self.assertEqual(len(rows), 2, output)
+        self.assertTrue(rows[0].startswith("200 "), output)
+        self.assertTrue(rows[1].lower().startswith("404 application/json"), output)
 
         table = self.processes(name)
         others = [p for p in table["processes"] if p["pid"] != table["self"]]

@@ -134,7 +134,7 @@ The deployment command the automation's key runs refuses every input but one com
 
 ## loop2-deploy-keeps-running
 
-A deployment that stops before it starts the new container — at its input, the commit, the lock, the reading of memory and disk, the fetch, the checkout, the type check or the build — leaves the running loop2 container in service.
+A deployment that stops before it starts the new containers — at its input, the commit, the lock, the reading of memory and disk, the fetch, the checkout, the type check or the build — leaves the running loop2 containers in service.
 
 - **Method:** test
 - **Rests on:** none
@@ -142,9 +142,19 @@ A deployment that stops before it starts the new container — at its input, the
 - **Part:** deployment
 - **Violated:** no
 
+## loop2-application-port
+
+The application port is inaccessible from the Internet outside Cloudflare.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-10
+- **Part:** deployment
+- **Violated:** no
+
 ## loop2-host-sharing
 
-A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and the loop2 Compose service asks the host for no privilege that a default container lacks.
+A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and neither loop2 Compose service asks the host for a privilege a default container lacks apart from the connector's read-only grant of the loop2 tunnel token file under D-13.
 
 - **Method:** test
 - **Rests on:** none

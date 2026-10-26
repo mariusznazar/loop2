@@ -6,23 +6,11 @@ The Node.js Release Working Group schedules Node.js 24.x end of life for 2028-04
 
 - **Source:** https://raw.githubusercontent.com/nodejs/release/72fdab20216c5f04e0a0fe72a225c2504e9f2b42/README.md § Release schedule, 24.x row, End-of-life — "2028-04-30" · § Release schedule — "Dates are subject to change."; read 2026-10-04
 
-## cloudflare-origin-rules
-
-On Cloudflare's Free plan, Origin Rules are available with up to 10 rules, and an Origin Rule can override the resolved destination port of incoming requests.
-
-- **Source:** https://developers.cloudflare.com/rules/origin-rules/ (archived: https://web.archive.org/web/20261012104103/https://developers.cloudflare.com/rules/origin-rules/, 2026-10-12) § Overview — "Destination port: Overrides the resolved destination port of incoming requests." · § Availability, Free column, Availability — "Yes" · § Availability, Free column, Number of rules — "10" · § Availability, Free column, Override destination port — "Yes"; read 2026-10-13
-
 ## openssh-authorized-keys-options
 
 In OpenSSH portable 8.9p1, the option `command=` of an authorized_keys file makes sshd execute its command whenever the key is used for authentication, for shell, command or subsystem execution, ignoring the command the user supplies and making the command the client supplied available in the `SSH_ORIGINAL_COMMAND` environment variable, and the option `restrict` disables port, agent and X11 forwarding, PTY allocation and execution of `~/.ssh/rc`.
 
 - **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/sshd.8 § AUTHORIZED_KEYS FILE FORMAT, the command option — "Specifies that the command is executed whenever this key is used for authentication." · "The command supplied by the user (if any) is ignored." · "The command originally supplied by the client is available in the SSH_ORIGINAL_COMMAND environment variable." · "Note that this option applies to shell, command or subsystem execution." · § AUTHORIZED_KEYS FILE FORMAT, the restrict option — "Enable all restrictions, i.e. disable port, agent and X11 forwarding, as well as disabling PTY allocation and execution of ~/.ssh/rc."; read 2026-10-13
-
-## cloudflare-configuration-rules
-
-On Cloudflare's Free plan, Configuration Rules are available with up to 10 rules, each applying to the requests its expression matches by properties such as the hostname, and a Configuration Rule's SSL setting configures the SSL/TLS encryption mode for the requests it matches.
-
-- **Source:** https://developers.cloudflare.com/rules/configuration-rules/ (archived: https://web.archive.org/web/20261005235800/https://developers.cloudflare.com/rules/configuration-rules/, 2026-10-05) § Overview — "Each configuration rule includes an expression that defines which requests the rule applies to, based on properties like URL path, hostname, or request header." · § Availability, Free column, Availability — "Yes" · § Availability, Free column, Number of rules — "10"; read 2026-10-13 · https://developers.cloudflare.com/rules/configuration-rules/settings/ (archived: https://web.archive.org/web/20261005235058/https://developers.cloudflare.com/rules/configuration-rules/settings/, 2026-10-05) § SSL — "Use this setting to configure the SSL/TLS encryption mode for matching requests:"; read 2026-10-13
 
 ## loop2-host-forced-command-entry
 
@@ -47,12 +35,6 @@ The old loop game and foundryvtt run as Docker containers on the test server's h
 The test server's host reports zero total swap in `/proc/meminfo`.
 
 - **Source:** observed: `cat /proc/meminfo` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64; run 2026-10-13
-
-## cloudflare-test-origin-ipv6
-
-Cloudflare establishes IPv6 TCP connections to port 18080 on the test server.
-
-- **Source:** observed: `python3 -c 'import ipaddress, subprocess; ranges=[ipaddress.ip_network(line) for line in subprocess.check_output(["curl", "--silent", "--show-error", "--fail", "--max-time", "20", "https://www.cloudflare.com/ips-v6"], text=True).splitlines()]; subprocess.run(["curl", "--silent", "--show-error", "--max-time", "20", "--output", "/dev/null", "--write-out", "public-api %{http_code}", "https://loop2.mariusznazar.com/api/unknown-path-probe?ipv6-evidence=3"], check=True); rows=subprocess.check_output(["ss", "-6", "-nt", "state", "established", "sport = :18080"], text=True).splitlines()[1:]; peers=[ipaddress.ip_address(row.split()[-1].rsplit(":", 1)[0].strip("[]")) for row in rows]; print("; Cloudflare IPv6 origin connections:", sum(any(peer in network for network in ranges) for peer in peers))'` on Python 3.10.12, curl 7.81.0 and ss from iproute2-5.15.0, Ubuntu 22.04.5 LTS; run 2026-10-13
 
 ## game-icons-licence
 
@@ -187,7 +169,46 @@ A Node.js `net` server told to listen on port 0 gets from the operating system a
 
 - **Source:** https://nodejs.org/download/release/v24.17.0/docs/api/net.html § Class: net.Server, server.listen([port[, host[, backlog]]][, callback]) — "If port is omitted or is 0, the operating system will assign an arbitrary unused port, which can be retrieved by using server.address().port after the 'listening' event has been emitted."; read 2026-10-23
 
+## cloudflare-tunnel-transport
+
+Cloudflare Tunnel connects an origin to Cloudflare through an outbound encrypted connection without an inbound public port.
+
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/tunnel/index.mdx § Overview — "Cloudflare Tunnel connects your infrastructure to Cloudflare through an outbound-only, post-quantum encrypted connection." · § Overview — "No open inbound ports."; read 2026-10-26
+
+## cloudflare-tunnel-token-file
+
+Cloudflared can run a remotely managed tunnel using a token file from version 2025.4.0 onward.
+
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/partials/cloudflare-one/tunnel/run-parameters.mdx § token-file — "For remotely-managed tunnels only. Requires 2025.4.0 or later." · § token-file, Syntax — "cloudflared tunnel run --token-file <PATH>"; read 2026-10-26
+
+## cloudflared-image-identity
+
+The official cloudflared 2026.10.4 image runs as user and group 65532 and starts cloudflared with automatic updating disabled.
+
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflared/dc3b264da64a801bc3a8d5301a6db21401910ad5/Dockerfile § final stage — "USER 65532:65532" · § final stage — "ENTRYPOINT [\"cloudflared\", \"--no-autoupdate\"]"; read 2026-10-26
+
+## cloudflared-connection-readiness
+
+Cloudflared 2026.10.4's readiness endpoint returns HTTP 200 only when at least one edge connection is active, and its ready command fails for any other status.
+
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflared/dc3b264da64a801bc3a8d5301a6db21401910ad5/metrics/readiness.go § makeResponse — "readyConnections = rs.tracker.CountActiveConns()" · § makeResponse — "if readyConnections > 0"; read 2026-10-26 · https://raw.githubusercontent.com/cloudflare/cloudflared/dc3b264da64a801bc3a8d5301a6db21401910ad5/cmd/cloudflared/tunnel/subcommands.go § readyCommand — "if res.StatusCode != 200"; read 2026-10-26
+
+## compose-file-secret-permissions
+
+Compose mounts a service's short-syntax secret read-only under `/run/secrets/`, and file-backed secrets retain host permissions because Compose does not implement their uid, gid and mode remapping.
+
+- **Source:** https://raw.githubusercontent.com/compose-spec/compose-spec/3a4a6995e4a971f6173dff9130cb3e38e6738651/container_spec.md § secrets, Short syntax — "mounts it as read-only to /run/secrets/<secret_name>" · § secrets, Long syntax, Note — "The uid, gid, and mode attributes are not implemented in Docker Compose"; read 2026-10-26
+
+## mikrus-tunnel-outbound-tcp
+
+The test server host establishes an IPv4 TCP connection to `region1.v2.argotunnel.com` on port 7844; this observation establishes neither UDP nor container connectivity.
+
+- **Source:** observed: `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844` reports Connected before timeout exit 124; the same check on port 7845 reports a connection timeout and exit 28; run 2026-10-26
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
 |---|---|---|
+| cloudflare-origin-rules | withdrawn: no decision is based on it and no invariant rests on it | none |
+| cloudflare-configuration-rules | withdrawn: no decision is based on it and no invariant rests on it | none |
+| cloudflare-test-origin-ipv6 | withdrawn: no decision is based on it and no invariant rests on it | none |

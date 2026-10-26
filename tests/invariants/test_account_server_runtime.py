@@ -11,7 +11,8 @@ Covers, in the working tree being checked:
   .tool-versions, CI workflow, platform file) that names Node.js versions or Node.js images
   names major version 24 in every one of them — each FROM line (with ARG/ENV defaults filled
   in), each element of a version list or CI matrix a `node-version` refers to, each version on
-  a .tool-versions line, the content of a `node-version-file` — and every Dockerfile names one.
+  a .tool-versions line, the content of a `node-version-file` — and every application Dockerfile names one; the named cloudflared wrapper is restricted
+  to its official non-Node base and ownership label.
 
 Does NOT cover: which Node.js actually runs the server on a machine (the check runs the product
 nowhere); a deployment defined outside this repository. A repository holding no deployment file
@@ -201,6 +202,14 @@ class NodeMajorInDeployment(unittest.TestCase):
         problems = []
         for relative in support.deployment_files():
             text = support.read_text(os.path.join(support.ROOT, *relative.split("/")))
+            if relative == "deploy/cloudflared.Dockerfile":
+                instructions = [line.strip() for line in text.splitlines()
+                                if line.strip() and not line.lstrip().startswith("#")]
+                self.assertEqual(len(instructions), 2)
+                self.assertRegex(instructions[0], r"^FROM cloudflare/cloudflared:"
+                                 r"[0-9]+\.[0-9]+\.[0-9]+@sha256:[0-9a-f]{64}$")
+                self.assertEqual(instructions[1], 'LABEL org.opencontainers.image.title="loop2"')
+                continue
             mentions = node_mentions(relative, text)
             base = relative.rsplit("/", 1)[-1]
             if any(fnmatch.fnmatchcase(base, p) for p in DOCKERFILE_NAMES) and not any(

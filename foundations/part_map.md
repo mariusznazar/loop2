@@ -140,6 +140,7 @@ the test server.
   tests/invariants/test_loop2_deploy_trigger_input.py
   tests/invariants/test_loop2_deploy_keeps_running.py
   tests/invariants/test_loop2_host_sharing.py
+  tests/invariants/test_loop2_application_port.py
 - **Depends on:** browser-view · account-server · build-tools
 - **Trust boundary:** deploy/**
 
