@@ -739,6 +739,26 @@ Opening the account database initializes a new schema transactionally, preserves
 - **Part:** account-server · deployment
 - **Violated:** yes
 
+## account-database-schema
+
+Opening an account database initializes version 1 atomically, preserves its existing accounts and sessions on reopen, and rejects an unknown newer schema without changing its version or records.
+
+- **Method:** test
+- **Rests on:** node-sqlite-database
+- **Derives from:** D-110
+- **Part:** account-server
+- **Violated:** no
+
+## account-session-storage
+
+The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
+
+- **Method:** test
+- **Rests on:** express-session-store-contract · node-sqlite-database
+- **Derives from:** D-110 · D-113
+- **Part:** account-server
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

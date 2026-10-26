@@ -18,6 +18,8 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 | browser-module | `guidelines/coding-browser-module.md` | Przed dodaniem lub zmianą modułu browser-view w katalogu widoku. |
 | http-application | `guidelines/coding-http-application.md` | Przed dodaniem lub zmianą pliku składającego aplikację HTTP w account-server. |
 | password-hashing | `guidelines/coding-password-hashing.md` | Przed dodaniem lub zmianą pliku wykonującego haszowanie albo sprawdzanie haseł. |
+| database-access | `guidelines/coding-database-access.md` | Przed dodaniem lub zmianą pliku dostępu do bazy danych. |
+| session-store | `guidelines/coding-session-store.md` | Przed dodaniem lub zmianą magazynu sesji biblioteki. |
 
 ## Rules
 
@@ -219,7 +221,7 @@ Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce
 budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone. CSS nie ma własnego wzorca ani własnych wytycznych rodzaju; reguły
 arkuszy stylów, których pilnuje test, stoją w
 `guidelines/styleguide-browser-view.md`.
-Wzorce sesji, zapisu gry i poczty powstaną przy pierwszych implementacjach.
+Wzorce zapisu gry i poczty powstaną przy pierwszych implementacjach.
 Przed wyborem wzorca odłożonego istniejącego rodzaju porównuje się jego pliki.
 Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Dla przyjętych linterów
 obowiązują niezmienniki pełnej zgodności kodu, bez przejściowej kontroli

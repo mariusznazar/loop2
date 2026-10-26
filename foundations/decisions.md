@@ -1895,8 +1895,38 @@ The account server opens one application-owned SQLite connection before readines
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database
 - **Relations:** derives from D-15 · derives from D-17 · derives from D-97 · derives from D-99 · derives from D-105
-- **Verification:** invariants: account-schema-lifecycle.
+- **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage.
 - **Origin:** none
 
 *Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema.
 *Rejected:* A destructive startup reset — loses accounts; unversioned schema assumptions — let old code misread newer data; transactions held across password work — prolong locks; session touch implemented as an upsert — revives logout.
+
+### D-112 — Which file is the exemplar for database access?
+
+The exemplar for kind `database-access` is `src/server/database.ts`, and its kind guidelines are read before adding or changing a database-access file. Database access owns the SQLite connection, transactional schema initialization, bound SQL values and connection disposal, independently of HTTP and password hashing.
+
+- **Scope:** account-server
+- **Based on:** node-sqlite-database
+- **Relations:** derives from D-28 · derives from D-110
+- **Verification:** an agent compares a change with the decision:
+  - complies: database-access guidelines identify the first implementation as exemplar and keep SQL and connection ownership together
+  - violates: a different exemplar or database access that spans asynchronous password work
+- **Origin:** none
+
+*Rationale:* A concrete model keeps persistence and failure handling visible for later account operations, while synchronous ownership limits transaction lifetimes.
+*Rejected:* Scattered SQL in HTTP handlers — obscures connection ownership and makes persistence failures harder to exercise independently.
+
+### D-113 — Which file is the exemplar for the session Store?
+
+The exemplar for kind `session-store` is `src/server/session-store.ts`, and its kind guidelines are read before adding or changing a session-store file. The Store adapts the library's callbacks to database operations, validates stored session identity and cookie metadata before library hydration, and leaves HTTP and cookie policy to application assembly.
+
+- **Scope:** account-server
+- **Based on:** express-session-store-contract
+- **Relations:** derives from D-28 · derives from D-105 · derives from D-110
+- **Verification:** invariants: account-session-storage. An agent compares a change with the decision:
+  - complies: session-store guidelines identify the first implementation as exemplar and preserve callback failures
+  - violates: treating parsed JSON as a valid library session without checking its shape
+- **Origin:** none
+
+*Rationale:* The adapter makes malformed persisted data and storage failures explicit before the library restores a session; a deliberately narrow payload requires conscious changes when session data grows.
+*Rejected:* Unchecked deserialization — passes arbitrary stored properties to library objects; a second session middleware — duplicates the chosen library's lifecycle.

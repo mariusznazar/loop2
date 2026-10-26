@@ -225,9 +225,9 @@ OWASP recommends Argon2id for password storage and experimentation on the applic
 
 ## express-session-store-contract
 
-Express-session 1.19.0 keeps session data server-side, requires Store get, set and destroy callbacks and recommends touch for idle expiry, while its default MemoryStore is not intended for production.
+Express-session 1.19.0 keeps session data server-side, requires Store get, set and destroy callbacks, uses set to upsert a session, and recommends touch for idle expiry with an error callback, while its default MemoryStore is not intended for production.
 
-- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/README.md § Compatible Session Stores — "Required methods are ones that this module will always call on the store." · § API — "not designed for a production environment."; read 2026-10-26
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/README.md § API — "Session data is stored server-side." · "not designed for a production environment." · § store.set — "upsert a session" · § store.touch — "callback(error)"; read 2026-10-27
 
 ## session-secret-rotation
 
@@ -237,9 +237,9 @@ Express-session 1.19.0 signs the session cookie with the first configured secret
 
 ## node-sqlite-database
 
-Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module and its DatabaseSync connection API is synchronous.
+Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, parameterizable prepared statements and explicit connection closing.
 
-- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § SQLite — "The node:sqlite module facilitates working with SQLite databases." · § Class: DatabaseSync — "All APIs exposed by this class execute synchronously."; read 2026-10-26
+- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection."; read 2026-10-27
 
 ## fetch-same-origin-credentials
 

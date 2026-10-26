@@ -55,12 +55,13 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game and handles the HTTP requests sent to it.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it and owns account and session persistence.
 
 - **Files:** src/server/**
   tests/http.test.mjs
   tests/startup.test.mjs
   tests/passwords.test.mjs
+  tests/account-storage.test.mjs
   tests/invariants/test_account_server_express_http.py
   tests/invariants/test_loop2_api_error_route.py
   tests/invariants/test_loop2_one_serving_process.py
