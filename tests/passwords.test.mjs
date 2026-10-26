@@ -2,39 +2,48 @@
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 
-import {
-  PasswordCapacityError,
-  withPasswordCapacity,
-} from "../dist/server/passwords.js";
-
-test("password capacity refuses excess work and is released after success or failure", async () => {
+test("compiled Argon2 APIs share bounded admission and recover both slots after an API error", () => {
   // invariant: password-operation-gate
-  let releaseFirst;
-  let releaseSecond;
-  const first = withPasswordCapacity(
-    () => new Promise((resolve) => (releaseFirst = resolve)),
-  );
-  const second = withPasswordCapacity(
-    () => new Promise((resolve) => (releaseSecond = resolve)),
+  const source = String.raw`
+    import assert from "node:assert/strict";
+    import { hashPassword, PasswordCapacityError, verifyPassword } from "./dist/server/passwords.js";
+
+    const password = "  exact password 🙂  ";
+    const encoded = await hashPassword(password);
+
+    const mixedHash = hashPassword(password);
+    const mixedVerify = verifyPassword(encoded, password);
+    await assert.rejects(hashPassword(password), PasswordCapacityError);
+    await assert.rejects(verifyPassword(encoded, password), PasswordCapacityError);
+    await Promise.all([mixedHash, mixedVerify]);
+
+    const hashes = [hashPassword(password), hashPassword(password)];
+    await assert.rejects(hashPassword(password), PasswordCapacityError);
+    await Promise.all(hashes);
+
+    const verifications = [verifyPassword(encoded, password), verifyPassword(encoded, password)];
+    await assert.rejects(verifyPassword(encoded, password), PasswordCapacityError);
+    await Promise.all(verifications);
+
+    await assert.rejects(verifyPassword("not-an-encoded-argon2-hash", password));
+    const afterErrorHash = hashPassword(password);
+    const afterErrorVerify = verifyPassword(encoded, password);
+    await assert.rejects(hashPassword(password), PasswordCapacityError);
+    await Promise.all([afterErrorHash, afterErrorVerify]);
+  `;
+  const result = spawnSync(
+    process.execPath,
+    ["--input-type=module", "-e", source],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      timeout: 30000,
+      maxBuffer: 1024 * 1024,
+    },
   );
 
-  await assert.rejects(
-    withPasswordCapacity(async () => "unreachable"),
-    PasswordCapacityError,
-  );
-  releaseFirst("done");
-  releaseSecond("done");
-  await Promise.all([first, second]);
-  await assert.rejects(
-    withPasswordCapacity(async () => {
-      throw new Error("operation failed");
-    }),
-    /operation failed/,
-  );
-  assert.equal(
-    await withPasswordCapacity(async () => "available"),
-    "available",
-  );
+  assert.equal(result.error, undefined, result.error?.message);
+  assert.equal(result.status, 0, result.stderr);
 });
 
 test("compiled password operations create and verify the production Argon2id profile", () => {

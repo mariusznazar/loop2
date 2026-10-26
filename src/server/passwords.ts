@@ -18,7 +18,7 @@ export class PasswordCapacityError extends Error {
   }
 }
 
-export async function withPasswordCapacity<T>(
+async function withPasswordCapacity<T>(
   operation: () => Promise<T>,
 ): Promise<T> {
   if (activeOperations >= MAX_ACTIVE_PASSWORD_OPERATIONS) {
