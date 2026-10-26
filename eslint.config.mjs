@@ -32,6 +32,7 @@ const excluded = [
   "**/dist/**",
   ".the-way/**",
   ".runs/**",
+  ".stryker-tmp/**",
   ".superpowers/**",
 ];
 

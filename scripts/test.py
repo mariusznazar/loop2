@@ -26,9 +26,13 @@ def python_file(path):
     spec = importlib.util.spec_from_file_location(path.stem, path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    suite = unittest.TestLoader().loadTestsFromModule(module)
-    result = unittest.TextTestRunner().run(suite)
+    try:
+        spec.loader.exec_module(module)
+        suite = unittest.TestLoader().loadTestsFromModule(module)
+        result = unittest.TextTestRunner().run(suite)
+    except SystemExit:
+        print("The selected Python file exited before producing a test result.", file=sys.stderr)
+        return 1
     if result.testsRun <= len(result.skipped):
         print("No test executed in the selected file.", file=sys.stderr)
         return 1

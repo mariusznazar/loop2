@@ -55,6 +55,23 @@ class TestGate(unittest.TestCase):
                 result = self.gate.run(name)
                 self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_python_exit_during_import_or_collection_fails(self):
+        # invariant: focused-test-execution
+        # A successful process exit before unittest returns is not a test result.
+        cases = {
+            "tests/test_import_exit_zero.py": "raise SystemExit(0)\n",
+            "tests/test_import_exit_none.py": "raise SystemExit()\n",
+            "tests/test_collect_exit_zero.py":
+                "def load_tests(loader, tests, pattern): raise SystemExit(0)\n",
+            "tests/test_collect_exit_none.py":
+                "def load_tests(loader, tests, pattern): raise SystemExit()\n",
+        }
+        for name, content in cases.items():
+            with self.subTest(name=name):
+                self.gate.write(name, content)
+                result = self.gate.run(name)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_missing_or_non_test_file_fails_before_building(self):
         # invariant: focused-test-execution
         self.gate.write("tests/helper.mjs", 'throw new Error("must not execute");\n')
