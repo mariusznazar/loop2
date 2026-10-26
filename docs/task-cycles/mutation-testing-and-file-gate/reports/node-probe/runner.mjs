@@ -1,1 +1,0 @@
-import { run } from "node:test"; const events = run({ files: [process.argv[2]] }); for await (const event of events) { if(event.type === "test:summary") console.log(JSON.stringify(event)); }
