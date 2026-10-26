@@ -147,6 +147,26 @@ header h1 {
   color: var(--text-strong);
 }
 
+.rule-group {
+  border-top: var(--frame-width) solid var(--divider);
+  padding: var(--space-m) 0;
+}
+
+.rule-group-header,
+.group-condition {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-s);
+}
+
+.rule-group-header input {
+  width: 12em;
+  max-width: 100%;
+  color: var(--text-strong);
+}
+
 .rules {
   margin: 0 0 var(--space-m);
   padding-left: var(--space-xl);
@@ -154,6 +174,7 @@ header h1 {
 
 .rule {
   margin-bottom: var(--space-s);
+  cursor: grab;
 }
 
 .rule > * {
@@ -161,7 +182,8 @@ header h1 {
   vertical-align: middle;
 }
 
-.rule input[type="number"] {
+.rule input[type="number"],
+.group-condition input[type="number"] {
   width: 4em;
 }
 

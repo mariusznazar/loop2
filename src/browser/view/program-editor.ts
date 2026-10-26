@@ -26,11 +26,100 @@ import {
   setSelectOptions,
   type SelectOption,
 } from "./controls/select-list.js";
-import type { Field } from "./controls/text-field.js";
+import { createTextField, type Field } from "./controls/text-field.js";
 import { sendMaps } from "./headquarters.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
+
+/** Append an empty group; its number is never reused after deletion or rename. */
+export function addGroup(program: Program): Program {
+  return {
+    ...program,
+    nextGroupId: program.nextGroupId + 1,
+    groups: [
+      ...program.groups,
+      {
+        id: program.nextGroupId,
+        name: `Grupa ${program.nextGroupId}`,
+        condition: { kind: "always" },
+        rules: [],
+      },
+    ],
+  };
+}
+
+export function renameGroup(
+  program: Program,
+  id: GroupId,
+  name: string,
+): Program | null {
+  const group = program.groups.find((each) => each.id === id);
+  if (!group || group.name === name) return null;
+  return {
+    ...program,
+    groups: program.groups.map((each) =>
+      each.id === id ? { ...each, name } : each,
+    ),
+  };
+}
+
+export function removeGroup(program: Program, id: GroupId): Program | null {
+  if (!program.groups.some((group) => group.id === id)) return null;
+  return {
+    ...program,
+    groups: program.groups.filter((group) => group.id !== id),
+  };
+}
+
+export function moveGroup(
+  program: Program,
+  id: GroupId,
+  offset: -1 | 1,
+): Program | null {
+  const index = program.groups.findIndex((group) => group.id === id);
+  const other = index + offset;
+  if (index < 0 || other < 0 || other >= program.groups.length) return null;
+  const groups = [...program.groups];
+  [groups[index], groups[other]] = [groups[other], groups[index]];
+  return { ...program, groups };
+}
+
+/** Resolve the destination after removal: a rule target means before it, a group means append. */
+export function dropRule(
+  program: Program,
+  ruleId: number,
+  groupId: GroupId,
+  beforeId?: number,
+): Program | null {
+  const source = program.groups.find((group) =>
+    group.rules.some((rule) => rule.id === ruleId),
+  );
+  const target = program.groups.find((group) => group.id === groupId);
+  if (
+    !source ||
+    !target ||
+    beforeId === ruleId ||
+    (beforeId !== undefined &&
+      !target.rules.some((rule) => rule.id === beforeId))
+  )
+    return null;
+  const rule = source.rules.find((each) => each.id === ruleId)!;
+  const removed = replaceRules(
+    program,
+    source.id,
+    source.rules.filter((each) => each.id !== ruleId),
+  );
+  const rules = [
+    ...removed.groups.find((group) => group.id === groupId)!.rules,
+  ];
+  const at =
+    beforeId === undefined
+      ? rules.length
+      : rules.findIndex((each) => each.id === beforeId);
+  rules.splice(at, 0, rule);
+  return replaceRules(removed, groupId, rules);
+}
 /**
  * An action that names a resource of the map: „Idź” and „Zbierz”. Every other action names
  * nothing — „Idź — ognisko” and the actions on the campfire and the backpack among them, whose
@@ -48,14 +137,19 @@ function namesResource(action: Action): action is ResourceAction {
   return takesResource(action.kind);
 }
 
-/** A control of a rule's row, or the button „Dodaj regułę”, that gets focus after a structural edit. */
+/** The control that recovers focus after a group or rule is added, moved or removed. */
 export type FocusTarget =
   | {
       groupId: GroupId;
       row: number;
       control: "condition" | "up" | "down" | "remove";
     }
-  | { groupId: GroupId; control: "add" };
+  | { groupId: GroupId; control: "add" }
+  | {
+      groupId: GroupId;
+      control: "group-name" | "group-up" | "group-down" | "group-remove";
+    }
+  | { control: "add-group" };
 
 /** An edit that changes the rows: „Dodaj regułę”, „Usuń”, „↑”, „↓”. */
 export type StructuralEdit = "add" | "remove" | "up" | "down";
@@ -228,25 +322,53 @@ function newCondition(
   }
 }
 
+/** A null row addresses the group's own condition, using the same controls as a rule. */
+function conditionAt(
+  program: Program,
+  groupId: GroupId,
+  index: number | null,
+): Condition | undefined {
+  const group = program.groups.find((each) => each.id === groupId);
+  return index === null ? group?.condition : group?.rules[index]?.condition;
+}
+
+function replaceCondition(
+  program: Program,
+  groupId: GroupId,
+  index: number | null,
+  condition: Condition,
+): Program {
+  const group = program.groups.find((each) => each.id === groupId)!;
+  return index === null
+    ? {
+        ...program,
+        groups: program.groups.map((each) =>
+          each.id === groupId ? { ...each, condition } : each,
+        ),
+      }
+    : replaceRule(program, groupId, index, {
+        ...group.rules[index],
+        condition,
+      });
+}
+
 /**
- * The rule's condition switched to `kind`, with the data's default number; a condition that names
+ * The condition switched to `kind` (null index selects the group), with the data's default number; a condition that names
  * a resource takes the first of `resources`, „Zapas poniżej” the first item of the data. Null when
  * the kind is already chosen.
  */
 export function withConditionKind(
   program: Program,
   groupId: GroupId,
-  index: number,
+  index: number | null,
   kind: ConditionKind,
   resources: readonly ResourceId[],
 ): Program | null {
-  const rule = program.groups.find((group) => group.id === groupId)?.rules[
-    index
-  ];
-  if (!rule || rule.condition.kind === kind) return null;
+  const previous = conditionAt(program, groupId, index);
+  if (!previous || previous.kind === kind) return null;
   const condition = newCondition(kind, resources);
   if (!condition) return null;
-  return replaceRule(program, groupId, index, { ...rule, condition });
+  return replaceCondition(program, groupId, index, condition);
 }
 
 /**
@@ -274,66 +396,47 @@ export function withActionKind(
   });
 }
 
-/** The resource of the rule's condition; null when unchanged or the condition names none. */
+/** The condition's resource; a null index selects the group. Null result when unchanged or absent. */
 export function withConditionResource(
   program: Program,
   groupId: GroupId,
-  index: number,
+  index: number | null,
   resource: ResourceId,
 ): Program | null {
-  const rule = program.groups.find((group) => group.id === groupId)?.rules[
-    index
-  ];
+  const previous = conditionAt(program, groupId, index);
   if (
-    !rule ||
-    rule.condition.kind !== "hereBelow" ||
-    rule.condition.resource === resource
+    !previous ||
+    previous.kind !== "hereBelow" ||
+    previous.resource === resource
   )
     return null;
-  return replaceRule(program, groupId, index, {
-    ...rule,
-    condition: { ...rule.condition, resource },
-  });
+  return replaceCondition(program, groupId, index, { ...previous, resource });
 }
 
-/** The item of the rule's „Zapas poniżej”; null when unchanged or the condition names none. */
+/** The condition's item; a null index selects the group. Null result when unchanged or absent. */
 export function withConditionItem(
   program: Program,
   groupId: GroupId,
-  index: number,
+  index: number | null,
   item: ItemId,
 ): Program | null {
-  const rule = program.groups.find((group) => group.id === groupId)?.rules[
-    index
-  ];
-  if (
-    !rule ||
-    rule.condition.kind !== "itemBelow" ||
-    rule.condition.item === item
-  )
+  const previous = conditionAt(program, groupId, index);
+  if (!previous || previous.kind !== "itemBelow" || previous.item === item)
     return null;
-  return replaceRule(program, groupId, index, {
-    ...rule,
-    condition: { ...rule.condition, item },
-  });
+  return replaceCondition(program, groupId, index, { ...previous, item });
 }
 
-/** The number of the rule's condition; null when unchanged or the condition takes none. */
+/** The condition's number; a null index selects the group. Null result when unchanged or absent. */
 export function withConditionValue(
   program: Program,
   groupId: GroupId,
-  index: number,
+  index: number | null,
   value: number,
 ): Program | null {
-  const rule = program.groups.find((group) => group.id === groupId)?.rules[
-    index
-  ];
-  if (!rule || !("value" in rule.condition) || rule.condition.value === value)
+  const previous = conditionAt(program, groupId, index);
+  if (!previous || !("value" in previous) || previous.value === value)
     return null;
-  return replaceRule(program, groupId, index, {
-    ...rule,
-    condition: { ...rule.condition, value },
-  });
+  return replaceCondition(program, groupId, index, { ...previous, value });
 }
 
 /** The resource of the rule's action; null when unchanged or the action names none. */
@@ -379,13 +482,16 @@ export function focusAfter(
   }
 }
 
-type RowView = {
-  element: HTMLLIElement;
-  count: HTMLSpanElement;
+type ConditionView = {
   condition: HTMLSelectElement;
   value: Field;
   conditionResource: HTMLSelectElement;
   conditionItem: HTMLSelectElement;
+};
+
+type RowView = ConditionView & {
+  element: HTMLLIElement;
+  count: HTMLSpanElement;
   action: HTMLSelectElement;
   actionResource: HTMLSelectElement;
   up: HTMLButtonElement;
@@ -427,11 +533,13 @@ function showResource(
 }
 
 /**
- * Builds the program panel: heading „Program”, each named group and its condition, one row per
+ * Builds the program panel: heading „Program”, editable groups and their conditions, one row per
  * program rule — condition select, for a condition that takes a number a number field with the
  * range and step of its kind, for „Tu leży
  * mniej niż” a resource select, for „Zapas poniżej” an item select, „→”, action select, for „Idź”
- * and „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Labels,
+ * and „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Groups
+ * have their own arrows and destructive removal, with „Dodaj grupę” after the list. Native rule
+ * drops insert before another rule or append to a group. Labels,
  * numbers, resources and items come from the data: the condition and action selects offer every
  * kind of the closed lists. Each edit commits a whole new program through `commit` on `change`; the
  * editor never writes the game state. Rows are rebuilt only after a structural edit, so the control
@@ -445,7 +553,8 @@ export function createProgramEditor(
   const heading = document.createElement("h2");
   heading.textContent = "Program";
   const groupsElement = document.createElement("div");
-  element.append(heading, groupsElement);
+  const addGroupButton = createButton("Dodaj grupę");
+  element.append(heading, groupsElement, addGroupButton);
 
   const conditionOptions = Object.entries(CONDITIONS).map(
     ([kind, def]): SelectOption => [kind, def.label],
@@ -463,12 +572,17 @@ export function createProgramEditor(
   let groups: {
     id: GroupId;
     element: HTMLElement;
-    name: HTMLElement;
-    condition: HTMLElement;
+    name: Field;
+    condition: ConditionView;
+    up: HTMLButtonElement;
+    down: HTMLButtonElement;
+    remove: HTMLButtonElement;
     add: HTMLButtonElement;
     rows: RowView[];
     ruleIds: number[];
   }[] = [];
+  let draggedRuleId: number | null = null;
+  const dragType = "application/x-loop-rule";
   let rebuild = true;
   let pendingFocus: FocusTarget | null = null;
 
@@ -491,20 +605,99 @@ export function createProgramEditor(
     commit(next);
   }
 
+  function structuralEdit(next: Program | null, focus: FocusTarget): void {
+    if (!next) return;
+    rebuild = true;
+    pendingFocus = focus;
+    commit(next);
+  }
+
+  addGroupButton.addEventListener("click", () =>
+    structuralEdit(addGroup(program), {
+      groupId: program.nextGroupId,
+      control: "group-name",
+    }),
+  );
+
+  function dragOver(event: DragEvent): void {
+    if (draggedRuleId === null || !event.dataTransfer) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = "move";
+  }
+
+  function drop(event: DragEvent, groupId: GroupId, beforeId?: number): void {
+    event.stopPropagation();
+    const id = draggedRuleId;
+    draggedRuleId = null;
+    if (id === null || event.dataTransfer?.getData(dragType) !== String(id))
+      return;
+    event.preventDefault();
+    const next = dropRule(program, id, groupId, beforeId);
+    if (!next) return;
+    const row = next.groups
+      .find((group) => group.id === groupId)!
+      .rules.findIndex((rule) => rule.id === id);
+    structuralEdit(next, { groupId, row, control: "condition" });
+  }
+
   function createGroup(group: RuleGroup): (typeof groups)[number] {
     const section = document.createElement("section");
-    const name = document.createElement("h3");
-    const condition = document.createElement("p");
+    section.className = "rule-group";
+    const header = document.createElement("div");
+    header.className = "rule-group-header";
+    const name = createTextField({ label: "Nazwa grupy", hint: "Nazwa grupy" });
+    const condition = createConditionControls(group.id, null);
+    const up = createButton("↑", { label: "Grupa w górę" });
+    const down = createButton("↓", { label: "Grupa w dół" });
+    const remove = createButton("Usuń", {
+      kind: "destructive",
+      label: "Usuń grupę",
+    });
+    header.append(name.element, up, down, remove);
+    const conditionRow = document.createElement("div");
+    conditionRow.className = "group-condition";
+    conditionRow.append(
+      condition.condition,
+      condition.value.element,
+      condition.conditionResource,
+      condition.conditionItem,
+    );
     const list = document.createElement("ol");
     list.className = "rules";
     const add = createButton("Dodaj regułę");
     const rows = group.rules.map((_, index) => createRow(group.id, index));
-    for (const row of rows) {
-      fillResources(row.conditionResource, offered, null);
-      fillResources(row.actionResource, offered, null);
-    }
+    for (const row of rows) fillResources(row.actionResource, offered, null);
     list.append(...rows.map((row) => row.element));
-    section.append(name, condition, list, add);
+    section.append(header, conditionRow, list, add);
+    name.input.addEventListener("change", () =>
+      edit(renameGroup(program, group.id, name.input.value)),
+    );
+    up.addEventListener("click", () =>
+      structuralEdit(moveGroup(program, group.id, -1), {
+        groupId: group.id,
+        control: "group-up",
+      }),
+    );
+    down.addEventListener("click", () =>
+      structuralEdit(moveGroup(program, group.id, 1), {
+        groupId: group.id,
+        control: "group-down",
+      }),
+    );
+    remove.addEventListener("click", () => {
+      const index = program.groups.findIndex((each) => each.id === group.id);
+      const next = removeGroup(program, group.id);
+      const following = next?.groups[index];
+      structuralEdit(
+        next,
+        following
+          ? { groupId: following.id, control: "group-remove" }
+          : { control: "add-group" },
+      );
+    });
+    section.addEventListener("dragover", dragOver);
+    section.addEventListener("drop", (event) => drop(event, group.id));
     add.addEventListener("click", () => {
       const current = program.groups.find((each) => each.id === group.id);
       if (current)
@@ -519,45 +712,37 @@ export function createProgramEditor(
       element: section,
       name,
       condition,
+      up,
+      down,
+      remove,
       add,
       rows,
       ruleIds: group.rules.map((rule) => rule.id),
     };
   }
 
-  function createRow(groupId: GroupId, index: number): RowView {
-    const row: RowView = {
-      element: document.createElement("li"),
-      count: document.createElement("span"),
-      condition: createSelectList("Warunek", conditionOptions),
-      value: createNumberField({ label: "Liczba", ...UNSET_RANGE }),
-      conditionResource: createSelectList("Zasób warunku"),
-      conditionItem: createSelectList("Przedmiot warunku", itemOptions),
-      action: createSelectList("Akcja", actionOptions),
-      actionResource: createSelectList("Zasób akcji"),
-      up: createButton("↑", { label: "W górę" }),
-      down: createButton("↓", { label: "W dół" }),
-      // „Usuń” deletes the program rule: a destructive button (D-44).
-      remove: createButton("Usuń", { kind: "destructive" }),
+  function createConditionControls(
+    groupId: GroupId,
+    index: number | null,
+  ): ConditionView {
+    const row: ConditionView = {
+      condition: createSelectList(
+        index === null ? "Warunek grupy" : "Warunek",
+        conditionOptions,
+      ),
+      value: createNumberField({
+        label: index === null ? "Liczba warunku grupy" : "Liczba",
+        ...UNSET_RANGE,
+      }),
+      conditionResource: createSelectList(
+        index === null ? "Zasób warunku grupy" : "Zasób warunku",
+      ),
+      conditionItem: createSelectList(
+        index === null ? "Przedmiot warunku grupy" : "Przedmiot warunku",
+        itemOptions,
+      ),
     };
-    row.element.className = "rule";
-    row.count.className = "rule-count";
-    const arrow = document.createElement("span");
-    arrow.textContent = "→";
-    row.element.append(
-      row.condition,
-      row.value.element,
-      row.conditionResource,
-      row.conditionItem,
-      arrow,
-      row.action,
-      row.actionResource,
-      row.count,
-      row.up,
-      row.down,
-      row.remove,
-    );
-
+    fillResources(row.conditionResource, offered, null);
     row.condition.addEventListener("change", () => {
       edit(
         withConditionKind(
@@ -570,8 +755,7 @@ export function createProgramEditor(
       );
     });
     row.value.input.addEventListener("change", () => {
-      const condition = program.groups.find((group) => group.id === groupId)
-        ?.rules[index]?.condition;
+      const condition = conditionAt(program, groupId, index);
       if (!condition || !("value" in condition)) return;
       const number = conditionNumber(condition.kind);
       if (!number) return;
@@ -604,6 +788,67 @@ export function createProgramEditor(
         ),
       );
     });
+    return row;
+  }
+
+  function createRow(groupId: GroupId, index: number): RowView {
+    const row: RowView = {
+      element: document.createElement("li"),
+      count: document.createElement("span"),
+      ...createConditionControls(groupId, index),
+      action: createSelectList("Akcja", actionOptions),
+      actionResource: createSelectList("Zasób akcji"),
+      up: createButton("↑", { label: "W górę" }),
+      down: createButton("↓", { label: "W dół" }),
+      // „Usuń” deletes the program rule: a destructive button (D-44).
+      remove: createButton("Usuń", { kind: "destructive" }),
+    };
+    row.element.className = "rule";
+    row.element.draggable = true;
+    row.element.title = "Przeciągnij regułę na inną regułę lub na grupę";
+    row.element.addEventListener("dragstart", (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("input, select, button")
+      ) {
+        event.preventDefault();
+        return;
+      }
+      const rule = program.groups.find((group) => group.id === groupId)?.rules[
+        index
+      ];
+      if (!rule || !event.dataTransfer) return;
+      draggedRuleId = rule.id;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData(dragType, String(rule.id));
+    });
+    row.element.addEventListener("dragend", () => {
+      draggedRuleId = null;
+    });
+    row.element.addEventListener("dragover", dragOver);
+    row.element.addEventListener("drop", (event) => {
+      const target = program.groups.find((group) => group.id === groupId)
+        ?.rules[index];
+      event.stopPropagation();
+      if (target) drop(event, groupId, target.id);
+    });
+    row.count.className = "rule-count";
+    const arrow = document.createElement("span");
+    arrow.textContent = "→";
+    row.element.append(
+      row.condition,
+      row.value.element,
+      row.conditionResource,
+      row.conditionItem,
+      arrow,
+      row.action,
+      row.actionResource,
+      row.count,
+      row.up,
+      row.down,
+      row.remove,
+    );
+
     row.action.addEventListener("change", () => {
       edit(
         withActionKind(
@@ -650,8 +895,7 @@ export function createProgramEditor(
   }
 
   /** Sets each control of a row to its rule, only where it differs, so a focused control keeps focus. */
-  function showRule(row: RowView, rule: ProgramRule): void {
-    const { condition, action } = rule;
+  function showCondition(row: ConditionView, condition: Condition): void {
     if (row.condition.value !== condition.kind)
       row.condition.value = condition.kind;
     row.value.element.hidden = !("value" in condition);
@@ -669,6 +913,11 @@ export function createProgramEditor(
       row.conditionItem.value !== condition.item
     )
       row.conditionItem.value = condition.item;
+  }
+
+  function showRule(row: RowView, rule: ProgramRule): void {
+    showCondition(row, rule.condition);
+    const action = rule.action;
     if (row.action.value !== action.kind) row.action.value = action.kind;
     row.actionResource.hidden = !namesResource(action);
     if (namesResource(action))
@@ -676,13 +925,34 @@ export function createProgramEditor(
   }
 
   function focusTarget(target: FocusTarget): void {
+    if (target.control === "add-group") {
+      addGroupButton.focus();
+      return;
+    }
     const group = groups.find((each) => each.id === target.groupId);
     if (!group) return;
     if (target.control === "add") {
       group.add.focus();
       return;
     }
-    group.rows[target.row]?.[target.control].focus();
+    if ("row" in target) {
+      group.rows[target.row]?.[target.control].focus();
+      return;
+    }
+    switch (target.control) {
+      case "group-name":
+        group.name.input.focus();
+        break;
+      case "group-up":
+        group.up.focus();
+        break;
+      case "group-down":
+        group.down.focus();
+        break;
+      case "group-remove":
+        group.remove.focus();
+        break;
+    }
   }
 
   function updateCounts(counts: GameState["ruleCounts"]): void {
@@ -720,14 +990,9 @@ export function createProgramEditor(
       }
       program.groups.forEach((group, index) => {
         const view = groups[index];
-        view.name.textContent = group.name;
-        const condition = group.condition;
-        const parts: string[] = [CONDITIONS[condition.kind].label];
-        if ("value" in condition) parts.push(String(condition.value));
-        if ("resource" in condition)
-          parts.push(RESOURCES[condition.resource].name);
-        if ("item" in condition) parts.push(ITEMS[condition.item].name);
-        view.condition.textContent = parts.join(" · ");
+        if (view.name.input.value !== group.name)
+          view.name.input.value = group.name;
+        showCondition(view.condition, group.condition);
         group.rules.forEach((rule, at) => showRule(view.rows[at], rule));
       });
       updateCounts(state.ruleCounts);

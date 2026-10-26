@@ -15,6 +15,11 @@ import {
   setProgram,
 } from "../../dist/public/sim/game.js";
 import {
+  addGroup,
+  renameGroup,
+  removeGroup,
+  moveGroup,
+  dropRule,
   addRule,
   createProgramEditor,
   focusAfter,
@@ -80,6 +85,148 @@ const ITEMS_LISTED = Object.keys(ITEMS);
 
 /** A deep copy, to show that an edit leaves its input as it was. */
 const copy = (value) => JSON.parse(JSON.stringify(value));
+
+// Task grupy-regul-i-liczniki, To do 3–4 (Mariusz, 2026-10-24); D-90 and D-93.
+// Catches reused numbers, lost groups, insertion before removal and counts tied to position.
+test("groups append with monotonic numbers through rename and deletion, including the last group", () => {
+  const initial = newGame().program;
+  const added = addGroup(initial);
+  assert.equal(added.groups.length, 2);
+  assert.deepEqual(added.groups[1], {
+    id: 2,
+    name: "Grupa 2",
+    condition: { kind: "always" },
+    rules: [],
+  });
+  const renamed = renameGroup(added, 2, "Plan");
+  assert.equal(renamed.groups[1].name, "Plan");
+  assert.deepEqual(renamed.groups[0], initial.groups[0]);
+  const populated = addRule(renamed, 2);
+  assert.deepEqual(populated.groups[1].rules, [ALWAYS_EXPLORE]);
+  const removed = removeGroup(populated, 2);
+  assert.deepEqual(removed.groups, initial.groups);
+  const empty = removeGroup(removed, 1);
+  assert.deepEqual(empty.groups, []);
+  const again = addGroup(empty);
+  assert.equal(again.groups[0].name, "Grupa 3");
+  assert.equal(again.groups[0].id, 3);
+  assert.equal(again.nextRuleId, 2);
+  for (const candidate of [added, renamed, populated, removed, empty, again]) {
+    assert.deepEqual(setProgram(newGame(), candidate).state.program, candidate);
+  }
+  assert.deepEqual(initial, newGame().program);
+});
+
+test("group arrows move the whole group and leave the edges unchanged", () => {
+  const input = addGroup(THREE);
+  const snapshot = copy(input);
+  const moved = moveGroup(input, 1, 1);
+  assert.ok(moved);
+  assert.deepEqual(
+    moved.groups.map((group) => group.id),
+    [2, 1],
+  );
+  assert.deepEqual(moved.groups[1].rules, THREE.groups[0].rules);
+  assert.deepEqual(moveGroup(moved, 1, -1), input);
+  assert.equal(moveGroup(input, 1, -1), null);
+  assert.equal(moveGroup(input, 2, 1), null);
+  assert.equal(moveGroup(input, 99, 1), null);
+  assert.deepEqual(input, snapshot);
+});
+
+test("group conditions offer the same kinds and editable fields while preserving rules and counts", () => {
+  const state = {
+    ...setProgram(newGame(), THREE).state,
+    ruleCounts: { 1: 7, 2: 3, 3: 1 },
+  };
+  for (const [kind, expected] of [
+    ["hereBelow", { kind: "hereBelow", resource: "stick", value: 1 }],
+    ["temperatureBelow", { kind: "temperatureBelow", value: 36.5 }],
+    ["satietyBelow", { kind: "satietyBelow", value: 50 }],
+    ["itemBelow", { kind: "itemBelow", item: "stick", value: 8 }],
+    ["campfireLeftBelow", { kind: "campfireLeftBelow", value: 20 }],
+    ["awayFromCampfire", { kind: "awayFromCampfire" }],
+  ]) {
+    const changed = withConditionKind(THREE, 1, null, kind, LAS);
+    assert.ok(changed, kind);
+    assert.deepEqual(changed.groups[0].condition, expected);
+    assert.deepEqual(changed.groups[0].rules, THREE.groups[0].rules);
+    assert.deepEqual(setProgram(state, changed).state.ruleCounts, {
+      1: 7,
+      2: 3,
+      3: 1,
+    });
+    assert.deepEqual(
+      withConditionKind(changed, 1, null, "always", LAS).groups[0].condition,
+      { kind: "always" },
+    );
+  }
+  const resource = withConditionKind(THREE, 1, null, "hereBelow", LAS);
+  assert.deepEqual(
+    withConditionResource(resource, 1, null, "moss").groups[0].condition,
+    { kind: "hereBelow", resource: "moss", value: 1 },
+  );
+  assert.deepEqual(
+    withConditionValue(resource, 1, null, 9).groups[0].condition,
+    { kind: "hereBelow", resource: "stick", value: 9 },
+  );
+  const item = withConditionKind(THREE, 1, null, "itemBelow", LAS);
+  assert.deepEqual(
+    withConditionItem(item, 1, null, "berry").groups[0].condition,
+    { kind: "itemBelow", item: "berry", value: 8 },
+  );
+  assert.equal(withConditionKind(THREE, 1, null, "always", LAS), null);
+  assert.equal(withConditionValue(THREE, 1, null, 9), null);
+});
+
+test("native drop targets place a rule before the target after removal, or append to a group", () => {
+  const input = {
+    ...THREE,
+    groups: [
+      ...THREE.groups,
+      { id: 8, name: "Empty", condition: { kind: "always" }, rules: [] },
+    ],
+    nextGroupId: 9,
+  };
+  const snapshot = copy(input);
+  for (const [label, id, groupId, beforeId, expected] of [
+    ["downward", 1, 1, 3, [[2, 1, 3], []]],
+    ["upward", 3, 1, 1, [[3, 1, 2], []]],
+    ["append same group", 1, 1, undefined, [[2, 3, 1], []]],
+    ["empty group", 2, 8, undefined, [[1, 3], [2]]],
+  ]) {
+    const moved = dropRule(input, id, groupId, beforeId);
+    assert.ok(moved, label);
+    assert.deepEqual(
+      moved.groups.map((group) => group.rules.map((rule) => rule.id)),
+      expected,
+      label,
+    );
+    const state = {
+      ...setProgram(newGame(), input).state,
+      ruleCounts: { 1: 7, 2: 3, 3: 1 },
+    };
+    const checked = setProgram(state, moved).state;
+    assert.deepEqual(checked.ruleCounts, { 1: 7, 2: 3, 3: 1 });
+    assert.deepEqual(checked.program, moved);
+  }
+  const transferred = dropRule(input, 2, 8);
+  const back = dropRule(transferred, 2, 1, 3);
+  assert.deepEqual(
+    back.groups.map((group) => group.rules.map((rule) => rule.id)),
+    [[1, 2, 3], []],
+  );
+  for (const args of [
+    [1, 1, 1],
+    [99, 1],
+    [1, 99],
+    [1, 1, 99],
+    [1, 8, 2],
+  ]) {
+    assert.equal(dropRule(input, ...args), null, JSON.stringify(args));
+  }
+  assert.deepEqual(input, snapshot);
+});
 
 test("importing the editor touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");
@@ -156,8 +303,10 @@ test("count-only refresh changes count text without writing field values or repl
     const fields = elements.filter((element) =>
       ["input", "select"].includes(element.tag),
     );
-    const number = fields.filter((field) => field.tag === "input")[1];
+    const number = fields.filter((field) => field.type === "number")[2];
     number.value = "3e";
+    const name = fields.find((field) => field.type === "text");
+    name.value = "Uncommitted group name";
     const originalValues = fields.map((field) => field.value);
     for (const field of fields) {
       const value = field.value;
