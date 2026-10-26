@@ -205,6 +205,48 @@ The test server host establishes an IPv4 TCP connection to `region1.v2.argotunne
 
 - **Source:** observed: `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844` reports Connected before timeout exit 124; the same check on port 7845 reports a connection timeout and exit 28; run 2026-10-26
 
+## argon2-password-api
+
+Argon2 0.45.1 generates a salt when none is supplied, returns an encoded hash by default with the selected parameters, and verifies an encoded hash using its stored parameters.
+
+- **Source:** https://raw.githubusercontent.com/ranisalt/node-argon2/786de7152f95881b0683aea1d2ca60ed0d6d9e2f/argon2.cjs § hash — "const salt = _salt ?? (await generateSalt(16));" · § hash — "return serialize({" · § verify — "const { id, ...rest } = deserialize(digest);"; read 2026-10-26
+
+## argon2-native-platform
+
+Argon2 0.45.1 documents Node.js 22 or newer as its supported runtime and publishes prebuilt binaries tested on Ubuntu 22.04 x86-64, without certifying this product's target image.
+
+- **Source:** https://raw.githubusercontent.com/ranisalt/node-argon2/786de7152f95881b0683aea1d2ca60ed0d6d9e2f/README.md § Before installing — "node-argon2 works only and is tested against Node >=22.0.0." · § Prebuilt binaries — "Ubuntu 22.04 (x86-64; ARM64 from v0.28.2; ARMv7 from v0.43.0)"; read 2026-10-26
+
+## password-hash-work-factor
+
+OWASP recommends Argon2id for password storage and experimentation on the application's actual servers to select a work factor.
+
+- **Source:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/3c07d4aa45a33ffc6a68408621064942358dee61/cheatsheets/Password_Storage_Cheat_Sheet.md § Recommendations — "Use Argon2id" · § Using Work Factors — "Determining the optimal work factor will require experimentation on the specific server(s) used by the application."; read 2026-10-26
+
+## express-session-store-contract
+
+Express-session 1.19.0 keeps session data server-side, requires Store get, set and destroy callbacks and recommends touch for idle expiry, while its default MemoryStore is not intended for production.
+
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/README.md § Compatible Session Stores — "Required methods are ones that this module will always call on the store." · § API — "not designed for a production environment."; read 2026-10-26
+
+## session-secret-rotation
+
+Express-session 1.19.0 signs the session cookie with the first configured secret and verifies incoming signatures against each configured secret, allowing old keys to remain verification keys.
+
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/index.js § session cookie response — "setcookie(res, name, req.sessionID, secrets[0], req.session.cookie.data)" · § unsigncookie — "for (var i = 0; i < secrets.length; i++) {" · "var result = signature.unsign(val, secrets[i]);"; read 2026-10-26
+
+## node-sqlite-database
+
+Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module and its DatabaseSync connection API is synchronous.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § SQLite — "The node:sqlite module facilitates working with SQLite databases." · § Class: DatabaseSync — "All APIs exposed by this class execute synchronously."; read 2026-10-26
+
+## fetch-same-origin-credentials
+
+Fetch includes eligible credentials by default for requests to the same origin, whereas cross-origin credential use needs additional browser and server configuration.
+
+- **Source:** https://raw.githubusercontent.com/mdn/content/fe1d7fb9b67ce826c4a748ce00e7b35ac4a54c7f/files/en-us/web/api/fetch_api/using_fetch/index.md § Including credentials — "By default, credentials are only included in same-origin requests."; read 2026-10-26
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
