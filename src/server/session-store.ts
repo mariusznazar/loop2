@@ -5,6 +5,10 @@ declare module "express-session" {
   interface SessionData {
     accountId?: string;
   }
+  // Present in the pinned runtime, absent from its Cookie declaration.
+  interface Cookie {
+    serialize(name: string, value: string): string;
+  }
 }
 
 type Completion = (error?: Error) => void;
@@ -15,6 +19,9 @@ function object(value: unknown): value is Record<string, unknown> {
 
 function validateCookie(cookie: session.Cookie): void {
   try {
+    if (cookie.originalMaxAge === null) {
+      throw new Error("Missing session lifetime");
+    }
     cookie.serialize("sid", "validation");
     // Exercise the library's renewal without changing the stored cookie.
     const renewed = Object.assign(new session.Cookie(), cookie);
