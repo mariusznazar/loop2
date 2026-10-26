@@ -35,13 +35,14 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 T = 1760000000000
 T_OTHER = 1760000123456
 ALWAYS = {"kind": "always"}
-PROGRAM = {"rules": [{"condition": ALWAYS, "action": {"kind": "explore"}},
-                     {"condition": ALWAYS, "action": {"kind": "wander"}}]}
+PROGRAM = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"}},
+                              {"condition": ALWAYS, "action": {"kind": "wander"}}])
 
 
 def sent(character_id):

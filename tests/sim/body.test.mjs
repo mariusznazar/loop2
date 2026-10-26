@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { bodyMinute } from "../../dist/public/sim/body.js";
+import { programFromRules } from "./program-fixture.mjs";
 import {
   advanceMinutes,
   createCharacter,
@@ -27,14 +28,12 @@ const ALWAYS = { kind: "always" };
 const rule = (action) => ({ condition: ALWAYS, action });
 const [stick] = forest.resources.map((resource) => resource.id);
 /** A program of today's closed list: explore, walk to sticks, otherwise wander. */
-const MIXED = {
-  rules: [
-    rule({ kind: "explore" }),
-    rule({ kind: "walkTo", resource: stick }),
-    rule({ kind: "wander" }),
-  ],
-};
-const EXPLORING = { rules: [rule({ kind: "explore" })] };
+const MIXED = programFromRules(
+  rule({ kind: "explore" }),
+  rule({ kind: "walkTo", resource: stick }),
+  rule({ kind: "wander" }),
+);
+const EXPLORING = programFromRules(rule({ kind: "explore" }));
 
 /** A game sent to Las with the program; the run stands at minute 0. */
 function sent(program = MIXED) {

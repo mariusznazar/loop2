@@ -9,6 +9,7 @@ import { BALANCE, INITIAL_SEED } from "../../dist/public/sim/data/balance.js";
 import { ITEMS } from "../../dist/public/sim/data/items.js";
 import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
 import { TRAITS } from "../../dist/public/sim/data/traits.js";
+import { programFromRules, programWithRules } from "./program-fixture.mjs";
 
 test("the map Las has the size, entrance, step and resources of the task", () => {
   const forest = MAPS.forest;
@@ -178,7 +179,7 @@ test("setProgram accepts every resource of the map data list, in conditions and 
     rule(below(id, 3), EXPLORE),
     rule(ALWAYS, walkTo(id)),
   ]);
-  const program = { rules };
+  const program = programFromRules(...rules);
   assert.deepEqual(setProgram(newGame(), program).state.program, program);
   const running = send(
     createCharacter(newGame(), "Ala").state,
@@ -193,14 +194,12 @@ test("setProgram accepts the empty program, both actions without a resource and 
   const [resource] = firstMap.resources.map(({ id }) => id);
   const { min, max } = CONDITIONS.hereBelow;
   for (const program of [
-    { rules: [] },
-    { rules: [rule(ALWAYS, EXPLORE), rule(ALWAYS, { kind: "wander" })] },
-    {
-      rules: [
-        rule(below(resource, min), EXPLORE),
-        rule(below(resource, max), EXPLORE),
-      ],
-    },
+    programFromRules(),
+    programFromRules(rule(ALWAYS, EXPLORE), rule(ALWAYS, { kind: "wander" })),
+    programFromRules(
+      rule(below(resource, min), EXPLORE),
+      rule(below(resource, max), EXPLORE),
+    ),
   ]) {
     assert.deepEqual(setProgram(newGame(), program).state.program, program);
   }
@@ -217,12 +216,17 @@ test("setProgram rejects a resource id outside the map data list", async () => {
   for (const resource of ["granite", "toString", "", undefined]) {
     for (const state of [newGame(), running]) {
       assert.throws(
-        () => setProgram(state, { rules: [rule(ALWAYS, walkTo(resource))] }),
+        () =>
+          setProgram(state, programFromRules(rule(ALWAYS, walkTo(resource)))),
         Error,
         `walk to ${resource}`,
       );
       assert.throws(
-        () => setProgram(state, { rules: [rule(below(resource, 1), EXPLORE)] }),
+        () =>
+          setProgram(
+            state,
+            programFromRules(rule(below(resource, 1), EXPLORE)),
+          ),
         Error,
         `below ${resource}`,
       );
@@ -237,16 +241,16 @@ test("setProgram rejects kinds outside the closed list and values outside the da
   const invalid = [
     null,
     {},
-    { rules: "none" },
-    { rules: [null] },
-    { rules: [{ condition: ALWAYS }] },
-    { rules: [rule({ kind: "never" }, EXPLORE)] },
-    { rules: [rule(ALWAYS, { kind: "gather" })] },
-    { rules: [rule(below(resource, min - 1), EXPLORE)] },
-    { rules: [rule(below(resource, max + 1), EXPLORE)] },
-    { rules: [rule(below(resource, 1.5), EXPLORE)] },
-    { rules: [rule(below(resource, "3"), EXPLORE)] },
-    { rules: [rule(below(resource, Number.NaN), EXPLORE)] },
+    programWithRules("none"),
+    programFromRules(null),
+    programFromRules({ condition: ALWAYS }),
+    programFromRules(rule({ kind: "never" }, EXPLORE)),
+    programFromRules(rule(ALWAYS, { kind: "gather" })),
+    programFromRules(rule(below(resource, min - 1), EXPLORE)),
+    programFromRules(rule(below(resource, max + 1), EXPLORE)),
+    programFromRules(rule(below(resource, 1.5), EXPLORE)),
+    programFromRules(rule(below(resource, "3"), EXPLORE)),
+    programFromRules(rule(below(resource, Number.NaN), EXPLORE)),
   ];
   for (const program of invalid) {
     assert.throws(
@@ -259,11 +263,14 @@ test("setProgram rejects kinds outside the closed list and values outside the da
 
 test("a refused program leaves the game unchanged", async () => {
   const { newGame, setProgram } = await import("../../dist/public/sim/game.js");
-  const state = setProgram(newGame(), { rules: [rule(ALWAYS, EXPLORE)] }).state;
+  const state = setProgram(
+    newGame(),
+    programFromRules(rule(ALWAYS, EXPLORE)),
+  ).state;
   assert.throws(() =>
-    setProgram(state, { rules: [rule(ALWAYS, walkTo("granite"))] }),
+    setProgram(state, programFromRules(rule(ALWAYS, walkTo("granite")))),
   );
-  assert.deepEqual(state.program, { rules: [rule(ALWAYS, EXPLORE)] });
+  assert.deepEqual(state.program, programFromRules(rule(ALWAYS, EXPLORE)));
 });
 
 test("send rejects a map id not in the data and a character id not in the team", async () => {
@@ -310,7 +317,7 @@ test("an activity of 0 minutes from faulty data still finishes in the next minut
   const { newMapRun, stepMinute } =
     await import("../../dist/public/sim/run.js");
   const map = { ...firstMap, stepMinutes: 0 };
-  const program = { rules: [rule(ALWAYS, { kind: "wander" })] };
+  const program = programFromRules(rule(ALWAYS, { kind: "wander" }));
   const started = newMapRun(map, 1, program, SENT).run;
   assert.equal(started.current.endMinute, started.minute);
   const step = stepMinute(started, map, program);

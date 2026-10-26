@@ -13,6 +13,7 @@ import {
 import { actionFeasible } from "../../dist/public/sim/program.js";
 import { streamState } from "../../dist/public/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+import { programFromRules } from "./program-fixture.mjs";
 
 const [mapId, map] = Object.entries(MAPS)[0];
 // The id of a character of the team, which the map run carries.
@@ -25,9 +26,8 @@ const EXPLORE = { kind: "explore" };
 const WANDER = { kind: "wander" };
 const walkTo = (resource) => ({ kind: "walkTo", resource });
 const rule = (condition, action) => ({ condition, action });
-const program = (...rules) => ({ rules });
-const EXPLORING = program(rule(ALWAYS, EXPLORE));
-const WANDERING = program(rule(ALWAYS, WANDER));
+const EXPLORING = programFromRules(rule(ALWAYS, EXPLORE));
+const WANDERING = programFromRules(rule(ALWAYS, WANDER));
 
 function start(seed = 3, startProgram = EXPLORING) {
   return newMapRun(map, seed, startProgram, { mapId, characterId });
@@ -79,25 +79,24 @@ test("a map run starts at minute 0 on the entrance with the first activity chose
   assert.deepEqual(run.character.at, entrance);
   assert.equal(run.wanderRandom, streamState(5, "wander"));
   assert.equal(hereOf(run).revealed, false);
-  assert.deepEqual(events, [
-    {
-      kind: "activityStarted",
-      minute: 0,
-      activity: { kind: "rule", ruleIndex: 0, action: EXPLORE },
-      stepTo: null,
-    },
-  ]);
+  assert.deepEqual(
+    events.map(({ kind, minute, activity, stepTo }) => [
+      kind,
+      minute,
+      activity?.action,
+      stepTo,
+    ]),
+    [["activityStarted", 0, EXPLORE, null]],
+  );
 });
 
 test("explore takes 20 minutes, reveals the tile and brings nothing", () => {
   assert.equal(ACTIONS.explore.minutes, 20);
   const { run } = start();
-  assert.deepEqual(run.current, {
-    activity: { kind: "rule", ruleIndex: 0, action: EXPLORE },
-    startMinute: 0,
-    endMinute: 20,
-    stepTo: null,
-  });
+  assert.deepEqual(run.current.activity.action, EXPLORE);
+  assert.equal(run.current.startMinute, 0);
+  assert.equal(run.current.endMinute, 20);
+  assert.equal(run.current.stepTo, null);
   const at19 = steps(run, 19, EXPLORING);
   assert.equal(at19.run.minute, 19);
   assert.equal(hereOf(at19.run).revealed, false);
@@ -113,14 +112,20 @@ test("explore takes 20 minutes, reveals the tile and brings nothing", () => {
     "exploring changes no stock",
   );
   assert.deepEqual(at20.run.character, run.character);
-  assert.deepEqual(at20.events.slice(0, 2), [
-    {
-      kind: "activityFinished",
-      minute: 20,
-      activity: { kind: "rule", ruleIndex: 0, action: EXPLORE },
-    },
-    { kind: "tileRevealed", minute: 20, at: entrance },
-  ]);
+  assert.deepEqual(
+    at20.events
+      .slice(0, 2)
+      .map(({ kind, minute, activity, at }) => [
+        kind,
+        minute,
+        activity?.action,
+        at,
+      ]),
+    [
+      ["activityFinished", 20, EXPLORE, undefined],
+      ["tileRevealed", 20, undefined, entrance],
+    ],
+  );
   const others = run.tiles.filter((tile) => !sameHex(tile.at, entrance));
   assert.deepEqual(
     at20.run.tiles.filter((tile) => !sameHex(tile.at, entrance)),
@@ -143,11 +148,7 @@ test("the next activity is chosen in the finishing minute by the program current
   const at19 = steps(start().run, 19, EXPLORING).run;
   const at20 = stepMinute(at19, map, WANDERING);
   assert.equal(at20.run.current.startMinute, 20);
-  assert.deepEqual(at20.run.current.activity, {
-    kind: "rule",
-    ruleIndex: 0,
-    action: WANDER,
-  });
+  assert.deepEqual(at20.run.current.activity.action, WANDER);
   assert.equal(at20.events.at(-1).kind, "activityStarted");
   assert.equal(at20.events.at(-1).minute, 20);
 });
@@ -264,18 +265,14 @@ test("a step lasts the target tile stepMinutes and moves the character at its en
       : { ...tile, revealed: true },
   );
   const begun = stepMinute(freeNextMinute(prepared), map, WANDERING);
-  assert.deepEqual(begun.run.current, {
-    activity: { kind: "rule", ruleIndex: 0, action: WANDER },
-    startMinute: 1,
-    endMinute: 10,
-    stepTo: target,
-  });
-  assert.deepEqual(begun.events.at(-1), {
-    kind: "activityStarted",
-    minute: 1,
-    activity: { kind: "rule", ruleIndex: 0, action: WANDER },
-    stepTo: target,
-  });
+  assert.deepEqual(begun.run.current.activity.action, WANDER);
+  assert.equal(begun.run.current.startMinute, 1);
+  assert.equal(begun.run.current.endMinute, 10);
+  assert.deepEqual(begun.run.current.stepTo, target);
+  assert.equal(begun.events.at(-1).kind, "activityStarted");
+  assert.equal(begun.events.at(-1).minute, 1);
+  assert.deepEqual(begun.events.at(-1).activity.action, WANDER);
+  assert.deepEqual(begun.events.at(-1).stepTo, target);
   const at9 = steps(begun.run, 8, WANDERING);
   assert.deepEqual(
     at9.run.character.at,
@@ -285,19 +282,22 @@ test("a step lasts the target tile stepMinutes and moves the character at its en
   assert.deepEqual(at9.run.current.stepTo, target);
   const at10 = stepMinute(at9.run, map, EXPLORING);
   assert.deepEqual(at10.run.character.at, target);
-  assert.deepEqual(at10.events.slice(0, 2), [
-    {
-      kind: "activityFinished",
-      minute: 10,
-      activity: { kind: "rule", ruleIndex: 0, action: WANDER },
-    },
-    { kind: "moved", minute: 10, from: entrance, to: target },
-  ]);
-  assert.deepEqual(at10.run.current.activity, {
-    kind: "rule",
-    ruleIndex: 0,
-    action: EXPLORE,
-  });
+  assert.deepEqual(
+    at10.events
+      .slice(0, 2)
+      .map(({ kind, minute, activity, from, to }) => [
+        kind,
+        minute,
+        activity?.action,
+        from,
+        to,
+      ]),
+    [
+      ["activityFinished", 10, WANDER, undefined, undefined],
+      ["moved", 10, undefined, entrance, target],
+    ],
+  );
+  assert.deepEqual(at10.run.current.activity.action, EXPLORE);
   assert.equal(at10.run.current.stepTo, null);
 });
 
@@ -320,7 +320,7 @@ test("Idź targets the nearest revealed tile with stock and gives the first step
   const next = stepMinute(
     freeNextMinute(prepared),
     map,
-    program(rule(ALWAYS, walkTo(stick))),
+    programFromRules(rule(ALWAYS, walkTo(stick))),
   ).run;
   assert.deepEqual(next.current.stepTo, expected.next);
   assert.equal(hexDistance(next.current.stepTo, entrance), 1);
@@ -370,7 +370,7 @@ test("walking by program reaches the stock step by step and stays there", () => 
     revealed: true,
     stock: sameHex(tile.at, far) ? { [stick]: 3 } : {},
   }));
-  const walking = program(rule(ALWAYS, walkTo(stick)));
+  const walking = programFromRules(rule(ALWAYS, walkTo(stick)));
   const { run: end, events } = steps(freeNextMinute(prepared), 40, walking);
   assert.deepEqual(end.character.at, far);
   const moves = events.filter((event) => event.kind === "moved");
@@ -380,7 +380,7 @@ test("walking by program reaches the stock step by step and stays there", () => 
 
 test("no step ends the run by itself: steps keep coming for four hours", () => {
   const end = steps(
-    start(4, program(rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER))).run,
+    start(4, programFromRules(rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER))).run,
     240,
     WANDERING,
   ).run;
@@ -389,7 +389,7 @@ test("no step ends the run by itself: steps keep coming for four hours", () => {
 });
 
 test("the same run and program give the same steps", () => {
-  const mixed = program(
+  const mixed = programFromRules(
     rule(ALWAYS, EXPLORE),
     rule(ALWAYS, walkTo(stick)),
     rule(ALWAYS, WANDER),
@@ -401,7 +401,7 @@ test("the same run and program give the same steps", () => {
 });
 
 test("newMapRun and stepMinute do not change their inputs", () => {
-  const mixed = program(
+  const mixed = programFromRules(
     rule(ALWAYS, EXPLORE),
     rule(ALWAYS, walkTo(stick)),
     rule(ALWAYS, WANDER),

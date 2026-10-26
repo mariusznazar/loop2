@@ -10,15 +10,17 @@ import {
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
+import { programFromRules } from "./program-fixture.mjs";
 
 const mapId = Object.keys(MAPS)[0];
 // The first character a new game creates takes the id 1.
 const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;
 
-const EXPLORING = {
-  rules: [{ condition: { kind: "always" }, action: { kind: "explore" } }],
-};
+const EXPLORING = programFromRules({
+  condition: { kind: "always" },
+  action: { kind: "explore" },
+});
 
 /** A game sent to the first map with a program that explores; the run stands at minute 0. */
 function sent(program = EXPLORING) {

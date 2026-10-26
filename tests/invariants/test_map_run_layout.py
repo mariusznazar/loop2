@@ -48,6 +48,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -67,11 +68,11 @@ def rule(condition, action):
     return {"condition": condition, "action": action}
 
 
-EXPLORE = {"rules": [rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
-WANDER = {"rules": [rule(ALWAYS, {"kind": "wander"})]}
-GOING = {"rules": [rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
-                   rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
-EMPTY = {"rules": []}
+EXPLORE = program_from_rules([rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
+WANDER = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
+GOING = program_from_rules([rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+                            rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
+EMPTY = program_from_rules([])
 PAIRS = (("EXPLORE", EXPLORE, "WANDER", WANDER), ("GOING", GOING, "EXPLORE", EXPLORE),
          ("EMPTY", EMPTY, "GOING", GOING))
 

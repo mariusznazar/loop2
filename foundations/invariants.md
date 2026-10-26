@@ -234,8 +234,10 @@ resource or an archetype, outside its comments, by the identifier or the name th
 ## program-rule-pick
 
 In each free game minute of a map run, the character starts to carry out the first program rule
-whose condition holds and which the character can carry out then, and carries out no program rule
-in a free game minute in which none has both.
+whose condition holds and whose action the character can carry out then, taking rule groups in
+order and the program rules within each in order, passing over a group whose condition does not
+hold or which holds no such program rule, and carries out no program rule where no group offers
+one.
 
 - **Method:** test
 - **Rests on:** none

@@ -36,6 +36,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -55,9 +56,9 @@ def rule(condition, action):
     return {"condition": condition, "action": action}
 
 
-P_WANDER = {"rules": [rule(ALWAYS, {"kind": "wander"})]}
-P_GO = {"rules": [rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
-                  rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
+P_WANDER = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
+P_GO = program_from_rules([rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+                           rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
 LONG_MINUTES = 240
 
 DRIVER = r"""
@@ -182,7 +183,7 @@ class MoveReach(unittest.TestCase):
                                                            "goes unseen")
         self.assertTrue(violations(moved_to({"q": 40, "r": 40}))[0],
                         "a move ending off the map goes unseen")
-        explore = copying.deepcopy(drive({"rules": [rule(ALWAYS, {"kind": "explore"})]}, 20))
+        explore = copying.deepcopy(drive(program_from_rules([rule(ALWAYS, {"kind": "explore"})]), 20))
         explore[10]["character"]["at"] = {"q": 2, "r": 1}
         self.assertTrue(violations(explore)[0], "a change of tile outside a move goes unseen")
 

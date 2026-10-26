@@ -10,6 +10,7 @@ import {
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { terrainPicture } from "../../dist/public/view/terrain-picture.js";
+import { programFromRules } from "../sim/program-fixture.mjs";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -19,7 +20,7 @@ const SENT = {
 const ALWAYS = { kind: "always" };
 
 function sent(rules = [{ condition: ALWAYS, action: { kind: "explore" } }]) {
-  const program = setProgram(newGame(), { rules }).state;
+  const program = setProgram(newGame(), programFromRules(...rules)).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
 }
 

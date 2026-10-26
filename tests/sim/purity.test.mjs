@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { programFromRules, programRules } from "./program-fixture.mjs";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
@@ -21,14 +22,12 @@ const REAL_MS = 1760000000000;
 
 const ALWAYS = { kind: "always" };
 const rule = (condition, action) => ({ condition, action });
-const PROGRAM = {
-  rules: [
-    rule({ kind: "hereBelow", resource: stick, value: 1 }, { kind: "explore" }),
-    rule(ALWAYS, { kind: "walkTo", resource: berry }),
-    rule(ALWAYS, { kind: "wander" }),
-  ],
-};
-const OTHER = { rules: [rule(ALWAYS, { kind: "wander" })] };
+const PROGRAM = programFromRules(
+  rule({ kind: "hereBelow", resource: stick, value: 1 }, { kind: "explore" }),
+  rule(ALWAYS, { kind: "walkTo", resource: berry }),
+  rule(ALWAYS, { kind: "wander" }),
+);
+const OTHER = programFromRules(rule(ALWAYS, { kind: "wander" }));
 
 /** Freezes a value and everything it holds, so a write to it throws in strict code. */
 function deepFreeze(value) {
@@ -90,8 +89,8 @@ test("no public function of the game changes its inputs", () => {
 test("the program held by the state does not follow later changes of the object passed in", () => {
   const program = structuredClone(PROGRAM);
   const { state } = setProgram(newGame(), program);
-  program.rules.pop();
-  program.rules[0].condition.value = 7;
+  programRules(program).pop();
+  programRules(program)[0].condition.value = 7;
   assert.deepEqual(state.program, PROGRAM);
 });
 

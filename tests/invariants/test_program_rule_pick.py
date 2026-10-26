@@ -1,6 +1,6 @@
 """Invariant program-rule-pick: In each free game minute of a map run, the character starts to
-carry out the first program rule whose condition holds and which the character can carry out
-then, and carries out no program rule in a free game minute in which none has both.
+carry out the first feasible rule whose condition holds, in the first group whose condition holds
+and offers such a rule. Empty and infeasible groups pass on; no qualifying group means waiting.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
@@ -11,9 +11,9 @@ JSON of the map run.
 Reading of the sentence:
 - a free game minute: the minute at which the activity before it ends, and minute 0 of the map
   run; at it the map run's `current` activity starts at that minute;
-- starts to carry out a program rule: `current.activity` is `{kind: 'rule', ruleIndex, action}`
-  with that rule's index and action, starting at that minute; carries out no program rule: it is
-  `{kind: 'wait'}`;
+- starts to carry out a program rule: `current.activity` is `{kind: 'rule', ruleId, action}`
+  with that rule's stable identity and copied action, starting at that minute; carries out no
+  program rule: it is `{kind: 'wait'}`;
 - a condition holds: `always` always holds; "fewer than 0 sticks here" never holds;
 - the character can carry out: exploring only on a tile not revealed (exploring-reveal); going to
   a resource only where some revealed tile holds some of it and the character does not stand on
@@ -23,24 +23,29 @@ Reading of the sentence:
 Scenarios on the map Las (`forest`) with the archetype `elementalMage`, sent at the real time T
 (exploring lasts 20 game minutes and waiting 1, as the data files `actions.js` and `balance.js`
 give them, written out below):
-- P_NONE_AT_20: rule 0 "fewer than 0 sticks here → explore" (condition fails, action possible),
-  rule 1 "always → go to berry" (condition holds; at minute 0 no tile is revealed, at minute 20
-  only the entrance is), rule 2 "always → explore": minute 0 starts rule 2, exploring to 20; at
+- P_NONE_AT_20: rule 1 "fewer than 0 sticks here → explore" (condition fails, action possible),
+  rule 2 "always → go to berry" (condition holds; at minute 0 no tile is revealed, at minute 20
+  only the entrance is), rule 3 "always → explore": minute 0 starts rule 3, exploring to 20; at
   minutes 20, 21 and 22 no rule has both, so the character carries out none;
-- P_NEVER: only rule 0 above: no rule at any minute 0 to 30;
-- order: "always → wander, always → explore" starts rule 0 (wander) at minute 0, "always →
-  explore, always → wander" starts rule 0 (explore), and "fewer than 0 sticks here → wander,
-  always → explore" starts rule 1 (explore);
-- P_LONG, 240 game minutes on two seeds (T and T_OTHER) and two resources (berry, moss): rule 0
-  "fewer than 0 sticks here → wander", rule 1 "always → go to the resource", rule 2 "always →
-  explore", rule 3 "always → wander"; at every free minute the rule started must be 1 where going
-  is possible, else 2 where the tile is not revealed, else 3; every minute at which the activity
+- P_NEVER: only rule 1 above: no rule at any minute 0 to 30;
+- order: "always → wander, always → explore" starts rule 1 (wander) at minute 0, "always →
+  explore, always → wander" starts rule 1 (explore), and "fewer than 0 sticks here → wander,
+  always → explore" starts rule 2 (explore);
+- P_LONG, 240 game minutes on two seeds (T and T_OTHER) and two resources (berry, moss): rule 1
+  "fewer than 0 sticks here → wander", rule 2 "always → go to the resource", rule 3 "always →
+  explore", rule 4 "always → wander"; at every free minute the rule started must be 2 where going
+  is possible, else 3 where the tile is not revealed, else 4; every minute at which the activity
   before ends must be a free minute with an activity starting at it.
 
-Controls, so the check can fail: P_LONG's runs must start each of rules 1, 2 and 3 at some free
+Controls, so the check can fail: P_LONG's runs must start each of rules 2, 3 and 4 at some free
 minute, so a pick that ignored the order or what can be carried out would show; and the comparison
-of P_LONG flags made-up records in which the rule started at a free minute is another one, an
-activity starts in the middle of another, or a free minute starts nothing.
+of P_LONG flags made-up records in which the rule started at a free minute is another one, a
+matching identity carries the wrong action, an activity starts in the middle of another, or a
+free minute starts nothing.
+
+The grouped scenario skips a false outer condition, an empty group and an infeasible group,
+then skips a false rule and chooses rule id 74 before a later feasible rule and group. Stable
+identities deliberately differ from positions. The original long scenarios use one always group.
 
 Does NOT cover: conditions "fewer than N here" with N above 0; maps, archetypes and programs other
 than those above; real time as the way minutes pass.
@@ -54,6 +59,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -80,22 +86,25 @@ def rule(condition, action):
     return {"condition": condition, "action": action}
 
 
-P_NONE_AT_20 = {"rules": [rule(NEVER, EXPLORE), rule(ALWAYS, walk_to("berry")),
-                          rule(ALWAYS, EXPLORE)]}
-P_NEVER = {"rules": [rule(NEVER, EXPLORE)]}
-P_WANDER_FIRST = {"rules": [rule(ALWAYS, WANDER), rule(ALWAYS, EXPLORE)]}
-P_EXPLORE_FIRST = {"rules": [rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)]}
-P_FIRST_FAILS = {"rules": [rule(NEVER, WANDER), rule(ALWAYS, EXPLORE)]}
+P_NONE_AT_20 = program_from_rules([
+    rule(NEVER, EXPLORE), rule(ALWAYS, walk_to("berry")), rule(ALWAYS, EXPLORE),
+])
+P_NEVER = program_from_rules([rule(NEVER, EXPLORE)])
+P_WANDER_FIRST = program_from_rules([rule(ALWAYS, WANDER), rule(ALWAYS, EXPLORE)])
+P_EXPLORE_FIRST = program_from_rules([rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)])
+P_FIRST_FAILS = program_from_rules([rule(NEVER, WANDER), rule(ALWAYS, EXPLORE)])
 
 
 def p_long(resource):
-    return {"rules": [rule(NEVER, WANDER), rule(ALWAYS, walk_to(resource)),
-                      rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)]}
+    return program_from_rules([
+        rule(NEVER, WANDER), rule(ALWAYS, walk_to(resource)),
+        rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER),
+    ])
 
 
 LONG_MINUTES = 240
 
-EXPLORING_FROM_0_BY_2 = {"activity": {"kind": "rule", "ruleIndex": 2, "action": EXPLORE},
+EXPLORING_FROM_0_BY_3 = {"activity": {"kind": "rule", "ruleId": 3, "action": EXPLORE},
                          "startMinute": 0, "endMinute": EXPLORE_MINUTES, "stepTo": None}
 
 
@@ -185,9 +194,11 @@ def long_violations(runs, resource):
             found.append(f"minute {minute}: a free minute starts nothing")
             continue
         here = tile_at(run, run["character"]["at"])
-        expected = 1 if can_go(run, resource) else 2 if not here["revealed"] else 3
+        expected = 2 if can_go(run, resource) else 3 if not here["revealed"] else 4
         activity = current["activity"]
-        if activity.get("kind") != "rule" or activity.get("ruleIndex") != expected:
+        expected_action = walk_to(resource) if expected == 2 else EXPLORE if expected == 3 else WANDER
+        if (activity.get("kind") != "rule" or activity.get("ruleId") != expected
+                or activity.get("action") != expected_action):
             found.append(f"minute {minute}: expected rule {expected}, started "
                          f"{json.dumps(activity)}")
     return found
@@ -195,11 +206,32 @@ def long_violations(runs, resource):
 
 class ProgramRulePick(unittest.TestCase):
 
+    def test_groups_skip_false_empty_and_infeasible_before_first_feasible_rule(self):
+        # invariant: program-rule-pick
+        program = {
+            "nextGroupId": 6, "nextRuleId": 90,
+            "groups": [
+                {"id": 1, "name": "False", "condition": NEVER,
+                 "rules": [{"id": 41, **rule(ALWAYS, WANDER)}]},
+                {"id": 2, "name": "Empty", "condition": ALWAYS, "rules": []},
+                {"id": 3, "name": "Infeasible", "condition": ALWAYS,
+                 "rules": [{"id": 52, **rule(ALWAYS, walk_to("berry"))}]},
+                {"id": 4, "name": "First", "condition": ALWAYS,
+                 "rules": [{"id": 63, **rule(NEVER, WANDER)},
+                           {"id": 74, **rule(ALWAYS, EXPLORE)},
+                           {"id": 85, **rule(ALWAYS, WANDER)}]},
+                {"id": 5, "name": "Later", "condition": ALWAYS,
+                 "rules": [{"id": 89, **rule(ALWAYS, WANDER)}]},
+            ],
+        }
+        activity = drive(program, 0)[0]["current"]["activity"]
+        self.assertEqual(activity, {"kind": "rule", "ruleId": 74, "action": EXPLORE})
+
     def test_no_rule_when_none_holds_and_can_be_carried_out(self):
         # invariant: program-rule-pick
         runs = drive(P_NONE_AT_20, 22)
-        self.assertEqual(runs[0]["current"], EXPLORING_FROM_0_BY_2,
-                         "minute 0: rules 0 and 1 lack one of the two, rule 2 has both")
+        self.assertEqual(runs[0]["current"], EXPLORING_FROM_0_BY_3,
+                         "minute 0: rules 1 and 2 lack one of the two, rule 3 has both")
         for minute in (20, 21, 22):
             self.assertEqual(runs[minute]["current"], waiting(minute),
                              f"minute {minute}: no rule has both, yet one was started")
@@ -211,11 +243,11 @@ class ProgramRulePick(unittest.TestCase):
     def test_the_first_rule_with_both_is_started(self):
         # invariant: program-rule-pick
         first = drive(P_WANDER_FIRST, 0)[0]["current"]["activity"]
-        self.assertEqual(first, {"kind": "rule", "ruleIndex": 0, "action": WANDER})
+        self.assertEqual(first, {"kind": "rule", "ruleId": 1, "action": WANDER})
         first = drive(P_EXPLORE_FIRST, 0)[0]["current"]["activity"]
-        self.assertEqual(first, {"kind": "rule", "ruleIndex": 0, "action": EXPLORE})
+        self.assertEqual(first, {"kind": "rule", "ruleId": 1, "action": EXPLORE})
         first = drive(P_FIRST_FAILS, 0)[0]["current"]["activity"]
-        self.assertEqual(first, {"kind": "rule", "ruleIndex": 1, "action": EXPLORE})
+        self.assertEqual(first, {"kind": "rule", "ruleId": 2, "action": EXPLORE})
 
     def test_every_free_minute_of_long_runs(self):
         # invariant: program-rule-pick
@@ -224,11 +256,11 @@ class ProgramRulePick(unittest.TestCase):
                 with self.subTest(real_ms=real_ms, resource=resource):
                     runs = drive(p_long(resource), LONG_MINUTES, real_ms)
                     self.assertEqual(long_violations(runs, resource), [])
-                    started = {r["current"]["activity"].get("ruleIndex") for i, r in
+                    started = {r["current"]["activity"].get("ruleId") for i, r in
                                enumerate(runs) if r["current"]["startMinute"] == r["minute"]}
-                    self.assertTrue({1, 2, 3} <= started,
+                    self.assertTrue({2, 3, 4} <= started,
                                     f"the run starts only rules {sorted(started, key=str)}, so "
-                                    "a wrong pick among rules 1 to 3 could go unseen")
+                                    "a wrong pick among rules 2 to 4 could go unseen")
 
     def test_control_the_comparison_flags_wrong_picks(self):
         # invariant: program-rule-pick
@@ -238,8 +270,12 @@ class ProgramRulePick(unittest.TestCase):
         other = copying.deepcopy(runs)
         index = free[3]
         activity = other[index]["current"]["activity"]
-        activity["ruleIndex"] = 3 if activity["ruleIndex"] != 3 else 2
+        activity["ruleId"] = 4 if activity["ruleId"] != 4 else 3
         self.assertTrue(long_violations(other, "berry"), "another rule started goes unseen")
+        wrong_action = copying.deepcopy(runs)
+        wrong_action[index]["current"]["activity"]["action"] = {"kind": "eat"}
+        self.assertTrue(long_violations(wrong_action, "berry"),
+                        "a matching identity with the wrong action goes unseen")
         middle = copying.deepcopy(runs)
         inside = next(i for i in range(1, len(runs)) if i not in free)
         middle[inside]["current"] = dict(middle[inside]["current"], startMinute=inside)

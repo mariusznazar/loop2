@@ -222,19 +222,21 @@ export function actionFeasible(
   }
 }
 
-/** The first program rule whose condition holds and whose action is feasible; else a wait. */
+/** The first feasible rule of the first qualifying group, both conditions holding; else a wait. */
 export function chooseActivity(
   run: RunView,
   map: MapDef,
   program: Program,
 ): Activity {
-  for (let ruleIndex = 0; ruleIndex < program.rules.length; ruleIndex += 1) {
-    const rule = program.rules[ruleIndex];
-    if (
-      conditionHolds(run, map, rule.condition) &&
-      actionFeasible(run, map, rule.action)
-    ) {
-      return { kind: "rule", ruleIndex, action: { ...rule.action } };
+  for (const group of program.groups) {
+    if (!conditionHolds(run, map, group.condition)) continue;
+    for (const rule of group.rules) {
+      if (
+        conditionHolds(run, map, rule.condition) &&
+        actionFeasible(run, map, rule.action)
+      ) {
+        return { kind: "rule", ruleId: rule.id, action: { ...rule.action } };
+      }
     }
   }
   return { kind: "wait" };

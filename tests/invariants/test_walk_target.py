@@ -51,6 +51,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -75,13 +76,13 @@ def rule(condition, action):
 
 
 def program(resource):
-    return {"rules": [rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
-                      rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
+    return program_from_rules([rule(ALWAYS, {"kind": "walkTo", "resource": resource}),
+                              rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
 
 
 # The program in force between spells of going, so that the character roams away from the
 # revealed tiles holding a resource before it goes to them again.
-ROAM = {"rules": [rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})]}
+ROAM = program_from_rules([rule(ALWAYS, {"kind": "explore"}), rule(ALWAYS, {"kind": "wander"})])
 LONG_MINUTES = 240
 SPELL_MINUTES = 40  # the programs alternate: going for 40 game minutes, roaming for 40
 

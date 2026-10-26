@@ -15,6 +15,7 @@ import {
 } from "../../dist/public/sim/game.js";
 import { conditionHolds } from "../../dist/public/sim/program.js";
 import { newMapRun } from "../../dist/public/sim/run.js";
+import { programFromRules, programRules } from "./program-fixture.mjs";
 
 // The conditions on the body, the backpack and the campfire (task, To do 12–13; spec Decision 3;
 // D-26, D-57). Every number below is written out by hand from the spec's table: „Temperatura
@@ -43,7 +44,10 @@ const hereBelow = (value) => ({ kind: "hereBelow", resource, value });
 
 /** A map run of Las at minute 0 with no program rules, with the given fields replaced. */
 function handMade(fields = {}) {
-  const { run } = newMapRun(forest, 3, { rules: [] }, { mapId, characterId });
+  const { run } = newMapRun(forest, 3, programFromRules(), {
+    mapId,
+    characterId,
+  });
   return { ...run, ...fields };
 }
 
@@ -187,14 +191,15 @@ test("„Z dala od — ognisko” holds where no campfire stands on the characte
 
 /** The program `setProgram` holds after taking `condition` in, on the sending screen and in a run. */
 function held(condition) {
-  const program = { rules: [rule(condition, EXPLORE)] };
+  const program = programFromRules(rule(condition, EXPLORE));
   const running = send(
     createCharacter(newGame(), "Ala").state,
     SENT,
     REAL_MS,
   ).state;
   return [newGame(), running].map(
-    (state) => setProgram(state, program).state.program.rules[0].condition,
+    (state) =>
+      programRules(setProgram(state, program).state.program)[0].condition,
   );
 }
 
@@ -206,7 +211,7 @@ function refused(condition) {
   ).state;
   for (const state of [newGame(), running]) {
     assert.throws(
-      () => setProgram(state, { rules: [rule(condition, EXPLORE)] }),
+      () => setProgram(state, programFromRules(rule(condition, EXPLORE))),
       Error,
       JSON.stringify(condition),
     );

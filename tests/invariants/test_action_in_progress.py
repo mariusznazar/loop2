@@ -55,6 +55,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -81,9 +82,9 @@ def fewer_sticks_than(value):
     return {"kind": "hereBelow", "resource": "stick", "value": value}
 
 
-PA = {"rules": [rule(fewer_sticks_than(0), WANDER), rule(ALWAYS, EXPLORE)]}
-PA_HOLDS = {"rules": [rule(fewer_sticks_than(50), WANDER), rule(ALWAYS, EXPLORE)]}
-PC = {"rules": [rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)]}
+PA = program_from_rules([rule(fewer_sticks_than(0), WANDER), rule(ALWAYS, EXPLORE)])
+PA_HOLDS = program_from_rules([rule(fewer_sticks_than(50), WANDER), rule(ALWAYS, EXPLORE)])
+PC = program_from_rules([rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)])
 
 MINUTE = ["advanceMinutes", 1]
 

@@ -20,13 +20,15 @@ Reading of the sentence:
   program in — it throws, or the state it returns holds the program the state had before,
   unchanged (written out below as BASE);
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
-  with valid fields, is taken in as offered (the control that shows refusal is no blanket refusal).
+  with valid fields, including all seven kinds on groups, is taken in as offered (the control
+  that shows refusal is no blanket refusal).
 
 Every offer is made twice: in the headquarters (no map run) and during a map run of Las
 (`forest`) of a character created in a new game, of the archetype `elementalMage`, sent at the
 real time T. The unlisted kind stands
-in rule 1 of three, between two valid rules, once bare and once with the fields a listed kind
-takes (`resource`, `value`), so that a reader that guesses a kind from its fields is caught.
+in rule 1 of three, between two valid rules, and on a group between valid groups, once bare and
+once with the fields a listed kind takes (`resource`, `value`), so that a reader that guesses a
+kind from its fields is caught.
 
 Controls, so the check can fail: the comparison flags a made-up result in which a program with an
 unlisted kind was taken in, and a made-up result in which the valid program was refused; the
@@ -44,6 +46,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules, program_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 BUILT_DATA = "dist/public/sim/data"
@@ -67,10 +70,10 @@ def rule(condition, action):
 
 
 # The program in force before each offer.
-BASE = {"rules": [rule(ALWAYS, {"kind": "wander"})]}
+BASE = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
 
 # A program holding every listed kind, each with valid fields.
-VALID = {"rules": [
+VALID = program_from_rules([
     rule(ALWAYS, {"kind": "explore"}),
     rule({"kind": "hereBelow", "resource": "stick", "value": 3}, {"kind": "wander"}),
     rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
@@ -86,7 +89,7 @@ VALID = {"rules": [
     rule(ALWAYS, {"kind": "lightItem"}),
     rule(ALWAYS, {"kind": "feedCampfire"}),
     rule(ALWAYS, {"kind": "eat"}),
-]}
+])
 
 # Kinds no data file lists: made-up kinds, letter-case variants, names every JavaScript object
 # answers to, the other list's kinds, the empty string, and kinds that are no string.
@@ -151,12 +154,12 @@ def offers():
         for fields in ({}, PLAUSIBLE_FIELDS):
             bad = rule(with_kind(kind, fields), {"kind": "explore"})
             found.append((f"condition kind {kind!r} with fields {fields}",
-                          {"rules": [VALID["rules"][0], bad, VALID["rules"][2]]}))
+                          program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]])))
     for kind in UNLISTED_ACTION_KINDS:
         for fields in ({}, PLAUSIBLE_FIELDS):
             bad = rule(ALWAYS, with_kind(kind, fields))
             found.append((f"action kind {kind!r} with fields {fields}",
-                          {"rules": [VALID["rules"][0], bad, VALID["rules"][2]]}))
+                          program_from_rules([program_rules(VALID)[0], bad, program_rules(VALID)[2]])))
     return found
 
 
@@ -222,6 +225,33 @@ def tripwire(condition_kinds, action_kinds):
 
 class ProgramClosedLists(unittest.TestCase):
 
+    def test_group_conditions_accept_listed_values_and_refuse_unlisted_kinds(self):
+        # invariant: program-closed-lists
+        valid = {
+            "nextGroupId": 8, "nextRuleId": 1,
+            "groups": [
+                {"id": index + 1, "name": "Group", "condition": condition, "rules": []}
+                for index, condition in enumerate([
+                    ALWAYS,
+                    {"kind": "hereBelow", "resource": "stick", "value": 3},
+                    {"kind": "temperatureBelow", "value": 36.5},
+                    {"kind": "satietyBelow", "value": 50},
+                    {"kind": "itemBelow", "item": "berry", "value": 8},
+                    {"kind": "campfireLeftBelow", "value": 20},
+                    {"kind": "awayFromCampfire"},
+                ])
+            ],
+        }
+        invalid = []
+        for kind in UNLISTED_CONDITION_KINDS:
+            for fields in ({}, PLAUSIBLE_FIELDS):
+                candidate = copying.deepcopy(valid)
+                candidate["groups"][3]["condition"] = with_kind(kind, fields)
+                invalid.append(candidate)
+        _, _, pairs = drive([valid, *invalid])
+        self.assertEqual(acceptance_findings(pairs[:2], valid), [])
+        self.assertEqual(refusal_findings("unlisted group condition", pairs[2:]), [])
+
     def test_programs_with_unlisted_kinds_are_refused(self):
         # invariant: program-closed-lists
         labelled = offers()
@@ -235,7 +265,7 @@ class ProgramClosedLists(unittest.TestCase):
 
     def test_control_the_comparison_and_the_tripwire_flag_breaks(self):
         # invariant: program-closed-lists
-        bad = {"rules": [rule({"kind": "never"}, {"kind": "explore"})]}
+        bad = program_from_rules([rule({"kind": "never"}, {"kind": "explore"})])
         self.assertTrue(refusal_findings("made up", [(True, {"threw": False, "program": bad})]),
                         "an unlisted kind taken in goes unseen")
         self.assertEqual(refusal_findings("made up", [(True, {"threw": True, "error": "x"}),

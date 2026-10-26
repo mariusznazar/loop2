@@ -16,6 +16,7 @@ import {
   send,
 } from "../../dist/public/sim/game.js";
 import { newMapRun } from "../../dist/public/sim/run.js";
+import { programFromRules } from "./program-fixture.mjs";
 
 // The numbers below are written out by hand: a new character carries carrying capacity 15 (D-64),
 // and the backpack's cap counts the pieces of all items together.
@@ -25,7 +26,7 @@ const [mapId, forest] = Object.entries(MAPS)[0];
 const characterId = 1;
 const SENT = { mapId, characterId };
 const REAL_MS = 1760000000000;
-const NO_RULES = { rules: [] };
+const NO_RULES = programFromRules();
 
 /** The backpack with every item at 0. */
 function emptyBackpack() {

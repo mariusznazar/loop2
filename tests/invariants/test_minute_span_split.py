@@ -54,6 +54,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -90,7 +91,7 @@ def walk_to(resource):
 
 
 # The acceptance program: eats when hungry, keeps a campfire, keeps a berry and 8 sticks at hand.
-ACCEPTANCE = {"rules": [
+ACCEPTANCE = program_from_rules([
     rule(below("satietyBelow", 35), {"kind": "eat"}),
     rule(below("temperatureBelow", 36), {"kind": "lightCampfire"}),
     rule(below("temperatureBelow", 36.5), {"kind": "feedCampfire"}),
@@ -108,8 +109,8 @@ ACCEPTANCE = {"rules": [
     rule(ALWAYS, gather("stick")),
     rule(ALWAYS, gather("berry")),
     rule(ALWAYS, {"kind": "wander"}),
-]}
-EMPTY = {"rules": []}
+])
+EMPTY = program_from_rules([])
 
 # name: (program, real time of the send, span in game minutes)
 SCENARIOS = {

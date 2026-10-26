@@ -16,6 +16,7 @@ import {
 } from "../../dist/public/sim/game.js";
 import { actionFeasible } from "../../dist/public/sim/program.js";
 import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // The campfire, the burning stick and eating (task, To do 7–12; D-26, D-63, D-68, D-69, D-71,
 // D-72). Every number below is written out by hand from the task: crafting lasts 20 game minutes
@@ -41,8 +42,7 @@ const EAT = { kind: "eat" };
 const TO_CAMPFIRE = { kind: "walkToCampfire" };
 const NEW_ACTIONS = [CRAFT, LIGHT_CAMPFIRE, LIGHT_ITEM, FEED, EAT, TO_CAMPFIRE];
 const rule = (condition, action) => ({ condition, action });
-const program = (...rules) => ({ rules });
-const IDLE = program();
+const IDLE = programFromRules();
 
 const body = (temperature, satiety, health) => ({
   temperature,
@@ -110,7 +110,7 @@ function endingNext(run, action) {
   return {
     ...run,
     current: {
-      activity: { kind: "rule", ruleIndex: 0, action },
+      activity: ruleActivity(action),
       startMinute: run.minute - 4,
       endMinute: run.minute + 1,
       stepTo: null,
@@ -301,18 +301,12 @@ test("each action lasts its minutes and takes nothing from the backpack at its s
     const begun = stepMinute(
       freeNextMinute(run),
       forest,
-      program(rule(ALWAYS, action)),
+      programFromRules(rule(ALWAYS, action)),
     ).run;
-    assert.deepEqual(
-      begun.current,
-      {
-        activity: { kind: "rule", ruleIndex: 0, action },
-        startMinute: 1,
-        endMinute: 1 + minutes,
-        stepTo: null,
-      },
-      action.kind,
-    );
+    assert.deepEqual(begun.current.activity.action, action, action.kind);
+    assert.equal(begun.current.startMinute, 1, action.kind);
+    assert.equal(begun.current.endMinute, 1 + minutes, action.kind);
+    assert.equal(begun.current.stepTo, null, action.kind);
     assert.deepEqual(
       begun.character.backpack,
       run.character.backpack,
@@ -404,7 +398,7 @@ test("a feeding during which the campfire burns out makes it burn 20 minutes aga
   // Minute 1: the campfire drops to 3 and the feeding starts; minutes 2–4 burn it out; minute 6
   // ends the feeding on the extinguished campfire.
   const start = freeNextMinute(at({ [stick]: 1 }, burning(4)));
-  const feeding = program(rule(ALWAYS, FEED));
+  const feeding = programFromRules(rule(ALWAYS, FEED));
   const at1 = after(start, 1, feeding);
   assert.deepEqual(at1.current.activity.action, FEED);
   assert.equal(at1.current.endMinute, 6);
@@ -445,20 +439,22 @@ test("„Idź — ognisko” takes one move toward the nearest campfire, in the 
       { at: near.at, minutesLeft: 0 },
     ]),
   );
-  const next = stepMinute(run, forest, program(rule(ALWAYS, TO_CAMPFIRE))).run;
-  assert.deepEqual(next.current, {
-    activity: { kind: "rule", ruleIndex: 0, action: TO_CAMPFIRE },
-    startMinute: 1,
-    endMinute: 1 + near.stepMinutes,
-    stepTo: near.at,
-  });
+  const next = stepMinute(
+    run,
+    forest,
+    programFromRules(rule(ALWAYS, TO_CAMPFIRE)),
+  ).run;
+  assert.deepEqual(next.current.activity.action, TO_CAMPFIRE);
+  assert.equal(next.current.startMinute, 1);
+  assert.equal(next.current.endMinute, 1 + near.stepMinutes);
+  assert.deepEqual(next.current.stepTo, near.at);
   const arrived = after(next, near.stepMinutes);
   assert.deepEqual(arrived.character.at, near.at);
 });
 
 test("„Idź — ognisko” walks to a far campfire step by step and stays there", () => {
   const far = offsetToAxial(3, 3);
-  const walking = program(rule(ALWAYS, TO_CAMPFIRE));
+  const walking = programFromRules(rule(ALWAYS, TO_CAMPFIRE));
   let run = freeNextMinute(at({}, [{ at: far, minutesLeft: 30 }]));
   const distances = [];
   for (let i = 0; i < 40; i += 1) {
@@ -507,9 +503,8 @@ test("„Idź — ognisko” is passed over on a campfire's tile, and the next p
   const next = stepMinute(
     run,
     forest,
-    program(rule(ALWAYS, TO_CAMPFIRE), rule(ALWAYS, WANDER)),
+    programFromRules(rule(ALWAYS, TO_CAMPFIRE), rule(ALWAYS, WANDER)),
   ).run;
-  assert.equal(next.current.activity.ruleIndex, 1);
   assert.deepEqual(next.current.activity.action, WANDER);
 });
 
@@ -533,10 +528,15 @@ test("the program check takes the six actions before sending and during a map ru
     1760000000000,
   ).state;
   for (const state of [newGame(), during]) {
-    assert.deepEqual(setProgram(state, { rules }).state.program, { rules });
+    const input = programFromRules(...rules);
+    assert.deepEqual(setProgram(state, input).state.program, input);
   }
-  const withField = setProgram(newGame(), {
-    rules: [rule(ALWAYS, { kind: "eat", item: berry })],
-  });
-  assert.deepEqual(withField.state.program, { rules: [rule(ALWAYS, EAT)] });
+  const withField = setProgram(
+    newGame(),
+    programFromRules(rule(ALWAYS, { kind: "eat", item: berry })),
+  );
+  assert.deepEqual(
+    withField.state.program,
+    programFromRules(rule(ALWAYS, EAT)),
+  );
 });

@@ -9,7 +9,7 @@ export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
 /** Axial hex coordinates. */
 export type Hex = { q: number; r: number };
 
-/** A condition of a program rule; `value` is the number it compares with, on its kind's step. */
+/** A condition of a program rule or group; `value` is the number it compares with, on its kind's step. */
 export type Condition =
   | { kind: "always" }
   | { kind: "hereBelow"; resource: ResourceId; value: number }
@@ -31,9 +31,25 @@ export type Action =
   | { kind: "feedCampfire" }
   | { kind: "eat" };
 
-export type ProgramRule = { condition: Condition; action: Action };
+/** Stable within a program, including after a rule moves to another group. */
+export type RuleId = number;
+export type GroupId = number;
 
-export type Program = { rules: ProgramRule[] };
+export type ProgramRule = { id: RuleId; condition: Condition; action: Action };
+
+export type RuleGroup = {
+  id: GroupId;
+  name: string;
+  condition: Condition;
+  rules: ProgramRule[];
+};
+
+export type Program = {
+  groups: RuleGroup[];
+  /** Identities allocated to the next group and rule, never derived from their positions. */
+  nextGroupId: GroupId;
+  nextRuleId: RuleId;
+};
 
 export type Tile = {
   /** Both coordinate forms, fixed. */
@@ -49,7 +65,7 @@ export type Tile = {
 
 /** What the character is doing now. */
 export type Activity =
-  { kind: "rule"; ruleIndex: number; action: Action } | { kind: "wait" };
+  { kind: "rule"; ruleId: RuleId; action: Action } | { kind: "wait" };
 
 export type CurrentActivity = {
   activity: Activity;
@@ -146,6 +162,8 @@ export type Team = { characters: Character[]; chest: Chest };
 
 export type GameState = {
   program: Program;
+  /** Starts per rule in the current or last map run; null before the first run. */
+  ruleCounts: Record<RuleId, number> | null;
   team: Team;
   /** The id the next created character takes. */
   nextCharacterId: CharacterId;

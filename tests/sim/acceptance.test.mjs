@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { programFromRules, programRules } from "./program-fixture.mjs";
 import {
   advanceMinutes,
   createCharacter,
@@ -36,28 +37,26 @@ const gather = (resource) => ({ kind: "gather", resource });
 const walkTo = (resource) => ({ kind: "walkTo", resource });
 
 /** Eats when hungry, keeps a campfire, keeps a berry and 8 sticks at hand, and seeks berries. */
-const ACCEPTANCE_PROGRAM = {
-  rules: [
-    rule(below("satietyBelow", 35), { kind: "eat" }),
-    rule(below("temperatureBelow", 36), { kind: "lightCampfire" }),
-    rule(below("temperatureBelow", 36.5), { kind: "feedCampfire" }),
-    rule(below("temperatureBelow", 35.2), { kind: "walkToCampfire" }),
-    rule(below("campfireLeftBelow", 1), { kind: "craftCampfire" }),
-    rule(itemBelow(berry, 1), gather(berry)),
-    rule(itemBelow(berry, 1), walkTo(berry)),
-    rule({ kind: "hereBelow", resource: berry, value: 1 }, { kind: "explore" }),
-    rule(itemBelow(berry, 1), { kind: "wander" }),
-    rule(itemBelow(stick, 8), gather(stick)),
-    rule(itemBelow(stick, 8), walkTo(stick)),
-    rule(below("temperatureBelow", 36), { kind: "lightItem" }),
-    rule(ALWAYS, { kind: "explore" }),
-    rule({ kind: "awayFromCampfire" }, { kind: "walkToCampfire" }),
-    rule(ALWAYS, gather(stick)),
-    rule(ALWAYS, gather(berry)),
-    rule(ALWAYS, { kind: "wander" }),
-  ],
-};
-const EMPTY_PROGRAM = { rules: [] };
+const ACCEPTANCE_PROGRAM = programFromRules(
+  rule(below("satietyBelow", 35), { kind: "eat" }),
+  rule(below("temperatureBelow", 36), { kind: "lightCampfire" }),
+  rule(below("temperatureBelow", 36.5), { kind: "feedCampfire" }),
+  rule(below("temperatureBelow", 35.2), { kind: "walkToCampfire" }),
+  rule(below("campfireLeftBelow", 1), { kind: "craftCampfire" }),
+  rule(itemBelow(berry, 1), gather(berry)),
+  rule(itemBelow(berry, 1), walkTo(berry)),
+  rule({ kind: "hereBelow", resource: berry, value: 1 }, { kind: "explore" }),
+  rule(itemBelow(berry, 1), { kind: "wander" }),
+  rule(itemBelow(stick, 8), gather(stick)),
+  rule(itemBelow(stick, 8), walkTo(stick)),
+  rule(below("temperatureBelow", 36), { kind: "lightItem" }),
+  rule(ALWAYS, { kind: "explore" }),
+  rule({ kind: "awayFromCampfire" }, { kind: "walkToCampfire" }),
+  rule(ALWAYS, gather(stick)),
+  rule(ALWAYS, gather(berry)),
+  rule(ALWAYS, { kind: "wander" }),
+);
+const EMPTY_PROGRAM = programFromRules();
 
 /** The game sent to Las with the program on the named seed, then advanced by `minutes`. */
 function played(program, minutes) {
@@ -92,9 +91,11 @@ test("the map is Las and the send takes the seed named here", () => {
 
 test("the program holds every kind of condition and action of the closed list", () => {
   const conditions = new Set(
-    ACCEPTANCE_PROGRAM.rules.map((r) => r.condition.kind),
+    programRules(ACCEPTANCE_PROGRAM).map((r) => r.condition.kind),
   );
-  const actions = new Set(ACCEPTANCE_PROGRAM.rules.map((r) => r.action.kind));
+  const actions = new Set(
+    programRules(ACCEPTANCE_PROGRAM).map((r) => r.action.kind),
+  );
   assert.deepEqual([...conditions].sort(), [
     "always",
     "awayFromCampfire",

@@ -43,6 +43,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -64,10 +65,10 @@ def rule(condition, action):
     return {"condition": condition, "action": action}
 
 
-P_ONLY = {"rules": [rule(ALWAYS, EXPLORE)]}
-P_ROAM = {"rules": [rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)]}
-P_GO = {"rules": [rule(ALWAYS, EXPLORE), rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
-                  rule(ALWAYS, WANDER)]}
+P_ONLY = program_from_rules([rule(ALWAYS, EXPLORE)])
+P_ROAM = program_from_rules([rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)])
+P_GO = program_from_rules([rule(ALWAYS, EXPLORE), rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
+                           rule(ALWAYS, WANDER)])
 LONG_MINUTES = 240
 
 DRIVER = r"""
@@ -167,9 +168,9 @@ class ExploringReveal(unittest.TestCase):
         # invariant: exploring-reveal
         runs = drive(P_ONLY, 25)
         self.assertEqual(runs[0]["character"]["at"], ENTRANCE)
-        self.assertEqual(runs[0]["current"],
-                         {"activity": {"kind": "rule", "ruleIndex": 0, "action": EXPLORE},
-                          "startMinute": 0, "endMinute": EXPLORE_MINUTES, "stepTo": None})
+        self.assertTrue(is_exploring(runs[0]["current"]))
+        self.assertEqual(runs[0]["current"]["startMinute"], 0)
+        self.assertEqual(runs[0]["current"]["endMinute"], EXPLORE_MINUTES)
         self.assertFalse(tile_at(runs[19], ENTRANCE)["revealed"],
                          "the entrance is revealed before the exploring ends")
         self.assertTrue(tile_at(runs[20], ENTRANCE)["revealed"],
@@ -202,7 +203,7 @@ class ExploringReveal(unittest.TestCase):
         tile_at(early[19], ENTRANCE)["revealed"] = True
         self.assertTrue(violations(early)[0], "a reveal before the end goes unseen")
         again = copying.deepcopy(runs)
-        again[20]["current"] = {"activity": {"kind": "rule", "ruleIndex": 0, "action": EXPLORE},
+        again[20]["current"] = {"activity": {"kind": "rule", "action": EXPLORE},
                                 "startMinute": 20, "endMinute": 40, "stepTo": None}
         again[20]["character"]["at"] = ENTRANCE
         self.assertTrue(violations(again)[0], "exploring on a revealed tile goes unseen")

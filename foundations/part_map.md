@@ -30,6 +30,7 @@ The part computes the game: the game state, the map run, the character's program
 
 - **Files:** src/browser/sim/**
   tests/sim/**
+  tests/invariants/program_fixture.py
   tests/invariants/test_map_run_repeatability.py
   tests/invariants/test_simulation_randomness.py
   tests/invariants/test_action_in_progress.py

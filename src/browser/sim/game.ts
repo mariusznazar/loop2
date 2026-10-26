@@ -173,27 +173,111 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
   }
 }
 
+/** A positive safe integer, so a stored identity remains exact. */
+function checkIdentity(value: unknown): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1)
+    throw new Error("program: an identity is not a positive safe integer");
+  return value;
+}
+
+/** Each identity occurs once and precedes its next-identity counter. */
+function uniqueIdentity(
+  value: unknown,
+  next: number,
+  seen: Set<number>,
+): number {
+  const id = checkIdentity(value);
+  if (id >= next || seen.has(id))
+    throw new Error(
+      "program: an identity is duplicated or reaches its next counter",
+    );
+  seen.add(id);
+  return id;
+}
+
 /** A copy of the program built from the closed list; throws on anything outside it. */
 function checkProgram(value: unknown, run: MapRun | null): Program {
-  if (!isObject(value) || !Array.isArray(value.rules))
-    throw new Error("program: no list of rules");
+  if (!isObject(value) || !Array.isArray(value.groups))
+    throw new Error("program: no list of groups");
+  const nextGroupId = checkIdentity(value.nextGroupId);
+  const nextRuleId = checkIdentity(value.nextRuleId);
   const allowed = allowedResources(run);
-  const rules = value.rules.map((rule: unknown): ProgramRule => {
-    if (!isObject(rule))
+  const groupIds = new Set<number>();
+  const ruleIds = new Set<number>();
+  const groups = value.groups.map((group: unknown) => {
+    if (
+      !isObject(group) ||
+      typeof group.name !== "string" ||
+      !Array.isArray(group.rules) ||
+      Object.hasOwn(group, "groups")
+    )
       throw new Error(
-        "program: a rule is not a pair of a condition and an action",
+        "program: a group must hold a name and a list of rules at one level",
       );
-    return {
-      condition: checkCondition(rule.condition, allowed),
-      action: checkAction(rule.action, allowed),
-    };
+    const id = uniqueIdentity(group.id, nextGroupId, groupIds);
+    const condition = checkCondition(group.condition, allowed);
+    const rules = group.rules.map((rule: unknown): ProgramRule => {
+      if (!isObject(rule))
+        throw new Error(
+          "program: a rule is not a pair of a condition and an action",
+        );
+      return {
+        id: uniqueIdentity(rule.id, nextRuleId, ruleIds),
+        condition: checkCondition(rule.condition, allowed),
+        action: checkAction(rule.action, allowed),
+      };
+    });
+    return { id, name: group.name, condition, rules };
   });
-  return { rules };
+  return { groups, nextGroupId, nextRuleId };
 }
 
 function requireRun(state: GameState, name: string): MapRun {
   if (!state.run) throw new Error(`${name}: there is no map run`);
   return state.run;
+}
+
+/** Counts follow rule identity and canonical validated content, never group or position. */
+function reconcileCounts(
+  state: GameState,
+  program: Program,
+): GameState["ruleCounts"] {
+  if (state.ruleCounts === null) return null;
+  const previous = new Map(
+    state.program.groups.flatMap((group) =>
+      group.rules.map((rule) => [rule.id, rule] as const),
+    ),
+  );
+  return Object.fromEntries(
+    program.groups.flatMap((group) =>
+      group.rules.map((rule) => {
+        const old = previous.get(rule.id);
+        const unchanged =
+          old &&
+          JSON.stringify([old.condition, old.action]) ===
+            JSON.stringify([rule.condition, rule.action]);
+        return [rule.id, unchanged ? (state.ruleCounts?.[rule.id] ?? 0) : 0];
+      }),
+    ),
+  );
+}
+
+/** Consume starts once; waits and finishes have no firing to count. Inputs stay unchanged. */
+function countStarts(
+  counts: GameState["ruleCounts"],
+  events: readonly GameEvent[],
+): GameState["ruleCounts"] {
+  if (counts === null) return null;
+  let next = counts;
+  for (const event of events) {
+    if (event.kind !== "activityStarted" || event.activity.kind !== "rule")
+      continue;
+    const id = event.activity.ruleId;
+    if (!Object.hasOwn(next, id)) continue;
+    if (next === counts) next = { ...counts };
+    next[id] += 1;
+  }
+  return next;
 }
 
 /** A new map run at minute 0 with the current program; events mapRunStarted, activityStarted. */
@@ -204,6 +288,11 @@ function startRun(
   seed: number,
   traits: Traits,
 ): GameResult {
+  const zeros = Object.fromEntries(
+    state.program.groups.flatMap((group) =>
+      group.rules.map((rule) => [rule.id, 0]),
+    ),
+  );
   const started = newMapRun(
     mapOf(mapId),
     seed,
@@ -212,7 +301,13 @@ function startRun(
     traits,
   );
   return {
-    state: { ...state, run: started.run, paused: false, realMsCarry: 0 },
+    state: {
+      ...state,
+      ruleCounts: countStarts(zeros, started.events),
+      run: started.run,
+      paused: false,
+      realMsCarry: 0,
+    },
     events: [{ kind: "mapRunStarted", seed }, ...started.events],
   };
 }
@@ -221,7 +316,14 @@ function startRun(
  * and an empty chest, no map run. */
 export function newGame(): GameState {
   return {
-    program: { rules: [] },
+    program: {
+      groups: [
+        { id: 1, name: "Program", condition: { kind: "always" }, rules: [] },
+      ],
+      nextGroupId: 2,
+      nextRuleId: 1,
+    },
+    ruleCounts: null,
     team: { characters: [], chest: { pieces: {} } },
     nextCharacterId: 1,
     run: null,
@@ -236,8 +338,13 @@ export function newGame(): GameState {
  * is, and the program takes effect when the character next picks a program rule.
  */
 export function setProgram(state: GameState, program: Program): GameResult {
+  const checked = checkProgram(program, state.run);
   return {
-    state: { ...state, program: checkProgram(program, state.run) },
+    state: {
+      ...state,
+      program: checked,
+      ruleCounts: reconcileCounts(state, checked),
+    },
     events: [],
   };
 }
@@ -387,5 +494,8 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     events.push(...stepped.events);
     if (run.death) break;
   }
-  return { state: { ...state, run }, events };
+  return {
+    state: { ...state, run, ruleCounts: countStarts(state.ruleCounts, events) },
+    events,
+  };
 }

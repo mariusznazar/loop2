@@ -54,6 +54,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
+from program_fixture import program_from_rules
 
 SOURCE_DIRECTORY = "src/browser/sim/"
 BUILT_DIRECTORY = "dist/public/sim"
@@ -467,13 +468,13 @@ writeFileSync(outPath, JSON.stringify(result));
 """
 
 ALWAYS = {"kind": "always"}
-MIXED = {"rules": [
+MIXED = program_from_rules([
     {"condition": {"kind": "hereBelow", "resource": "stick", "value": 1},
      "action": {"kind": "explore"}},
     {"condition": ALWAYS, "action": {"kind": "walkTo", "resource": "berry"}},
     {"condition": ALWAYS, "action": {"kind": "explore"}},
     {"condition": ALWAYS, "action": {"kind": "wander"}},
-]}
+])
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
 SENT = {"mapId": "forest", "characterId": 1}
