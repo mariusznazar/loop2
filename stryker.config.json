@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "tap",
+  "plugins": ["@stryker-mutator/tap-runner"],
+  "checkers": [],
+  "mutate": ["src/browser/sim/**/*.ts"],
+  "buildCommand": "node ../../node_modules/typescript-compiler/bin/tsc -p tsconfig.browser.json",
+  "concurrency": 4,
+  "ignorePatterns": [".runs", ".the-way", "dist"],
+  "tempDirName": ".stryker-tmp",
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": { "fileName": ".runs/stryker/mutation.json" },
+  "incrementalFile": ".runs/stryker/incremental.json",
+  "tap": {
+    "testFiles": [
+      "tests/sim/acceptance.test.mjs",
+      "tests/sim/actions.test.mjs",
+      "tests/sim/body.test.mjs",
+      "tests/sim/campfire.test.mjs",
+      "tests/sim/conditions.test.mjs",
+      "tests/sim/data.test.mjs",
+      "tests/sim/flow.test.mjs",
+      "tests/sim/gather.test.mjs",
+      "tests/sim/hex.test.mjs",
+      "tests/sim/layout.test.mjs",
+      "tests/sim/program-counts.test.mjs",
+      "tests/sim/program.test.mjs",
+      "tests/sim/purity.test.mjs",
+      "tests/sim/random.test.mjs",
+      "tests/sim/team.test.mjs",
+      "tests/sim/time.test.mjs",
+      "tests/sim/traits.test.mjs",
+      "tests/sim/world.test.mjs"
+    ]
+  }
+}
