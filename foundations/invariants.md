@@ -579,6 +579,26 @@ Every `*.test.mjs` file under `tests/` is selected for execution by `npm test`.
 - **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Violated:** no
 
+## focused-test-execution
+
+A focused gate run fails if it executes no test or receives a file that is not a test file.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-77
+- **Part:** build-tools
+- **Violated:** no
+
+## mutation-test-selection
+
+The StrykerJS configuration lists every `tests/sim/*.test.mjs` file except `rules.test.mjs`.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-94
+- **Part:** build-tools
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

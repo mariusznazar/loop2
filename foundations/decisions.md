@@ -1390,16 +1390,18 @@ Permanent refusal tests for font files and the local interface preview server ar
 
 ### D-77 — How are tests selected and limited as a whole?
 
-Tests run through full `npm test`, without selection of a level, file or case and without a configuration file limiting the whole run. Selection and a whole-run limit are reconsidered on a concrete problem with diagnosis time or a hanging run; new or changed tests still bound their own waiting.
+`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests or the foundation check. A focused run with no executed test or a file that is not a test fails, and only the full gate suffices before a request. There is no configuration file limiting the whole run; a whole-run limit is reconsidered on a concrete problem with diagnosis time or a hanging run, while new or changed tests still bound their own waiting.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5m
+- **Verification:** invariants: focused-test-execution. An agent compares a change with the decision:
+  - complies: one selected Node file after a build; one Python file without a build; the full gate before a request
+  - violates: a focused run starting another test or the foundation check; accepting several files; treating a focused pass as the full gate
+- **Origin:** none
 
-*Rationale:* One entry point keeps the existing run intact, at the cost of slower diagnosis and the possibility that an operation with no local limit hangs.
-*Rejected:* Adding selection and a central limit with the guidelines — expands the work into orchestration across languages.
+*Rationale:* One entry point preserves the complete check while a file selection shortens diagnosis and avoids building unused JavaScript for Python tests. Keeping no whole-run limit accepts that an operation without a local limit may hang.
+*Rejected:* Only full runs — diagnosis repeats unrelated tests; building for a Python selection — adds work its runner does not need; adding a central limit without a concrete timing problem — adds orchestration without a demonstrated need.
 
 ### D-78 — How is one test case shaped?
 
@@ -1646,3 +1648,33 @@ condition changes, and the next run gives a fresh picture of the edited program.
 *Rejected:* counts per position — moving a rule would attach another rule's history to it;
 resetting on a move or group edit — arranging the same rules would erase their history; hiding
 the counts after „Zakończ” — the player would lose the completed run's evidence while editing.
+
+### D-94 — Where does loop2 use a mutation testing tool?
+
+Loop2 adopts StrykerJS for simulation, without a type-checking plugin, and the reviewer runs it on the changed files of that part. The configuration lists every `tests/sim/*.test.mjs` file except `rules.test.mjs`. Browser-view joins by a change of this decision when a defect in calculating the drawing or lists passes through tests and review.
+
+- **Scope:** simulation, browser-view, build-tools
+- **Based on:** stryker-simulation-execution · typescript-nocheck-support
+- **Relations:** derives from D-73
+- **Verification:** invariants: mutation-test-selection. An agent compares a change with the decision:
+  - complies: the reviewer runs StrykerJS on changed simulation files without a type-checking plugin; other parts retain the author's mental mutation check
+  - violates: installing a type-checking plugin; counting an author's mental check as the tool run for changed simulation files; extending the tool to browser-view without changing the decision
+- **Origin:** none
+
+*Rationale:* Executing small changes to simulation code reveals assertions that miss altered behaviour without spending the author's reasoning on mechanically detectable cases. The TAP runner reuses the existing tests and the compiler accepts instrumented files; excluding the source-text rules test avoids testing the instrumenter's spelling. Accepted costs are development dependencies, compilation and mutation runtime, and manual assessment of survivors, including ones other test suites would kill.
+*Rejected:* Mental mutation alone for simulation — spends reasoning on cases a tool can execute; a type-checking plugin — unnecessary for the accepted instrumented build; mutation testing browser-view immediately — extends cost before the stated return condition.
+
+### D-95 — When is the mutation testing tool removed?
+
+If the dependency audit reports an advisory in a package introduced by StrykerJS and a corrected version cannot remove it, loop2 removes the tool and returns the mutation testing rule to the author's mental check.
+
+- **Scope:** simulation, build-tools
+- **Based on:** none
+- **Relations:** narrows D-94 · derives from D-33
+- **Verification:** an agent compares a change with the decision:
+  - complies: a corrected dependency version satisfies the unchanged audit, or the tool is removed and the author's mental check restored
+  - violates: weakening the audit or keeping an uncorrectable advisory to retain mutation testing
+- **Origin:** none
+
+*Rationale:* The tool saves review effort but does not justify accepting a dependency advisory; the mental check preserves the review obligation when a corrected dependency is unavailable.
+*Rejected:* Relaxing the audit — trades the existing dependency boundary for a development convenience; retaining the tool indefinitely while waiting for a fix — leaves that boundary violated.

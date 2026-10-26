@@ -9,6 +9,8 @@ Przed napisaniem lub zmianą testu; przy przeglądzie porównaj test z tymi zasa
 Ogólne kontrole jakości kodu nadal określa `guidelines/coding.md` (D-28).
 Przyjęty szablon przypiętego the-way określa D-73; jego sześć odstępstw
 to D-74, D-75, D-76, D-77, D-78 i D-79.
+D-77 jest odstępstwem tylko w sprawie limitu czasu całego przebiegu;
+wybór jednego pliku działa przez to samo `npm test`.
 
 ## Levels
 
@@ -197,6 +199,43 @@ lub pominięcie czerwonego testu podlega Changing an existing test.
 Zachowanie każdego narzędzia AI używanego w testach wymaga faktu środowiska
 z wersją i datą odczytu źródła. Testy loop2 nie używają takiego narzędzia.
 
+### Mutation testing
+
+- **Decision:** D-73 · D-94 · D-95
+- **Invariant:** none
+- **Good:** Recenzent uruchamia narzędzie na zmienionym pliku symulacji i wskazuje, którą przeoczoną zmianę zachowania wykryje dodana asercja.
+- **Bad:** Autor dopisuje asercje wyłącznie po to, by podnieść procent zabitych mutacji.
+
+Dla zmienionych plików `simulation` recenzent uruchamia lokalny StrykerJS
+bez dodatku sprawdzającego typy:
+
+```sh
+node node_modules/@stryker-mutator/core/bin/stryker.js run --mutate "src/browser/sim/hex.ts"
+```
+
+Zastąp ścieżkę zmienionym plikiem albo listą plików oddzielonych przecinkami;
+zakres wierszy można podać jako `src/browser/sim/hex.ts:10-30`.
+`stryker.config.json` ogranicza domyślny zakres do `simulation` i wymienia
+pliki `tests/sim/*.test.mjs` poza `rules.test.mjs`, który sprawdza tekst źródeł.
+Wynik w konsoli pokazuje plik i wiersz ocalałej zmiany; raport JSON trafia
+do `.runs/stryker/mutation.json`, a kopie robocze do `.stryker-tmp/`.
+Krok `buildCommand` kompiluje przerobione źródła raz na przebieg.
+Testy Pythona i widoku nie biorą udziału w tym przebiegu, więc ocalała
+zmiana nie dowodzi sama w sobie braku ochrony w pełnej bramce.
+
+Każdą ocalałą zmianę recenzent klasyfikuje: rzeczywista luka wymagająca
+asercji, zmiana równoważna, kod niekompilowalny albo zachowanie niewarte
+utrwalania. Dla trzech ostatnich podaje powód. Nie ustalamy procentowego
+progu wyniku ani nie utrwalamy szczegółu implementacji dla poprawy liczby.
+Autor dodaje asercję tylko dla rzeczywistej luki w wymaganym zachowaniu.
+
+W pozostałych częściach autor sprawdza w głowie, czy test wykryje prostą
+błędną zmianę kodu. `browser-view` dołącza do narzędzia zmianą D-94, gdy błąd
+w wyliczaniu rysunku albo list przejdzie przez testy i recenzję.
+Jeśli audyt zgłosi ostrzeżenie w zależności wniesionej przez StrykerJS,
+którego nie usuwa poprawiona wersja, usuwamy narzędzie i przywracamy
+sprawdzanie w głowie autora (D-95); nie osłabiamy audytu.
+
 ### Flaky tests
 
 - **Decision:** D-73
@@ -209,19 +248,29 @@ zielonej bramki. Wyłączenie lub usunięcie podlega Changing an existing test.
 
 ### Test files in the gate
 
-- **Decision:** D-83
-- **Invariant:** node-test-selection
+- **Decision:** D-83 · D-77 · D-94
+- **Invariant:** node-test-selection · focused-test-execution · mutation-test-selection
 - **Good:** Nowy plik ma potwierdzone uruchomienie w `npm test`.
 - **Bad:** Plik leży poza wzorcami polecenia, lecz jego obecność jest traktowana jak pokrycie.
 
 Każdy plik `*.test.mjs` pod `tests/` ma wejść do `npm test`; sprawdza to
-`tests/quality/test_node_test_selection.py`. Node bierze pliki i wzorce
-wymienione w polu `scripts.test` pliku `package.json`. Pythonowy runner
+`tests/quality/test_node_test_selection.py`. `package.json` kieruje bramkę
+do `scripts/test.py`, który w pełnym przebiegu przekazuje Node pliki i wzorce.
+Pythonowy runner
 the-way znajduje katalogi mające śledzony przez git i obecny plik `test_*.py`,
 a następnie uruchamia w nich odkrywanie testów unittest. Nowy plik Pythona
 jest objęty bramką dopiero po potwierdzeniu jego wykonania; szczególnie nowy
 katalog potrzebuje śledzonego pliku. Sama nazwa ani obecność na dysku nie
 jest dowodem wykonania.
+
+`npm test -- <plik testu>` przyjmuje dokładnie jeden istniejący plik:
+`*.test.mjs` uruchamia po zbudowaniu gry, a `test_*.py` bez budowania.
+Nie uruchamia innych testów ani kontroli fundamentu. Błędna ścieżka,
+plik niebędący testem i przebieg bez wykonanego testu kończą się porażką;
+pusty plik, pusta grupa i same pominięte testy nie są sukcesem.
+Chroni to `tests/quality/test_test_gate.py`. Przed requestem nadal wymagany
+jest pełny `npm test` bez argumentów. Lista plików symulacji dla narzędzia
+mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`.
 
 ## Recipes
 
@@ -234,7 +283,7 @@ jest dowodem wykonania.
 - **Data:** Każdy przypadek ma własne dane, które zmienia; wspólne tylko niemodyfikowane dane i przygotowanie. Wartość rozstrzygająca oczekiwanie stoi w przypadku. (D-73)
 - **Time and randomness:** Jawny stan, upływ czasu i ziarno, rzeczywisty generator gry; bez czekania na minuty komputera. Powtarzalność nie zastępuje niezależnego oczekiwania. (D-84)
 - **Exemplar:** `tests/sim/traits.test.mjs`, wyłącznie „the count of a hand-made backpack is the pieces of all items together”: jawne dane i niezależne sumy; nie wzorzec czasu ani całej rozgrywki. (D-85)
-- **Command:** `npm test`; zawężanie: none. (D-77)
+- **Command:** Pełny przebieg: `npm test`; jeden plik: `npm test -- <plik testu>` (Node po budowaniu, Python bez niego; bez innych testów i kontroli fundamentu). Przed requestem pełny przebieg. (D-77)
 - **Time limit:** Brak pliku konfiguracji limitu całego przebiegu. Lokalnych ograniczeń innych testów nie przedstawiaj jako limitu całości. Powrót: konkretny problem czasu diagnozy albo zawieszony przebieg. (D-77)
 
 ### integration test
@@ -303,6 +352,9 @@ może pokazywać rzeczywiście różne ryzyka.
 - `scripts/kitchen-sink.mjs`
 - `package-lock.json`
 - `package.json`
+- `stryker.config.json`
+- `scripts/test.py`
+- `scripts/test-node-file.mjs`
 - `.the-way/gate/run_tests.py`
 - `tests/sim/`
 - `tests/view/`
@@ -320,3 +372,5 @@ może pokazywać rzeczywiście różne ryzyka.
 - `tests/invariants/test_loop2_deploy_trigger_input.py`
 - `tests/quality/test_audit_dependencies.py`
 - `tests/quality/test_node_test_selection.py`
+- `tests/quality/test_test_gate.py`
+- `tests/quality/test_mutation_test_selection.py`
