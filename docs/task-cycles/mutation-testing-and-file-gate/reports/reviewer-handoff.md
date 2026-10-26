@@ -1,0 +1,19 @@
+# Whole-change review handoff
+
+Worktree: C:/Storage/repos/loop2/.runs/worktrees/mutation-gate
+Method: .agents/skills/the-way-review-change/SKILL.md; read its pinned method and references whole.
+Read first the user review playbook: C:/Storage/The Brain/The Brain/Notes/Areas/(A) Claude code/playbook_code_review.md. Apply full substantive review in two distinct passes, code/tests then documentation/foundation. Combine into one full report with the method's PASS/FAIL first line, grades and scope.
+Frozen task: .runs/task-cycles/mutation-testing-and-file-gate/task.md, whole.
+Author report: .runs/task-cycles/mutation-testing-and-file-gate/reports/author.md.
+Report destination: .runs/task-cycles/mutation-testing-and-file-gate/reports/review.md.
+Review range: 7012abc..85c6e6404b4a05e6bfad6cae8098fad3d80e6e89. One author commit, no slices.
+
+You wrote none of this change. User delegated intermediate review to the cycle; no human questions. No spec or plan: one author because settled Q1?Q6 and six settlements leave reversible execution choices only. Select foundation and guidelines yourself under the pinned procedures, and read the task whole. Do not read cycle.md. Never edit product files. Use scratch evidence under the cycle reports folder, not tracked code/diff copies. Every repository test runs through npm test; run focused checks only as needed; the orchestrator owns the full gate. Each performed check needs exact command and exit code. Report limitations and reaches.
+
+Trust boundary: package-lock.json, npm registry. Inspect introduced advisory handling and crafted malformed/advisory refusal protection. No irreversible operation or UI change. Full task scope, all nine items, acceptance criterion, and all six settlements remain your scope; do not turn the explicitly deferred twelve audit findings into fixes for this task.
+
+Additional risk questions (not a replacement for full review): Does selected execution reject actual zero tests, invalid paths and multiple inputs, and propagate failures for both runtimes? Does full invocation still reach every existing Node and Python test and foundation check? Does Python selection preserve sibling-helper imports and skip build? Does Stryker really exclude large/recursive artifacts, compile through the pinned compiler, include every required simulation test and show survivors with file/line without enforcing an unrequested score threshold? Do all six foundation settlements preserve the accepted meanings and do the revised guidelines match actual commands? Are red/green invariant proofs substantive?
+
+Return PASS <sha> / FAIL <sha> / questions, commits reviewed, check failures/unchecked items, and absolute report path. Questions go to orchestrator. Do not fix findings; reviewer alone grades/scope. Network requests must not contain owner identity, emails, usernames or local paths. Public sources use unauthenticated access, not authenticated gh.
+
+Source/choice additions from author reaches: official Node 24.17.0 node:test per-file summary, Python importlib loader and Stryker 10.0.0 immutable sources. Exact Python loading intentionally avoids discover selecting nested duplicate filenames. Preserve default Node process isolation and require a case actually executed; skipped/TODO-only runs are rejected. Foundation row 6 is represented by two facts cited in D-94 because sources are independently changing tool editions; preserve all clauses. The author report details these choices and their costs. Current pinned npm release age is 6 (historical task Context said 7); no override of that setting. Unchanged baseline full gate failed Windows listener inspection and missing quality-venv tools; tools now provisioned and focused quality passed. Windows CIM listener lookup still fails even for an independently created listener. Do not weaken that test. Assess any related scope finding yourself.

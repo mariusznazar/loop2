@@ -1,0 +1,16 @@
+npm notice run loop2@0.0.0 test
+npm notice run python -B scripts/test.py tests/quality/test_node_test_selection.py
+F
+======================================================================
+FAIL: test_every_node_test_file_is_selected_by_npm_test (test_node_test_selection.NodeTestSelection.test_every_node_test_file_is_selected_by_npm_test)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\mutation-gate\tests\quality\test_node_test_selection.py", line 22, in test_every_node_test_file_is_selected_by_npm_test
+    self.assertFalse(omitted, f"Node test files omitted by npm test: {sorted(omitted)}")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'tests/view/terrain-picture.test.mjs', 'tests/view/icons.test.mjs', 'tests/view/body-row.test.mjs', 'tests/view/program-editor.test.mjs', 'tests/view/tile-list.test.mjs', 'tests/view/status-row.test.mjs', 'tests/view/headquarters.test.mjs'} is not false : Node test files omitted by npm test: ['tests/view/body-row.test.mjs', 'tests/view/headquarters.test.mjs', 'tests/view/icons.test.mjs', 'tests/view/program-editor.test.mjs', 'tests/view/status-row.test.mjs', 'tests/view/terrain-picture.test.mjs', 'tests/view/tile-list.test.mjs']
+
+----------------------------------------------------------------------
+Ran 1 test in 3.940s
+
+FAILED (failures=1)
