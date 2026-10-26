@@ -13,6 +13,18 @@ function object(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function validateCookie(cookie: session.Cookie): void {
+  try {
+    cookie.serialize("sid", "validation");
+    // Exercise the library's renewal without changing the stored cookie.
+    const renewed = Object.assign(new session.Cookie(), cookie);
+    renewed.maxAge = cookie.originalMaxAge;
+    renewed.serialize("sid", "validation");
+  } catch {
+    throw new Error("Invalid stored session cookie");
+  }
+}
+
 function decode(data: string): session.SessionData {
   let value: unknown;
   try {
@@ -77,6 +89,7 @@ function decode(data: string): session.SessionData {
     priority: cookie.priority,
     sameSite: cookie.sameSite,
   });
+  validateCookie(restored);
   return { accountId: value.accountId, cookie: restored };
 }
 
@@ -99,6 +112,7 @@ export class SqliteSessionStore extends session.Store {
         const maxAge = value.cookie.originalMaxAge;
         value.cookie.expires = new Date(row.expiresAt);
         value.cookie.originalMaxAge = maxAge;
+        validateCookie(value.cookie);
       }
     } catch (error) {
       callback(this.failure(error));

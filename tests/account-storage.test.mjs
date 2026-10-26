@@ -324,6 +324,130 @@ test("crafted persisted payloads fail through Store callbacks before package hyd
   assert.equal((await call(store, "load", "one")).accountId, account.id);
 });
 
+// invariant: account-session-storage
+test("persisted cookies must be usable after database expiry replacement and package renewal", async (t) => {
+  for (const [name, corrupt] of [
+    [
+      "invalid path",
+      (payload) => {
+        payload.cookie.path = "/;bad";
+      },
+    ],
+    [
+      "invalid domain",
+      (payload) => {
+        payload.cookie.domain = "bad domain";
+      },
+    ],
+    [
+      "unrepresentable renewal age",
+      (payload) => {
+        payload.cookie.originalMaxAge = Number.MAX_SAFE_INTEGER;
+      },
+    ],
+    [
+      "unrepresentable database expiry",
+      (_payload, raw) => {
+        raw
+          .prepare("UPDATE sessions SET expires_at = ? WHERE id = 'one'")
+          .run(Number.MAX_SAFE_INTEGER);
+      },
+    ],
+  ]) {
+    await t.test(name, async (t) => {
+      const { store, raw, account } = await fixture(t);
+      const valid = data(account.id);
+      valid.cookie.path = "/accounts";
+      valid.cookie.domain = "example.test";
+      await call(store, "set", "one", valid);
+      const renewed = data(account.id, 5000);
+      await call(store, "touch", "one", renewed);
+      const before = await call(store, "load", "one");
+      assert.equal(
+        before.cookie.expires.getTime(),
+        5000,
+        "database expiry replaces older JSON expiry",
+      );
+      assert.doesNotThrow(() => before.cookie.serialize("sid", "synthetic"));
+      before.touch();
+      assert.doesNotThrow(() => before.cookie.serialize("sid", "synthetic"));
+
+      const payload = JSON.parse(JSON.stringify(valid));
+      corrupt(payload, raw);
+      raw
+        .prepare("UPDATE sessions SET data = ? WHERE id = 'one'")
+        .run(JSON.stringify(payload));
+      await assert.rejects(
+        call(store, "load", "one"),
+        /Invalid stored session cookie/,
+      );
+
+      raw
+        .prepare(
+          "UPDATE sessions SET data = ?, expires_at = 5000 WHERE id = 'one'",
+        )
+        .run(JSON.stringify(valid));
+      const after = await call(store, "load", "one");
+      assert.equal(after.accountId, account.id);
+      assert.doesNotThrow(() => after.cookie.serialize("sid", "synthetic"));
+      after.touch();
+      assert.doesNotThrow(() => after.cookie.serialize("sid", "synthetic"));
+    });
+  }
+});
+
+// invariant: account-session-storage
+test("set and touch refuse unusable cookie input without changing stored sessions", async (t) => {
+  for (const [name, corrupt] of [
+    [
+      "invalid path",
+      (cookie) => {
+        cookie.path = "/;bad";
+      },
+    ],
+    [
+      "invalid domain",
+      (cookie) => {
+        cookie.domain = "bad domain";
+      },
+    ],
+    [
+      "unrepresentable renewal age",
+      (cookie) => {
+        cookie.originalMaxAge = Number.MAX_SAFE_INTEGER;
+      },
+    ],
+  ]) {
+    await t.test(name, async (t) => {
+      const { store, raw, account } = await fixture(t);
+      await call(store, "set", "one", data(account.id));
+      const invalid = data(account.id, 5000);
+      corrupt(invalid.cookie);
+      await assert.rejects(
+        call(store, "set", "two", invalid),
+        /Invalid stored session cookie/,
+      );
+      assert.equal(
+        raw.prepare("SELECT id FROM sessions WHERE id = 'two'").get(),
+        undefined,
+      );
+      await assert.rejects(
+        call(store, "touch", "one", invalid),
+        /Invalid stored session cookie/,
+      );
+      assert.equal(
+        (await call(store, "get", "one")).cookie.expires.getTime(),
+        2000,
+      );
+      await call(store, "touch", "one", data(account.id, 5000));
+      const valid = await call(store, "load", "one");
+      assert.equal(valid.cookie.expires.getTime(), 5000);
+      valid.touch();
+      assert.doesNotThrow(() => valid.cookie.serialize("sid", "synthetic"));
+    });
+  }
+});
+
 test("Store callback failures are delivered once and callback exceptions are not swallowed", async (t) => {
   const { store, account } = await fixture(t);
   const sentinel = new Error("caller exception");

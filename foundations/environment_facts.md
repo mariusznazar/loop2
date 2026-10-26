@@ -247,6 +247,18 @@ Fetch includes eligible credentials by default for requests to the same origin, 
 
 - **Source:** https://raw.githubusercontent.com/mdn/content/fe1d7fb9b67ce826c4a748ce00e7b35ac4a54c7f/files/en-us/web/api/fetch_api/using_fetch/index.md § Including credentials — "By default, credentials are only included in same-origin requests."; read 2026-10-26
 
+## express-session-cookie-lifecycle
+
+Express-session 1.19.0 renews a session by assigning its cookie's originalMaxAge to maxAge, computes expiry from the current time, and serializes the cookie through the cookie package.
+
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/session/session.js § resetMaxAge — "this.cookie.maxAge = this.cookie.originalMaxAge;"; read 2026-10-27 · https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/session/cookie.js § maxAge setter — "new Date(Date.now() + ms)" · § serialize — "return cookie.serialize(name, val, this.data);"; read 2026-10-27
+
+## cookie-serialization-validation
+
+Cookie 0.7.2 rejects a nonempty domain or path outside its serializer's accepted syntax and rejects an invalid Date supplied as expiry.
+
+- **Source:** https://raw.githubusercontent.com/jshttp/cookie/d19eaa1a2bb9ca43ac0951edd852ba4e88e410e0/index.js § serialize, domain — "if (!domainValueRegExp.test(opt.domain))" · § serialize, path — "if (!pathValueRegExp.test(opt.path))" · § serialize, expires — "if (!isDate(expires) || isNaN(expires.valueOf()))"; read 2026-10-27
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

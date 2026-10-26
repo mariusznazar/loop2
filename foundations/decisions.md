@@ -1921,7 +1921,7 @@ The exemplar for kind `database-access` is `src/server/database.ts`, and its kin
 The exemplar for kind `session-store` is `src/server/session-store.ts`, and its kind guidelines are read before adding or changing a session-store file. The Store adapts the library's callbacks to database operations, validates stored session identity and cookie metadata before library hydration, and leaves HTTP and cookie policy to application assembly.
 
 - **Scope:** account-server
-- **Based on:** express-session-store-contract
+- **Based on:** express-session-store-contract · express-session-cookie-lifecycle · cookie-serialization-validation
 - **Relations:** derives from D-28 · derives from D-105 · derives from D-110
 - **Verification:** invariants: account-session-storage. An agent compares a change with the decision:
   - complies: session-store guidelines identify the first implementation as exemplar and preserve callback failures

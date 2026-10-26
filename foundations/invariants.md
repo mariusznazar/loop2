@@ -754,7 +754,7 @@ Opening an account database initializes version 1 atomically, preserves its exis
 The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
 
 - **Method:** test
-- **Rests on:** express-session-store-contract · node-sqlite-database
+- **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation
 - **Derives from:** D-110 · D-113
 - **Part:** account-server
 - **Violated:** no

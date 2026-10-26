@@ -24,6 +24,8 @@ Czytaj również ogólne wytyczne kodowania.
 - **Bad:** Odczyt bez walidacji albo odnowienie przez wstawienie brakującego rekordu.
 
 Sprawdzaj kształt odczytanych danych i zgodność tożsamości z rekordem.
+Sprawdzaj też, czy biblioteka potrafi zapisać ciasteczko z tymi wartościami,
+również po zastąpieniu daty terminem z bazy i po odnowieniu jego ważności.
 Przy odnowieniu aktualizuj tylko istniejącą, niewygasłą sesję tego konta
 i zachowaj późniejszy termin. Sprawdzaj granicę czasu równą wygaśnięciu.
 Testy adaptera nie zastępują dowodu konfiguracji ciasteczka i wdrożonego serwera.
@@ -38,6 +40,12 @@ odbiorcy nie powoduje drugiego wywołania. Brak callbacku kieruje błąd do zdar
 `error` magazynu. Zapis nowej uwierzytelnionej sesji używa `set`; zwykłe żądanie
 używa `touch` i nie przepisuje tożsamości. Zasady HTTP i atrybuty ciasteczka
 ustala aplikacja używająca magazynu.
+
+### Wartości przyjmowane przez bibliotekę
+
+Adapter używa rzeczywistego `Cookie.serialize` do kontroli metadanych.
+Kopia ciasteczka przechodzi też ustawienie `maxAge` tak jak przy odnowieniu
+sesji; walidacja nie zmienia daty ani czasu życia zwracanej sesji.
 
 ## Where in code
 
