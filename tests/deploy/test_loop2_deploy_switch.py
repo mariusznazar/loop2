@@ -1,10 +1,10 @@
 """The deployment script from the switch to its end (spec § 5, steps 10–13, "Never").
 
 - the switch: `docker compose --project-name loop2 -f <checkout>/compose.yaml up -d --no-build
-  --no-deps --remove-orphans --wait --wait-timeout 120 app`; a container that does not become
+  --no-deps --remove-orphans --force-recreate --wait --wait-timeout 120 app cloudflared`; a container that does not become
   healthy gives exit 8, the last container log lines in the log file and the restore line naming
   the previous commit;
-- the local probe of 127.0.0.1:18080: `/` must answer 200 and an unknown `/api/` path a JSON 404,
+- the internal Node HTTP probe of 127.0.0.1:3000: `/` must answer 200 and an unknown `/api/` path a JSON 404,
   else exit 8 with the same restore line;
 - the old game's container: its name, status and health logged after the build stage, on
   success and after exit 8, never its port;
@@ -73,6 +73,7 @@ class DeploySwitchTestCase(unittest.TestCase):
     def assert_failed_start(self, result):
         self.assertEqual(result.code, 8, result)
         self.assertIn(self.restore_line(), result.stdout)
+        self.assertIn("Cloudflare route", result.stdout)
         self.assertIn(self.restore_line(), self.fixture.log_text())
         self.assertIn("(exit 8)", self.log_lines()[-1])
         self.assertEqual([c for c in result.calls["docker"] if "prune" in c], [], result)
@@ -88,11 +89,12 @@ class Success(DeploySwitchTestCase):
         compose_file = support.shell_path(self.fixture.checkout) + "/compose.yaml"
         self.assertEqual(self.compose_calls(result, "up"), [
             ["compose", "--project-name", "loop2", "-f", compose_file, "up", "-d", "--no-build",
-             "--no-deps", "--remove-orphans", "--wait", "--wait-timeout", "120", "app"]], result)
-        urls = [call[-1] for call in result.calls["curl"]]
-        self.assertEqual(urls[0], "http://127.0.0.1:18080/", result)
-        self.assertEqual(len(urls), 2, result)
-        self.assertTrue(urls[1].startswith("http://127.0.0.1:18080/api/"), result)
+             "--no-deps", "--remove-orphans", "--force-recreate", "--wait", "--wait-timeout",
+             "120", "app", "cloudflared"]], result)
+        probes = [call for call in result.calls["docker"] if call[:1] == ["exec"]]
+        self.assertEqual(len(probes), 1, result)
+        self.assertEqual(probes[0][:4], ["exec", "loop2", "node", "-e"], result)
+        self.assertEqual(result.calls["curl"], [], result)
         docker = result.calls["docker"]
         prunes = [c for c in docker if "prune" in c]
         self.assertEqual(prunes, [PRUNE], result)
@@ -135,38 +137,47 @@ class Success(DeploySwitchTestCase):
 class FailedStart(DeploySwitchTestCase):
 
     def test_failed_health_wait_exits_8_with_the_restore_line_and_container_logs(self):
-        self.fixture.answer("docker", exit_code=1, stdout="container loop2 is unhealthy\n",
-                            match="compose * up *")
-        self.fixture.answer("docker", stdout="LAST-CONTAINER-LINE listening failed\n",
-                            match="compose * logs *")
-        result = self.deploy()
-        self.assert_failed_start(result)
-        self.assertEqual(result.calls["curl"], [], result)
-        logs = self.compose_calls(result, "logs")
-        self.assertEqual(len(logs), 1, result)
-        self.assertEqual(logs[0][:5], ["compose", "--project-name", "loop2", "-f",
-                                       support.shell_path(self.fixture.checkout)
-                                       + "/compose.yaml"])
-        self.assertEqual(logs[0][-1], "app")
-        self.assertIn("LAST-CONTAINER-LINE", self.fixture.log_text())
-        self.assertNotIn("LAST-CONTAINER-LINE", result.output)
-        self.assertNotIn("unhealthy", result.output)
+        for failure in ("container loop2 is unhealthy",
+                        "container loop2-cloudflared is unhealthy", "secret file is missing"):
+            with self.subTest(failure=failure):
+                self.fixture = support.DeployFixture()
+                self.addCleanup(self.fixture.remove)
+                self.sha = self.fixture.deployable_commit()
+                self.fixture.install()
+                self.fixture.answer("docker", exit_code=1, stdout=failure + "\n",
+                                    match="compose * up *")
+                self.fixture.answer("docker", stdout="LAST-CONTAINER-LINE listening failed\n",
+                                    match="compose * logs *")
+                result = self.deploy()
+                self.assert_failed_start(result)
+                self.assertEqual([c for c in result.calls["docker"] if c[:1] == ["exec"]], [], result)
+                logs = self.compose_calls(result, "logs")
+                self.assertEqual(len(logs), 1, result)
+                self.assertEqual(logs[0][:5], ["compose", "--project-name", "loop2", "-f",
+                                               support.shell_path(self.fixture.checkout)
+                                               + "/compose.yaml"])
+                self.assertEqual(logs[0][-2:], ["app", "cloudflared"])
+                self.assertIn("LAST-CONTAINER-LINE", self.fixture.log_text())
+                self.assertNotIn("LAST-CONTAINER-LINE", result.output)
+                self.assertNotIn("unhealthy", result.output)
 
     def test_failed_probe_exits_8_with_the_restore_line(self):
         cases = {
-            "root not 200": ("200", "502 text/html", "*:18080/"),
-            "api path not 404": ("404", "200 text/html; charset=UTF-8", "*/api/*"),
-            "api 404 not JSON": ("404", "404 text/html; charset=utf-8", "*/api/*"),
-            "curl cannot connect": ("connect", "000 ", "*"),
+            "root not 200": (0, "502 text/html\n404 application/json"),
+            "api path not 404": (0, "200 text/html\n200 text/html"),
+            "api 404 not JSON": (0, "200 text/html\n404 text/html"),
+            "api 404 another subtype": (0, "200 text/html\n404 application/jsonp"),
+            "exec or HTTP fails": (1, ""),
+            "exec times out": (124, ""),
         }
-        for name, (_kind, answer, match) in cases.items():
+        for name, (exit_code, answer) in cases.items():
             with self.subTest(case=name):
                 self.fixture = support.DeployFixture()
                 self.addCleanup(self.fixture.remove)
                 self.sha = self.fixture.deployable_commit()
                 self.fixture.install()
-                exit_code = 7 if name == "curl cannot connect" else 0
-                self.fixture.answer("curl", exit_code=exit_code, stdout=answer, match=match)
+                self.fixture.answer("docker", exit_code=exit_code, stdout=answer,
+                                    match="exec loop2 node -e *")
                 result = self.deploy()
                 self.assert_failed_start(result)
                 self.assertIn("probe", self.log_lines()[-1])
@@ -185,7 +196,7 @@ class NeverInTheOutputOrTheCommands(DeploySwitchTestCase):
         """A success, a failed build, a failed start and a failed probe."""
         results = [self.deploy()]
         for rule in (("docker", 1, "compose * build *"), ("docker", 1, "compose * up *"),
-                     ("curl", 0, "*")):
+                     ("docker", 0, "exec loop2 node -e *")):
             self.fixture = support.DeployFixture()
             self.addCleanup(self.fixture.remove)
             self.sha = self.fixture.deployable_commit()

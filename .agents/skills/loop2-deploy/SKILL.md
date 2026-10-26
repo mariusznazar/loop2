@@ -5,82 +5,107 @@ description: How loop2's test-server deployment works - seeing which commit runs
 
 # loop2-deploy
 
-loop2 runs as one Docker container on a shared test server. A push to `main` starts the GitHub
-Actions workflow `.github/workflows/deploy.yml`; it makes one SSH call that hands the commit name to
-the server script `deploy/loop2-deploy` (installed at `/usr/local/bin/loop2-deploy`). The script
-fetches that commit, builds the image, starts the container and probes it. Nothing is shipped from
-GitHub to the server; the server pulls the code itself with a read-only deploy key.
+Loop2 runs in a Docker Compose project with an application and a Cloudflare Tunnel connector.
+A push to `main` starts `.github/workflows/deploy.yml`, whose SSH call passes the commit to the
+installed `/usr/local/bin/loop2-deploy`. Its source is `deploy/loop2-deploy`. The server fetches
+the code, prepares both images before replacing either container, recreates both services,
+waits for their health checks, then probes the application inside its container. Nothing is
+shipped from GitHub to the server.
 
-Fixed facts, all in `compose.yaml` and the script: Compose project `loop2`, service `app`, container
-`loop2`, checkout `/srv/loop2`, host port 18080 (container port 3000), memory limit 512 MiB, log
-`/var/log/loop2-deploy.log`. The public address is `https://loop2.mariusznazar.com/` (Cloudflare
-proxies it and an Origin Rule sends it to port 18080). The server is shared: the old game (container `loop`) and any other
-workload must stay untouched: the deployment never prunes host-wide, never runs `down` and never
-touches another Compose project.
+The public address is `https://loop2.mariusznazar.com/`. Cloudflare's remotely managed tunnel
+forwards it to `http://app:3000` over the private Compose network. The application publishes no
+host port. The connector uses HTTP/2 over IPv4, encrypted to Cloudflare, with metrics on its own
+`127.0.0.1:2000`. Its image version and digest stand in `deploy/cloudflared.Dockerfile`.
+
+| Resource | Value |
+|---|---|
+| Project / checkout | `loop2` / `/srv/loop2` |
+| Application service / container / limit | `app` / `loop2` / 512 MiB |
+| Tunnel service / container / limit | `cloudflared` / `loop2-cloudflared` / 256 MiB |
+| Deploy log / lock | `/var/log/loop2-deploy.log` / `/run/loop2-deploy.lock` |
+| Host token file / container secret | `/etc/loop2/cloudflared-token` / `/run/secrets/cloudflare_tunnel_token` |
+
+The old game (`loop`) and `foundryvtt` share the host and stay untouched. Deployment never
+prunes host-wide, runs `down`, or changes another Compose project. Replaced dangling images
+with loop2's ownership label can be removed; upstream bases and shared build cache stay.
 
 ## Agent or human
 
-- **The agent reads only.** It reaches the server through the `mikrus` MCP: its `servers` tool gives
-  the server id (never write that id, the server name, ports or addresses into the repository), its
-  `exec` tool runs commands. The MCP runs commands as root, so "read only" is an agreement this
-  skill states, not a technical limit. Allowed: `tail` of the deploy log, `docker ps`,
-  `docker compose -p loop2 ps` and `logs`, `docker inspect` of labels and state, `free`, `df`,
-  `git -C /srv/loop2 log` and `git -C /srv/loop2 --no-optional-locks status` (a plain `status` can
-  rewrite the index), `cat` of the script, `cmp`.
-- The MCP's changing tools (`upload`, `porty`, `domains`, and any `exec` command that changes state)
-  are the human's too.
-- **Every change is the human's:** installing or reinstalling the script, keys, `authorized_keys`,
-  GitHub secrets, Cloudflare rules, running a deployment or rollback on the server, reclaiming Docker
-  build cache. The agent prepares the exact command and asks the human to run it.
-- Setup and secrets: `references/setup_and_secrets.md`. A failed deployment, the resource gate, the
-  installed-script warning, Cloudflare 521/522: `references/troubleshooting.md`.
+The agent reads only, through the `mikrus` MCP: `servers` gives the server ID and `exec` runs
+commands. Never copy the ID, server name, SSH port, user, address or any secret into repository
+files or requests. The MCP has full rights, so the following limits are an agreement:
+
+- Allowed: bounded `tail` of the deploy log; `docker ps`; `docker compose -p loop2 ps` and
+  `logs --tail 100 app cloudflared` from `/srv/loop2`; container label, state and health fields;
+  the individual memory-limit reads below; scoped `docker stats --no-stream loop2 loop2-cloudflared`;
+  `free`, `df`, `docker system df`; `git -C /srv/loop2 log`,
+  `git -C /srv/loop2 --no-optional-locks status`; `cat` of the deploy script and `cmp`.
+- Allowed: the fixed internal application probe and bounded connector readiness command below;
+  `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844`
+  (also the same check for `region2.v2.argotunnel.com`). A **Connected** line is success evidence,
+  often followed by timeout exit 124; it proves host TCP/IPv4 reachability only, not UDP or
+  container connectivity. See `references/troubleshooting.md`.
+- No token-file reads, full `docker inspect`, Compose configuration dumps, arbitrary container
+  execution, restarts, deployments, key changes or secret rotation. The MCP's changing tools
+  (`upload`, `porty`, `domains`) are the human's too.
+
+Every server or Cloudflare change is the human's, except deployment started by the existing
+automation. The agent prepares the commands. Read `references/setup_and_secrets.md` for setup,
+the five transition actions and rotations; read `references/troubleshooting.md` for failure,
+script installation and rollback through the route change.
 
 ## Seeing deployments
 
-- **The Actions run** of "Deploy loop2" for the commit: the first step prints the script's output
-  (stage lines), the second probes the public addresses of loop2 and of the old game. ssh's own
-  fatal errors (a refused connection, a host-key mismatch) may print the resolved address of the
-  server into this log, so treat the Actions log as not safe to share publicly.
-- **The deploy log** `/var/log/loop2-deploy.log`: every line has a UTC time and `loop2-deploy:`. A
-  run starts with `start: commit <sha>, path: ..., running commit: <sha>` and ends with
-  `deployed <sha>, previously <sha>` or a `stage <name>: ... (exit N)` line. Docker's and git's own
-  output goes only to this file, never to the Actions log.
-- **The running commit** is the container's revision label, not the checkout (the checkout may stand
-  at a commit whose build failed):
+- Actions shows stage lines and probes both public addresses after deployment. SSH errors may
+  reveal resolved server access values, so do not publish raw Actions logs.
+- The server log starts a run with `start: commit <sha>, path: ..., running commit: <sha>` and
+  ends with `deployed <sha>, previously <sha>` or `stage <name>: ... (exit N)`. Git and Docker
+  output stays in this log. Treat service logs as potentially sensitive; report selected,
+  redacted diagnosis, not raw logs.
+- The running application commit comes from its label, not the checkout or connector image:
   `docker inspect --type container --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' loop2`
-- **State:** `docker compose -p loop2 ps`; application logs `docker compose -p loop2 logs --tail 100 app`.
-- **The applied memory limit:** `docker inspect --type container loop2` and read the requested limit,
-  `HostConfig.Memory` (512 MiB is 536870912); the enforced limit is the container's cgroup
-  `memory.max` or the limit column of `docker stats --no-stream loop2`.
+- State and health: `docker inspect --type container --format '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' loop2-cloudflared`;
+  use the same scoped read for `loop2`. Connector health means an active edge connection,
+  not a verified public hostname route.
+- Requested limits: `docker inspect --type container --format '{{.HostConfig.Memory}}' loop2`
+  expects 536870912; the same command for `loop2-cloudflared` expects 268435456. The limit
+  column of `docker stats --no-stream loop2 loop2-cloudflared` shows the enforced limit.
+- Connector readiness: `timeout 5 docker exec loop2-cloudflared cloudflared tunnel --metrics 127.0.0.1:2000 ready`.
+- Internal application probe (fixed read-only Node client, bounded independently of Docker):
+
+```sh
+timeout 15 docker exec loop2 node -e 'Promise.all(["/", "/api/loop2-deploy-probe"].map(async path => { const r = await fetch("http://127.0.0.1:3000" + path, { redirect: "manual", signal: AbortSignal.timeout(10000) }); return r.status + " " + (r.headers.get("content-type") || ""); })).then(rows => { console.log(rows.join("\n")); process.exit(0); }, () => process.exit(1));'
+```
+
+Expected lines: root `200` and API `404 application/json` (charset may follow). This proves
+internal HTTP only; the human checks the public page/API and outside-host IPv6 port separately.
 
 ## Log stages and exit codes
 
-| Exit | Stage | Meaning | Running loop2 |
+| Exit | Stage | Meaning | Running services |
 |---|---|---|---|
-| 0 | - | deployed | new commit |
-| 2 | input | not exactly one commit name of 40 lowercase hex characters, or both an SSH command and an argument | untouched |
-| 3 | commit | the commit is not fetched, or (automation key) not on `main`, or (human run) on no branch of GitHub | untouched |
-| 4 | lock | `/run/loop2-deploy.lock` cannot be opened, or another deployment held it for 900 s | untouched |
-| 5 | resources | less than 1024 MiB `MemAvailable`, less than 4 GiB free for Docker, or a value unreadable | untouched |
-| 6 | fetch, checkout | git fetch, checkout or clean failed (deploy key, GitHub reachability) | untouched |
-| 7 | build | type check or image build failed (also: the commit has no `compose.yaml`) | untouched |
-| 8 | switch, probe | the container was not healthy within 120 s, or the local probe on `127.0.0.1:18080` failed | down or broken |
+| 0 | — | both healthy; internal HTTP passed | new commit |
+| 2 | input | not one lowercase 40-hex commit or ambiguous input paths | untouched |
+| 3 | commit | absent, on no accepted branch, or automation commit outside `main` | untouched |
+| 4 | lock | cannot open lock or it is held for 900 seconds | untouched |
+| 5 | resources | less than 1024 MiB available memory, 4 GiB free Docker disk, or unreadable | untouched |
+| 6 | fetch, checkout | Git fetch, checkout or clean failed | untouched |
+| 7 | build | app type check/build, connector preparation, or missing Compose file | untouched |
+| 8 | switch, probe | either service fails health within 120 seconds or internal HTTP fails | may be partly running or broken |
 
-After exit 8 the log holds a `previously running commit` line with the exact restore command. When
-the container did not start healthy, its last 50 log lines go only to the server log (and
-`docker compose -p loop2 logs`), not to the Actions log; after a failed probe only
-`docker compose -p loop2 logs` has them. The script also logs the resource values
-(`resources: MemAvailable ... free space ...`), the old game's state after a failure, and a warning
-when the installed script differs from the checked-out source (see troubleshooting).
+After exit 8 the log gives the previous application commit and restoration guidance. The
+switch is not atomic. Failed health waits put the last 50 lines of both service logs in the
+server log, not Actions; after a probe failure read bounded service logs. Resource readings,
+the old game's state and installed-script mismatches are also logged.
 
 ## Rollback
 
-A rollback is a rebuild of an earlier commit; no old image is kept.
+An ordinary rollback within the same route is one deployment: merge a revert request, or the
+human runs `loop2-deploy <earlier sha>`. A fast rollback lasts until the next push to `main`;
+a revert keeps the branch and server aligned. No earlier product image is retained for recovery.
 
-- **Ordinary:** open a revert pull request and merge it; the merge deploys itself.
-- **Fast (human, on the server):** `loop2-deploy <earlier sha>`, one command of the human path, which
-  accepts a commit of any branch. The earlier commit is the `previously` commit in the log. It lasts
-  only until the next push to `main`, which deploys the tip again; to keep a rollback, revert on `main`.
-- A rollback across a change of the published port also needs the Origin Rule changed.
-- The skeleton has no data to lose. Once a later task adds data, rolling back code does not roll back
-  data.
+**Crossing the tunnel transition also requires the matching installed script and Cloudflare
+route.** Follow the complete procedure in `references/troubleshooting.md` before deploying or
+merging a revert. It involves script installation, one deployment and four Cloudflare changes,
+with an outage during the route switch. This transport task changes no game data; a code
+rollback does not restore historical data.

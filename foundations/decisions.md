@@ -194,28 +194,19 @@ start a rebuild but cannot bring code in. The price is a short break in access a
 
 ### D-10 — How do players reach loop2 on the server?
 
-Players reach loop2 at `https://loop2.mariusznazar.com/`, which Cloudflare proxies to the server: a
-proxied AAAA record points at the server's IPv6 address, and an Origin Rule sends the requests to
-the port the loop2 container publishes. Players connect to Cloudflare over HTTPS, and Cloudflare
-connects to the server over plain HTTP only while no player account is served through this route.
+Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project with its own memory limit and forwards internally to `http://app:3000`. The application publishes no host port, and the tunnel's published hostname replaces loop2's proxied AAAA record, Origin Rule and Configuration Rule. Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success.
 
 - **Scope:** deployment
-- **Based on:** cloudflare-origin-rules · cloudflare-configuration-rules · cloudflare-test-origin-ipv6 · Cloudflare network ports, "By default, Cloudflare proxies traffic destined for the HTTP/HTTPS ports listed below." (https://developers.cloudflare.com/fundamentals/reference/network-ports/, read 2026-10-13)
+- **Based on:** cloudflare-tunnel-transport · cloudflare-tunnel-token-file · cloudflared-connection-readiness · mikrus-tunnel-outbound-tcp
 - **Relations:** derives from D-08
-- **Verification:** an agent compares the change with the decision:
-  - complies: a change whose workflow requests `https://loop2.mariusznazar.com/` after a deployment and whose container publishes the port the Origin Rule names
-  - violates: a public address on a Mikrus subdomain for loop2; a task that serves player accounts through this route while Cloudflare still connects to the server over plain HTTP
-- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Pod jakim adresem stanie loop2 na Mikrusie?"
+- **Verification:** invariants: loop2-application-port. An agent compares the change with the decision:
+  - complies: a private application container reached by the separately limited tunnel connector, whose image is prepared and health checked with the application
+  - violates: a public origin port; a deployment that reports success while the connector has no active connection; a tunnel installed as an unmanaged host service
+- **Origin:** none
 
-*Rationale:* Cloudflare already holds the `mariusznazar.com` domain, gives players HTTPS without a
-certificate in the container, and reaches the container's port through an Origin Rule, while both
-public IPv4 service ports of the host are taken by other workloads, the old loop game and another.
-Plain HTTP from Cloudflare to the server is accepted only while the test server holds no player
-data, since HTTPS for players is not end-to-end encryption; a Configuration Rule sets that
-encryption mode for this hostname alone, so the old game's route keeps its own. IPv6 lets
-Cloudflare reach loop2 without taking a shared public IPv4 service port.
-*Rejected:* a new free Mikrus subdomain — ties the game's address to the hosting provider; serving
-loop2 at `kantarion.bieda.it` in place of the old game — would reopen the approved MVP definition.
+*Rationale:* The tunnel encrypts traffic across the public network without adding certificate handling to the application, and keeping its connector in the product's deployment makes its version and resource boundary reviewable. The application depends on a working connector and its credential; replacing it during deployment adds a short interruption. HTTP/2 uses the observed TCP route; container connectivity and the chosen memory bounds still need observation on the host. The hostname remains independent of the hosting provider.
+*Rejected:* A manually installed host connector — its version and updates would sit outside the product's deployment, although it would avoid restarting the tunnel with the application; Origin CA and Full (strict) in the game server — adds TLS handling or another server process and still needs a separate, unverified restriction on direct port access; a new Mikrus subdomain — ties the address to the provider; replacing the old game's public address — breaks the approved separation; automatic QUIC selection — adds an unverified UDP route and fallback delay.
+
 
 ### D-11 — Which branch deploys loop2 to the test server?
 
@@ -262,23 +253,19 @@ state.
 
 ### D-13 — Where do the server's access values and secrets live?
 
-Secrets and the values that give access to the server — its name, SSH port, SSH user and IPv6
-address — stay outside the repository, in the repository's GitHub secrets and the owner's private
-note, and the repository's files and requests refer to them by the secret's name or the note. The
-server directory, the container port and the deploy script may stand in the repository.
+Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, while the runtime tunnel token lives in `/etc/loop2/cloudflared-token` on the server and backed up in that private note. Compose grants that file only to `cloudflared` as the read-only secret `/run/secrets/cloudflare_tunnel_token`; the host directory is owned by the deployment account with group 65532 and mode 0750, and the file has the same owner and group with mode 0640, granting access to that account, root and the connector's group rather than other host users. Repository files and requests refer to access values by secret name or private note, may name non-secret deployment paths and container ports, and token rotation recreates the connector after the server file and private copy are replaced.
 
 - **Scope:** deployment, agent-workflow
-- **Based on:** none
+- **Based on:** cloudflare-tunnel-token-file · compose-file-secret-permissions · cloudflared-image-identity
 - **Relations:** none
 - **Verification:** an agent compares the change with the decision:
-  - complies: a workflow that reads the server's address from a named GitHub secret; a skill that says the SSH port is held in a named secret
-  - violates: a workflow, script, skill or request text that holds the server's name, SSH port, SSH user or IPv6 address itself
-- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Co poza sekretami jest wrażliwą konfiguracją serwera, której nie ma być w PR-ze ani w repozytorium?"
+  - complies: a workflow reading named GitHub access secrets and a connector receiving only its file-backed token, with a human rotation that recreates it
+  - violates: server access values or a token value in a workflow, script, skill, request, command argument or container environment; a world-readable token file or a grant to the application
+- **Origin:** none
 
-*Rationale:* the access values would tell a reader of the repository where and how to enter the
-server; the server directory, the container port and the deploy script tell no one how to get in.
-*Rejected:* keeping only the secrets outside the repository — the access values left in it would
-show where and how to enter the server.
+*Rationale:* Access values reveal where and how to enter the server, whereas deployment paths and container ports do not. A runtime credential must survive starts outside automation, and the private copy supports recovery independently of the provider dashboard. A file-backed secret avoids printing the token in configuration and environment inspection, at the price of maintaining host permissions and another copy during rotation.
+*Rejected:* Keeping only secret values outside the repository — access values would still reveal how to enter the server; keeping the runtime token only in GitHub secrets — the runtime cannot retrieve it on an ordinary restart; a server token without a private copy — recovery depends on issuing another token; environment delivery — exposes the credential through environment inspection.
+
 
 ### D-14 — What kind of container does loop2 run in?
 
@@ -298,7 +285,7 @@ container, so loop2 is run with the tool the host is already operated with.
 
 ### D-15 — How is loop2 recovered when a deployment goes wrong?
 
-A deployment that stops before it starts the new container leaves the running loop2 container in
+A deployment that stops before it starts the new containers leaves the running loop2 containers in
 service. A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's
 run of the installed deploy script with that commit, which may name a commit of any branch of the
 GitHub repository while the automation's key deploys only commits of `main`. No earlier image is
@@ -313,14 +300,9 @@ kept, so a rollback restores the earlier commit's code, never the data of that t
   - violates: a rollback that restarts a kept image of an earlier commit; the automation key's path accepting a commit of a branch other than `main`
 - **Origin:** none
 
-*Rationale:* keeping no earlier image leaves the server one checkout and one image of loop2, and a
-revert on `main` keeps the branch and the server in agreement. A human's run accepts a commit of any
-branch so that a change to how loop2 is deployed can be deployed and tried before its merge, and so
-that a rollback reaches an earlier commit at once. The base image is named by a tag that is not
-pinned, so a rebuild of an earlier commit restores its code, not the identical image.
-*Rejected:* keeping the images of earlier commits and switching back by index — a restore at once,
-but a commit's image tag can be overwritten, a rollback across a change of the published port breaks
-the public route, and the kept images need ordering rules of their own.
+*Rationale:* Rebuilding an earlier commit keeps the repository and the deployed code in agreement without keeping product images as a recovery store. Application and connector images are prepared before either running container is replaced; shared base images and build cache remain outside product cleanup. A human can try a request before its merge or recover at once. Crossing a deployment-route change also requires the matching installed command and external route settings, so code rollback alone is not public-route recovery. Rebuilding restores code, not historical data or necessarily identical upstream layers.
+*Rejected:* Keeping earlier product images and switching by index — speeds recovery but requires independent retention rules and does not restore the installed deployment command or external routing.
+
 
 ### D-16 — What does the automation's key run on the server?
 
@@ -350,11 +332,7 @@ source would stop.
 
 ### D-17 — How does loop2 share the Mikrus host with other workloads?
 
-A deployment of loop2 changes nothing on the host but loop2's own checkout, image, container, log
-and lock, and the build cache and base image its build adds to the Docker store the host's
-workloads share, which it never prunes; it removes or replaces nothing of another workload. It
-builds only while the host's available memory and free disk stay above thresholds the repository
-sets, and the loop2 container runs under a memory limit.
+A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes; it removes or replaces nothing of another workload. It builds only while the host's available memory and free disk stay above thresholds the repository sets, and each loop2 container runs under its own memory limit. The tunnel token file is provisioned by the human outside the checkout and only read by deployment and the connector.
 
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · mikrus-host-swap

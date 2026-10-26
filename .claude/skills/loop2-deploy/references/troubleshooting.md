@@ -1,65 +1,129 @@
-# Troubleshooting
+# Troubleshooting and rollback
 
-Read the stage first: the Actions log shows the script's stage lines, the server log
-`/var/log/loop2-deploy.log` holds git's and Docker's own output. The stages and exit codes are in
-`SKILL.md`. The agent only reads; the actions below that change the server are the human's.
+Read the Actions stage line and the matching bounded tail of `/var/log/loop2-deploy.log`.
+Git and Docker output goes to the server log. The agent reads only; every change here is the
+human's. Use `SKILL.md` for allowed read commands and limits.
 
-## A failed automated deployment
-
-Find the exit code in the Actions log (`The server script (or the SSH connection) failed with exit
-code N`) and the matching `stage` line in the deploy log.
-
-| Exit | What to do |
+| Exit | Diagnosis and response |
 |---|---|
-| 255 or no stage line | SSH itself failed: wrong or blocked `DEPLOY_HOST` or `DEPLOY_PORT`, a host-key mismatch (`DEPLOY_KNOWN_HOSTS`), a rejected key. The runners use IPv4 only, so the name must resolve over IPv4 and its port must reach SSH. ssh's own errors may show the server's resolved address; mind that when sharing the log. |
-| 2 | The input was refused; a workflow or `authorized_keys` problem, not a code problem. |
-| 3 | The commit was not fetched or is not on `main`. Check that the pushed commit exists on GitHub. |
-| 4 | Another deployment held the lock for 900 s, or the lock file cannot be opened (see the run account in `setup_and_secrets.md`). Retry. |
-| 5 | Resource gate, below. |
-| 6 | Fetch or checkout failed: the deploy key, the SSH alias, GitHub reachability, or a full disk. Read git's message in the server log, fix, re-run the workflow. |
-| 7 | The type check or build failed. loop2 still runs the previous commit. The fix goes to `main`. |
-| 8 | The container did not become healthy, or the probe failed. loop2 is down or broken. If the container did not start healthy, its last 50 log lines are in the server log (not in the Actions log); after a failed probe read `docker compose -p loop2 logs`. Then run `loop2-deploy <previous sha>` using the restore line in the log, or merge a revert. |
+| 255 or no stage | SSH failed: access secret, IPv4 route, pinned host key or authorized key. SSH output may expose access values; redact it. |
+| 2 | Refused input; inspect workflow and restricted authorized-key entry. |
+| 3 | Commit missing or automation commit outside freshly fetched `main`. |
+| 4 | Lock inaccessible or held for 900 seconds; check run-account setup before retry. |
+| 5 | Resource gate below its limit or unreadable; see below. |
+| 6 | Fetch/checkout failure; read Git's error for repository key, alias, reachability or disk. |
+| 7 | Application type check/build or connector pull/build failed; both old containers remain. Fix the request or `main` as appropriate. |
+| 8 | Either service failed readiness or internal HTTP failed; partial availability is possible. Read both bounded service logs, then recover with the correct procedure below. |
 
-With exits 2 to 7 loop2 still runs the previous commit (after the first merge, the human-deployed
-request commit). A first human deployment of the request commit that fails at start (exit 8) leaves
-no earlier container: fix on the task branch and run the human path again, before the merge.
+Exits 2–7 preserve the old running containers; there may be none on a first installation.
+After failed health waiting, the last 50 lines of each service's log are also in the deploy
+log. After failed HTTP, read `docker compose -p loop2 logs --tail 100 app cloudflared` from
+`/srv/loop2`. Never dump configuration, environment or token files to diagnose it.
 
-## The resource gate (exit 5)
+## Resource gate
 
-Before building, the script requires `MemAvailable` of at least 1024 MiB and at least 4 GiB free on
-the filesystem of Docker's root directory, and logs both values (`resources: ...`). Nothing was
-built and the running container is untouched. The human may stop a heavy process or free memory,
-free disk (for example Docker build cache, below), or change the thresholds in the script's constants
-block and reinstall it. Re-run the workflow afterwards. An `unreadable` value fails the gate too.
+Before preparing both images, deployment requires at least 1024 MiB `MemAvailable` and 4 GiB
+free on Docker's filesystem. It logs those readings and fails closed if either is unreadable.
+Each running service also has its own memory limit. The human may free resources or change
+the selected bounds in the repository and reinstall the script. The agent does neither.
+Read the limits using the one-field inspect and scoped stats commands in `SKILL.md`.
+
+Repeated builds grow shared cache. `docker system df` is a read-only size check. Reclaiming
+cache is a human decision affecting the next builds of all projects. Never use host-wide
+`docker system prune` as loop2 recovery. Product cleanup removes only dangling images with
+loop2's ownership label; it leaves upstream bases and shared cache alone.
 
 ## Installed-script warning
 
-The log line `warning: the installed /usr/local/bin/loop2-deploy differs from deploy/loop2-deploy at
-commit ...` means the installed copy is not the checked-out source; the run went on with the installed
-copy. It is expected after a rollback to a commit older than the script's last change, and when a
-commit has no `deploy/loop2-deploy` at all. A second warning, `the installed ... cannot be read`,
-means the installed copy is missing or unreadable, so it could not be compared: check the file's
-existence, owner and mode (root-owned, 0755) and reinstall. Otherwise review and reinstall (human):
+The installed command is outside the checkout and never updates itself. A mismatch warning
+does not stop deployment. After a source change, review and install from the **exact intended
+commit** using `setup_and_secrets.md`, then deploy that commit. The checkout may hold a failed
+commit, so copying `/srv/loop2/deploy/loop2-deploy` without selecting its commit is unsafe.
+A missing or unreadable installed copy needs its existence, owner and mode checked by the human.
 
-1. `diff /usr/local/bin/loop2-deploy /srv/loop2/deploy/loop2-deploy` and read the difference.
-2. Keep the previous copy: `cp -p /usr/local/bin/loop2-deploy /usr/local/bin/loop2-deploy.previous`.
-3. Copy the source to a temporary file and run `bash -n` on it.
-4. Install it root-owned, mode 0755, over `/usr/local/bin/loop2-deploy`.
-5. Run a deployment. If the new copy fails `bash -n` or its first run, copy `.previous` back.
+Preserve the previous installed script before replacing it. During the tunnel transition,
+`.previous` remains the pre-transition copy across all corrections. Outside that window,
+preserve a recovery copy appropriate to the change. A failed syntax check is never installed.
 
-## Cloudflare 521 or 522 right after a deployment
+## Tunnel unavailable or Cloudflare 1016/521/522
 
-The container is probably still starting (the switch has a few seconds of outage). Probe the origin
-from the host: `curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/`. An answer of 200
-there with 521 or 522 at the public address for more than a minute points at routing (the AAAA
-record, the Origin Rule's port 18080, the Flexible Configuration Rule, or port 18080 over the host's
-IPv6), not at the container. No answer there means the container is down: read
-`docker compose -p loop2 ps` and the deploy log.
+Separate three observations:
 
-## Reclaiming Docker build cache
+1. **Application:** run the fixed internal HTTP probe from `SKILL.md`. A wrong page/API status
+   concerns the application even if the connector is healthy.
+2. **Connector:** inspect only state/health and bounded `cloudflared` logs, then run the
+   bounded readiness command. A token-file read error asks the human to check the host owner,
+   group 65532 and mode 0640, with directory mode 0750. A rejected token asks the human to
+   rotate it. Neither diagnosis calls for printing its contents or changing the container to root.
+3. **Public routing:** if internal HTTP and connector readiness pass, check the tunnel's
+   published hostname and service `http://app:3000`, its CNAME, and removal of loop2's old
+   AAAA/Origin/Configuration rules. These are human Cloudflare actions. Readiness alone does
+   not verify that route. A stopped tunnel can produce 1016 while DNS still exists; 1016 is
+   a symptom, not a unique diagnosis.
 
-Repeated builds grow the build cache, and low free disk makes the resource gate fail. Reclaiming it
-is a human decision. `docker system df` shows its size. Emptying it clears the build cache of every
-project on the host, the old game's included, so their next builds take longer; running containers
-are not affected. Never run `docker system prune`, which reaches far more. The agent does not
-reclaim it.
+A few seconds of outage while both containers are recreated is expected. If connectivity is
+uncertain, the agent may run the bounded host check:
+
+```sh
+timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844
+```
+
+The evidence is the **Connected** line, often followed by timeout exit 124 while curl waits;
+exit 124 alone is not success. A connection failure such as exit 28 and no connected line is
+different. This checks host TCP over IPv4 only. It proves no container path and no UDP/QUIC
+path. The same check can target the other official endpoint `region2.v2.argotunnel.com`; the
+recorded host observation covers region1 only. Do not open port 18080 as a tunnel repair.
+
+## Rollback across the tunnel transition
+
+Stay in a no-other-merges window until recovery is verified. Before changing anything, retain
+the target application SHA from the deploy log and the old IPv6/rule values from the private
+note. This transport task changes no game data; rebuilding code never restores historical data.
+
+**Fast recovery:** the human installs the script extracted from the exact earlier target SHA
+(fetch it first if necessary), validates it with `bash -n`, and installs it root-owned 0755 as
+in `setup_and_secrets.md`. Then run `loop2-deploy <target sha>` with the human input path.
+The earlier Compose definition restores the published application port and its
+`--remove-orphans` removes the connector from the loop2 project. Next make these four
+Cloudflare changes, scoped to loop2 alone:
+
+1. Remove the tunnel's published application hostname and its `loop2` CNAME. Verify both are gone.
+2. Restore the proxied AAAA `loop2` to the host IPv6 from the private note.
+3. Restore the Origin Rule matching only `loop2.mariusznazar.com`, destination port 18080.
+4. Restore the Configuration Rule matching only that hostname, encryption mode Flexible.
+
+This is **script installation, one deployment and four Cloudflare changes**; public traffic
+can be unavailable between those actions. Check the game page, unknown API JSON 404, old game,
+and neighbour containers. The fast rollback lasts only until another push deploys `main`.
+
+**Durable revert:** prepare a revert request restoring the earlier route. Before merging it,
+fetch its exact head and install the script extracted from that revert commit's content,
+with syntax check and a recovery copy, so automation uses the matching script. Merge the
+revert, let the automatic deployment finish, then perform the same four Cloudflare changes
+and acceptance checks above. The count is script installation, one automated deployment and
+four Cloudflare changes; the public outage lasts until the route agrees with the containers.
+
+The default earlier-route values above apply when crossing this transition. For any other
+target, read that target's deployment instructions and restore its route. In particular,
+rolling back code alone cannot restore external DNS/rules or the installed script.
+
+## Abandoning the request during H1–H5
+
+- After H1/H2 only, current public traffic is unchanged; unused tunnel/token cleanup is a
+  later human action.
+- After H3, restore the preserved pre-transition `.previous` script root-owned 0755.
+- If H4 occurred, deploy the pre-transition `main` SHA recorded before the window, using
+  that restored script.
+- If H5 occurred, remove the published tunnel name and its CNAME, then restore AAAA and
+  the two hostname-scoped rules as above. Verify both games and neighbour containers before
+  ending the no-other-merges window.
+
+The human can later remove the unused tunnel and token file. No agent performs that cleanup.
+
+## Sources for route recovery and diagnostics
+
+- https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/routing-to-tunnel/dns/
+- https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/configure-tunnels/tunnel-with-firewall/
+- https://developers.cloudflare.com/rules/origin-rules/
+- https://developers.cloudflare.com/rules/configuration-rules/settings/
+- https://docs.docker.com/reference/cli/docker/compose/up/

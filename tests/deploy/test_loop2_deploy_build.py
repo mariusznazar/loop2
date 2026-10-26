@@ -7,7 +7,7 @@
 - the resource gate before any build: `MemAvailable` at least 1024 MiB and at least 4 GiB free on
   the filesystem of Docker's root directory, that one field read from `docker info`; both values
   logged on every run; below either, or unreadable, exit 5 and no `docker compose` at all;
-- the build: `docker compose --project-name loop2 -f <checkout>/compose.yaml build app` with
+- the build: `docker compose --project-name loop2 -f <checkout>/compose.yaml build app cloudflared` with
   `LOOP2_COMMIT` set to the commit; a failure gives exit 7 and never calls `up`; `MemAvailable`
   logged again after a build;
 - the old game's container state logged after a failed build.
@@ -194,33 +194,39 @@ class Build(DeployBuildTestCase):
         builds = [(call, env) for call, env in result.calls_with_env("docker")
                   if call[:1] == ["compose"] and "build" in call]
         self.assertEqual(builds, [(["compose", "--project-name", "loop2", "-f", compose_file,
-                                    "build", "app"], sha)], result)
+                                    "build", "app", "cloudflared"], sha)], result)
         docker = result.calls["docker"]
         self.assertLess(docker.index(builds[0][0]), docker.index(self.compose_calls(result,
                                                                                     "up")[0]))
 
     def test_failed_build_exits_7_never_calls_up_and_logs_the_old_game(self):
-        sha = self.fixture.deployable_commit()
-        self.fixture.install()
-        self.fixture.answer("docker", exit_code=1, stdout="#9 ERROR: npm run typecheck\n",
-                            match="compose * build *")
-        self.fixture.answer_passing_run()
-        result = self.deploy(sha)
-        self.assertEqual(result.code, 7, result)
-        self.assertEqual(len(self.compose_calls(result, "build")), 1, result)
-        self.assertEqual(self.compose_calls(result, "up"), [], result)
-        self.assertEqual(result.calls["curl"], [], result)
-        self.assertEqual([c for c in result.calls["docker"] if "prune" in c], [], result)
-        lines = self.log_lines()
-        self.assertIn("(exit 7)", lines[-1])
-        self.assertIn("build", lines[-1])
-        old_game = self.index_of("old game")
-        self.assertIn("loop running healthy", lines[old_game])
-        self.assertLess(self.index_of("MemAvailable"), old_game)
-        self.assertIn(lines[old_game], result.stdout)
-        # Docker's own output goes to the log file only.
-        self.assertIn("npm run typecheck", self.fixture.log_text())
-        self.assertNotIn("npm run typecheck", result.output)
+        # Compose reports either image's preparation error through the combined build.
+        for failure in ("app: npm run typecheck failed", "cloudflared: base pull failed",
+                        "cloudflared: build failed"):
+            with self.subTest(failure=failure):
+                self.fixture = support.DeployFixture()
+                self.addCleanup(self.fixture.remove)
+                sha = self.fixture.deployable_commit()
+                self.fixture.install()
+                self.fixture.answer("docker", exit_code=1, stdout=failure + "\n",
+                                    match="compose * build *")
+                self.fixture.answer_passing_run()
+                result = self.deploy(sha)
+                self.assertEqual(result.code, 7, result)
+                self.assertEqual(len(self.compose_calls(result, "build")), 1, result)
+                self.assertEqual(self.compose_calls(result, "up"), [], result)
+                self.assertEqual(result.calls["curl"], [], result)
+                self.assertEqual([c for c in result.calls["docker"] if "prune" in c], [], result)
+                lines = self.log_lines()
+                self.assertIn("(exit 7)", lines[-1])
+                self.assertIn("build", lines[-1])
+                old_game = self.index_of("old game")
+                self.assertIn("loop running healthy", lines[old_game])
+                self.assertLess(self.index_of("MemAvailable"), old_game)
+                self.assertIn(lines[old_game], result.stdout)
+                # Docker's own output goes to the log file only.
+                self.assertIn(failure, self.fixture.log_text())
+                self.assertNotIn(failure, result.output)
 
 
 if __name__ == "__main__":

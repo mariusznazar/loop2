@@ -36,10 +36,10 @@ readonly MIN_MEM_AVAILABLE_MIB=1024
 readonly MIN_DOCKER_FREE_GIB=4
 readonly LOCK_WAIT_SECONDS=900
 readonly HEALTH_WAIT_SECONDS=120
-readonly HOST_PORT=18080
 readonly BRANCH=main
 readonly COMPOSE_PROJECT=loop2
 readonly COMPOSE_SERVICE=app
+readonly TUNNEL_SERVICE=cloudflared
 readonly CONTAINER_NAME=loop2
 readonly OLD_GAME_CONTAINER=loop
 readonly IMAGE_TITLE_LABEL=org.opencontainers.image.title=loop2
@@ -251,13 +251,13 @@ check_resources() {
   free_kb=$(docker_root_free_kb)
   log "resources: MemAvailable $(as_mib "$mem_kb") (minimum $MIN_MEM_AVAILABLE_MIB MiB), free space on the filesystem of Docker's root directory $(as_mib "$free_kb") (minimum $MIN_DOCKER_FREE_GIB GiB)"
   if [[ -z $mem_kb || -z $free_kb ]]; then
-    fail 5 resources "the resource gate cannot read its values; nothing was built, the running loop2 container is untouched"
+    fail 5 resources "the resource gate cannot read its values; nothing was built, the running loop2 containers are untouched"
   fi
   if (( mem_kb < MIN_MEM_AVAILABLE_MIB * 1024 )); then
-    fail 5 resources "MemAvailable is below $MIN_MEM_AVAILABLE_MIB MiB; nothing was built, the running loop2 container is untouched"
+    fail 5 resources "MemAvailable is below $MIN_MEM_AVAILABLE_MIB MiB; nothing was built, the running loop2 containers are untouched"
   fi
   if (( free_kb < MIN_DOCKER_FREE_GIB * 1024 * 1024 )); then
-    fail 5 resources "free space for Docker is below $MIN_DOCKER_FREE_GIB GiB; nothing was built, the running loop2 container is untouched"
+    fail 5 resources "free space for Docker is below $MIN_DOCKER_FREE_GIB GiB; nothing was built, the running loop2 containers are untouched"
   fi
 }
 
@@ -278,7 +278,7 @@ restore_line() {
   if [[ $PREVIOUS_COMMIT == none ]]; then
     log "previously running commit: none; no earlier loop2 container existed to restore"
   else
-    log "previously running commit: $PREVIOUS_COMMIT; to restore run loop2-deploy $PREVIOUS_COMMIT on the server"
+    log "previously running commit: $PREVIOUS_COMMIT; to restore run loop2-deploy $PREVIOUS_COMMIT on the server; when crossing a route change, first install that commit's script and restore its Cloudflare route as the loop2-deploy skill describes"
   fi
 }
 
@@ -293,13 +293,13 @@ fail_after_build() {
 build_image() {
   local output status
   if [[ ! -f $CHECKOUT_DIR/compose.yaml ]]; then
-    fail_after_build 7 build "the build of $REQUESTED failed: the commit has no compose.yaml; the running loop2 container is untouched"
+    fail_after_build 7 build "the build of $REQUESTED failed: the commit has no compose.yaml; the running loop2 containers are untouched"
   fi
-  output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" build "$COMPOSE_SERVICE" 2>&1)
+  output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" build "$COMPOSE_SERVICE" "$TUNNEL_SERVICE" 2>&1)
   status=$?
   append_to_log "$output"
   if (( status != 0 )); then
-    fail_after_build 7 build "the build of $REQUESTED failed (docker exit $status; its output is in $LOG_FILE); the running loop2 container is untouched"
+    fail_after_build 7 build "the build of $REQUESTED failed (docker exit $status; its output is in $LOG_FILE); the running loop2 containers are untouched"
   fi
   log "build of $REQUESTED succeeded"
   log "resources after the build: MemAvailable $(as_mib "$(mem_available_kb)")"
@@ -309,39 +309,40 @@ build_image() {
 
 start_container() {
   local output status
-  output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" up -d --no-build --no-deps --remove-orphans --wait --wait-timeout "$HEALTH_WAIT_SECONDS" "$COMPOSE_SERVICE" 2>&1)
+  output=$(LOOP2_COMMIT=$REQUESTED docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" up -d --no-build --no-deps --remove-orphans --force-recreate --wait --wait-timeout "$HEALTH_WAIT_SECONDS" "$COMPOSE_SERVICE" "$TUNNEL_SERVICE" 2>&1)
   status=$?
   append_to_log "$output"
   if (( status != 0 )); then
-    output=$(docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" logs --no-color --tail 50 "$COMPOSE_SERVICE" 2>&1)
-    append_to_log "--- the last lines of the loop2 container's log ---"
+    output=$(docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" logs --no-color --tail 50 "$COMPOSE_SERVICE" "$TUNNEL_SERVICE" 2>&1)
+    append_to_log "--- the last lines of both loop2 services' logs ---"
     append_to_log "$output"
-    log "the last lines of the loop2 container's log are in $LOG_FILE"
+    log "the last lines of both loop2 services' logs are in $LOG_FILE"
     restore_line
-    fail_after_build 8 switch "the loop2 container did not start healthy within $HEALTH_WAIT_SECONDS s (docker exit $status; its output is in $LOG_FILE)"
+    fail_after_build 8 switch "a loop2 service did not start healthy within $HEALTH_WAIT_SECONDS s (docker exit $status; its output is in $LOG_FILE)"
   fi
-  log "switch: the loop2 container of $REQUESTED is running and healthy"
+  log "switch: both loop2 services of $REQUESTED are running and healthy"
 }
 
 # --- 11. local probe ----------------------------------------------------------------------------
 
 probe() {
-  # probe PATH: prints "<HTTP code> <content type>" of one local request, nothing on failure.
-  curl --silent --noproxy '*' --max-time 10 --output /dev/null \
-    --write-out '%{http_code} %{content_type}' "http://127.0.0.1:$HOST_PORT$1" 2>/dev/null
+  # Fixed GETs inside the application container; no host port or external redirect.
+  # Each HTTP request is bounded by 10 seconds; Docker exec itself by 15 seconds.
+  timeout 15 docker exec "$CONTAINER_NAME" node -e 'Promise.all(["/", "/api/loop2-deploy-probe"].map(async path => { const r = await fetch("http://127.0.0.1:3000" + path, { redirect: "manual", signal: AbortSignal.timeout(10000) }); return r.status + " " + (r.headers.get("content-type") || ""); })).then(rows => { console.log(rows.join("\n")); process.exit(0); }, () => process.exit(1));' 2>/dev/null
 }
 
 probe_origin() {
-  local root api
-  root=$(probe /) || root=''
-  api=$(probe /api/loop2-deploy-probe) || api=''
+  local answers root api
+  answers=$(probe) || answers=''
+  root=${answers%%$'\n'*}
+  api=${answers#*$'\n'}
   if [[ $root != '200 '* ]]; then
     restore_line
-    fail_after_build 8 probe "GET http://127.0.0.1:$HOST_PORT/ did not answer 200 (got: ${root:-no answer})"
+    fail_after_build 8 probe "internal GET / did not answer 200 (got: ${root:-no answer})"
   fi
-  if [[ ${api,,} != '404 application/json'* ]]; then
+  if [[ ${api,,} != '404 application/json' && ${api,,} != '404 application/json;'* ]]; then
     restore_line
-    fail_after_build 8 probe "GET http://127.0.0.1:$HOST_PORT/api/loop2-deploy-probe did not answer a JSON 404 (got: ${api:-no answer})"
+    fail_after_build 8 probe "internal GET /api/loop2-deploy-probe did not answer a JSON 404 (got: ${api:-no answer})"
   fi
   log "probe: GET / answered 200, an unknown /api/ path a JSON 404"
 }

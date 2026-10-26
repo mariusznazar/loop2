@@ -3,7 +3,7 @@
 Each test runs a temporary copy of the script in which only the marked constants block is
 replaced: its `PATH` puts a directory of recording stubs first, and its paths point into a
 temporary directory. Everything outside the block is checked to be byte-identical to the
-repository's script before any run. The thresholds, waits, port and names stay as the script
+repository's script before any run. The thresholds, waits and names stay as the script
 writes them.
 
 What a run gets:
@@ -375,8 +375,8 @@ class DeployFixture:
         self.answer("docker", stdout="/loop running healthy\n",
                     match="inspect --type container * loop")
         self.answer("df", stdout=f" Avail\n{22 * 1024 * 1024}\n")
-        self.answer("curl", stdout="404 application/json; charset=utf-8", match="*/api/*")
-        self.answer("curl", stdout="200 text/html; charset=UTF-8", match="*")
+        self.answer("docker", stdout="200 text/html; charset=utf-8\n"
+                    "404 application/json; charset=utf-8\n", match="exec loop2 node -e *")
 
     def delete_branch(self, branch):
         self.git("-C", self.github, "update-ref", "-d", f"refs/heads/{branch}")

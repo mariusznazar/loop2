@@ -1,6 +1,6 @@
 """Invariant loop2-host-sharing: A deployment of loop2 stops, removes, replaces or reconfigures
-no container, image, network or volume on the host other than loop2's own, and the loop2 Compose
-service asks the host for no privilege that a default container lacks.
+no container, image, network or volume on the host other than loop2's own, and neither Compose
+service asks for extra host privilege apart from the connector's read-only tunnel token grant.
 
 The check reads the server-side script `deploy/loop2-deploy` and `compose.yaml` as they stand and
 runs nothing; no Docker is needed.
@@ -19,14 +19,15 @@ Reading of the sentence:
   `docker image prune` with the filter `label=org.opencontainers.image.title=loop2` (and only
   `dangling=true` beside it); `docker compose` with only `-p`/`--project-name loop2` and
   `-f`/`--file` under `/srv/loop2/` before its subcommand, the subcommands `build`, `up`,
-  `logs` and `ps` with their listed options, and no object but the service `app`. Commands are
+  `logs` and `ps` with their listed options, and no object but `app` or `cloudflared`. The only exec allowance is the fixed
+  bounded Node HTTP probe inside `loop2`, with no user or privilege override. Commands are
   matched after the management forms `container inspect` and `container logs` are read as
   `inspect` and `logs`; aliases (`image remove`, `container remove`, `rmi`), `tag`, `down`,
   `run`, `create` and every other command are not on the list. Nothing outside Docker names
   the old loop instance but such a read-only `inspect`. A function that wraps
   `docker … "$@"` is read at each call;
 - asks the host for no privilege a default container lacks: `compose.yaml` holds at its top only
-  `name` and `services`; its service sets only keys that grant nothing beyond a default
+  `name`, `services` and the exact tunnel file-backed `secrets` definition; its service sets only keys that grant nothing beyond a default
   container (`container_name`, `build`, `ports`, `expose`, `mem_limit`, `memswap_limit`, `cpus`,
   `pids_limit`, `restart`, `init`, `healthcheck`, `labels`, `environment`, `command`,
   `entrypoint`, `user`, `working_dir`, `read_only`, `stop_signal`, `stop_grace_period`,
@@ -62,7 +63,10 @@ EXPECTED_PRUNE_FILTER = "label=org.opencontainers.image.title=loop2"
 # Compose name `loop-…` or `loop_…`, or a path in its directory `/srv/loop`.
 OLD_NAME_WORD = re.compile(r"^(?:loop|loop[-_].*|.*/srv/loop(?:/.*)?)$")
 OLD_CONTAINER = "loop"
-EXPECTED_SERVICE = "app"
+EXPECTED_SERVICES = ("app", "cloudflared")
+EXPECTED_SECRET = "cloudflare_tunnel_token"
+EXPECTED_SECRET_FILE = "/etc/loop2/cloudflared-token"
+INTERNAL_PROBE = 'Promise.all(["/", "/api/loop2-deploy-probe"].map(async path => { const r = await fetch("http://127.0.0.1:3000" + path, { redirect: "manual", signal: AbortSignal.timeout(10000) }); return r.status + " " + (r.headers.get("content-type") || ""); })).then(rows => { console.log(rows.join("\\n")); process.exit(0); }, () => process.exit(1));'
 # The Docker commands a deployment may run, by their normalised name (management forms such as
 # `container inspect` and `container logs` read as `inspect` and `logs`): for each, the options it
 # may take — those taking a value as the next word mapped to True — and the objects it may name.
@@ -70,9 +74,9 @@ EXPECTED_SERVICE = "app"
 ALLOWED_DOCKER = {
     "info": ({"--format": True, "-f": True}, ()),
     "inspect": ({"--type": True, "--format": True, "-f": True},
-                (EXPECTED_CONTAINER, OLD_CONTAINER)),
+                (EXPECTED_CONTAINER, "loop2-cloudflared", OLD_CONTAINER)),
     "logs": ({"--tail": True, "-n": True, "--timestamps": False, "-t": False},
-             (EXPECTED_CONTAINER,)),
+             (EXPECTED_CONTAINER, "loop2-cloudflared")),
     "image prune": ({"--force": False, "-f": False, "--all": False, "-a": False,
                      "--filter": True}, ()),
 }
@@ -81,7 +85,7 @@ CONTAINER_FORMS = {"inspect": "inspect", "logs": "logs"}
 INSPECT_TYPE = "container"
 PRUNE_FILTERS = (EXPECTED_PRUNE_FILTER, "dangling=true")
 # `docker compose`: options before the subcommand, and per subcommand its options (value-taking
-# ones mapped to True); every other word must be the service `app`.
+# ones mapped to True); every other word must name one of the two loop2 services.
 COMPOSE_GLOBAL = {"-p": True, "--project-name": True, "-f": True, "--file": True}
 ALLOWED_COMPOSE = {
     "build": {"--pull": False, "--no-cache": False, "--quiet": False, "-q": False},
@@ -95,11 +99,11 @@ ALLOWED_COMPOSE = {
 DOCKER_ENDPOINT_VARIABLES = re.compile(
     r"(?<![A-Za-z0-9_])(?:DOCKER_HOST|DOCKER_CONTEXT|DOCKER_CONFIG|DOCKER_TLS_VERIFY|"
     r"DOCKER_CERT_PATH|COMPOSE_PROJECT_NAME|COMPOSE_FILE|COMPOSE_PROFILES)(?![A-Za-z0-9_])")
-COMPOSE_TOP_KEYS = ("name", "services")
+COMPOSE_TOP_KEYS = ("name", "services", "secrets")
 COMPOSE_SERVICE_KEYS = ("container_name", "build", "ports", "expose", "mem_limit",
                         "memswap_limit", "cpus", "pids_limit", "restart", "init", "healthcheck",
                         "labels", "environment", "command", "entrypoint", "user", "working_dir",
-                        "read_only", "stop_signal", "stop_grace_period", "logging", "depends_on")
+                        "read_only", "stop_signal", "stop_grace_period", "logging", "depends_on", "secrets")
 COMPOSE_BUILD_KEYS = ("context", "dockerfile", "args", "labels", "target")
 
 
@@ -139,6 +143,10 @@ def docker_problems(words):
     """What in one Docker command (the words after `docker`) a deployment may not run."""
     if not words or words[0].startswith("-"):
         return [f"a global option or no subcommand: {words[:1]}"]
+    if words[0] == "exec":
+        if words == ["exec", EXPECTED_CONTAINER, "node", "-e", INTERNAL_PROBE]:
+            return []
+        return ["exec is not the fixed internal application probe"]
     if words[0] == "compose":
         return compose_problems(words[1:])
     if words[0] == "container" and len(words) > 1 and words[1] in CONTAINER_FORMS:
@@ -190,8 +198,39 @@ def compose_problems(words):
     subcommand = words[index]
     found, _options, objects = split_options(words[index + 1:], ALLOWED_COMPOSE[subcommand])
     problems += [f"compose {subcommand}: {p}" for p in found]
-    problems += [f"compose {subcommand}: object `{o}` is not the service `{EXPECTED_SERVICE}`"
-                 for o in objects if o != EXPECTED_SERVICE]
+    problems += [f"compose {subcommand}: object `{o}` is not a loop2 service"
+                 for o in objects if o not in EXPECTED_SERVICES]
+    return problems
+
+
+def secret_problems(top, services):
+    """Permit exactly one file-backed secret and its connector-only short-form grant."""
+    problems = []
+    secret_key = top.get("secrets")
+    if secret_key is None or secret_key.value:
+        return ["no block mapping of the tunnel secret"]
+    definitions = support._yaml_mapping(secret_key.block, secret_key.line + 1)
+    if set(definitions) != {EXPECTED_SECRET}:
+        return ["secrets must define only the tunnel token"]
+    definition = definitions[EXPECTED_SECRET]
+    if definition.value:
+        return ["tunnel secret is not a block mapping"]
+    fields = support._yaml_mapping(definition.block, definition.line + 1)
+    if set(fields) != {"file"}:
+        problems.append("tunnel secret must use only a file source")
+    elif fields["file"].value != EXPECTED_SECRET_FILE or fields["file"].block:
+        problems.append("tunnel secret names another host source")
+    for name, keys in services.items():
+        grant = keys.get("secrets")
+        if name == "cloudflared":
+            if grant is None or grant.value or [line.strip() for line in grant.block
+                                               if line.strip()] != ["- " + EXPECTED_SECRET]:
+                problems.append("connector must receive only the named short-form secret")
+            for key in ("environment", "env_file", "entrypoint", "user"):
+                if key in keys:
+                    problems.append(f"connector overrides its credential or identity with {key}")
+        elif grant is not None:
+            problems.append(f"secret granted to {name}, not only the connector")
     return problems
 
 
@@ -329,7 +368,7 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.text = support.read_required(COMPOSE_FILE)
         self.top, self.services = support.compose_outline(self.text)
 
-    def test_compose_top_holds_only_name_and_services(self):
+    def test_compose_top_holds_only_project_services_and_tunnel_secret(self):
         # invariant: loop2-host-sharing
         others = sorted(k for k in self.top if k not in COMPOSE_TOP_KEYS)
         self.assertEqual(others, [], f"{COMPOSE_FILE} sets top-level keys beyond "
@@ -337,7 +376,7 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
 
     def test_service_sets_only_keys_that_grant_nothing(self):
         # invariant: loop2-host-sharing
-        self.assertTrue(self.services, f"{COMPOSE_FILE} defines no service")
+        self.assertEqual(set(self.services), set(EXPECTED_SERVICES))
         problems = []
         for name, keys in self.services.items():
             problems += [f"service `{name}` sets `{k}` {keys[k]!r}" for k in keys
@@ -349,11 +388,54 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.assertEqual(problems, [], f"{COMPOSE_FILE} asks the host for more than a default "
                                        "container has")
 
+    def test_token_file_is_granted_only_to_the_connector(self):
+        # invariant: loop2-host-sharing
+        self.assertEqual(secret_problems(self.top, self.services), [])
+
     def test_no_docker_socket(self):
         # invariant: loop2-host-sharing
         found = [f"line {number}: {line.strip()}"
                  for number, line in enumerate(code_lines(self.text), 1) if "docker.sock" in line]
         self.assertEqual(found, [], f"{COMPOSE_FILE} names the Docker socket")
+
+
+class NarrowAllowances(unittest.TestCase):
+
+    def test_exec_refuses_other_targets_programs_and_privileges(self):
+        approved = ["exec", "loop2", "node", "-e", INTERNAL_PROBE]
+        self.assertEqual(docker_problems(approved), [])
+        cases = [
+            ["exec", "loop", "node", "-e", INTERNAL_PROBE],
+            ["exec", "--privileged", "loop2", "node", "-e", INTERNAL_PROBE],
+            ["exec", "-u", "root", "loop2", "node", "-e", INTERNAL_PROBE],
+            ["exec", "loop2", "sh", "-c", "id"],
+            ["exec", "loop2", "node", "-e", "require('fs').writeFileSync('/tmp/x', '')"],
+        ]
+        for command in cases:
+            with self.subTest(command=command):
+                self.assertTrue(docker_problems(command))
+
+    def test_secret_reader_refuses_other_files_grants_sources_and_options(self):
+        approved = ("name: loop2\nservices:\n  app:\n    build: .\n  cloudflared:\n"
+                    "    secrets:\n      - cloudflare_tunnel_token\nsecrets:\n"
+                    "  cloudflare_tunnel_token:\n    file: /etc/loop2/cloudflared-token\n")
+        self.assertEqual(secret_problems(*support.compose_outline(approved)), [])
+        cases = {
+            "other host file": approved.replace("/etc/loop2/cloudflared-token", "/etc/shadow"),
+            "environment source": approved.replace("file: /etc/loop2/cloudflared-token",
+                                                    "environment: TUNNEL_TOKEN"),
+            "external source": approved.replace("file: /etc/loop2/cloudflared-token",
+                                                 "external: true"),
+            "additional source field": approved + "    name: shared-secret\n",
+            "application grant": approved.replace("    build: .", "    secrets:\n"
+                                                   "      - cloudflare_tunnel_token"),
+            "another grant": approved.replace("- cloudflare_tunnel_token", "- other"),
+            "root connector": approved.replace("  cloudflared:\n", "  cloudflared:\n"
+                                                 "    user: root\n"),
+        }
+        for name, document in cases.items():
+            with self.subTest(case=name):
+                self.assertTrue(secret_problems(*support.compose_outline(document)))
 
 
 if __name__ == "__main__":
