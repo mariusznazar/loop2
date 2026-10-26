@@ -629,6 +629,16 @@ The deployed loop2 container image has passed concurrent password hash and verif
 - **Part:** account-server · build-tools · deployment
 - **Violated:** yes
 
+## password-operation-gate
+
+Password hashing and verification share a gate that admits at most two active native operations, refuses excess work without waiting, and releases each slot after success or failure.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-101 · D-111
+- **Part:** account-server · build-tools
+- **Violated:** no
+
 ## player-opaque-session-cookie
 
 The browser carries a random session identifier in a loop2 host-scoped, Secure and HttpOnly cookie.

@@ -1874,6 +1874,20 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 *Rationale:* Failing before readiness prevents an apparently healthy production process from operating without durable identity or a signing key. An explicitly unconfigured development mode still allows static work, while partial configuration remains an error rather than silently losing account behavior.
 *Rejected:* Generated production keys or ephemeral storage — invalidate or lose identity on replacement; an unconfigured production fallback — conceals missing setup; unconditional default-start readiness — contradicts required validation.
 
+### D-111 — Which file is the exemplar for password hashing?
+
+The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its kind guidelines are read before adding or changing a password-hashing file. Hashing and verification share one bounded admission gate, preserve password content, and use the explicit Argon2id candidate profile; the profile remains provisional until the intended container image is measured.
+
+- **Scope:** account-server
+- **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
+- **Relations:** derives from D-96 · derives from D-101 · derives from D-104
+- **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check.
+- **Review when:** The password library or measured container profile changes.
+- **Origin:** task konta-graczy-i-logowanie, accepted cycle plan, Slice 1.
+
+*Rationale:* A first file makes password work's admission and package boundary visible for later account routes. Two slots are the selected candidate, not evidence that this cost fits the target image.
+*Rejected:* Separate gates for hash and verify — allow their combined memory use to exceed the shared limit; an unbounded queue — retains arbitrary pending work; treating the candidate as measured — claims target suitability without target evidence.
+
 ### D-110 — How does the account database open and preserve its schema?
 
 The account server opens one application-owned SQLite connection before readiness, transactionally initializes version 1 with accounts and sessions on a new database, retains an existing version 1 without resetting records and refuses an unknown newer schema. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash and creation time, and sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session.
