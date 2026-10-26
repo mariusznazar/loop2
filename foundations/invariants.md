@@ -661,11 +661,11 @@ The deployed account server uses `express-session` with a project-owned Store ba
 
 ## account-save-durable-storage
 
-Replacing the application container preserves the SQLite database of player accounts and sessions.
+Replacing the application container preserves the SQLite database of player accounts and saved game states.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-17
+- **Derives from:** D-17 · C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\definicja_mvp_loop2.md § Projected foundation changes, account-save-durable-storage/1 — "Replacing the application container preserves the SQLite database of player accounts and saved game states."; read 2026-10-27
 - **Part:** account-server · deployment
 - **Violated:** yes
 

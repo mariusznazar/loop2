@@ -337,7 +337,7 @@ A deployment of loop2 changes nothing on the host but loop2's own checkout, appl
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · mikrus-host-swap
 - **Relations:** derives from D-08
-- **Verification:** invariants: loop2-host-sharing · account-save-durable-storage. For the thresholds and the memory limit, an
+- **Verification:** invariants: loop2-host-sharing · account-save-durable-storage. Checks of accounts and sessions alone do not establish preservation of saved game states and cannot clear account-save-durable-storage. For the thresholds and the memory limit, an
   agent compares the change with the decision:
   - complies: a deployment that refuses to build while available memory is below its threshold and leaves the running container untouched; a Compose service with a memory limit
   - violates: a build started without reading the host's memory and disk; a Compose service with no memory limit
