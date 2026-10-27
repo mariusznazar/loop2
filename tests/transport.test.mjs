@@ -200,9 +200,10 @@ test(
       assert.equal(asset.headers["set-cookie"], undefined);
       assert.deepEqual(f.runtime.database.readSession(id), before);
     }
+    // Valid transport reaches the session guard, which refuses the anonymous request.
     assert.equal(
       (await f.send("/api/account", { headers: proxyHeaders })).status,
-      503,
+      401,
     );
   },
 );
@@ -256,7 +257,7 @@ test(
   "mutation guards reject foreign origins, non-JSON and malformed bodies",
   { timeout: 20000 },
   async (t) => {
-    // D-102. Expected credential fields and authorization are the following slice's work.
+    // D-102. Expected credential fields are the following slice's work.
     const f = await fixture(t);
     const valid = {
       ...proxyHeaders,
@@ -307,7 +308,7 @@ test(
     ]) {
       const headers = { ...valid, "Content-Type": type };
       if (encoding) headers["Content-Encoding"] = encoding;
-      const response = await f.send("/api/register", {
+      const response = await f.send("/api/accounts", {
         method: "POST",
         headers,
         body,
@@ -322,7 +323,7 @@ test(
     ]) {
       assert.equal(
         (
-          await f.send("/api/login", {
+          await f.send("/api/session", {
             method: "POST",
             headers: { ...valid, "Content-Type": type },
             body: "{}",
@@ -335,6 +336,15 @@ test(
       (await f.send("/api/unknown", { method: "POST" })).status,
       404,
     );
+    // The canonical paths replace the earlier placeholders without aliases.
+    for (const path of ["/api/register", "/api/login"]) {
+      assert.equal(
+        (await f.send(path, { method: "POST", headers: valid, body: "{}" }))
+          .status,
+        404,
+        `${path} is no account route`,
+      );
+    }
   },
 );
 

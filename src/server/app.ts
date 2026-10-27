@@ -2,8 +2,13 @@ import express from "express";
 import type { Express, ErrorRequestHandler } from "express";
 import { fileURLToPath } from "node:url";
 import session from "express-session";
+import {
+  accountRoutes,
+  sessionCookieName,
+  sessionCookieScope,
+} from "./account-routes.js";
 import type { AccountRuntime } from "./configuration.js";
-import { clientAddress, mutationGuards, trustProxy } from "./transport.js";
+import { clientAddress, trustProxy } from "./transport.js";
 
 // The built game, found next to the compiled server (dist/server -> dist/public),
 // so the app serves the same files whatever the working directory is.
@@ -15,17 +20,14 @@ export function createApp(runtime: AccountRuntime | null = null): Express {
   if (runtime) {
     app.set("trust proxy", trustProxy(runtime.configuration.proxyMode));
     const sessions = session({
-      name: "__Host-loop2.sid",
+      name: sessionCookieName,
       secret: runtime.configuration.secrets,
       store: runtime.store,
       resave: false,
       saveUninitialized: false,
       rolling: true,
       cookie: {
-        path: "/",
-        secure: true,
-        httpOnly: true,
-        sameSite: "strict",
+        ...sessionCookieScope,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       },
     });
@@ -43,32 +45,7 @@ export function createApp(runtime: AccountRuntime | null = null): Express {
     });
   }
 
-  const accountPaths = [
-    "/api/account",
-    "/api/register",
-    "/api/login",
-    "/api/logout",
-  ];
-  app.all(accountPaths, (request, response, next) => {
-    response.setHeader("Cache-Control", "no-store");
-    if (!runtime) {
-      response.status(503).json({ error: "Accounts unavailable" });
-      return;
-    }
-    if (!response.locals.accountClientAddress) {
-      response.status(403).json({ error: "Invalid request transport" });
-      return;
-    }
-    next();
-  });
-  if (runtime)
-    app.post(
-      accountPaths,
-      ...mutationGuards(runtime.configuration.publicOrigin),
-    );
-  app.all(accountPaths, (_request, response) => {
-    response.status(503).json({ error: "Accounts unavailable" });
-  });
+  app.use(accountRoutes(runtime));
 
   app.use("/api", (_request, response) => {
     response.status(404).json({ error: "Not found" });
