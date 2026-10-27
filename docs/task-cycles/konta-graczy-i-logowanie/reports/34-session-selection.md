@@ -1,0 +1,255 @@
+# Exact slice 6 selection
+
+````markdown
+### Slice 6 — Session account lookup and one-browser logout
+
+- **Goal:** Make GET /api/account and POST /api/logout use only a valid stored session as account authority. Return only opaque account ID and normalized email with no-store; absent, tampered, unknown, expired and deleted sessions authorize nothing. Logout awaits destruction of this browser's record and clears the same cookie scope; destruction failure is not success, and other browsers remain valid. Ordinary reads preserve the existing touch-only behavior. Assemble the canonical four-path API: POST /api/accounts, POST /api/session, GET /api/account and POST /api/logout. Correct the old register/login placeholders without aliases; credential routes remain guarded and unavailable until Slice 7. Preserve the transport, JSON and Origin refusal controls while evolving only completed-route expectations. Add the session/account permission and direct unauthorized-refusal rows through maintain-testing-guidelines, with actual invariant evidence/status through record-invariant and exact ownership through update-part-map. Slice 8 completes the full table after credentials exist.
+- **Change:** `src/server/account-routes.ts` · `src/server/app.ts` · `tests/http.test.mjs` · `tests/transport.test.mjs` · `guidelines/testing.md` · `foundations/invariants.md` · `foundations/part_map.md`
+- **Read:** `guidelines/coding.md` · `guidelines/testing.md` · `docs/task-cycles/konta-graczy-i-logowanie/task.md:14-37` To do and Acceptance criteria · `docs/task-cycles/konta-graczy-i-logowanie/task.md:208-215` Out of scope · `docs/task-cycles/konta-graczy-i-logowanie/spec.md:6-25` Intent, Goals and non-goals, Constraints · `docs/task-cycles/konta-graczy-i-logowanie/spec.md:138-167` Units and code kinds; Tests and evidence · `foundations/decisions.md:1339-1507` D-73–D-85 · `foundations/decisions.md:1547-1559` D-89 · `foundations/glossary.md:94-104` unit test; integration test · `foundations/invariants.md:572-581` node-test-selection · `foundations/part_map.md:104-127` agent-workflow; product-foundation · `guidelines/coding-http-application.md` · `foundations/decisions.md:3-38` D-01–D-02 · `foundations/decisions.md:94-154` D-05–D-07 · `foundations/decisions.md:752-766` D-37 · `foundations/decisions.md:932-946` D-49 · `foundations/decisions.md:1508-1520` D-86 · `foundations/part_map.md:56-103` account-server; build-tools · `foundations/invariants.md:5-34` account-server-runtime/typecheck/express-http · `foundations/invariants.md:45-104` API/one-serving-process/build/package/occupied-address · `foundations/invariants.md:532-541` public-file-access · `docs/task-cycles/konta-graczy-i-logowanie/reports/02-designer-answers.md` · `.agents/skills/the-way-maintain-testing-guidelines/SKILL.md` · `.agents/skills/the-way-record-invariant/SKILL.md` · `.agents/skills/the-way-update-part-map/SKILL.md` · `foundations/decisions.md:1650-1662` D-94 · `foundations/decisions.md:1663-1677` D-95 · `foundations/decisions.md:1723-1735` D-99 · `foundations/decisions.md:1766-1778` D-102 · `foundations/decisions.md:1794-1807` D-104 · `foundations/decisions.md:1836-1848` D-107 · `foundations/decisions.md:1864-1876` D-109 · `foundations/decisions.md:1877-1890` D-111 · `foundations/decisions.md:1919-1932` D-113 · `foundations/invariants.md:642-651` player-opaque-session-cookie · `foundations/invariants.md:652-661` player-express-session-sqlite-store · `foundations/invariants.md:662-671` account-save-durable-storage · `foundations/invariants.md:672-681` account-save-sqlite-access · `foundations/invariants.md:682-691` loop2-shared-public-origin · `foundations/invariants.md:692-701` account-session-authorization · `foundations/invariants.md:702-711` account-mutation-request-guards · `foundations/invariants.md:712-721` account-request-transport · `foundations/invariants.md:722-731` account-startup-configuration · `foundations/invariants.md:732-741` account-schema-lifecycle · `foundations/invariants.md:752-761` account-session-storage · `foundations/invariants.md:742-751` account-database-schema · `foundations/environment_facts.md:226-231` express-session-store-contract · `foundations/environment_facts.md:232-237` session-secret-rotation · `foundations/environment_facts.md:238-243` node-sqlite-database · `foundations/environment_facts.md:250-255` express-session-cookie-lifecycle · `foundations/environment_facts.md:256-261` cookie-serialization-validation · `foundations/environment_facts.md:262-267` express-forwarded-protocol · `foundations/environment_facts.md:268-273` session-proxy-security · `foundations/environment_facts.md:274-279` cloudflare-client-address · `foundations/environment_facts.md:280-285` cloudflare-forwarded-protocol · `src/server/database.ts` · `src/server/session-store.ts` · `src/server/configuration.ts` · `src/server/transport.ts` · `guidelines/coding-database-access.md` · `guidelines/coding-session-store.md` · `node_modules/express-session/index.js` · `node_modules/express-session/session/cookie.js` · `node_modules/express-session/session/session.js` · `docs/task-cycles/konta-graczy-i-logowanie/reports/15-slice2-report.md:11-19` · `docs/task-cycles/konta-graczy-i-logowanie/reports/17-slice2-fix-report.md` · `tests/account-storage.test.mjs:1-290` · `.runs/account-linux-inputs/verify-startup29-mutation.sh` · `.runs/account-linux-inputs/mutate-startup29.py` · `docs/task-cycles/konta-graczy-i-logowanie/reports/29a-target-advance.md` · `docs/task-cycles/konta-graczy-i-logowanie/reports/29-startup-report.md:18-31` · `docs/task-cycles/konta-graczy-i-logowanie/reports/30-startup-review.md` · `docs/task-cycles/konta-graczy-i-logowanie/spec.md:29-85` Canonical API, SQLite, sessions and transport · `docs/task-cycles/konta-graczy-i-logowanie/task.md:52-54` Q4 account screens and transitions · `docs/task-cycles/konta-graczy-i-logowanie/task.md:58-60` Q6 rolling independent sessions · `docs/task-cycles/konta-graczy-i-logowanie/task.md:64-66` Q8 mutation protection · `docs/task-cycles/konta-graczy-i-logowanie/task.md:194-195` K1–K2 account screens and logout · `docs/task-cycles/konta-graczy-i-logowanie/task.md:199-199` K6 independent rolling sessions · `docs/task-cycles/konta-graczy-i-logowanie/task.md:202-202` K9 request guards · `foundations/decisions.md:1808-1821` D-105 · `foundations/decisions.md:1822-1835` D-106 · `foundations/decisions.md:1849-1863` D-108 · `foundations/decisions.md:1891-1903` D-110 · `foundations/decisions.md:1904-1918` D-112 · Foundation rows F01, F02, F06, F09, F17, F18, F20f–F20j, F21, F22, F24c, F24d, F25.
+- **Model:** same — Session callbacks, destruction failures and two-browser concurrency require implementation choices at the boundary between existing Store behavior and HTTP responses.
+- **Risk:** trust boundary — session-derived account authority and guarded logout
+- **Checks:** Start with failing real HTTP/SQLite lookup and logout cases in tests/http.test.mjs, then run npm test before/after implementation. Assert only the stored account is returned, supplied foreign account identifiers grant nothing, missing/tampered/unknown/expired/deleted sessions yield JSON 401, logout ends only its own browser session, failed destruction never returns 204, and delayed ordinary reads cannot revive destroyed sessions. Verify no-store, exact clearing scope and no private fields. Retain existing unknown-API/traversal tests. In tests/transport.test.mjs retain each crafted refusal and accepted-input control, use canonical paths, and change the admitted unauthenticated account placeholder from 503 to 401; accepted credential requests still reach guarded 503 until Slice 7. Keep the startup request without proxy metadata at 403. Upgrade touched HTTP helpers to D-84 absolute deadlines, bounded readiness and guaranteed cleanup. For each newly proven invariant record a named actual assertion failure under a plausible mutation and restoration via full npm test; removing the direct session guard must fail the unauthorized assertion. Run python -B .the-way/elements/common/foundation_check.py. Do not rerun the unchanged baseline solely to advance.
+- **Depends on:** Slice 5 · Foundation rows F01, F02, F06, F09, F17, F18, F20f–F20j, F21, F22, F24c, F24d, F25.
+- **Dispatch reads to materialize:** The current database.ts, session-store.ts, configuration.ts and transport.ts plus their existing kind guidelines and both HTTP test files are already counted. Read current installed session-library sources named above; do not substitute report prose for them. Refresh entry ranges and rerun slice_size.py against the actual handoff before execution. account-routes.ts belongs to the existing HTTP kind; first-file account-policy kind work belongs to Slice 7. Preserve PR 31's already adopted testing policy/gate at root's final target reconciliation; this branch still runs only full npm test. No target or secret action is authorized.
+
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:14-37`
+
+````markdown
+### To do
+
+1. Gracz zakłada na serwerze testowym konto adresem e-mail, hasłem i powtórzonym hasłem, bez zatwierdzenia przez właściciela i bez potwierdzania adresu, a po założeniu konta jest od razu zalogowany i trafia do siedziby (pytanie 4).
+2. Serwer przyjmuje hasło od 12 do 128 znaków dowolnego rodzaju, bez wymogu cyfr i wielkich liter; adres e-mail przyjmuje z obciętymi spacjami na początku i końcu, porównuje go bez rozróżniania wielkości liter i sprawdza tylko postać „coś@coś”; przy adresie, który ma już konto, gracz widzi „Konto z tym adresem już istnieje.” (pytanie 5).
+3. Gracz niezalogowany widzi tylko ekran z dwoma formularzami: „Zaloguj się” (adres e-mail, hasło) i „Załóż konto” (adres e-mail, hasło, powtórzone hasło); siedziby ani panelu programu nie widać, dopóki gracz się nie zaloguje (pytanie 4).
+4. Gracz loguje się adresem e-mail i hasłem i trafia do siedziby, a przeładowanie strony z ważną sesją prowadzi prosto do siedziby; nieudane logowanie pokazuje jeden komunikat „Nieprawidłowy adres e-mail lub hasło.” bez wskazania, co się nie zgadza (pytania 4 i 5).
+5. Przycisk „Wyloguj” stoi w nagłówku strony obok tytułu; wylogowanie unieważnia na serwerze rekord sesji tej przeglądarki, po czym wraca ekran formularzy, a gry z przeglądarki nie widać (pytania 4, 6 i 16).
+6. Żądanie konta bez ważnej sesji serwer odrzuca odpowiedzią błędu API, a nieznane żądanie `/api/` dalej dostaje błąd API, nigdy stronę gry.
+7. Przeglądarka trzyma losowy identyfikator sesji w ciasteczku ograniczonym do adresu loop2, z ustawieniami Secure i HttpOnly; serwer prowadzi sesje przez `express-session` z własnym magazynem opartym na `node:sqlite`, nie przez domyślny `MemoryStore`. Sesja jest ważna 30 dni od ostatniego żądania i przedłuża się przy każdym; gracz może być zalogowany w kilku przeglądarkach naraz, każda z własną sesją (pytanie 6).
+8. Serwer zapisuje dla hasła skrót Argon2id z biblioteki `argon2` i sprawdza nim hasło przy logowaniu; ustawienia kosztu są jawne i dobrane po pomiarze równoległego tworzenia i sprawdzania skrótów w docelowym obrazie kontenera na Mikrusie.
+9. Konta i sesje leżą w bazie SQLite, do której serwer sięga przez wbudowany moduł `node:sqlite`, w pliku na trwałym miejscu poza wymienialną warstwą kontenera, tak że wdrożenie nowego commitu, które wymienia kontener, zachowuje konta. Plik bazy leży w nazwanym wolumenie Dockera, który zakłada samo wdrożenie (pytanie 15).
+10. Po 5 nieudanych logowaniach na jeden adres e-mail serwer odrzuca kolejne próby tego adresu przez 15 minut; z jednego adresu IP przyjmuje najwyżej 20 nieudanych logowań na 15 minut i najwyżej 5 nowych kont na godzinę; liczenie skrótów haseł naraz ogranicza tak, żeby zmieściło się w pamięci kontenera, z liczbą ustaloną pomiarem z punktu 8. Liczniki stoją w pamięci procesu serwera, z górną granicą liczby śledzonych adresów, a restart albo wdrożenie je zeruje. Gracz, którego próby ograniczono, widzi „Za dużo prób. Spróbuj ponownie za kilka minut.” (pytanie 7).
+11. Ciasteczko sesji ma ustawienie `SameSite=Strict`, a serwer odrzuca każde żądanie zmieniające stan, którego nagłówek `Origin` nie jest adresem loop2, i przyjmuje dane tylko jako JSON (pytanie 8).
+12. W fundamencie staje zasada ograniczania wysyłki wiadomości o koncie, którą stosują zadania 20 i 21: serwer wysyła łącznie najwyżej 30 wiadomości na godzinę i najwyżej 3 na jeden adres na godzinę, a ponad pułap wiadomość nie wychodzi i gracz widzi, że ma spróbować później (pytanie 9).
+13. Sekret podpisu sesji leży w pliku na serwerze poza checkoutem, z właścicielem root, grupą o numerze 1000 i prawami 0440 (odczyt dla roota i dla użytkownika `node`, którym w kontenerze działa proces gry, nic dla innych), który Compose przekazuje kontenerowi, a jego kopia stoi w prywatnej notatce właściciela. Przy wymianie nowy sekret stoi przed starym: serwer podpisuje nowym, a ciasteczka podpisane starym dalej przyjmuje, więc wymiana nie wylogowuje graczy; stary sekret usuwa się po czasie ważności sesji z punktu 7 (pytania 10 i 14).
+14. Serwer bierze protokół i adres gracza z nagłówków pośrednika szyfrowanej drogi od Cloudflare, którą wprowadza zadanie 22 szyfrowana-droga-do-serwera (Cloudflare Tunnel z `cloudflared`, pytania 1 i 2), tak że bezpieczne ciasteczko sesji działa na serwerze testowym, a progi na adres IP z punktu 10 liczą adres gracza.
+15. Kontrolka, która czeka na odpowiedź serwera, ma stan oczekiwania (loading), pokazany na stronie wszystkich stanów: na czas oczekiwania przycisk jest wyłączony (tekst w `text-disabled`), jego napis zmienia się na „Logowanie…” albo „Zakładanie konta…”, a pola formularza są zablokowane; odmowa serwera i brak połączenia stoją jednym zdaniem pod formularzem w roli `warning` — przez `maintain-styleguide`, ze zmianą D-44 (pytanie 11).
+16. Skill `loop2-deploy` (`.claude/skills/loop2-deploy/` i jego kopia w `.agents/skills/loop2-deploy/`) mówi, gdzie leży sekret podpisu sesji i jak się go wymienia, gdzie leży plik bazy kont oraz co wycofanie wdrożenia robi z kontami w bazie (WAY-139, pytanie 13).
+17. Pierwszy plik każdego nowego rodzaju kodu, który powstaje w tym zadaniu — wśród nich pierwszy plik sesji (`guidelines/coding.md:221`: „Wzorce sesji, zapisu gry i poczty powstaną przy pierwszych implementacjach”) — zostaje wzorcem swojego rodzaju, z wytycznymi rodzaju i wierszem w indeksie `guidelines/coding.md` — przez `maintain-coding-guidelines` (WAY-200). Plików sesji ani dostępu do bazy produkt dziś nie ma (`src/server/` ma tylko `app.ts` i `main.ts`, a `app.ts` żadnej trasy `/api/`; loop2 `9a5f360`), więc to pierwsze pliki swoich rodzajów, nie wybór wzorca spośród istniejących plików, który według `guidelines/coding.md:222` poprzedza porównanie. Trasy kont należą do rodzaju `http-application`, który ma już wzorzec `src/server/app.ts` (D-37), a jego wytyczne pokazują plik trasy Express jako przykład rodzaju (`guidelines/coding-http-application.md`, „HTTP przez Express”); pliki odłożonych istniejących rodzajów, które zadanie zmienia — wdrożenia (`compose.yaml`, `Dockerfile`), punktu uruchomienia (`src/server/main.ts`), HTML — zmienia bez wyboru ich wzorca.
+18. Tabela uprawnień i granic zaufania w `guidelines/testing.md` dostaje wiersze dla tras kont: kto, który zasób, jakie działanie i oczekiwana odmowa, z testem odmowy żądania bez ważnej sesji, oznaczonym niezmiennikiem i raz widzianym z porażką — przez `maintain-testing-guidelines`.
+
+### Acceptance criteria
+
+- Zmieniona ścieżka gracza — założenie konta, siedziba, wylogowanie, ponowne zalogowanie — jest sprawdzona ręcznie w przeglądarce pod `https://loop2.mariusznazar.com/` po wdrożeniu (D-75), a pomiar skrótów Argon2id odbył się na obrazie wdrożonym z commitu tego zadania (`player-argon2-deployment-check`).
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:208-215`
+
+````markdown
+## Out of scope
+
+- Szyfrowanie drogi od Cloudflare do serwera i zamknięcie bezpośredniego dostępu do portu aplikacji — zadanie 22 szyfrowana-droga-do-serwera (pytanie 1).
+- Wysyłka wiadomości, potwierdzenie adresu i konfiguracja poczty Outsidera — zadanie 20.
+- Reset hasła — zadanie 21.
+- Blokada konta przez właściciela — zadanie 19.
+- Zapis stanu gry na serwerze, jego wczytanie po zalogowaniu i niezapisany postęp po wygaśnięciu sesji i przy wylogowaniu — zadanie 16 (pytanie 16).
+- Kopia bazy poza serwerem gry — zadanie 17.
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/spec.md:6-25`
+
+````markdown
+## Intent
+
+A visitor creates an account, enters the existing headquarters, leaves through logout and can sign in again. Authentication persists across reloads and container replacement; game progress does not yet persist. The server protects accounts and the browser exposes the game only after server confirmation of a session.
+
+These are autonomous intermediate technical choices under implement-task, not new human approvals. The task and K1–K13 remain binding. Answers and their costs stand in reports/02-designer-answers.md; the default-start invariant clarification stands in reports/04-spec-revision-handoff.md.
+
+## Goals and non-goals
+
+Deliver registration, login, current-account lookup, logout, durable accounts/sessions, bounded password work and attempts, same-origin JSON requests, authentication UI/loading states, first-kind guidelines, refusal tests, foundation entries and deployment instructions.
+
+Do not add saves, mail, verification, recovery, blocking, an operator interface, backup service or second public server. Record the mail rule without implementing mail. Preserve the tunnel and existing game behavior, including empty team and empty Program group. Reload/fresh login starts newGame(). Task 16 owns future unsaved-progress behavior after logout/expiry; this task establishes no enduring policy about it.
+
+## Constraints
+
+- Base 7012abcfb55b4ba2b2836b574a2275eb1551df28 includes the delivered tunnel. Historical task Context does not restore a published port. Current D-10/D-13/D-15/D-17 apply.
+- Node.js 24, Express 5, one serving process and npm package, separate browser/server builds, public files only, no server simulation. Use node:sqlite, express-session with a project Store and argon2 Argon2id.
+- Public assets remain public under D-86. UI gating is not authorization of account data.
+- Run repository tests only through npm test. Use real database/files/HTTP; manual browser evidence retains D-75/D-87/D-88 and assesses their return conditions.
+- Existing design tokens, shared controls, focus rule and warning/text-disabled roles; no new token values, framework or permanent browser/pixel test suite.
+- Agents do not mutate the server. Human actions are secret creation, installation of a changed deploy command if needed, request-head deployment and target-image measurement/public journey. Request remains a blocked draft until evidence exists.
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/spec.md:138-167`
+
+````markdown
+### 8. Units and code kinds
+
+Paths below identify the designed first files; the maker may adjust names while preserving interfaces and honest first-file designation.
+
+| Unit | Contract/dependencies | Kind |
+|---|---|---|
+| src/server/database.ts | Schema/open/close, account/session operations, supplied clock; owns node:sqlite/SQL, no HTTP/hash. | New database-access exemplar. |
+| src/server/session-store.ts | Express Store callback/expiry adapter over DB, no route policy. | New session-store exemplar. |
+| src/server/passwords.ts | Argon2 hash/verify and bounded gate/profile, no DB/HTTP. | New password-hashing exemplar. |
+| src/server/account-policy.ts; optional rate-limits.ts | Normalize/validate and reserve/complete attempts, supplied clock, HTTP-independent outcomes. | New account-policy; first file exemplar, others copies. |
+| src/server/account-routes.ts; optional transport middleware | HTTP guards/identity/sequencing over preceding units. | Existing http-application, app.ts exemplar retained. |
+| src/browser/account-api.ts | Relative fetch, bounded abort timeout, response validation/typed outcomes, no DOM/game state. | New browser-api-client exemplar. |
+| src/browser/view/account-screen.ts and shell/clock integration | Controls, transitions, game lifecycle. | Existing browser-module. |
+| Runtime/build/deploy/measurement entrypoints | Compose/start/check existing units, no duplicate account policy. | Existing deferred entrypoint/build/deployment kinds when responsibilities match. |
+
+Through maintain-coding-guidelines, each genuinely new kind gets its first-file exemplar, kind guidelines and coding.md row. Do not invent a new kind solely for a new filename or disguise a new responsibility as deferred. Measurement is an entrypoint using password operations. Return unexpected additional kinds to orchestrator. Existing exemplars and deferred HTML/CSS/build/deployment decisions remain.
+
+Browser API/screen belong to browser-view; map gains account-server protocol dependency. Account-server description gains persistence. Assign each new test path exactly once; scripts belong to build-tools unless an operational deployment entrypoint lives under deploy. Include new tests in npm test. No foundation reorganization.
+
+### 9. Tests and evidence
+
+Use existing Node/Python tools, real temporary DB/files/local HTTP, bounded readiness/requests and cleanup on failures. Test account policies through real HTTP/DB where appropriate; do not silently broaden glossary unit test, currently simulation/view logic. View-state tests may be unit tests; real focus/events/rendering remain manual evidence.
+
+Protect concrete faults: concurrent duplicate normalized email; code-point boundary/exact preservation; missing/tampered/expired/deleted session; foreign Origin/non-JSON/oversized requests; forwarded-chain spoof changing limiter key; sixth registration or sixth/twenty-first failure admitted concurrently; delayed touch resurrecting logout/shortening expiry; excess native password concurrency; success before persistence; request-supplied account ID changing authority; container replacement losing records; malformed secrets/new schema reaching readiness; unconfigured production falling back; game mounted before identity; timers left by logout.
+
+At least one direct unauthorized-account refusal test carries its invariant and is seen failing once with controlled temporary guard removal then restoration. Every new invariant test has fail-once evidence with exact mutation/restoration, npm test command and exit. Do not leave weakened code or claim static grep proves session persistence/cookie safety.
+
+Through maintain-testing-guidelines extend authorization table: visitor create/login allowed subject to guards; signed-in player reads own account/destroys own session; absent valid session denied; supplied other ID grants nothing; wrong Origin/media/transport denied before mutation. Bind rows to new decisions/invariants. Preserve public-file and unknown-API protections.
+
+Fulfil D-73's adopted mental-mutation obligation: author names plausible faults and assertions that catch them. This task makes no new mutation-tool choice and changes connection-based accounts/browser auth, not simulation/computational drawing. The old task-base guideline gap is settled upstream by PR 31 at 2c1d64c; preserve its adopted mutation rule and full/focused gate during final reconciliation, combine the account permission/refusal additions, and report the final merged state rather than an unresolved tool choice. See reports/29a-target-advance.md; no unrelated audit.
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/reports/15-slice2-report.md:11-19`
+
+````markdown
+## Result and integration contract
+
+`AccountDatabase(path, options)` owns a real `node:sqlite` DatabaseSync connection. It enables foreign keys, WAL and FULL synchronization; initializes strict version-1 accounts/sessions in one transaction; rejects unknown versions; closes on initialization failure; and closes its connection and unreferenced cleanup timer on disposal. SQL values are bound. Schema indexes cover expiry and account ID. Cleanup deletes at most 1000 indexed expired rows per invocation, at startup and at a default 60-second interval. The default lock wait is one second, configurable only within a positive five-second bound. These are implementation choices under D-110, not new product settings.
+
+Accounts expose `createAccount(normalizedEmail, encodedPasswordHash)`, `findAccountByEmail(normalizedEmail)` and `findAccountById(id)`. The actual parameter name in code is `email`; callers supply the normalized value from account policy. Normalization and hashing remain outside this layer. A duplicate email returns null; unrelated SQLite errors propagate. IDs are generated with `randomUUID`. A successful insert returns the account including its stored hash: HTTP must project the public account response rather than return that object.
+
+`SqliteSessionStore(database)` extends the installed package's Store, implementing get/set/touch/destroy. SessionData gains optional `accountId`. A persisted authenticated session contains exactly accountId and the library's serialized cookie metadata. Reads validate the JSON shape and matching record identity before package hydration. They use the database's absolute expiry, so stale serialized cookie expiry does not shorten a later touch. `set` inserts a fresh authenticated session or updates data/monotonic expiry for the same unexpired identity; it refuses changing that identity or replacing an expired record. `touch` only updates existing unexpired records for that identity; it cannot insert. `destroy` deletes only its supplied session ID. Both close methods are idempotent.
+
+Later assembly must use resave=false and ordinary unchanged requests must use touch. `set` is the library's upsert contract; an explicitly delayed set after deletion can create a record, so application code must not use explicit save for ordinary authenticated reads. Credential success regenerates to a fresh ID and awaits save as the reviewed spec already requires. Cookie lifetime/attributes, no-cache policy, proxy/Origin checks, readiness/startup and secret handling remain the later HTTP slices' work. The Store does not impose that HTTP policy. Errors go to each supplied callback once; absent optional callbacks receive an error event. Callback exceptions are not reinterpreted as storage failures. Cleanup errors go to the optional database observer or a generic stderr message without row contents.
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/reports/29-startup-report.md:18-31`
+
+````markdown
+## Implementation and next-slice interface
+
+`readAccountConfiguration(environment)` accepts a supplied environment object rather than modifying shared process state. Wholly unconfigured non-production returns null. Production requires all four account settings and cloudflare-tunnel mode; partial or invalid explicit settings fail everywhere. The HTTPS origin must contain no credentials, non-root path, query or fragment, including empty query/fragment markers that URL normalization would otherwise erase. Comparison uses its serialized origin, including a nondefault port.
+
+The external signing file is opened read-only/nonblocking, checked as a regular file, read with a 16-KiB bound and decoded as strict UTF-8. It must hold a nonempty JSON array of distinct canonical base64url strings encoding 32 bytes. The order is preserved. Errors identify the configuration setting, never file contents. No session-signing key is created. Random bytes used for the dummy password are unrelated to the external signing key.
+
+`openAccountRuntime(environment)` opens the real AccountDatabase and SqliteSessionStore and awaits a dummy Argon2id hash through the existing bounded password module. It returns configuration, database, store, dummyHash and an idempotent close method, or null for unconfigured mode. Database/hash initialization failures close owned resources. The entrypoint awaits this runtime before listen/readiness; listen errors and shutdown close it. Shutdown stops new connections and bounds draining existing connections at five seconds. Invalid port and occupied-address outcomes remain intact.
+
+`createApp(runtime = null)` assembles express-session before static files. It uses the actual SQLite Store, ordered keys, resave=false, saveUninitialized=false and rolling=true; cookie name __Host-loop2.sid, root path, Secure, HttpOnly, SameSite=Strict, no Domain and 30-day maxAge. Ordinary authenticated reads reach Store.touch, never explicit save. Requests with missing or invalid transport metadata bypass session loading entirely, preserving anonymous public assets/health without account authority or renewal. Eligible session middleware responses receive Cache-Control: no-store, including static responses and anonymous requests with valid proxy metadata.
+
+`transport.ts` exports trustProxy, clientAddress, singleHeader and mutationGuards. Cloudflare mode trusts only hop zero and requires one exact https protocol and a singular valid client address. Raw headers detect duplicates rather than relying on Node's joined header map. IPv6 and IPv4-mapped spellings normalize to a common identity. Forwarded chains, X-Real-IP and forwarded Host do not choose identity/origin. Explicit loopback-proxy mode trusts only a loopback peer and uses that peer's identity; direct mode ignores forwarding. The adapter puts the canonical identity in response.locals.accountClientAddress for the next route slice.
+
+Known account paths are /api/account, /api/register, /api/login and /api/logout. Unconfigured requests receive JSON 503; configured ones require transport, and POST requests additionally require exact Origin, JSON with an optional charset, no compressed inflation, at most 16 KiB and an object body. Empty bodies are refused explicitly. Valid configured requests still receive the planned temporary 503. Unmatched API remains JSON 404. Expected credential fields, authorization, admission, registration/login/logout sequencing and the browser gate remain Slice 6 and later work. The test-only session/identity routes live only inside the test fixture.
+
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/spec.md:29-85`
+
+````markdown
+### 1. API and credential validation
+
+| Request | Input | Success |
+|---|---|---|
+| POST `/api/accounts` | email, password, passwordConfirmation | Create account, regenerate and persist browser session, then 201 with opaque account ID and normalized email. |
+| POST `/api/session` | email, password | Verify, regenerate and persist browser session, then 200 with that same account representation. |
+| GET `/api/account` | session cookie | 200 with the current account's ID and normalized email. |
+| POST `/api/logout` | empty JSON object, session cookie | Destroy this browser's session, clear cookie, then 204. |
+
+No endpoint accepts an account ID as authority to select the acting account. GET account and POST logout without a valid session return JSON 401. A successful credential transition replaces this browser's session, not other browsers'. No list/profile endpoint.
+
+Expose no hashes, session IDs, secrets, SQL errors or stacks. Account responses are no-store. New errors have a machine-readable code and one user-facing message; unmatched API requests retain their existing JSON 404 contract, never HTML. Guards run before every actual state-changing route. An unmatched method/path has no mutation and may retain 404 rather than acquire authentication/body requirements.
+
+Normalize email by ECMAScript trim and lowercase; require exactly one @ and nonempty sides, without dot/DNS/RFC/ASCII restrictions. Store this normalized value under a unique database constraint; SQLite ASCII NOCASE is not the normalization algorithm. No arbitrary email substring restriction. Bound total JSON to 16 KiB.
+
+Count passwords in Unicode code points, inclusive 12–128, preserving content without trim/normalization. Allow emoji, whitespace and paste. Confirmation equals password exactly. Browser UTF-16 minlength/maxlength cannot be the authoritative check. Use the same explicit semantics for feedback; use a text input with an email hint rather than stricter native email validation. Password fields mask content and support password managers.
+
+Duplicate registration is 409 with “Konto z tym adresem już istnieje.” Login rejection is “Nieprawidłowy adres e-mail lub hasło.” for unknown account and wrong password, with the same response shape. Bad credential lengths/formats do not invoke Argon2 and retain that generic login message. Malformed JSON, wrong types, excessive size, wrong media type or origin get JSON 4xx before writes/hashing; never coerce arrays, objects or numbers to strings. Structurally malformed requests do not count as admitted credential checks.
+
+Choose a small explicit contract over a schema/client framework. One giant app.ts would mix HTTP, policy and persistence; the units below keep their failure boundaries clear. Future contract changes update server and browser together.
+
+### 2. SQLite and schema lifecycle
+
+One application-owned connection opens before readiness and closes on shutdown/start failure. Database `/app/data/accounts.sqlite` lives in Compose-managed named volume `loop2_accounts` mounted at `/app/data`. The image creates that directory owned by uid/gid 1000 before USER node. Check writes on a genuinely fresh volume as node; image ownership alone is not proof.
+
+Version 1 has accounts with opaque random primary ID, unique normalized email, encoded password hash and creation time; sessions have primary session ID, account foreign key, serialized express-session data and absolute expiry. Index expiry and account ID. Session data holds account ID/library cookie metadata, never credentials. Add no unused saves/reset/mail/verification/blocking columns.
+
+Enable foreign keys, bounded busy timeout, parameterized prepared statements, WAL and full synchronization. Initialize schema and version transactionally. Existing version 1 opens without resets; newer unknown schema fails closed. No destructive migration framework. Duplicate insert races produce the duplicate-account response. No transaction spans asynchronous hashing or an HTTP response.
+
+Reject expiry on read even before cleanup. Prune indexed expired rows on startup and periodically with a bounded lifecycle timer; unref/clear the timer on disposal. Touch updates existing unexpired rows only, preserves the later expiry under out-of-order requests and cannot resurrect logout. Ordinary authenticated requests do not mutate identity or need upsert; fresh authenticated creation is a distinct path. Test delayed touch after logout.
+
+Hash before account insertion. Success requires durable account and session. If session storage fails after account insert, return unavailable with no success cookie and leave the valid account usable by subsequent login, rather than deleting it in a race. The error wording must not claim the account never existed. This is a failed server operation, not successful registration.
+
+File SQLite meets container replacement; in-memory storage does not. The selected built-in driver avoids another driver/ORM. Versioned startup prevents old code reinterpreting newer schema. Short synchronous operations suit one small process; measured contention may later change that. Rollback restores code, not historical accounts. Pre-account code leaves the volume intact but has no account feature; account-aware code can reuse it later. No down -v, volume deletion or prune in recovery.
+
+### 3. Sessions
+
+Cookie `__Host-loop2.sid`: library-generated random opaque ID, Path=/, no Domain, Secure, HttpOnly, SameSite=Strict, maxAge 30 days. Set saveUninitialized=false, resave=false, rolling=true. The custom Store implements get/set/touch/destroy and propagates database failures. Session middleware uses the app's verified proxy policy, not a separate unconditional proxy bypass.
+
+Mount session handling before static serving as well as account routes so each request with a valid session refreshes expiry/cookie, including asset requests. Anonymous reads create no record/cookie. Supply time to storage/policy boundaries so tests advance without waiting 30 days; equality to expiry is invalid. Responses renewing cookies cannot be publicly cached.
+
+Regenerate on successful credentials to prevent fixation, assign account identity and await save before success. Missing/tampered/unknown/expired/deleted sessions authorize nothing. Logout awaits destroy and clears the same cookie scope. Failed destruction is not successful logout; expired-session 401 may clear its obsolete cookie. Authentication failure creates no authenticated session. Parallel reads touch rather than rewrite identity, and cannot revive expired/deleted records.
+
+Choose package sessions plus revocable SQLite records over self-contained tokens or a second signing mechanism; future blocking needs revocation and the task already selected the library.
+
+### 4. Transport trust and Origin
+
+Production selects explicit cloudflare-tunnel mode on the private two-service Compose topology. Express trusts exactly the immediate hop for protocol, not arbitrary forwarded chains. Before account work require one X-Forwarded-Proto=https and one syntactically valid CF-Connecting-IP, rejecting duplicated/list/malformed values. Use that address, normalized for equivalent IP representations, as the limiter key; never trust an attacker-selected leftmost X-Forwarded-For, X-Real-IP or Forwarded. The transport adapter supplies the client address explicitly; req.ip need not be policy authority. Forwarded Host never chooses the expected origin.
+
+The boundary is private topology, not the header's name. Do not publish the application port or silently apply this policy to arbitrary development listeners. Static files and internal anonymous health probes need no proxy metadata; absent metadata cannot create or authorize an account session. Account requests without required transport metadata are refused. Local synthetic headers prove parser/policy behavior, not the real tunnel. Target acceptance checks actual secure-cookie issuance and canonical address handling. If Workers, transforms removing/replacing address headers or Pseudo IPv4 overwrite are present, review their effect before acceptance; this spec does not claim those settings were inspected.
+
+Every mutating route requires exactly the configured serialized HTTPS Origin, including port when present; missing/null/duplicate/foreign/suffix-lookalike values fail. Do not derive it from Host. Accept application/json with optional charset only, reject compressed body inflation, cap at 16 KiB, and validate an object of expected fields. No CORS allowance or URL-encoded/text/plain workaround. Logout obeys the same guards; GET account is read-only and session-protected.
+
+Configured local checks may use explicit loopback-proxy mode: trust a loopback peer only, require forwarded https and use the actual local peer as client identity, ignoring supplied Cloudflare headers. Real-browser checks use a temporary local HTTPS proxy and fixed HTTPS origin, preserving Secure. Ordinary direct mode trusts no forwarding. The local fixture adds no production service or insecure cookie mode.
+
+Generic trust-proxy=true/leftmost forwarded IP was rejected as spoofable. Fixed container IP/subnet was rejected as added coordination without benefit over the existing closed topology. The chosen policy depends on topology and Cloudflare semantics; automated crafted-input checks and actual deployment checks prove different aspects.
+
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:52-54`
+
+````markdown
+- 4. Co widzi gracz niezalogowany, jak wyglądają zakładanie konta, logowanie i wylogowanie i co dzieje się z grą w przeglądarce po wylogowaniu? (Q4)
+  - Answer: część z cytatów, zachowanych przez Mariusza: po założeniu konta gracz gra od razu, bez potwierdzania adresu, a zalogowany trafia do siedziby. Reszta — przebieg przyjęty w brzmieniu propozycji: „Gracz niezalogowany widzi tylko ekran z dwoma formularzami: „Zaloguj się” (adres e-mail, hasło) i „Załóż konto” (adres e-mail, hasło, powtórzone hasło); siedziby ani panelu programu nie widać, dopóki gracz się nie zaloguje.”; „po założeniu konta gracz jest od razu zalogowany i trafia do siedziby”; „Przycisk „Wyloguj” stoi w nagłówku strony obok tytułu; po wylogowaniu wraca ekran formularzy, a gra z przeglądarki przepada.”; „Przeładowanie strony z ważną sesją prowadzi prosto do siedziby.” Przyjęty koszt: „do zadania 16 każde zalogowanie i przeładowanie zaczyna nową grę z pustą drużyną, bo zapisu jeszcze nie ma; powtórzone hasło to jedno pole więcej, ale bez resetu (zadanie 21) literówka w haśle zamyka konto na stałe. Wariant bez gry dla niezalogowanych nie pozwala zajrzeć do gry przed rejestracją.” Zdanie „a gra z przeglądarki przepada” zawęziło pytanie 16 (2026-10-26) do „a gry z przeglądarki nie widać”; co dzieje się z niezapisanym postępem przy wylogowaniu, ustala zadanie 16.
+  - Source: cytaty: definicja `definicja_mvp_loop2.md` (zatwierdzona 2026-10-26, odcisk 7692b28a, sha256 8dad9717784d), § In scope, pkt 1: „Każdy może sam założyć konto i od razu grać; […]”, pkt 4: „Zalogowany gracz trafia do siedziby.”; plan, wiersz 15, Goal. Przebieg: Mariusz, 2026-10-25, słowa wyżej (tura 9). Fakt z kodu, osobno: nagłówek strony ma dziś sam tytuł „Loop” (`src/browser/view/app.ts:26`–`29`), a strona przy każdym wczytaniu zaczyna nową grę (`app.ts:24`, `newGame()`), loop2 `9a5f360`.
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:58-60`
+
+````markdown
+- 6. Jak długo ważna jest sesja gracza i czy gracz może być zalogowany w kilku przeglądarkach naraz? (Q6; pierwsza połowa pytania otwartego definicji „Jak długo ważna jest sesja gracza i jak chronić żądania zmieniające zapis przed podszyciem się pod gracza?”)
+  - Answer: droga A: „Sesja ważna 30 dni od ostatniego żądania i przedłużana przy każdym; logowanie w kilku przeglądarkach naraz dozwolone, każda ma własną sesję; „Wyloguj” kończy sesję tylko tej przeglądarki.” Przyjęty koszt: „urządzenie, które ktoś zostawi zalogowane, daje dostęp do konta do 30 dni; więcej rekordów sesji w bazie”.
+  - Source: Mariusz, 2026-10-25, słowa wyżej (tura 9).
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:64-66`
+
+````markdown
+- 8. Jak serwer chroni żądania zmieniające przed podszyciem się pod zalogowanego gracza? (Q8; druga połowa pytania otwartego definicji o sesji)
+  - Answer: droga A: „Ciasteczko sesji z ustawieniem `SameSite=Strict`, a serwer odrzuca każde żądanie zmieniające stan, którego nagłówek `Origin` nie jest adresem loop2, i przyjmuje dane tylko jako JSON.” Przyjęty koszt: „zależność od tego, że przeglądarka wysyła nagłówek `Origin` (bardzo stare przeglądarki mogą tego nie robić i zostaną odrzucone)”.
+  - Source: Mariusz, 2026-10-25, słowa wyżej (tura 9).
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:194-195`
+
+````markdown
+| K1 | Gracz niezalogowany widzi tylko ekran z formularzami „Zaloguj się” i „Załóż konto”, a siedziby ani panelu programu nie widać, dopóki się nie zaloguje; po założeniu konta gracz jest od razu zalogowany i trafia do siedziby. | decision | pytanie 4 (przebieg przyjęty; Mariusz, 2026-10-25) | czy niezalogowany może grać w przeglądarce bez konta — a stąd w zadaniu 16, czy łączyć stan zagrany przed zalogowaniem z zapisem konta |
+| K2 | Przycisk „Wyloguj” stoi w nagłówku strony obok tytułu; wylogowanie kończy sesję tylko tej przeglądarki, po czym wraca ekran formularzy, a gry z przeglądarki nie widać. | decision | pytania 4 i 6 (A; Mariusz, 2026-10-25) i pytanie 16 (B; Mariusz, 2026-10-26): co dzieje się z niezapisanym postępem przy wylogowaniu, ustala zadanie 16; obok wpisu projektowanego „What happens to unsaved progress when a session expires?” (Decisions in play) | czy wylogowanie kończy sesje wszystkich przeglądarek gracza, gdzie stoi „Wyloguj” i czy po wylogowaniu gra zostaje na ekranie |
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:199-199`
+
+````markdown
+| K6 | Sesja gracza jest ważna 30 dni od ostatniego żądania i przedłuża się przy każdym, a gracz może być zalogowany w kilku przeglądarkach naraz, każda z własną sesją. | decision | pytanie 6 (A; Mariusz, 2026-10-25) | czas życia ciasteczka i rekordu sesji, przedłużanie przy żądaniu, a w zadaniu 19 — czy blokada kończy jedną sesję, czy wszystkie sesje konta |
+````
+
+Source: `docs/task-cycles/konta-graczy-i-logowanie/task.md:202-202`
+
+````markdown
+| K9 | Ciasteczko sesji ma ustawienie `SameSite=Strict`, a serwer odrzuca każde żądanie zmieniające stan, którego nagłówek `Origin` nie jest adresem loop2, i przyjmuje dane tylko jako JSON. | decision | pytanie 8 (A; Mariusz, 2026-10-25); wpis projektowany „How is a player's login kept between requests?” nie wiąże `SameSite` | czy żądania zapisu zadania 16 dostają osobny token i czy przyjmują dane formularza |
+````

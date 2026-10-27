@@ -1,0 +1,9 @@
+# Return slice 4 for size before its boundary is exceeded
+
+The new required tests/invariants/test_loop2_container_icons.py path would make eleven changed files. The pinned task-cycle size boundary is ten; root cannot simply waive it. Stop further implementation and checks, leave that extra file unchanged, and return status returned for size under make-change. The task's required production configuration still stands; no developer bypass or test exclusion is permitted.
+
+Preserve your current authorized attempt in an explicit-path English commit if needed so its exact last SHA and changed files can be recorded before the orchestrator resets to slice base c9af9d4521895fe6fe98ae96ccbc7035e4cea350. Do not reset or rebase yourself. Do not change the already reviewed earlier slices, the extra fixture, plan or cycle.md. Remove/stop only your owned running disposable processes if necessary; retain logs. No test rerun merely to produce this return.
+
+Write reports/25-slice4-size-report.md under .runs/task-cycles/konta-graczy-i-logowanie. Include status returned, base and historical attempt head, exact changed files/counts, the missing fixture's concrete dependency and line anchors, why the current slice requires eleven paths, the smallest proposed split (fixture preparation first, original startup/transport scope second), every executed check with command/exit and actual failed/unchecked state, mutation evidence and reaches. The report contains no code/diff/file copies; name commits instead. Do not present the current incomplete full gate as passed. Preserve any existing reports/logs as attempt evidence.
+
+This is the task-cycle's size-return route, not the one executor-failure retry or a code-review fix. The orchestrator will record/discard the attempt and have the planner split the slice; earlier reviewed slices remain. Return the report and stop. Questions go only to root, not the human.
