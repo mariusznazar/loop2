@@ -15,6 +15,10 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/status-row.ts` | exemplar | D-36 |
 | `src/browser/view/app.ts` | copy | — |
 | `src/browser/view/clock.ts` | copy | — |
+| `src/browser/view/controls/button.ts` | copy | — |
+| `src/browser/view/controls/number-field.ts` | copy | — |
+| `src/browser/view/controls/select-list.ts` | copy | — |
+| `src/browser/view/controls/text-field.ts` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
 | `src/browser/view/footer.ts` | copy | — |
 | `src/browser/view/headquarters.ts` | copy | — |
@@ -82,6 +86,15 @@ Obsługa kliknięć przekazuje działania do aplikacji przez `StatusRowControls`
 aplikacja wywołuje symulację. Taki podział jest przykładem dla edytowalnych
 kontrolek. Każdy moduł nie musi mieć `update()`, a elementy statyczne mogą być
 przebudowywane.
+
+Wspólne kontrolki w `src/browser/view/controls/` budują ekrany; kontrolka, która
+czeka na serwer, zmienia się w miejscu. `setButtonWaiting` z `button.ts` wyłącza
+istniejący przycisk i podmienia jego tekst na napis oczekiwania, a wywołana
+z `null` przywraca tekst; pola formularza blokuje się przez `input.disabled`,
+a zdanie odmowy albo braku połączenia pokazuje `createFormWarning` z
+`text-field.ts`. Pole hasła to `createPasswordField`, a przycisk, który wysyła
+formularz, dostaje `submit: true`. Wyłączony przycisk traci fokus, więc ekran
+po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
 
 ## Where in code
 

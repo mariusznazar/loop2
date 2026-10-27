@@ -66,7 +66,9 @@ header h1 {
  * The shared controls of src/browser/view/controls/ in their states (styleguide rule "States of
  * shared controls", D-44): no background of their own, text in `text`, frame in `control-border`;
  * under the pointer the background `highlight` with frame and text role unchanged; focus by the
- * one :focus-visible rule above; disabled text in `text-disabled`. Loading applies to none.
+ * one :focus-visible rule above; disabled text in `text-disabled`. Loading is the state of a
+ * control that waits for a server: the button disabled under a changed text and the fields of its
+ * form disabled, which the disabled rules below draw (D-44).
  */
 .button,
 .select-list,
@@ -137,6 +139,27 @@ header h1 {
 .input-field-message {
   margin-top: var(--space-2xs);
   font-size: var(--font-size-detail);
+  color: var(--warning);
+}
+
+/* The visible label of a field, above its input: a field name in `text-label` (D-40). */
+.input-field-label {
+  margin-bottom: var(--space-2xs);
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+/* A form that sends its fields to the server: its fields, its button and one sentence under it. */
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-s);
+}
+
+/* The sentence under a form of a server refusal or a lost connection, in `warning` (D-39, D-44). */
+.form-warning {
+  margin: 0;
   color: var(--warning);
 }
 
