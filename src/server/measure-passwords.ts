@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { release } from "node:os";
 import { join } from "node:path";
@@ -76,6 +76,7 @@ async function cgroupValue(directory: string, name: string): Promise<string> {
   }
 }
 
+// cgroup v1 writes an unlimited limit as a page-rounded 2^63 - 1, beyond safe integers.
 async function cgroupBytes(
   directory: string,
   name: string,
@@ -83,34 +84,94 @@ async function cgroupBytes(
   const value = await cgroupValue(directory, name);
   if (value === "max") return value;
   const bytes = /^\d+$/.test(value) ? Number(value) : NaN;
-  if (!Number.isSafeInteger(bytes))
-    throw new Error(`cgroup file ${name} holds no byte count`);
+  if (Number.isSafeInteger(bytes)) return bytes;
+  if (bytes >= 2 ** 62) return "max";
+  throw new Error(`cgroup file ${name} holds no byte count`);
+}
+
+async function cgroupCount(
+  directory: string,
+  file: string,
+  name: string,
+): Promise<number> {
+  for (const line of (await cgroupValue(directory, file)).split("\n")) {
+    const [key, count] = line.trim().split(/\s+/);
+    if (key === name && /^\d+$/.test(count ?? "")) return Number(count);
+  }
+  throw new Error(`cgroup file ${file} names no ${name} count`);
+}
+
+async function present(directory: string, name: string): Promise<boolean> {
+  try {
+    await access(join(directory, name));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+interface MemoryReading {
+  cgroupVersion: 1 | 2;
+  cgroupLimitBytes: number | "max";
+  cgroupPeakBytes: number;
+  cgroupCurrentBytes: number | "max";
+  cgroupSwapLimitBytes: number | "max" | null;
+  oomEvents: number;
+  oomKillEvents: number;
+}
+
+async function peak(directory: string, name: string): Promise<number> {
+  const bytes = await cgroupBytes(directory, name);
+  if (bytes === "max") throw new Error(`cgroup file ${name} holds no peak`);
   return bytes;
 }
 
-async function cgroupEvents(directory: string): Promise<Map<string, number>> {
-  const events = new Map<string, number>();
-  for (const line of (await cgroupValue(directory, "memory.events")).split(
-    "\n",
-  )) {
-    const [name, count] = line.trim().split(/\s+/);
-    if (name && /^\d+$/.test(count ?? "")) events.set(name, Number(count));
-  }
-  if (!events.has("oom") || !events.has("oom_kill"))
-    throw new Error("cgroup file memory.events names no oom or oom_kill count");
-  return events;
+async function readVersion2(directory: string): Promise<MemoryReading> {
+  return {
+    cgroupVersion: 2,
+    cgroupLimitBytes: await cgroupBytes(directory, "memory.max"),
+    cgroupPeakBytes: await peak(directory, "memory.peak"),
+    cgroupCurrentBytes: await cgroupBytes(directory, "memory.current"),
+    cgroupSwapLimitBytes: (await present(directory, "memory.swap.max"))
+      ? await cgroupBytes(directory, "memory.swap.max")
+      : null,
+    oomEvents: await cgroupCount(directory, "memory.events", "oom"),
+    oomKillEvents: await cgroupCount(directory, "memory.events", "oom_kill"),
+  };
 }
 
-async function optionalBytes(
-  directory: string,
-  name: string,
-): Promise<number | "max" | null> {
-  try {
-    await readFile(join(directory, name));
-  } catch {
-    return null;
+// Version 1 has no count of failed allocations; every hit of the limit counts instead.
+async function readVersion1(directory: string): Promise<MemoryReading> {
+  const limit = await cgroupBytes(directory, "memory.limit_in_bytes");
+  let swap: number | "max" | null = null;
+  if (await present(directory, "memory.memsw.limit_in_bytes")) {
+    const both = await cgroupBytes(directory, "memory.memsw.limit_in_bytes");
+    swap = both === "max" || limit === "max" ? "max" : both - limit;
   }
-  return cgroupBytes(directory, name);
+  return {
+    cgroupVersion: 1,
+    cgroupLimitBytes: limit,
+    cgroupPeakBytes: await peak(directory, "memory.max_usage_in_bytes"),
+    cgroupCurrentBytes: await cgroupBytes(directory, "memory.usage_in_bytes"),
+    cgroupSwapLimitBytes: swap,
+    oomEvents: Number(await cgroupBytes(directory, "memory.failcnt")),
+    oomKillEvents: await cgroupCount(
+      directory,
+      "memory.oom_control",
+      "oom_kill",
+    ),
+  };
+}
+
+async function memoryReader(
+  directory: string,
+): Promise<() => Promise<MemoryReading>> {
+  if (await present(directory, "memory.max"))
+    return () => readVersion2(directory);
+  const version1 = join(directory, "memory");
+  if (await present(version1, "memory.limit_in_bytes"))
+    return () => readVersion1(version1);
+  throw new Error("cgroup memory accounting is unavailable");
 }
 
 function timings(samples: number[]): Timings {
@@ -180,10 +241,8 @@ async function concurrentRun(
 }
 
 async function measure(options: Options) {
-  const directory = options.cgroupDirectory;
-  const limitBytes = await cgroupBytes(directory, "memory.max");
-  await cgroupEvents(directory);
-  await cgroupBytes(directory, "memory.peak");
+  const readMemory = await memoryReader(options.cgroupDirectory);
+  await readMemory();
 
   const password = syntheticPassword();
   const encoded = await hashPassword(password);
@@ -203,7 +262,7 @@ async function measure(options: Options) {
   const warmup = await concurrentRun(encoded, password, WARMUP_PER_KIND);
   const measured = await concurrentRun(encoded, password, MEASURED_PER_KIND);
 
-  const events = await cgroupEvents(directory);
+  const memory = await readMemory();
   const usage = process.resourceUsage();
   return {
     profile: {
@@ -234,15 +293,7 @@ async function measure(options: Options) {
       verify: timings(measured.verifyMs),
       totalMs: Math.round(measured.totalMs),
     },
-    memory: {
-      cgroupLimitBytes: limitBytes,
-      cgroupPeakBytes: await cgroupBytes(directory, "memory.peak"),
-      cgroupCurrentBytes: await cgroupBytes(directory, "memory.current"),
-      cgroupSwapLimitBytes: await optionalBytes(directory, "memory.swap.max"),
-      oomEvents: events.get("oom"),
-      oomKillEvents: events.get("oom_kill"),
-      processMaxRssBytes: usage.maxRSS * 1024,
-    },
+    memory: { ...memory, processMaxRssBytes: usage.maxRSS * 1024 },
   };
 }
 

@@ -130,6 +130,11 @@ export function judge(request, observed) {
   }
   for (const error of result.errors ?? []) problems.push(String(error));
   if (result.ok !== true) problems.push("the measurement reports a failure");
+  // A measurement stopped early names its own reason; nothing below it was measured.
+  if (result.measured === undefined) {
+    problems.push("the measurement reports no measured operations");
+    return problems;
+  }
   if (result.profile?.type !== "argon2id")
     problems.push("the measured profile is not Argon2id");
   if (result.checks?.correctAccepted !== true)

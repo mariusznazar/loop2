@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -97,6 +97,7 @@ test("the entrypoint measures the production profile and gate with synthetic pas
   assert.ok(result.measured.verifies >= 20, `${result.measured.verifies}`);
   assert.equal(result.measured.hash.count, result.measured.hashes);
   // The cgroup's own numbers are passed on as read.
+  assert.equal(result.memory.cgroupVersion, 2);
   assert.equal(result.memory.cgroupLimitBytes, 536870912);
   assert.equal(result.memory.cgroupPeakBytes, 123456789);
   assert.equal(result.memory.cgroupSwapLimitBytes, 0);
@@ -106,6 +107,37 @@ test("the entrypoint measures the production profile and gate with synthetic pas
   assert.equal(result.versions.node, process.versions.node);
   assert.doesNotMatch(run.stdout, /\$argon2/);
   assert.equal(existsSync(databasePath), false, "the database was opened");
+});
+
+test("the entrypoint reads a cgroup v1 memory controller, counting every hit of its limit", async (t) => {
+  // Swap allowed is memsw minus the memory limit: 536870912 - 536870912 = 0.
+  const directory = await cgroupDirectory(t, {});
+  await mkdir(join(directory, "memory"));
+  for (const [name, text] of Object.entries({
+    "memory.limit_in_bytes": "536870912\n",
+    "memory.memsw.limit_in_bytes": "536870912\n",
+    "memory.max_usage_in_bytes": "222222222\n",
+    "memory.usage_in_bytes": "111111111\n",
+    "memory.failcnt": "3\n",
+    "memory.oom_control": "oom_kill_disable 0\nunder_oom 0\noom_kill 1\n",
+  }))
+    await writeFile(join(directory, "memory", name), text);
+  const run = runEntryPoint(["--cgroup-directory", directory]);
+
+  assert.equal(run.status, 0, run.stdout);
+  assert.deepEqual(
+    { ...run.result.memory, processMaxRssBytes: undefined },
+    {
+      cgroupVersion: 1,
+      cgroupLimitBytes: 536870912,
+      cgroupPeakBytes: 222222222,
+      cgroupCurrentBytes: 111111111,
+      cgroupSwapLimitBytes: 0,
+      oomEvents: 3,
+      oomKillEvents: 1,
+      processMaxRssBytes: undefined,
+    },
+  );
 });
 
 test("the entrypoint refuses to measure where the cgroup reports no peak memory", async (t) => {
@@ -267,6 +299,7 @@ test("the launcher fails each run that breaks one bound and still removes its co
     "19 measured verifications": { result: tooFew },
     "a third operation admitted": { result: thirdAdmitted },
     "no result printed": { result: "not json" },
+    "a result without measurements": { result: { ok: true, errors: [] } },
     "the run outlasting its bound": { waitStatus: null },
   };
   for (const [label, options] of Object.entries(cases)) {

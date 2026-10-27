@@ -283,11 +283,11 @@ Cloudflare sets X-Forwarded-Proto to the client's protocol and overwrites a diff
 
 - **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/fundamentals/reference/http-headers.mdx § X-Forwarded-Proto — "If the client set a different value, it will be overwritten."; read 2026-10-27
 
-## cgroup-memory-peak
+## cgroup-memory-accounting
 
-Linux 6.12's cgroup v2 interface reports in a non-root cgroup's `memory.peak` the highest memory usage recorded for the cgroup and its descendants since the cgroup's creation or the last reset through the same file descriptor, and counts in its `memory.events` `oom_kill` the cgroup's processes killed by any OOM killer.
+Linux 6.12's memory controller records a cgroup's highest memory usage — in cgroup v2's `memory.peak` for the cgroup and its descendants since the cgroup's creation or the last reset through the same file descriptor, in cgroup v1's `memory.max_usage_in_bytes` — counts the cgroup's processes killed by any OOM killer as `oom_kill` in v2's `memory.events` and v1's `memory.oom_control`, and counts in v1's `memory.failcnt` the times its usage hit its limit.
 
-- **Source:** https://raw.githubusercontent.com/torvalds/linux/v6.12/Documentation/admin-guide/cgroup-v2.rst § Memory Interface Files, memory.peak — "The max memory usage recorded for the cgroup and its descendants since either the creation of the cgroup or the most recent reset for that FD." · § Memory Interface Files, memory.events, oom_kill — "The number of processes belonging to this cgroup killed by any kind of OOM killer."; read 2026-10-27
+- **Source:** https://raw.githubusercontent.com/torvalds/linux/v6.12/Documentation/admin-guide/cgroup-v2.rst § Memory Interface Files, memory.peak — "The max memory usage recorded for the cgroup and its descendants since either the creation of the cgroup or the most recent reset for that FD." · § Memory Interface Files, memory.events, oom_kill — "The number of processes belonging to this cgroup killed by any kind of OOM killer."; read 2026-10-27 · https://raw.githubusercontent.com/torvalds/linux/v6.12/Documentation/admin-guide/cgroup-v1/memory.rst § Brief summary of control files — "show max memory usage recorded" · § 5.4 failcnt — "shows the number of times that a usage counter hit its limit" · § 10. OOM Control — "The number of processes belonging to this cgroup killed by any kind of OOM killer."; read 2026-10-27
 
 ## Withdrawn identifiers
 
