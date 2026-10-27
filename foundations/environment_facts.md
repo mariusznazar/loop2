@@ -289,6 +289,18 @@ Linux 6.12's memory controller records a cgroup's highest memory usage — in cg
 
 - **Source:** https://raw.githubusercontent.com/torvalds/linux/v6.12/Documentation/admin-guide/cgroup-v2.rst § Memory Interface Files, memory.peak — "The max memory usage recorded for the cgroup and its descendants since either the creation of the cgroup or the most recent reset for that FD." · § Memory Interface Files, memory.events, oom_kill — "The number of processes belonging to this cgroup killed by any kind of OOM killer."; read 2026-10-27 · https://raw.githubusercontent.com/torvalds/linux/v6.12/Documentation/admin-guide/cgroup-v1/memory.rst § Brief summary of control files — "show max memory usage recorded" · § 5.4 failcnt — "shows the number of times that a usage counter hit its limit" · § 10. OOM Control — "The number of processes belonging to this cgroup killed by any kind of OOM killer."; read 2026-10-27
 
+## docker-volume-lifecycle
+
+Docker keeps a volume's contents outside the lifecycle of the containers that use it, so a removed container leaves the data of its volume, and a volume no running container uses is not removed automatically.
+
+- **Source:** https://raw.githubusercontent.com/docker/docs/62f6d26c183faf98fc8567f0b675f660f4e91ae6/content/manuals/engine/storage/volumes.md § A volume's lifecycle — "A volume's contents exist outside the lifecycle of a given container. When a container is destroyed, the writable layer is destroyed with it. Using a volume ensures that the data is persisted even if the container using it is removed." · "When no running container is using a volume, the volume is still available to Docker and isn't removed automatically."; read 2026-10-27
+
+## fetch-origin-header
+
+The Fetch Standard's HTTP-network-or-cache fetch gives a request whose method is neither `GET` nor `HEAD` an `Origin` header holding its serialized origin whenever its mode is `cors`, the mode a `Request` made from a URL string takes when none is given.
+
+- **Source:** https://raw.githubusercontent.com/whatwg/fetch/e9460d1b22ead1c6a72eeac37fb2ec0dc01aeb1d/fetch.bs § HTTP-network-or-cache fetch — "Append a request `Origin` header for httpRequest." · § `Origin` header, append a request `Origin` header — "Otherwise, if request's method is neither `GET` nor `HEAD`, then:" · "If request's mode is not "cors", then switch on request's referrer policy:" · "Append (`Origin`, serializedOrigin) to request's header list." · § Request class, new Request(input, init) — "Set fallbackMode to "cors"."; read 2026-10-27
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

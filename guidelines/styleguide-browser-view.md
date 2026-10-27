@@ -173,13 +173,13 @@ stanów:
 - error — w polach przyjmujących wpis ramka i komunikat pod polem w `warning`;
 - empty — w listach i polach: lista bez pozycji, puste pole z podpowiedzią
   w `text-label`;
-- loading — dotyczy kontrolek formularza, który czeka na odpowiedź serwera
-  (D-44): przycisk wysyłający formularz jest wyłączony, jego tekst stoi
-  w `text-disabled`, a napis zmienia się na „Logowanie…” albo „Zakładanie
-  konta…” zależnie od formularza; pola tego formularza są wyłączone, więc
+- loading — dotyczy kontrolki, która czeka na odpowiedź serwera (D-44):
+  przycisk jest wyłączony, a jego tekst stoi w `text-disabled`; przycisk
+  wysyłający formularz zmienia napis na „Logowanie…” albo „Zakładanie
+  konta…” zależnie od formularza, a pola tego formularza są wyłączone, więc
   też mają tekst w `text-disabled`. Nie ma ruchomego wskaźnika. Odmowa
-  serwera i brak połączenia stoją jednym zdaniem pod formularzem w `warning`
-  (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
+  serwera i brak połączenia przy formularzu stoją jednym zdaniem pod
+  formularzem w `warning` (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
   gracz zaczął.
 
@@ -196,8 +196,8 @@ Kontrolki odstępujące od tej listy stanów:
   wpisu. Przycisk niszczący ma tekst w `danger`; są nim „Zakończ”, „Usuń”
   i „Restart” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40). Loading dotyczy tylko zwykłego przycisku, który
-  wysyła formularz; przycisk niszczący i przycisk wybrany w grupie nie
-  wysyłają formularzy na serwer.
+  czeka na odpowiedź serwera; przycisk niszczący i przycisk wybrany w grupie
+  nie czekają na serwer.
 - `src/browser/view/controls/select-list.ts` — lista wyboru: error nie
   dotyczy, bo lista podaje tylko poprawne pozycje; loading nie dotyczy, bo
   żaden formularz czekający na serwer jej nie ma.

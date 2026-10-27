@@ -664,7 +664,7 @@ The deployed account server uses `express-session` with a project-owned Store ba
 Replacing the application container preserves the SQLite database of player accounts and saved game states.
 
 - **Method:** review
-- **Rests on:** none
+- **Rests on:** docker-volume-lifecycle
 - **Derives from:** D-17 · C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\definicja_mvp_loop2.md § Projected foundation changes, account-save-durable-storage/1 — "Replacing the application container preserves the SQLite database of player accounts and saved game states."; read 2026-10-27
 - **Part:** account-server · deployment
 - **Violated:** yes
@@ -677,7 +677,7 @@ The account and save server accesses its SQLite database through Node.js's built
 - **Rests on:** node-sqlite-database
 - **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/definicja_mvp_loop2.md § Projected foundation changes, account-save-sqlite-access/1 — "The account and save server accesses its SQLite database through Node.js's built-in `node:sqlite` module rather than an external SQLite driver."; read 2026-10-26
 - **Part:** account-server · build-tools · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## loop2-shared-public-origin
 

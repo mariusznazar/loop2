@@ -13,16 +13,10 @@ Czytaj również ogólne wytyczne kodowania.
 | File | Status | Decision |
 |---|---|---|
 | `src/browser/view/status-row.ts` | exemplar | D-36 |
-| `src/browser/view/account-screen.ts` | copy | — |
 | `src/browser/view/app.ts` | copy | — |
 | `src/browser/view/clock.ts` | copy | — |
-| `src/browser/view/controls/button.ts` | copy | — |
-| `src/browser/view/controls/number-field.ts` | copy | — |
-| `src/browser/view/controls/select-list.ts` | copy | — |
-| `src/browser/view/controls/text-field.ts` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
 | `src/browser/view/footer.ts` | copy | — |
-| `src/browser/view/game-view.ts` | copy | — |
 | `src/browser/view/headquarters.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | copy | — |
 | `src/browser/view/terrain-panel.ts` | copy | — |

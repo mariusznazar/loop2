@@ -254,7 +254,7 @@ jest dowodem wykonania.
 ### integration test
 
 - **Purpose:** Konkretna operacja lub połączenie na prawdziwych plikach, lokalnym HTTP lub procesach, także kontrola plików repozytorium skryptem; start gotowej aplikacji należy do smoke test. (D-81)
-- **Files:** `tests/http.test.mjs`, `tests/transport.test.mjs`, `tests/account-storage.test.mjs` i `tests/passwords.test.mjs` oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
+- **Files:** `tests/http.test.mjs`, `tests/transport.test.mjs`, `tests/account-storage.test.mjs`, `tests/passwords.test.mjs`, `tests/account-api.test.mjs` i `tests/password-measurement.test.mjs` oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** as in `unit test`. (D-78)
 - **Doubles:** Rzeczywista zależność, gdy jest szybka, powtarzalna i prosta, potem działające uproszczenie, potem podstawiona odpowiedź lub kontrola wywołania; obce typy za własnym adapterem. Nie zastępuj kodu pod testem; wywołanie sprawdzaj tylko dla skutku widocznego poza produktem. Błąd plików lub HTTP sprawdzaj na prawdziwych plikach tymczasowych lub lokalnym serwerze; podstawiona odpowiedź dowodzi reakcji na błąd, nie zastąpionej operacji. (D-73, D-84)
 - **Data:** as in `unit test`; wspólny niemodyfikowany serwer lub kopia zbudowanej aplikacji są dozwolone. (D-73)
@@ -328,6 +328,8 @@ może pokazywać rzeczywiście różne ryzyka.
 - `tests/transport.test.mjs`
 - `tests/account-storage.test.mjs`
 - `tests/passwords.test.mjs`
+- `tests/account-api.test.mjs`
+- `tests/password-measurement.test.mjs`
 - `tests/startup.test.mjs`
 - `tests/sim/traits.test.mjs`
 - `tests/sim/time.test.mjs`

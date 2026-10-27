@@ -335,7 +335,7 @@ source would stop.
 A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes; it removes or replaces nothing of another workload. It builds only while the host's available memory and free disk stay above thresholds the repository sets, and each loop2 container runs under its own memory limit. The tunnel token and session signing files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000 and the database preserved across application-container replacement and code rollback.
 
 - **Scope:** deployment
-- **Based on:** mikrus-host-docker-workloads · mikrus-host-swap
+- **Based on:** mikrus-host-docker-workloads · mikrus-host-swap · docker-volume-lifecycle
 - **Relations:** derives from D-08
 - **Verification:** invariants: loop2-host-sharing · account-save-durable-storage. Checks of accounts and sessions alone do not establish preservation of saved game states and cannot clear account-save-durable-storage. For the thresholds and the memory limit, an
   agent compares the change with the decision:
@@ -856,7 +856,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń” and „Restart” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`, its button reads „Logowanie…” or „Zakładanie konta…” for the corresponding form, and that form's fields are disabled. Server refusal and loss of connection appear as one sentence below the form in `warning`, and the kitchen-sink page shows the waiting and refusal states.
+The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń” and „Restart” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…” or „Zakładanie konta…” for the corresponding form, and that form's fields are disabled. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, and the kitchen-sink page shows the waiting and refusal states.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -1768,7 +1768,7 @@ Attempt histories live in bounded process memory, with at most 10,000 live email
 The session cookie uses SameSite=Strict, and every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 16 KiB, optional charset allowed and compressed inflation rejected. Missing, null, duplicate, malformed or foreign Origin and wrong media type are refused before mutation or password work, and Host or forwarded host headers never choose the expected origin. Input is an object of expected fields with explicit type checks rather than coercion, and no cross-origin allowance or form-body alternative bypasses these guards.
 
 - **Scope:** account-server, browser-view
-- **Based on:** none
+- **Based on:** fetch-origin-header
 - **Relations:** derives from D-99
 - **Verification:** invariants: account-mutation-request-guards.
 - **Origin:** none
@@ -1883,7 +1883,7 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 - **Relations:** derives from D-96 · derives from D-101 · derives from D-104
 - **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check.
 - **Review when:** The password library or measured container profile changes.
-- **Origin:** task konta-graczy-i-logowanie, accepted cycle plan, Slice 1.
+- **Origin:** none
 
 *Rationale:* A first file makes password work's admission and package boundary visible for later account routes. Two slots are the selected candidate, not evidence that this cost fits the target image.
 *Rejected:* Separate gates for hash and verify — allow their combined memory use to exceed the shared limit; an unbounded queue — retains arbitrary pending work; treating the candidate as measured — claims target suitability without target evidence.
@@ -1933,7 +1933,7 @@ The exemplar for kind `session-store` is `src/server/session-store.ts`, and its 
 
 ### D-114 — Which file is the exemplar for account policy?
 
-The exemplar for kind `account-policy` is `src/server/account-policy.ts`, and its kind guidelines are read before adding or changing an account-policy file. Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database, and each admitted attempt is settled once, when its password work has completed.
+The exemplar for kind `account-policy` is `src/server/account-policy.ts`, and its kind guidelines are read before adding or changing an account-policy file. Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database, and each admitted attempt is settled once, only after the password work it started has completed.
 
 - **Scope:** account-server
 - **Based on:** none
