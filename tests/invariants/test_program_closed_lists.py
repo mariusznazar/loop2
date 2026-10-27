@@ -5,6 +5,9 @@ The simulation is built by `npm run build` in a temporary copy of the working tr
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram` and
 `send`.
+The new game of each game with a map run is one whose Understanding holds everything the built data
+modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
+program stay what the check drives.
 
 Reading of the sentence:
 - the lists: the kinds of condition are the keys of `CONDITIONS` (`conditions.ts`), the kinds of
@@ -46,7 +49,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules, program_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules, program_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 BUILT_DATA = "dist/public/sim/data"
@@ -106,7 +109,7 @@ UNLISTED_ACTION_KINDS = ("collect", "gatherAll", "Gather", "rest", "walkToTile",
 # Fields a listed kind takes, given to an unlisted one in the second offer of each kind.
 PLAUSIBLE_FIELDS = {"resource": "stick", "value": 3}
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -117,7 +120,8 @@ const { ACTIONS } = await import(pathToFileURL(dataPath + '/actions.js').href);
 const { base, sent, realMs, offers } = JSON.parse(readFileSync(offersPath, 'utf8'));
 const results = [];
 for (const { withRun, program } of offers) {
-  let state = game.setProgram(game.newGame(), base).state;
+  let state = game.setProgram(
+    withRun ? await newKnowingGame(game, gamePath) : game.newGame(), base).state;
   state = game.createCharacter(state, 'Ala').state;
   if (withRun) state = game.send(state, sent, realMs).state;
   try {

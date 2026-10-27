@@ -7,6 +7,9 @@ is never written) and driven through its public functions in `dist/public/sim/ga
 script this check writes to a temporary directory: `newGame`, `setProgram`, `createCharacter`,
 `send`, `advanceMinutes` and `passRealTime`, each returning `{state, events}`. After every call
 the script records the JSON of the whole game state and the events that call gave.
+The new game of each sent character is one whose Understanding holds everything the built data
+modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
+program stay what the check drives.
 
 Reading of the sentence:
 - a span of game minutes: the SPAN minutes after a send to the map Las (`forest`) of a character
@@ -54,7 +57,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -171,7 +174,7 @@ SPLITS = {
     "real time in pieces of 1500 ms": (lambda total: real_time_calls([1500], total), False),
 }
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -180,7 +183,7 @@ const game = await import(pathToFileURL(gamePath).href);
 const runs = JSON.parse(readFileSync(runsPath, 'utf8'));
 const out = {};
 for (const [key, { program, sent, realMs, calls }] of Object.entries(runs)) {
-  let state = game.newGame();
+  let state = await newKnowingGame(game, gamePath);
   state = game.setProgram(state, program).state;
   state = game.createCharacter(state, 'Ala').state;
   state = game.send(state, sent, realMs).state;

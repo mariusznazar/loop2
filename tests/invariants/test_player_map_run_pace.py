@@ -7,6 +7,9 @@ is never written) and driven through its public functions in `dist/public/sim/ga
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send`, `passRealTime`, `setPaused`, `restart` and `end`, each returning `{state, events}`. After
 every input the script records the map run's game minute and whether the game is paused.
+The new game of each sent character is one whose Understanding holds everything the built data
+modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
+program stay what the check drives.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
@@ -39,7 +42,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -114,7 +117,7 @@ CONTROL = PREFIX + (
     (passed(500), 71, False),
 )
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -124,7 +127,7 @@ const steps = JSON.parse(readFileSync(stepsPath, 'utf8'));
 let state;
 const records = [];
 for (const [name, ...args] of steps) {
-  state = name === 'newGame' ? game.newGame() : game[name](state, ...args).state;
+  state = name === 'newGame' ? await newKnowingGame(game, gamePath) : game[name](state, ...args).state;
   records.push({ step: name, minute: state.run ? state.run.minute : null, paused: state.paused });
 }
 writeFileSync(outPath, JSON.stringify(records));
