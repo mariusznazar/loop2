@@ -21,6 +21,7 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 | database-access | `guidelines/coding-database-access.md` | Przed dodaniem lub zmianą pliku dostępu do bazy danych. |
 | session-store | `guidelines/coding-session-store.md` | Przed dodaniem lub zmianą magazynu sesji biblioteki. |
 | account-policy | `guidelines/coding-account-policy.md` | Przed dodaniem lub zmianą pliku sprawdzania danych logowania i rejestracji albo dopuszczania prób. |
+| browser-api-client | `guidelines/coding-browser-api-client.md` | Przed dodaniem lub zmianą pliku klienta API serwera w przeglądarce. |
 
 ## Rules
 

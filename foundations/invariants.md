@@ -779,6 +779,26 @@ When the account server's table of tracked email or client-address keys is full 
 - **Part:** account-server
 - **Violated:** no
 
+## account-client-requests
+
+The browser account client sends each account request to one of the relative `/api/` account paths with the method and JSON body that route takes, and follows no redirect.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-106 · D-115
+- **Part:** browser-view
+- **Violated:** no
+
+## account-client-outcomes
+
+The browser account client returns an account only for the success status of its request with a body holding a non-empty string `id` and `email`, and returns every other answer, a failed connection and an answer not complete within its time limit as a failure.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-115
+- **Part:** browser-view
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
