@@ -995,6 +995,43 @@ test("the item list of „Zapas poniżej” offers the backpack items of the Und
   });
 });
 
+// Review finding I-1: a kind that names a target is no choice while no target is offered, since the
+// edit would commit nothing and the select would show a rule the program does not hold.
+const NO_TARGETS = {
+  actions: ["explore", "wander", "walkTo", "gather"],
+  conditions: ["always", "hereBelow", "itemBelow"],
+  items: [],
+};
+
+test("kinds that name a resource or an item are not offered while the Understanding holds no target for them", () => {
+  const state = gameKnowing(NO_TARGETS);
+  assert.deepEqual(offeredActionKinds(state), ["explore", "wander"]);
+  assert.deepEqual(offeredConditionKinds(state), ["always"]);
+  const resourceOnly = gameKnowing({ ...NO_TARGETS, items: ["moss"] });
+  assert.deepEqual(offeredActionKinds(resourceOnly), [
+    "explore",
+    "wander",
+    "walkTo",
+    "gather",
+  ]);
+  assert.deepEqual(offeredConditionKinds(resourceOnly), [
+    "always",
+    "hereBelow",
+    "itemBelow",
+  ]);
+});
+
+test("with no target offered the selects list only choices that commit: the rule's kind stays the one shown", () => {
+  withEditorDocument(() => {
+    const editor = createProgramEditor(() => assert.fail("committed"));
+    editor.update({ ...gameKnowing(NO_TARGETS), program: THREE });
+    const [, , action] = selectsLabelled(editor, "Akcja");
+    assert.deepEqual(optionValues(action), ["explore", "wander", "walkTo"]);
+    const [condition] = selectsLabelled(editor, "Warunek");
+    assert.deepEqual(optionValues(condition), ["always"]);
+  });
+});
+
 test("focus after a structural edit: same button in the moved rule's row, next „Usuń” or „Dodaj regułę”, new condition", () => {
   assert.deepEqual(focusAfter("up", 23, 2, 3), {
     groupId: 23,

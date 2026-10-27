@@ -160,20 +160,31 @@ const UNSET_RANGE = { min: 0, max: 0, step: 1 };
 
 /**
  * The condition kinds the condition selects offer, in the data's order: those of the repertoire the
- * program is shown through (Q-C1). Pure.
+ * program is shown through (Q-C1), less „Tu leży mniej niż” and „Zapas poniżej” while no resource or
+ * item is offered for them to name — a choice the editor could not turn into a rule. Pure.
  */
 export function offeredConditionKinds(state: GameState): ConditionKind[] {
   const { conditions } = editorRepertoire(state);
-  return (Object.keys(CONDITIONS) as ConditionKind[]).filter((kind) =>
-    conditions.includes(kind),
+  const named = {
+    hereBelow: offeredResources(state).length > 0,
+    itemBelow: offeredItems(state).length > 0,
+  };
+  return (Object.keys(CONDITIONS) as ConditionKind[]).filter(
+    (kind) =>
+      conditions.includes(kind) &&
+      (kind === "hereBelow" || kind === "itemBelow" ? named[kind] : true),
   );
 }
 
-/** The action kinds the action selects offer, in the data's order: those of the repertoire. Pure. */
+/**
+ * The action kinds the action selects offer, in the data's order: those of the repertoire, less
+ * „Idź” and „Zbierz” while no resource is offered for them to name. Pure.
+ */
 export function offeredActionKinds(state: GameState): ActionKind[] {
   const { actions } = editorRepertoire(state);
-  return (Object.keys(ACTIONS) as ActionKind[]).filter((kind) =>
-    actions.includes(kind),
+  const named = offeredResources(state).length > 0;
+  return (Object.keys(ACTIONS) as ActionKind[]).filter(
+    (kind) => actions.includes(kind) && (named || !takesResource(kind)),
   );
 }
 
