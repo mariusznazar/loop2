@@ -7,13 +7,13 @@ import { RESOURCES } from "../../dist/public/sim/data/resources.js";
 import {
   advanceMinutes,
   createCharacter,
-  newGame,
   send,
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { pauseLabel, statusText } from "../../dist/public/view/status-row.js";
 import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
+import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -24,7 +24,10 @@ const ALWAYS = { kind: "always" };
 
 /** A game with a map run started by `send` under the given program rules. */
 function sent(rules) {
-  const program = setProgram(newGame(), programFromRules(...rules)).state;
+  const program = setProgram(
+    newKnowingGame(),
+    programFromRules(...rules),
+  ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
 }
 

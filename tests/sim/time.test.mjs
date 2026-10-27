@@ -11,6 +11,7 @@ import {
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { programFromRules } from "./program-fixture.mjs";
+import { newKnowingGame } from "./understanding-fixture.mjs";
 
 const mapId = Object.keys(MAPS)[0];
 // The first character a new game creates takes the id 1.
@@ -24,7 +25,10 @@ const EXPLORING = programFromRules({
 
 /** A game sent to the first map with a program that explores; the run stands at minute 0. */
 function sent(program = EXPLORING) {
-  const game = createCharacter(setProgram(newGame(), program).state, "Ala");
+  const game = createCharacter(
+    setProgram(newKnowingGame(), program).state,
+    "Ala",
+  );
   return send(game.state, SENT, REAL_MS).state;
 }
 

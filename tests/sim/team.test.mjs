@@ -13,6 +13,7 @@ import {
   send,
   setProgram,
 } from "../../dist/public/sim/game.js";
+import { newKnowingGame } from "./understanding-fixture.mjs";
 
 const mapId = Object.keys(MAPS)[0];
 const REAL_MS = 1760000000000;
@@ -22,11 +23,21 @@ const EXPLORING = programFromRules({
   action: { kind: "explore" },
 });
 
-/** A new game with characters created under the given names, in that order. */
-function created(...names) {
-  let state = setProgram(newGame(), EXPLORING).state;
+/** The given game with characters created under the given names, in that order. */
+function createdIn(game, names) {
+  let state = setProgram(game, EXPLORING).state;
   for (const name of names) state = createCharacter(state, name).state;
   return state;
+}
+
+/** A new game with characters created under the given names, in that order. */
+function created(...names) {
+  return createdIn(newGame(), names);
+}
+
+/** The same, from a game that knows everything: for a game that is sent and then passes time. */
+function createdKnowing(...names) {
+  return createdIn(newKnowingGame(), names);
 }
 
 test("a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
@@ -91,14 +102,18 @@ test("a name empty once trimmed creates no character", () => {
 
 test("the team's chest is empty in a new game and stays empty through creating, sending and ending", () => {
   assert.deepEqual(newGame().team.chest, { pieces: {} });
-  let state = send(created("Ala"), { mapId, characterId: 1 }, REAL_MS).state;
+  let state = send(
+    createdKnowing("Ala"),
+    { mapId, characterId: 1 },
+    REAL_MS,
+  ).state;
   state = advanceMinutes(state, 120).state;
   state = end(state).state;
   assert.deepEqual(state.team.chest, { pieces: {} });
 });
 
 test("the send sends the chosen character of the team, and a restart keeps it", () => {
-  const state = created("Ala", "Ola", "Ela");
+  const state = createdKnowing("Ala", "Ola", "Ela");
   const sent = send(state, { mapId, characterId: 2 }, REAL_MS).state;
   assert.equal(sent.run.character.id, 2);
   assert.deepEqual(sent.team, state.team);
