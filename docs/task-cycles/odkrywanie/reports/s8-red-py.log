@@ -1,0 +1,26 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_program_rule_pick.py
+
+F.....
+======================================================================
+FAIL: test_a_rule_outside_the_repertoire_is_passed_over (test_program_rule_pick.ProgramRulePick.test_a_rule_outside_the_repertoire_is_passed_over)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2\.runs\worktrees\odkrywanie\tests\invariants\test_program_rule_pick.py", line 276, in test_a_rule_outside_the_repertoire_is_passed_over
+    self.assertEqual(lacking, {"kind": "rule", "ruleId": 2, "action": WANDER},
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     "the action of rule 1 is outside the repertoire, so rule 2 is started")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'kind': 'rule', 'ruleId': 1, 'action': {'kind': 'explore'}} != {'kind': 'rule', 'ruleId': 2, 'action': {'kind': 'wander'}}
+- {'action': {'kind': 'explore'}, 'kind': 'rule', 'ruleId': 1}
+?                       ---- -                              ^
+
++ {'action': {'kind': 'wander'}, 'kind': 'rule', 'ruleId': 2}
+?                      ++++                                ^
+ : the action of rule 1 is outside the repertoire, so rule 2 is started
+
+----------------------------------------------------------------------
+Ran 6 tests in 12.145s
+
+FAILED (failures=1)

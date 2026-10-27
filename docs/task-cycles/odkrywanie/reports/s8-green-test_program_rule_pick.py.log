@@ -1,0 +1,9 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_program_rule_pick.py
+
+......
+----------------------------------------------------------------------
+Ran 6 tests in 9.962s
+
+OK

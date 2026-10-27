@@ -1,0 +1,11 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/deploy/test_account_storage.py
+
+Production image sha256:0c2492a7fb885735f5f9e46403b63de36f4d0bb87a33bc1f917b2f7e75e0acc2; container loop2-account-storage-first-66ea388ba75b; data volume loop2-account-data-check-d81415e0f4a54e4f985650dba6d583ef; secret volume loop2-account-secret-check-d81415e0f4a54e4f985650dba6d583ef; uid/gid 1000; memory 536870912; resources verified
+Production image sha256:0c2492a7fb885735f5f9e46403b63de36f4d0bb87a33bc1f917b2f7e75e0acc2; container loop2-account-storage-second-66ea388ba75b; data volume loop2-account-data-check-d81415e0f4a54e4f985650dba6d583ef; secret volume loop2-account-secret-check-d81415e0f4a54e4f985650dba6d583ef; uid/gid 1000; memory 536870912; resources verified
+.
+----------------------------------------------------------------------
+Ran 1 test in 5.800s
+
+OK

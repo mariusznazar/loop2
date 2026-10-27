@@ -1,0 +1,10 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_loop2_container_icons.py
+
+Production image sha256:cd601bb32aea2389073785de9e5a5d5d6d95ed729cbd82dfe353d16933418a11; container loop2-invariant-check-a2f3ed5c9149; data volume loop2-account-data-check-9117cac683fe46e18d97891f004c4da8; secret volume loop2-account-secret-check-9117cac683fe46e18d97891f004c4da8; uid/gid 1000; memory 536870912; resources verified
+.
+----------------------------------------------------------------------
+Ran 1 test in 5.201s
+
+OK

@@ -1,0 +1,10 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/deploy/test_loop2_image_icons.py
+
+Production image sha256:c84e30b99c5f8fc1cddaa525c92ce06c3b6c958cd8e2323f0cecef40c295c5fe; container loop2-image-icons-check-2b24e40ef1d9; data volume loop2-account-data-check-97a65f98e05e4dc4a86038892d4e520c; secret volume loop2-account-secret-check-97a65f98e05e4dc4a86038892d4e520c; uid/gid 1000; memory 536870912; resources verified
+.
+----------------------------------------------------------------------
+Ran 1 test in 3.319s
+
+OK
