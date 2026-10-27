@@ -28,6 +28,18 @@ function boundedInteger(value: number, maximum: number): number {
   return value;
 }
 
+const SQLITE_BUSY = 5;
+const RETRY_PAUSE = new Int32Array(new SharedArrayBuffer(4));
+
+function isBusy(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "errcode" in error &&
+    error.errcode === SQLITE_BUSY
+  );
+}
+
 export class AccountDatabase {
   private readonly connection: DatabaseSync;
   private readonly now: () => number;
@@ -43,9 +55,9 @@ export class AccountDatabase {
     this.now = options.now ?? Date.now;
     this.connection = new DatabaseSync(path, { timeout });
     try {
-      this.connection.exec(
-        "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL;",
-      );
+      this.connection.exec("PRAGMA foreign_keys = ON");
+      this.enableWriteAheadLog(timeout);
+      this.connection.exec("PRAGMA synchronous = FULL");
       this.initializeSchema();
       this.pruneExpiredSessions();
     } catch (error) {
@@ -63,6 +75,23 @@ export class AccountDatabase {
       }
     }, interval);
     this.cleanupTimer.unref();
+  }
+
+  // SQLite refuses a change of journal mode at once, without its busy
+  // handler, while another process holds a write lock on a new database, so
+  // two processes opening one fresh database would fail regardless of the
+  // busy timeout. The change is retried until that timeout instead (D-112).
+  private enableWriteAheadLog(timeoutMs: number): void {
+    const deadline = performance.now() + timeoutMs;
+    for (;;) {
+      try {
+        this.connection.exec("PRAGMA journal_mode = WAL");
+        return;
+      } catch (error) {
+        if (!isBusy(error) || performance.now() >= deadline) throw error;
+        Atomics.wait(RETRY_PAUSE, 0, 0, 10);
+      }
+    }
   }
 
   private initializeSchema(): void {
