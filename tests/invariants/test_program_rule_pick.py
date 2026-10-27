@@ -53,6 +53,17 @@ rule 1 is not one the character can carry out; the same program in a game that k
 starts rule 1 (the control, so the check can fail: a pick that ignored the repertoire would start
 rule 1 in both).
 
+Condition and group outside the repertoire, with STOCK = "fewer than 5 sticks in the backpack"
+(`itemBelow`), which holds at minute 0, since a map run starts with a new backpack: in a game whose
+Understanding lacks the item "stick", the program "STOCK -> wander, always -> explore" starts rule 2
+(explore), because the target of rule 1's condition is not in the repertoire; in a game whose
+Understanding lacks the condition "itemBelow", a program whose first group stands under STOCK and
+holds "always -> wander", followed by a group under "always" holding "always -> explore", starts the
+explore rule of the second group, because the first group's condition is not in the repertoire. In
+both, the program the game holds after the send is the program set. Controls: in the game that
+knows everything, the same programs start the wander rule, so STOCK holds and a pick that ignored
+the repertoire would start it in both.
+
 The grouped scenario skips a false outer condition, an empty group and an infeasible group,
 then skips a false rule and chooses rule id 74 before a later feasible rule and group. Stable
 identities deliberately differ from positions. The original long scenarios use one always group.
@@ -84,6 +95,7 @@ WAIT_MINUTES = 1      # balance.js: waitMinutes
 
 ALWAYS = {"kind": "always"}
 NEVER = {"kind": "hereBelow", "resource": "stick", "value": 0}
+STOCK = {"kind": "itemBelow", "item": "stick", "value": 5}
 EXPLORE = {"kind": "explore"}
 WANDER = {"kind": "wander"}
 
@@ -135,13 +147,17 @@ const runs = [];
 for (const [name, ...args] of steps) {
   if (name === 'newGame') {
     state = await newKnowingGame(game, gamePath);
-    const lacking = args[0] ?? [];
-    state = { ...state, understanding: { ...state.understanding,
-      actions: state.understanding.actions.filter((kind) => !lacking.includes(kind)) } };
+    const lacking = args[0] ?? {};
+    const keep = (list, name) => list.filter((id) => !(lacking[name] ?? []).includes(id));
+    state = { ...state, understanding: {
+      actions: keep(state.understanding.actions, 'actions'),
+      conditions: keep(state.understanding.conditions, 'conditions'),
+      items: keep(state.understanding.items, 'items') } };
   } else {
     state = game[name](state, ...args).state;
   }
-  runs.push({ step: name, run: JSON.parse(JSON.stringify(state.run)) });
+  runs.push({ step: name, run: JSON.parse(JSON.stringify(state.run)),
+              program: JSON.parse(JSON.stringify(state.program)) });
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """
@@ -154,11 +170,12 @@ def node():
     return path
 
 
-def drive(program, minutes, real_ms=T, lacking=()):
-    """The map run after the send and after each of `minutes` game minutes, by minute.
-    The game starts knowing everything the data lists except the actions in `lacking`."""
-    steps = ([["newGame", list(lacking)], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
-             + [["advanceMinutes", 1]] * minutes)
+def records(program, minutes, real_ms=T, lacking=None):
+    """The map run and the program after the send and after each of `minutes` game minutes, by
+    minute. The game starts knowing everything the data lists except what `lacking` names, a
+    dict of lists under "actions", "conditions" and "items"."""
+    steps = ([["newGame", lacking or {}], CREATE, ["setProgram", program],
+              ["send", SENT, real_ms]] + [["advanceMinutes", 1]] * minutes)
     game = support.built_copy().file(GAME_MODULE)
     if not os.path.isfile(game):
         raise AssertionError(f"`npm run build` placed no {GAME_MODULE}")
@@ -175,13 +192,18 @@ def drive(program, minutes, real_ms=T, lacking=()):
         if code != 0:
             raise AssertionError(f"the driver exited {code}:\n{output}")
         with open(out_path, encoding="utf-8") as handle:
-            records = json.load(handle)
+            recorded = json.load(handle)
     finally:
         shutil.rmtree(directory, ignore_errors=True)
-    runs = [r["run"] for r in records if r["step"] in ("send", "advanceMinutes")]
-    if [r["minute"] for r in runs] != list(range(minutes + 1)):
+    sent = [r for r in recorded if r["step"] in ("send", "advanceMinutes")]
+    if [r["run"]["minute"] for r in sent] != list(range(minutes + 1)):
         raise AssertionError("the map run did not pass one game minute per input")
-    return runs
+    return sent
+
+
+def drive(program, minutes, real_ms=T, lacking=None):
+    """The map run after the send and after each of `minutes` game minutes, by minute."""
+    return [r["run"] for r in records(program, minutes, real_ms, lacking)]
 
 
 def tile_at(run, at):
@@ -272,9 +294,46 @@ class ProgramRulePick(unittest.TestCase):
         known = drive(P_EXPLORE_FIRST, 0)[0]["current"]["activity"]
         self.assertEqual(known, {"kind": "rule", "ruleId": 1, "action": EXPLORE},
                          "control: with the action known, rule 1 is started")
-        lacking = drive(P_EXPLORE_FIRST, 0, lacking=["explore"])[0]["current"]["activity"]
+        lacking = drive(P_EXPLORE_FIRST, 0,
+                        lacking={"actions": ["explore"]})[0]["current"]["activity"]
         self.assertEqual(lacking, {"kind": "rule", "ruleId": 2, "action": WANDER},
                          "the action of rule 1 is outside the repertoire, so rule 2 is started")
+
+    def test_a_rule_whose_condition_names_a_target_outside_the_repertoire_is_passed_over(self):
+        # invariant: program-rule-pick
+        program = program_from_rules([rule(STOCK, WANDER), rule(ALWAYS, EXPLORE)])
+        known = records(program, 0)[0]
+        self.assertEqual(known["run"]["current"]["activity"],
+                         {"kind": "rule", "ruleId": 1, "action": WANDER},
+                         "control: with the stick known, rule 1's condition holds and it is started")
+        lacking = records(program, 0, lacking={"items": ["stick"]})[0]
+        self.assertEqual(lacking["run"]["current"]["activity"],
+                         {"kind": "rule", "ruleId": 2, "action": EXPLORE},
+                         "the stick rule 1's condition names is outside the repertoire, so rule 2 "
+                         "is started")
+        self.assertEqual(lacking["program"], program, "the passed-over rule left the program")
+
+    def test_a_group_whose_condition_lies_outside_the_repertoire_is_passed_over(self):
+        # invariant: program-rule-pick
+        program = {
+            "nextGroupId": 3, "nextRuleId": 30,
+            "groups": [
+                {"id": 1, "name": "Stock", "condition": STOCK,
+                 "rules": [{"id": 11, **rule(ALWAYS, WANDER)}]},
+                {"id": 2, "name": "Rest", "condition": ALWAYS,
+                 "rules": [{"id": 22, **rule(ALWAYS, EXPLORE)}]},
+            ],
+        }
+        known = records(program, 0)[0]
+        self.assertEqual(known["run"]["current"]["activity"],
+                         {"kind": "rule", "ruleId": 11, "action": WANDER},
+                         "control: with the condition known, the first group holds and is taken")
+        lacking = records(program, 0, lacking={"conditions": ["itemBelow"]})[0]
+        self.assertEqual(lacking["run"]["current"]["activity"],
+                         {"kind": "rule", "ruleId": 22, "action": EXPLORE},
+                         "the first group's condition is outside the repertoire, so the second "
+                         "group's rule is started")
+        self.assertEqual(lacking["program"], program, "the passed-over group left the program")
 
     def test_every_free_minute_of_long_runs(self):
         # invariant: program-rule-pick
