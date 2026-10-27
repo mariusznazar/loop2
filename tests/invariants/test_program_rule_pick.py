@@ -9,7 +9,8 @@ script this check writes to a temporary directory: `newGame`, `createCharacter`,
 JSON of the map run.
 The new game of each sent character is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
-program stay what the check drives.
+program stay what the check drives; the scenario of a rule outside the repertoire takes from that
+Understanding the actions it names.
 
 Reading of the sentence:
 - a free game minute: the minute at which the activity before it ends, and minute 0 of the map
@@ -45,6 +46,12 @@ minute, so a pick that ignored the order or what can be carried out would show; 
 of P_LONG flags made-up records in which the rule started at a free minute is another one, a
 matching identity carries the wrong action, an activity starts in the middle of another, or a
 free minute starts nothing.
+
+Rule outside the repertoire: in a game whose Understanding lacks the action "explore", the program
+"always -> explore, always -> wander" starts rule 2 (wander) at minute 0, because the action of
+rule 1 is not one the character can carry out; the same program in a game that knows the action
+starts rule 1 (the control, so the check can fail: a pick that ignored the repertoire would start
+rule 1 in both).
 
 The grouped scenario skips a false outer condition, an empty group and an infeasible group,
 then skips a false rule and chooses rule id 74 before a later feasible rule and group. Stable
@@ -126,7 +133,14 @@ const steps = JSON.parse(readFileSync(stepsPath, 'utf8'));
 let state;
 const runs = [];
 for (const [name, ...args] of steps) {
-  state = name === 'newGame' ? await newKnowingGame(game, gamePath) : game[name](state, ...args).state;
+  if (name === 'newGame') {
+    state = await newKnowingGame(game, gamePath);
+    const lacking = args[0] ?? [];
+    state = { ...state, understanding: { ...state.understanding,
+      actions: state.understanding.actions.filter((kind) => !lacking.includes(kind)) } };
+  } else {
+    state = game[name](state, ...args).state;
+  }
   runs.push({ step: name, run: JSON.parse(JSON.stringify(state.run)) });
 }
 writeFileSync(outPath, JSON.stringify(runs));
@@ -140,9 +154,10 @@ def node():
     return path
 
 
-def drive(program, minutes, real_ms=T):
-    """The map run after the send and after each of `minutes` game minutes, by minute."""
-    steps = ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
+def drive(program, minutes, real_ms=T, lacking=()):
+    """The map run after the send and after each of `minutes` game minutes, by minute.
+    The game starts knowing everything the data lists except the actions in `lacking`."""
+    steps = ([["newGame", list(lacking)], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
              + [["advanceMinutes", 1]] * minutes)
     game = support.built_copy().file(GAME_MODULE)
     if not os.path.isfile(game):
@@ -251,6 +266,15 @@ class ProgramRulePick(unittest.TestCase):
         self.assertEqual(first, {"kind": "rule", "ruleId": 1, "action": EXPLORE})
         first = drive(P_FIRST_FAILS, 0)[0]["current"]["activity"]
         self.assertEqual(first, {"kind": "rule", "ruleId": 2, "action": EXPLORE})
+
+    def test_a_rule_outside_the_repertoire_is_passed_over(self):
+        # invariant: program-rule-pick
+        known = drive(P_EXPLORE_FIRST, 0)[0]["current"]["activity"]
+        self.assertEqual(known, {"kind": "rule", "ruleId": 1, "action": EXPLORE},
+                         "control: with the action known, rule 1 is started")
+        lacking = drive(P_EXPLORE_FIRST, 0, lacking=["explore"])[0]["current"]["activity"]
+        self.assertEqual(lacking, {"kind": "rule", "ruleId": 2, "action": WANDER},
+                         "the action of rule 1 is outside the repertoire, so rule 2 is started")
 
     def test_every_free_minute_of_long_runs(self):
         # invariant: program-rule-pick

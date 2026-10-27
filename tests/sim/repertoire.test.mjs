@@ -398,3 +398,132 @@ test("a character's death leaves the Understanding as it is", () => {
     items: [],
   });
 });
+
+// A sent mage whose Understanding is `understanding`, running `rules` as the program.
+function sentWith(understanding, ...rules) {
+  const state = createCharacter({ ...newGame(), understanding }, "Ala").state;
+  const programmed = setProgram(state, programFromRules(...rules)).state;
+  return send(programmed, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
+}
+
+const WITHOUT_EXPLORE = {
+  ...FULL,
+  actions: ALL_ACTIONS.filter((kind) => kind !== "explore"),
+};
+const EXPLORE_RULE = {
+  condition: { kind: "always" },
+  action: { kind: "explore" },
+};
+const WANDER_RULE = {
+  condition: { kind: "always" },
+  action: { kind: "wander" },
+};
+
+test("a sent mage whose Understanding lacks Eksploruj passes over its rule and carries out the next one, the rule staying in the program with its count", () => {
+  const state = sentWith(WITHOUT_EXPLORE, EXPLORE_RULE, WANDER_RULE);
+  assert.deepEqual(state.run.current.activity, {
+    kind: "rule",
+    ruleId: 2,
+    action: { kind: "wander" },
+  });
+  assert.deepEqual(state.program, programFromRules(EXPLORE_RULE, WANDER_RULE));
+  assert.deepEqual(state.ruleCounts, { 1: 0, 2: 1 });
+});
+
+test("the same program with the action known carries out the first rule", () => {
+  const state = sentWith(FULL, EXPLORE_RULE, WANDER_RULE);
+  assert.deepEqual(state.run.current.activity, {
+    kind: "rule",
+    ruleId: 1,
+    action: { kind: "explore" },
+  });
+  assert.deepEqual(state.ruleCounts, { 1: 1, 2: 0 });
+});
+
+test("a rule whose condition lies outside the repertoire is passed over at the start of the map run", () => {
+  const stickBelow = {
+    condition: { kind: "itemBelow", item: "stick", value: 5 },
+    action: { kind: "wander" },
+  };
+  const known = sentWith(FULL, stickBelow, EXPLORE_RULE);
+  assert.equal(known.run.current.activity.ruleId, 1, "the condition holds");
+  const noCondition = sentWith(
+    { ...FULL, conditions: ["always"] },
+    stickBelow,
+    EXPLORE_RULE,
+  );
+  assert.equal(noCondition.run.current.activity.ruleId, 2);
+  assert.deepEqual(noCondition.ruleCounts, { 1: 0, 2: 1 });
+});
+
+test("a rule whose target lies outside the repertoire is passed over at the start of the map run", () => {
+  const stickBelow = {
+    condition: { kind: "itemBelow", item: "stick", value: 5 },
+    action: { kind: "wander" },
+  };
+  const state = sentWith(
+    { ...FULL, items: ALL_ITEMS.filter((item) => item !== "stick") },
+    stickBelow,
+    EXPLORE_RULE,
+  );
+  assert.equal(state.run.current.activity.ruleId, 2);
+  assert.deepEqual(state.program, programFromRules(stickBelow, EXPLORE_RULE));
+});
+
+test("a rule outside the repertoire is passed over in each game minute of the map run, and no count of it grows", () => {
+  const state = sentWith(WITHOUT_EXPLORE, EXPLORE_RULE, WANDER_RULE);
+  const later = advanceMinutes(state, 120).state;
+  const started = later.ruleCounts;
+  assert.equal(started[1], 0);
+  assert.ok(started[2] > 1, "the rule it knows is carried out again and again");
+});
+
+test("an action leaving the Understanding in the middle of a map run is passed over when the character next picks", () => {
+  const state = sentWith(FULL, WANDER_RULE, EXPLORE_RULE);
+  assert.equal(state.run.current.activity.ruleId, 1);
+  const end = state.run.current.endMinute;
+  const withoutWander = {
+    ...state,
+    understanding: {
+      ...FULL,
+      actions: ALL_ACTIONS.filter((kind) => kind !== "wander"),
+    },
+  };
+  const before = advanceMinutes(withoutWander, end - 1).state;
+  assert.equal(before.run.current.activity.ruleId, 1, "wandering goes on");
+  const after = advanceMinutes(before, 1).state;
+  assert.equal(after.run.minute, end);
+  assert.equal(after.run.current.activity.ruleId, 2);
+  assert.deepEqual(after.ruleCounts, { 1: 1, 2: 1 });
+});
+
+test("a group whose condition lies outside the repertoire is passed over with its rules, and stays in the program", () => {
+  const program = {
+    groups: [
+      {
+        id: 1,
+        name: "Stock",
+        condition: { kind: "itemBelow", item: "stick", value: 5 },
+        rules: [{ id: 1, ...WANDER_RULE }],
+      },
+      {
+        id: 2,
+        name: "Rest",
+        condition: { kind: "always" },
+        rules: [{ id: 2, ...EXPLORE_RULE }],
+      },
+    ],
+    nextGroupId: 3,
+    nextRuleId: 3,
+  };
+  const run = (understanding) => {
+    const created = createCharacter({ ...newGame(), understanding }, "Ala");
+    const programmed = setProgram(created.state, program).state;
+    return send(programmed, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
+  };
+  assert.equal(run(FULL).run.current.activity.ruleId, 1);
+  const passed = run({ ...FULL, conditions: ["always"] });
+  assert.equal(passed.run.current.activity.ruleId, 2);
+  assert.deepEqual(passed.program, program);
+  assert.deepEqual(passed.ruleCounts, { 1: 0, 2: 1 });
+});

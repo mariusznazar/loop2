@@ -1,6 +1,10 @@
 import { newTraits } from "./character.js";
-import { CREATED_ARCHETYPE } from "./data/archetypes.js";
-import { newUnderstanding } from "./understanding.js";
+import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
+import {
+  newUnderstanding,
+  programInRepertoire,
+  repertoireOf,
+} from "./understanding.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
 import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
@@ -281,6 +285,22 @@ function countStarts(
   return next;
 }
 
+/**
+ * The program as the character `characterId` can carry it out: reduced to the repertoire of its
+ * archetype over the game's Understanding. A rule outside it is passed over and stays in
+ * `state.program`; a character the team does not list takes the archetype of created characters.
+ */
+function programOf(state: GameState, characterId: CharacterId): Program {
+  const character = state.team.characters.find(
+    (listed) => listed.id === characterId,
+  );
+  const archetype = ARCHETYPES[character?.archetypeId ?? CREATED_ARCHETYPE];
+  return programInRepertoire(
+    state.program,
+    repertoireOf(state.understanding, archetype.predispositions),
+  );
+}
+
 /** A new map run at minute 0 with the current program; events mapRunStarted, activityStarted. */
 function startRun(
   state: GameState,
@@ -297,7 +317,7 @@ function startRun(
   const started = newMapRun(
     mapOf(mapId),
     seed,
-    state.program,
+    programOf(state, characterId),
     { mapId, characterId },
     traits,
   );
@@ -488,10 +508,11 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (!state.run || state.run.death || minutes === 0)
     return { state, events: [] };
   const map = mapOf(state.run.mapId);
+  const program = programOf(state, state.run.character.id);
   const events: GameEvent[] = [];
   let run = state.run;
   for (let minute = 0; minute < minutes; minute += 1) {
-    const stepped = stepMinute(run, map, state.program);
+    const stepped = stepMinute(run, map, program);
     run = stepped.run;
     events.push(...stepped.events);
     if (run.death) break;
