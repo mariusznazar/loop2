@@ -1,0 +1,114 @@
+19695d670a69ea6d005a3795541b57ba4fe5a3f6
+v24.22.1
+daemon 29.9.2 linux/amd64
+cgroup 1 driver cgroupfs kernel 5.15.167.4-microsoft-standard-WSL2 memory 16651759616
+sha256:11c5a9409e4acfaf54d6166a44515bbb7d7a9e395ad5dbe336088472c09c0ef9
+image sha256:11c5a9409e4acfaf54d6166a44515bbb7d7a9e395ad5dbe336088472c09c0ef9
+image node v24.22.1
+=== measurement --memory 512m
+{
+  "ok": true,
+  "problems": [],
+  "request": {
+    "image": "sha256:11c5a9409e4acfaf54d6166a44515bbb7d7a9e395ad5dbe336088472c09c0ef9",
+    "commit": "19695d670a69ea6d005a3795541b57ba4fe5a3f6",
+    "memoryBytes": 536870912
+  },
+  "imageId": "sha256:11c5a9409e4acfaf54d6166a44515bbb7d7a9e395ad5dbe336088472c09c0ef9",
+  "container": {
+    "exitCode": 0,
+    "oomKilled": false,
+    "restartCount": 0,
+    "memoryBytes": 536870912,
+    "memorySwapBytes": 536870912
+  },
+  "peakBudgetBytes": 429496729.6,
+  "result": {
+    "ok": true,
+    "versions": {
+      "node": "24.22.1",
+      "argon2": "0.45.1",
+      "platform": "linux-x64",
+      "kernel": "5.15.167.4-microsoft-standard-WSL2"
+    },
+    "errors": [],
+    "profile": {
+      "type": "argon2id",
+      "memoryCostKiB": 65536,
+      "timeCost": 3,
+      "parallelism": 1,
+      "hashLength": 32
+    },
+    "gate": {
+      "admittedTogether": 2,
+      "thirdRefused": true,
+      "bothAdmittedAfterRelease": true
+    },
+    "checks": {
+      "correctAccepted": true,
+      "wrongRejected": true
+    },
+    "warmup": {
+      "hashes": 2,
+      "verifies": 2
+    },
+    "measured": {
+      "concurrency": 2,
+      "maxActive": 2,
+      "hashes": 20,
+      "verifies": 20,
+      "hash": {
+        "count": 20,
+        "minMs": 137.2,
+        "medianMs": 157.3,
+        "maxMs": 253.2
+      },
+      "verify": {
+        "count": 20,
+        "minMs": 137.6,
+        "medianMs": 158,
+        "maxMs": 281.2
+      },
+      "totalMs": 3367
+    },
+    "memory": {
+      "cgroupVersion": 1,
+      "cgroupLimitBytes": 536870912,
+      "cgroupPeakBytes": 152920064,
+      "cgroupCurrentBytes": 18427904,
+      "cgroupSwapLimitBytes": 0,
+      "oomEvents": 0,
+      "oomKillEvents": 0,
+      "processMaxRssBytes": 193425408
+    }
+  }
+}
+PASS
+=== launcher exit 0 for --memory 512m
+=== measurement --memory 64m
+{
+  "ok": false,
+  "problems": [
+    "the container was killed for lack of memory",
+    "the measurement exited with 137",
+    "the measurement printed no result"
+  ],
+  "request": {
+    "image": "sha256:11c5a9409e4acfaf54d6166a44515bbb7d7a9e395ad5dbe336088472c09c0ef9",
+    "commit": "19695d670a69ea6d005a3795541b57ba4fe5a3f6",
+    "memoryBytes": 67108864
+  },
+  "imageId": "sha256:11c5a9409e4acfaf54d6166a44515bbb7d7a9e395ad5dbe336088472c09c0ef9",
+  "container": {
+    "exitCode": 137,
+    "oomKilled": true,
+    "restartCount": 0,
+    "memoryBytes": 67108864,
+    "memorySwapBytes": 67108864
+  },
+  "peakBudgetBytes": 429496729.6,
+  "result": null
+}
+FAIL: the container was killed for lack of memory; the measurement exited with 137; the measurement printed no result
+=== launcher exit 1 for --memory 64m
+=== leftover measurement containers: 0

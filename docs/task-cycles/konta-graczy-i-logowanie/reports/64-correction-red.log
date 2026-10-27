@@ -1,0 +1,691 @@
+Cloning into '/workspace'...
+HEAD is now at b018ee5 docs: :memo: remove archived player accounts cycle from current tree
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Initialized empty Git repository in /workspace/.the-way/.git/
+From /inputs/process.bundle
+ * branch            HEAD       -> FETCH_HEAD
+HEAD is now at 574a37b Merge pull request #44 from mariusznazar/task/mutation-testing
+160000 574a37b9ab9572f876298f4cc10754581222d3f0 0	.the-way
+574a37b9ab9572f876298f4cc10754581222d3f0
+b018ee54f51bf307c272771d78c488fbb995812d
+v24.22.1
+Python 3.14.9
+
+added 338 packages, and audited 486 packages in 8s
+
+100 packages are looking for funding
+  run `npm fund` for details
+
+3 vulnerabilities (1 moderate, 2 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   argon2@0.45.1 (install: cross-env ZERO_AR_DATE=1 node-gyp-build)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+Collecting ruff==0.17.1 (from -r requirements-quality.txt (line 6))
+  Downloading ruff-0.17.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.4/10.4 MB 7.5 MB/s  0:00:01
+Collecting shellcheck-py==0.11.0.1 (from -r requirements-quality.txt (line 25))
+  Downloading shellcheck_py-0.11.0.1-py2.py3-none-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (3.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.8/3.8 MB 7.9 MB/s  0:00:00
+Installing collected packages: shellcheck-py, ruff
+
+Successfully installed ruff-0.17.1 shellcheck-py-0.11.0.1
+1e1dbc37e8bd6ecb8a6d193903d5124f8e6d4c907f2b8dcffea6d3c7e6dcd013  /inputs/correction64-red.tar
+ M scripts/measure-passwords.mjs
+ M tests/password-measurement.test.mjs
+
+> loop2@0.0.0 test
+> python -B scripts/test.py
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ each call sends its documented method, relative path and JSON body (110.641276ms)
+✔ a redirect is not followed, so nothing is sent to its target (8.251209ms)
+✔ the success status of each call with an account body gives that account and no other property (25.0396ms)
+✔ a success status other than the call's own is no success, whatever the body (31.462865ms)
+✔ a success status with a body that is not an account with string id and email is no success (146.985527ms)
+✔ an error status is a refusal carrying the server's code and message, even beside an account body (20.315354ms)
+✔ an error status without a known code is a refusal by status and shows none of the server's words (29.464171ms)
+✔ a server that never answers, or stalls inside the body, ends in a timeout failure (311.548506ms)
+✔ a connection that fails before or inside the answer is a network failure, not a success (7.739578ms)
+✔ an account insertion returns an opaque identity and persists across reopen (383.071308ms)
+✔ two connections cannot insert the same normalized email and SQL characters remain data (240.66177ms)
+✔ schema reopen preserves accounts and sessions and rejects a newer version without rewriting it (79.741887ms)
+✔ a schema initialization failure rolls back every new table and version (64.664114ms)
+✔ missing and expired records authorize nothing, including equality to expiry (46.919956ms)
+✔ out-of-order renewal preserves the later expiry and never changes identity (65.580334ms)
+✔ a delayed touch after destroy cannot recreate a session or revoke another browser (68.912377ms)
+✔ set rejects unknown accounts and replacement of an existing session identity (82.681674ms)
+✔ crafted persisted payloads fail through Store callbacks before package hydration (89.173342ms)
+▶ persisted cookies must be usable after database expiry replacement and package renewal
+  ✔ invalid path (67.068465ms)
+  ✔ invalid domain (75.3545ms)
+  ✔ unrepresentable renewal age (96.872111ms)
+  ✔ unrepresentable database expiry (183.838733ms)
+✔ persisted cookies must be usable after database expiry replacement and package renewal (425.633138ms)
+▶ set and touch refuse unusable cookie input without changing stored sessions
+  ✔ invalid path (630.835687ms)
+  ✔ invalid domain (570.737156ms)
+  ✔ unrepresentable renewal age (563.413256ms)
+✔ set and touch refuse unusable cookie input without changing stored sessions (1766.305849ms)
+✔ Store callback failures are delivered once and callback exceptions are not swallowed (456.828213ms)
+✔ busy writes fail within a bound and keep the valid account for a later retry (670.622748ms)
+✔ startup and bounded periodic cleanup remove expired rows and disposal stops its timer (216.298718ms)
+✔ serves the built HTML and JavaScript from another working directory (80.310559ms)
+✔ API keeps its JSON error across paths, methods, queries and HTML negotiation (131.012066ms)
+✔ ordinary missing routes and files do not become the home page or API (20.326245ms)
+✔ raw and encoded traversal cannot expose files outside dist/public (37.365582ms)
+✔ unconfigured accounts answer the four canonical routes as unavailable JSON (13.763129ms)
+✔ a stored session alone selects the account, whatever identifier the request supplies (364.039108ms)
+✔ absent, tampered, unknown, expired and deleted sessions authorize neither lookup nor logout (375.56133ms)
+✔ logout destroys only this browser's session and clears the same host cookie (776.292564ms)
+✔ a failed session destruction is not reported as logout and leaves the browser signed in (1143.774754ms)
+✔ a read that loaded its session before logout cannot revive it afterwards (832.985212ms)
+✔ registration stores an Argon2id hash of the exact password and signs this browser in at once (1618.851118ms)
+✔ a credential success replaces only this browser's session with a fresh identity (1541.240791ms)
+✔ one normalized address holds one account and a duplicate gets the required message, also in a race (764.868071ms)
+✔ passwords count 12 to 128 Unicode code points and keep their exact content (1596.69544ms)
+✔ malformed fields and out-of-shape credentials are refused before password work or writes (1018.431096ms)
+✔ a known address with a wrong password and an unknown address fail login identically (536.46098ms)
+✔ a failed session save keeps the new account usable and issues no success cookie (615.967642ms)
+✔ five failed logins lock an address for 15 minutes from the fifth, also for its correct password (2869.777831ms)
+✔ one client address is admitted twenty failed logins per rolling 15 minutes and success does not clear them (2043.315442ms)
+✔ one client address creates five accounts per rolling hour, and refused registrations take no slot (1069.898787ms)
+✔ a disconnected login keeps its reservation until its password work completes and still counts (1001.981581ms)
+✔ full limiter tables refuse newcomers without evicting a live restriction (1261.959227ms)
+✖ the entrypoint measures the production profile and gate with synthetic passwords only (5142.199179ms)
+✖ the entrypoint reads a cgroup v1 memory controller, counting every hit of its limit (4659.209843ms)
+✖ the entrypoint measures where the kernel keeps no peak, as kernel 5.15 does (53.284574ms)
+✖ the entrypoint refuses to measure where the cgroup does not count hits of its limit (66.596576ms)
+✔ the entrypoint stops with a failure when its deadline passes first (71.161531ms)
+✖ the launcher passes a measured image within every bound and runs it isolated (1.911883ms)
+✔ the launcher measures nothing when the image's label names another commit (0.521316ms)
+✔ the launcher fails each run that breaks one bound and still removes its container (1.632779ms)
+✖ the launcher passes a run whose kernel keeps no peak, judging by its counts (0.660489ms)
+✖ the measurement container's limit is 80% of the deployment's, rounded down to whole MiB (0.346277ms)
+✖ the launcher takes only a commit name and a memory limit up to the deployment's (0.688233ms)
+✔ compiled Argon2 APIs share bounded admission and recover both slots after an API error (1341.515799ms)
+✔ compiled password operations create and verify the production Argon2id profile (561.804085ms)
+✔ the map is Las and the send takes the seed named here (10.406383ms)
+✔ the program holds every kind of condition and action of the closed list (2.132043ms)
+✔ on Las the program passes 480 game minutes alive on the named seed (13.260855ms)
+✔ on the same seed the empty program dies in game minute 243, of cold (8.131599ms)
+✔ a map run starts at minute 0 on the entrance with the first activity chosen (9.624243ms)
+✔ explore takes 20 minutes, reveals the tile and brings nothing (2.480365ms)
+✔ explore is not feasible on a revealed tile, so the next choice is a wait (1.214113ms)
+✔ the next activity is chosen in the finishing minute by the program current then (1.670155ms)
+✔ a program change during an explore does not interrupt it (0.532229ms)
+✔ Wędruj prefers an unrevealed neighbour (2.487382ms)
+✔ Wędruj goes to some neighbour when all are revealed (1.089139ms)
+✔ starting Wędruj consumes exactly one draw (0.368108ms)
+✔ Wędruj is not feasible with no neighbour on the map (0.440613ms)
+✔ a step lasts the target tile stepMinutes and moves the character at its end (1.187881ms)
+✔ Idź targets the nearest revealed tile with stock and gives the first step (2.861879ms)
+✔ Idź is not feasible with no known tile in stock (2.070613ms)
+✔ Idź is not feasible standing on the target (1.637107ms)
+✔ walking by program reaches the stock step by step and stays there (7.075433ms)
+✔ no step ends the run by itself: steps keep coming for four hours (4.898358ms)
+✔ the same run and program give the same steps (32.971035ms)
+✔ newMapRun and stepMinute do not change their inputs (13.302146ms)
+✔ Las is the map these numbers are worked out for (4.330625ms)
+✔ a map run starts at 37.0 °C, satiety 100, health 100, alive (5.427941ms)
+✔ on Las the body at named minutes is the one worked out by hand (6.769349ms)
+✔ on Las a program of today's closed list is alive in minute 242 and dies of cold in minute 243 (10.647984ms)
+✔ death falls during an action in progress, which gives no activityFinished (1.120841ms)
+✔ a map run that is warm but hungry dies of hunger (0.809957ms)
+✔ a map run both chilled and starving loses both and dies of cold (0.783417ms)
+✔ health rises by 0.05 where neither chilled nor starving, not above 100 (0.940238ms)
+✔ satiety does not fall below 0 (1.271625ms)
+✔ the warmth on the tile warms the body, capped at 37.0 °C on the sum (0.886909ms)
+✔ a value the decimal arithmetic puts exactly on a threshold does not cross it (1.895821ms)
+✔ a span split into calls gives the same state and events at every minute up to and including death (48.637494ms)
+✔ real time reaching death gives the same state however it is split (5.835457ms)
+✔ a map run ended in death passes no minute (2.439757ms)
+✔ restart and end take a map run ended in death as one in progress (2.793276ms)
+✔ the six actions are on the closed list with the task's labels and minutes (4.729673ms)
+✔ „Wytwórz — ognisko” is feasible on a revealed tile without a campfire, with 6 sticks (4.612727ms)
+✔ „Zapal — ognisko” is feasible at a campfire here that is not burning, with 2 sticks (1.405498ms)
+✔ „Zapal — patyk” is feasible on a revealed tile with a stick, and nowhere else (1.138787ms)
+✔ „Zasil — ognisko” is feasible at a burning campfire here, with a piece of fuel (0.957597ms)
+✔ „Zjedz — jagoda” is feasible with a piece of food, and not without (2.062532ms)
+✔ each action lasts its minutes and takes nothing from the backpack at its start (3.155308ms)
+✔ crafting puts an unlit campfire on the tile at its end and uses 6 sticks (2.487535ms)
+✔ a campfire lit in minute m warms from minute m + 1 for 60 minutes and uses 2 sticks (4.214733ms)
+✔ lighting and feeding land on the campfire of the character's tile alone (4.888132ms)
+✔ a stick lit in minute m burns on the tile, warms in minutes m + 1 to m + 3 and is used (1.527221ms)
+✔ feeding a burning campfire adds 20 minutes, without a cap, and uses one stick (0.851548ms)
+✔ a feeding during which the campfire burns out makes it burn 20 minutes again (0.753769ms)
+✔ eating adds 25 satiety at its end, not above 100, and uses a berry (2.410693ms)
+✔ „Idź — ognisko” takes one move toward the nearest campfire, in the minutes of the tile it enters (1.894904ms)
+✔ „Idź — ognisko” walks to a far campfire step by step and stays there (4.224181ms)
+✔ „Idź — ognisko” cannot be carried out where there is no campfire or on a campfire's tile (2.617974ms)
+✔ „Idź — ognisko” is passed over on a campfire's tile, and the next program rule is picked (1.454479ms)
+✔ the action ending in the minute of death takes no effect (1.514362ms)
+✔ the program check takes the six actions before sending and during a map run (3.072943ms)
+✔ „Temperatura poniżej N °C” holds below N and not at N, also for tenths (4.924742ms)
+✔ „Sytość poniżej N %” holds below N and not at N (1.887604ms)
+✔ „Zapas poniżej N szt.” counts only the named item of the backpack (0.951393ms)
+✔ „Zostało mniej niż N min — ognisko” reads 0 where there is no campfire (1.517228ms)
+✔ „Zostało mniej niż N min — ognisko” reads the minutes left to a campfire on the character's tile (3.062115ms)
+✔ „Zostało mniej niż N min — ognisko” reads the nearest campfire, extinguished or not, not a farther one (1.78782ms)
+✔ „Zostało mniej niż N min — ognisko” counts nearness in game minutes of walking, not in tiles (2.25435ms)
+✔ „Z dala od — ognisko” holds where no campfire stands on the character's tile (1.68705ms)
+✔ the check takes a temperature with tenths and holds it as the decimal the player reads (6.740568ms)
+✔ the check refuses a temperature off the step of 0.1 or outside 30.0–37.0 (3.201224ms)
+✔ the check takes the whole numbers of „Tu leży mniej niż” as before, and only those (9.946013ms)
+✔ the check takes each new kind's numbers from its minimum to its maximum on its step (7.042513ms)
+✔ the check refuses a number that is no finite number, for every kind that takes one (4.710047ms)
+✔ „Zapas poniżej” takes every item of the data, and nothing else (2.480491ms)
+✔ „Z dala od — ognisko” takes no number and no target (0.64974ms)
+✔ the map Las has the size, entrance, step and resources of the task (4.430911ms)
+✔ every resource of the map is defined in the resource data, with name and icon (0.696451ms)
+✔ each resource's data gives its icon's title as the icon's page on game-icons.net gives it (0.415352ms)
+✔ actions carry their labels, status texts and the fixed explore duration (0.598269ms)
+✔ conditions carry labels and the value range of hereBelow (0.557594ms)
+✔ Las has an ambient temperature of 25 degrees in its map data (0.731697ms)
+✔ the body starts at its caps and the rates and thresholds are the task's (0.440954ms)
+✔ the cooling in Las is 0.024 degrees a minute, as the task works it out (0.610963ms)
+✔ a new character's traits hold carrying capacity 15, apart from the archetype (1.815793ms)
+✔ the items are the four resources of Las, with their uses (0.672409ms)
+✔ the campfire holds its name, costs, burning minutes, warmth and icon (3.157064ms)
+✔ every item and every item of the campfire names an item of the data (0.383003ms)
+✔ the archetype and the pace are in data (0.188562ms)
+✔ setProgram accepts every resource of the map data list, in conditions and in walks (19.362749ms)
+✔ setProgram accepts the empty program, both actions without a resource and the ends of the range (0.864925ms)
+✔ setProgram rejects a resource id outside the map data list (2.298924ms)
+✔ setProgram rejects kinds outside the closed list and values outside the data range (1.768912ms)
+✔ a refused program leaves the game unchanged (2.203135ms)
+✔ send rejects a map id not in the data and a character id not in the team (1.325991ms)
+✔ every map step and every fixed action duration is a whole number of minutes, at least 1 (0.478087ms)
+✔ an activity of 0 minutes from faulty data still finishes in the next minute (2.364219ms)
+✔ a new game has an empty program, a team with no character and an empty chest, no map run, the initial seed and no pause (4.244278ms)
+✔ a send starts a map run at minute 0 with the seed mixed from the last seed and the real time (3.557928ms)
+✔ a send while a map run exists is refused (1.152027ms)
+✔ a program edit during a 20-minute exploration does not interrupt it and applies at minute 20 (2.598045ms)
+✔ Restart starts a new map run at minute 0 with the same seed and tiles and the current program (4.154516ms)
+✔ Restart with the starting program gives back the sent map run (4.128775ms)
+✔ Zakończ ends the map run, keeps the program and the last seed (4.46023ms)
+✔ the next send after Zakończ takes a new seed from the later real time (1.674612ms)
+✔ Restart and Zakończ without a map run are refused (2.528349ms)
+✔ „Zbierz” is feasible on a revealed tile holding the resource, with room in the backpack (6.148786ms)
+✔ „Zbierz” is not feasible on a tile not revealed (0.986287ms)
+✔ „Zbierz” is not feasible on a tile without the resource or with 0 of it (3.047518ms)
+✔ „Zbierz” is not feasible with a full backpack of 15 pieces of any items (0.580877ms)
+✔ a gathering lasts 10 game minutes, takes nothing at its start and draws nothing then (1.386129ms)
+✔ a map run starts its gathering generator from its seed, apart from the other streams (2.164336ms)
+✔ a hit moves one piece from the tile into the backpack, as the item of that resource (1.602082ms)
+✔ a miss takes no piece and leaves the backpack as it was (1.729473ms)
+✔ a hit on a tile of several resources takes only the gathered one, for each resource of the map (3.490533ms)
+✔ each gathering hits exactly where its draw lies below 0.7 (15.237995ms)
+✔ a tile gathered to 0 pieces keeps the key of its resource (0.655787ms)
+✔ a gathering takes no more than lies on the tile, nor beyond the backpack's cap, at its end (0.885081ms)
+✔ the wander stream gives the same draws with and without gathering (9.417563ms)
+✔ a map run restart starts the gathering generator anew from the seed (2.025781ms)
+✔ the program check takes „Zbierz” with a resource of the map and refuses it without one (1.704141ms)
+✔ the character stays on its tile while gathering (1.189628ms)
+✔ offset coordinates convert to axial with odd rows shifted right (5.055873ms)
+✔ sameHex and tileAt compare axial coordinates (0.647026ms)
+✔ a tile inside the grid has six neighbours, the corner (0,0) has two, in tile-list order (0.634638ms)
+✔ hex distance counts steps (0.250346ms)
+✔ centres: origin at zero, next in row one tile width right, next row 1.5 radii lower (0.529676ms)
+✔ six corners at the radius, the first straight above the centre, clockwise (0.494478ms)
+✔ tile label is (col, row) in offset coordinates (0.456774ms)
+✔ nearestTile: the start tile qualifies at 0 minutes and is its own first step (0.680358ms)
+✔ nearestTile: walks the shortest route and gives the first step (0.683688ms)
+✔ nearestTile: null when nothing qualifies (1.661143ms)
+✔ nearestTile: equally near tiles are decided by tile-list order (1.095313ms)
+✔ nearestTile: the first step is the first neighbour in list order on a cheapest path (3.388414ms)
+✔ nearestTile: a cheaper detour is preferred over a costly tile (2.363434ms)
+✔ tiles are row-major, unrevealed, with the map step cost (3.834292ms)
+✔ only the map resources appear, each with its full stock (5.258543ms)
+✔ the entrance is the fixed one and lies on the map (0.486452ms)
+✔ the same seed gives the same tiles, another seed other tiles (0.727826ms)
+✔ every resource with positive density lies on at least one tile, seeds 1-20 (1.505722ms)
+✔ the minimum guarantee places a resource nobody drew (2.005962ms)
+✔ a resource of zero density is never placed (0.501773ms)
+✔ drawLayout does not change the map (0.495048ms)
+✔ golden values: the layout stream of seed 1, mixSeed(1, 1000) and the stocks of Las for seed 1 (1.38619ms)
+✔ counts stay absent through program edits before the first send (5.655791ms)
+✔ minute zero counts once; a multi-minute action, its finish and later waits add nothing (7.558974ms)
+✔ an initial wait leaves every rule at zero (1.365718ms)
+✔ later starts count and each restart or new send resets before the minute-zero choice (1.902819ms)
+✔ pause and death retain counts, including an action interrupted by death (1.030683ms)
+✔ identical rules count independently and keep their counts after group reorder and transfer (2.114145ms)
+✔ every condition/action content field resets only its edited rule, also after Stop (4.074626ms)
+✔ canonical equivalent content preserves history despite key order, extra fields and floating rounding (1.305907ms)
+✔ deleting an active rule removes its count; adding its duplicate starts at zero and completion does not resurrect it (2.030829ms)
+✔ editing an active rule resets it immediately and its old completion adds no count (2.317706ms)
+✔ batched, split and real-time minutes produce the same counts through later starts and death (10.106684ms)
+✔ always holds (6.856137ms)
+✔ hereBelow reads 0 on an unrevealed tile, whatever lies there (0.732234ms)
+✔ hereBelow compares the true stock of a revealed tile (0.53246ms)
+✔ hereBelow with N = 0 never holds (0.566597ms)
+✔ the first rule whose condition holds and whose action is feasible wins (1.996592ms)
+✔ a rule whose condition does not hold is skipped (0.643147ms)
+✔ a rule whose action is not feasible is skipped (0.817324ms)
+✔ with no applicable rule the character waits (1.224954ms)
+✔ a wait lasts waitMinutes, one game minute (0.690043ms)
+✔ feasibility and choice do not draw from the wander generator (0.796769ms)
+✔ the chosen action is a copy, not the program rule itself (0.487629ms)
+✔ a new game starts with one empty Program group under always (0.512974ms)
+✔ group order skips false, empty and infeasible groups and then takes the first qualifying rule (1.921084ms)
+✔ all empty groups and an empty list of groups leave the character waiting (0.541968ms)
+✔ identical rule contents keep distinct identities when groups and rules move (0.665492ms)
+✔ group conditions use the same legal number, resource and item values as rules (1.350766ms)
+✔ group conditions refuse unknown kinds and invalid fields while accepting a legal control (0.943209ms)
+✔ program identities are unique positive integers below the next identity counters (1.218179ms)
+✔ editing, deleting or transferring a started rule leaves its action running to completion (3.056427ms)
+✔ no public function of the game changes its inputs (45.537932ms)
+✔ the program held by the state does not follow later changes of the object passed in (0.701262ms)
+✔ a returned state is plain JSON (1.875206ms)
+✔ the same state gives the same sequence (3.580904ms)
+✔ values lie in [0, 1) and the state stays a uint32 (7.036944ms)
+✔ nextRandom does not change its input and advances the state (0.516951ms)
+✔ different states give different sequences (0.459175ms)
+✔ streams of one seed differ (1.159366ms)
+✔ a stream state is deterministic and changes with the seed (0.43799ms)
+✔ mixSeed is deterministic and changes with either argument (0.77579ms)
+✔ mixSeed uses the high part of a large realMs (1.511577ms)
+✔ S1: the simulation imports only its own files and names no DOM, Node, timer, clock or other randomness (23.647509ms)
+✔ S1 control: each forbidden form is flagged, and the same names in comments and strings are not (3.869043ms)
+✔ S2 scans the simulation outside sim/data, the view and the entry module main.ts (0.532876ms)
+✔ S2: no file of the simulation outside sim/data, of the view or main.ts writes a content id or name (40.915283ms)
+✔ S2 control: literal ids, names and closed unions are flagged; reading them from data is not (0.794362ms)
+✔ a directory that does not exist yet (the view before it is written) gives no files, not an error (0.358534ms)
+✔ a created character joins the end of the team's list as an elemental mage, in the order of creation (4.825582ms)
+✔ two characters may share a name and stay two characters (2.755823ms)
+✔ the name loses the white space at its start and end, and keeps the white space inside (0.750959ms)
+✔ a name empty once trimmed creates no character (2.85808ms)
+✔ the team's chest is empty in a new game and stays empty through creating, sending and ending (5.873027ms)
+✔ the send sends the chosen character of the team, and a restart keeps it (2.000029ms)
+✔ while one character's map run goes on, no other character of the team is sent (0.975259ms)
+✔ 1000 ms of real time moves the run on by one game minute (11.259925ms)
+✔ parts of a second carry over from one call to the next (1.042933ms)
+✔ real time passed while paused changes nothing, carry included (2.059022ms)
+✔ after a resume time goes on from where the pause held it (0.615825ms)
+✔ one long real time (a hidden tab) advances that many minutes at once, with no cap (5.733206ms)
+✔ 1000 ms in one call and 1000 calls of 1 ms give the same state and events (4.885984ms)
+✔ real time is ignored when it is not a finite number above zero (4.230975ms)
+✔ real time without a map run is ignored (0.730322ms)
+✔ passing real time gives the events of the minutes it covers, in order (2.048516ms)
+✔ advanceMinutes advances a span of game minutes, also while paused (1.216832ms)
+✔ advanceMinutes of zero minutes changes nothing (0.660578ms)
+✔ advanceMinutes rejects a span that is not a whole number of minutes from zero up (1.126654ms)
+✔ advanceMinutes and setPaused without a map run change nothing (0.422603ms)
+✔ a sent map run's character carries carrying capacity 15 and an empty backpack with cap 15 (8.730706ms)
+✔ every item of the data has a place in a new backpack (0.425375ms)
+✔ the traits of a character are its own copy, not the data's object (0.526689ms)
+✔ two sent map runs do not share a backpack (0.463197ms)
+✔ a restart keeps the traits of a character that carries other traits (0.858838ms)
+✔ a restart gives the new map run an empty backpack (4.922445ms)
+✔ the count of a hand-made backpack is the pieces of all items together (0.403084ms)
+✔ the cap of a hand-made character is its carrying capacity (0.527756ms)
+✔ newMapRun takes the traits it is given, and a new character's without them (0.888421ms)
+✔ a created character carries carrying capacity 15 in the team (1.018689ms)
+✔ the map run of a sent character carries that character's traits, also where they differ from a new character's (0.65343ms)
+✔ the map run holds its own copy of the traits, so changing the team's traits leaves it alone (0.562087ms)
+✔ the sending leaves the team's character as it was (0.39033ms)
+✔ Las and its campfire and stick are the ones these numbers are worked out for (4.121962ms)
+✔ a map run starts with no campfires and nothing burning (5.162442ms)
+✔ a campfire with 60 minutes on the character's tile warms in exactly 60 minutes, then is extinguished and stays (4.264137ms)
+✔ a character at a burning campfire stays at 37.0 °C (2.057054ms)
+✔ the cap of 37.0 °C applies to the warmth of a campfire and a stick together (0.903011ms)
+✔ a stick lit with 3 minutes warms in 3 minutes and is gone (1.209623ms)
+✔ a campfire and a stick on another tile do not warm, and burn down there (2.209357ms)
+✔ a tile below its stock of sticks gains one piece at minute 30 and none above its stock; a tile at 0 keeps its resource (2.364719ms)
+✔ a resource whose map data gives no time to renew does not renew, while the others renew (4.643012ms)
+✔ in the minute of death nothing burns down and no tile renews (1.697369ms)
+✔ an exploring that ends in a minute of renewal reveals its tile and keeps the renewal (1.283439ms)
+✔ the one-minute step changes no campfire, burning item or tile passed to it (2.048084ms)
+✔ exits with an error instead of reporting ready when its listening port is occupied (305.894516ms)
+✔ listens on the address given by LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT (197.853847ms)
+✔ rejects LOOP2_LISTEN_PORT="0" without a readiness line (156.614975ms)
+✔ rejects LOOP2_LISTEN_PORT="65536" without a readiness line (194.315602ms)
+✔ rejects LOOP2_LISTEN_PORT="abc" without a readiness line (200.144535ms)
+✔ rejects LOOP2_LISTEN_PORT="3000x" without a readiness line (159.330063ms)
+✔ rejects LOOP2_LISTEN_PORT="" without a readiness line (135.761403ms)
+✔ production missing settings and partial or invalid explicit configuration refuse readiness (3093.646386ms)
+✔ secret files reject noncanonical keys, invalid UTF-8 and oversized or non-file input without echoing contents (28.161492ms)
+✔ configured runtime has a real database and dummy hash and releases its connection (389.441092ms)
+✔ configured startup refuses unknown schema and unavailable database before readiness (317.71674ms)
+✔ configured process becomes ready with public health response and exits on shutdown (812.753493ms)
+✔ transport refuses ambiguous proxy metadata before loading live sessions (399.290351ms)
+✔ canonical transport identity ignores caller-selected forwarding chains (291.165426ms)
+✔ local proxy mode uses the peer and direct mode ignores forwarded HTTPS (990.998547ms)
+✔ mutation guards reject foreign origins, non-JSON and malformed bodies (1034.283431ms)
+✔ refused state-changing requests change no account or session and do no password work (2280.748637ms)
+✔ rolling static responses use the newest signing key and touch real SQLite without rewriting identity (594.773432ms)
+✔ new opaque sessions persist in SQLite while anonymous and invalid cookies create nothing (821.905163ms)
+✔ until the server names an account the page has neither the game nor a running clock (69.990283ms)
+✔ an answer of no session shows the two forms with visible labels, and no game (8.615149ms)
+✔ an answer that names no account and is not a refusal of the session shows one warning with retry, neither forms nor game (12.751369ms)
+✔ a sent login waits with both forms locked, and a refusal leaves one warning under it and focus where the player sent it from (2.960959ms)
+✔ a lost connection on registration leaves one warning under that form and focus on its button (4.393119ms)
+✔ a created account enters the game at once, and the forms keep no password (5.343673ms)
+✔ a registration the server would refuse sends nothing and marks the field at fault (3.866502ms)
+✔ registration problems follow the server's rules, counting a password in code points (1.031512ms)
+✔ a confirmed logout or an expired session removes the game and its clock and brings back the forms (6.26427ms)
+✔ a logout whose outcome is uncertain keeps the game with one warning, and „Wyloguj” stays usable (3.053273ms)
+✔ signing in and out again and again keeps at most one clock running (8.853117ms)
+✔ an answer that comes after the screen was left is ignored (1.231191ms)
+✔ the body row reads temperature, satiety and health as the task's example (2.39829ms)
+✔ temperature is cut down to tenths, never rounded up (0.416908ms)
+✔ a chilled 34.99 °C shows as „34,9” in danger; 35.0 is not chilled (1.709709ms)
+✔ satiety and health are cut down to whole numbers (0.385771ms)
+✔ satiety below 30 stands in danger and 30 does not; health never does (0.407204ms)
+✔ an empty backpack reads „Plecak 0/15” (0.591008ms)
+✔ a backpack holding items reads its count, its cap and each held item in the data's order (0.506726ms)
+✔ the cap is the character's carrying capacity (0.246191ms)
+✔ the row on the screen marks only the value below its threshold as danger, and updates in place (1.741783ms)
+✔ a running clock passes time to its game on every 200 ms tick (8.963482ms)
+✔ a disposed clock leaves no interval registered and passes no further time, however long (0.967888ms)
+✔ flush and send of a disposed clock no longer reach the game (1.286668ms)
+✔ games started and disposed one after another leave only the last clock running (2.597933ms)
+✔ importing the headquarters touches no DOM: Node has no document and the import succeeded (4.39177ms)
+✔ an empty chest shows no line, so the headquarters marks it empty (2.565269ms)
+✔ a chest holding pieces shows a line per resource held, in the order of the resources' data (0.761192ms)
+✔ every icon file passes the untrusted-input rules (5.983032ms)
+✔ the check rejects an svg holding a script (0.443586ms)
+✔ the check rejects an svg holding an onload attribute (0.217604ms)
+✔ the check rejects an svg holding a foreignObject (0.38973ms)
+✔ the check rejects an svg holding an external href (0.97009ms)
+✔ the check rejects an svg holding an external xlink:href (0.781426ms)
+✔ the check rejects an svg holding an external url( (0.457552ms)
+✔ the check rejects an svg holding a data: URI (0.332041ms)
+✔ the check rejects an svg holding a protocol-relative address (0.529801ms)
+✔ the check rejects an svg holding an xmlns with another value (0.404686ms)
+✔ the check rejects an svg holding a <!DOCTYPE (0.412632ms)
+✔ the check rejects an svg holding an <!ENTITY (2.341064ms)
+✔ the check rejects an svg holding an <?xml-stylesheet (0.962571ms)
+✔ the check rejects an svg holding a <style element (0.182782ms)
+✔ the check rejects an svg holding an @import (0.174215ms)
+✔ the check rejects an svg holding an unquoted href (0.147845ms)
+✔ the check rejects an svg holding an unquoted xlink:href (0.126696ms)
+✔ the check passes an svg holding only the two allowed namespace declarations (2.525392ms)
+✔ every icon file is a light shape without a background: svg and path elements, allowed attributes only (2.076868ms)
+✔ each icon credit records that the file was changed from its source (0.311529ms)
+✔ each footer line names the icon by its title on game-icons.net and says after the licence that it was changed (3.020841ms)
+✔ the footer credits the campfire's icon, by Lorc, after the four resources' icons (0.862ms)
+✔ the campfire's data names the icon file campfire.svg and its title on game-icons.net (0.454284ms)
+✔ the footer links open in a new tab, without opener or referrer (1.453894ms)
+✔ each icon the data names, the campfire's included, exists as a file (0.330628ms)
+✔ each icon file has a credit with an author and the source commit (0.770227ms)
+✔ groups append with monotonic numbers through rename and deletion, including the last group (6.001043ms)
+✔ group arrows move the whole group and leave the edges unchanged (2.729601ms)
+✔ group conditions offer the same kinds and editable fields while preserving rules and counts (3.449479ms)
+✔ native drop targets place a rule before the target after removal, or append to a group (1.886529ms)
+✔ importing the editor touches no DOM: Node has no document and the import succeeded (0.312089ms)
+✔ count-only refresh changes count text without writing field values or replacing controls (15.661571ms)
+✔ the number field: empty or not a number keeps the previous value and commits nothing (0.842998ms)
+✔ the number field: a number is rounded to a whole number and committed when it differs (0.72894ms)
+✔ the number field: a number is clamped to the data's range 0–50 (1.01846ms)
+✔ the number field: the same value after rounding or clamping is written back but not committed (0.771194ms)
+✔ the number field: a temperature is rounded to the step of 0.1 and kept as the decimal the check keeps (0.662165ms)
+✔ the number field: a temperature is clamped to 30.0–37.0 (0.475434ms)
+✔ the number field's range and step follow the condition kind; a kind with no number leaves them (0.529411ms)
+✔ „Dodaj regułę” appends a fresh „Zawsze → Eksploruj” to the named group (1.441793ms)
+✔ „Usuń” removes the rule at its position without reassigning identities (7.744071ms)
+✔ „↑” and „↓” swap a rule with its neighbour; past either end nothing is committed (1.576232ms)
+✔ switching the condition to „Tu leży mniej niż” takes the map's first resource and the data's default N (0.618036ms)
+✔ switching the condition to a new kind puts in the kind's default number, and the first item for „Zapas poniżej” (1.351931ms)
+✔ „Zapas poniżej” offers every item of the data, and its item and number can be chosen (0.588214ms)
+✔ the number of the body's and the campfire's conditions can be chosen; „Z dala od” takes none (0.493769ms)
+✔ switching the condition to „Zawsze” drops its resource and number; the same kind commits nothing (0.31911ms)
+✔ switching the action to „Idź” takes the map's first resource; other kinds carry none (0.532968ms)
+✔ switching the action to „Zbierz” takes the map's first resource, and its resource can be chosen (0.657421ms)
+✔ „Idź — ognisko” and the actions on the campfire and the backpack are offered without a target (0.592255ms)
+✔ choosing a resource or a number changes only that rule; the same choice commits nothing (0.470268ms)
+✔ the resource lists offer the shown map's resources before sending and the run's map's during a run, in order (0.57709ms)
+✔ focus after a structural edit: same button in the moved rule's row, next „Usuń” or „Dodaj regułę”, new condition (1.652614ms)
+✔ every program the editor builds passes setProgram, before sending and during a run (173.176746ms)
+✔ rule edits preserve other groups, group boundaries and identities (0.731375ms)
+✔ exploring shows the minute and „Eksploruje” (7.308469ms)
+✔ the minute shown is the map run's game minute (1.69916ms)
+✔ wandering shows „Wędruje” (1.414181ms)
+✔ walking to a resource shows „Idzie po: ” and the resource's name from data, for each resource (1.142034ms)
+✔ waiting because no rule applies shows „Czeka — żadna reguła nie pasuje” (0.801044ms)
+✔ a paused map run gets „ (pauza)” appended, and loses it when resumed (2.121268ms)
+✔ gathering shows „Zbiera: ” and the resource's name from data, for each resource (4.242058ms)
+✔ an action without a target shows its status text from data alone (1.653564ms)
+✔ a death of cold reads „Minuta <n> · Mag zamarzł”, of hunger „Mag umarł z głodu” (1.183374ms)
+✔ after death no „ (pauza)” is appended, even to a paused game (0.838497ms)
+✔ „Pauza” while running, „Wznów” while paused, and no pause button after death (0.695332ms)
+✔ a mage left without a program dies, and the status row reads the minute of its death (4.411268ms)
+✔ on the screen the pause button is hidden after death; „Restart” and „Zakończ” stay (6.57288ms)
+✔ a game without a map run has an empty picture (3.454513ms)
+✔ all tiles are drawn from minute 0, unrevealed ones without icons (9.861066ms)
+✔ regular hexagons meet their neighbours along sides without gaps or overlap (3.798934ms)
+✔ every polygon lies inside the picture (1.28343ms)
+✔ a revealed tile carries one icon per resource present, dimmed only at stock zero (2.315993ms)
+✔ the picture holds no stock numbers (9.09339ms)
+✔ the character tile has the character outline (5.69571ms)
+✔ the step target is outlined only while a move runs (31.845164ms)
+✔ the campfire's icon stands on its tile, burning and extinguished, and on no other tile (10.447097ms)
+✔ the drawing shows no number of the campfire or of a burning stick (2.000724ms)
+✔ the campfire's icon stands beside the resources' icons, none overlapping, within the tile (2.009658ms)
+✔ a tile's icons follow the order of the resources in the run's map data (2.484677ms)
+✔ a game without a map run has no columns and no rows (10.913046ms)
+✔ the columns are the map's resources in the map's order, with names and icons from data (3.462793ms)
+✔ rows stand only for revealed tiles, in tile-list order, labelled (col, row) (1.318614ms)
+✔ each row gives the stock of every resource of the map, „—” where the tile lacks it, 0 when used up (0.709842ms)
+✔ a fresh map run lists nothing; exploring the entrance lists that tile with its stock (2.079448ms)
+✔ a tile's row gives its campfire's state: burning with the minutes left, or extinguished (3.024428ms)
+✔ a burning stick stands in its tile's row after the campfire, and only while it burns (1.573667ms)
+✔ the campfire's state leaves the row's stock as it was (1.56703ms)
+✔ on the panel the campfire's icon stands in its tile and the state in the row of the same key (13.848371ms)
+ℹ tests 432
+ℹ suites 0
+ℹ pass 424
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20170.783469
+
+✖ failing tests:
+
+test at tests/password-measurement.test.mjs:60:1
+✖ the entrypoint measures the production profile and gate with synthetic passwords only (5142.199179ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:109:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/password-measurement.test.mjs:117:1
+✖ the entrypoint reads a cgroup v1 memory controller, counting every hit of its limit (4659.209843ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      cgroupCurrentBytes: 111111111,
+      cgroupLimitBytes: 428867584,
+      cgroupPeakBytes: 222222222,
+      cgroupSwapLimitBytes: 0,
+      cgroupVersion: 1,
+  +   oomEvents: 3,
+  -   limitHitEvents: 3,
+      oomKillEvents: 1,
+      processMaxRssBytes: undefined
+    }
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:133:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { cgroupVersion: 1, cgroupLimitBytes: 428867584, cgroupPeakBytes: 222222222, cgroupCurrentBytes: 111111111, cgroupSwapLimitBytes: 0, oomEvents: 3, oomKillEvents: 1, processMaxRssBytes: undefined },
+    expected: { cgroupVersion: 1, cgroupLimitBytes: 428867584, cgroupSwapLimitBytes: 0, limitHitEvents: 3, oomKillEvents: 1, cgroupCurrentBytes: 111111111, cgroupPeakBytes: 222222222, processMaxRssBytes: undefined },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/password-measurement.test.mjs:148:1
+✖ the entrypoint measures where the kernel keeps no peak, as kernel 5.15 does (53.284574ms)
+  AssertionError [ERR_ASSERTION]: {"ok":false,"versions":{"node":"24.22.1","argon2":"0.45.1","platform":"linux-x64","kernel":"5.15.167.4-microsoft-standard-WSL2"},"errors":["cgroup file memory.peak is unavailable"]}
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:155:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/password-measurement.test.mjs:172:1
+✖ the entrypoint refuses to measure where the cgroup does not count hits of its limit (66.596576ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /memory\.events names no max/. Input:
+  
+  'cgroup file memory.peak is unavailable'
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:182:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'cgroup file memory.peak is unavailable',
+    expected: /memory\.events names no max/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/password-measurement.test.mjs:280:1
+✖ the launcher passes a measured image within every bound and runs it isolated (1.911883ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   "the container's memory limit is not the requested one",
+  +   'the container may use swap beyond its memory limit',
+  +   'the measurement saw another memory limit',
+  +   'the container reached its memory limit'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:284:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ "the container's memory limit is not the requested one", 'the container may use swap beyond its memory limit', 'the measurement saw another memory limit', 'the container reached its memory limit' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/password-measurement.test.mjs:360:1
+✖ the launcher passes a run whose kernel keeps no peak, judging by its counts (0.660489ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   "the container's memory limit is not the requested one",
+  +   'the container may use swap beyond its memory limit',
+  +   'the measurement saw another memory limit',
+  +   'the container reached its memory limit',
+  +   'the measurement reports no peak memory'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:364:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ "the container's memory limit is not the requested one", 'the container may use swap beyond its memory limit', 'the measurement saw another memory limit', 'the container reached its memory limit', 'the measurement reports no peak memory' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/password-measurement.test.mjs:367:1
+✖ the measurement container's limit is 80% of the deployment's, rounded down to whole MiB (0.346277ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 428867584
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:369:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 428867584,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/password-measurement.test.mjs:373:1
+✖ the launcher takes only a commit name and a memory limit up to the deployment's (0.688233ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      commit: '0123456789abcdef0123456789abcdef01234567',
+      image: 'abc',
+  -   limitBytes: 428867584,
+      memoryBytes: 536870912
+    }
+  
+      at TestContext.<anonymous> (file:///workspace/tests/password-measurement.test.mjs:374:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { image: 'abc', commit: '0123456789abcdef0123456789abcdef01234567', memoryBytes: 536870912 },
+    expected: { image: 'abc', commit: '0123456789abcdef0123456789abcdef01234567', memoryBytes: 536870912, limitBytes: 428867584 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
