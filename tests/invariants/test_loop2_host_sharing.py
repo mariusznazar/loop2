@@ -99,11 +99,11 @@ ALLOWED_COMPOSE = {
 DOCKER_ENDPOINT_VARIABLES = re.compile(
     r"(?<![A-Za-z0-9_])(?:DOCKER_HOST|DOCKER_CONTEXT|DOCKER_CONFIG|DOCKER_TLS_VERIFY|"
     r"DOCKER_CERT_PATH|COMPOSE_PROJECT_NAME|COMPOSE_FILE|COMPOSE_PROFILES)(?![A-Za-z0-9_])")
-COMPOSE_TOP_KEYS = ("name", "services", "secrets")
+COMPOSE_TOP_KEYS = ("name", "services", "secrets", "volumes")
 COMPOSE_SERVICE_KEYS = ("container_name", "build", "ports", "expose", "mem_limit",
                         "memswap_limit", "cpus", "pids_limit", "restart", "init", "healthcheck",
                         "labels", "environment", "command", "entrypoint", "user", "working_dir",
-                        "read_only", "stop_signal", "stop_grace_period", "logging", "depends_on", "secrets")
+                        "read_only", "stop_signal", "stop_grace_period", "logging", "depends_on", "secrets", "volumes")
 COMPOSE_BUILD_KEYS = ("context", "dockerfile", "args", "labels", "target")
 
 
@@ -204,33 +204,68 @@ def compose_problems(words):
 
 
 def secret_problems(top, services):
-    """Permit exactly one file-backed secret and its connector-only short-form grant."""
+    """Permit only the two file-backed secrets, each granted to its own consumer."""
     problems = []
     secret_key = top.get("secrets")
     if secret_key is None or secret_key.value:
-        return ["no block mapping of the tunnel secret"]
+        return ["no block mapping of runtime secrets"]
     definitions = support._yaml_mapping(secret_key.block, secret_key.line + 1)
-    if set(definitions) != {EXPECTED_SECRET}:
-        return ["secrets must define only the tunnel token"]
-    definition = definitions[EXPECTED_SECRET]
-    if definition.value:
-        return ["tunnel secret is not a block mapping"]
-    fields = support._yaml_mapping(definition.block, definition.line + 1)
-    if set(fields) != {"file"}:
-        problems.append("tunnel secret must use only a file source")
-    elif fields["file"].value != EXPECTED_SECRET_FILE or fields["file"].block:
-        problems.append("tunnel secret names another host source")
+    expected = {
+        EXPECTED_SECRET: EXPECTED_SECRET_FILE,
+        "loop2_session_secrets": "/etc/loop2/session-secrets",
+    }
+    if set(definitions) != set(expected):
+        return ["secrets must define only the tunnel token and application session keys"]
+    for name, path in expected.items():
+        definition = definitions[name]
+        if definition.value:
+            problems.append(f"{name} is not a block mapping")
+            continue
+        fields = support._yaml_mapping(definition.block, definition.line + 1)
+        if set(fields) != {"file"}:
+            problems.append(f"{name} must use only a file source")
+        elif fields["file"].value != path or fields["file"].block:
+            problems.append(f"{name} names another host source")
+    grants = {"app": "loop2_session_secrets", "cloudflared": EXPECTED_SECRET}
     for name, keys in services.items():
         grant = keys.get("secrets")
+        if name not in grants:
+            if grant is not None:
+                problems.append(f"secret granted to unexpected service {name}")
+            continue
+        if grant is None or grant.value or [line.strip() for line in grant.block
+                                           if line.strip()] != ["- " + grants[name]]:
+            problems.append(f"{name} must receive only its named short-form secret")
         if name == "cloudflared":
-            if grant is None or grant.value or [line.strip() for line in grant.block
-                                               if line.strip()] != ["- " + EXPECTED_SECRET]:
-                problems.append("connector must receive only the named short-form secret")
             for key in ("environment", "env_file", "entrypoint", "user"):
                 if key in keys:
                     problems.append(f"connector overrides its credential or identity with {key}")
-        elif grant is not None:
-            problems.append(f"secret granted to {name}, not only the connector")
+    return problems
+
+
+def volume_problems(top, services):
+    """Permit one application-owned local volume, without arbitrary mounts or drivers."""
+    volumes = top.get("volumes")
+    if volumes is None or volumes.value:
+        return ["no block mapping of the application database volume"]
+    definitions = support._yaml_mapping(volumes.block, volumes.line + 1)
+    if set(definitions) != {"accounts"}:
+        return ["volumes must define only accounts"]
+    definition = definitions["accounts"]
+    if definition.value:
+        return ["accounts volume is not a block mapping"]
+    fields = support._yaml_mapping(definition.block, definition.line + 1)
+    problems = []
+    if set(fields) != {"name"} or fields["name"].value != "loop2_accounts" or fields["name"].block:
+        problems.append("accounts must be the own named volume without external source or driver")
+    for name, keys in services.items():
+        mount = keys.get("volumes")
+        if name == "app":
+            if mount is None or mount.value or [line.strip() for line in mount.block
+                                               if line.strip()] != ["- accounts:/app/data"]:
+                problems.append("application must mount only accounts at /app/data")
+        elif mount is not None:
+            problems.append(f"volume granted to {name}, not only the application")
     return problems
 
 
@@ -368,7 +403,7 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.text = support.read_required(COMPOSE_FILE)
         self.top, self.services = support.compose_outline(self.text)
 
-    def test_compose_top_holds_only_project_services_and_tunnel_secret(self):
+    def test_compose_top_holds_only_project_services_and_own_resources(self):
         # invariant: loop2-host-sharing
         others = sorted(k for k in self.top if k not in COMPOSE_TOP_KEYS)
         self.assertEqual(others, [], f"{COMPOSE_FILE} sets top-level keys beyond "
@@ -388,15 +423,52 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.assertEqual(problems, [], f"{COMPOSE_FILE} asks the host for more than a default "
                                        "container has")
 
-    def test_token_file_is_granted_only_to_the_connector(self):
+    def test_runtime_secrets_are_granted_only_to_their_consumers(self):
         # invariant: loop2-host-sharing
         self.assertEqual(secret_problems(self.top, self.services), [])
+
+    def test_account_volume_is_owned_and_mounted_only_by_the_application(self):
+        # invariant: loop2-host-sharing
+        self.assertEqual(volume_problems(self.top, self.services), [])
+
+    def test_production_account_configuration_is_fixed(self):
+        # D-109; missing or drifting settings must not reach deployment unnoticed.
+        environment = self.services["app"].get("environment")
+        self.assertIsNotNone(environment, "application account settings are missing")
+        fields = support._yaml_mapping(environment.block, environment.line + 1)
+        self.assertEqual({key: field.value for key, field in fields.items()}, {
+            "LOOP2_DATABASE_PATH": "/app/data/accounts.sqlite",
+            "LOOP2_SESSION_SECRET_FILE": "/run/secrets/loop2_session_secrets",
+            "LOOP2_PUBLIC_ORIGIN": "https://loop2.mariusznazar.com",
+            "LOOP2_PROXY_MODE": "cloudflare-tunnel",
+        })
 
     def test_no_docker_socket(self):
         # invariant: loop2-host-sharing
         found = [f"line {number}: {line.strip()}"
                  for number, line in enumerate(code_lines(self.text), 1) if "docker.sock" in line]
         self.assertEqual(found, [], f"{COMPOSE_FILE} names the Docker socket")
+
+
+APPROVED_RESOURCES = """name: loop2
+services:
+  app:
+    secrets:
+      - loop2_session_secrets
+    volumes:
+      - accounts:/app/data
+  cloudflared:
+    secrets:
+      - cloudflare_tunnel_token
+secrets:
+  cloudflare_tunnel_token:
+    file: /etc/loop2/cloudflared-token
+  loop2_session_secrets:
+    file: /etc/loop2/session-secrets
+volumes:
+  accounts:
+    name: loop2_accounts
+"""
 
 
 class NarrowAllowances(unittest.TestCase):
@@ -416,26 +488,53 @@ class NarrowAllowances(unittest.TestCase):
                 self.assertTrue(docker_problems(command))
 
     def test_secret_reader_refuses_other_files_grants_sources_and_options(self):
-        approved = ("name: loop2\nservices:\n  app:\n    build: .\n  cloudflared:\n"
-                    "    secrets:\n      - cloudflare_tunnel_token\nsecrets:\n"
-                    "  cloudflare_tunnel_token:\n    file: /etc/loop2/cloudflared-token\n")
+        approved = APPROVED_RESOURCES
         self.assertEqual(secret_problems(*support.compose_outline(approved)), [])
         cases = {
-            "other host file": approved.replace("/etc/loop2/cloudflared-token", "/etc/shadow"),
-            "environment source": approved.replace("file: /etc/loop2/cloudflared-token",
-                                                    "environment: TUNNEL_TOKEN"),
-            "external source": approved.replace("file: /etc/loop2/cloudflared-token",
+            "other tunnel host file": approved.replace("/etc/loop2/cloudflared-token", "/etc/shadow"),
+            "other session host file": approved.replace("/etc/loop2/session-secrets", "/etc/shadow"),
+            "environment source": approved.replace("file: /etc/loop2/session-secrets",
+                                                    "environment: SESSION_KEYS"),
+            "external source": approved.replace("file: /etc/loop2/session-secrets",
                                                  "external: true"),
-            "additional source field": approved + "    name: shared-secret\n",
-            "application grant": approved.replace("    build: .", "    secrets:\n"
-                                                   "      - cloudflare_tunnel_token"),
-            "another grant": approved.replace("- cloudflare_tunnel_token", "- other"),
+            "additional source field": approved.replace("file: /etc/loop2/session-secrets",
+                "file: /etc/loop2/session-secrets\n    name: shared-secret"),
+            "application gets tunnel token": approved.replace("- loop2_session_secrets",
+                                                               "- cloudflare_tunnel_token"),
+            "connector gets session keys": approved.replace("- cloudflare_tunnel_token",
+                                                             "- loop2_session_secrets"),
+            "additional grant": approved.replace("- loop2_session_secrets",
+                "- loop2_session_secrets\n      - cloudflare_tunnel_token"),
+            "long grant with override": approved.replace("- loop2_session_secrets",
+                "- source: loop2_session_secrets\n        target: other"),
             "root connector": approved.replace("  cloudflared:\n", "  cloudflared:\n"
                                                  "    user: root\n"),
         }
         for name, document in cases.items():
             with self.subTest(case=name):
                 self.assertTrue(secret_problems(*support.compose_outline(document)))
+
+    def test_volume_reader_refuses_host_mounts_external_volumes_and_other_consumers(self):
+        approved = APPROVED_RESOURCES
+        self.assertEqual(volume_problems(*support.compose_outline(approved)), [])
+        cases = {
+            "host directory": approved.replace("accounts:/app/data", "/srv/other:/app/data"),
+            "other named volume": approved.replace("accounts:/app/data", "other:/app/data"),
+            "wrong destination": approved.replace("accounts:/app/data", "accounts:/app"),
+            "extra mount": approved.replace("- accounts:/app/data", "- accounts:/app/data\n"
+                                              "      - /etc:/host"),
+            "connector mount": approved.replace("  cloudflared:\n", "  cloudflared:\n"
+                                                 "    volumes:\n      - accounts:/app/data\n"),
+            "other volume identity": approved.replace("name: loop2_accounts", "name: other"),
+            "external volume": approved.replace("name: loop2_accounts", "name: loop2_accounts\n"
+                                                  "    external: true"),
+            "driver host bind": approved.replace("name: loop2_accounts", "name: loop2_accounts\n"
+                                                 "    driver_opts:\n      device: /srv/other"),
+            "extra definition": approved + "  other: {}\n",
+        }
+        for name, document in cases.items():
+            with self.subTest(case=name):
+                self.assertTrue(volume_problems(*support.compose_outline(document)))
 
 
 if __name__ == "__main__":

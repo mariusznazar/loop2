@@ -89,6 +89,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   .gitignore
   README.md
   tests/invariants/loop2_invariant_support.py
+  tests/invariants/account_container_support.py
   tests/invariants/test_account_server_runtime.py
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py

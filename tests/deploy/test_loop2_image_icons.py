@@ -33,6 +33,8 @@ import time
 import unittest
 import uuid
 
+from tests.invariants.account_container_support import start_production_container
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 ICONS = os.path.join(ROOT, "assets", "icons")
 
@@ -111,9 +113,7 @@ class ImageServesIcons(unittest.TestCase):
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=image-icons-check",
                                   "-t", tag, ".", timeout=BUILD_TIMEOUT)
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
-        self.addCleanup(docker_run, "rm", "-f", name)
-        code, output = docker_run("run", "-d", "--name", name, tag)
-        self.assertEqual(code, 0, f"`docker run` failed:\n{output}")
+        start_production_container(self, tag, name)
 
         paths = ["/"] + [f"/icons/{icon}" for icon in icons]
         deadline = time.monotonic() + SERVE_WAIT

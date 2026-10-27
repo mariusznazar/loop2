@@ -50,6 +50,7 @@ import unittest
 import uuid
 
 import loop2_invariant_support as support
+from tests.invariants.account_container_support import start_production_container
 
 COMPOSE_FILE = "compose.yaml"
 DOCKERFILE = "Dockerfile"
@@ -208,13 +209,11 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
                           "loop2-one-serving-process stays unchecked")
         tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
         name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
+        self.addCleanup(docker_run, "image", "rm", "-f", tag)
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=invariant-check",
                                   "-t", tag, ".", timeout=BUILD_TIMEOUT)
-        self.addCleanup(docker_run, "image", "rm", "-f", tag)
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
-        code, output = docker_run("run", "-d", "--init", "--name", name, tag)
-        self.addCleanup(docker_run, "rm", "-f", name)
-        self.assertEqual(code, 0, f"`docker run --init` failed:\n{output}")
+        start_production_container(self, tag, name)
 
         deadline = time.monotonic() + LISTEN_WAIT
         while True:
