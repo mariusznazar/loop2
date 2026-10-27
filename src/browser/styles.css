@@ -32,6 +32,14 @@ body {
   outline-offset: var(--focus-offset);
 }
 
+/* The header: the title and, for a signed-in player, „Wyloguj” beside it with its warning. */
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-l);
+}
+
 header h1 {
   margin: var(--space-l) 0;
   font-size: var(--font-size-game-title);
@@ -39,8 +47,12 @@ header h1 {
   color: var(--text-strong);
 }
 
-.columns {
+/* The place of the screen: the session check, the account forms or the game. */
+.app-main {
   flex: 1;
+}
+
+.columns {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
   gap: var(--space-xl);
@@ -161,6 +173,50 @@ header h1 {
 .form-warning {
   margin: 0;
   color: var(--warning);
+}
+
+/* While the page asks the server whom this browser is signed in as (D-94). */
+.session-check {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-s);
+}
+
+.session-check-text {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* The forms „Zaloguj się” and „Załóż konto”, each a block of its own, side by side when they fit. */
+.account-screen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.account-form {
+  background: var(--panel);
+  color: var(--text);
+  border: var(--frame-width) solid var(--divider);
+  padding: var(--space-m) var(--space-l);
+}
+
+.account-form h2 {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+/* The fields of an account form take the width of the form, so a long address stays visible. */
+.account-form .input-field {
+  align-self: stretch;
+}
+
+.account-form .input-field input {
+  min-width: 0;
 }
 
 .program-editor h2 {

@@ -587,7 +587,7 @@ Anyone can create a player account and begin playing without operator approval.
 - **Rests on:** none
 - **Derives from:** D-94
 - **Part:** account-server · browser-view
-- **Violated:** yes
+- **Violated:** no
 
 ## player-password-login
 
@@ -597,7 +597,7 @@ Player accounts sign in with an email address and password.
 - **Rests on:** none
 - **Derives from:** D-94
 - **Part:** account-server · browser-view
-- **Violated:** yes
+- **Violated:** no
 
 ## email-verification-nonblocking
 
@@ -607,7 +607,7 @@ A player can start playing after registration before confirming their email addr
 - **Rests on:** none
 - **Derives from:** D-94
 - **Part:** account-server · browser-view
-- **Violated:** yes
+- **Violated:** no
 
 ## player-argon2-password-hash
 
@@ -687,7 +687,7 @@ The browser loads the built game and sends account and save requests to relative
 - **Rests on:** fetch-same-origin-credentials
 - **Derives from:** D-106
 - **Part:** browser-view · account-server · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## account-session-authorization
 

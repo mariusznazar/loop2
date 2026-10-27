@@ -13,6 +13,7 @@ Czytaj również ogólne wytyczne kodowania.
 | File | Status | Decision |
 |---|---|---|
 | `src/browser/view/status-row.ts` | exemplar | D-36 |
+| `src/browser/view/account-screen.ts` | copy | — |
 | `src/browser/view/app.ts` | copy | — |
 | `src/browser/view/clock.ts` | copy | — |
 | `src/browser/view/controls/button.ts` | copy | — |
@@ -21,6 +22,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/controls/text-field.ts` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
 | `src/browser/view/footer.ts` | copy | — |
+| `src/browser/view/game-view.ts` | copy | — |
 | `src/browser/view/headquarters.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | copy | — |
 | `src/browser/view/terrain-panel.ts` | copy | — |
@@ -95,6 +97,19 @@ a zdanie odmowy albo braku połączenia pokazuje `createFormWarning` z
 `text-field.ts`. Pole hasła to `createPasswordField`, a przycisk, który wysyła
 formularz, dostaje `submit: true`. Wyłączony przycisk traci fokus, więc ekran
 po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
+
+### Gra na stronie i odpowiedzi serwera
+
+`src/browser/view/app.ts` buduje grę dopiero wtedy, gdy serwer potwierdzi
+konto, i usuwa ją dopiero wtedy, gdy potwierdzi wylogowanie (D-94, D-95).
+`createGameView` z `game-view.ts` zwraca element gry i `dispose()`, które
+zatrzymuje zegar (`dispose()` z `clock.ts`) i zdejmuje element ze strony,
+a z nim jego obsługę zdarzeń; moduł, który tworzy grę, wywołuje `dispose()`,
+zanim ją porzuci. Każde żądanie ekranu dostaje kolejny numer, a odpowiedź
+działa tylko wtedy, gdy jej numer jest ostatni, więc spóźniona odpowiedź nie
+buduje gry ani nie nadpisuje nowszego stanu. Brak sesji ekran rozpoznaje po
+odmowie ze statusem 401 w wyniku klienta z `account-api.ts`, a każdą inną
+porażkę pokazuje jako jedno ostrzeżenie; treści odpowiedzi nie czyta.
 
 ## Where in code
 
