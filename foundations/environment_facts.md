@@ -259,6 +259,30 @@ Cookie 0.7.2 rejects a nonempty domain or path outside its serializer's accepted
 
 - **Source:** https://raw.githubusercontent.com/jshttp/cookie/d19eaa1a2bb9ca43ac0951edd852ba4e88e410e0/index.js § serialize, domain — "if (!domainValueRegExp.test(opt.domain))" · § serialize, path — "if (!pathValueRegExp.test(opt.path))" · § serialize, expires — "if (!isDate(expires) || isNaN(expires.valueOf()))"; read 2026-10-27
 
+## express-forwarded-protocol
+
+Express 5.2.1 uses forwarded protocol only when its trust function accepts the immediate socket peer, and takes the first value from a comma-separated protocol header.
+
+- **Source:** https://raw.githubusercontent.com/expressjs/express/dbac741a49a5a64336b70c06e85c2e2706e36336/lib/request.js § protocol getter — "if (!trust(this.socket.remoteAddress, 0)) { return proto; }" · "? header.substring(0, index).trim()"; read 2026-10-27
+
+## session-proxy-security
+
+Express-session 1.19.0 uses Express's secure-request assessment when its proxy option is unspecified, while an explicit true option reads forwarded protocol directly.
+
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/index.js § issecure — "if (trustProxy !== true) { return req.secure === true }"; read 2026-10-27
+
+## cloudflare-client-address
+
+Cloudflare's CF-Connecting-IP carries the client address on ordinary edge-to-origin traffic, while Workers can affect that value and the Remove visitor IP headers transform can remove it.
+
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/fundamentals/reference/http-headers.mdx § CF-Connecting-IP — "CF-Connecting-IP provides the client IP address connecting to Cloudflare to the origin web server." · § CF-Connecting-IP in Worker subrequests — "x-real-ip can be altered by the user in their Worker script."; read 2026-10-27
+
+## cloudflare-forwarded-protocol
+
+Cloudflare sets X-Forwarded-Proto to the client's protocol and overwrites a different value supplied by the client.
+
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/fundamentals/reference/http-headers.mdx § X-Forwarded-Proto — "If the client set a different value, it will be overwritten."; read 2026-10-27
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

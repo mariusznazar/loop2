@@ -643,11 +643,11 @@ Password hashing and verification share a gate that admits at most two active na
 
 The browser carries a random session identifier in a loop2 host-scoped, Secure and HttpOnly cookie.
 
-- **Method:** review
-- **Rests on:** none
+- **Method:** test
+- **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security
 - **Derives from:** D-99
 - **Part:** account-server · browser-view · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## player-express-session-sqlite-store
 
@@ -657,7 +657,7 @@ The deployed account server uses `express-session` with a project-owned Store ba
 - **Rests on:** express-session-store-contract · node-sqlite-database
 - **Derives from:** D-105
 - **Part:** account-server · build-tools · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## account-save-durable-storage
 
@@ -713,31 +713,31 @@ Every state-changing account route refuses a missing, duplicate, malformed or no
 
 An account request in cloudflare-tunnel mode with missing, duplicate, list or malformed forwarded protocol or canonical client-IP metadata is refused before session authorization or password work, and an attacker-selected forwarded chain cannot replace the canonical limiter identity.
 
-- **Method:** review
-- **Rests on:** none
+- **Method:** test
+- **Rests on:** express-forwarded-protocol · session-proxy-security · cloudflare-client-address · cloudflare-forwarded-protocol
 - **Derives from:** D-108
 - **Part:** account-server · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## account-startup-configuration
 
 Production startup without all valid account settings and every startup with partial or invalid explicit account settings exits nonzero before listening or printing readiness.
 
-- **Method:** review
-- **Rests on:** none
+- **Method:** test
+- **Rests on:** session-secret-rotation
 - **Derives from:** D-109
 - **Part:** account-server · deployment · build-tools
-- **Violated:** yes
+- **Violated:** no
 
 ## account-schema-lifecycle
 
 Opening the account database initializes a new schema transactionally, preserves existing version-1 accounts and sessions and refuses a newer unknown schema before readiness.
 
-- **Method:** review
-- **Rests on:** none
+- **Method:** test
+- **Rests on:** node-sqlite-database
 - **Derives from:** D-110
 - **Part:** account-server · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## account-database-schema
 

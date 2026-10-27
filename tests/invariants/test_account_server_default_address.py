@@ -1,5 +1,6 @@
 """Invariant account-server-default-address: the server started without a listening address of
-its own takes 127.0.0.1:3000.
+its own takes 127.0.0.1:3000 after configuration validation. This case establishes
+wholly unconfigured non-production startup explicitly (D-109).
 
 The product is built by `npm run build` in a temporary copy of the working tree, and its built
 server `dist/server/main.js` is started there by `node` with neither `LOOP2_LISTEN_HOST` nor
@@ -28,6 +29,8 @@ import unittest
 import loop2_invariant_support as support
 
 LISTEN_VARIABLES = ("LOOP2_LISTEN_HOST", "LOOP2_LISTEN_PORT")
+ACCOUNT_VARIABLES = ("LOOP2_DATABASE_PATH", "LOOP2_SESSION_SECRET_FILE",
+                     "LOOP2_PUBLIC_ORIGIN", "LOOP2_PROXY_MODE")
 DEFAULT_READY_LINE = re.compile(r"(?m)^Loop: http://127\.0\.0\.1:3000$")
 ANY_READY_LINE = re.compile(r"(?m)^Loop: .*$")
 OCCUPIED_DEFAULT = re.compile(r"127\.0\.0\.1:3000.*EADDRINUSE|EADDRINUSE.*127\.0\.0\.1:3000")
@@ -42,7 +45,8 @@ class AccountServerDefaultAddress(unittest.TestCase):
         node = shutil.which("node")
         self.assertIsNotNone(node, "node is not on PATH")
         environment = {name: value for name, value in os.environ.items()
-                       if name not in LISTEN_VARIABLES}
+                       if name not in LISTEN_VARIABLES + ACCOUNT_VARIABLES}
+        environment["NODE_ENV"] = "test"
         log_dir = tempfile.mkdtemp(prefix="loop2-default-address-")
         self.addCleanup(shutil.rmtree, log_dir, ignore_errors=True)
         stdout_path = os.path.join(log_dir, "stdout.txt")

@@ -60,6 +60,7 @@ The part is the account and save server: it serves the built game, handles the H
 - **Files:** src/server/**
   tests/http.test.mjs
   tests/startup.test.mjs
+  tests/transport.test.mjs
   tests/passwords.test.mjs
   tests/account-storage.test.mjs
   tests/invariants/test_account_server_express_http.py
