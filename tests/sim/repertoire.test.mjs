@@ -385,16 +385,18 @@ test("creating, sending, restarting, pausing, changing the program and ending le
 });
 
 test("a character's death leaves the Understanding as it is", () => {
+  // The Understanding already holds what the first chill reveals, so the chill on the way to
+  // death discovers nothing and only death could change it.
   const understanding = {
-    actions: ["wander"],
-    conditions: ["always"],
+    actions: ["wander", "explore"],
+    conditions: ["always", "temperatureBelow"],
     items: [],
   };
   const state = advanceMinutes({ ...sent(), understanding }, 3000).state;
   assert.ok(state.run.death, "the character died");
   assert.deepEqual(state.understanding, {
-    actions: ["wander"],
-    conditions: ["always"],
+    actions: ["wander", "explore"],
+    conditions: ["always", "temperatureBelow"],
     items: [],
   });
 });
@@ -472,7 +474,8 @@ test("a rule whose target lies outside the repertoire is passed over at the star
 
 test("a rule outside the repertoire is passed over in each game minute of the map run, and no count of it grows", () => {
   const state = sentWith(WITHOUT_EXPLORE, EXPLORE_RULE, WANDER_RULE);
-  const later = advanceMinutes(state, 120).state;
+  // 80 minutes stay before the first chill at minute 84, which would discover Eksploruj.
+  const later = advanceMinutes(state, 80).state;
   const started = later.ruleCounts;
   assert.equal(started[1], 0);
   assert.ok(started[2] > 1, "the rule it knows is carried out again and again");
