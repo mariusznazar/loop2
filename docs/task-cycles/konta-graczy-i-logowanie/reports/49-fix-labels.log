@@ -1,0 +1,3 @@
+LABELS={"org.opencontainers.image.revision":"19695d670a69ea6d005a3795541b57ba4fe5a3f6","org.opencontainers.image.title":"loop2"}
+IMAGE=sha256:8a628beb0ce7adc84798d7b8d685756dc6885287b515770ced6b7a6a287dbac0
+IMAGE_ID=sha256:8a628beb0ce7adc84798d7b8d685756dc6885287b515770ced6b7a6a287dbac0
