@@ -246,15 +246,16 @@ resource or an archetype, outside its comments, by the identifier or the name th
 ## program-rule-pick
 
 In each free game minute of a map run, the character starts to carry out the first program rule
-whose condition, action and action's target lie in the character's repertoire, whose condition
-holds and whose action the character can carry out then, taking rule groups in order and the
-program rules within each in order, passing over a group whose condition does not hold or which
-holds no such program rule, carries out no program rule where no group offers one, and leaves every
-program rule it passes over in the program.
+whose condition and action, with the target of each, lie in the character's repertoire, whose
+condition holds and whose action the character can carry out then, taking rule groups in order and
+the program rules within each in order, passing over a group whose condition or its target lies
+outside the character's repertoire, whose condition does not hold or which holds no such program
+rule, carries out no program rule where no group offers one, and leaves every program rule and group
+it passes over in the program.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-23 · D-126
+- **Derives from:** D-23 · D-126 · D-127
 - **Part:** simulation
 - **Violated:** no
 

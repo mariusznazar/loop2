@@ -1306,7 +1306,7 @@ A campfire shows on the terrain panel's drawing of the game map as an icon on it
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
-A game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and the program picks a program rule from what that minute has made. Something discovered in a game minute is discovered at the step that brings it — a chill with the character's body, an action of the character with its effect — so the rest of the minute takes effect and the program's pick at its end draws on the Understanding and the program as the discovery has left them, a program rule written at the discovery included; in the game minute of death no effect of an ending action takes hold, and so it brings no discovery. A map run in which something is discovered stops once the whole game minute of the discovery has taken effect.
+A game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and the program picks a program rule from what that minute has made. Something discovered in a game minute is discovered where that order brings it — a chill with the character's body, an action of the character with its effect — so the rest of the minute takes effect and the program's pick at its end draws on the Understanding and the program as the discovery has left them, a program rule written at the discovery included; in the game minute of death no effect of an ending action takes hold, and so it brings no discovery. A map run in which something is discovered stops once the whole game minute of the discovery has taken effect.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1316,7 +1316,7 @@ A game minute of a map run takes effect in this order: first the character's bod
   - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?"
 
-*Rationale:* The world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so every effect of an action of the character acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where the step that brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel.
+*Rationale:* The world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so every effect of an action of the character acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel.
 *Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
@@ -2085,7 +2085,7 @@ and the conditions „Zostało mniej niż — ognisko” and „Z dala od — og
 - **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "1. Co odsłania co — które zdarzenie gry wprowadza do Zrozumienia które akcje, przedmioty i warunki Lasu, i co gracz zna od startu nowej gry?"
 
 *Rationale:* the first map run is a linear tutorial, so each discovery in Las offers the program
-what the next step there needs — cold, the tile, sticks, fire, food — in the order a character
+what the tutorial needs next — cold, the tile, sticks, fire, food — in the order a character
 meets them. Accepted with it: moss and fibre enter the Understanding although nothing uses them
 yet; the first lit stick reveals „Zasil — ognisko” as a lit campfire does; the conditions on the
 campfire come with the first crafted campfire, later than in loop.
@@ -2182,8 +2182,8 @@ the terrain panel hiding items not yet discovered.
 
 ### D-126 — What does the simulation do with a program rule outside the character's repertoire?
 
-The simulation passes over a program rule whose condition, action or action's target lies outside
-the character's repertoire to the next program rule, as over a program rule whose action cannot be
+The simulation passes over a program rule whose condition, action or the target of either lies
+outside the character's repertoire to the next program rule, as over a program rule whose action cannot be
 carried out in that game minute, and the program rule stays in the program.
 
 - **Scope:** simulation
@@ -2204,3 +2204,58 @@ program rule that does not act stands in the program with no sign of why.
 *Rejected:* the simulation refusing a whole program that holds a program rule outside the
 character's repertoire — a program carried to another character or another archetype would stop
 whole.
+
+### D-127 — What does the simulation do with a rule group whose condition lies outside the character's repertoire?
+
+The simulation passes over a rule group whose condition, or the target of that condition, lies
+outside the character's repertoire, together with every program rule it holds, as over a rule group
+whose condition does not hold, and the rule group stays in the program.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-119 · narrows D-23
+- **Verification:** invariants: program-rule-pick. An agent compares a change with the decision:
+  - complies: a first rule group under the condition „Zapas poniżej” of sticks, before the first
+    finished exploration, passed over for the next rule group, and the first rule group staying in
+    the program with its program rules
+  - violates: a program rule of such a rule group carried out because the group's condition holds;
+    the simulation refusing a program that holds such a rule group
+- **Origin:** none
+
+*Rationale:* a condition outside the repertoire is one the character cannot use yet, so it steers
+nothing, as a program rule outside the repertoire acts on nothing; kept in the program, the rule
+group acts once the repertoire holds its condition. Accepted with it: a rule group that does not act
+stands in the program with no sign of why.
+*Rejected:* the rule group's condition taken as holding — a condition the character cannot use would
+steer what it carries out; the simulation refusing the whole program — a program carried to another
+character or another archetype would stop whole.
+
+### D-128 — Where does what reveals an action, an item or a condition stand?
+
+What reveals each action, item and condition of the game stands in the data files beside that
+action, item or condition, as one of the kinds of revealing event the simulation handles, such as
+the first chill or the first gathered piece of an item, and a condition the Understanding holds from
+the start of a new game has none there. An action, an item or a condition revealed by a kind of
+revealing event the simulation already handles is added, or what reveals it is changed, by a change
+of data alone.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-118
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zasil — ognisko” revealed by the first finished „Zapal” through a field of its own
+    entry in the data of the actions, which the simulation reads; a condition revealed by the first
+    gathered stick added as an entry of the data of the conditions, with no change of the
+    simulation's code
+  - violates: a list in the simulation's code naming „Eksploruj” and „Wędruj” as what the first
+    chill reveals; a condition revealed by the first crafted campfire that takes a change of the
+    simulation's code to be revealed
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Settlements to record, row O9, column "What the cycle would otherwise guess"
+
+*Rationale:* what reveals a thing stands with the thing, so an action, an item or a condition is
+defined and revealed in one place, and a later discovery of a kind already handled adds data, not
+code, as the game's content does. A kind of revealing event the simulation does not handle yet takes
+a change of its code where it reads the event.
+*Rejected:* the whole chain of revelations in a table of its own, apart from the actions, items and
+conditions — a thing would be defined in one place and revealed in another; the chain written into
+the simulation's code — each later discovery would take a change of code.
