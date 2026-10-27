@@ -154,7 +154,7 @@ The application port is inaccessible from the Internet outside Cloudflare.
 
 ## loop2-host-sharing
 
-A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and neither loop2 Compose service asks the host for a privilege a default container lacks apart from the connector's read-only grant of the loop2 tunnel token file under D-13.
+A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and neither loop2 Compose service asks the host for a privilege a default container lacks apart from the connector's read-only tunnel-token grant and the application's read-only session-key grant under D-13 and its own named account-database volume under D-17.
 
 - **Method:** test
 - **Rests on:** none
@@ -501,11 +501,11 @@ Nothing `npm run build` writes holds the kitchen-sink page of the browser view o
 
 ## account-server-default-address
 
-The account and save server started with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set either prints its readiness line `Loop: http://127.0.0.1:3000` or exits with a non-zero code and a message naming `127.0.0.1:3000` as an address already in use.
+After startup configuration and required resources validate under D-111, including wholly unconfigured non-production and fully configured valid startup, the account and save server started with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set either prints its readiness line `Loop: http://127.0.0.1:3000` or exits with a non-zero code and a message naming `127.0.0.1:3000` as an address already in use.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** recovered from code — src/server/main.ts, the defaults `127.0.0.1` of `LOOP2_LISTEN_HOST` and `3000` of `LOOP2_LISTEN_PORT`, the readiness line printed on `listening`, and the `error` handler, which prints the failure with the address and sets exit code 1
+- **Derives from:** D-111
 - **Part:** account-server · build-tools
 - **Violated:** no
 
@@ -597,6 +597,226 @@ The StrykerJS configuration lists every `tests/sim/*.test.mjs` file except `rule
 - **Rests on:** none
 - **Derives from:** D-94
 - **Part:** build-tools
+- **Violated:** no
+
+## player-self-registration
+
+Anyone can create a player account and begin playing without operator approval.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-96
+- **Part:** account-server · browser-view
+- **Violated:** no
+
+## player-password-login
+
+Player accounts sign in with an email address and password.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-96
+- **Part:** account-server · browser-view
+- **Violated:** no
+
+## email-verification-nonblocking
+
+A player can start playing after registration before confirming their email address.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-96
+- **Part:** account-server · browser-view
+- **Violated:** no
+
+## player-argon2-password-hash
+
+The account server stores an encoded Argon2id hash made by the `argon2` package for each player password and verifies login passwords through that package.
+
+- **Method:** test
+- **Rests on:** argon2-password-api
+- **Derives from:** D-106
+- **Part:** account-server · build-tools
+- **Violated:** no
+
+## player-argon2-deployment-check
+
+The deployed loop2 container image has passed, after warmup, at least 20 hashes and 20 verifications with the configured Argon2id cost settings two at a time, a correct and a wrong password check and the refusal of a third concurrent operation in a container limited, without swap, to at most 80% of its 512 MiB deployment limit, which did not restart and whose cgroup counted no hit of that limit and no out-of-memory kill.
+
+- **Method:** review
+- **Rests on:** cgroup-memory-accounting
+- **Derives from:** D-106
+- **Part:** account-server · build-tools · deployment
+- **Violated:** no
+
+## password-operation-gate
+
+Password hashing and verification share a gate that admits at most two active native operations, refuses excess work without waiting, and releases each slot after success or failure.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-103 · D-113
+- **Part:** account-server · build-tools
+- **Violated:** no
+
+## player-opaque-session-cookie
+
+The browser carries a random session identifier in a loop2 host-scoped, Secure and HttpOnly cookie.
+
+- **Method:** test
+- **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security
+- **Derives from:** D-101
+- **Part:** account-server · browser-view · deployment
+- **Violated:** no
+
+## player-express-session-sqlite-store
+
+The deployed account server uses `express-session` with a project-owned Store backed by `node:sqlite` for player sessions, not its default `MemoryStore`.
+
+- **Method:** review
+- **Rests on:** express-session-store-contract · node-sqlite-database
+- **Derives from:** D-107
+- **Part:** account-server · build-tools · deployment
+- **Violated:** no
+
+## account-save-durable-storage
+
+Replacing the application container preserves the SQLite database of player accounts and saved game states.
+
+- **Method:** review
+- **Rests on:** docker-volume-lifecycle
+- **Derives from:** D-17 · C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\definicja_mvp_loop2.md § Projected foundation changes, account-save-durable-storage/1 — "Replacing the application container preserves the SQLite database of player accounts and saved game states."; read 2026-10-27
+- **Part:** account-server · deployment
+- **Violated:** yes
+
+## account-save-sqlite-access
+
+The account and save server accesses its SQLite database through Node.js's built-in `node:sqlite` module rather than an external SQLite driver.
+
+- **Method:** review
+- **Rests on:** node-sqlite-database
+- **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/definicja_mvp_loop2.md § Projected foundation changes, account-save-sqlite-access/1 — "The account and save server accesses its SQLite database through Node.js's built-in `node:sqlite` module rather than an external SQLite driver."; read 2026-10-26
+- **Part:** account-server · build-tools · deployment
+- **Violated:** no
+
+## loop2-shared-public-origin
+
+The browser loads the built game and sends account and save requests to relative `/api/` paths at the same public HTTPS origin.
+
+- **Method:** review
+- **Rests on:** fetch-same-origin-credentials
+- **Derives from:** D-108
+- **Part:** browser-view · account-server · deployment
+- **Violated:** no
+
+## account-session-authorization
+
+The account API returns JSON 401 for `GET /api/account`, and for `POST /api/logout` that meets the Origin, media-type and body requirements, without a valid server-side session, and an account identifier supplied by the caller cannot authorize reading or changing another account or session.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-109
+- **Part:** account-server
+- **Violated:** no
+
+## account-mutation-request-guards
+
+Every state-changing account route refuses a missing, duplicate, malformed or nonmatching Origin and a non-JSON, compressed, oversized or structurally invalid body before password work or mutation.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-104
+- **Part:** account-server
+- **Violated:** no
+
+## account-request-transport
+
+An account request in cloudflare-tunnel mode with missing, duplicate, list or malformed forwarded protocol or canonical client-IP metadata is refused before session authorization or password work, and an attacker-selected forwarded chain cannot replace the canonical limiter identity.
+
+- **Method:** test
+- **Rests on:** express-forwarded-protocol · session-proxy-security · cloudflare-client-address · cloudflare-forwarded-protocol
+- **Derives from:** D-110
+- **Part:** account-server · deployment
+- **Violated:** no
+
+## account-startup-configuration
+
+Production startup without all valid account settings and every startup with partial or invalid explicit account settings exits nonzero before listening or printing readiness.
+
+- **Method:** test
+- **Rests on:** session-secret-rotation
+- **Derives from:** D-111
+- **Part:** account-server · deployment · build-tools
+- **Violated:** no
+
+## account-schema-lifecycle
+
+Opening the account database initializes a new schema transactionally, preserves existing version-1 accounts and sessions and refuses a newer unknown schema before readiness.
+
+- **Method:** test
+- **Rests on:** node-sqlite-database
+- **Derives from:** D-112
+- **Part:** account-server · deployment
+- **Violated:** no
+
+## account-database-schema
+
+Opening an account database initializes version 1 atomically, preserves its existing accounts and sessions on reopen, and rejects an unknown newer schema without changing its version or records.
+
+- **Method:** test
+- **Rests on:** node-sqlite-database
+- **Derives from:** D-112
+- **Part:** account-server
+- **Violated:** no
+
+## account-session-storage
+
+The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
+
+- **Method:** test
+- **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation
+- **Derives from:** D-112 · D-115
+- **Part:** account-server
+- **Violated:** no
+
+## account-attempt-limits
+
+The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes since its last successful login or within 15 minutes of its fifth failure, a login from a client address with twenty failed or unsettled logins in the last 15 minutes and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only after the password work it started has completed, whether or not its client is still connected.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-102 · D-103 · D-116
+- **Part:** account-server
+- **Violated:** no
+
+## account-attempt-tracking
+
+When the account server's table of tracked email or client-address keys is full of live entries, an attempt that needs a new key is refused without evicting a live entry, and entries whose histories, locks and reservations have all ended release their place.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-103 · D-116
+- **Part:** account-server
+- **Violated:** no
+
+## account-client-requests
+
+The browser account client sends each account request to one of the relative `/api/` account paths with the method and JSON body that route takes, and follows no redirect.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-108 · D-117
+- **Part:** browser-view
+- **Violated:** no
+
+## account-client-outcomes
+
+The browser account client returns an account only for the success status of its request with a body holding a non-empty string `id` and `email`, and returns every other answer, a failed connection and an answer not complete within its time limit as a failure.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-117
+- **Part:** browser-view
 - **Violated:** no
 
 ## Withdrawn identifiers

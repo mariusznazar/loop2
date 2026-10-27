@@ -15,6 +15,16 @@ human's. Use `SKILL.md` for allowed read commands and limits.
 | 7 | Application type check/build or connector pull/build failed; both old containers remain. Fix the request or `main` as appropriate. |
 | 8 | Either service failed readiness or internal HTTP failed; partial availability is possible. Read both bounded service logs, then recover with the correct procedure below. |
 
+A failing application whose log names a setting is read as follows (the log names the
+setting, never a value):
+
+| Log text | Human check |
+|---|---|
+| `Invalid or unavailable account configuration: LOOP2_SESSION_SECRET_FILE` | `/etc/loop2/session-secrets` exists with `stat -c '%U %g %a'` giving `root 1000 440`, is one JSON array of distinct 43-character base64url keys and is at most 16 KiB. Rebuild it with the sequences in `setup_and_secrets.md`, not by editing it by hand. |
+| `Invalid or unavailable account configuration: LOOP2_DATABASE_PATH` | The volume `loop2_accounts` is mounted at `/app/data` and writable by uid 1000 (`docker volume inspect loop2_accounts`), and the database is not from a newer schema than this commit knows (see below). |
+| `Invalid or unavailable account configuration: LOOP2_PUBLIC_ORIGIN` or `LOOP2_PROXY_MODE` | Compose supplies them; a mismatch means the checkout's `compose.yaml` was changed. Report to the task. |
+| `Account password readiness failed` | The password hash self-test failed at start; report with the bounded log. |
+
 Exits 2–7 preserve the old running containers; there may be none on a first installation.
 After failed health waiting, the last 50 lines of each service's log are also in the deploy
 log. After failed HTTP, read `docker compose -p loop2 logs --tail 100 app cloudflared` from
@@ -74,11 +84,38 @@ different. This checks host TCP over IPv4 only. It proves no container path and 
 path. The same check can target the other official endpoint `region2.v2.argotunnel.com`; the
 recorded host observation covers region1 only. Do not open port 18080 as a tunnel repair.
 
+## Rollback and the accounts
+
+A rollback deploys earlier code (D-15). The data does not move with it:
+
+- The volume `loop2_accounts` and the key file `/etc/loop2/session-secrets` lie outside the
+  image and the checkout. A rollback, a revert, a redeployment of the same commit and
+  `--remove-orphans` leave them as they are.
+- **Accounts and sessions made after the target commit stay;** nothing is restored from an
+  earlier time. There is no earlier image to run and no copy of the database anywhere but the
+  server, so a lost volume cannot be brought back.
+- **Rolling back to a commit with accounts:** players stay signed in as long as the key file
+  still holds the key their cookie was signed with. The file is not rolled back with the code.
+- **Rolling back to a commit without accounts:** that commit's Compose file does not mention
+  the volume or the key file, so both stay unused on the server and the accounts are not
+  visible. Deploying forward again shows them. Until then no loop2 container references the
+  volume, which is exactly the state a volume prune would clear; run none.
+- **A database newer than the code:** an application refuses a database whose schema version
+  it does not know. The current code writes schema version 1. A target commit that knows only
+  an older schema fails health (exit 8) on a newer database; the recovery is deploying a
+  commit that knows the schema, since the data has no way back.
+- **Session keys in a rollback:** restoring an old private copy of the key file puts an old
+  key first again; follow "Putting an old key first again" in `setup_and_secrets.md`.
+
+The human runs the rollback itself: `loop2-deploy <earlier sha>` or a merged revert, as above.
+After it, check health, the internal probe and, for a commit with accounts, that a test account
+still logs in. A rollback across the tunnel transition also needs the next section.
+
 ## Rollback across the tunnel transition
 
 Stay in a no-other-merges window until recovery is verified. Before changing anything, retain
 the target application SHA from the deploy log and the old IPv6/rule values from the private
-note. This transport task changes no game data; rebuilding code never restores historical data.
+note. Rebuilding code never restores historical data (see the previous section).
 
 **Fast recovery:** the human installs the script extracted from the exact earlier target SHA
 (fetch it first if necessary), validates it with `bash -n`, and installs it root-owned 0755 as

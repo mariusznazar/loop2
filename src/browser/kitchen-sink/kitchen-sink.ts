@@ -9,10 +9,19 @@
 import { RESOURCES } from "../sim/data/resources.js";
 import { hexCenter, hexCorners, tileLabel } from "../sim/hex.js";
 import type { Hex } from "../sim/types.js";
-import { createButton, type ButtonKind } from "../view/controls/button.js";
+import {
+  createButton,
+  setButtonWaiting,
+  type ButtonKind,
+} from "../view/controls/button.js";
 import { createNumberField } from "../view/controls/number-field.js";
 import { createSelectList } from "../view/controls/select-list.js";
-import { createTextField, type Field } from "../view/controls/text-field.js";
+import {
+  createFormWarning,
+  createPasswordField,
+  createTextField,
+  type Field,
+} from "../view/controls/text-field.js";
 
 /** The page's marker: it stands in this module and in the page's HTML, in no other file of src. */
 export const PAGE_MARKER = "loop2-kitchen-sink-page";
@@ -44,8 +53,12 @@ const NOT_APPLYING = {
   buttonError: "Nie dotyczy: przycisk nie ma niepoprawnej wartości.",
   buttonEmpty: "Nie dotyczy: przycisk nie ma pozycji ani wpisu.",
   listError: "Nie dotyczy: lista podaje tylko poprawne pozycje.",
-  loading:
-    "Nie dotyczy: gra liczy się w przeglądarce i nie czeka na serwer (D-44).",
+  buttonLoading:
+    "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz (D-44).",
+  listLoading:
+    "Nie dotyczy: żaden formularz, który czeka na serwer, nie ma listy wyboru (D-44).",
+  numberLoading:
+    "Nie dotyczy: żaden formularz, który czeka na serwer, nie ma pola liczby (D-44).",
 };
 
 /** A sample of a control in a state, or the reason the state does not apply to it. */
@@ -61,11 +74,19 @@ function forced(element: HTMLElement, state: State): void {
   if (state === "focus") element.classList.add("sample-focus");
 }
 
-function buttonSample(text: string, kind: ButtonKind) {
+/** The button of a form waiting for the server, and the text it shows meanwhile. */
+const WAITING_BUTTON = ["Zaloguj się", "Logowanie…"] as const;
+
+function buttonSample(text: string, kind: ButtonKind, waits = false) {
   return (state: State): Sample => {
     if (state === "error") return NOT_APPLYING.buttonError;
     if (state === "empty") return NOT_APPLYING.buttonEmpty;
-    if (state === "loading") return NOT_APPLYING.loading;
+    if (state === "loading") {
+      if (!waits) return NOT_APPLYING.buttonLoading;
+      const waiting = createButton(WAITING_BUTTON[0], { kind });
+      setButtonWaiting(waiting, WAITING_BUTTON[1]);
+      return waiting;
+    }
     const button = createButton(text, { kind });
     button.disabled = state === "disabled";
     forced(button, state);
@@ -75,7 +96,7 @@ function buttonSample(text: string, kind: ButtonKind) {
 
 function selectListSample(state: State): Sample {
   if (state === "error") return NOT_APPLYING.listError;
-  if (state === "loading") return NOT_APPLYING.loading;
+  if (state === "loading") return NOT_APPLYING.listLoading;
   const list = createSelectList(
     "Lista wyboru",
     state === "empty"
@@ -90,12 +111,21 @@ function selectListSample(state: State): Sample {
   return list;
 }
 
-function fieldSample(make: () => Field, value: string, wrong: string) {
+/**
+ * A field in each state; `loading` is the reason the state does not apply to a field of its kind,
+ * or null where the field is locked while its form waits for the server.
+ */
+function fieldSample(
+  make: () => Field,
+  value: string,
+  wrong: string,
+  loading: string | null,
+) {
   return (state: State): Sample => {
-    if (state === "loading") return NOT_APPLYING.loading;
+    if (state === "loading" && loading !== null) return loading;
     const field = make();
     field.input.value = state === "empty" ? "" : value;
-    field.input.disabled = state === "disabled";
+    field.input.disabled = state === "disabled" || state === "loading";
     if (state === "error") {
       field.input.value = wrong;
       field.setError("Wpis jest niepoprawny.");
@@ -107,7 +137,7 @@ function fieldSample(make: () => Field, value: string, wrong: string) {
 
 /** The six shared controls of D-44, each with the maker of its samples. */
 const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
-  ["Przycisk", buttonSample("Wyślij", "plain")],
+  ["Przycisk", buttonSample("Wyślij", "plain", true)],
   ["Przycisk niszczący", buttonSample("Zakończ", "destructive")],
   ["Przycisk wybrany w grupie", buttonSample("Wybrany", "selected")],
   ["Lista wyboru", selectListSample],
@@ -124,6 +154,7 @@ const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
         }),
       "12",
       "120",
+      NOT_APPLYING.numberLoading,
     ),
   ],
   [
@@ -132,6 +163,16 @@ const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
       () => createTextField({ label: "Pole tekstowe", hint: "podpowiedź" }),
       "Tekst wpisu",
       "?",
+      null,
+    ),
+  ],
+  [
+    "Pole hasła",
+    fieldSample(
+      () => createPasswordField({ label: "Pole hasła", hint: "hasło" }),
+      "przykładowe-hasło",
+      "krótkie",
+      null,
     ),
   ],
 ];
@@ -172,6 +213,99 @@ function controlsSection(): HTMLElement {
   panel.className = "sample-panel";
   panel.append(table);
   return section("Wspólne kontrolki w stanach", panel);
+}
+
+// --- forms waiting for the server -----------------------------------------------------------
+
+/** The sentences of the task and of the client in `account-api.ts`, as a form shows them (D-44). */
+const REFUSAL = "Nieprawidłowy adres e-mail lub hasło.";
+const NO_CONNECTION = "Brak połączenia z serwerem. Spróbuj ponownie.";
+
+/**
+ * A form of the account screen as the page shows it, with a made-up address and password: the
+ * sign-in form or the registration form, waiting for the server (its fields locked and its button
+ * waiting) or with the sentence of a refusal under it.
+ */
+function formSample(
+  kind: "login" | "register",
+  state: "waiting" | "warning",
+  sentence: string | null,
+): HTMLElement {
+  const registering = kind === "register";
+  const form = document.createElement("form");
+  form.className = "form";
+  // The page sends nothing: the handler only keeps the page from reloading on Enter.
+  form.addEventListener("submit", (event) => event.preventDefault());
+  const fields = [
+    createTextField({
+      label: "Adres e-mail",
+      hint: "adres e-mail",
+      visibleLabel: true,
+      autocomplete: "email",
+    }),
+    createPasswordField({
+      label: "Hasło",
+      hint: "hasło",
+      visibleLabel: true,
+      autocomplete: registering ? "new-password" : "current-password",
+    }),
+  ];
+  if (registering)
+    fields.push(
+      createPasswordField({
+        label: "Powtórz hasło",
+        hint: "hasło jeszcze raz",
+        visibleLabel: true,
+        autocomplete: "new-password",
+      }),
+    );
+  const values = [
+    "przyklad@example.com",
+    "przykładowe-hasło",
+    "przykładowe-hasło",
+  ];
+  fields.forEach((field, index) => {
+    field.input.value = values[index];
+    field.input.disabled = state === "waiting";
+  });
+  const button = createButton(registering ? "Załóż konto" : "Zaloguj się", {
+    submit: true,
+  });
+  if (state === "waiting")
+    setButtonWaiting(button, registering ? "Zakładanie konta…" : "Logowanie…");
+  const warning = createFormWarning();
+  warning.set(sentence);
+  form.append(...fields.map((field) => field.element), button, warning.element);
+  return form;
+}
+
+function formsSection(): HTMLElement {
+  const samples: readonly (readonly [string, HTMLElement])[] = [
+    [
+      "Zaloguj się: oczekiwanie na serwer",
+      formSample("login", "waiting", null),
+    ],
+    [
+      "Załóż konto: oczekiwanie na serwer",
+      formSample("register", "waiting", null),
+    ],
+    ["Zaloguj się: odmowa serwera", formSample("login", "warning", REFUSAL)],
+    [
+      "Załóż konto: brak połączenia",
+      formSample("register", "warning", NO_CONNECTION),
+    ],
+  ];
+  const list = document.createElement("div");
+  list.className = "form-samples";
+  for (const [name, form] of samples) {
+    const figure = document.createElement("figure");
+    figure.className = "form-sample";
+    const caption = document.createElement("figcaption");
+    caption.textContent = name;
+    figure.append(form, caption);
+    list.append(figure);
+  }
+  return section("Formularze czekające na serwer", list);
 }
 
 // --- roles ----------------------------------------------------------------------------------
@@ -452,4 +586,10 @@ const title = document.createElement("h1");
 title.textContent = "Loop — strona wszystkich stanów";
 header.append(title);
 document.body.dataset.page = PAGE_MARKER;
-document.body.append(header, controlsSection(), rolesSection(), tilesSection());
+document.body.append(
+  header,
+  controlsSection(),
+  formsSection(),
+  rolesSection(),
+  tilesSection(),
+);

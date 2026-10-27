@@ -105,6 +105,31 @@
   opacity: var(--depleted);
 }
 
+/* The samples of forms of the account screen, side by side as far as the page is wide. */
+.form-samples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-xl);
+}
+
+.form-sample {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  max-width: 260px;
+  margin: 0;
+  padding: var(--space-m) var(--space-l);
+  background: var(--panel);
+  color: var(--text);
+  border: var(--frame-width) solid var(--divider);
+}
+
+.form-sample figcaption {
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
 .tile-samples {
   display: flex;
   flex-wrap: wrap;

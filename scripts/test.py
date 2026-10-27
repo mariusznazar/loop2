@@ -8,8 +8,7 @@ import sys
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-NODE_TESTS = ["tests/http.test.mjs", "tests/startup.test.mjs",
-              "tests/sim/*.test.mjs", "tests/view/*.test.mjs"]
+NODE_TESTS = ["tests/*.test.mjs", "tests/sim/*.test.mjs", "tests/view/*.test.mjs"]
 
 
 def command(*arguments):

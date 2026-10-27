@@ -102,6 +102,237 @@ the role labels here are not server usernames. Keep the target SHA for the subse
 deployment. The installed-script comparison merely warns, so selecting the correct script is
 part of this procedure, especially across a route change.
 
+## Session signing keys
+
+The application signs its session cookie with keys from `/etc/loop2/session-secrets`. In
+`compose.yaml` the secret `loop2_session_secrets` has this host file as its source and is
+granted to `app` alone, which sets `LOOP2_SESSION_SECRET_FILE` to
+`/run/secrets/loop2_session_secrets`; the connector does not receive it. Compose ignores
+`uid`/`gid`/`mode` for a file-backed secret, so inside the container the host file's owner and
+mode apply. The process runs as `node`, uid and gid 1000, hence owner root, group **1000**,
+mode **0440**: readable by root and by group 1000, by no one else.
+
+The file is UTF-8 JSON on one line: an array of distinct base64url strings, each the encoding
+of exactly 32 random bytes (43 characters), the **newest first**, in at most 16 KiB. The
+application signs with the first key and accepts a cookie signed by any key in the file. A
+missing, unreadable, empty, malformed or duplicated file stops the application before it
+listens; its log names the setting `LOOP2_SESSION_SECRET_FILE`, never the contents.
+
+Leave `/etc/loop2` itself as it is (deployment account as owner, group 65532, mode 0750; see
+H2). Run the sequences below in bash as root on the server, from a private terminal. They put
+no key into a command argument and no key into shell history. Never print the file in a
+logged or shared session.
+
+**Creating the file** (once, before the first deployment of a commit with accounts; without
+it that deployment ends with exit 8). The sequence does nothing if the file already exists,
+since replacing it signs every player out. Each block below runs in a subshell, so the
+`umask` does not stay set in your shell, and each step depends on the one before it, so the
+block can be pasted whole: when a check fails, nothing after it runs and the file is not
+changed.
+
+```sh
+f=/etc/loop2/session-secrets
+( umask 077
+  test ! -e "$f" &&
+  key=$(head -c 32 /dev/urandom | base64 -w0 | tr '+/' '-_' | tr -d '=') &&
+  test "${#key}" -eq 43 &&
+  tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX) &&
+  trap 'rm -f -- "$tmp"' EXIT &&
+  printf '["%s"]\n' "$key" > "$tmp" &&
+  chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" &&
+  mv -T -- "$tmp" "$f" )
+stat -c '%U %g %a' "$f"
+wc -c < "$f"
+```
+
+Expected: `root 1000 440`, then `48` (two quotes, two brackets, 43 characters, a newline).
+Then copy the file's whole content into the owner's private note: read it with `cat` in a
+private terminal and paste it there. Do this before the deployment.
+
+**Rotating: a new key first, the old one kept.**
+
+1. Set the file from the current one with a new key prepended. The block stops, with the file
+   unchanged, if the file is not in the one-line form this procedure writes (`["<key>"]` or
+   `["<key>","<key>"]`; an empty or pretty-printed file is refused). Its guard prints STOP and
+   then fails, and every later step depends on it:
+
+   ```sh
+   f=/etc/loop2/session-secrets
+   ( umask 077
+     current=$(cat "$f") &&
+     case $current in '["'*'"]') ;; *) echo "STOP: not in the one-line form"; false ;; esac &&
+     key=$(head -c 32 /dev/urandom | base64 -w0 | tr '+/' '-_' | tr -d '=') &&
+     test "${#key}" -eq 43 &&
+     tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX) &&
+     trap 'rm -f -- "$tmp"' EXIT &&
+     printf '["%s",%s\n' "$key" "${current#\[}" > "$tmp" &&
+     chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" && mv -T -- "$tmp" "$f" )
+   stat -c '%U %g %a' "$f"
+   ```
+
+   After STOP the file is as it was; bring it into the one-line form from the private note
+   first, then run the block again.
+2. Replace the private note's copy with the file's new content.
+3. Read the running application commit from its label (not the checkout's HEAD) and deploy
+   exactly that commit with the installed script, as for the tunnel token. Deployment
+   force-recreates the application, which reads the file again; players stay signed in. The
+   server log's line `deployed <sha>, previously <sha>` gives the moment the old key stopped
+   signing; write it into the private note next to the old key.
+4. Check, as in the persistence step of "Deploying a request head and accepting it", that a
+   player who was signed in before is still signed in.
+
+**Retiring an old key.** Remove a key no earlier than **30 days after the last deployment
+that could sign with it**: that is the moment recorded in step 3, since a session lasts 30
+days from its last request and every response is signed again with the first key. Removing it
+earlier signs out the players whose cookies were last signed with it. With at least two keys
+in the file, this drops the oldest one (the last):
+
+```sh
+f=/etc/loop2/session-secrets
+( umask 077
+  current=$(cat "$f") &&
+  case $current in '["'*'","'*'"]') ;; *) echo "STOP: fewer than two keys, or not the one-line form"; false ;; esac &&
+  tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX) &&
+  trap 'rm -f -- "$tmp"' EXIT &&
+  printf '%s]\n' "${current%,\"*}" > "$tmp" &&
+  chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" && mv -T -- "$tmp" "$f" )
+stat -c '%U %g %a' "$f"
+```
+
+After STOP the file is as it was. Otherwise update the private note, then redeploy
+the running application commit as in step 3. A key that leaked is removed at once, accepting
+that the players with cookies signed by it must log in again.
+
+**Putting an old key first again** (restoring an earlier private copy, or any file whose first
+key is an older one): that key signs again, so its 30 days start only at the deployment that
+next makes another key first; keep every key that signed meanwhile until then. Never delete
+the file to "reset" the keys: the application refuses to start without it.
+
+## The account database
+
+The database is the file `/app/data/accounts.sqlite` in the named Docker volume
+`loop2_accounts`, which only `app` mounts at `/app/data`. The deployment's own `compose up`
+creates the volume; nothing is prepared on the host. The image creates `/app/data` owned by
+`node`, so a new volume starts writable for the application. The environment variable
+`LOOP2_DATABASE_PATH` carries that path, and the application opens the database before it
+listens. It keeps recent writes in companion files next to `accounts.sqlite` (write-ahead
+log), so copying the one file while the application runs does not copy the database.
+
+- Replacing the container, redeploying the same commit and rolling back code keep the volume.
+  `docker compose down`, `docker system prune --volumes` and `docker volume prune` remove it
+  when no loop2 container references it; none of these is part of any loop2 procedure.
+- Docker keeps the volume in its own data directory on the server; the human finds it with
+  `docker volume inspect loop2_accounts` and opens it only as root or through Docker.
+- The database holds e-mail addresses and password hashes. No agent reads or copies it, and
+  nothing here copies it off the server: losing the volume loses the accounts.
+
+## Deploying a request head and accepting it
+
+The request stays a blocked draft until the password measurement and the public journey have
+been done on its head commit. The human does everything here (D-12).
+
+1. **Script.** The installed script is reinstalled only when the head changes
+   `deploy/loop2-deploy`: compare it with the installed copy as `troubleshooting.md` describes
+   and, if they differ in behaviour, install from the exact head as above before deploying.
+   The commands in this skill work with the script as it is.
+2. **Session keys.** The file exists with the expected owner, group and mode (see above).
+3. **Deployment.** Run `loop2-deploy <request head sha>` with `SSH_ORIGINAL_COMMAND` unset.
+   The server log must end with `deployed <sha>, previously <sha>`. Check both services'
+   health, the internal probe and both limits with the narrow commands in `SKILL.md`.
+4. **Measurement.** Run the next section on this commit.
+5. **Public journey,** in a browser at `https://loop2.mariusznazar.com/`, with a test account:
+   the address `<test account address from the private note>` and a password of 12 to 128
+   characters from the same note.
+   - Signed out, the page shows the two forms and no game or Program panel.
+   - Create the account: the headquarters appears at once and the header shows the logout
+     button.
+   - Reload: the headquarters appears straight away.
+   - Persistence: run step 3 again for the same commit, then reload; the same session still
+     reaches the headquarters. Log out, log in with the same address and password; it works.
+     This shows that accounts and sessions survive container replacement; saved game states
+     are not checked here.
+   - A wrong password shows the single message `Nieprawidłowy adres e-mail lub hasło.`
+   - Logout shows the forms again and no game.
+   - An unknown `/api/` path still answers JSON 404, not HTML.
+   - The limits are 5 failed logins per address in 15 minutes, 20 failed logins per client
+     address in 15 minutes and 5 new accounts per client address in an hour; do not trip them
+     while testing. A restart or deployment resets the counters.
+
+   The test account stays in the database afterwards. Report the observations before merge.
+
+## Measuring the password work of the deployed image
+
+The human runs this after `loop2-deploy` has deployed the request's head commit, to check
+`player-argon2-deployment-check` on the test server. Agents do not run it: it starts a
+container on the server.
+
+**What it needs**
+
+- A shell on the server as root, the shell the deployment is run from. The commands below are
+  bash.
+- The host's Node.js, version 20 or later (`node --version`). The launcher uses only Node's
+  built-in modules; the measurement itself runs on the image's own Node.js 24.
+- The checkout `/srv/loop2`, which the deployment leaves at the deployed commit.
+
+**Steps**
+
+1. Check that the server has room for a temporary container of 409 MiB:
+
+   ```bash
+   grep MemAvailable /proc/meminfo
+   ```
+
+   The value should be at least `1048576 kB`, the deployment's own build threshold. If it is
+   lower, wait and check again.
+2. Measure:
+
+   ```bash
+   sha=<the 40-character request head>
+   cd /srv/loop2
+   git rev-parse HEAD
+   docker inspect --type container --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' loop2
+   node --version
+   image=$(docker inspect --type container --format '{{.Image}}' loop2)
+   node scripts/measure-passwords.mjs --image "$image" --commit "$sha" --memory 512m > "/tmp/measure-$sha.txt"
+   echo $?
+   tail -n 1 "/tmp/measure-$sha.txt"
+   ```
+
+   - `git rev-parse HEAD` and the label must both print the value of `$sha`. If the label
+     differs, the running container is not the request head: stop and report. If git refuses
+     the checkout as root with `dubious ownership`, `cat /srv/loop2/.git/HEAD` prints the same
+     commit, because the deployment leaves the checkout detached at it.
+   - `--memory 512m` is the deployment's memory limit. The launcher runs the measurement under
+     80% of it, rounded down to whole MiB: 409 MiB, 428867584 bytes.
+3. Read the result. The number `echo $?` printed is the measurement's exit code, and the last
+   line of the file is its verdict.
+   - **0, last line `PASS`:** the deployed image passed. In a container limited to 409 MiB with
+     no swap, the kernel counted no hit of that limit and no OOM kill, so its memory stayed
+     below 80% of 512 MiB. Keep the file. It holds the JSON report: Node and argon2 versions,
+     profile, gate, operation counts, times, cgroup version, limit, the counts of limit hits
+     and OOM kills, current memory and, where the kernel records one, peak memory; kernel 5.15
+     records none, so the peak reads `null`. It holds no password, hash, cookie or secret.
+     `/tmp` does not keep the file for long: copy its content into the report on the request.
+   - **1, last line `FAIL: ...`:** the deployed image did not pass, or its environment could
+     not be measured. Report the file.
+     - `the container's memory reached its limit of 428867584 bytes`, `a process of the
+       container was killed for lack of memory` or `the container was killed for lack of
+       memory` means the password work does not fit in 80% of 512 MiB. The password profile or
+       the gate has to change in code; then rebuild, redeploy and measure again. Never measure
+       an older image instead.
+     - `cgroup memory accounting is unavailable`, or another line naming a `cgroup file`, means
+       Docker on the server does not show the memory counts the verdict needs. The result
+       cannot be judged and goes back to the task's cycle.
+   - **2, the file is empty:** the arguments were wrong. The reason and the usage line went to
+     the terminal, not to the file, because `>` keeps only standard output.
+
+**What it changes on the server.** The launcher starts one container from the deployed image:
+no network, no volume, no secret and no environment of the application; limited to 409 MiB
+with no swap, with no restarts; named `loop2-password-measure-<random>`. It removes the
+container afterwards, also after a failure. The running `loop2` container, its database volume
+and its secrets are not touched. The extra load is two password operations at a time for a few
+seconds; locally, the 40 measured operations took 3.4 s.
+
 ## The five GitHub secrets
 
 | Secret | Holds |
@@ -126,6 +357,8 @@ not an additional GitHub secret; the existing automation key transports only a c
   replaced file and establishing a new connector connection. Verify readiness and the public
   page/API. This rebuild/recreate causes the normal short outage. A plain Compose restart is
   not this rotation procedure; an existing connection may remain active after token refresh.
+- **Session signing keys:** a new key first, the old one kept 30 days; see "Session signing keys"
+  above. A rotation redeploys the running application commit and signs no player out.
 - **Automation key:** append the new restricted public key, replace `DEPLOY_SSH_KEY`, verify a
   deployment, then remove the old authorized line and server copy of the private key.
 - **Repository Deploy key:** add a new read-only key, update the SSH alias, verify a fetch,

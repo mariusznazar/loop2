@@ -156,7 +156,7 @@ z jego testem.
 
 - **Decision:** D-38 · D-44
 - **Invariant:** none
-- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`.
+- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
 
 Wspólne kontrolki stoją w `src/browser/view/controls/`, a ekrany budują z nich
@@ -173,9 +173,20 @@ stanów:
 - error — w polach przyjmujących wpis ramka i komunikat pod polem w `warning`;
 - empty — w listach i polach: lista bez pozycji, puste pole z podpowiedzią
   w `text-label`;
-- loading — nie dotyczy żadnej kontrolki, bo gra liczy się w przeglądarce
-  i nie czeka na serwer; dotyczy dopiero kontrolki, która na serwer czeka
-  (D-44).
+- loading — dotyczy kontrolki, która czeka na odpowiedź serwera (D-44):
+  przycisk jest wyłączony, a jego tekst stoi w `text-disabled`; przycisk
+  wysyłający formularz zmienia napis na „Logowanie…” albo „Zakładanie
+  konta…” zależnie od formularza, a pola tego formularza są wyłączone, więc
+  też mają tekst w `text-disabled`. Nie ma ruchomego wskaźnika. Odmowa
+  serwera i brak połączenia przy formularzu stoją jednym zdaniem pod
+  formularzem w `warning` (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
+  klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
+  gracz zaczął.
+
+Pole hasła to pole tekstowe z ukrytym wpisem (przeglądarka maskuje znaki)
+i ma te same stany co ono. Pole z widoczną etykietą stawia jej tekst nad polem
+w `text-label`. Formularz stawia pod swoim przyciskiem jedno zdanie w `warning`, a przycisk,
+który go wysyła, jest przyciskiem zatwierdzającym.
 
 Kontrolki odstępujące od tej listy stanów:
 
@@ -184,9 +195,14 @@ Kontrolki odstępujące od tej listy stanów:
   niepoprawnej wartości; empty nie dotyczy, bo przycisk nie ma pozycji ani
   wpisu. Przycisk niszczący ma tekst w `danger`; są nim „Zakończ”, „Usuń”
   i „Restart” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
-  w `text-strong` (D-40).
+  w `text-strong` (D-40). Loading dotyczy tylko zwykłego przycisku, który
+  czeka na odpowiedź serwera; przycisk niszczący i przycisk wybrany w grupie
+  nie czekają na serwer.
 - `src/browser/view/controls/select-list.ts` — lista wyboru: error nie
-  dotyczy, bo lista podaje tylko poprawne pozycje.
+  dotyczy, bo lista podaje tylko poprawne pozycje; loading nie dotyczy, bo
+  żaden formularz czekający na serwer jej nie ma.
+- `src/browser/view/controls/number-field.ts` — pole liczby: loading nie
+  dotyczy, bo żaden formularz czekający na serwer go nie ma.
 
 Kontrolka, która odstępuje od listy stanów, stoi tu ze swoją ścieżką i powodem;
 reguła nie powtarza listy kontrolek, którą trzyma kod. Przegląd porównuje stany
@@ -254,7 +270,9 @@ Strona wszystkich stanów to `src/browser/kitchen-sink/index.html` — kod
 produktu, nie część tekstu styleguide'u. Buduje ją i otwiera lokalnie osobna
 komenda `npm run kitchen-sink`; nic, co pisze `npm run build`, a to trafia na
 serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontrolkę
-w każdym stanie albo z powodem, dla którego stan nie dotyczy, każdą rolę
+w każdym stanie albo z powodem, dla którego stan nie dotyczy, formularze
+logowania i zakładania konta czekające na serwer i ze zdaniem odmowy pod nimi
+(z wartościami zmyślonymi, bez stanu gry), każdą rolę
 z tabeli Roles i próbki wyglądu kafelków w każdym stanie, narysowane rolami —
 nigdy rysunek gry ze stanu gry (D-04, D-45). Nowa wspólna kontrolka, nowy stan
 albo nowa rola trafia na stronę w tej samej zmianie.

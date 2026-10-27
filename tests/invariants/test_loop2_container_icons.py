@@ -17,12 +17,15 @@ Reading of the sentence:
   stands in the working tree. The expected bytes are read from the working tree, never from the
   image, the build output or the server.
 
-The check builds the image with `docker build --build-arg LOOP2_COMMIT=invariant-check`, runs it
-detached, waits for a listening TCP socket in the container's `/proc/net/tcp` and `tcp6`, makes
-the GETs with the container's own Node.js through `docker exec`, and removes the container and
-the image afterwards; each removal is registered before the command it undoes. Where no Docker
-daemon answers, the test is skipped, so the run gives this invariant no `pass`: whether the
-container serves the icons stays unchecked, never passed.
+The check builds the image with `docker build --build-arg LOOP2_COMMIT=invariant-check`, then uses
+`start_production_container` from `tests/invariants/account_container_support.py` to create fresh
+disposable database and read-only synthetic secret volumes, start the normal production command
+under 512 MiB, and verify its account resources and node identity. It waits for a listening TCP
+socket in the container's `/proc/net/tcp` and `tcp6`, makes the GETs with the container's own
+Node.js through `docker exec`, then removes the container, both volumes and the image; each
+removal is registered before the command it undoes. Where no Docker daemon answers, the test is
+skipped, so the run gives this invariant no `pass`: whether the container serves the icons stays
+unchecked, never passed.
 
 Does NOT cover: the container on the server; requests other than GET; headers of the answer
 (media type, caching); paths under `/icons/` that name no file of `assets/icons/`; files of
@@ -40,6 +43,7 @@ import urllib.parse
 import uuid
 
 import loop2_invariant_support as support
+from tests.invariants.account_container_support import start_production_container
 
 DOCKERFILE = "Dockerfile"
 ICONS_DIRECTORY = "assets/icons"
@@ -140,9 +144,7 @@ class ContainerServesIcons(unittest.TestCase):
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=invariant-check",
                                   "-t", tag, ".", timeout=BUILD_TIMEOUT)
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
-        self.addCleanup(docker_run, "rm", "-f", name)
-        code, output = docker_run("run", "-d", "--name", name, tag)
-        self.assertEqual(code, 0, f"`docker run` failed:\n{output}")
+        start_production_container(self, tag, name)
 
         deadline = time.monotonic() + LISTEN_WAIT
         while True:

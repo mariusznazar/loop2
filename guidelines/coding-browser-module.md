@@ -83,6 +83,28 @@ aplikacja wywołuje symulację. Taki podział jest przykładem dla edytowalnych
 kontrolek. Każdy moduł nie musi mieć `update()`, a elementy statyczne mogą być
 przebudowywane.
 
+Wspólne kontrolki w `src/browser/view/controls/` budują ekrany; kontrolka, która
+czeka na serwer, zmienia się w miejscu. `setButtonWaiting` z `button.ts` wyłącza
+istniejący przycisk i podmienia jego tekst na napis oczekiwania, a wywołana
+z `null` przywraca tekst; pola formularza blokuje się przez `input.disabled`,
+a zdanie odmowy albo braku połączenia pokazuje `createFormWarning` z
+`text-field.ts`. Pole hasła to `createPasswordField`, a przycisk, który wysyła
+formularz, dostaje `submit: true`. Wyłączony przycisk traci fokus, więc ekran
+po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
+
+### Gra na stronie i odpowiedzi serwera
+
+`src/browser/view/app.ts` buduje grę dopiero wtedy, gdy serwer potwierdzi
+konto, i usuwa ją dopiero wtedy, gdy potwierdzi wylogowanie (D-96, D-97).
+`createGameView` z `game-view.ts` zwraca element gry i `dispose()`, które
+zatrzymuje zegar (`dispose()` z `clock.ts`) i zdejmuje element ze strony,
+a z nim jego obsługę zdarzeń; moduł, który tworzy grę, wywołuje `dispose()`,
+zanim ją porzuci. Każde żądanie ekranu dostaje kolejny numer, a odpowiedź
+działa tylko wtedy, gdy jej numer jest ostatni, więc spóźniona odpowiedź nie
+buduje gry ani nie nadpisuje nowszego stanu. Brak sesji ekran rozpoznaje po
+odmowie ze statusem 401 w wyniku klienta z `account-api.ts`, a każdą inną
+porażkę pokazuje jako jedno ostrzeżenie; treści odpowiedzi nie czyta.
+
 ## Where in code
 
 - `src/browser/view/`

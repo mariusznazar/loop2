@@ -2,7 +2,7 @@
 
 ## browser-view
 
-The part draws the game's screens in the browser, and the kitchen-sink page that shows their shared controls, roles and tiles in every state.
+The part draws the game's screens in the browser, sends the browser's requests to the account and save server, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
 
 - **Files:** src/browser/*.ts
   src/browser/*.css
@@ -12,6 +12,7 @@ The part draws the game's screens in the browser, and the kitchen-sink page that
   assets/icons/**
   assets/fonts/**
   tests/view/**
+  tests/account-api.test.mjs
   tests/invariants/test_browser_view_framework.py
   tests/invariants/test_icon_file_content.py
   tests/invariants/test_icon_credits.py
@@ -20,7 +21,7 @@ The part draws the game's screens in the browser, and the kitchen-sink page that
   tests/invariants/test_browser_view_focus_outline.py
   tests/invariants/test_design_token_contrast.py
   tests/invariants/test_design_token_sources.py
-- **Depends on:** simulation
+- **Depends on:** simulation · account-server
 - **Trust boundary:** assets/icons/**
   assets/fonts/**
 
@@ -55,11 +56,14 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game and handles the HTTP requests sent to it.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns account and session persistence and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs
   tests/startup.test.mjs
+  tests/transport.test.mjs
+  tests/passwords.test.mjs
+  tests/account-storage.test.mjs
   tests/invariants/test_account_server_express_http.py
   tests/invariants/test_loop2_api_error_route.py
   tests/invariants/test_loop2_one_serving_process.py
@@ -70,7 +74,7 @@ The part is the account and save server: it serves the built game and handles th
 
 ## build-tools
 
-The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, audits introduced dependency versions and builds and launches the application, and builds and serves the browser view's kitchen-sink page on the developer's machine.
+The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, and builds and serves the browser view's kitchen-sink page on the developer's machine.
 
 - **Files:** /package.json
   /package-lock.json
@@ -88,11 +92,13 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   .gitignore
   README.md
   tests/invariants/loop2_invariant_support.py
+  tests/invariants/account_container_support.py
   tests/invariants/test_account_server_runtime.py
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
   tests/invariants/test_application_build_kitchen_sink.py
+  tests/password-measurement.test.mjs
 - **Depends on:** browser-view · simulation · account-server · product-foundation
 - **Trust boundary:** package-lock.json
   scripts/audit_dependencies.py

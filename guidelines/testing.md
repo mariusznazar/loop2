@@ -146,8 +146,8 @@ przypadku wynikającą z wymagania, nie techniczną strukturę danych.
 
 ### Trust boundaries
 
-- **Decision:** D-73 · D-76 · D-86 · D-27 · D-33 · D-45 · D-46 · D-09 · D-11
-- **Invariant:** icon-file-content · public-file-access · dependency-audit-refusal · font-file-provenance · preview-server-access · loop2-deploy-trigger-input
+- **Decision:** D-73 · D-76 · D-86 · D-96 · D-97 · D-99 · D-100 · D-102 · D-103 · D-104 · D-109 · D-110 · D-27 · D-33 · D-45 · D-46 · D-09 · D-11
+- **Invariant:** icon-file-content · public-file-access · account-session-authorization · account-mutation-request-guards · account-request-transport · account-attempt-limits · account-attempt-tracking · dependency-audit-refusal · font-file-provenance · preview-server-access · loop2-deploy-trigger-input
 - **Good:** Spreparowana zakodowana ścieżka dostaje odmowę i nie ujawnia pliku spoza katalogu publicznego.
 - **Bad:** Sprawdzenie samego uruchomienia serwera jest przedstawione jako dowód odmowy.
 
@@ -164,7 +164,7 @@ przegląd każdej dotyczącej jej zmiany.
 |---|---|
 | `assets/icons/` | `icon-file-content`: spreparowane prawdziwe pliki, `tests/invariants/test_icon_file_content.py`, przypadek `test_control_the_scan_flags_each_forbidden_form`. |
 | `assets/fonts/` | `font-file-provenance`: przegląd pochodzenia z wydania github.com/vercel/geist-font; czasowe odstępstwo D-76. |
-| `src/server/` | `public-file-access`: przypadek „raw and encoded traversal cannot expose files outside dist/public” w `tests/http.test.mjs`. |
+| `src/server/` | `public-file-access`: przypadek „raw and encoded traversal cannot expose files outside dist/public” w `tests/http.test.mjs`. `account-session-authorization`: przypadki „a stored session alone selects the account, whatever identifier the request supplies” oraz „absent, tampered, unknown, expired and deleted sessions authorize neither lookup nor logout” w `tests/http.test.mjs`, na prawdziwym HTTP i SQLite. `account-mutation-request-guards`: przypadek „refused state-changing requests change no account or session and do no password work” w `tests/transport.test.mjs`, dla trzech tras zmieniających stan. `account-request-transport`: przypadek „transport refuses ambiguous proxy metadata before loading live sessions” w `tests/transport.test.mjs`; sprawdza odmowę dla `GET /api/account` z ważną sesją, a to, że bramka transportu stoi też przed trasami `POST`, pilnuje przegląd. `account-attempt-limits`: przypadki „five failed logins lock an address for 15 minutes from the fifth, also for its correct password”, „one client address is admitted twenty failed logins per rolling 15 minutes and success does not clear them”, „one client address creates five accounts per rolling hour, and refused registrations take no slot” oraz „a disconnected login keeps its reservation until its password work completes and still counts” w `tests/http.test.mjs`; to, że odmowa poprzedza pracę hasła, pilnuje przegląd. `account-attempt-tracking`: przypadek „full limiter tables refuse newcomers without evicting a live restriction” w `tests/http.test.mjs`, dla logowania; rejestrację pilnuje przegląd. |
 | `package-lock.json` | `dependency-audit-refusal`: odmowa nieczytelnego raportu i nowego zgłoszenia w `tests/quality/test_audit_dependencies.py`; kontrola samego lockfile'u pozostaje osobnym `introduced-npm-vulnerabilities`. |
 | `scripts/audit_dependencies.py` | Ten sam test odmowy audytu, bez dublowania; podstawiona odpowiedź nie dowodzi działania prawdziwego rejestru (D-79). |
 | `scripts/kitchen-sink.mjs` | `preview-server-access`: przegląd ograniczenia do własnego katalogu podglądu i komputera dewelopera; czasowe odstępstwo D-76. |
@@ -180,6 +180,20 @@ sprawdza oddzielenie wyniku budowania, nie serwowanie podglądu.
 |---|---|---|---|---|
 | Każdy odwiedzający | Plik zbudowanej gry w katalogu publicznym | GET | Plik podany | D-86 |
 | Każdy odwiedzający | Plik spoza katalogu publicznego, również przez zakodowaną ścieżkę | GET | 400, 403 albo 404, bez treści pliku i bez strony gry | D-86 |
+| Odwiedzający bez ważnej sesji: brak, podrobione, nieznane, wygasłe albo usunięte ciasteczko | Konto i sesja | GET /api/account; POST /api/logout spełniający wymagania Origin, JSON i pustego obiektu | JSON 401 z kodem odmowy, bez danych konta i bez zmiany rekordów sesji | D-109 |
+| Gracz z ważną sesją tej przeglądarki | Własne konto | GET /api/account | 200 z samym identyfikatorem konta i znormalizowanym adresem, bez zapisu w pamięci podręcznej, bez skrótu hasła i identyfikatora sesji | D-109 |
+| Gracz z ważną sesją tej przeglądarki | Sesja tej przeglądarki | POST /api/logout | 204 dopiero po usunięciu rekordu, z ciasteczkiem wyczyszczonym w tym samym zakresie; sesje innych przeglądarek zostają; nieudane usunięcie daje błąd zamiast 204 | D-109 · D-97 |
+| Każdy wywołujący | Inne konto albo sesja wskazane identyfikatorem w żądaniu | GET /api/account, POST /api/logout | Identyfikator w żądaniu nie daje uprawnień: odczyt zwraca własne konto albo 401, a wylogowanie kończy co najwyżej sesję tej przeglądarki, bez ważnej sesji zwraca 401, a sesje wskazanego konta zostają | D-109 · D-97 |
+| Odwiedzający bez konta, bez zatwierdzenia przez właściciela i bez potwierdzania adresu | Nowe konto | POST /api/accounts z nieużywanym adresem, hasłem i jego powtórzeniem w żądaniu spełniającym wymagania Origin i JSON | 201 z identyfikatorem konta i znormalizowanym adresem dopiero po zapisaniu świeżej sesji tej przeglądarki; błąd zapisu sesji nie daje sukcesu, a utworzone konto zostaje do późniejszego logowania | D-96 · D-109 |
+| Odwiedzający z adresem bez ważnej postaci albo z hasłem poza zakresem 12–128 punktów kodowych lub różnym od powtórzenia | Nowe konto | POST /api/accounts | Odmowa 4xx bez konta, bez sesji i bez pracy hasła | D-98 · D-99 |
+| Odwiedzający z adresem, który ma już konto, także w równoległych żądaniach albo zapisany inną wielkością liter lub z otaczającymi spacjami | Nowe konto | POST /api/accounts | Odmowa 409 z komunikatem „Konto z tym adresem już istnieje.”; jeden adres ma jedno konto | D-99 · D-100 |
+| Odwiedzający ze znanym adresem i poprawnym hasłem | Sesja tej przeglądarki | POST /api/session | 200 z identyfikatorem konta i znormalizowanym adresem dopiero po zapisaniu odnowionej sesji; błąd zapisu sesji nie daje sukcesu, a konto zostaje | D-109 |
+| Odwiedzający z nieznanym adresem albo błędnym hasłem | Sesja tej przeglądarki | POST /api/session | Odmowa 401 o tej samej postaci i z tym samym komunikatem „Nieprawidłowy adres e-mail lub hasło.” w obu przypadkach | D-100 |
+| Odwiedzający przekraczający próg prób: pięć nieudanych logowań na adres e-mail, dwadzieścia na adres klienta w 15 minutach albo pięć utworzonych kont z adresu klienta w godzinie, liczone razem z próbami w toku | Logowanie i rejestracja | POST /api/session, POST /api/accounts | Odmowa 429 z komunikatem „Za dużo prób. Spróbuj ponownie za kilka minut.”; zablokowany adres e-mail odmawia także poprawnego hasła; rejestracja nieważna lub zdublowana i odmowa z powodu pełnej bramki haseł nie zużywają limitu | D-102 · D-103 |
+| Każdy wywołujący, gdy tablica śledzonych adresów e-mail lub adresów klienta jest pełna żywych wpisów | Wpisy śledzenia prób | Próba wymagająca nowego klucza | Odmowa bez wypierania żywego wpisu; wpis o zakończonych historiach, blokadach i rezerwacjach zwalnia miejsce | D-103 |
+| Każdy wywołujący | Trasy zmieniające stan konta | POST /api/accounts, POST /api/session, POST /api/logout z nagłówkiem Origin brakującym, null, zdublowanym, błędnym albo obcym; Host i nagłówki przekazanego hosta nie wybierają oczekiwanego Origin | Odmowa 4xx przed zmianą konta lub sesji i przed pracą hasła | D-104 |
+| Każdy wywołujący | Trasy zmieniające stan konta | POST /api/accounts, POST /api/session, POST /api/logout z treścią inną niż JSON (opcjonalny charset dozwolony), skompresowaną, większą niż 16 KiB, niebędącą obiektem oczekiwanych pól albo z polem niewłaściwego typu | Odmowa 4xx przed zmianą konta lub sesji i przed pracą hasła | D-104 |
+| Każdy wywołujący przez pośrednika | Żądania kont na czterech trasach | Brakujący, zdublowany, listowy albo błędny X-Forwarded-Proto lub CF-Connecting-IP; X-Forwarded-For, X-Real-IP i Forwarded nie wybierają adresu klienta | Odmowa 4xx przed odczytem sesji i pracą hasła; pliki publiczne nadal podane bez metadanych pośrednika; adres klienta dla limitów to znormalizowana wartość CF-Connecting-IP | D-110 |
 
 ### AI in tests
 
@@ -289,12 +303,12 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 ### integration test
 
 - **Purpose:** Konkretna operacja lub połączenie na prawdziwych plikach, lokalnym HTTP lub procesach, także kontrola plików repozytorium skryptem; start gotowej aplikacji należy do smoke test. (D-81)
-- **Files:** `tests/http.test.mjs` oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
+- **Files:** `tests/http.test.mjs`, `tests/transport.test.mjs`, `tests/account-storage.test.mjs`, `tests/passwords.test.mjs`, `tests/account-api.test.mjs` i `tests/password-measurement.test.mjs` oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** as in `unit test`. (D-78)
 - **Doubles:** Rzeczywista zależność, gdy jest szybka, powtarzalna i prosta, potem działające uproszczenie, potem podstawiona odpowiedź lub kontrola wywołania; obce typy za własnym adapterem. Nie zastępuj kodu pod testem; wywołanie sprawdzaj tylko dla skutku widocznego poza produktem. Błąd plików lub HTTP sprawdzaj na prawdziwych plikach tymczasowych lub lokalnym serwerze; podstawiona odpowiedź dowodzi reakcji na błąd, nie zastąpionej operacji. (D-73, D-84)
 - **Data:** as in `unit test`; wspólny niemodyfikowany serwer lub kopia zbudowanej aplikacji są dozwolone. (D-73)
 - **Time and randomness:** Czekaj na sygnał lub warunek z limitem i obsługą błędu, nie na sam upływ stałej pauzy; okresowe sprawdzanie warunku jest dozwolone. Sprzątaj zasoby także po porażce. Porty procesów serwera wybieraj zgodnie z D-49. (D-84, D-49)
-- **Exemplar:** `tests/http.test.mjs`, wyłącznie „raw and encoded traversal cannot expose files outside dist/public”: rzeczywiste żądanie i odmowa. Nie zatwierdza całego pliku ani jego pomocników: limit żądania jest limitem bezczynności, a czekanie na listening nie ma limitu; pomocniki przy swojej zmianie przechodzą na D-84. (D-85)
+- **Exemplar:** `tests/http.test.mjs`, wyłącznie „raw and encoded traversal cannot expose files outside dist/public”: rzeczywiste żądanie i odmowa. Nie zatwierdza całego pliku ani jego pomocników. (D-85)
 - **Command:** as in `unit test`. (D-77)
 - **Time limit:** Brak centralnego pliku; lokalne ograniczenia stoją w `tests/http.test.mjs` i `tests/invariants/loop2_invariant_support.py`, a testy procesów także przy swoich wywołaniach. Nie są limitem całego przebiegu; do zmiany wracamy jak w `unit test`. (D-77)
 
@@ -363,6 +377,11 @@ może pokazywać rzeczywiście różne ryzyka.
 - `tests/deploy/`
 - `tests/agent_workflow/`
 - `tests/http.test.mjs`
+- `tests/transport.test.mjs`
+- `tests/account-storage.test.mjs`
+- `tests/passwords.test.mjs`
+- `tests/account-api.test.mjs`
+- `tests/password-measurement.test.mjs`
 - `tests/startup.test.mjs`
 - `tests/sim/traits.test.mjs`
 - `tests/sim/time.test.mjs`

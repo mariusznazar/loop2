@@ -8,8 +8,9 @@ Reading of the sentence:
 - the loop2 instance runs in a container of its own: `compose.yaml` names its own Compose project
   `loop2`, application `app`/`loop2` and connector `cloudflared`/`loop2-cloudflared`;
 - separate from the existing loop instance: nothing in `compose.yaml` or the Dockerfile reaches
-  into the old instance or shares with another container — no volume, no external network or
-  volume, no network, PID, IPC, UTS or user namespace set to share (`network_mode`, `pid`, `ipc`,
+  into the old instance or shares with another container — the only volume is loop2's own
+  account database, mounted only by app at /app/data under D-17; no other mount or external
+  network or volume, no network, PID, IPC, UTS or user namespace set to share (`network_mode`, `pid`, `ipc`,
   `uts`, `userns_mode`, `cgroup`), no link to another container, no device, no Docker socket,
   and no name of the old instance (`loop`, `loop-…`, `loop_…`, `/srv/loop`).
 
@@ -25,6 +26,7 @@ import re
 import unittest
 
 import loop2_invariant_support as support
+from test_loop2_host_sharing import volume_problems
 
 COMPOSE_FILE = "compose.yaml"
 DOCKERFILE = "Dockerfile"
@@ -39,7 +41,7 @@ OLD_NAME_IN_TEXT = re.compile(r"(?<![A-Za-z0-9])loop(?![A-Za-z0-9])")
 
 # Keys of a Compose service that share a namespace, a file or a socket with something outside
 # the container.
-SHARING_SERVICE_KEYS = ("volumes", "volumes_from", "network_mode", "pid", "ipc", "links",
+SHARING_SERVICE_KEYS = ("volumes_from", "network_mode", "pid", "ipc", "links",
                         "external_links", "uts", "userns_mode", "cgroup", "devices")
 
 
@@ -77,8 +79,8 @@ class ComposeIsolation(unittest.TestCase):
         # invariant: loop2-container-isolation
         text = support.read_required(COMPOSE_FILE)
         top, services = support.compose_outline(text)
-        problems = []
-        for key in ("volumes", "include", "extends"):
+        problems = volume_problems(top, services)
+        for key in ("include", "extends"):
             if key in top:
                 problems.append(f"top-level `{key}` {top[key]!r}")
         for name, keys in services.items():

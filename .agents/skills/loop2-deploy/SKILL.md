@@ -6,6 +6,9 @@ description: How loop2's test-server deployment works - seeing which commit runs
 # loop2-deploy
 
 Loop2 runs in a Docker Compose project with an application and a Cloudflare Tunnel connector.
+The application keeps player accounts and sessions in a SQLite database in the named Docker
+volume `loop2_accounts` and signs session cookies with keys read from a root-provisioned file
+on the host.
 A push to `main` starts `.github/workflows/deploy.yml`, whose SSH call passes the commit to the
 installed `/usr/local/bin/loop2-deploy`. Its source is `deploy/loop2-deploy`. The server fetches
 the code, prepares both images before replacing either container, recreates both services,
@@ -24,6 +27,8 @@ host port. The connector uses HTTP/2 over IPv4, encrypted to Cloudflare, with me
 | Tunnel service / container / limit | `cloudflared` / `loop2-cloudflared` / 256 MiB |
 | Deploy log / lock | `/var/log/loop2-deploy.log` / `/run/loop2-deploy.lock` |
 | Host token file / container secret | `/etc/loop2/cloudflared-token` / `/run/secrets/cloudflare_tunnel_token` |
+| Host session-key file / container secret | `/etc/loop2/session-secrets` / `/run/secrets/loop2_session_secrets` |
+| Account database volume / file in the container | `loop2_accounts` / `/app/data/accounts.sqlite` |
 
 The old game (`loop`) and `foundryvtt` share the host and stay untouched. Deployment never
 prunes host-wide, runs `down`, or changes another Compose project. Replaced dangling images
@@ -39,14 +44,18 @@ files or requests. The MCP has full rights, so the following limits are an agree
   `logs --tail 100 app cloudflared` from `/srv/loop2`; container label, state and health fields;
   the individual memory-limit reads below; scoped `docker stats --no-stream loop2 loop2-cloudflared`;
   `free`, `df`, `docker system df`; `git -C /srv/loop2 log`,
-  `git -C /srv/loop2 --no-optional-locks status`; `cat` of the deploy script and `cmp`.
+  `git -C /srv/loop2 --no-optional-locks status`; `cat` of the deploy script and `cmp`;
+  `docker volume ls --filter name=loop2_accounts`; the metadata of the session-key file only,
+  `stat -c '%U %g %a' /etc/loop2/session-secrets` (expects `root 1000 440`).
 - Allowed: the fixed internal application probe and bounded connector readiness command below;
   `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844`
   (also the same check for `region2.v2.argotunnel.com`). A **Connected** line is success evidence,
   often followed by timeout exit 124; it proves host TCP/IPv4 reachability only, not UDP or
   container connectivity. See `references/troubleshooting.md`.
-- No token-file reads, full `docker inspect`, Compose configuration dumps, arbitrary container
-  execution, restarts, deployments, key changes or secret rotation. The MCP's changing tools
+- No token-file or session-key-file reads, no reading or copying of the account database or
+  its volume (it holds e-mail addresses and password hashes), full `docker inspect`, Compose
+  configuration dumps, arbitrary container execution, restarts, deployments, key changes or
+  secret rotation. The MCP's changing tools
   (`upload`, `porty`, `domains`) are the human's too.
 
 Every server or Cloudflare change is the human's, except deployment started by the existing
@@ -62,7 +71,9 @@ script installation and rollback through the route change.
   ends with `deployed <sha>, previously <sha>` or `stage <name>: ... (exit N)`. Git and Docker
   output stays in this log. Treat service logs as potentially sensitive; report selected,
   redacted diagnosis, not raw logs.
-- The running application commit comes from its label, not the checkout or connector image:
+- The running application commit comes from its label, not the checkout or connector image.
+  Run this in bash on the server (it is what `mikrus` `exec` gives); it is not for Windows
+  PowerShell 5.1, which drops the nested double quotes before Docker sees them:
   `docker inspect --type container --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' loop2`
 - State and health: `docker inspect --type container --format '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' loop2-cloudflared`;
   use the same scoped read for `loop2`. Connector health means an active edge connection,
@@ -98,14 +109,37 @@ switch is not atomic. Failed health waits put the last 50 lines of both service 
 server log, not Actions; after a probe failure read bounded service logs. Resource readings,
 the old game's state and installed-script mismatches are also logged.
 
+## Accounts, session keys and the database
+
+- **Session keys:** the file `/etc/loop2/session-secrets` holds a JSON array of keys, newest
+  first, owner root, group 1000, mode 0440, outside the checkout. Compose mounts it read-only
+  only into `app`. The human creates it before the first deployment of an accounts commit and
+  rotates it; a copy stays in the owner's private note. Sequences: "Session signing keys" in
+  `references/setup_and_secrets.md`. A missing or invalid file stops the application before it
+  listens: the deployment ends with exit 8.
+- **Database:** the volume `loop2_accounts` is created by the deployment itself and mounted
+  only into `app` at `/app/data`; nothing is prepared on the host by hand. Container
+  replacement keeps it. Never run volume pruning on the host: while no loop2 container
+  references the volume, a prune removes the accounts.
+- **Deploying a request and accepting it:** "Deploying a request head" in
+  `references/setup_and_secrets.md`: deployment, persistence check, password measurement in the
+  deployed image, public browser journey.
+
 ## Rollback
 
 An ordinary rollback within the same route is one deployment: merge a revert request, or the
 human runs `loop2-deploy <earlier sha>`. A fast rollback lasts until the next push to `main`;
 a revert keeps the branch and server aligned. No earlier product image is retained for recovery.
 
+**A rollback changes code, never data.** The accounts, sessions and session-key file stay as
+they are; accounts made after the target commit are not undone and nothing is restored from
+an earlier time. Rolling back to a commit without accounts leaves the volume and the key file
+unused but intact; deploying forward again brings the accounts back. An application refuses a
+database whose schema version is newer than it knows, so an old commit may fail health with
+exit 8 on a newer database. Details and recovery: "Rollback and the accounts" in
+`references/troubleshooting.md`.
+
 **Crossing the tunnel transition also requires the matching installed script and Cloudflare
 route.** Follow the complete procedure in `references/troubleshooting.md` before deploying or
 merging a revert. It involves script installation, one deployment and four Cloudflare changes,
-with an outage during the route switch. This transport task changes no game data; a code
-rollback does not restore historical data.
+with an outage during the route switch.

@@ -1,113 +1,125 @@
 import {
-  createCharacter,
-  end,
-  newGame,
-  restart,
-  setPaused,
-  setProgram,
-  type GameResult,
-} from "../sim/game.js";
-import type { GameState } from "../sim/types.js";
-import { createBodyRow } from "./body-row.js";
-import { startClock, type GameStore } from "./clock.js";
+  createAccountClient,
+  type AccountClient,
+  type AccountFailure,
+} from "../account-api.js";
+import { createAccountScreen } from "./account-screen.js";
+import { createButton, setButtonWaiting } from "./controls/button.js";
+import { createFormWarning } from "./controls/text-field.js";
 import { createFooter } from "./footer.js";
-import { createHeadquarters } from "./headquarters.js";
-import { createProgramEditor } from "./program-editor.js";
-import { createStatusRow } from "./status-row.js";
-import { createTerrainPanel } from "./terrain-panel.js";
+import { createGameView, type GameView } from "./game-view.js";
+
+/** The server's answer that this browser has no valid session: the player is signed out. */
+function signedOut(failure: AccountFailure): boolean {
+  return failure.kind === "refused" && failure.status === 401;
+}
 
 /**
- * Builds the page in `root` and starts the game. This module holds the one current game state;
- * it replaces it only with the state a simulation function returned and draws only from it.
+ * Builds the page in `root`: the header with the title, the place of the screen, and the footer.
+ * The page first asks the server whom this browser is signed in as and shows only that it is
+ * asking; the game is built only once the server names an account, and the forms only once it
+ * says there is none. Any other answer is a warning with „Spróbuj ponownie”, never a guess.
+ * „Wyloguj” beside the title ends this browser's session; the game leaves the page only when the
+ * server confirms it, and stays with a warning when the outcome is uncertain. One transition runs
+ * at a time, and an answer that comes after the page moved on is ignored.
  */
-export function startApp(root: HTMLElement): void {
-  let state: GameState = newGame();
-
+export function startApp(
+  root: HTMLElement,
+  client: AccountClient = createAccountClient(),
+): void {
   const header = document.createElement("header");
   const title = document.createElement("h1");
   title.textContent = "Loop";
-  header.append(title);
+  const logoutButton = createButton("Wyloguj");
+  logoutButton.hidden = true;
+  const logoutWarning = createFormWarning();
+  header.append(title, logoutButton, logoutWarning.element);
 
-  const columns = document.createElement("main");
-  columns.className = "columns";
-  // Left column: the program panel, always visible.
-  const programPanel = document.createElement("section");
-  programPanel.className = "program-panel";
-  // Right column: the headquarters without a map run; during one the status row, the row of the
-  // body and the backpack under it, and the terrain panel.
-  const mapColumn = document.createElement("section");
-  mapColumn.className = "map-column";
-  const runPanel = document.createElement("div");
-  runPanel.className = "run-panel";
-  // The terrain panel draws the map run and lists its revealed tiles.
-  const terrainPanel = createTerrainPanel();
-  columns.append(programPanel, mapColumn);
+  const main = document.createElement("main");
+  main.className = "app-main";
 
-  // The editor passes each edited program to the simulation; setProgram validates and replaces it.
-  // Real time elapsed before the edit is passed first, so it runs under the program it ran under.
-  const programEditor = createProgramEditor((program) => {
-    clock.flush();
-    store.apply(setProgram(state, program));
-  });
-  programPanel.append(programEditor.element);
+  // The session check: what the page says while it asks, and the warning with its retry.
+  const check = document.createElement("section");
+  check.className = "session-check";
+  const checking = document.createElement("p");
+  checking.className = "session-check-text";
+  checking.textContent = "Sprawdzanie logowania…";
+  const checkWarning = createFormWarning();
+  const retryButton = createButton("Spróbuj ponownie");
+  retryButton.hidden = true;
+  check.append(checking, checkWarning.element, retryButton);
 
-  const store: GameStore = {
-    get: () => state,
-    apply(result: GameResult): void {
-      if (result.state === state) return;
-      const previous = state;
-      state = result.state;
-      renderMapColumn();
-      // Content updates only on a program/map change. A tick or restart updates counts alone,
-      // leaving partial field input and focus intact.
-      if (
-        state.program !== previous.program ||
-        state.run?.mapId !== previous.run?.mapId
-      ) {
-        programEditor.update(state);
-      } else {
-        programEditor.updateCounts(state.ruleCounts);
-      }
-    },
-  };
-  const clock = startClock(store);
+  const accountScreen = createAccountScreen(client, () => showGame());
+  let game: GameView | null = null;
+  // Each request of the page takes the next number; an answer counts only while it is the last.
+  let latest = 0;
 
-  const headquarters = createHeadquarters({
-    create(name) {
-      store.apply(createCharacter(state, name));
-    },
-    send(characterId, mapId) {
-      if (!state.run) clock.send({ mapId, characterId });
-    },
-  });
-  const statusRow = createStatusRow({
-    togglePause() {
-      clock.flush();
-      store.apply(setPaused(state, !state.paused));
-    },
-    restart() {
-      clock.flush();
-      if (state.run) store.apply(restart(state));
-    },
-    end() {
-      clock.flush();
-      if (state.run) store.apply(end(state));
-    },
-  });
-  const bodyRow = createBodyRow();
-  runPanel.append(statusRow.element, bodyRow.element, terrainPanel.element);
-  mapColumn.append(headquarters.element, runPanel);
-
-  function renderMapColumn(): void {
-    headquarters.element.hidden = state.run !== null;
-    runPanel.hidden = state.run === null;
-    headquarters.update(state);
-    statusRow.update(state);
-    bodyRow.update(state);
-    terrainPanel.update(state);
+  function showGame(): void {
+    game?.dispose();
+    game = createGameView();
+    main.replaceChildren(game.element);
+    logoutWarning.set(null);
+    logoutButton.hidden = false;
   }
 
-  root.append(header, columns, createFooter());
-  renderMapColumn();
-  programEditor.update(state);
+  function showForms(): void {
+    game?.dispose();
+    game = null;
+    logoutButton.hidden = true;
+    logoutWarning.set(null);
+    accountScreen.reset();
+    main.replaceChildren(accountScreen.element);
+  }
+
+  async function checkSession(): Promise<void> {
+    const mine = ++latest;
+    checkWarning.set(null);
+    if (retryButton.hidden) {
+      checking.hidden = false;
+    } else {
+      setButtonWaiting(retryButton, "Sprawdzanie…");
+    }
+    main.replaceChildren(check);
+    const result = await client.currentAccount();
+    if (mine !== latest) return;
+    setButtonWaiting(retryButton, null);
+    if (result.ok) {
+      showGame();
+    } else if (signedOut(result.failure)) {
+      showForms();
+    } else {
+      checking.hidden = true;
+      checkWarning.set(result.failure.message);
+      retryButton.hidden = false;
+      retryButton.focus();
+    }
+  }
+
+  retryButton.addEventListener("click", () => {
+    if (retryButton.disabled) return;
+    void checkSession();
+  });
+
+  logoutButton.addEventListener("click", () => {
+    if (game === null || logoutButton.disabled) return;
+    void (async () => {
+      const mine = ++latest;
+      logoutWarning.set(null);
+      setButtonWaiting(logoutButton, "Wylogowywanie…");
+      const result = await client.logout();
+      if (mine !== latest) return;
+      setButtonWaiting(logoutButton, null);
+      if (result.ok || signedOut(result.failure)) {
+        showForms();
+        accountScreen.focus();
+        return;
+      }
+      // The server may or may not have ended the session: the game stays, and so does „Wyloguj”.
+      logoutWarning.set(result.failure.message);
+      logoutButton.focus();
+    })();
+  });
+
+  root.append(header, main, createFooter());
+  void checkSession();
 }

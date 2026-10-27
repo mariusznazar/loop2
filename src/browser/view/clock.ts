@@ -12,6 +12,11 @@ export type Clock = {
   flush(): void;
   /** Sends a character, passing the real date to the simulation as the send's real time. */
   send(ids: { mapId: MapId; characterId: CharacterId }): void;
+  /**
+   * Stops the clock for good: its interval is cleared, and `flush` and `send` no longer reach
+   * the simulation. A game leaving the page disposes its clock, so no hidden game runs on.
+   */
+  dispose(): void;
 };
 
 const TICK_MS = 200;
@@ -23,18 +28,25 @@ const TICK_MS = 200;
  */
 export function startClock(store: GameStore): Clock {
   let previous = performance.now();
+  let running = true;
   const flush = (): void => {
+    if (!running) return;
     const now = performance.now();
     const elapsed = now - previous;
     previous = now;
     store.apply(passRealTime(store.get(), elapsed));
   };
-  setInterval(flush, TICK_MS);
+  const interval = setInterval(flush, TICK_MS);
   return {
     flush,
     send(ids) {
+      if (!running) return;
       flush();
       store.apply(send(store.get(), ids, Date.now()));
+    },
+    dispose() {
+      running = false;
+      clearInterval(interval);
     },
   };
 }

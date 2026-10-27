@@ -6,7 +6,8 @@ This test builds the image from the working tree as `docker build` reads it (the
 `.dockerignore` decide what the build stage holds; the tree is only read), runs it, and, from
 inside the running container, GETs `/` and `/icons/<name>` for each SVG file the working tree
 holds in `assets/icons/`, on the port the container's own environment names
-(`LOOP2_LISTEN_PORT`).
+(`LOOP2_LISTEN_PORT`). It supplies real disposable account resources and explicit production
+settings under 512 MiB, checking fresh-volume writes as node, without bypassing production startup.
 
 Covers:
 - the image builds from the working tree (`docker build` exits 0);
@@ -32,6 +33,8 @@ import subprocess
 import time
 import unittest
 import uuid
+
+from tests.invariants.account_container_support import start_production_container
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 ICONS = os.path.join(ROOT, "assets", "icons")
@@ -111,9 +114,7 @@ class ImageServesIcons(unittest.TestCase):
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=image-icons-check",
                                   "-t", tag, ".", timeout=BUILD_TIMEOUT)
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
-        self.addCleanup(docker_run, "rm", "-f", name)
-        code, output = docker_run("run", "-d", "--name", name, tag)
-        self.assertEqual(code, 0, f"`docker run` failed:\n{output}")
+        start_production_container(self, tag, name)
 
         paths = ["/"] + [f"/icons/{icon}" for icon in icons]
         deadline = time.monotonic() + SERVE_WAIT
