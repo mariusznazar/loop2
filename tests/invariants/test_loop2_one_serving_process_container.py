@@ -25,7 +25,9 @@ Reading of the sentence:
   major version 5.
 
 The Docker part builds the image from the working tree (`docker build`, the tree is only read),
-runs it with `docker run --init` (the init process Compose's `init: true` would add, which the
+runs it with explicit production account settings, fresh disposable data and read-only secret
+volumes under 512 MiB, checking node ownership and writing on the fresh volume. This is not a
+container-replacement or account-persistence check. It uses `docker run --init` (the init process Compose's `init: true` would add, which the
 check does not require), reads the processes through
 `/proc` inside the container as the image's own user (the user the container runs as, as a
 `docker exec` without `-u` does; root without `CAP_SYS_PTRACE` may be refused another user's

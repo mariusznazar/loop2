@@ -6,7 +6,8 @@ This test builds the image from the working tree as `docker build` reads it (the
 `.dockerignore` decide what the build stage holds; the tree is only read), runs it, and, from
 inside the running container, GETs `/` and `/icons/<name>` for each SVG file the working tree
 holds in `assets/icons/`, on the port the container's own environment names
-(`LOOP2_LISTEN_PORT`).
+(`LOOP2_LISTEN_PORT`). It supplies real disposable account resources and explicit production
+settings under 512 MiB, checking fresh-volume writes as node, without bypassing production startup.
 
 Covers:
 - the image builds from the working tree (`docker build` exits 0);

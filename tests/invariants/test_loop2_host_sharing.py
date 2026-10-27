@@ -1,6 +1,7 @@
 """Invariant loop2-host-sharing: A deployment of loop2 stops, removes, replaces or reconfigures
 no container, image, network or volume on the host other than loop2's own, and neither Compose
-service asks for extra host privilege apart from the connector's read-only tunnel token grant.
+service asks for extra host privilege apart from its own read-only runtime secret grant and
+the application's own named database volume.
 
 The check reads the server-side script `deploy/loop2-deploy` and `compose.yaml` as they stand and
 runs nothing; no Docker is needed.
@@ -27,13 +28,17 @@ Reading of the sentence:
   the old loop instance but such a read-only `inspect`. A function that wraps
   `docker … "$@"` is read at each call;
 - asks the host for no privilege a default container lacks: `compose.yaml` holds at its top only
-  `name`, `services` and the exact tunnel file-backed `secrets` definition; its service sets only keys that grant nothing beyond a default
+  `name`, `services`, the two exact file-backed `secrets` definitions and the own named account
+  volume; each secret is granted only to its consumer and only the application mounts the volume
+  at /app/data. External volumes, custom drivers and other sources or mounts fail. Its service
+  sets only keys that grant nothing beyond a default
   container (`container_name`, `build`, `ports`, `expose`, `mem_limit`, `memswap_limit`, `cpus`,
   `pids_limit`, `restart`, `init`, `healthcheck`, `labels`, `environment`, `command`,
   `entrypoint`, `user`, `working_dir`, `read_only`, `stop_signal`, `stop_grace_period`,
   `logging`, `depends_on`), so `privileged`, `cap_add`, `security_opt`, `devices`,
   `device_cgroup_rules`, `pid`/`ipc`/`uts`/`network_mode`/`userns_mode`/`cgroup` set to `host`,
-  `sysctls`, `volumes` and any key not listed fail; its `build` sets only `context`,
+  `sysctls` and any key not listed fail; `secrets` and `volumes` receive the narrow checks above.
+  Its `build` sets only `context`,
   `dockerfile`, `args`, `labels` and `target` (no `network: host`, `privileged` or
   `entitlements`); and no line names the Docker socket.
 

@@ -23,7 +23,9 @@ fs.chownSync(path, 0, 1000);
 """
 
 RESOURCE_PROBE = """
+(async () => {
 const fs = require('node:fs');
+const { AccountDatabase } = await import('/app/dist/server/database.js');
 const path = process.env.LOOP2_DATABASE_PATH;
 const secret = process.env.LOOP2_SESSION_SECRET_FILE;
 const stat = fs.statSync('/app/data');
@@ -32,12 +34,16 @@ const keys = JSON.parse(fs.readFileSync(secret, 'utf8'));
 fs.writeFileSync('/app/data/node-write-probe', 'written by node', { flag: 'wx' });
 const written = fs.readFileSync('/app/data/node-write-probe', 'utf8');
 fs.unlinkSync('/app/data/node-write-probe');
+const database = new AccountDatabase(path);
+database.close();
 console.log(JSON.stringify({ uid: process.getuid(), gid: process.getgid(),
   directoryUid: stat.uid, directoryGid: stat.gid, written,
   secretUid: secretStat.uid, secretGid: secretStat.gid,
   secretMode: secretStat.mode & 0o777, keyBytes: keys.map(k => Buffer.from(k, 'base64url').length),
   databasePath: path, production: process.env.NODE_ENV,
+  databaseFile: fs.statSync(path).isFile(),
   origin: process.env.LOOP2_PUBLIC_ORIGIN, proxyMode: process.env.LOOP2_PROXY_MODE }));
+})().catch(error => { console.error(error); process.exitCode = 1; });
 """
 
 
@@ -78,12 +84,14 @@ def start_production_container(test, tag, name):
     test.assertEqual(code, 0, f"production container start failed: {output}")
     code, output = run("exec", "-i", name, "node", "-", script=RESOURCE_PROBE)
     test.assertEqual(code, 0, f"node cannot use fresh account resources: {output}")
-    actual = json.loads(output)
+    # The successful probe writes one JSON line; Node may append SQLite's experimental warning.
+    actual = json.loads(output.splitlines()[0])
     test.assertEqual(actual, {
         "uid": 1000, "gid": 1000, "directoryUid": 1000, "directoryGid": 1000,
         "written": "written by node", "secretUid": 0, "secretGid": 1000,
         "secretMode": 0o440, "keyBytes": [32],
-        "databasePath": "/app/data/accounts.sqlite", "production": "production",
+        "databasePath": "/app/data/accounts.sqlite", "databaseFile": True,
+        "production": "production",
         "origin": "https://loop2.mariusznazar.com", "proxyMode": "cloudflare-tunnel",
     })
     code, output = run("inspect", name)
