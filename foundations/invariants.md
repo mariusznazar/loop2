@@ -691,7 +691,7 @@ The browser loads the built game and sends account and save requests to relative
 
 ## account-session-authorization
 
-The account API returns JSON 401 for `GET /api/account` or `POST /api/logout` without a valid server-side session, and an account identifier supplied by the caller cannot authorize reading or changing another account or session.
+The account API returns JSON 401 for `GET /api/account`, and for `POST /api/logout` that meets the Origin, media-type and body requirements, without a valid server-side session, and an account identifier supplied by the caller cannot authorize reading or changing another account or session.
 
 - **Method:** test
 - **Rests on:** none
@@ -761,7 +761,7 @@ The SQLite session Store returns only valid stored account identity and cookie d
 
 ## account-attempt-limits
 
-The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes since its last successful login or within 15 minutes of its fifth failure, a login from a client address with twenty failed or unsettled logins in the last 15 minutes and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only when its password work has completed, whether or not its client is still connected.
+The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes since its last successful login or within 15 minutes of its fifth failure, a login from a client address with twenty failed or unsettled logins in the last 15 minutes and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only after the password work it started has completed, whether or not its client is still connected.
 
 - **Method:** test
 - **Rests on:** none
