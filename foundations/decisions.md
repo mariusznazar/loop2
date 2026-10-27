@@ -240,7 +240,6 @@ change on the server that is not a deployment started by the automation is made 
 - **Verification:** an agent compares the change with the decision:
   - complies: a deployment skill in which the agent reads the deploy log and the container state through the `mikrus` MCP server and asks the human to run a rollback
   - violates: an instruction of the skill in which the agent installs the deploy script, edits `authorized_keys` or restarts a container through the `mikrus` MCP server; an SSH key of the agent's own on the server
-- **Review when:** Before closing the project's accounts-on-the-test-server phase and opening accounts to public use, the owner reviews agent access together with the automation key's access in D-16.
 - **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Jaki dostęp do serwera dostaje agent?"
 
 *Rationale:* Until public account launch, the test server is intended to hold only the owner's account, so reading through a tool that can run any command remains accepted; the agent reads logs and state itself instead of the human relaying them. An outsider who discovers the public address can nevertheless register, and the read-only limit protects that account only by agreement. The `mikrus` MCP server runs
@@ -316,7 +315,6 @@ the copy is a human's change.
 - **Verification:** an agent compares the change with the decision:
   - complies: an `authorized_keys` entry whose forced command names the installed copy's path; a deployment that logs the difference between the copies and goes on
   - violates: a forced command that points into the server's checkout; a deployment that reinstalls its own script
-- **Review when:** Before closing the project's accounts-on-the-test-server phase and opening accounts to public use, the owner reviews the automation key's access together with agent access in D-12.
 - **Origin:** none
 
 *Rationale:* what the key can run stays what a human installed, whatever a pushed commit holds. A
@@ -1905,7 +1903,7 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 
 ### D-113 — Which file is the exemplar for password hashing?
 
-The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its kind guidelines are read before adding or changing a password-hashing file. Hashing and verification share one bounded admission gate, preserve password content, and use the explicit Argon2id candidate profile; the profile remains provisional until the intended container image is measured.
+The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its kind guidelines are read before adding or changing a password-hashing file. Hashing and verification share one bounded admission gate, preserve password content, and use one explicit Argon2id profile, measured with that gate in the deployed container image.
 
 - **Scope:** account-server
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
@@ -1913,8 +1911,8 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 - **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check.
 - **Origin:** none
 
-*Rationale:* A first file makes password work's admission and package boundary visible for later account routes. Two slots are the selected candidate, not evidence that this cost fits the target image.
-*Rejected:* Separate gates for hash and verify — allow their combined memory use to exceed the shared limit; an unbounded queue — retains arbitrary pending work; treating the candidate as measured — claims target suitability without target evidence.
+*Rationale:* A first file makes password work's admission and package boundary visible for later account routes. The measurement of the deployed image shows that two slots of this profile fit within 80% of its memory limit; a different profile or gate carries no such evidence.
+*Rejected:* Separate gates for hash and verify — allow their combined memory use to exceed the shared limit; an unbounded queue — retains arbitrary pending work; treating an unmeasured profile or gate as fitting — claims target suitability without target evidence.
 
 ### D-112 — How does the account database open and preserve its schema?
 

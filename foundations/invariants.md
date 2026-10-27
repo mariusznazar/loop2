@@ -647,7 +647,7 @@ The deployed loop2 container image has passed, after warmup, at least 20 hashes 
 - **Rests on:** cgroup-memory-accounting
 - **Derives from:** D-106
 - **Part:** account-server · build-tools · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## password-operation-gate
 

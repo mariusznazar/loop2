@@ -26,9 +26,9 @@ All native password hashing and verification pass through the same capacity gate
 
 ## Examples
 
-### Explicit Argon2id candidate
+### Explicit Argon2id profile
 
-`src/server/passwords.ts` names the Argon2id parameters and uses the package's generated salt. The profile is provisional until measured in the intended container image.
+`src/server/passwords.ts` names the Argon2id parameters and uses the package's generated salt. The profile and the gate are the ones measured in the deployed container image (`player-argon2-deployment-check`); a changed profile or gate needs that measurement again.
 
 ## Where in code
 
