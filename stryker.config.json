@@ -27,6 +27,7 @@
       "tests/sim/program.test.mjs",
       "tests/sim/purity.test.mjs",
       "tests/sim/random.test.mjs",
+      "tests/sim/repertoire.test.mjs",
       "tests/sim/team.test.mjs",
       "tests/sim/time.test.mjs",
       "tests/sim/traits.test.mjs",

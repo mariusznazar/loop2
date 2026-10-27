@@ -1,5 +1,6 @@
 import { newTraits } from "./character.js";
 import { CREATED_ARCHETYPE } from "./data/archetypes.js";
+import { newUnderstanding } from "./understanding.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
 import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
@@ -323,6 +324,7 @@ export function newGame(): GameState {
       nextGroupId: 2,
       nextRuleId: 1,
     },
+    understanding: newUnderstanding(),
     ruleCounts: null,
     team: { characters: [], chest: { pieces: {} } },
     nextCharacterId: 1,
