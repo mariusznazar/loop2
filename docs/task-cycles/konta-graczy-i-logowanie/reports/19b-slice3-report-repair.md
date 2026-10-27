@@ -1,5 +1,0 @@
-# Repair report encoding before review
-
-Your slice is mechanically clean/nonempty/in the approved Change at c9af9d4521895fe6fe98ae96ccbc7035e4cea350. Final checks have commands/exits and pass. Before dependent review, repair reports/19-slice3-report.md only: the Polish meaning sentences under Foundation and boundaries are corrupted into question marks, as are several separators and the gate source range. Restore the intended full wording from your authored material/source. Keep every failed run, scope discovery, limitation and actual check result. Do not edit product code, rerun tests, add a commit or read cycle.md.
-
-PowerShell pipelines into Python stdin can replace non-ASCII before Python receives it, irrespective of output encoding. Use apply_patch or a UTF-8 script file/escaped ASCII literals, not a non-ASCII Python stdin pipeline. Preserve line endings. Read back the affected passages to verify genuine UTF-8 letters and the exact source range. Return the repaired full report path and a short note of the repair; no new implementation/fix round is being requested.
