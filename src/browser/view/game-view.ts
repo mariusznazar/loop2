@@ -102,7 +102,12 @@ export function createGameView(): GameView {
     },
   });
   const bodyRow = createBodyRow();
-  runPanel.append(statusRow.element, bodyRow.element, terrainPanel.element);
+  runPanel.append(
+    statusRow.element,
+    statusRow.discovery,
+    bodyRow.element,
+    terrainPanel.element,
+  );
   mapColumn.append(headquarters.element, runPanel);
 
   function renderMapColumn(): void {

@@ -1,6 +1,15 @@
 import { ACTIONS } from "../sim/data/actions.js";
+import { CAMPFIRE } from "../sim/data/campfire.js";
+import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
+import { ITEMS } from "../sim/data/items.js";
 import { RESOURCES } from "../sim/data/resources.js";
-import type { Activity, DeathCause, GameState, MapRun } from "../sim/types.js";
+import type {
+  Activity,
+  DeathCause,
+  GameState,
+  MapRun,
+  Understanding,
+} from "../sim/types.js";
 import { createButton } from "./controls/button.js";
 
 const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
@@ -43,6 +52,45 @@ export function pauseLabel(state: GameState): string | null {
   return state.paused ? "Wznów" : "Pauza";
 }
 
+/** The name of an item or of the campfire, with a capital first letter. */
+function discoveredItemName(id: Understanding["items"][number]): string {
+  const name = id === CAMPFIRE.id ? CAMPFIRE.name : ITEMS[id].name;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+/** A condition's label, followed for a condition that takes a number by „ … ” and its unit. */
+function discoveredConditionText(kind: Understanding["conditions"][number]) {
+  const condition: ConditionDef = CONDITIONS[kind];
+  return condition.unit === undefined
+    ? condition.label
+    : `${condition.label} … ${condition.unit}`;
+}
+
+/** The sentence closed by a full stop, unless a unit such as „szt.” already ended it with one. */
+function closed(sentence: string): string {
+  return sentence.endsWith(".") ? sentence : `${sentence}.`;
+}
+
+/**
+ * The line under the status row for what a game minute revealed: „Odkryto: ” and the labels of the
+ * actions and the names of the items, the campfire's included, then „ W regułach można teraz
+ * sprawdzić: ” and the conditions; a part with nothing revealed is left out. Pure.
+ */
+export function discoveryText(discovery: Understanding): string {
+  const found = [
+    ...discovery.actions.map((kind) => ACTIONS[kind].label),
+    ...discovery.items.map(discoveredItemName),
+  ];
+  const checkable = discovery.conditions.map(discoveredConditionText);
+  const sentences: string[] = [];
+  if (found.length > 0) sentences.push(closed(`Odkryto: ${found.join(", ")}`));
+  if (checkable.length > 0)
+    sentences.push(
+      closed(`W regułach można teraz sprawdzić: ${checkable.join(", ")}`),
+    );
+  return sentences.join(" ");
+}
+
 /** What the status row's buttons ask for; the app turns each into a simulation call. */
 export type StatusRowControls = {
   /** „Pauza” or „Wznów”: pauses a running map run, resumes a paused one. */
@@ -53,6 +101,11 @@ export type StatusRowControls = {
 
 export type StatusRow = {
   element: HTMLElement;
+  /**
+   * The line of what the last game minute of a discovery revealed, in the role `discovery`; hidden
+   * while the game state holds no discovery. The page places it under the status row.
+   */
+  discovery: HTMLElement;
   /** Shows the given game state; call only while it holds a map run. */
   update(state: GameState): void;
 };
@@ -68,6 +121,9 @@ export function createStatusRow(controls: StatusRowControls): StatusRow {
   element.className = "status-row";
   const text = document.createElement("p");
   text.className = "status-text";
+  const discovery = document.createElement("p");
+  discovery.className = "discovery-text";
+  discovery.hidden = true;
   const pauseButton = createButton("");
   // „Restart” and „Zakończ” end the map run as it stands: destructive buttons (D-44).
   const restartButton = createButton("Restart", { kind: "destructive" });
@@ -80,7 +136,11 @@ export function createStatusRow(controls: StatusRowControls): StatusRow {
 
   return {
     element,
+    discovery,
     update(state: GameState): void {
+      const revealed = state.discovery ? discoveryText(state.discovery) : "";
+      discovery.hidden = revealed === "";
+      if (discovery.textContent !== revealed) discovery.textContent = revealed;
       if (!state.run) return;
       const shown = statusText(state.run, state.paused);
       if (text.textContent !== shown) text.textContent = shown;
