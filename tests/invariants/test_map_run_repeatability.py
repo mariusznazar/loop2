@@ -7,6 +7,9 @@ is never written) and driven through its public functions in `dist/public/sim/ga
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send`, `passRealTime`, `setPaused` and `restart`, each returning `{state, events}`. After every
 input the script records the JSON of the whole game state and the events that input gave.
+The `newGame` step starts from a game whose Understanding holds everything the built data
+modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
+program stay what the check drives.
 
 Reading of the sentence:
 - one program, one starting game state, one seed: a new game given the program P1 below and sent
@@ -40,7 +43,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 
@@ -140,7 +143,7 @@ MINIMUM_MINUTES = 230
 
 # Drives the public functions of the built game module through a list of steps and records, after
 # each step, the JSON of the whole state and the events the step gave.
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -151,7 +154,7 @@ let state;
 const records = [];
 for (const [name, ...args] of steps) {
   if (name === 'newGame') {
-    state = game.newGame();
+    state = await newKnowingGame(game, gamePath);
     records.push({ step: name, state: JSON.parse(JSON.stringify(state)), events: [] });
     continue;
   }

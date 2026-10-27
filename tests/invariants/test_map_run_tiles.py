@@ -7,6 +7,9 @@ is never written). A Node script this check writes to a temporary directory impo
 `dist/public/sim/game.js` and, for each game map written out in MAP_RESOURCES, starts map runs
 through the public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, `restart` and
 `end`, recording the map run's tiles at each start.
+The new game of each start has an Understanding that holds everything the built data
+modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
+program stay what the check drives.
 
 Reading of the sentence:
 - a map run starts: the state a `send` returns, and the state a `restart` returns;
@@ -53,7 +56,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 BUILT_DIRECTORY = "dist/public/sim"
 # The game maps and, for each, its list of resources with the stock per tile, as
@@ -76,7 +79,7 @@ PROGRAM = program_from_rules([{"condition": ALWAYS, "action": {"kind": "explore"
                               {"condition": ALWAYS, "action": {"kind": "wander"}}])
 STARTS_PER_TIME = 3
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -88,7 +91,8 @@ const characterId = 1;
 const out = { starts: [] };
 for (const mapId of config.mapIds) {
   for (const realMs of config.realTimes) {
-    let state = game.setProgram(game.newGame(), config.program).state;
+    let state = game.setProgram(
+      await newKnowingGame(game, join(simDirectory, 'game.js')), config.program).state;
     state = game.createCharacter(state, config.characterName).state;
     const record = (how) => out.starts.push({ mapId, how, realMs,
       tiles: JSON.parse(JSON.stringify(state.run.tiles)) });

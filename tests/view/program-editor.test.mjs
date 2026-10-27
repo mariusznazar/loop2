@@ -35,6 +35,7 @@ import {
   withConditionResource,
   withConditionValue,
 } from "../../dist/public/view/program-editor.js";
+import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -285,7 +286,7 @@ test("count-only refresh changes count text without writing field values or repl
       value: 2,
     };
     const state = createCharacter(
-      setProgram(newGame(), program).state,
+      setProgram(newKnowingGame(), program).state,
       "Ala",
     ).state;
     const editor = createProgramEditor(() =>
