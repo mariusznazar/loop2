@@ -101,12 +101,9 @@ export function createApp(runtime: AccountRuntime | null = null): Express {
         status = 400;
     }
     response.setHeader("Cache-Control", "no-store");
-    response
-      .status(status)
-      .json({
-        error:
-          status === 500 ? "Account service failed" : "Invalid request body",
-      });
+    response.status(status).json({
+      error: status === 500 ? "Account service failed" : "Invalid request body",
+    });
   };
   app.use(errors);
 

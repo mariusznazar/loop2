@@ -90,7 +90,9 @@ export async function readAccountConfiguration(
   if (databasePath === ":memory:") throw invalid("LOOP2_DATABASE_PATH");
   let origin: URL;
   try {
-    origin = new URL(environment.LOOP2_PUBLIC_ORIGIN!);
+    const suppliedOrigin = environment.LOOP2_PUBLIC_ORIGIN!;
+    if (!/^https:\/\/[^/?#\\\s@]+\/?$/i.test(suppliedOrigin)) throw new Error();
+    origin = new URL(suppliedOrigin);
     if (
       origin.protocol !== "https:" ||
       origin.username ||

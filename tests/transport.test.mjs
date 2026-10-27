@@ -355,15 +355,21 @@ test(
     assert.equal(response.status, 200);
     const issued = response.headers["set-cookie"]?.[0];
     assert.ok(issued, "a valid asset request must renew the cookie");
-    assert.equal(issued.split(";")[0], signedCookie(id, f.keys[0]));
+    assert.ok(
+      issued.split(";")[0] === signedCookie(id, f.keys[0]),
+      "renewal must sign with the newest key",
+    );
     for (const attribute of [
       /; Path=\//,
       /; HttpOnly/,
       /; Secure/,
       /; SameSite=Strict/,
     ])
-      assert.match(issued, attribute);
-    assert.doesNotMatch(issued, /; Domain=/i);
+      assert.ok(
+        attribute.test(issued),
+        `missing cookie attribute ${attribute}`,
+      );
+    assert.ok(!/; Domain=/i.test(issued), "host cookie must omit Domain");
     assert.equal(response.headers["cache-control"], "no-store");
     const row = f.runtime.database.readSession(id);
     assert.equal(
@@ -410,8 +416,11 @@ test(
       /; Secure/,
       /; SameSite=Strict/,
     ])
-      assert.match(issued, attribute);
-    assert.doesNotMatch(issued, /; Domain=/i);
+      assert.ok(
+        attribute.test(issued),
+        `missing cookie attribute ${attribute}`,
+      );
+    assert.ok(!/; Domain=/i.test(issued), "host cookie must omit Domain");
     const row = f.inspection
       .prepare("SELECT id, account_id FROM sessions")
       .get();
@@ -419,7 +428,10 @@ test(
     assert.notEqual(row.id, f.account.id);
     assert.equal(row.account_id, f.account.id);
     const cookie = issued.split(";")[0];
-    assert.equal(cookie, signedCookie(row.id, f.keys[0]));
+    assert.ok(
+      cookie === signedCookie(row.id, f.keys[0]),
+      "new cookie must sign its opaque SQLite ID with the newest key",
+    );
     const valid = await f.send("/test-identity", {
       headers: { ...proxyHeaders, Cookie: cookie },
     });

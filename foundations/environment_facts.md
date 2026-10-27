@@ -275,7 +275,7 @@ Express-session 1.19.0 uses Express's secure-request assessment when its proxy o
 
 Cloudflare's CF-Connecting-IP carries the client address on ordinary edge-to-origin traffic, while Workers can affect that value and the Remove visitor IP headers transform can remove it.
 
-- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/fundamentals/reference/http-headers.mdx § CF-Connecting-IP — "CF-Connecting-IP provides the client IP address connecting to Cloudflare to the origin web server." · § CF-Connecting-IP in Worker subrequests — "x-real-ip can be altered by the user in their Worker script."; read 2026-10-27
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/fundamentals/reference/http-headers.mdx § CF-Connecting-IP — "provides the client IP address" · "Remove visitor IP headers" · § CF-Connecting-IP in Worker subrequests — "can be altered"; read 2026-10-27
 
 ## cloudflare-forwarded-protocol
 

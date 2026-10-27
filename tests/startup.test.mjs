@@ -223,6 +223,9 @@ test(
       ["LOOP2_PUBLIC_ORIGIN", "https://game.example.test/path"],
       ["LOOP2_PUBLIC_ORIGIN", "https://game.example.test/?query=1"],
       ["LOOP2_PUBLIC_ORIGIN", "https://game.example.test/#fragment"],
+      ["LOOP2_PUBLIC_ORIGIN", "https://game.example.test/?"],
+      ["LOOP2_PUBLIC_ORIGIN", "https://game.example.test/#"],
+      ["LOOP2_PUBLIC_ORIGIN", "https://game.example.test/path/.."],
       ["LOOP2_SESSION_SECRET_FILE", join(f.directory, "missing")],
     ])
       assert.match(
