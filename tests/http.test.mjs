@@ -6,9 +6,12 @@ import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import argon2 from "argon2";
 import session from "express-session";
+import { AccountPolicy } from "../dist/server/account-policy.js";
 import { createApp } from "../dist/server/app.js";
 import { openAccountRuntime } from "../dist/server/configuration.js";
+import { hashPassword } from "../dist/server/passwords.js";
 
 let server;
 let port;
@@ -222,7 +225,7 @@ const logoutHeaders = {
 // D-99: 30 days from the last request.
 const sessionLifetime = 30 * 24 * 60 * 60 * 1000;
 
-async function accountFixture(t) {
+async function accountFixture(t, { keyCapacity } = {}) {
   const directory = await mkdtemp(join(tmpdir(), "loop2-account-http-"));
   let runtime, inspection, listening;
   let release = () => {};
@@ -259,7 +262,10 @@ async function accountFixture(t) {
     runtime.dummyHash,
   );
   assert.ok(first && second, "precondition: two persisted accounts");
-  const app = createApp(runtime);
+  // The limiter's clock stands still unless a case moves it.
+  const clock = { time: Date.now() };
+  const policy = new AccountPolicy({ now: () => clock.time, keyCapacity });
+  const app = createApp(runtime, policy);
   // A test-only ordinary read that holds its response until released, so a
   // logout can complete between its session load and its renewal.
   let reached;
@@ -286,6 +292,15 @@ async function accountFixture(t) {
     second,
     arrived,
     release,
+    clock,
+    policy,
+    to,
+    connections: () =>
+      new Promise((resolve, reject) =>
+        listening.getConnections((error, count) =>
+          error ? reject(error) : resolve(count),
+        ),
+      ),
     send: (target, options = {}) => send(target, { ...options, to }),
   };
 }
@@ -576,5 +591,746 @@ test(
       "the delayed read must not recreate the record",
     );
     assert.equal((await readAccount(f, cookie)).status, 401);
+  },
+);
+
+// Credential transitions. The required messages come from the task's To do 2, 4
+// and 10 (D-98, D-100); the limits and windows from D-100 and the orchestrator's
+// answer 5 (reports/02-designer-answers.md).
+const password = "  Correct horse 🙂 battery  ";
+const duplicateMessage = "Konto z tym adresem już istnieje.";
+const loginMessage = "Nieprawidłowy adres e-mail lub hasło.";
+const limitMessage = "Za dużo prób. Spróbuj ponownie za kilka minut.";
+const minute = 60 * 1000;
+
+function post(f, path, fields, { address = "198.51.100.10", cookie } = {}) {
+  const headers = {
+    "X-Forwarded-Proto": "https",
+    "CF-Connecting-IP": address,
+    Origin: origin,
+    "Content-Type": "application/json",
+  };
+  if (cookie) headers.Cookie = cookie;
+  const body = typeof fields === "string" ? fields : JSON.stringify(fields);
+  return f.send(path, { method: "POST", headers, body });
+}
+
+function register(f, email, options = {}) {
+  const secret = options.password ?? password;
+  return post(
+    f,
+    "/api/accounts",
+    {
+      email,
+      password: secret,
+      passwordConfirmation: options.confirmation ?? secret,
+    },
+    options,
+  );
+}
+
+function login(f, email, secret, options = {}) {
+  return post(f, "/api/session", { email, password: secret }, options);
+}
+
+function issuedSession(response, label) {
+  const cookies = response.headers["set-cookie"];
+  assert.equal(cookies?.length, 1, `${label}: one session cookie is issued`);
+  const [pair, ...attributes] = cookies[0].split("; ");
+  assert.ok(pair.startsWith("__Host-loop2.sid="), `${label}: session cookie`);
+  for (const attribute of ["Path=/", "HttpOnly", "Secure", "SameSite=Strict"])
+    assert.ok(attributes.includes(attribute), `${label}: ${attribute}`);
+  const value = decodeURIComponent(pair.slice("__Host-loop2.sid=".length));
+  return { cookie: pair, id: value.slice(2, value.lastIndexOf(".")) };
+}
+
+function assertNoCookie(response, label) {
+  assert.ok(
+    response.headers["set-cookie"] === undefined,
+    `${label}: no cookie`,
+  );
+}
+
+function assertMessage(response, status, message, label) {
+  assert.equal(response.status, status, label);
+  assert.match(response.headers["content-type"], /^application\/json/, label);
+  assert.equal(response.headers["cache-control"], "no-store", label);
+  assert.equal(JSON.parse(response.body).error, message, label);
+  assertNoCookie(response, label);
+}
+
+const assertLimited = (response, label) =>
+  assertMessage(response, 429, limitMessage, label);
+const assertLoginRefused = (response, label) =>
+  assertMessage(response, 401, loginMessage, label);
+
+function accountCount(f) {
+  return f.inspection.prepare("SELECT count(*) AS n FROM accounts").get().n;
+}
+
+function sessionCount(f) {
+  return f.inspection.prepare("SELECT count(*) AS n FROM sessions").get().n;
+}
+
+function storedAccount(f, email) {
+  return f.inspection
+    .prepare("SELECT id, password_hash AS hash FROM accounts WHERE email = ?")
+    .get(email);
+}
+
+async function waitFor(condition, label) {
+  const deadline = Date.now() + 5000;
+  while (!(await condition())) {
+    if (Date.now() > deadline) throw new Error(`${label}: deadline exceeded`);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+}
+
+// Both native password slots stay busy for the action, so any password work
+// the action starts is refused as over capacity rather than performed.
+async function withFullGate(action) {
+  const pending = [true, true];
+  const work = pending.map((_, index) =>
+    hashPassword(`occupying password ${index}`).finally(() => {
+      pending[index] = false;
+    }),
+  );
+  try {
+    await action();
+    assert.ok(
+      pending[0] && pending[1],
+      "precondition: both password slots stayed occupied",
+    );
+  } finally {
+    await Promise.allSettled(work);
+  }
+}
+
+test(
+  "registration stores an Argon2id hash of the exact password and signs this browser in at once",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: player-argon2-password-hash
+    // Faults: hashing a trimmed or otherwise changed password; a hash outside
+    // the package's Argon2id profile; registration without a signed-in session.
+    const f = await accountFixture(t);
+    const other = seed(f, "registration-other", f.second);
+    const created = await register(f, "  New.Player@Example.TEST ");
+    assert.equal(created.status, 201);
+    assert.match(created.headers["content-type"], /^application\/json/);
+    assert.equal(created.headers["cache-control"], "no-store");
+    const stored = storedAccount(f, "new.player@example.test");
+    assert.ok(stored, "the account is stored under its normalized address");
+    assert.deepEqual(JSON.parse(created.body), {
+      id: stored.id,
+      email: "new.player@example.test",
+    });
+    assert.ok(
+      /^\$argon2id\$v=19\$m=65536,p=1,t=3\$/.test(stored.hash),
+      "the stored value is an encoded Argon2id hash of the configured profile",
+    );
+    assert.equal(await argon2.verify(stored.hash, password), true);
+    assert.equal(await argon2.verify(stored.hash, password.trim()), false);
+    const session = issuedSession(created, "registration");
+    assert.ok(
+      storedRow(f, session.id)?.account_id === stored.id,
+      "the new browser session is stored for the new account",
+    );
+    assert.deepEqual(JSON.parse((await readAccount(f, session.cookie)).body), {
+      id: stored.id,
+      email: "new.player@example.test",
+    });
+    assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
+      id: f.second.id,
+      email: "second@example.test",
+    });
+    assertLoginRefused(
+      await login(f, "new.player@example.test", password.trim()),
+      "the trimmed password is another password",
+    );
+    const again = await login(f, "NEW.player@example.test  ", password);
+    assert.equal(again.status, 200, "the exact password signs in");
+    assert.deepEqual(JSON.parse(again.body), {
+      id: stored.id,
+      email: "new.player@example.test",
+    });
+  },
+);
+
+test(
+  "a credential success replaces only this browser's session with a fresh identity",
+  { timeout: 20000 },
+  async (t) => {
+    // D-107: regenerate on credential success to prevent fixation; D-95/D-99:
+    // other browsers keep their sessions.
+    const f = await accountFixture(t);
+    const created = await register(f, "fresh@example.test", {
+      cookie: seed(f, "fixation-registration", f.second),
+    });
+    assert.equal(created.status, 201);
+    const registered = issuedSession(created, "registration");
+    assert.ok(
+      registered.id !== "fixation-registration",
+      "registration issues a new session identifier",
+    );
+    assert.equal(storedRow(f, "fixation-registration"), undefined);
+    const kept = seed(f, "fixation-kept", f.second);
+    const fixed = seed(f, "fixation-login", f.second);
+    const signedIn = await login(f, "fresh@example.test", password, {
+      cookie: fixed,
+    });
+    assert.equal(signedIn.status, 200);
+    const replaced = issuedSession(signedIn, "login");
+    assert.ok(
+      replaced.id !== "fixation-login" && replaced.id !== registered.id,
+      "login issues a new session identifier",
+    );
+    assert.equal(storedRow(f, "fixation-login"), undefined);
+    const account = storedAccount(f, "fresh@example.test").id;
+    assert.equal(storedRow(f, replaced.id)?.account_id, account);
+    assert.equal(storedRow(f, registered.id)?.account_id, account);
+    assert.equal((await readAccount(f, fixed)).status, 401);
+    assert.deepEqual(JSON.parse((await readAccount(f, kept)).body), {
+      id: f.second.id,
+      email: "second@example.test",
+    });
+    assert.deepEqual(
+      JSON.parse((await readAccount(f, registered.cookie)).body),
+      { id: account, email: "fresh@example.test" },
+      "the registering browser stays signed in",
+    );
+  },
+);
+
+test(
+  "one normalized address holds one account and a duplicate gets the required message, also in a race",
+  { timeout: 20000 },
+  async (t) => {
+    // D-97, D-98. Faults: comparing raw spellings; a lost insert race
+    // answered as a server error or as a second account.
+    const f = await accountFixture(t);
+    const raced = await Promise.all([
+      register(f, "Race@Example.test", { address: "198.51.100.11" }),
+      register(f, " race@example.TEST ", { address: "198.51.100.12" }),
+    ]);
+    assert.deepEqual(
+      raced.map((response) => response.status).sort(),
+      [201, 409],
+    );
+    const lost = raced.find((response) => response.status === 409);
+    assertMessage(lost, 409, duplicateMessage, "the lost race");
+    assert.equal(
+      f.inspection
+        .prepare("SELECT count(*) AS n FROM accounts WHERE email = ?")
+        .get("race@example.test").n,
+      1,
+    );
+    assertMessage(
+      await register(f, "FIRST@example.test"),
+      409,
+      duplicateMessage,
+      "an address that already has an account",
+    );
+    assert.equal(accountCount(f), 3);
+    assert.equal(
+      (await login(f, "  RACE@EXAMPLE.TEST ", password)).status,
+      200,
+      "login normalizes the address as registration did",
+    );
+  },
+);
+
+test(
+  "passwords count 12 to 128 Unicode code points and keep their exact content",
+  { timeout: 20000 },
+  async (t) => {
+    // D-96. Faults: UTF-16 or byte length, trimming, normalizing, or a
+    // confirmation compared after normalization.
+    const f = await accountFixture(t);
+    const accepted = [
+      ["twelve-emoji", "🙂".repeat(12)],
+      ["twelve-spaces", " ".repeat(12)],
+      ["max-emoji", "🙂".repeat(128)],
+      ["max-two-byte", "ą".repeat(128)],
+    ];
+    for (const [index, [label, secret]] of accepted.entries()) {
+      const response = await register(f, `${label}@example.test`, {
+        password: secret,
+        address: `198.51.100.${30 + index}`,
+      });
+      assert.equal(response.status, 201, label);
+    }
+    for (const [label, secret] of [
+      ["eleven-emoji", "🙂".repeat(11)],
+      ["eleven-letters", "a".repeat(11)],
+      ["too-many-letters", "a".repeat(129)],
+      ["too-many-emoji", "🙂".repeat(129)],
+    ]) {
+      const response = await register(f, `${label}@example.test`, {
+        password: secret,
+      });
+      assert.equal(response.status, 400, label);
+      assert.equal(JSON.parse(response.body).code, "invalid-password", label);
+      assertNoCookie(response, label);
+      assert.equal(storedAccount(f, `${label}@example.test`), undefined);
+    }
+    for (const [label, confirmation] of [
+      ["trailing-space", `${password} `],
+      ["decomposed", password.replace("o", "ó")],
+    ]) {
+      const response = await register(f, `${label}@example.test`, {
+        confirmation,
+      });
+      assert.equal(response.status, 400, label);
+      assert.equal(JSON.parse(response.body).code, "password-mismatch", label);
+      assert.equal(storedAccount(f, `${label}@example.test`), undefined);
+    }
+    assert.equal(
+      (await login(f, "twelve-spaces@example.test", " ".repeat(12))).status,
+      200,
+    );
+    assert.equal(
+      (await login(f, "max-emoji@example.test", "🙂".repeat(128))).status,
+      200,
+    );
+    assertLoginRefused(
+      await login(f, "twelve-emoji@example.test", "🙂".repeat(11)),
+      "a login password below the boundary",
+    );
+  },
+);
+
+test(
+  "malformed fields and out-of-shape credentials are refused before password work or writes",
+  { timeout: 20000 },
+  async (t) => {
+    // D-97, D-102: explicit field and type checks, no coercion; bad lengths
+    // and shapes keep the generic login message without Argon2.
+    const f = await accountFixture(t);
+    const structural = [
+      {},
+      { email: "shape@example.test", password },
+      {
+        email: "shape@example.test",
+        password,
+        passwordConfirmation: password,
+        extra: true,
+      },
+      {
+        email: ["shape@example.test"],
+        password,
+        passwordConfirmation: password,
+      },
+      { email: 7, password, passwordConfirmation: password },
+      {
+        email: "shape@example.test",
+        password: { password },
+        passwordConfirmation: password,
+      },
+      {
+        email: "shape@example.test",
+        password: null,
+        passwordConfirmation: null,
+      },
+    ];
+    await withFullGate(async () => {
+      for (const fields of structural) {
+        const response = await post(f, "/api/accounts", fields);
+        assert.equal(response.status, 400, JSON.stringify(Object.keys(fields)));
+        assert.equal(JSON.parse(response.body).code, "invalid-request");
+      }
+    });
+    await withFullGate(async () => {
+      for (const fields of [
+        {},
+        { email: "first@example.test" },
+        {
+          email: "first@example.test",
+          password,
+          passwordConfirmation: password,
+        },
+        { email: 7, password },
+        { email: "first@example.test", password: [password] },
+      ]) {
+        const response = await post(f, "/api/session", fields);
+        assert.equal(response.status, 400, JSON.stringify(Object.keys(fields)));
+        assert.equal(JSON.parse(response.body).code, "invalid-request");
+      }
+    });
+    await withFullGate(async () => {
+      for (const email of [
+        "no-at-sign",
+        "@example.test",
+        "player@",
+        "a@b@c",
+        "   ",
+      ]) {
+        const response = await register(f, email);
+        assert.equal(response.status, 400, email);
+        assert.equal(JSON.parse(response.body).code, "invalid-email", email);
+      }
+      const short = await register(f, "short@example.test", {
+        password: "a".repeat(11),
+      });
+      assert.equal(short.status, 400);
+    });
+    await withFullGate(async () => {
+      for (const [email, secret] of [
+        ["no-at-sign", password],
+        ["first@example.test", "a".repeat(11)],
+        ["first@example.test", "a".repeat(129)],
+      ])
+        assertLoginRefused(
+          await login(f, email, secret),
+          `out-of-shape login ${email}`,
+        );
+      // Positive control: well-formed credentials do reach the full gate.
+      assertLimited(await register(f, "control@example.test"), "full gate");
+      assertLimited(
+        await login(f, "unknown@example.test", password),
+        "unknown address goes through the same gate",
+      );
+    });
+    assert.equal(accountCount(f), 2, "nothing was written");
+    assert.equal(sessionCount(f), 0, "no session was created");
+    assert.equal(
+      (await register(f, "player@localhost")).status,
+      201,
+      "no dot or DNS restriction applies",
+    );
+  },
+);
+
+test(
+  "a known address with a wrong password and an unknown address fail login identically",
+  { timeout: 20000 },
+  async (t) => {
+    // D-98. Fault: a distinct message, status or shape for an unknown address.
+    const f = await accountFixture(t);
+    assert.equal((await register(f, "known@example.test")).status, 201);
+    const wrong = await login(f, "known@example.test", `${password}!`);
+    const unknown = await login(f, "unknown@example.test", password);
+    assertLoginRefused(wrong, "wrong password");
+    assertLoginRefused(unknown, "unknown address");
+    assert.deepEqual(JSON.parse(unknown.body), JSON.parse(wrong.body));
+    assert.equal(
+      unknown.headers["content-type"],
+      wrong.headers["content-type"],
+    );
+  },
+);
+
+test(
+  "a failed session save keeps the new account usable and issues no success cookie",
+  { timeout: 20000 },
+  async (t) => {
+    // D-107: success only after the session is stored; the account is not
+    // deleted when its first session fails.
+    const f = await accountFixture(t);
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_session BEFORE INSERT ON sessions
+      BEGIN SELECT RAISE(ABORT, 'synthetic session refusal'); END;
+    `);
+    for (const [label, attempt] of [
+      ["registration", () => register(f, "unsaved@example.test")],
+      ["login", () => login(f, "unsaved@example.test", password)],
+    ]) {
+      const failed = await attempt();
+      assert.ok(failed.status >= 500, `${label}: a failed save is a failure`);
+      assert.match(failed.headers["content-type"], /^application\/json/);
+      assert.equal(failed.headers["cache-control"], "no-store");
+      assertNoCookie(failed, label);
+      assert.doesNotMatch(failed.body, /synthetic|trigger|sqlite|sessions/i);
+      assert.ok(!("id" in JSON.parse(failed.body)), `${label}: no account`);
+    }
+    assert.ok(storedAccount(f, "unsaved@example.test"), "the account remains");
+    assert.equal(sessionCount(f), 0);
+    f.inspection.exec("DROP TRIGGER refuse_session");
+    const later = await login(f, "unsaved@example.test", password);
+    assert.equal(later.status, 200, "a later login succeeds");
+    const { cookie } = issuedSession(later, "later login");
+    assert.equal((await readAccount(f, cookie)).status, 200);
+  },
+);
+
+test(
+  "five failed logins lock an address for 15 minutes from the fifth, also for its correct password",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-attempt-limits
+    // Faults: success not clearing earlier failures; a lock skipped for correct
+    // credentials; a lock or window still counted at its end instant.
+    const f = await accountFixture(t);
+    assert.equal(
+      (await register(f, "lock@example.test", { address: "198.51.100.40" }))
+        .status,
+      201,
+    );
+    const wrong = () => login(f, "lock@example.test", `${password}!`);
+    const right = () => login(f, "lock@example.test", password);
+    for (let attempt = 1; attempt <= 4; attempt += 1)
+      assertLoginRefused(await wrong(), `failure ${attempt}`);
+    assert.equal((await right()).status, 200, "success clears the four");
+    for (let attempt = 1; attempt <= 5; attempt += 1)
+      assertLoginRefused(await wrong(), `failure ${attempt} after success`);
+    const lockedAt = f.clock.time;
+    assertLimited(await right(), "locked, correct password");
+    assertLimited(await wrong(), "locked, wrong password");
+    assertLoginRefused(
+      await login(f, "other@example.test", password),
+      "another address from the same client is not locked",
+    );
+    f.clock.time = lockedAt + 15 * minute - 1;
+    assertLimited(await right(), "one millisecond before the lock ends");
+    f.clock.time = lockedAt + 15 * minute;
+    assert.equal((await right()).status, 200, "the lock ends after 15 minutes");
+    for (let attempt = 1; attempt <= 4; attempt += 1)
+      assertLoginRefused(await wrong(), `rolling failure ${attempt}`);
+    f.clock.time += 15 * minute;
+    assertLoginRefused(await wrong(), "a fifth failure after the window");
+    assert.equal(
+      (await right()).status,
+      200,
+      "failures older than 15 minutes do not lock",
+    );
+  },
+);
+
+test(
+  "one client address is admitted twenty failed logins per rolling 15 minutes and success does not clear them",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-attempt-limits
+    // Faults: a success clearing address failures; in-flight attempts not
+    // counted; another client sharing the restriction.
+    const f = await accountFixture(t);
+    assert.equal(
+      (await register(f, "address@example.test", { address: "198.51.100.50" }))
+        .status,
+      201,
+    );
+    const address = "198.51.100.51";
+    for (let pair = 0; pair < 9; pair += 1) {
+      const failures = await Promise.all(
+        [0, 1].map((index) =>
+          login(f, `unknown-${pair}-${index}@example.test`, password, {
+            address,
+          }),
+        ),
+      );
+      for (const response of failures)
+        assertLoginRefused(response, `pair ${pair}`);
+    }
+    assertLoginRefused(
+      await login(f, "unknown-last@example.test", password, { address }),
+      "the nineteenth failure",
+    );
+    const startedAt = f.clock.time;
+    assert.equal(
+      (await login(f, "address@example.test", password, { address })).status,
+      200,
+    );
+    const parallel = await Promise.all(
+      ["last-0", "last-1"].map((name) =>
+        login(f, `${name}@example.test`, password, { address }),
+      ),
+    );
+    assert.deepEqual(
+      parallel.map((response) => response.status).sort(),
+      [401, 429],
+      "the twentieth attempt's reservation refuses the twenty-first",
+    );
+    assertLimited(
+      await login(f, "address@example.test", password, { address }),
+      "twenty failures refuse even correct credentials",
+    );
+    assertLoginRefused(
+      await login(f, "elsewhere@example.test", password, {
+        address: "198.51.100.52",
+      }),
+      "another client address is admitted",
+    );
+    f.clock.time = startedAt + 15 * minute - 1;
+    assertLimited(
+      await login(f, "address@example.test", password, { address }),
+      "one millisecond before the window ends",
+    );
+    f.clock.time = startedAt + 15 * minute;
+    assert.equal(
+      (await login(f, "address@example.test", password, { address })).status,
+      200,
+    );
+  },
+);
+
+test(
+  "one client address creates five accounts per rolling hour, and refused registrations take no slot",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-attempt-limits
+    // Faults: duplicates or invalid requests consuming slots; parallel
+    // registrations overshooting the limit; the window counted at its end.
+    const f = await accountFixture(t);
+    const address = "198.51.100.60";
+    const startedAt = f.clock.time;
+    for (let index = 0; index < 3; index += 1)
+      assert.equal(
+        (await register(f, `slot-${index}@example.test`, { address })).status,
+        201,
+      );
+    assert.equal(
+      (await register(f, "slot-0@example.test", { address })).status,
+      409,
+    );
+    assert.equal((await register(f, "no-at-sign", { address })).status, 400);
+    assert.equal(
+      (await register(f, "slot-3@example.test", { address })).status,
+      201,
+    );
+    const parallel = await Promise.all(
+      ["slot-4", "slot-5"].map((name) =>
+        register(f, `${name}@example.test`, { address }),
+      ),
+    );
+    assert.deepEqual(
+      parallel.map((response) => response.status).sort(),
+      [201, 429],
+      "the fifth registration's reservation refuses the sixth",
+    );
+    assertLimited(
+      await register(f, "slot-6@example.test", { address }),
+      "sixth account within the hour",
+    );
+    assert.equal(accountCount(f), 2 + 5);
+    assert.equal(
+      (
+        await register(f, "elsewhere@example.test", {
+          address: "198.51.100.61",
+        })
+      ).status,
+      201,
+    );
+    f.clock.time = startedAt + 60 * minute - 1;
+    assertLimited(
+      await register(f, "slot-7@example.test", { address }),
+      "one millisecond before the hour ends",
+    );
+    f.clock.time = startedAt + 60 * minute;
+    assert.equal(
+      (await register(f, "slot-8@example.test", { address })).status,
+      201,
+    );
+  },
+);
+
+test(
+  "a disconnected login keeps its reservation until its password work completes and still counts",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-attempt-limits
+    // Faults: releasing the reservation when the client disconnects, and
+    // dropping the outcome of work whose client has gone.
+    const f = await accountFixture(t);
+    assert.equal(
+      (await register(f, "drop@example.test", { address: "198.51.100.70" }))
+        .status,
+      201,
+    );
+    for (let attempt = 1; attempt <= 4; attempt += 1)
+      assertLoginRefused(
+        await login(f, "drop@example.test", `${password}!`),
+        `failure ${attempt}`,
+      );
+    await waitFor(async () => (await f.connections()) === 0, "idle server");
+    const abandoned = request({
+      hostname: "127.0.0.1",
+      port: f.to,
+      path: "/api/session",
+      method: "POST",
+      agent: false,
+      headers: {
+        "X-Forwarded-Proto": "https",
+        "CF-Connecting-IP": "198.51.100.10",
+        Origin: origin,
+        "Content-Type": "application/json",
+      },
+    });
+    abandoned.on("error", () => {});
+    abandoned.end(
+      JSON.stringify({ email: "drop@example.test", password: `${password}!` }),
+    );
+    try {
+      await waitFor(() => f.policy.inFlight === 1, "fifth attempt admitted");
+    } finally {
+      abandoned.destroy();
+    }
+    await waitFor(async () => (await f.connections()) === 0, "disconnect seen");
+    assert.equal(
+      f.policy.inFlight,
+      1,
+      "precondition: the fifth attempt's password work is still running",
+    );
+    assertLimited(
+      await login(f, "drop@example.test", password),
+      "the disconnected attempt still holds its reservation",
+    );
+    await waitFor(() => f.policy.inFlight === 0, "abandoned work completed");
+    assertLimited(
+      await login(f, "drop@example.test", password),
+      "the abandoned failure counted as the fifth and locked the address",
+    );
+    f.clock.time += 15 * minute;
+    assert.equal((await login(f, "drop@example.test", password)).status, 200);
+  },
+);
+
+test(
+  "full limiter tables refuse newcomers without evicting a live restriction",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-attempt-tracking
+    // Faults: evicting the oldest key, or admitting an untracked newcomer.
+    const f = await accountFixture(t, { keyCapacity: 2 });
+    const address = "198.51.100.80";
+    assert.equal(
+      (await register(f, "kept@example.test", { address })).status,
+      201,
+    );
+    for (let attempt = 1; attempt <= 5; attempt += 1)
+      assertLoginRefused(
+        await login(f, "kept@example.test", `${password}!`, { address }),
+        `failure ${attempt}`,
+      );
+    assertLoginRefused(
+      await login(f, "second-key@example.test", password, {
+        address: "198.51.100.81",
+      }),
+      "the second tracked email and address",
+    );
+    assertLimited(
+      await login(f, "newcomer@example.test", password, { address }),
+      "a third email key is refused while two are live",
+    );
+    assertLimited(
+      await login(f, "kept@example.test", password, { address }),
+      "the live lock was not evicted",
+    );
+    assertLimited(
+      await login(f, "second-key@example.test", password, {
+        address: "198.51.100.82",
+      }),
+      "a third address key is refused while two are live",
+    );
+    f.clock.time += 60 * minute;
+    assertLoginRefused(
+      await login(f, "newcomer@example.test", password, {
+        address: "198.51.100.82",
+      }),
+      "expired entries release their capacity",
+    );
+    assert.equal(
+      (await login(f, "kept@example.test", password, { address })).status,
+      200,
+    );
   },
 );

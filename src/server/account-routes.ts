@@ -1,7 +1,17 @@
 import express from "express";
 import type { Request, Response, Router } from "express";
+import {
+  AccountPolicy,
+  checkLogin,
+  checkRegistration,
+} from "./account-policy.js";
 import type { AccountRuntime } from "./configuration.js";
 import type { Account } from "./database.js";
+import {
+  hashPassword,
+  PasswordCapacityError,
+  verifyPassword,
+} from "./passwords.js";
 import { mutationGuards } from "./transport.js";
 
 export const sessionCookieName = "__Host-loop2.sid";
@@ -49,7 +59,95 @@ function unauthenticated(response: Response): void {
   );
 }
 
-export function accountRoutes(runtime: AccountRuntime | null): Router {
+function invalidRequest(response: Response): void {
+  refuse(response, 400, "invalid-request", "Nieprawidłowe żądanie.");
+}
+
+function limited(response: Response): void {
+  refuse(
+    response,
+    429,
+    "too-many-attempts",
+    "Za dużo prób. Spróbuj ponownie za kilka minut.",
+  );
+}
+
+function invalidCredentials(response: Response): void {
+  refuse(
+    response,
+    401,
+    "invalid-credentials",
+    "Nieprawidłowy adres e-mail lub hasło.",
+  );
+}
+
+const registrationProblems = {
+  "invalid-email": "Podaj adres e-mail w postaci nazwa@domena.",
+  "invalid-password": "Hasło musi mieć od 12 do 128 znaków.",
+  "password-mismatch": "Powtórzone hasło różni się od hasła.",
+};
+
+// The body holds exactly the named fields, each a string; nothing is coerced.
+function stringFields<Name extends string>(
+  body: unknown,
+  names: readonly Name[],
+): Record<Name, string> | null {
+  const record = body as Record<string, unknown>;
+  const keys = Object.keys(record);
+  if (
+    keys.length !== names.length ||
+    !names.every(
+      (name) => Object.hasOwn(record, name) && typeof record[name] === "string",
+    )
+  )
+    return null;
+  return record as Record<Name, string>;
+}
+
+// Replaces this browser's session and stores it before the caller answers.
+// On failure no session remains attached, so no cookie is issued.
+function establishSession(
+  request: Request,
+  accountId: string,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const abandon = () => request.session.destroy(() => resolve(false));
+    request.session.regenerate((regenerated: unknown) => {
+      if (regenerated) {
+        abandon();
+        return;
+      }
+      request.session.accountId = accountId;
+      request.session.save((saved: unknown) => {
+        if (saved) abandon();
+        else resolve(true);
+      });
+    });
+  });
+}
+
+async function signIn(
+  request: Request,
+  response: Response,
+  account: Account,
+  status: number,
+): Promise<void> {
+  if (!(await establishSession(request, account.id))) {
+    refuse(
+      response,
+      503,
+      "session-unavailable",
+      "Nie udało się zalogować. Spróbuj zalogować się ponownie.",
+    );
+    return;
+  }
+  response.status(status).json({ id: account.id, email: account.email });
+}
+
+export function accountRoutes(
+  runtime: AccountRuntime | null,
+  policy: AccountPolicy = new AccountPolicy(),
+): Router {
   const router = express.Router();
 
   router.all(Object.values(paths), (_request, response, next) => {
@@ -105,9 +203,103 @@ export function accountRoutes(runtime: AccountRuntime | null): Router {
     });
   });
 
-  // Credentials and admission arrive with their policy; until then they stay unavailable.
-  router.post([paths.accounts, paths.session], (_request, response) => {
-    response.status(503).json({ error: "Accounts unavailable" });
+  router.post(paths.accounts, async (request, response) => {
+    const input = stringFields(request.body, [
+      "email",
+      "password",
+      "passwordConfirmation",
+    ] as const);
+    if (!input) {
+      invalidRequest(response);
+      return;
+    }
+    const checked = checkRegistration(input);
+    if (!checked.ok) {
+      refuse(
+        response,
+        400,
+        checked.problem,
+        registrationProblems[checked.problem],
+      );
+      return;
+    }
+    const address = response.locals.accountClientAddress as string;
+    const ticket = policy.admitRegistration(address);
+    if (!ticket) {
+      limited(response);
+      return;
+    }
+    let account: Account | null;
+    try {
+      if (runtime.database.findAccountByEmail(checked.email)) {
+        account = null;
+      } else {
+        const hash = await hashPassword(checked.password);
+        account = runtime.database.createAccount(checked.email, hash);
+      }
+    } catch (error) {
+      ticket.release();
+      if (error instanceof PasswordCapacityError) {
+        limited(response);
+        return;
+      }
+      throw error;
+    }
+    if (!account) {
+      ticket.release();
+      refuse(
+        response,
+        409,
+        "account-exists",
+        "Konto z tym adresem już istnieje.",
+      );
+      return;
+    }
+    ticket.created();
+    await signIn(request, response, account, 201);
+  });
+
+  router.post(paths.session, async (request, response) => {
+    const input = stringFields(request.body, ["email", "password"] as const);
+    if (!input) {
+      invalidRequest(response);
+      return;
+    }
+    const checked = checkLogin(input);
+    if (!checked) {
+      invalidCredentials(response);
+      return;
+    }
+    const address = response.locals.accountClientAddress as string;
+    const ticket = policy.admitLogin(checked.email, address);
+    if (!ticket) {
+      limited(response);
+      return;
+    }
+    let account: Account | null;
+    let verified: boolean;
+    try {
+      account = runtime.database.findAccountByEmail(checked.email);
+      // An unknown address is checked against the startup hash through the same gate.
+      verified = await verifyPassword(
+        account?.passwordHash ?? runtime.dummyHash,
+        checked.password,
+      );
+    } catch (error) {
+      ticket.release();
+      if (error instanceof PasswordCapacityError) {
+        limited(response);
+        return;
+      }
+      throw error;
+    }
+    if (!account || !verified) {
+      ticket.fail();
+      invalidCredentials(response);
+      return;
+    }
+    ticket.succeed();
+    await signIn(request, response, account, 200);
   });
 
   return router;

@@ -9,6 +9,7 @@ import { test } from "node:test";
 import session from "express-session";
 import { createApp } from "../dist/server/app.js";
 import { openAccountRuntime } from "../dist/server/configuration.js";
+import { hashPassword } from "../dist/server/passwords.js";
 
 const origin = "https://game.example.test:8443";
 const proxyHeaders = {
@@ -257,7 +258,7 @@ test(
   "mutation guards reject foreign origins, non-JSON and malformed bodies",
   { timeout: 20000 },
   async (t) => {
-    // D-102. Expected credential fields are the following slice's work.
+    // D-102.
     const f = await fixture(t);
     const valid = {
       ...proxyHeaders,
@@ -317,19 +318,23 @@ test(
       assert.match(response.headers["content-type"], /application\/json/);
       assert.equal(response.headers["set-cookie"], undefined);
     }
+    // Accepted media reach the login route, which answers an unknown address.
     for (const type of [
       "application/json",
       "application/json; charset=utf-8",
     ]) {
+      const response = await f.send("/api/session", {
+        method: "POST",
+        headers: { ...valid, "Content-Type": type },
+        body: JSON.stringify({
+          email: "unknown@example.test",
+          password: "unknown account password",
+        }),
+      });
+      assert.equal(response.status, 401, type);
       assert.equal(
-        (
-          await f.send("/api/session", {
-            method: "POST",
-            headers: { ...valid, "Content-Type": type },
-            body: "{}",
-          })
-        ).status,
-        503,
+        JSON.parse(response.body).error,
+        "Nieprawidłowy adres e-mail lub hasło.",
       );
     }
     assert.equal(
@@ -345,6 +350,164 @@ test(
         `${path} is no account route`,
       );
     }
+  },
+);
+
+test(
+  "refused state-changing requests change no account or session and do no password work",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-mutation-request-guards
+    // Faults: a guard missing from one state-changing route, a guard run after
+    // its route, and field checks that coerce or ignore unexpected fields.
+    const f = await fixture(t);
+    const secret = "  guarded password 🙂  ";
+    const known = f.runtime.database.createAccount(
+      "guarded@example.test",
+      await hashPassword(secret),
+    );
+    assert.ok(known, "precondition: an account with a known password");
+    const live = "guarded-live-session";
+    seed(f, live);
+    const cookie = signedCookie(live, f.keys[0]);
+    const stored = f.runtime.database.readSession(live);
+    // D-99: a request with a valid session renews that same session, refused or not.
+    const renewal = signedCookie(live, f.keys[0]);
+    const count = (table) =>
+      f.inspection.prepare(`SELECT count(*) AS n FROM ${table}`).get().n;
+    const accounts = count("accounts");
+    // Each body would succeed if its request were admitted.
+    const routes = [
+      [
+        "/api/accounts",
+        {
+          email: "created@example.test",
+          password: secret,
+          passwordConfirmation: secret,
+        },
+      ],
+      ["/api/session", { email: "guarded@example.test", password: secret }],
+      ["/api/logout", {}],
+    ];
+    const json = (value) => () => JSON.stringify(value);
+    const variants = (fields) => [
+      ["missing origin", { Origin: undefined }, null, 403],
+      ["null origin", { Origin: "null" }, null, 403],
+      ["foreign origin", { Origin: "https://evil.example" }, null, 403],
+      ["suffix origin", { Origin: `${origin}.evil` }, null, 403],
+      ["origin with path", { Origin: `${origin}/` }, null, 403],
+      [
+        "origin without port",
+        { Origin: "https://game.example.test" },
+        null,
+        403,
+      ],
+      ["malformed origin", { Origin: `${origin}:1` }, null, 403],
+      ["duplicate origin", { Origin: [origin, origin] }, null, 403],
+      ["missing media", { "Content-Type": undefined }, null, 415],
+      ["text media", { "Content-Type": "text/plain" }, null, 415],
+      [
+        "form media",
+        { "Content-Type": "application/x-www-form-urlencoded" },
+        null,
+        415,
+      ],
+      [
+        "parameterized media",
+        { "Content-Type": "application/json;other=value" },
+        null,
+        415,
+      ],
+      [
+        "duplicate media",
+        { "Content-Type": ["application/json", "application/json"] },
+        null,
+        415,
+      ],
+      ["compressed", { "Content-Encoding": "gzip" }, null, 415],
+      [
+        "duplicate encoding",
+        { "Content-Encoding": ["identity", "identity"] },
+        null,
+        415,
+      ],
+      [
+        "oversized",
+        {},
+        json({ ...fields, padding: "x".repeat(16 * 1024) }),
+        413,
+      ],
+      ["empty body", {}, () => "", 400],
+      ["broken body", {}, () => "{", 400],
+      ["array body", {}, json([fields]), 400],
+      ["scalar body", {}, () => "7", 400],
+      ["null body", {}, () => "null", 400],
+      [
+        "unexpected field",
+        {},
+        json({ ...fields, accountId: f.account.id }),
+        400,
+      ],
+      ...Object.keys(fields).flatMap((name) => [
+        ["missing " + name, {}, json({ ...fields, [name]: undefined }), 400],
+        ["numeric " + name, {}, json({ ...fields, [name]: 7 }), 400],
+        ["array " + name, {}, json({ ...fields, [name]: [fields[name]] }), 400],
+      ]),
+    ];
+    for (const [path, fields] of routes) {
+      for (const [label, changes, body, expected] of variants(fields)) {
+        const headers = {
+          ...proxyHeaders,
+          Origin: origin,
+          "Content-Type": "application/json",
+          Cookie: cookie,
+          ...changes,
+        };
+        for (const name of Object.keys(headers))
+          if (headers[name] === undefined) delete headers[name];
+        const response = await f.send(path, {
+          method: "POST",
+          headers,
+          body: body ? body() : JSON.stringify(fields),
+        });
+        const name = `${path} ${label}`;
+        assert.equal(response.status, expected, name);
+        assert.match(response.headers["content-type"], /application\/json/);
+        const cookies = response.headers["set-cookie"] ?? [];
+        assert.ok(
+          cookies.every((value) => value.split(";")[0] === renewal),
+          `${name}: no new or cleared session cookie`,
+        );
+        assert.equal(count("accounts"), accounts, `${name}: no account`);
+        assert.equal(count("sessions"), 1, `${name}: no session`);
+        const current = f.runtime.database.readSession(live);
+        assert.ok(
+          current?.accountId === stored.accountId &&
+            current.data === stored.data,
+          `${name}: the live session keeps its identity`,
+        );
+      }
+    }
+    // Controls: the same bodies with every guard satisfied do change state.
+    const valid = {
+      ...proxyHeaders,
+      Origin: origin,
+      "Content-Type": "application/json",
+    };
+    for (const [path, fields, expected] of [
+      ["/api/logout", {}, 204],
+      ["/api/session", routes[1][1], 200],
+      ["/api/accounts", routes[0][1], 201],
+    ]) {
+      const response = await f.send(path, {
+        method: "POST",
+        headers: { ...valid, Cookie: cookie },
+        body: JSON.stringify(fields),
+      });
+      assert.equal(response.status, expected, `${path} control`);
+    }
+    assert.equal(f.runtime.database.readSession(live), null);
+    assert.equal(count("accounts"), accounts + 1);
   },
 );
 

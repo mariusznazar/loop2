@@ -2,6 +2,7 @@ import express from "express";
 import type { Express, ErrorRequestHandler } from "express";
 import { fileURLToPath } from "node:url";
 import session from "express-session";
+import type { AccountPolicy } from "./account-policy.js";
 import {
   accountRoutes,
   sessionCookieName,
@@ -14,7 +15,10 @@ import { clientAddress, trustProxy } from "./transport.js";
 // so the app serves the same files whatever the working directory is.
 const publicDirectory = fileURLToPath(new URL("../public/", import.meta.url));
 
-export function createApp(runtime: AccountRuntime | null = null): Express {
+export function createApp(
+  runtime: AccountRuntime | null = null,
+  policy?: AccountPolicy,
+): Express {
   const app = express();
 
   if (runtime) {
@@ -45,7 +49,7 @@ export function createApp(runtime: AccountRuntime | null = null): Express {
     });
   }
 
-  app.use(accountRoutes(runtime));
+  app.use(accountRoutes(runtime, policy));
 
   app.use("/api", (_request, response) => {
     response.status(404).json({ error: "Not found" });

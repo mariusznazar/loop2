@@ -613,11 +613,11 @@ A player can start playing after registration before confirming their email addr
 
 The account server stores an encoded Argon2id hash made by the `argon2` package for each player password and verifies login passwords through that package.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** argon2-password-api
 - **Derives from:** D-104
 - **Part:** account-server · build-tools
-- **Violated:** yes
+- **Violated:** no
 
 ## player-argon2-deployment-check
 
@@ -703,11 +703,11 @@ The account API returns JSON 401 for `GET /api/account` or `POST /api/logout` wi
 
 Every state-changing account route refuses a missing, duplicate, malformed or nonmatching Origin and a non-JSON, compressed, oversized or structurally invalid body before password work or mutation.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-102
 - **Part:** account-server
-- **Violated:** yes
+- **Violated:** no
 
 ## account-request-transport
 
@@ -756,6 +756,26 @@ The SQLite session Store returns only valid stored account identity and cookie d
 - **Method:** test
 - **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation
 - **Derives from:** D-110 · D-113
+- **Part:** account-server
+- **Violated:** no
+
+## account-attempt-limits
+
+The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes or within 15 minutes of its fifth failure, a login from a client address with twenty failed or unsettled logins in the last 15 minutes and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only when its password work has completed, whether or not its client is still connected.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-100 · D-101 · D-114
+- **Part:** account-server
+- **Violated:** no
+
+## account-attempt-tracking
+
+When the account server's table of tracked email or client-address keys is full of live entries, an attempt that needs a new key is refused without evicting a live entry, and entries whose histories, locks and reservations have all ended release their place.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-101 · D-114
 - **Part:** account-server
 - **Violated:** no
 

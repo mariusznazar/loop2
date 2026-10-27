@@ -1740,7 +1740,7 @@ Five failed logins for one normalized email address within a rolling 15-minute w
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: account-attempt-limits. An agent compares a change with the decision:
   - complies: parallel requests reserve their admission before hashing and release unused capacity after actual completion
   - violates: simultaneous successful registrations exceeding the IP limit or correct credentials bypassing an active email lock
 - **Origin:** none
@@ -1755,7 +1755,7 @@ Attempt histories live in bounded process memory, with at most 10,000 live email
 - **Scope:** account-server, deployment
 - **Based on:** none
 - **Relations:** derives from D-100
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
   - complies: a full gate refuses immediately and a disconnected request retains its slot until native work finishes
   - violates: registration and login using independent unbounded hash pools or dropping a live limiter key to make room
 - **Origin:** none
@@ -1930,3 +1930,18 @@ The exemplar for kind `session-store` is `src/server/session-store.ts`, and its 
 
 *Rationale:* The adapter makes malformed persisted data and storage failures explicit before the library restores a session; a deliberately narrow payload requires conscious changes when session data grows.
 *Rejected:* Unchecked deserialization — passes arbitrary stored properties to library objects; a second session middleware — duplicates the chosen library's lifecycle.
+
+### D-114 — Which file is the exemplar for account policy?
+
+The exemplar for kind `account-policy` is `src/server/account-policy.ts`, and its kind guidelines are read before adding or changing an account-policy file. Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database, and each admitted attempt is settled once, when its password work has completed.
+
+- **Scope:** account-server
+- **Based on:** none
+- **Relations:** derives from D-28 · derives from D-96 · derives from D-97 · derives from D-100 · derives from D-101
+- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
+  - complies: account-policy guidelines identify the first implementation as exemplar, and a route settles its admission after the awaited password operation without reading the connection's state
+  - violates: limiter state kept in an HTTP handler, or a settlement made when the client disconnects
+- **Origin:** none
+
+*Rationale:* One HTTP-independent unit makes the credential rules, the attempt accounting and their clock visible together for later account operations such as password recovery, while a settlement tied to completed work keeps a disconnected client from freeing or erasing an attempt. Its weak point is that the policy cannot observe password work itself: the route decides when that work has completed, so the rule rests on the route's sequencing.
+*Rejected:* Limiter counters inside route handlers — mix HTTP sequencing with accounting and hide the reservation lifetime; settling on the connection's close — lets a client abandon attempts to exceed the limits.
