@@ -1,9 +1,0 @@
-# Fix of the slice 6 review's blocking finding
-
-You are the original executor of slice 6 (handoff reports/34-session-handoff.md, your report reports/34-session-report.md). The independent review reports/36-session-review.md returned FAIL 4101fb9e46226a9ce1a13580aa3413a1a80c398e. Fix its one blocking finding, given in the reviewer's words in reports/37-slice6-blocking-findings.md, with .claude/skills/the-way-make-change/SKILL.md (its section on fixing review findings applies). This is the single fix round the cycle allows; one review of the fix follows.
-
-Boundaries: fix only what the finding needs; the Minor findings 2-4 are not part of this round. A change to guidelines/testing.md goes through the-way-maintain-testing-guidelines; keep rows sourced from the decisions they cite (the template's "Writing the file"). If you hold the finding wrong, answer it with evidence in your report instead of changing code. Same rules as your handoff: Change paths of slice 6 only, no target/secret/deploy action, no push/reset/rebase, explicit-path staging, English commits, preserve line endings, no synthetic session value in retained diagnostics.
-
-Checks: run the affected checks again — at least python -B .the-way/elements/common/foundation_check.py and, where any test or product file changes, the full npm test through the Linux harness as in your report. A documentation-only fix needs no full npm test rerun unless a test reads the changed file; say which applies and why. Every check with its command and exit code.
-
-Write the fix report to reports/37-slice6-fix-report.md: status, fix range (from 4101fb9e46226a9ce1a13580aa3413a1a80c398e to your new head), commits, changed paths and counts, checks with commands and exit codes, how the finding is resolved (or the evidence against it), any foundation or guideline consequence with its Polish meaning, and reading reaches. Read it back. Return status, head, one-line check result and the report path.
