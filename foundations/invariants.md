@@ -693,11 +693,11 @@ The browser loads the built game and sends account and save requests to relative
 
 The account API returns JSON 401 for `GET /api/account` or `POST /api/logout` without a valid server-side session, and an account identifier supplied by the caller cannot authorize reading or changing another account or session.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-107
 - **Part:** account-server
-- **Violated:** yes
+- **Violated:** no
 
 ## account-mutation-request-guards
 

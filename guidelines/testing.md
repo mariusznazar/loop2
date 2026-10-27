@@ -144,8 +144,8 @@ przypadku wynikającą z wymagania, nie techniczną strukturę danych.
 
 ### Trust boundaries
 
-- **Decision:** D-73 · D-76 · D-86 · D-27 · D-33 · D-45 · D-46 · D-09 · D-11
-- **Invariant:** icon-file-content · public-file-access · dependency-audit-refusal · font-file-provenance · preview-server-access · loop2-deploy-trigger-input
+- **Decision:** D-73 · D-76 · D-86 · D-107 · D-95 · D-27 · D-33 · D-45 · D-46 · D-09 · D-11
+- **Invariant:** icon-file-content · public-file-access · account-session-authorization · dependency-audit-refusal · font-file-provenance · preview-server-access · loop2-deploy-trigger-input
 - **Good:** Spreparowana zakodowana ścieżka dostaje odmowę i nie ujawnia pliku spoza katalogu publicznego.
 - **Bad:** Sprawdzenie samego uruchomienia serwera jest przedstawione jako dowód odmowy.
 
@@ -162,7 +162,7 @@ przegląd każdej dotyczącej jej zmiany.
 |---|---|
 | `assets/icons/` | `icon-file-content`: spreparowane prawdziwe pliki, `tests/invariants/test_icon_file_content.py`, przypadek `test_control_the_scan_flags_each_forbidden_form`. |
 | `assets/fonts/` | `font-file-provenance`: przegląd pochodzenia z wydania github.com/vercel/geist-font; czasowe odstępstwo D-76. |
-| `src/server/` | `public-file-access`: przypadek „raw and encoded traversal cannot expose files outside dist/public” w `tests/http.test.mjs`. |
+| `src/server/` | `public-file-access`: przypadek „raw and encoded traversal cannot expose files outside dist/public” w `tests/http.test.mjs`. `account-session-authorization`: przypadki „a stored session alone selects the account, whatever identifier the request supplies” oraz „absent, tampered, unknown, expired and deleted sessions authorize neither lookup nor logout” w `tests/http.test.mjs`, na prawdziwym HTTP i SQLite. |
 | `package-lock.json` | `dependency-audit-refusal`: odmowa nieczytelnego raportu i nowego zgłoszenia w `tests/quality/test_audit_dependencies.py`; kontrola samego lockfile'u pozostaje osobnym `introduced-npm-vulnerabilities`. |
 | `scripts/audit_dependencies.py` | Ten sam test odmowy audytu, bez dublowania; podstawiona odpowiedź nie dowodzi działania prawdziwego rejestru (D-79). |
 | `scripts/kitchen-sink.mjs` | `preview-server-access`: przegląd ograniczenia do własnego katalogu podglądu i komputera dewelopera; czasowe odstępstwo D-76. |
@@ -178,6 +178,10 @@ sprawdza oddzielenie wyniku budowania, nie serwowanie podglądu.
 |---|---|---|---|---|
 | Każdy odwiedzający | Plik zbudowanej gry w katalogu publicznym | GET | Plik podany | D-86 |
 | Każdy odwiedzający | Plik spoza katalogu publicznego, również przez zakodowaną ścieżkę | GET | 400, 403 albo 404, bez treści pliku i bez strony gry | D-86 |
+| Odwiedzający bez ważnej sesji: brak, podrobione, nieznane, wygasłe albo usunięte ciasteczko | Konto i sesja | GET /api/account, POST /api/logout | JSON 401 z kodem odmowy, bez danych konta i bez zmiany rekordów sesji | D-107 |
+| Gracz z ważną sesją tej przeglądarki | Własne konto | GET /api/account | 200 z samym identyfikatorem konta i znormalizowanym adresem, bez zapisu w pamięci podręcznej, bez skrótu hasła i identyfikatora sesji | D-107 |
+| Gracz z ważną sesją tej przeglądarki | Sesja tej przeglądarki | POST /api/logout | 204 dopiero po usunięciu rekordu, z ciasteczkiem wyczyszczonym w tym samym zakresie; sesje innych przeglądarek zostają; nieudane usunięcie daje błąd zamiast 204 | D-107 · D-95 |
+| Każdy wywołujący | Inne konto albo sesja wskazane identyfikatorem w żądaniu | GET /api/account, POST /api/logout | Identyfikator nie daje uprawnień: odczyt własnego konta albo 401, a wylogowanie wskazujące konto zostaje odrzucone bez zmiany żadnej sesji | D-107 |
 
 ### AI in tests
 
@@ -245,7 +249,7 @@ jest dowodem wykonania.
 - **Doubles:** Rzeczywista zależność, gdy jest szybka, powtarzalna i prosta, potem działające uproszczenie, potem podstawiona odpowiedź lub kontrola wywołania; obce typy za własnym adapterem. Nie zastępuj kodu pod testem; wywołanie sprawdzaj tylko dla skutku widocznego poza produktem. Błąd plików lub HTTP sprawdzaj na prawdziwych plikach tymczasowych lub lokalnym serwerze; podstawiona odpowiedź dowodzi reakcji na błąd, nie zastąpionej operacji. (D-73, D-84)
 - **Data:** as in `unit test`; wspólny niemodyfikowany serwer lub kopia zbudowanej aplikacji są dozwolone. (D-73)
 - **Time and randomness:** Czekaj na sygnał lub warunek z limitem i obsługą błędu, nie na sam upływ stałej pauzy; okresowe sprawdzanie warunku jest dozwolone. Sprzątaj zasoby także po porażce. Porty procesów serwera wybieraj zgodnie z D-49. (D-84, D-49)
-- **Exemplar:** `tests/http.test.mjs`, wyłącznie „raw and encoded traversal cannot expose files outside dist/public”: rzeczywiste żądanie i odmowa. Nie zatwierdza całego pliku ani jego pomocników: limit żądania jest limitem bezczynności, a czekanie na listening nie ma limitu; pomocniki przy swojej zmianie przechodzą na D-84. (D-85)
+- **Exemplar:** `tests/http.test.mjs`, wyłącznie „raw and encoded traversal cannot expose files outside dist/public”: rzeczywiste żądanie i odmowa. Nie zatwierdza całego pliku ani jego pomocników. (D-85)
 - **Command:** as in `unit test`. (D-77)
 - **Time limit:** Brak centralnego pliku; lokalne ograniczenia stoją w `tests/http.test.mjs` i `tests/invariants/loop2_invariant_support.py`, a testy procesów także przy swoich wywołaniach. Nie są limitem całego przebiegu; do zmiany wracamy jak w `unit test`. (D-77)
 
