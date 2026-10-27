@@ -1,5 +1,5 @@
 // The page before and after signing in (task konta-graczy-i-logowanie, To do 1, 3, 4, 5 and 15;
-// spec section 7; D-94, D-95). These tests run the page's logic on a hand-made document model:
+// spec section 7; D-96, D-97). These tests run the page's logic on a hand-made document model:
 // they prove which elements it builds and what it does with the client's answers, never real
 // events, focus or rendering, which the browser check covers (D-88).
 import assert from "node:assert/strict";

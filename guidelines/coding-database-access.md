@@ -12,13 +12,13 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/server/database.ts` | exemplar | D-112 |
+| `src/server/database.ts` | exemplar | D-114 |
 
 ## Rules
 
 ### Otwarcie schematu bez utraty danych
 
-- **Decision:** D-110
+- **Decision:** D-112
 - **Invariant:** account-database-schema
 - **Good:** Ponowne otwarcie zachowuje konta i sesje, a błąd inicjalizacji wycofuje całą transakcję.
 - **Bad:** Start resetuje istniejącą bazę albo pozostawia część utworzonych tabel po błędzie.

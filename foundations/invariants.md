@@ -501,11 +501,11 @@ Nothing `npm run build` writes holds the kitchen-sink page of the browser view o
 
 ## account-server-default-address
 
-After startup configuration and required resources validate under D-109, including wholly unconfigured non-production and fully configured valid startup, the account and save server started with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set either prints its readiness line `Loop: http://127.0.0.1:3000` or exits with a non-zero code and a message naming `127.0.0.1:3000` as an address already in use.
+After startup configuration and required resources validate under D-111, including wholly unconfigured non-production and fully configured valid startup, the account and save server started with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set either prints its readiness line `Loop: http://127.0.0.1:3000` or exits with a non-zero code and a message naming `127.0.0.1:3000` as an address already in use.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-109
+- **Derives from:** D-111
 - **Part:** account-server · build-tools
 - **Violated:** no
 
@@ -585,7 +585,7 @@ Anyone can create a player account and begin playing without operator approval.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-94
+- **Derives from:** D-96
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -595,7 +595,7 @@ Player accounts sign in with an email address and password.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-94
+- **Derives from:** D-96
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -605,7 +605,7 @@ A player can start playing after registration before confirming their email addr
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-94
+- **Derives from:** D-96
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -615,7 +615,7 @@ The account server stores an encoded Argon2id hash made by the `argon2` package 
 
 - **Method:** test
 - **Rests on:** argon2-password-api
-- **Derives from:** D-104
+- **Derives from:** D-106
 - **Part:** account-server · build-tools
 - **Violated:** no
 
@@ -625,7 +625,7 @@ The deployed loop2 container image has passed, under its 512 MiB memory limit an
 
 - **Method:** review
 - **Rests on:** cgroup-memory-accounting
-- **Derives from:** D-104
+- **Derives from:** D-106
 - **Part:** account-server · build-tools · deployment
 - **Violated:** yes
 
@@ -635,7 +635,7 @@ Password hashing and verification share a gate that admits at most two active na
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-101 · D-111
+- **Derives from:** D-103 · D-113
 - **Part:** account-server · build-tools
 - **Violated:** no
 
@@ -645,7 +645,7 @@ The browser carries a random session identifier in a loop2 host-scoped, Secure a
 
 - **Method:** test
 - **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security
-- **Derives from:** D-99
+- **Derives from:** D-101
 - **Part:** account-server · browser-view · deployment
 - **Violated:** no
 
@@ -655,7 +655,7 @@ The deployed account server uses `express-session` with a project-owned Store ba
 
 - **Method:** review
 - **Rests on:** express-session-store-contract · node-sqlite-database
-- **Derives from:** D-105
+- **Derives from:** D-107
 - **Part:** account-server · build-tools · deployment
 - **Violated:** no
 
@@ -685,7 +685,7 @@ The browser loads the built game and sends account and save requests to relative
 
 - **Method:** review
 - **Rests on:** fetch-same-origin-credentials
-- **Derives from:** D-106
+- **Derives from:** D-108
 - **Part:** browser-view · account-server · deployment
 - **Violated:** no
 
@@ -695,7 +695,7 @@ The account API returns JSON 401 for `GET /api/account`, and for `POST /api/logo
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-107
+- **Derives from:** D-109
 - **Part:** account-server
 - **Violated:** no
 
@@ -705,7 +705,7 @@ Every state-changing account route refuses a missing, duplicate, malformed or no
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-102
+- **Derives from:** D-104
 - **Part:** account-server
 - **Violated:** no
 
@@ -715,7 +715,7 @@ An account request in cloudflare-tunnel mode with missing, duplicate, list or ma
 
 - **Method:** test
 - **Rests on:** express-forwarded-protocol · session-proxy-security · cloudflare-client-address · cloudflare-forwarded-protocol
-- **Derives from:** D-108
+- **Derives from:** D-110
 - **Part:** account-server · deployment
 - **Violated:** no
 
@@ -725,7 +725,7 @@ Production startup without all valid account settings and every startup with par
 
 - **Method:** test
 - **Rests on:** session-secret-rotation
-- **Derives from:** D-109
+- **Derives from:** D-111
 - **Part:** account-server · deployment · build-tools
 - **Violated:** no
 
@@ -735,7 +735,7 @@ Opening the account database initializes a new schema transactionally, preserves
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
-- **Derives from:** D-110
+- **Derives from:** D-112
 - **Part:** account-server · deployment
 - **Violated:** no
 
@@ -745,7 +745,7 @@ Opening an account database initializes version 1 atomically, preserves its exis
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
-- **Derives from:** D-110
+- **Derives from:** D-112
 - **Part:** account-server
 - **Violated:** no
 
@@ -755,7 +755,7 @@ The SQLite session Store returns only valid stored account identity and cookie d
 
 - **Method:** test
 - **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation
-- **Derives from:** D-110 · D-113
+- **Derives from:** D-112 · D-115
 - **Part:** account-server
 - **Violated:** no
 
@@ -765,7 +765,7 @@ The account server refuses before password work a login for an email address wit
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-100 · D-101 · D-114
+- **Derives from:** D-102 · D-103 · D-116
 - **Part:** account-server
 - **Violated:** no
 
@@ -775,7 +775,7 @@ When the account server's table of tracked email or client-address keys is full 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-101 · D-114
+- **Derives from:** D-103 · D-116
 - **Part:** account-server
 - **Violated:** no
 
@@ -785,7 +785,7 @@ The browser account client sends each account request to one of the relative `/a
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-106 · D-115
+- **Derives from:** D-108 · D-117
 - **Part:** browser-view
 - **Violated:** no
 
@@ -795,7 +795,7 @@ The browser account client returns an account only for the success status of its
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-115
+- **Derives from:** D-117
 - **Part:** browser-view
 - **Violated:** no
 

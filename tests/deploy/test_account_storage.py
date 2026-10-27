@@ -1,4 +1,4 @@
-"""Accounts and sessions outlive the replacement of the loop2 container (D-17, D-110).
+"""Accounts and sessions outlive the replacement of the loop2 container (D-17, D-112).
 
 The deployment replaces the application container and keeps its named volume `loop2_accounts`
 mounted at `/app/data`. This test builds the image from the working tree, starts its normal
@@ -11,7 +11,7 @@ with a synthetic address and password and reads it with the session cookie it go
 removes that container, starts a new one from the same image on the same two volumes, and checks
 that the session cookie still names the account and that the password still signs in.
 
-The requests carry the headers Cloudflare's tunnel gives every request (D-108) and the public
+The requests carry the headers Cloudflare's tunnel gives every request (D-110) and the public
 origin, as the browser's would. The synthetic password and the cookie reach the container only
 through the probe's standard input and are never printed.
 

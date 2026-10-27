@@ -12,13 +12,13 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/server/session-store.ts` | exemplar | D-113 |
+| `src/server/session-store.ts` | exemplar | D-115 |
 
 ## Rules
 
 ### Odczyt i odnowienie sesji
 
-- **Decision:** D-110 · D-113
+- **Decision:** D-112 · D-115
 - **Invariant:** account-session-storage
 - **Good:** Spreparowany zapis jest odrzucany przed odtworzeniem sesji, a opóźnione odnowienie nie przywraca wylogowanej sesji.
 - **Bad:** Odczyt bez walidacji albo odnowienie przez wstawienie brakującego rekordu.

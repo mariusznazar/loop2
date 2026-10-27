@@ -175,7 +175,7 @@ header h1 {
   color: var(--warning);
 }
 
-/* While the page asks the server whom this browser is signed in as (D-94). */
+/* While the page asks the server whom this browser is signed in as (D-96). */
 .session-check {
   display: flex;
   flex-direction: column;

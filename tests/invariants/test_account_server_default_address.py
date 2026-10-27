@@ -1,6 +1,6 @@
 """Invariant account-server-default-address: the server started without a listening address of
 its own takes 127.0.0.1:3000 after configuration validation. This case establishes
-wholly unconfigured non-production startup explicitly (D-109).
+wholly unconfigured non-production startup explicitly (D-111).
 
 The product is built by `npm run build` in a temporary copy of the working tree, and its built
 server `dist/server/main.js` is started there by `node` with neither `LOOP2_LISTEN_HOST` nor

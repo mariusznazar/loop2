@@ -138,7 +138,7 @@ function signedCookie(id, key) {
 }
 
 function seed(f, id, expiresAt = Date.now() + 86_400_000) {
-  // D-99: 30 days from last activity; deliberately seed only one day remaining.
+  // D-101: 30 days from last activity; deliberately seed only one day remaining.
   const cookie = new session.Cookie({
     path: "/",
     secure: true,
@@ -258,7 +258,7 @@ test(
   "mutation guards reject foreign origins, non-JSON and malformed bodies",
   { timeout: 20000 },
   async (t) => {
-    // D-102.
+    // D-104.
     const f = await fixture(t);
     const valid = {
       ...proxyHeaders,
@@ -371,7 +371,7 @@ test(
     seed(f, live);
     const cookie = signedCookie(live, f.keys[0]);
     const stored = f.runtime.database.readSession(live);
-    // D-99: a request with a valid session renews that same session, refused or not.
+    // D-101: a request with a valid session renews that same session, refused or not.
     const renewal = signedCookie(live, f.keys[0]);
     const count = (table) =>
       f.inspection.prepare(`SELECT count(*) AS n FROM ${table}`).get().n;

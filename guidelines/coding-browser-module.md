@@ -95,7 +95,7 @@ po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
 ### Gra na stronie i odpowiedzi serwera
 
 `src/browser/view/app.ts` buduje grę dopiero wtedy, gdy serwer potwierdzi
-konto, i usuwa ją dopiero wtedy, gdy potwierdzi wylogowanie (D-94, D-95).
+konto, i usuwa ją dopiero wtedy, gdy potwierdzi wylogowanie (D-96, D-97).
 `createGameView` z `game-view.ts` zwraca element gry i `dispose()`, które
 zatrzymuje zegar (`dispose()` z `clock.ts`) i zdejmuje element ze strony,
 a z nim jego obsługę zdarzeń; moduł, który tworzy grę, wywołuje `dispose()`,

@@ -13,13 +13,13 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/server/account-policy.ts` | exemplar | D-114 |
+| `src/server/account-policy.ts` | exemplar | D-116 |
 
 ## Rules
 
 ### Rezerwacja przed pracą hasła, rozliczenie po jej końcu
 
-- **Decision:** D-100 · D-101 · D-114
+- **Decision:** D-102 · D-103 · D-116
 - **Invariant:** account-attempt-limits
 - **Good:** Trasa dostaje zgodę na próbę przed haszowaniem i rozlicza ją raz, po zakończeniu sprawdzenia hasła.
 - **Bad:** Próba jest liczona dopiero po haszowaniu albo zwalniana, gdy klient się rozłączy.
@@ -34,7 +34,7 @@ przekazany zegar; granica okna równa upływowi czasu już nie liczy próby.
 
 ### Ograniczone tablice bez wypierania
 
-- **Decision:** D-101 · D-114
+- **Decision:** D-103 · D-116
 - **Invariant:** account-attempt-tracking
 - **Good:** Pełna tablica najpierw usuwa wygasłe wpisy, a gdy nadal brak miejsca, odmawia próbie z nowym kluczem.
 - **Bad:** Nowy klucz wypiera najstarszy wpis albo próba przechodzi bez śledzenia.

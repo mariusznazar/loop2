@@ -240,7 +240,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-startup-configuration
-    // D-109's ordered 32-byte base64url format; decoding alone would admit aliases.
+    // D-111's ordered 32-byte base64url format; decoding alone would admit aliases.
     const f = await configurationFixture(t);
     const noncanonical = "A".repeat(42) + "B";
     const invalid = [

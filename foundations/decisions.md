@@ -1647,7 +1647,7 @@ condition changes, and the next run gives a fresh picture of the edited program.
 resetting on a move or group edit — arranging the same rules would erase their history; hiding
 the counts after „Zakończ” — the player would lose the completed run's evidence while editing.
 
-### D-94 — What does a player see before and after signing in?
+### D-96 — What does a player see before and after signing in?
 
 A signed-out visitor sees the „Zaloguj się” form with email and password and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session also lead to the headquarters. The browser constructs the game only after the server confirms the session, and an unavailable or uncertain account response shows a warning and retry rather than an anonymous game.
 
@@ -1660,7 +1660,7 @@ A signed-out visitor sees the „Zaloguj się” form with email and password an
 *Rationale:* An account provides the entry to the game and the headquarters provides its starting place; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview.
 *Rejected:* Anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry.
 
-### D-95 — What does the player's logout do?
+### D-97 — What does the player's logout do?
 
 The shared „Wyloguj” button stands in the header beside the title and ends only this browser's server-side session. A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded. Logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it.
 
@@ -1675,7 +1675,7 @@ The shared „Wyloguj” button stands in the header beside the title and ends o
 *Rationale:* Independent browser sessions let a player leave one device without interrupting another; a visible failure avoids claiming the server revoked a session when its outcome is uncertain. This choice determines visibility and lifecycle, not the preservation of unsaved progress.
 *Rejected:* Ending all browser sessions on ordinary logout — interrupts other devices; an enduring rule that logout discards unsaved progress — prejudges the separate save behavior.
 
-### D-96 — Which player passwords are accepted?
+### D-98 — Which player passwords are accepted?
 
 A player password has from 12 through 128 Unicode code points of any kind, without a digit or uppercase-letter requirement, and its content is preserved without trimming or normalization. Registration's repeated password equals the password exactly, and browser validation uses the same code-point interpretation without making UTF-16 field limits authoritative.
 
@@ -1690,7 +1690,7 @@ A player password has from 12 through 128 Unicode code points of any kind, witho
 *Rationale:* Length supplies a clear boundary without restricting the player's choice of characters; code points give the same explicit interpretation to server and browser, while a visible grapheme can contain several code points.
 *Rejected:* Composition requirements — add arbitrary character rules; UTF-16 code units — count supplementary characters twice; grapheme counting — adds a different, more elaborate boundary.
 
-### D-97 — How are player email addresses compared and checked?
+### D-99 — How are player email addresses compared and checked?
 
 The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely, and accepts its form when exactly one `@` has nonempty text on both sides. It imposes no dot, DNS or ASCII restriction; confirmation establishes whether the address is real.
 
@@ -1705,7 +1705,7 @@ The account server normalizes email with ECMAScript trim and lowercase, stores t
 *Rationale:* A single normalized spelling keeps registration and later account operations consistent; case-distinct local parts intentionally cannot obtain separate accounts. A loose shape avoids treating a syntax filter as proof of delivery.
 *Rejected:* Case-sensitive local parts — allow accounts the accepted comparison equates; stricter native browser email validation or DNS checks — reject addresses beyond the settled shape.
 
-### D-98 — What do duplicate registration and failed login tell the player?
+### D-100 — What do duplicate registration and failed login tell the player?
 
 Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. An unsuccessful credential login shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing an unknown address from a wrong password.
 
@@ -1720,20 +1720,20 @@ Registration with an email address that already has an account shows „Konto z 
 *Rationale:* A duplicate message explains why registration cannot proceed, while the common login message reveals no further distinction; registration consequently allows an observer to discover whether an address has an account.
 *Rejected:* Hiding duplicate registration — obscures the accepted registration feedback; separate unknown-address and wrong-password login messages — reveal the cause the chosen message conceals.
 
-### D-99 — How long do independent browser sessions last?
+### D-101 — How long do independent browser sessions last?
 
 Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once. A session expires 30 days after its last request and every request with a valid session, static-file requests included, renews the server expiry and cookie. Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot resurrect a destroyed session or shorten a later expiry.
 
 - **Scope:** account-server, browser-view
 - **Based on:** express-session-store-contract
-- **Relations:** derives from D-95
+- **Relations:** derives from D-97
 - **Verification:** invariants: player-opaque-session-cookie.
 - **Origin:** none
 
 *Rationale:* Sliding validity keeps an active player signed in but a device left signed in remains usable until its idle lifetime ends; independent records cost storage and permit revocation of one browser.
 *Rejected:* A single session per account — interrupts other devices; a fixed expiry unaffected by activity — signs out an active player; client-only identity — prevents server record revocation.
 
-### D-100 — How are account attempts limited?
+### D-102 — How are account attempts limited?
 
 Five failed logins for one normalized email address within a rolling 15-minute window lock that address for 15 minutes from the fifth failure; success clears pre-lock email history but not IP failures, and a locked address remains locked even for correct credentials. One client IP admits at most 20 failed logins per rolling 15 minutes and five successfully created accounts per rolling hour, with in-flight reservations counted before asynchronous password work so concurrency cannot overshoot those limits. A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots, and a capacity refusal is not a credential failure.
 
@@ -1748,13 +1748,13 @@ Five failed logins for one normalized email address within a rolling 15-minute w
 *Rationale:* Per-address and per-network limits slow repeated attempts but allow an attacker to lock another address and make users behind a shared address share a limit. Rolling histories release stale partial failures; attempts spread below the threshold remain possible, and changing client addresses can evade an address limit.
 *Rejected:* Lifetime accumulation of email failures — stale partial histories retain capacity indefinitely; counting only after asynchronous work without reservations — concurrent requests exceed admission limits.
 
-### D-101 — Where are attempt counters kept and how is password work bounded?
+### D-103 — Where are attempt counters kept and how is password work bounded?
 
 Attempt histories live in bounded process memory, with at most 10,000 live email keys and 10,000 live IP keys, fixed-size digests for email keys and threshold-bounded histories; restart or deployment clears them. Expired entries release capacity, live restrictions are not evicted to admit another key, and full capacity refuses work. One bounded gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account, with a concurrency cap selected by measurement within the container memory budget and slots released only when the actual operation completes.
 
 - **Scope:** account-server, deployment
 - **Based on:** none
-- **Relations:** derives from D-100
+- **Relations:** derives from D-102
 - **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
   - complies: a full gate refuses immediately and a disconnected request retains its slot until native work finishes
   - violates: registration and login using independent unbounded hash pools or dropping a live limiter key to make room
@@ -1763,20 +1763,20 @@ Attempt histories live in bounded process memory, with at most 10,000 live email
 *Rationale:* Bounded histories and native work prevent untrusted input from consuming unbounded memory; a restart loses the restrictions and a full table can refuse legitimate newcomers. The measured gate shares the host processor with other workloads.
 *Rejected:* Durable counters — write on every attempt and survive a restart at additional storage cost; unbounded maps or a waiting queue — move denial of service into memory; evicting a live restriction — permits bypass by filling the table.
 
-### D-102 — Which request origin and body may change account state?
+### D-104 — Which request origin and body may change account state?
 
 The session cookie uses SameSite=Strict, and every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 16 KiB, optional charset allowed and compressed inflation rejected. Missing, null, duplicate, malformed or foreign Origin and wrong media type are refused before mutation or password work, and Host or forwarded host headers never choose the expected origin. Input is an object of expected fields with explicit type checks rather than coercion, and no cross-origin allowance or form-body alternative bypasses these guards.
 
 - **Scope:** account-server, browser-view
 - **Based on:** fetch-origin-header
-- **Relations:** derives from D-99
+- **Relations:** derives from D-101
 - **Verification:** invariants: account-mutation-request-guards.
 - **Origin:** none
 
 *Rationale:* An explicit expected origin and JSON boundary constrain state changes made with a browser cookie; clients that omit the origin are refused, and valid-looking content still needs field checks.
 *Rejected:* A separate anti-forgery token — adds another value and lifecycle beyond the selected origin policy; inferring origin from the request host — lets input choose the expected value; accepting form bodies — broadens the request boundary.
 
-### D-103 — How is sending account email limited?
+### D-105 — How is sending account email limited?
 
 The account server sends at most 30 account messages per hour in total and at most three per email address per hour. Above either limit no message is sent and the player is told to try later; no monthly sending cap applies.
 
@@ -1791,7 +1791,7 @@ The account server sends at most 30 account messages per hour in total and at mo
 *Rationale:* Hourly limits bound a burst while retaining a simple sending rule; they can exhaust the provider's monthly allowance and prevent recovery messages until delivery becomes available again. The chosen policy accepts that risk rather than reserving a monthly balance.
 *Rejected:* A persistent monthly cap below the provider allowance — adds a shared balance and restricts sends earlier; unrestricted sending — lets a burst consume delivery capacity.
 
-### D-104 — How are player passwords hashed and checked?
+### D-106 — How are player passwords hashed and checked?
 
 The account server hashes and verifies player passwords with the `argon2` package using Argon2id. Its cost parameters are set explicitly after measuring hash and verify operations under concurrent login attempts in the intended Mikrus container image.
 
@@ -1804,20 +1804,20 @@ The account server hashes and verifies player passwords with the `argon2` packag
 *Rationale:* The package handles salt generation, an encoded password hash and verification, so the project writes less security-sensitive code than with a lower-level hash API. A native dependency can fail to install or consume more memory than the target permits; compatible published binaries support feasibility rather than proving this particular image. Explicit settings and target measurements address that uncertainty.
 *Rejected:* Node's built-in Argon2 — leaves salt, encoded format and verification to project code; another native Argon2 package — no demonstrated target-image advantage; bcrypt — a legacy alternative with a password-input restriction incompatible with unrestricted password content.
 
-### D-105 — Which library maintains player sessions?
+### D-107 — Which library maintains player sessions?
 
 The account server uses `express-session` to issue and maintain player sessions, with a project-owned session Store backed by the chosen `node:sqlite` database. The deployed server does not use the package's default `MemoryStore`.
 
 - **Scope:** account-server, build-tools, deployment
 - **Based on:** express-session-store-contract · node-sqlite-database
-- **Relations:** derives from D-99
+- **Relations:** derives from D-101
 - **Verification:** invariants: player-express-session-sqlite-store.
 - **Origin:** none
 
 *Rationale:* The library supplies cookie and session lifecycle while the project supplies a database adapter, signing keys and the correct proxy boundary. A custom adapter remains maintenance work and can introduce expiry or concurrency faults.
 *Rejected:* Own middleware using a cookie helper — leaves issuance, rotation, expiry and invalidation to the project; connect-sqlite3 — adds an external SQLite driver; cookie-session — keeps session data in the browser; MemoryStore — unsuitable for deployed sessions.
 
-### D-106 — What public address do the game and account server share?
+### D-108 — What public address do the game and account server share?
 
 The built game and the account and save server use one public HTTPS origin at loop2's address. The browser sends account and save requests to relative `/api/` paths at that origin.
 
@@ -1830,26 +1830,26 @@ The built game and the account and save server use one public HTTPS origin at lo
 *Rationale:* A shared origin carries eligible session cookies without a separate cross-origin agreement. An API moved to another machine can keep its public route through forwarding, at the cost of maintaining that forwarding.
 *Rejected:* Separate public origins — permit independent addresses but require additional browser and server configuration.
 
-### D-107 — What identity authorizes an account request?
+### D-109 — What identity authorizes an account request?
 
 A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards, and a valid server-side session alone authorizes reading its own account or destroying that browser's session. `GET /api/account` and `POST /api/logout` without a valid session return JSON 401, while an account identifier supplied in a request grants no authority. Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, secret, database error or stack.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
-- **Relations:** derives from D-94 · derives from D-95 · derives from D-99 · derives from D-102
+- **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104
 - **Verification:** invariants: account-session-authorization.
 - **Origin:** none
 
 *Rationale:* Server-held identity keeps browser input from selecting another account, and waiting for persistence prevents a success response with no usable session. Errors can leave a newly created account usable for later login even when its first session could not be stored.
 *Rejected:* Request-supplied identity — lets a caller select another account; responding before session persistence or destruction — reports success without the promised state; deleting an account after its session fails — races with a later valid login.
 
-### D-108 — Which proxy information identifies an account request?
+### D-110 — Which proxy information identifies an account request?
 
 In the private Cloudflare Tunnel topology of D-10, account requests require exactly one X-Forwarded-Proto value of https and one syntactically valid CF-Connecting-IP, normalized for equivalent IP representations and used directly for admission limits; Express trusts only the immediate hop for protocol. Duplicate, list or malformed values are refused, and X-Forwarded-For, X-Real-IP, Forwarded and forwarded host values never select account authority, limiter identity or expected origin. Explicit local loopback-proxy mode trusts only a loopback peer, requires forwarded https and uses the actual peer as identity, while direct mode trusts no forwarding and anonymous static and health requests require no proxy metadata.
 
 - **Scope:** account-server, deployment
 - **Based on:** cloudflare-tunnel-transport
-- **Relations:** derives from D-10 · derives from D-100
+- **Relations:** derives from D-10 · derives from D-102
 - **Verification:** invariants: account-request-transport. An agent compares a change with the decision:
   - complies: target acceptance checks actual cookie issuance and client-address handling through the tunnel, including provider transformations
   - violates: treating synthetic header tests as proof of the deployed provider route
@@ -1858,52 +1858,52 @@ In the private Cloudflare Tunnel topology of D-10, account requests require exac
 *Rationale:* The closed origin topology makes the connector's information usable while a header name alone cannot establish trust. Provider transformations or a newly exposed origin can invalidate that assumption, and synthetic local headers prove parsing rather than the real route.
 *Rejected:* Unconditional trust proxy or the leftmost forwarded address — admits spoofed chains; fixed container addresses — add coordination without an advantage over the closed topology.
 
-### D-109 — When is account configuration sufficient to start the server?
+### D-111 — When is account configuration sufficient to start the server?
 
 Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `LOOP2_PUBLIC_ORIGIN` and `LOOP2_PROXY_MODE`, and every partial or invalid explicit configuration refuses before listening; wholly unconfigured non-production may serve public files with JSON 503 from known account routes, without anonymous gameplay or generated-secret, in-memory-database or MemoryStore fallback. The configured origin is HTTPS without credentials, non-root path, query or fragment, and the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; unreadable or invalid settings report their setting or path rather than contents. After configuration and required resources validate, a start with neither listen variable set retains `127.0.0.1:3000` and the existing occupied-address error, and startup failure or shutdown disposes opened resources.
 
 - **Scope:** account-server, deployment, build-tools
 - **Based on:** session-secret-rotation
-- **Relations:** derives from D-13 · derives from D-105
+- **Relations:** derives from D-13 · derives from D-107
 - **Verification:** invariants: account-server-default-address · account-startup-configuration.
 - **Origin:** none
 
 *Rationale:* Failing before readiness prevents an apparently healthy production process from operating without durable identity or a signing key. An explicitly unconfigured development mode still allows static work, while partial configuration remains an error rather than silently losing account behavior.
 *Rejected:* Generated production keys or ephemeral storage — invalidate or lose identity on replacement; an unconfigured production fallback — conceals missing setup; unconditional default-start readiness — contradicts required validation.
 
-### D-111 — Which file is the exemplar for password hashing?
+### D-113 — Which file is the exemplar for password hashing?
 
 The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its kind guidelines are read before adding or changing a password-hashing file. Hashing and verification share one bounded admission gate, preserve password content, and use the explicit Argon2id candidate profile; the profile remains provisional until the intended container image is measured.
 
 - **Scope:** account-server
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
-- **Relations:** derives from D-96 · derives from D-101 · derives from D-104
+- **Relations:** derives from D-98 · derives from D-103 · derives from D-106
 - **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check.
 - **Origin:** none
 
 *Rationale:* A first file makes password work's admission and package boundary visible for later account routes. Two slots are the selected candidate, not evidence that this cost fits the target image.
 *Rejected:* Separate gates for hash and verify — allow their combined memory use to exceed the shared limit; an unbounded queue — retains arbitrary pending work; treating the candidate as measured — claims target suitability without target evidence.
 
-### D-110 — How does the account database open and preserve its schema?
+### D-112 — How does the account database open and preserve its schema?
 
 The account server opens one application-owned SQLite connection before readiness, transactionally initializes version 1 with accounts and sessions on a new database, retains an existing version 1 without resetting records and refuses an unknown newer schema. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash and creation time, and sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session.
 
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database
-- **Relations:** derives from D-15 · derives from D-17 · derives from D-97 · derives from D-99 · derives from D-105
+- **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107
 - **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage.
 - **Origin:** none
 
 *Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema.
 *Rejected:* A destructive startup reset — loses accounts; unversioned schema assumptions — let old code misread newer data; transactions held across password work — prolong locks; session touch implemented as an upsert — revives logout.
 
-### D-112 — Which file is the exemplar for database access?
+### D-114 — Which file is the exemplar for database access?
 
 The exemplar for kind `database-access` is `src/server/database.ts`, and its kind guidelines are read before adding or changing a database-access file. Database access owns the SQLite connection, transactional schema initialization, bound SQL values and connection disposal, independently of HTTP and password hashing.
 
 - **Scope:** account-server
 - **Based on:** node-sqlite-database
-- **Relations:** derives from D-28 · derives from D-110
+- **Relations:** derives from D-28 · derives from D-112
 - **Verification:** an agent compares a change with the decision:
   - complies: database-access guidelines identify the first implementation as exemplar and keep SQL and connection ownership together
   - violates: a different exemplar or database access that spans asynchronous password work
@@ -1912,13 +1912,13 @@ The exemplar for kind `database-access` is `src/server/database.ts`, and its kin
 *Rationale:* A concrete model keeps persistence and failure handling visible for later account operations, while synchronous ownership limits transaction lifetimes.
 *Rejected:* Scattered SQL in HTTP handlers — obscures connection ownership and makes persistence failures harder to exercise independently.
 
-### D-113 — Which file is the exemplar for the session Store?
+### D-115 — Which file is the exemplar for the session Store?
 
 The exemplar for kind `session-store` is `src/server/session-store.ts`, and its kind guidelines are read before adding or changing a session-store file. The Store adapts the library's callbacks to database operations, validates stored session identity and cookie metadata before library hydration, and leaves HTTP and cookie policy to application assembly.
 
 - **Scope:** account-server
 - **Based on:** express-session-store-contract · express-session-cookie-lifecycle · cookie-serialization-validation
-- **Relations:** derives from D-28 · derives from D-105 · derives from D-110
+- **Relations:** derives from D-28 · derives from D-107 · derives from D-112
 - **Verification:** invariants: account-session-storage. An agent compares a change with the decision:
   - complies: session-store guidelines identify the first implementation as exemplar and preserve callback failures
   - violates: treating parsed JSON as a valid library session without checking its shape
@@ -1927,13 +1927,13 @@ The exemplar for kind `session-store` is `src/server/session-store.ts`, and its 
 *Rationale:* The adapter makes malformed persisted data and storage failures explicit before the library restores a session; a deliberately narrow payload requires conscious changes when session data grows.
 *Rejected:* Unchecked deserialization — passes arbitrary stored properties to library objects; a second session middleware — duplicates the chosen library's lifecycle.
 
-### D-114 — Which file is the exemplar for account policy?
+### D-116 — Which file is the exemplar for account policy?
 
 The exemplar for kind `account-policy` is `src/server/account-policy.ts`, and its kind guidelines are read before adding or changing an account-policy file. Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database, and each admitted attempt is settled once, only after the password work it started has completed.
 
 - **Scope:** account-server
 - **Based on:** none
-- **Relations:** derives from D-28 · derives from D-96 · derives from D-97 · derives from D-100 · derives from D-101
+- **Relations:** derives from D-28 · derives from D-98 · derives from D-99 · derives from D-102 · derives from D-103
 - **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
   - complies: account-policy guidelines identify the first implementation as exemplar, and a route settles its admission after the awaited password operation without reading the connection's state
   - violates: limiter state kept in an HTTP handler, or a settlement made when the client disconnects
@@ -1942,13 +1942,13 @@ The exemplar for kind `account-policy` is `src/server/account-policy.ts`, and it
 *Rationale:* One HTTP-independent unit makes the credential rules, the attempt accounting and their clock visible together for later account operations such as password recovery, while a settlement tied to completed work keeps a disconnected client from freeing or erasing an attempt. Its weak point is that the policy cannot observe password work itself: the route decides when that work has completed, so the rule rests on the route's sequencing.
 *Rejected:* Limiter counters inside route handlers — mix HTTP sequencing with accounting and hide the reservation lifetime; settling on the connection's close — lets a client abandon attempts to exceed the limits.
 
-### D-115 — Which file is the exemplar for a browser API client?
+### D-117 — Which file is the exemplar for a browser API client?
 
 The exemplar for kind `browser-api-client` is `src/browser/account-api.ts`, and its kind guidelines are read before adding or changing a browser API client file. A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure, and keeps no identity, cookie or document state.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-28 · derives from D-106
+- **Relations:** derives from D-28 · derives from D-108
 - **Verification:** invariants: account-client-requests · account-client-outcomes. An agent compares a change with the decision:
   - complies: browser API client guidelines identify the first implementation as exemplar, and a screen reads the client's typed result instead of a status code or a response body
   - violates: a client that treats any 2xx status as a success, or a screen that calls `fetch` for an account route itself

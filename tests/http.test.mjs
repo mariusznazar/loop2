@@ -194,7 +194,7 @@ test("raw and encoded traversal cannot expose files outside dist/public", async 
 });
 
 test("unconfigured accounts answer the four canonical routes as unavailable JSON", async () => {
-  // D-109: wholly unconfigured non-production serves JSON 503 from known account routes.
+  // D-111: wholly unconfigured non-production serves JSON 503 from known account routes.
   for (const [method, path] of [
     ["POST", "/api/accounts"],
     ["POST", "/api/session"],
@@ -222,7 +222,7 @@ const logoutHeaders = {
   Origin: origin,
   "Content-Type": "application/json",
 };
-// D-99: 30 days from the last request.
+// D-101: 30 days from the last request.
 const sessionLifetime = 30 * 24 * 60 * 60 * 1000;
 
 async function accountFixture(t, { keyCapacity } = {}) {
@@ -490,7 +490,7 @@ test(
   "logout destroys only this browser's session and clears the same host cookie",
   { timeout: 20000 },
   async (t) => {
-    // D-95 and D-99: other browsers of the same account stay signed in.
+    // D-97 and D-101: other browsers of the same account stay signed in.
     const f = await accountFixture(t);
     const one = seed(f, "logout-one", f.first);
     const two = seed(f, "logout-two", f.first);
@@ -538,7 +538,7 @@ test(
   "a failed session destruction is not reported as logout and leaves the browser signed in",
   { timeout: 20000 },
   async (t) => {
-    // D-107: logout awaits destruction; a database refusal stands in for any failure.
+    // D-109: logout awaits destruction; a database refusal stands in for any failure.
     const f = await accountFixture(t);
     const cookie = seed(f, "logout-failing", f.first);
     f.inspection.exec(`
@@ -567,7 +567,7 @@ test(
   "a read that loaded its session before logout cannot revive it afterwards",
   { timeout: 20000 },
   async (t) => {
-    // D-99: a delayed renewal cannot resurrect a destroyed session.
+    // D-101: a delayed renewal cannot resurrect a destroyed session.
     const f = await accountFixture(t);
     const cookie = seed(f, "logout-delayed", f.first);
     const delayed = f.send("/test-delayed-read", {
@@ -595,7 +595,7 @@ test(
 );
 
 // Credential transitions. The required messages come from the task's To do 2, 4
-// and 10 (D-98, D-100); the limits and windows from D-100 and the orchestrator's
+// and 10 (D-100, D-102); the limits and windows from D-102 and the orchestrator's
 // answer 5 (reports/02-designer-answers.md).
 const password = "  Correct horse 🙂 battery  ";
 const duplicateMessage = "Konto z tym adresem już istnieje.";
@@ -767,7 +767,7 @@ test(
   "a credential success replaces only this browser's session with a fresh identity",
   { timeout: 20000 },
   async (t) => {
-    // D-107: regenerate on credential success to prevent fixation; D-95/D-99:
+    // D-109: regenerate on credential success to prevent fixation; D-97/D-101:
     // other browsers keep their sessions.
     const f = await accountFixture(t);
     const created = await register(f, "fresh@example.test", {
@@ -812,7 +812,7 @@ test(
   "one normalized address holds one account and a duplicate gets the required message, also in a race",
   { timeout: 20000 },
   async (t) => {
-    // D-97, D-98. Faults: comparing raw spellings; a lost insert race
+    // D-99, D-100. Faults: comparing raw spellings; a lost insert race
     // answered as a server error or as a second account.
     const f = await accountFixture(t);
     const raced = await Promise.all([
@@ -850,7 +850,7 @@ test(
   "passwords count 12 to 128 Unicode code points and keep their exact content",
   { timeout: 20000 },
   async (t) => {
-    // D-96. Faults: UTF-16 or byte length, trimming, normalizing, or a
+    // D-98. Faults: UTF-16 or byte length, trimming, normalizing, or a
     // confirmation compared after normalization.
     const f = await accountFixture(t);
     const accepted = [
@@ -910,7 +910,7 @@ test(
   "malformed fields and out-of-shape credentials are refused before password work or writes",
   { timeout: 20000 },
   async (t) => {
-    // D-97, D-102: explicit field and type checks, no coercion; bad lengths
+    // D-99, D-104: explicit field and type checks, no coercion; bad lengths
     // and shapes keep the generic login message without Argon2.
     const f = await accountFixture(t);
     const structural = [
@@ -1011,7 +1011,7 @@ test(
   "a known address with a wrong password and an unknown address fail login identically",
   { timeout: 20000 },
   async (t) => {
-    // D-98. Fault: a distinct message, status or shape for an unknown address.
+    // D-100. Fault: a distinct message, status or shape for an unknown address.
     const f = await accountFixture(t);
     assert.equal((await register(f, "known@example.test")).status, 201);
     const wrong = await login(f, "known@example.test", `${password}!`);
@@ -1030,7 +1030,7 @@ test(
   "a failed session save keeps the new account usable and issues no success cookie",
   { timeout: 20000 },
   async (t) => {
-    // D-107: success only after the session is stored; the account is not
+    // D-109: success only after the session is stored; the account is not
     // deleted when its first session fails.
     const f = await accountFixture(t);
     f.inspection.exec(`
@@ -1214,7 +1214,7 @@ test(
       await register(f, "slot-6@example.test", { address }),
       "sixth account within the hour",
     );
-    // D-108: the limiter keys on the canonical connecting address, whatever
+    // D-110: the limiter keys on the canonical connecting address, whatever
     // spelling it arrives in and whatever forwarding chain the caller adds.
     assertLimited(
       await register(f, "slot-6@example.test", {

@@ -437,7 +437,7 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.assertEqual(volume_problems(self.top, self.services), [])
 
     def test_production_account_configuration_is_fixed(self):
-        # D-109; missing or drifting settings must not reach deployment unnoticed.
+        # D-111; missing or drifting settings must not reach deployment unnoticed.
         environment = self.services["app"].get("environment")
         self.assertIsNotNone(environment, "application account settings are missing")
         fields = support._yaml_mapping(environment.block, environment.line + 1)

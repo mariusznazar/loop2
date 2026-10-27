@@ -11,13 +11,13 @@ Przed dodaniem lub zmianą pliku wykonującego haszowanie albo sprawdzanie hase�
 
 | File | Status | Decision |
 |---|---|---|
-| `src/server/passwords.ts` | exemplar | D-111 |
+| `src/server/passwords.ts` | exemplar | D-113 |
 
 ## Rules
 
 ### One gate for native password work
 
-- **Decision:** D-101 · D-111
+- **Decision:** D-103 · D-113
 - **Invariant:** password-operation-gate
 - **Good:** Hashing and verification use the same bounded admission gate.
 - **Bad:** Hashing and verification use separate gates or wait in an unbounded queue.

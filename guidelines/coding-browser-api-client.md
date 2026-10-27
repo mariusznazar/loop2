@@ -13,13 +13,13 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/browser/account-api.ts` | exemplar | D-115 |
+| `src/browser/account-api.ts` | exemplar | D-117 |
 
 ## Rules
 
 ### Względne ścieżki, bez przekierowań
 
-- **Decision:** D-106 · D-115
+- **Decision:** D-108 · D-117
 - **Invariant:** account-client-requests
 - **Good:** Klient wysyła żądanie na względną ścieżkę `/api/…` z metodą i treścią JSON, jakie ta trasa przyjmuje, a odpowiedź przekierowująca kończy się porażką.
 - **Bad:** Klient wpisuje adres z nazwą hosta albo idzie za przekierowaniem pod inny adres.
@@ -31,7 +31,7 @@ tylko tam, gdzie trasa jej oczekuje.
 
 ### Sukces tylko dla własnego statusu i kształtu
 
-- **Decision:** D-115
+- **Decision:** D-117
 - **Invariant:** account-client-outcomes
 - **Good:** Klient zwraca konto tylko dla statusu sukcesu swojego żądania i treści z niepustymi tekstami `id` oraz `email`; resztę zwraca jako porażkę typu odmowa, niespodziewana odpowiedź albo brak połączenia.
 - **Bad:** Klient uznaje za sukces każdy status 2xx albo treść, której pól nie sprawdził.
@@ -43,7 +43,7 @@ nazwał, i nie przekazuje dalej niczego więcej.
 
 ### Ograniczone oczekiwanie
 
-- **Decision:** D-115
+- **Decision:** D-117
 - **Invariant:** account-client-outcomes
 - **Good:** Żądanie, którego odpowiedź albo treść nie dotarła w limicie czasu, kończy się porażką z powodem „timeout”.
 - **Bad:** Żądanie czeka bez końca na serwer, który milczy albo przerwał odpowiedź w trakcie treści.
@@ -53,7 +53,7 @@ konstruktora klienta, żeby test mógł go skrócić.
 
 ### Bez własnego stanu
 
-- **Decision:** D-115
+- **Decision:** D-117
 - **Invariant:** none
 - **Good:** Klient oddaje wynik wywołania i niczego nie zapamiętuje między wywołaniami.
 - **Bad:** Klient zapisuje tożsamość w `localStorage`, czyta ciasteczko albo dotyka DOM.
