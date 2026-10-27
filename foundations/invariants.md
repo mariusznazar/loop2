@@ -761,7 +761,7 @@ The SQLite session Store returns only valid stored account identity and cookie d
 
 ## account-attempt-limits
 
-The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes or within 15 minutes of its fifth failure, a login from a client address with twenty failed or unsettled logins in the last 15 minutes and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only when its password work has completed, whether or not its client is still connected.
+The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes since its last successful login or within 15 minutes of its fifth failure, a login from a client address with twenty failed or unsettled logins in the last 15 minutes and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only when its password work has completed, whether or not its client is still connected.
 
 - **Method:** test
 - **Rests on:** none
