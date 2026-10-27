@@ -13,7 +13,9 @@ Reading of the sentence:
 - changes: a key added, removed or given another value, at any depth.
 
 Inputs (written out below, or reached by driving `game.js` from them):
-- game states: a new game, the game after `setProgram`, after a character created, after a send
+- game states: a new game, the game after `setProgram` on it, the fully knowing game (as
+  `KNOWING_GAME_JS` in `program_fixture.py` gives it, from which the rest of the scenario goes on),
+  the game after `setProgram`, after a character created, after a send
   of that character to the map `forest`, at every game minute of 240 minutes of a program using
   every condition kind and every action kind (sent at the real time T, on which it gathers, eats,
   builds a campfire and lights it within those minutes, and stays alive), paused, after real time,
@@ -53,7 +55,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 BUILT_DIRECTORY = "dist/public/sim"
 
@@ -160,7 +162,7 @@ INPUTS = {
     "warmths": [0, 0.15, 0.5, 0.65], "satieties": [0, 25], "renewalMinutes": [1, 119, 120],
 }
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -256,7 +258,11 @@ const call = (module, name, args) => check(module + ' ' + name, ns[module][name]
 
 // Game states along a scenario, each kept as its own object.
 const states = [];
-let state = g.newGame();
+const newGame = g.newGame();
+states.push(newGame);
+states.push(g.setProgram(newGame, clone(I.programs[1])).state);
+// The scenario goes on from the game that knows everything, beside the new game above.
+let state = await newKnowingGame(g, join(simDirectory, 'game.js'));
 states.push(state);
 state = g.setProgram(state, clone(I.programs[1])).state; states.push(state);
 state = g.createCharacter(state, I.names[0]).state; states.push(state);

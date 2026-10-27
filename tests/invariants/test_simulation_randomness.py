@@ -18,7 +18,10 @@ Covers:
 - dynamic: a Node script replaces `Math.random`, `crypto.getRandomValues`, `crypto.randomUUID`
   and the random functions of `node:crypto` with functions that count their calls and throw,
   first proving each replacement fires on a direct call, then imports every module under
-  `dist/public/sim/` and drives the public functions of `game.js`: a character created, a send,
+  `dist/public/sim/` and drives the public functions of `game.js`, starting from a game whose
+  Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
+  `program_fixture.py` gives it, so that the rules of the program stay what the check drives: a
+  character created, a send,
   240 game minutes with a program whose only rule is to wander, then a program mixing every action
   of the closed list (gathering, which draws from the gathering generator, included), a restart,
   an end and a second send, no map run going past game minute 240; no input may raise and no
@@ -42,7 +45,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 SOURCE_DIRECTORY = "src/browser/sim/"
 GENERATOR_FILE = "src/browser/sim/random.ts"
@@ -303,7 +306,7 @@ PROOFS = (
     "node:crypto default randomBytes",
 )
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -370,7 +373,7 @@ try {
   let state;
   for (const [name, ...args] of steps) {
     if (name === 'newGame') {
-      state = game.newGame();
+      state = await newKnowingGame(game, join(simDirectory, 'game.js'));
     } else {
       state = game[name](state, ...args).state;
     }

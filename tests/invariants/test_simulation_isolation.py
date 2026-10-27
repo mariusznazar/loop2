@@ -33,7 +33,9 @@ Covers:
   any specifier resolving outside `dist/public/sim/` is recorded and refused. It then drives the
   public functions of `game.js` through a character created, a send, a mixed program for 150 game
   minutes, real time,
-  a pause, a restart, an end and a second send. No module may fail to load, no input may raise
+  a pause, a restart, an end and a second send. The game it starts from is one whose Understanding
+  holds everything the built data modules list, as `KNOWING_GAME_JS` in `program_fixture.py`
+  gives it, so that the rules of the program stay what the check drives. No module may fail to load, no input may raise
   and no refused import or guarded call may be recorded;
 - a control of the dynamic harness: made-up modules that call `setTimeout`, read `document`,
   call `Date.now()`, `new Date()`, `Date()`, write to `console`, read `process`, import a file
@@ -54,7 +56,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 SOURCE_DIRECTORY = "src/browser/sim/"
 BUILT_DIRECTORY = "dist/public/sim"
@@ -383,7 +385,7 @@ GUARD = r"""
 })()
 """
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import vm from 'node:vm';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, resolve, relative, isAbsolute } from 'node:path';
@@ -447,7 +449,8 @@ try {
       const hadRun = Boolean(state && state.run);
       let error = null;
       try {
-        state = name === 'newGame' ? game.newGame() : game[name](state, ...args).state;
+        state = name !== 'newGame' ? game[name](state, ...args).state
+          : config.knowing ? await newKnowingGame(game, join(root, 'game.js')) : game.newGame();
       } catch (thrown) {
         error = { name: String(thrown && thrown.name), message: String(thrown && thrown.message) };
       }
@@ -639,7 +642,7 @@ class SimulationIsolation(unittest.TestCase):
         directory = copy.file(BUILT_DIRECTORY)
         self.assertTrue(os.path.isfile(os.path.join(directory, "game.js")),
                         f"`npm run build` placed no {BUILT_DIRECTORY}/game.js")
-        result = harness(directory, {"mode": "game", "steps": GAME_STEPS})
+        result = harness(directory, {"mode": "game", "steps": GAME_STEPS, "knowing": True})
         for name in ("console", "WebAssembly", "process", "setTimeout", "document"):
             self.assertNotIn(name, result["globals"], f"the harness's context holds {name}")
         self.assertEqual(run_problems(result), [], "the simulation imports from outside it, reads "
