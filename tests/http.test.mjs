@@ -603,8 +603,14 @@ const loginMessage = "Nieprawidłowy adres e-mail lub hasło.";
 const limitMessage = "Za dużo prób. Spróbuj ponownie za kilka minut.";
 const minute = 60 * 1000;
 
-function post(f, path, fields, { address = "198.51.100.10", cookie } = {}) {
+function post(
+  f,
+  path,
+  fields,
+  { address = "198.51.100.10", cookie, forwarded = {} } = {},
+) {
   const headers = {
+    ...forwarded,
     "X-Forwarded-Proto": "https",
     "CF-Connecting-IP": address,
     Origin: origin,
@@ -1200,6 +1206,19 @@ test(
     assertLimited(
       await register(f, "slot-6@example.test", { address }),
       "sixth account within the hour",
+    );
+    // D-108: the limiter keys on the canonical connecting address, whatever
+    // spelling it arrives in and whatever forwarding chain the caller adds.
+    assertLimited(
+      await register(f, "slot-6@example.test", {
+        address: "::ffff:198.51.100.60",
+        forwarded: {
+          "X-Forwarded-For": "203.0.113.9",
+          "X-Real-IP": "203.0.113.10",
+          Forwarded: "for=203.0.113.11",
+        },
+      }),
+      "an equivalent spelling with a chosen forwarding chain",
     );
     assert.equal(accountCount(f), 2 + 5);
     assert.equal(
