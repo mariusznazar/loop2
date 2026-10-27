@@ -8,6 +8,7 @@ import {
   onStep,
   type ConditionNumber,
 } from "../sim/program.js";
+import { editorRepertoire } from "../sim/understanding.js";
 import type {
   Action,
   Condition,
@@ -154,23 +155,61 @@ export type FocusTarget =
 /** An edit that changes the rows: „Dodaj regułę”, „Usuń”, „↑”, „↓”. */
 export type StructuralEdit = "add" | "remove" | "up" | "down";
 
-/**
- * The items „Zapas poniżej” offers, in the data's order: every item of the data, bound to no map,
- * since an item can reach the backpack from elsewhere than the map's tiles.
- */
-const OFFERED_ITEMS = Object.keys(ITEMS) as ItemId[];
-
 /** The range a row's number field is made with, before `showRule` sets that of the rule's kind. */
 const UNSET_RANGE = { min: 0, max: 0, step: 1 };
 
 /**
- * The resources the resource selects offer, in the map's order: the run's map's during a map run,
- * otherwise the first map the headquarters sends characters to. Pure.
+ * The condition kinds the condition selects offer, in the data's order: those of the repertoire the
+ * program is shown through (Q-C1), less „Tu leży mniej niż” and „Zapas poniżej” while no resource or
+ * item is offered for them to name — a choice the editor could not turn into a rule. Pure.
+ */
+export function offeredConditionKinds(state: GameState): ConditionKind[] {
+  const { conditions } = editorRepertoire(state);
+  const named = {
+    hereBelow: offeredResources(state).length > 0,
+    itemBelow: offeredItems(state).length > 0,
+  };
+  return (Object.keys(CONDITIONS) as ConditionKind[]).filter(
+    (kind) =>
+      conditions.includes(kind) &&
+      (kind === "hereBelow" || kind === "itemBelow" ? named[kind] : true),
+  );
+}
+
+/**
+ * The action kinds the action selects offer, in the data's order: those of the repertoire, less
+ * „Idź” and „Zbierz” while no resource is offered for them to name. Pure.
+ */
+export function offeredActionKinds(state: GameState): ActionKind[] {
+  const { actions } = editorRepertoire(state);
+  const named = offeredResources(state).length > 0;
+  return (Object.keys(ACTIONS) as ActionKind[]).filter(
+    (kind) => actions.includes(kind) && (named || !takesResource(kind)),
+  );
+}
+
+/**
+ * The items „Zapas poniżej” offers, in the data's order: the repertoire's items of the backpack,
+ * bound to no map, since an item can reach the backpack from elsewhere than the map's tiles. The
+ * campfire is no item of the backpack. Pure.
+ */
+export function offeredItems(state: GameState): ItemId[] {
+  const { items } = editorRepertoire(state);
+  return (Object.keys(ITEMS) as ItemId[]).filter((id) => items.includes(id));
+}
+
+/**
+ * The resources the resource selects offer, in the map's order: those of the run's map during a map
+ * run, otherwise of the first map the headquarters sends characters to, that the repertoire holds as
+ * items. Pure.
  */
 export function offeredResources(state: GameState): ResourceId[] {
   const mapId = state.run ? state.run.mapId : sendMaps()[0];
   if (mapId === undefined) return [];
-  return MAPS[mapId].resources.map((resource) => resource.id);
+  const { items } = editorRepertoire(state);
+  return MAPS[mapId].resources
+    .map((resource) => resource.id)
+    .filter((id) => items.includes(id));
 }
 
 /**
@@ -296,12 +335,13 @@ export function moveRule(
 
 /**
  * A new condition of `kind`: a kind that takes a number starts with the data's default, one that
- * names a resource with the first of `resources`, „Zapas poniżej” with the first item of the data.
- * Null where there is nothing to name.
+ * names a resource with the first of `resources`, „Zapas poniżej” with the first of `items`. Null
+ * where there is nothing to name.
  */
 function newCondition(
   kind: ConditionKind,
   resources: readonly ResourceId[],
+  items: readonly ItemId[],
 ): Condition | null {
   if (kind === "always" || kind === "awayFromCampfire") return { kind };
   const value = conditionNumber(kind)?.defaultValue;
@@ -312,7 +352,7 @@ function newCondition(
       return resource === undefined ? null : { kind, resource, value };
     }
     case "itemBelow": {
-      const item = OFFERED_ITEMS[0];
+      const item = items[0];
       return item === undefined ? null : { kind, item, value };
     }
     case "temperatureBelow":
@@ -353,9 +393,9 @@ function replaceCondition(
 }
 
 /**
- * The condition switched to `kind` (null index selects the group), with the data's default number; a condition that names
- * a resource takes the first of `resources`, „Zapas poniżej” the first item of the data. Null when
- * the kind is already chosen.
+ * The condition switched to `kind` (null index selects the group), with the data's default number;
+ * a condition that names a resource takes the first of `resources`, „Zapas poniżej” the first of
+ * `items`. Null when the kind is already chosen or there is nothing to name.
  */
 export function withConditionKind(
   program: Program,
@@ -363,10 +403,11 @@ export function withConditionKind(
   index: number | null,
   kind: ConditionKind,
   resources: readonly ResourceId[],
+  items: readonly ItemId[],
 ): Program | null {
   const previous = conditionAt(program, groupId, index);
   if (!previous || previous.kind === kind) return null;
-  const condition = newCondition(kind, resources);
+  const condition = newCondition(kind, resources, items);
   if (!condition) return null;
   return replaceCondition(program, groupId, index, condition);
 }
@@ -501,35 +542,58 @@ type RowView = ConditionView & {
 
 export type ProgramEditor = {
   element: HTMLElement;
-  /** Shows the given game state's program; call when the program or the run's map changes. */
+  /**
+   * Shows the given game state's program; call when the program, the run's map or the
+   * Understanding changes.
+   */
   update(state: GameState): void;
   /** Refreshes counts alone; never writes a field value, rebuilds rows or changes focus. */
   updateCounts(counts: GameState["ruleCounts"]): void;
 };
 
-/** Fills a resource select with the offered resources, plus `value` when it is not among them. */
-function fillResources(
-  element: HTMLSelectElement,
-  offered: readonly ResourceId[],
-  value: ResourceId | null,
-): void {
-  const ids =
-    value !== null && !offered.includes(value) ? [...offered, value] : offered;
-  setSelectOptions(
-    element,
-    ids.map((id): SelectOption => [id, RESOURCES[id].name]),
-  );
+/** The positions of a select list for `ids`, each with the text `text` gives it. */
+function optionsOf<T extends string>(
+  ids: readonly T[],
+  text: (id: T) => string,
+): SelectOption[] {
+  return ids.map((id): SelectOption => [id, text(id)]);
 }
 
-/** Shows `value` in a resource select, adding its option first when the select lacks one. */
-function showResource(
+/**
+ * Shows `value` in a select list, adding its position after the offered ones first when the select
+ * lacks one: a rule or group may hold a value the lists no longer offer.
+ */
+function showChoice<T extends string>(
   element: HTMLSelectElement,
-  offered: readonly ResourceId[],
-  value: ResourceId,
+  offered: readonly T[],
+  value: T,
+  text: (id: T) => string,
 ): void {
   if (![...element.options].some((option) => option.value === value))
-    fillResources(element, offered, value);
+    setSelectOptions(element, optionsOf([...offered, value], text));
   if (element.value !== value) element.value = value;
+}
+
+const conditionLabel = (kind: ConditionKind): string => CONDITIONS[kind].label;
+const actionLabel = (kind: ActionKind): string => ACTIONS[kind].label;
+const resourceName = (id: ResourceId): string => RESOURCES[id].name;
+const itemName = (id: ItemId): string => ITEMS[id].name;
+
+/** What the editor's lists offer, as `offered…` give it for one game state. */
+type Offer = {
+  conditions: ConditionKind[];
+  actions: ActionKind[];
+  resources: ResourceId[];
+  items: ItemId[];
+};
+
+function offerOf(state: GameState): Offer {
+  return {
+    conditions: offeredConditionKinds(state),
+    actions: offeredActionKinds(state),
+    resources: offeredResources(state),
+    items: offeredItems(state),
+  };
 }
 
 /**
@@ -540,8 +604,10 @@ function showResource(
  * and „Zbierz” a resource select, buttons „↑”, „↓”, „Usuń” — and the button „Dodaj regułę”. Groups
  * have their own arrows and destructive removal, with „Dodaj grupę” after the list. Native rule
  * drops insert before another rule or append to a group. Labels,
- * numbers, resources and items come from the data: the condition and action selects offer every
- * kind of the closed lists. Each edit commits a whole new program through `commit` on `change`; the
+ * numbers, resources and items come from the data: the lists offer the repertoire of the program's
+ * character (D-119) — its conditions, its actions and their targets — and a rule or group holding
+ * a value outside them still shows it. „Dodaj regułę” is disabled while the repertoire holds no
+ * action. Each edit commits a whole new program through `commit` on `change`; the
  * editor never writes the game state. Rows are rebuilt only after a structural edit, so the control
  * being edited keeps focus while the state changes.
  */
@@ -556,19 +622,8 @@ export function createProgramEditor(
   const addGroupButton = createButton("Dodaj grupę");
   element.append(heading, groupsElement, addGroupButton);
 
-  const conditionOptions = Object.entries(CONDITIONS).map(
-    ([kind, def]): SelectOption => [kind, def.label],
-  );
-  const actionOptions = Object.entries(ACTIONS).map(
-    ([kind, def]): SelectOption => [kind, def.label],
-  );
-  const itemOptions = OFFERED_ITEMS.map((id): SelectOption => [
-    id,
-    ITEMS[id].name,
-  ]);
-
   let program: Program = { groups: [], nextGroupId: 1, nextRuleId: 1 };
-  let offered: ResourceId[] = [];
+  let offer: Offer = { conditions: [], actions: [], resources: [], items: [] };
   let groups: {
     id: GroupId;
     element: HTMLElement;
@@ -667,7 +722,6 @@ export function createProgramEditor(
     list.className = "rules";
     const add = createButton("Dodaj regułę");
     const rows = group.rules.map((_, index) => createRow(group.id, index));
-    for (const row of rows) fillResources(row.actionResource, offered, null);
     list.append(...rows.map((row) => row.element));
     section.append(header, conditionRow, list, add);
     name.input.addEventListener("change", () =>
@@ -728,7 +782,7 @@ export function createProgramEditor(
     const row: ConditionView = {
       condition: createSelectList(
         index === null ? "Warunek grupy" : "Warunek",
-        conditionOptions,
+        optionsOf(offer.conditions, conditionLabel),
       ),
       value: createNumberField({
         label: index === null ? "Liczba warunku grupy" : "Liczba",
@@ -736,13 +790,13 @@ export function createProgramEditor(
       }),
       conditionResource: createSelectList(
         index === null ? "Zasób warunku grupy" : "Zasób warunku",
+        optionsOf(offer.resources, resourceName),
       ),
       conditionItem: createSelectList(
         index === null ? "Przedmiot warunku grupy" : "Przedmiot warunku",
-        itemOptions,
+        optionsOf(offer.items, itemName),
       ),
     };
-    fillResources(row.conditionResource, offered, null);
     row.condition.addEventListener("change", () => {
       edit(
         withConditionKind(
@@ -750,7 +804,8 @@ export function createProgramEditor(
           groupId,
           index,
           row.condition.value as ConditionKind,
-          offered,
+          offer.resources,
+          offer.items,
         ),
       );
     });
@@ -796,8 +851,11 @@ export function createProgramEditor(
       element: document.createElement("li"),
       count: document.createElement("span"),
       ...createConditionControls(groupId, index),
-      action: createSelectList("Akcja", actionOptions),
-      actionResource: createSelectList("Zasób akcji"),
+      action: createSelectList("Akcja", optionsOf(offer.actions, actionLabel)),
+      actionResource: createSelectList(
+        "Zasób akcji",
+        optionsOf(offer.resources, resourceName),
+      ),
       up: createButton("↑", { label: "W górę" }),
       down: createButton("↓", { label: "W dół" }),
       // „Usuń” deletes the program rule: a destructive button (D-44).
@@ -856,7 +914,7 @@ export function createProgramEditor(
           groupId,
           index,
           row.action.value as ActionKind,
-          offered,
+          offer.resources,
         ),
       );
     });
@@ -896,8 +954,7 @@ export function createProgramEditor(
 
   /** Sets each control of a row to its rule, only where it differs, so a focused control keeps focus. */
   function showCondition(row: ConditionView, condition: Condition): void {
-    if (row.condition.value !== condition.kind)
-      row.condition.value = condition.kind;
+    showChoice(row.condition, offer.conditions, condition.kind, conditionLabel);
     row.value.element.hidden = !("value" in condition);
     if ("value" in condition) {
       showFieldRange(row.value.input, condition.kind);
@@ -906,22 +963,29 @@ export function createProgramEditor(
     }
     row.conditionResource.hidden = condition.kind !== "hereBelow";
     if (condition.kind === "hereBelow")
-      showResource(row.conditionResource, offered, condition.resource);
+      showChoice(
+        row.conditionResource,
+        offer.resources,
+        condition.resource,
+        resourceName,
+      );
     row.conditionItem.hidden = condition.kind !== "itemBelow";
-    if (
-      condition.kind === "itemBelow" &&
-      row.conditionItem.value !== condition.item
-    )
-      row.conditionItem.value = condition.item;
+    if (condition.kind === "itemBelow")
+      showChoice(row.conditionItem, offer.items, condition.item, itemName);
   }
 
   function showRule(row: RowView, rule: ProgramRule): void {
     showCondition(row, rule.condition);
     const action = rule.action;
-    if (row.action.value !== action.kind) row.action.value = action.kind;
+    showChoice(row.action, offer.actions, action.kind, actionLabel);
     row.actionResource.hidden = !namesResource(action);
     if (namesResource(action))
-      showResource(row.actionResource, offered, action.resource);
+      showChoice(
+        row.actionResource,
+        offer.resources,
+        action.resource,
+        resourceName,
+      );
   }
 
   function focusTarget(target: FocusTarget): void {
@@ -970,9 +1034,9 @@ export function createProgramEditor(
     element,
     updateCounts,
     update(state: GameState): void {
-      const nextOffered = offeredResources(state);
-      if (nextOffered.join() !== offered.join()) rebuild = true;
-      offered = nextOffered;
+      const nextOffer = offerOf(state);
+      if (JSON.stringify(nextOffer) !== JSON.stringify(offer)) rebuild = true;
+      offer = nextOffer;
       program = state.program;
       if (
         rebuild ||
@@ -994,6 +1058,8 @@ export function createProgramEditor(
           view.name.input.value = group.name;
         showCondition(view.condition, group.condition);
         group.rules.forEach((rule, at) => showRule(view.rows[at], rule));
+        const addDisabled = offer.actions.length === 0;
+        if (view.add.disabled !== addDisabled) view.add.disabled = addDisabled;
       });
       updateCounts(state.ruleCounts);
       if (pendingFocus) {

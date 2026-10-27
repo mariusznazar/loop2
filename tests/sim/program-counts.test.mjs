@@ -12,6 +12,7 @@ import {
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
+import { newKnowingGame } from "./understanding-fixture.mjs";
 
 // D-92 and D-93 (foundations/decisions.md:1619,1641): starts, not elapsed minutes,
 // with independent counts attached to stable identities. Deliberately no program fixture builder.
@@ -40,7 +41,8 @@ const PROGRAM = {
 const SENT = { mapId: Object.keys(MAPS)[0], characterId: 1 };
 
 function ready(program = PROGRAM) {
-  return createCharacter(setProgram(newGame(), program).state, "Ala").state;
+  return createCharacter(setProgram(newKnowingGame(), program).state, "Ala")
+    .state;
 }
 
 function sent(program = PROGRAM) {

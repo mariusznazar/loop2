@@ -9,7 +9,9 @@ such as `className`, `dataset` and `scope` reflected to attributes, class lists,
 `closest`), builds the terrain panel with `createTerrainPanel()` of the built
 `dist/public/view/terrain-panel.js`, as the game's view does, and drives the simulation of the
 built `dist/public/sim/game.js` (`newGame`, `createCharacter`, `setProgram`, `send`,
-`advanceMinutes`), handing the panel each game state at the minutes below through its `update`.
+`advanceMinutes`), starting from a game whose Understanding holds everything the built data
+modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
+program stay what the check drives, and handing the panel each game state at the minutes below through its `update`.
 After each update it writes out the panel's element as a tree, with the map run's tiles; the check
 reads both.
 
@@ -57,7 +59,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 PANEL_MODULE = "dist/public/view/terrain-panel.js"
@@ -217,7 +219,8 @@ globalThis.document = {
 """
 
 DRIVER = (
-    "import { readFileSync, writeFileSync } from 'node:fs';\n"
+    KNOWING_GAME_JS
+    + "import { readFileSync, writeFileSync } from 'node:fs';\n"
     "import { pathToFileURL } from 'node:url';\n"
     + FAKE_DOCUMENT
     + r"""
@@ -229,7 +232,7 @@ const panel = createTerrainPanel();
 let state;
 const drawn = [];
 for (const [name, ...args] of steps) {
-  if (name === 'newGame') state = game.newGame();
+  if (name === 'newGame') state = await newKnowingGame(game, gamePath);
   else if (name === 'draw') {
     panel.update(state);
     drawn.push({ label: args[0], tiles: state.run ? state.run.tiles : [], tree: panel.element.toTree() });

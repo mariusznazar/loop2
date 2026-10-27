@@ -1,9 +1,22 @@
+import type { SkillId } from "./skills.js";
+
 export type ArchetypeDef = {
   name: string;
+  /** The character skills the archetype lets a character learn. */
+  predispositions: SkillId[];
 };
 
 export const ARCHETYPES = {
-  elementalMage: { name: "Mag żywiołów" },
+  elementalMage: {
+    name: "Mag żywiołów",
+    predispositions: [
+      "exploration",
+      "smallItemGathering",
+      "campfireCrafting",
+      "eating",
+      "flameSpell",
+    ],
+  },
 } as const satisfies Record<string, ArchetypeDef>;
 
 export type ArchetypeId = keyof typeof ARCHETYPES;

@@ -12,8 +12,13 @@ import {
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
-import { pauseLabel, statusText } from "../../dist/public/view/status-row.js";
+import {
+  discoveryText,
+  pauseLabel,
+  statusText,
+} from "../../dist/public/view/status-row.js";
 import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
+import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -24,7 +29,10 @@ const ALWAYS = { kind: "always" };
 
 /** A game with a map run started by `send` under the given program rules. */
 function sent(rules) {
-  const program = setProgram(newGame(), programFromRules(...rules)).state;
+  const program = setProgram(
+    newKnowingGame(),
+    programFromRules(...rules),
+  ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
 }
 
@@ -234,6 +242,86 @@ test("on the screen the pause button is hidden after death; „Restart” and �
     assert.equal(endButton.hidden, false);
     assert.equal(restartButton.textContent, "Restart");
     assert.equal(endButton.textContent, "Zakończ");
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+// Slice 12 (task odkrywanie, To do 5, odkrywanie_loop2.md line 144): the line under the status row
+// says what was revealed, and goes when the player moves on.
+const EXPLORED_REVEALED = {
+  actions: ["walkTo", "gather"],
+  conditions: ["hereBelow", "itemBelow"],
+  items: ["stick", "berry"],
+};
+
+test("the text for the first finished exploration of a tile with sticks and berries is the task's example", () => {
+  assert.equal(
+    discoveryText(EXPLORED_REVEALED),
+    "Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.",
+  );
+});
+
+test("the text for the first chill names its actions and its condition with the unit", () => {
+  assert.equal(
+    discoveryText({
+      actions: ["explore", "wander"],
+      conditions: ["temperatureBelow"],
+      items: [],
+    }),
+    "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+  );
+});
+
+test("a discovery of an action alone has no second sentence, and the campfire is named with a capital letter", () => {
+  assert.equal(
+    discoveryText({
+      actions: ["lightItem"],
+      conditions: [],
+      items: ["campfire"],
+    }),
+    "Odkryto: Zapal — patyk, Ognisko.",
+  );
+});
+
+test("a condition that takes no number is named without a unit, and a discovery of conditions alone has no first sentence", () => {
+  assert.equal(
+    discoveryText({
+      actions: [],
+      conditions: ["awayFromCampfire"],
+      items: [],
+    }),
+    "W regułach można teraz sprawdzić: Z dala od — ognisko.",
+  );
+});
+
+test("on the screen the line is shown while the game holds a discovery and hidden after the player moves on", async () => {
+  const { createStatusRow } =
+    await import("../../dist/public/view/status-row.js");
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const row = createStatusRow({ togglePause() {}, restart() {}, end() {} });
+    const line = row.discovery;
+    assert.equal(line.hidden, true);
+    let state = createCharacter(newGame(), "Ala").state;
+    state = send(state, SENT, 1760000000003).state;
+    const stopped = advanceMinutes(state, 100).state;
+    assert.equal(stopped.run.minute, 84);
+    row.update(stopped);
+    assert.equal(line.hidden, false);
+    assert.equal(
+      line.textContent,
+      "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+    );
+    assert.equal(
+      row.element.children[0].textContent,
+      "Minuta 84 · Eksploruje (pauza)",
+    );
+    assert.equal(row.element.children[1].textContent, "Wznów");
+    row.update(setPaused(stopped, false).state);
+    assert.equal(line.hidden, true);
+    assert.equal(line.textContent, "");
   } finally {
     globalThis.document = saved;
   }

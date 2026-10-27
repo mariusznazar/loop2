@@ -24,6 +24,9 @@ import {
   createProgramEditor,
   focusAfter,
   moveRule,
+  offeredActionKinds,
+  offeredConditionKinds,
+  offeredItems,
   offeredResources,
   readNumberField,
   removeRule,
@@ -35,6 +38,7 @@ import {
   withConditionResource,
   withConditionValue,
 } from "../../dist/public/view/program-editor.js";
+import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: Object.keys(MAPS)[0],
@@ -147,7 +151,7 @@ test("group conditions offer the same kinds and editable fields while preserving
     ["campfireLeftBelow", { kind: "campfireLeftBelow", value: 20 }],
     ["awayFromCampfire", { kind: "awayFromCampfire" }],
   ]) {
-    const changed = withConditionKind(THREE, 1, null, kind, LAS);
+    const changed = withConditionKind(THREE, 1, null, kind, LAS, ITEMS_LISTED);
     assert.ok(changed, kind);
     assert.deepEqual(changed.groups[0].condition, expected);
     assert.deepEqual(changed.groups[0].rules, THREE.groups[0].rules);
@@ -157,11 +161,19 @@ test("group conditions offer the same kinds and editable fields while preserving
       3: 1,
     });
     assert.deepEqual(
-      withConditionKind(changed, 1, null, "always", LAS).groups[0].condition,
+      withConditionKind(changed, 1, null, "always", LAS, ITEMS_LISTED).groups[0]
+        .condition,
       { kind: "always" },
     );
   }
-  const resource = withConditionKind(THREE, 1, null, "hereBelow", LAS);
+  const resource = withConditionKind(
+    THREE,
+    1,
+    null,
+    "hereBelow",
+    LAS,
+    ITEMS_LISTED,
+  );
   assert.deepEqual(
     withConditionResource(resource, 1, null, "moss").groups[0].condition,
     { kind: "hereBelow", resource: "moss", value: 1 },
@@ -170,12 +182,22 @@ test("group conditions offer the same kinds and editable fields while preserving
     withConditionValue(resource, 1, null, 9).groups[0].condition,
     { kind: "hereBelow", resource: "stick", value: 9 },
   );
-  const item = withConditionKind(THREE, 1, null, "itemBelow", LAS);
+  const item = withConditionKind(
+    THREE,
+    1,
+    null,
+    "itemBelow",
+    LAS,
+    ITEMS_LISTED,
+  );
   assert.deepEqual(
     withConditionItem(item, 1, null, "berry").groups[0].condition,
     { kind: "itemBelow", item: "berry", value: 8 },
   );
-  assert.equal(withConditionKind(THREE, 1, null, "always", LAS), null);
+  assert.equal(
+    withConditionKind(THREE, 1, null, "always", LAS, ITEMS_LISTED),
+    null,
+  );
   assert.equal(withConditionValue(THREE, 1, null, 9), null);
 });
 
@@ -245,8 +267,14 @@ function editorDocument() {
         hidden: false,
         className: "",
         classList: { add() {} },
-        setAttribute() {},
-        addEventListener() {},
+        attributes: {},
+        listeners: {},
+        setAttribute(name, value) {
+          this.attributes[name] = value;
+        },
+        addEventListener(type, listener) {
+          this.listeners[type] = listener;
+        },
         focus() {},
         append(...items) {
           this.children.push(...items);
@@ -285,7 +313,7 @@ test("count-only refresh changes count text without writing field values or repl
       value: 2,
     };
     const state = createCharacter(
-      setProgram(newGame(), program).state,
+      setProgram(newKnowingGame(), program).state,
       "Ala",
     ).state;
     const editor = createProgramEditor(() =>
@@ -543,7 +571,8 @@ test("„↑” and „↓” swap a rule with its neighbour; past either end no
 
 test("switching the condition to „Tu leży mniej niż” takes the map's first resource and the data's default N", () => {
   assert.deepEqual(
-    withConditionKind(THREE, 1, 0, "hereBelow", LAS).groups[0].rules[0],
+    withConditionKind(THREE, 1, 0, "hereBelow", LAS, ITEMS_LISTED).groups[0]
+      .rules[0],
     {
       id: 1,
       condition: { kind: "hereBelow", resource: "stick", value: 1 },
@@ -559,7 +588,8 @@ test("switching the condition to „Tu leży mniej niż” takes the map's first
 
 test("switching the condition to a new kind puts in the kind's default number, and the first item for „Zapas poniżej”", () => {
   const switched = (kind) =>
-    withConditionKind(THREE, 1, 0, kind, LAS).groups[0].rules[0].condition;
+    withConditionKind(THREE, 1, 0, kind, LAS, ITEMS_LISTED).groups[0].rules[0]
+      .condition;
   assert.deepEqual(switched("temperatureBelow"), {
     kind: "temperatureBelow",
     value: 36.5,
@@ -579,8 +609,8 @@ test("switching the condition to a new kind puts in the kind's default number, a
   });
   assert.deepEqual(switched("awayFromCampfire"), { kind: "awayFromCampfire" });
   assert.deepEqual(
-    withConditionKind(THREE, 1, 0, "itemBelow", []).groups[0].rules[0].condition
-      .kind,
+    withConditionKind(THREE, 1, 0, "itemBelow", [], ITEMS_LISTED).groups[0]
+      .rules[0].condition.kind,
     "itemBelow",
     "„Zapas poniżej” is bound to no map",
   );
@@ -601,6 +631,7 @@ test("switching the condition to a new kind puts in the kind's default number, a
       0,
       "satietyBelow",
       LAS,
+      ITEMS_LISTED,
     ).groups[0].rules[0].condition,
     { kind: "satietyBelow", value: 50 },
     "switching from one number kind to another puts in the new kind's default",
@@ -608,7 +639,7 @@ test("switching the condition to a new kind puts in the kind's default number, a
 });
 
 test("„Zapas poniżej” offers every item of the data, and its item and number can be chosen", () => {
-  let program = withConditionKind(THREE, 1, 1, "itemBelow", LAS);
+  let program = withConditionKind(THREE, 1, 1, "itemBelow", LAS, ITEMS_LISTED);
   for (const item of ITEMS_LISTED.slice(1)) {
     program = withConditionItem(program, 1, 1, item);
     assert.equal(program.groups[0].rules[1].condition.item, item);
@@ -631,7 +662,8 @@ test("„Zapas poniżej” offers every item of the data, and its item and numbe
 });
 
 test("the number of the body's and the campfire's conditions can be chosen; „Z dala od” takes none", () => {
-  const withKind = (kind) => withConditionKind(THREE, 1, 0, kind, LAS);
+  const withKind = (kind) =>
+    withConditionKind(THREE, 1, 0, kind, LAS, ITEMS_LISTED);
   assert.deepEqual(
     withConditionValue(withKind("temperatureBelow"), 1, 0, 35.2).groups[0]
       .rules[0].condition,
@@ -649,15 +681,22 @@ test("the number of the body's and the campfire's conditions can be chosen; „Z
 
 test("switching the condition to „Zawsze” drops its resource and number; the same kind commits nothing", () => {
   assert.deepEqual(
-    withConditionKind(THREE, 1, 1, "always", LAS).groups[0].rules[1],
+    withConditionKind(THREE, 1, 1, "always", LAS, ITEMS_LISTED).groups[0]
+      .rules[1],
     {
       id: 2,
       condition: { kind: "always" },
       action: { kind: "wander" },
     },
   );
-  assert.equal(withConditionKind(THREE, 1, 1, "hereBelow", LAS), null);
-  assert.equal(withConditionKind(THREE, 1, 0, "always", LAS), null);
+  assert.equal(
+    withConditionKind(THREE, 1, 1, "hereBelow", LAS, ITEMS_LISTED),
+    null,
+  );
+  assert.equal(
+    withConditionKind(THREE, 1, 0, "always", LAS, ITEMS_LISTED),
+    null,
+  );
 });
 
 test("switching the action to „Idź” takes the map's first resource; other kinds carry none", () => {
@@ -768,7 +807,7 @@ test("choosing a resource or a number changes only that rule; the same choice co
 });
 
 test("the resource lists offer the shown map's resources before sending and the run's map's during a run, in order", () => {
-  const game = newGame();
+  const game = newKnowingGame();
   assert.deepEqual(offeredResources(game), LAS);
   const running = send(
     createCharacter(game, "Ala").state,
@@ -776,6 +815,221 @@ test("the resource lists offer the shown map's resources before sending and the 
     1760000000000,
   ).state;
   assert.deepEqual(offeredResources(running), LAS);
+});
+
+// Task odkrywanie_loop2, To do 4 and 7 (vault, accepted 2026-10-26); D-124. Hand-written
+// Understandings: a new game holds the condition "Zawsze" alone; the first chill adds "Eksploruj",
+// "Wędruj" and "Temperatura poniżej" (written out here, not read from the data).
+const AFTER_FIRST_CHILL = {
+  actions: ["explore", "wander"],
+  conditions: ["always", "temperatureBelow"],
+  items: [],
+};
+const gameKnowing = (understanding) => ({ ...newGame(), understanding });
+
+test("the editor's lists are the repertoire: a new game offers „Zawsze” alone and no action, the first chill adds three", () => {
+  const fresh = newGame();
+  assert.deepEqual(offeredConditionKinds(fresh), ["always"]);
+  assert.deepEqual(offeredActionKinds(fresh), []);
+  assert.deepEqual(offeredResources(fresh), []);
+  assert.deepEqual(offeredItems(fresh), []);
+  const chilled = gameKnowing(AFTER_FIRST_CHILL);
+  assert.deepEqual(offeredConditionKinds(chilled), [
+    "always",
+    "temperatureBelow",
+  ]);
+  assert.deepEqual(offeredActionKinds(chilled), ["explore", "wander"]);
+});
+
+test("target lists follow the Understanding's items: resources of the shown map in the map's order, backpack items in the data's order, the campfire in neither", () => {
+  const state = gameKnowing({
+    actions: [],
+    conditions: ["always"],
+    items: ["moss", "campfire", "stick"],
+  });
+  assert.deepEqual(offeredResources(state), ["stick", "moss"]);
+  assert.deepEqual(offeredItems(state), ["stick", "moss"]);
+  const onlyCampfire = gameKnowing({
+    actions: [],
+    conditions: ["always"],
+    items: ["campfire"],
+  });
+  assert.deepEqual(offeredResources(onlyCampfire), []);
+  assert.deepEqual(offeredItems(onlyCampfire), []);
+});
+
+test("an Understanding that holds everything gives lists of every action and condition of the data", () => {
+  const everything = newKnowingGame();
+  assert.deepEqual(offeredActionKinds(everything), Object.keys(ACTIONS));
+  assert.deepEqual(offeredConditionKinds(everything), Object.keys(CONDITIONS));
+});
+
+test("a condition switching to „Zapas poniżej” takes the first of the offered items; with none offered nothing is committed", () => {
+  assert.deepEqual(
+    withConditionKind(THREE, 1, 0, "itemBelow", LAS, ["moss", "fiber"])
+      .groups[0].rules[0].condition,
+    { kind: "itemBelow", item: "moss", value: 8 },
+  );
+  assert.equal(withConditionKind(THREE, 1, 0, "itemBelow", LAS, []), null);
+  assert.deepEqual(
+    withConditionKind(THREE, 1, 0, "temperatureBelow", [], []).groups[0]
+      .rules[0].condition,
+    { kind: "temperatureBelow", value: 36.5 },
+  );
+});
+
+/** Runs `body` with the editor's document model installed, restoring the globals after. */
+function withEditorDocument(body) {
+  const savedDocument = globalThis.document;
+  const savedOption = globalThis.Option;
+  globalThis.document = editorDocument();
+  globalThis.Option = class {
+    constructor(text, value) {
+      this.textContent = text;
+      this.value = value;
+      this.children = [];
+    }
+  };
+  try {
+    body();
+  } finally {
+    if (savedDocument === undefined) delete globalThis.document;
+    else globalThis.document = savedDocument;
+    if (savedOption === undefined) delete globalThis.Option;
+    else globalThis.Option = savedOption;
+  }
+}
+
+const selectsLabelled = (editor, label) =>
+  descendants(editor.element).filter(
+    (element) => element.attributes?.["aria-label"] === label,
+  );
+const optionValues = (select) => select.children.map((option) => option.value);
+const addRuleButtons = (editor) =>
+  descendants(editor.element).filter(
+    (element) =>
+      element.tag === "button" && element.textContent === "Dodaj regułę",
+  );
+
+test("a new game's editor offers „Zawsze” alone and a disabled „Dodaj regułę”; after the first chill it offers the three and adds „Zawsze → Eksploruj”", () => {
+  withEditorDocument(() => {
+    const committed = [];
+    const editor = createProgramEditor((program) => committed.push(program));
+    editor.update(newGame());
+    const [groupCondition] = selectsLabelled(editor, "Warunek grupy");
+    assert.deepEqual(optionValues(groupCondition), ["always"]);
+    const [add] = addRuleButtons(editor);
+    assert.equal(add.disabled, true);
+
+    editor.update(gameKnowing(AFTER_FIRST_CHILL));
+    const [chilledCondition] = selectsLabelled(editor, "Warunek grupy");
+    assert.deepEqual(optionValues(chilledCondition), [
+      "always",
+      "temperatureBelow",
+    ]);
+    const [enabled] = addRuleButtons(editor);
+    assert.equal(enabled.disabled, false);
+    enabled.listeners.click();
+    assert.equal(committed.length, 1);
+    assert.deepEqual(committed[0].groups[0].rules, [ALWAYS_EXPLORE]);
+
+    editor.update({
+      ...gameKnowing(AFTER_FIRST_CHILL),
+      program: committed[0],
+    });
+    const [action] = selectsLabelled(editor, "Akcja");
+    assert.deepEqual(optionValues(action), ["explore", "wander"]);
+    const [condition] = selectsLabelled(editor, "Warunek");
+    assert.deepEqual(optionValues(condition), ["always", "temperatureBelow"]);
+  });
+});
+
+test("a rule holding a kind or a target outside the lists still shows it, after the lists", () => {
+  withEditorDocument(() => {
+    const editor = createProgramEditor(() => assert.fail("committed"));
+    editor.update({
+      ...gameKnowing({
+        actions: ["explore"],
+        conditions: ["always"],
+        items: ["stick"],
+      }),
+      program: THREE,
+    });
+    const [first, second, third] = selectsLabelled(editor, "Warunek");
+    assert.deepEqual(optionValues(first), ["always"]);
+    assert.deepEqual(optionValues(second), ["always", "hereBelow"]);
+    assert.equal(second.value, "hereBelow");
+    assert.deepEqual(optionValues(third), ["always"]);
+    const [, wander, walk] = selectsLabelled(editor, "Akcja");
+    assert.deepEqual(optionValues(wander), ["explore", "wander"]);
+    assert.equal(wander.value, "wander");
+    assert.deepEqual(optionValues(walk), ["explore", "walkTo"]);
+    const [, berry] = selectsLabelled(editor, "Zasób warunku");
+    assert.deepEqual(optionValues(berry), ["stick", "berry"]);
+    assert.equal(berry.value, "berry");
+    const [, , moss] = selectsLabelled(editor, "Zasób akcji");
+    assert.deepEqual(optionValues(moss), ["stick", "moss"]);
+  });
+});
+
+test("the item list of „Zapas poniżej” offers the backpack items of the Understanding, and a held item outside it still shows", () => {
+  withEditorDocument(() => {
+    const editor = createProgramEditor(() => assert.fail("committed"));
+    const program = structuredClone(THREE);
+    program.groups[0].rules[0].condition = {
+      kind: "itemBelow",
+      item: "stick",
+      value: 2,
+    };
+    editor.update({
+      ...gameKnowing({
+        actions: ["explore"],
+        conditions: ["always", "itemBelow"],
+        items: ["fiber", "campfire", "berry"],
+      }),
+      program,
+    });
+    const [first] = selectsLabelled(editor, "Przedmiot warunku");
+    assert.deepEqual(optionValues(first), ["berry", "fiber", "stick"]);
+    assert.equal(first.value, "stick");
+  });
+});
+
+// Review finding I-1: a kind that names a target is no choice while no target is offered, since the
+// edit would commit nothing and the select would show a rule the program does not hold.
+const NO_TARGETS = {
+  actions: ["explore", "wander", "walkTo", "gather"],
+  conditions: ["always", "hereBelow", "itemBelow"],
+  items: [],
+};
+
+test("kinds that name a resource or an item are not offered while the Understanding holds no target for them", () => {
+  const state = gameKnowing(NO_TARGETS);
+  assert.deepEqual(offeredActionKinds(state), ["explore", "wander"]);
+  assert.deepEqual(offeredConditionKinds(state), ["always"]);
+  const resourceOnly = gameKnowing({ ...NO_TARGETS, items: ["moss"] });
+  assert.deepEqual(offeredActionKinds(resourceOnly), [
+    "explore",
+    "wander",
+    "walkTo",
+    "gather",
+  ]);
+  assert.deepEqual(offeredConditionKinds(resourceOnly), [
+    "always",
+    "hereBelow",
+    "itemBelow",
+  ]);
+});
+
+test("with no target offered the selects list only choices that commit: the rule's kind stays the one shown", () => {
+  withEditorDocument(() => {
+    const editor = createProgramEditor(() => assert.fail("committed"));
+    editor.update({ ...gameKnowing(NO_TARGETS), program: THREE });
+    const [, , action] = selectsLabelled(editor, "Akcja");
+    assert.deepEqual(optionValues(action), ["explore", "wander", "walkTo"]);
+    const [condition] = selectsLabelled(editor, "Warunek");
+    assert.deepEqual(optionValues(condition), ["always"]);
+  });
 });
 
 test("focus after a structural edit: same button in the moved rule's row, next „Usuń” or „Dodaj regułę”, new condition", () => {
@@ -810,7 +1064,7 @@ test("focus after a structural edit: same button in the moved rule's row, next �
 });
 
 test("every program the editor builds passes setProgram, before sending and during a run", () => {
-  const resources = offeredResources(newGame());
+  const resources = offeredResources(newKnowingGame());
   const conditionKinds = Object.keys(CONDITIONS);
   const actionKinds = Object.keys(ACTIONS);
   assert.deepEqual(conditionKinds, [
@@ -845,7 +1099,16 @@ test("every program the editor builds passes setProgram, before sending and duri
     for (const actionKind of actionKinds) {
       keep(addRule(program, 1));
       const last = program.groups[0].rules.length - 1;
-      keep(withConditionKind(program, 1, last, conditionKind, resources));
+      keep(
+        withConditionKind(
+          program,
+          1,
+          last,
+          conditionKind,
+          resources,
+          ITEMS_LISTED,
+        ),
+      );
       keep(withActionKind(program, 1, last, actionKind, resources));
       for (const resource of resources) {
         if (conditionKind === "hereBelow")

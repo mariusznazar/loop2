@@ -1,4 +1,5 @@
 import type { ArchetypeId } from "./data/archetypes.js";
+import type { CAMPFIRE } from "./data/campfire.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
@@ -49,6 +50,20 @@ export type Program = {
   /** Identities allocated to the next group and rule, never derived from their positions. */
   nextGroupId: GroupId;
   nextRuleId: RuleId;
+};
+
+/** What the Understanding records of the campfire: it is discoverable, yet no item of the backpack. */
+export type CampfireId = typeof CAMPFIRE.id;
+
+/**
+ * What the player has discovered, by data identifiers: actions and conditions by their kinds, and
+ * items, the campfire included, by their ids. One for the whole game and every character. Also the
+ * shape of a repertoire, the subset of it that a character can use.
+ */
+export type Understanding = {
+  actions: Action["kind"][];
+  conditions: Condition["kind"][];
+  items: (ItemId | CampfireId)[];
 };
 
 export type Tile = {
@@ -162,6 +177,8 @@ export type Team = { characters: Character[]; chest: Chest };
 
 export type GameState = {
   program: Program;
+  /** What the player has discovered; never changed by creating, sending, restarting, ending or death. */
+  understanding: Understanding;
   /** Starts per rule in the current or last map run; null before the first run. */
   ruleCounts: Record<RuleId, number> | null;
   team: Team;
@@ -172,6 +189,11 @@ export type GameState = {
   /** Seed of the latest send; INITIAL_SEED at start. */
   lastSeed: number;
   paused: boolean;
+  /**
+   * What the last game minute of a discovery revealed, set together with the pause that minute
+   * leaves, and null once the player moves on (resume, restart, end, send); null in a new game.
+   */
+  discovery: Understanding | null;
   /** Scaled real ms not yet turned into a game minute, 0 <= x < 1000. */
   realMsCarry: number;
 };

@@ -5,6 +5,9 @@ The simulation is built by `npm run build` in a temporary copy of the working tr
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send` and `advanceMinutes`.
+The new game of each game with a map run is one whose Understanding holds everything the built data
+modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
+program stay what the check drives.
 
 Reading of the sentence:
 - a program the simulation holds: the program in the game state (`state.program`) after
@@ -57,7 +60,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import program_from_rules, program_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules, program_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -115,7 +118,7 @@ NAMING = (
     ("a program with a position", {**program_from_rules([rule(ALWAYS, walk("stick"))]), "target": {"q": 3, "r": 1}}),
 )
 
-DRIVER = r"""
+DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -126,7 +129,7 @@ const copy = value => JSON.parse(JSON.stringify(value));
 const results = [];
 for (const program of offers) {
   for (const withRun of [false, true]) {
-    let state = game.setProgram(game.newGame(), base).state;
+    let state = game.setProgram(await newKnowingGame(game, gamePath), base).state;
     state = game.createCharacter(state, 'Ala').state;
     if (withRun) state = game.send(state, sent, realMs).state;
     const held = [];

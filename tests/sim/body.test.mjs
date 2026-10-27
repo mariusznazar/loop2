@@ -3,11 +3,11 @@ import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { bodyMinute } from "../../dist/public/sim/body.js";
 import { programFromRules } from "./program-fixture.mjs";
+import { newKnowingGame } from "./understanding-fixture.mjs";
 import {
   advanceMinutes,
   createCharacter,
   end,
-  newGame,
   passRealTime,
   restart,
   send,
@@ -38,7 +38,7 @@ const EXPLORING = programFromRules(rule({ kind: "explore" }));
 /** A game sent to Las with the program; the run stands at minute 0. */
 function sent(program = MIXED) {
   return send(
-    createCharacter(setProgram(newGame(), program).state, "Ala").state,
+    createCharacter(setProgram(newKnowingGame(), program).state, "Ala").state,
     SENT,
     REAL_MS,
   ).state;

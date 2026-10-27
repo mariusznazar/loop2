@@ -17,6 +17,7 @@ import {
   conditionHolds,
 } from "../../dist/public/sim/program.js";
 import { newMapRun } from "../../dist/public/sim/run.js";
+import { newKnowingGame } from "./understanding-fixture.mjs";
 
 const [mapId, map] = Object.entries(MAPS)[0];
 // The id of a character of the team, which the map run carries.
@@ -348,7 +349,7 @@ test("editing, deleting or transferring a started rule leaves its action running
   let state;
   assert.doesNotThrow(() => {
     state = setProgram(
-      createCharacter(newGame(), "Ala").state,
+      createCharacter(newKnowingGame(), "Ala").state,
       candidate,
     ).state;
   });

@@ -34,6 +34,7 @@ import type {
   Program,
   ResourceId,
   Traits,
+  Understanding,
 } from "./types.js";
 
 /** What happened in the simulation, minute-stamped, in order of occurrence. */
@@ -49,7 +50,9 @@ export type GameEvent =
   | { kind: "activityFinished"; minute: number; activity: Activity }
   | { kind: "tileRevealed"; minute: number; at: Hex }
   | { kind: "moved"; minute: number; from: Hex; to: Hex }
-  | { kind: "characterDied"; minute: number; cause: DeathCause };
+  | { kind: "characterDied"; minute: number; cause: DeathCause }
+  /** What a game minute revealed to the player, each list in the order of its data. */
+  | ({ kind: "discovered"; minute: number } & Understanding);
 
 /**
  * Chooses the next activity at the run's minute with the given program and starts it.
@@ -299,19 +302,26 @@ export function newMapRun(
 }
 
 /**
- * One game minute, in the order of D-71. First the body, warmed by what burns on its tile; where
- * the character dies, the step stops there: what burns and the tiles stay as they stood, the
- * current activity too, giving no finish, and no program rule is picked. Otherwise what burns
- * loses a minute and the tiles renew their stock; then, when the current activity ends in this
- * minute, its finish applies and the next activity is chosen in the same minute with the program
- * given now. A map run ended in death passes no minute. Inputs are not changed.
+ * What a game minute leaves before the pick: the run as the minute made it and the events so far.
+ * Where `picks` is true the minute ended an activity, so `run.current` is still the finished
+ * activity and `pickActivity` must follow; otherwise the run is complete.
  */
-export function stepMinute(
-  run: MapRun,
-  map: MapDef,
-  program: Program,
-): { run: MapRun; events: GameEvent[] } {
-  if (run.death) return { run, events: [] };
+export type MinuteBeforePick = {
+  run: MapRun;
+  events: GameEvent[];
+  picks: boolean;
+};
+
+/**
+ * One game minute, in the order of D-71, up to the pick. First the body, warmed by what burns on
+ * its tile; where the character dies, the step stops there: what burns and the tiles stay as they
+ * stood, the current activity too, giving no finish, and no program rule is picked. Otherwise what
+ * burns loses a minute and the tiles renew their stock; then, when the current activity ends in
+ * this minute, its finish applies and the pick is left to `pickActivity`. A map run ended in death
+ * passes no minute. Inputs are not changed.
+ */
+export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
+  if (run.death) return { run, events: [], picks: false };
   const minute = run.minute + 1;
   const lived = bodyMinute(run.body, warmthAt(run, run.character.at), map);
   if (lived.death) {
@@ -319,6 +329,7 @@ export function stepMinute(
     return {
       run: { ...run, minute, body: lived.body, death: { minute, cause } },
       events: [{ kind: "characterDied", minute, cause }],
+      picks: false,
     };
   }
   const body = lived.body;
@@ -326,7 +337,11 @@ export function stepMinute(
   // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
   // instead of never; for every duration of 1 minute or more the two are the same.
   if (minute < run.current.endMinute)
-    return { run: { ...run, minute, body, ...world }, events: [] };
+    return {
+      run: { ...run, minute, body, ...world },
+      events: [],
+      picks: false,
+    };
 
   const finished = run.current;
   const events: GameEvent[] = [
@@ -371,27 +386,58 @@ export function stepMinute(
     }
   }
 
-  const base = {
-    mapId: run.mapId,
-    seed: run.seed,
-    minute,
-    tiles,
-    character,
-    body: landed.body,
-    campfires: landed.campfires,
-    burningItems: landed.burningItems,
-    wanderRandom: run.wanderRandom,
-    gatherRandom,
-    death: null,
-  };
-  const started = startActivity(base, map, program);
-  events.push(started.event);
   return {
     run: {
-      ...base,
+      ...run,
+      minute,
+      tiles,
+      character,
+      body: landed.body,
+      campfires: landed.campfires,
+      burningItems: landed.burningItems,
+      gatherRandom,
+    },
+    events,
+    picks: true,
+  };
+}
+
+/**
+ * The pick of D-71's last step: the next activity chosen in the run's minute with the program
+ * given now, and the run holding it. Follows `minuteBeforePick` where its `picks` is true.
+ * Inputs are not changed.
+ */
+export function pickActivity(
+  run: MapRun,
+  map: MapDef,
+  program: Program,
+): { run: MapRun; events: GameEvent[] } {
+  const started = startActivity(run, map, program);
+  return {
+    run: {
+      ...run,
       current: started.current,
       wanderRandom: started.wanderRandom,
     },
-    events,
+    events: [started.event],
+  };
+}
+
+/**
+ * One game minute, in the order of D-71: `minuteBeforePick`, then, when the minute ended an
+ * activity, `pickActivity` with the program given now. A map run ended in death passes no minute.
+ * Inputs are not changed.
+ */
+export function stepMinute(
+  run: MapRun,
+  map: MapDef,
+  program: Program,
+): { run: MapRun; events: GameEvent[] } {
+  const stepped = minuteBeforePick(run, map);
+  if (!stepped.picks) return { run: stepped.run, events: stepped.events };
+  const picked = pickActivity(stepped.run, map, program);
+  return {
+    run: picked.run,
+    events: [...stepped.events, ...picked.events],
   };
 }

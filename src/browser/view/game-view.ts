@@ -63,11 +63,13 @@ export function createGameView(): GameView {
       const previous = state;
       state = result.state;
       renderMapColumn();
-      // Content updates only on a program/map change. A tick or restart updates counts alone,
-      // leaving partial field input and focus intact.
+      // Content updates only on a program/map change or when the Understanding changes (what the
+      // lists offer). A tick or restart updates counts alone, leaving partial field input and focus
+      // intact.
       if (
         state.program !== previous.program ||
-        state.run?.mapId !== previous.run?.mapId
+        state.run?.mapId !== previous.run?.mapId ||
+        state.understanding !== previous.understanding
       ) {
         programEditor.update(state);
       } else {
@@ -100,7 +102,12 @@ export function createGameView(): GameView {
     },
   });
   const bodyRow = createBodyRow();
-  runPanel.append(statusRow.element, bodyRow.element, terrainPanel.element);
+  runPanel.append(
+    statusRow.element,
+    statusRow.discovery,
+    bodyRow.element,
+    terrainPanel.element,
+  );
   mapColumn.append(headquarters.element, runPanel);
 
   function renderMapColumn(): void {
