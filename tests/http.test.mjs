@@ -1065,7 +1065,8 @@ test(
   async (t) => {
     // invariant: account-attempt-limits
     // Faults: success not clearing earlier failures; a lock skipped for correct
-    // credentials; a lock or window still counted at its end instant.
+    // credentials or timed from the first failure; a capacity refusal counted
+    // as a failure; a lock or window still counted at its end instant.
     const f = await accountFixture(t);
     assert.equal(
       (await register(f, "lock@example.test", { address: "198.51.100.40" }))
@@ -1074,11 +1075,17 @@ test(
     );
     const wrong = () => login(f, "lock@example.test", `${password}!`);
     const right = () => login(f, "lock@example.test", password);
+    await withFullGate(async () => {
+      for (let attempt = 1; attempt <= 5; attempt += 1)
+        assertLimited(await wrong(), `capacity refusal ${attempt}`);
+    });
     for (let attempt = 1; attempt <= 4; attempt += 1)
       assertLoginRefused(await wrong(), `failure ${attempt}`);
     assert.equal((await right()).status, 200, "success clears the four");
-    for (let attempt = 1; attempt <= 5; attempt += 1)
+    for (let attempt = 1; attempt <= 5; attempt += 1) {
+      if (attempt > 1) f.clock.time += minute;
       assertLoginRefused(await wrong(), `failure ${attempt} after success`);
+    }
     const lockedAt = f.clock.time;
     assertLimited(await right(), "locked, correct password");
     assertLimited(await wrong(), "locked, wrong password");
