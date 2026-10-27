@@ -181,7 +181,7 @@ sprawdza oddzielenie wyniku budowania, nie serwowanie podglądu.
 | Odwiedzający bez ważnej sesji: brak, podrobione, nieznane, wygasłe albo usunięte ciasteczko | Konto i sesja | GET /api/account, POST /api/logout | JSON 401 z kodem odmowy, bez danych konta i bez zmiany rekordów sesji | D-107 |
 | Gracz z ważną sesją tej przeglądarki | Własne konto | GET /api/account | 200 z samym identyfikatorem konta i znormalizowanym adresem, bez zapisu w pamięci podręcznej, bez skrótu hasła i identyfikatora sesji | D-107 |
 | Gracz z ważną sesją tej przeglądarki | Sesja tej przeglądarki | POST /api/logout | 204 dopiero po usunięciu rekordu, z ciasteczkiem wyczyszczonym w tym samym zakresie; sesje innych przeglądarek zostają; nieudane usunięcie daje błąd zamiast 204 | D-107 · D-95 |
-| Każdy wywołujący | Inne konto albo sesja wskazane identyfikatorem w żądaniu | GET /api/account, POST /api/logout | Identyfikator nie daje uprawnień: odczyt własnego konta albo 401, a wylogowanie wskazujące konto zostaje odrzucone bez zmiany żadnej sesji | D-107 |
+| Każdy wywołujący | Inne konto albo sesja wskazane identyfikatorem w żądaniu | GET /api/account, POST /api/logout | Identyfikator w żądaniu nie daje uprawnień: odczyt zwraca własne konto albo 401, a wylogowanie kończy co najwyżej sesję tej przeglądarki, bez ważnej sesji zwraca 401, a sesje wskazanego konta zostają | D-107 · D-95 |
 
 ### AI in tests
 
