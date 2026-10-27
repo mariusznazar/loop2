@@ -80,7 +80,8 @@ export class AccountDatabase {
   // SQLite refuses a change of journal mode at once, without its busy
   // handler, while another process holds a write lock on a new database, so
   // two processes opening one fresh database would fail regardless of the
-  // busy timeout. The change is retried until that timeout instead (D-112).
+  // busy timeout. The change is retried while the busy timeout lasts, each
+  // attempt itself bounded by it, as D-112's bounded busy timeout asks.
   private enableWriteAheadLog(timeoutMs: number): void {
     const deadline = performance.now() + timeoutMs;
     for (;;) {

@@ -569,12 +569,14 @@ test("startup and bounded periodic cleanup remove expired rows and disposal stop
 
 // Another process holding a write lock on a new database while this one opens
 // it is what two processes starting on one fresh database meet: the account
-// container's start and a second process opening its database. A connection of
-// another thread of this process does not reproduce it.
-async function heldWriteLock(path, holdMs) {
+// container's start and a second process opening its database.
+async function heldWriteLock(t, path, holdMs) {
+  // The holder waits for its own commit as every AccountDatabase connection
+  // does; without a busy timeout its COMMIT would fail whenever the opener's
+  // retry briefly reads the file.
   const source = `
     const { DatabaseSync } = require("node:sqlite");
-    const connection = new DatabaseSync(process.argv[1]);
+    const connection = new DatabaseSync(process.argv[1], { timeout: 5000 });
     connection.exec("BEGIN IMMEDIATE");
     console.log("held");
     setTimeout(() => {
@@ -585,12 +587,15 @@ async function heldWriteLock(path, holdMs) {
   const child = spawn(process.execPath, ["-e", source, path, String(holdMs)], {
     stdio: ["ignore", "pipe", "inherit"],
   });
+  t.after(() => child.kill());
   const finished = new Promise((resolve, reject) => {
     child.once("error", reject);
     child.once("exit", (code) =>
       code === 0 ? resolve() : reject(new Error(`lock process exited ${code}`)),
     );
   });
+  // A failure before the lock is held is reported by the wait below.
+  finished.catch(() => {});
   await new Promise((resolve, reject) => {
     const deadline = setTimeout(
       () => reject(new Error("lock process deadline")),
@@ -600,7 +605,10 @@ async function heldWriteLock(path, holdMs) {
       clearTimeout(deadline);
       resolve();
     });
-    child.once("error", reject);
+    finished.catch((error) => {
+      clearTimeout(deadline);
+      reject(error);
+    });
   });
   // Wrapped, so that awaiting the lock does not also await its release.
   return { released: finished };
@@ -612,7 +620,7 @@ test("opening a new database waits within the busy timeout for another connectio
   const path = join(directory, "accounts.sqlite");
   new DatabaseSync(path).close();
   // The lock lasts 300 ms, well inside the 2000 ms busy timeout (D-112).
-  const { released } = await heldWriteLock(path, 300);
+  const { released } = await heldWriteLock(t, path, 300);
   const database = new AccountDatabase(path, { busyTimeoutMs: 2000 });
   try {
     await released;
@@ -636,16 +644,19 @@ test("opening a new database fails within the busy timeout when another connecti
   t.after(() => rm(directory, { recursive: true, force: true }));
   const path = join(directory, "accounts.sqlite");
   new DatabaseSync(path).close();
-  const { released } = await heldWriteLock(path, 3000);
+  const { released } = await heldWriteLock(t, path, 1000);
+  let opened;
+  t.after(() => opened?.close());
   const before = performance.now();
-  assert.throws(
-    () => new AccountDatabase(path, { busyTimeoutMs: 100 }),
-    /locked/,
-  );
+  assert.throws(() => {
+    opened = new AccountDatabase(path, { busyTimeoutMs: 100 });
+  }, /locked/);
   const waited = performance.now() - before;
   await released;
-  // The open waited for the lock rather than failing at once, and stopped at
-  // its bound instead of waiting the whole 3000 ms lock out.
+  // The open waited for the configured 100 ms rather than failing at once. It
+  // stops after one more attempt, which SQLite's busy handler bounds by the
+  // same 100 ms, so 500 ms leaves room while a bound other than the
+  // configured one, or none, waits the 1000 ms lock out.
   assert.ok(waited >= 100, `the open gave up after ${waited} ms`);
-  assert.ok(waited < 2000, `the open waited ${waited} ms`);
+  assert.ok(waited < 500, `the open waited ${waited} ms`);
 });
