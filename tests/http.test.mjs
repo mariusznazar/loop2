@@ -409,6 +409,18 @@ test(
         storedRow(f, id)?.account_id === account.id,
         "a supplied account changes no session",
       );
+    const ended = await f.send(`/api/logout?${foreign}`, {
+      method: "POST",
+      headers: { ...logoutHeaders, Cookie: own, "X-Account-Id": f.second.id },
+      body: "{}",
+    });
+    assert.equal(ended.status, 204, "logout ends this browser's session");
+    assert.equal(storedRow(f, "lookup-first"), undefined);
+    assert.ok(
+      storedRow(f, "lookup-second")?.account_id === f.second.id,
+      "an account named in the query or a header keeps its session",
+    );
+    assert.equal((await readAccount(f, other)).status, 200);
   },
 );
 
