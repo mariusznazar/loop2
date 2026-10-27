@@ -1294,7 +1294,7 @@ test(
     assert.equal(
       f.policy.inFlight,
       1,
-      "precondition: the fifth attempt's password work is still running",
+      "the disconnected attempt stays unsettled while its password work runs",
     );
     assertLimited(
       await login(f, "drop@example.test", password),
