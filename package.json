@@ -12,7 +12,7 @@
     "kitchen-sink": "node scripts/kitchen-sink.mjs",
     "start": "node dist/server/main.js",
     "dev": "npm run build && npm start",
-    "test": "npm run build && node --test tests/*.test.mjs \"tests/sim/*.test.mjs\" \"tests/view/*.test.mjs\" && python -B .the-way/gate/run_tests.py && python -B .the-way/elements/common/foundation_check.py"
+    "test": "python -B scripts/test.py"
   },
   "dependencies": {
     "argon2": "0.45.1",
@@ -21,6 +21,8 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@stryker-mutator/core": "10.0.0",
+    "@stryker-mutator/tap-runner": "10.0.0",
     "@types/express": "5.0.6",
     "@types/express-session": "1.19.0",
     "@types/node": "24.19.0",
@@ -33,6 +35,11 @@
     "typescript-eslint": "8.71.2"
   },
   "overrides": {
-    "@typescript/old": "npm:typescript@6.0.2"
+    "@typescript/old": "npm:typescript@6.0.2",
+    "@stryker-mutator/core": {
+      "typed-rest-client": {
+        "qs": "6.16.1"
+      }
+    }
   }
 }

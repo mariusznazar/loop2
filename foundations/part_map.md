@@ -74,7 +74,7 @@ The part is the account and save server: it serves the built game, handles the H
 
 ## build-tools
 
-The part installs dependencies, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, and builds and serves the browser view's kitchen-sink page on the developer's machine.
+The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, and builds and serves the browser view's kitchen-sink page on the developer's machine.
 
 - **Files:** /package.json
   /package-lock.json
@@ -86,6 +86,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   eslint.config.mjs
   prettier.config.mjs
   ruff.toml
+  stryker.config.json
   requirements-quality.in
   requirements-quality.txt
   .gitignore

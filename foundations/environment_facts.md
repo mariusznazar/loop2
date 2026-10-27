@@ -205,6 +205,18 @@ The test server host establishes an IPv4 TCP connection to `region1.v2.argotunne
 
 - **Source:** observed: `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844` reports Connected before timeout exit 124; the same check on port 7845 reports a connection timeout and exit 28; run 2026-10-26
 
+## stryker-simulation-execution
+
+StrykerJS 10.0.0 supports `node:test` through its TAP runner and runs `buildCommand` once during sandbox initialization on instrumented files whose type checking it disables with `// @ts-nocheck`.
+
+- **Source:** https://raw.githubusercontent.com/stryker-mutator/stryker-js/cb3bd8fe25d5215422c9b632357062d3a43fcf92/docs/tap-runner.md § introduction — "A plugin to use test files producing TAP-output in StrykerJS." · § introduction, tip — "the build-in node test runner"; read 2026-10-26 · https://raw.githubusercontent.com/stryker-mutator/stryker-js/cb3bd8fe25d5215422c9b632357062d3a43fcf92/docs/configuration.md § disableTypeChecks — "Stryker disables type checking by inserting // @ts-nocheck atop those files"; read 2026-10-26 · https://raw.githubusercontent.com/stryker-mutator/stryker-js/cb3bd8fe25d5215422c9b632357062d3a43fcf92/packages/core/src/sandbox/sandbox.ts § init — "await this.fillSandbox(); await this.runBuildCommand(); await this.symlinkNodeModulesIfNeeded();"; read 2026-10-26
+
+## typescript-nocheck-support
+
+TypeScript 7.0.2 accepts TypeScript files marked `// @ts-nocheck` and emits JavaScript despite type errors in their source.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/typescript-go/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/testdata/baselines/reference/submodule/conformance/tsNoCheckForTypescript.js § file.ts — "// @ts-nocheck" · § file.ts — "export const a = 1 + {};" · § file.js — "export const a = 1 + {};"; read 2026-10-26
+
 ## argon2-password-api
 
 Argon2 0.45.1 generates a salt when none is supplied, returns an encoded hash by default with the selected parameters, and verifies an encoded hash using its stored parameters.

@@ -70,7 +70,9 @@ Ikony zasobów pochodzą z game-icons.net (licencja CC BY 3.0). Ikony są zmieni
 
 W przeglądarce sprawdź, że `/main.js` ładuje się bez błędu, konsola nie zawiera błędów wykonania, a strona pokazuje panel „Program”, wysyłanie maga i stopkę z wzmiankami; po „Wyślij” — wiersz stanu z minutą rosnącą co sekundę oraz panel terenu z listą kafelków.
 
-Testy jednego katalogu, np. wdrożenia: `python -B .the-way/gate/run_tests.py tests/deploy`.
+Jeden plik testu: `npm test -- tests/sim/hex.test.mjs` albo `npm test -- tests/quality/test_audit_dependencies.py`. Bramka przyjmuje dokładnie jeden plik: Node uruchamia po budowaniu, Python bez budowania, bez pozostałych testów i kontroli fundamentu. Błędny plik lub przebieg bez wykonanego testu kończy się porażką. Przed requestem wymagany jest pełny `npm test` bez argumentów.
+
+Testy mutacyjne symulacji uruchamia recenzent na zmienionych plikach: `node node_modules/@stryker-mutator/core/bin/stryker.js run --mutate "src/browser/sim/hex.ts"`. Zakres, ocenę ocalałych zmian i warunek usunięcia narzędzia opisuje reguła Mutation testing w `guidelines/testing.md`. To osobna kontrola, poza zwykłym `npm test`.
 
 Nieznane `/api`, `/api/` i ścieżki pod `/api/` otrzymują 404 JSON. Pozostałe brakujące ścieżki otrzymują zwykłe 404. Serwer podaje wyłącznie `dist/public`.
 
