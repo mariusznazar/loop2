@@ -1,9 +1,20 @@
+import { backpackCount } from "./character.js";
+import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
+import { BALANCE } from "./data/balance.js";
+import { CAMPFIRE } from "./data/campfire.js";
+import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
+import { ITEMS } from "./data/items.js";
+import type { Revelation } from "./data/revelations.js";
 import { SKILLS, type SkillId } from "./data/skills.js";
+import { tileAt } from "./hex.js";
+import type { GameEvent } from "./run.js";
 import type {
   Action,
   Condition,
   GameState,
+  ItemId,
+  MapRun,
   Program,
   ProgramRule,
   Understanding,
@@ -118,4 +129,190 @@ export function editorRepertoire(state: GameState): Repertoire {
     : undefined;
   const archetype = ARCHETYPES[runner?.archetypeId ?? CREATED_ARCHETYPE];
   return repertoireOf(state.understanding, archetype.predispositions);
+}
+
+/** Whether two revealing events are the same event: the same kind, naming the same item. */
+function sameRevelation(a: Revelation, b: Revelation): boolean {
+  return (
+    a.kind === b.kind &&
+    ("item" in a ? "item" in b && a.item === b.item : !("item" in b))
+  );
+}
+
+/** The first event of `kind` among the events of a minute. */
+function eventOf<K extends GameEvent["kind"]>(
+  events: readonly GameEvent[],
+  kind: K,
+): Extract<GameEvent, { kind: K }> | undefined {
+  return events.find(
+    (event): event is Extract<GameEvent, { kind: K }> => event.kind === kind,
+  );
+}
+
+/**
+ * The revealing events that happened in a game minute, read from the map run before the minute and
+ * after it up to the pick, and from the events of that minute: the chill from the body after its
+ * step; a finished exploration from its revealed tile and the items that tile holds; a gathering
+ * from the pieces that entered the backpack; a crafting from the campfire put on the tile; a
+ * lighting from the pieces it used. The effect of an action takes hold only where the character
+ * lives, so in the minute of death only the body's event happens.
+ */
+function happened(
+  before: MapRun,
+  after: MapRun,
+  events: readonly GameEvent[],
+): Revelation[] {
+  const found: Revelation[] = [];
+  if (after.body.temperature < BALANCE.body.chilledBelow)
+    found.push({ kind: "chilled" });
+  if (after.death) return found;
+
+  const finished = eventOf(events, "activityFinished");
+  if (finished?.activity.kind !== "rule") return found;
+  switch (finished.activity.action.kind) {
+    case "explore": {
+      found.push({ kind: "explored" });
+      const revealed = eventOf(events, "tileRevealed");
+      const tile = revealed && tileAt(after.tiles, revealed.at);
+      for (const item of Object.keys(ITEMS) as ItemId[]) {
+        if (tile && Object.hasOwn(tile.stock, item))
+          found.push({ kind: "tileHolds", item });
+      }
+      break;
+    }
+    case "gather":
+      for (const item of Object.keys(ITEMS) as ItemId[]) {
+        if (after.character.backpack[item] > before.character.backpack[item])
+          found.push({ kind: "gathered", item });
+      }
+      break;
+    case "craftCampfire":
+      if (after.campfires.length > before.campfires.length)
+        found.push({ kind: "campfireCrafted" });
+      break;
+    case "lightCampfire":
+    case "lightItem":
+      if (
+        backpackCount(after.character.backpack) <
+        backpackCount(before.character.backpack)
+      )
+        found.push({ kind: "lit" });
+      break;
+    default:
+      break;
+  }
+  return found;
+}
+
+/** What a game minute revealed, and the Understanding with it. */
+export type Discovered = {
+  /** The Understanding after the minute. */
+  understanding: Understanding;
+  /** What is new to the Understanding, each list in the order of its data. */
+  revealed: Understanding;
+  /** Whether the chill revealed something new: the first chill. */
+  chill: boolean;
+};
+
+/** What the revealing events `happening` reveal that the Understanding does not hold yet. */
+function newlyRevealed(
+  understanding: Understanding,
+  happening: readonly Revelation[],
+): Understanding {
+  const revealing = (revealedBy: Revelation | undefined) =>
+    revealedBy !== undefined &&
+    happening.some((event) => sameRevelation(event, revealedBy));
+  const items: Understanding["items"] = (Object.keys(ITEMS) as ItemId[]).filter(
+    (item) =>
+      !understanding.items.includes(item) && revealing(ITEMS[item].revealedBy),
+  );
+  if (
+    !understanding.items.includes(CAMPFIRE.id) &&
+    revealing(CAMPFIRE.revealedBy)
+  )
+    items.push(CAMPFIRE.id);
+  return {
+    actions: (Object.keys(ACTIONS) as Action["kind"][]).filter(
+      (kind) =>
+        !understanding.actions.includes(kind) &&
+        revealing((ACTIONS[kind] as ActionDef).revealedBy),
+    ),
+    conditions: (Object.keys(CONDITIONS) as Condition["kind"][]).filter(
+      (kind) =>
+        !understanding.conditions.includes(kind) &&
+        revealing((CONDITIONS[kind] as ConditionDef).revealedBy),
+    ),
+    items,
+  };
+}
+
+function isEmpty(revealed: Understanding): boolean {
+  return (
+    revealed.actions.length +
+      revealed.conditions.length +
+      revealed.items.length ===
+    0
+  );
+}
+
+/**
+ * What a game minute up to the pick reveals, from the map run before it, the map run after it and
+ * its events, read against the revealing events of the data. What the Understanding already holds
+ * reveals nothing; null where nothing is new. Inputs are not changed.
+ */
+export function discover(
+  understanding: Understanding,
+  before: MapRun,
+  after: MapRun,
+  events: readonly GameEvent[],
+): Discovered | null {
+  const happening = happened(before, after, events);
+  const revealed = newlyRevealed(understanding, happening);
+  if (isEmpty(revealed)) return null;
+  return {
+    understanding: {
+      actions: [...understanding.actions, ...revealed.actions],
+      conditions: [...understanding.conditions, ...revealed.conditions],
+      items: [...understanding.items, ...revealed.items],
+    },
+    revealed,
+    chill: !isEmpty(
+      newlyRevealed(
+        understanding,
+        happening.filter((event) => event.kind === "chilled"),
+      ),
+    ),
+  };
+}
+
+/**
+ * The program with the rule "Zawsze → Eksploruj" appended to its first group, with the next rule
+ * identity; where it has no group, with a group "Program" under "Zawsze" made for it, with the
+ * next group identity. Inputs are not changed.
+ */
+export function withFirstChillRule(program: Program): Program {
+  const rule: ProgramRule = {
+    id: program.nextRuleId,
+    condition: { kind: "always" },
+    action: { kind: "explore" },
+  };
+  const [first, ...rest] = program.groups;
+  if (first)
+    return {
+      ...program,
+      groups: [{ ...first, rules: [...first.rules, rule] }, ...rest],
+      nextRuleId: program.nextRuleId + 1,
+    };
+  return {
+    groups: [
+      {
+        id: program.nextGroupId,
+        name: "Program",
+        condition: { kind: "always" },
+        rules: [rule],
+      },
+    ],
+    nextGroupId: program.nextGroupId + 1,
+    nextRuleId: program.nextRuleId + 1,
+  };
 }

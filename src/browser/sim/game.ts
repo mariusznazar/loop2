@@ -1,16 +1,23 @@
 import { newTraits } from "./character.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
+  discover,
   newUnderstanding,
   programInRepertoire,
   repertoireOf,
+  withFirstChillRule,
 } from "./understanding.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
 import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import { conditionNumber, onStep } from "./program.js";
 import { mixSeed } from "./random.js";
-import { newMapRun, stepMinute, type GameEvent } from "./run.js";
+import {
+  minuteBeforePick,
+  newMapRun,
+  pickActivity,
+  type GameEvent,
+} from "./run.js";
 import type {
   Action,
   Character,
@@ -492,8 +499,11 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
 }
 
 /**
- * A span of game minutes: the minute step repeated, with the current program; also while paused.
- * A span that reaches the character's death stops there; a map run ended in death changes nothing.
+ * A span of game minutes: the minute of D-71 repeated, also while paused. A discovery takes hold
+ * between the minute's last effect and the pick: what the minute revealed enters the Understanding,
+ * at the first chill the rule "Zawsze → Eksploruj" enters the program, and the pick that ends the
+ * minute is made from the program and the Understanding as they then stand. A span that reaches
+ * the character's death stops there; a map run ended in death changes nothing.
  */
 export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (
@@ -508,17 +518,50 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (!state.run || state.run.death || minutes === 0)
     return { state, events: [] };
   const map = mapOf(state.run.mapId);
-  const program = programOf(state, state.run.character.id);
   const events: GameEvent[] = [];
+  let current = state;
   let run = state.run;
+  let program = programOf(current, run.character.id);
   for (let minute = 0; minute < minutes; minute += 1) {
-    const stepped = stepMinute(run, map, program);
-    run = stepped.run;
+    const stepped = minuteBeforePick(run, map);
     events.push(...stepped.events);
+    const found = discover(
+      current.understanding,
+      run,
+      stepped.run,
+      stepped.events,
+    );
+    if (found) {
+      const written = found.chill ? withFirstChillRule(current.program) : null;
+      current = {
+        ...current,
+        understanding: found.understanding,
+        ...(written && {
+          program: written,
+          ruleCounts: reconcileCounts(current, written),
+        }),
+      };
+      program = programOf(current, run.character.id);
+      events.push({
+        kind: "discovered",
+        minute: stepped.run.minute,
+        ...found.revealed,
+      });
+    }
+    run = stepped.run;
+    if (stepped.picks) {
+      const picked = pickActivity(run, map, program);
+      run = picked.run;
+      events.push(...picked.events);
+    }
     if (run.death) break;
   }
   return {
-    state: { ...state, run, ruleCounts: countStarts(state.ruleCounts, events) },
+    state: {
+      ...current,
+      run,
+      ruleCounts: countStarts(current.ruleCounts, events),
+    },
     events,
   };
 }
