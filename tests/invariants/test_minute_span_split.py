@@ -1,6 +1,7 @@
 """Invariant minute-span-split: A map run advanced by a span of game minutes reaches the same game
 state, with the same events in the same order, at every game minute, however the span is split
-into calls of the simulation, up to and including the character's death.
+into calls of the simulation, up to and including the game minute of the character's death or of a
+discovery.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
@@ -9,7 +10,8 @@ script this check writes to a temporary directory: `newGame`, `setProgram`, `cre
 the script records the JSON of the whole game state and the events that call gave.
 The new game of each sent character is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
-program stay what the check drives.
+program stay what the check drives and no game minute discovers anything; the scenario DISCOVERS
+alone starts from `newGame()`, which knows nothing.
 
 Reading of the sentence:
 - a span of game minutes: the SPAN minutes after a send to the map Las (`forest`) of a character
@@ -25,14 +27,22 @@ Reading of the sentence:
   carry belongs to the split, not to a game minute, so for such a split the state is compared less
   `realMsCarry`; everything else is compared whole;
 - up to and including death: in the scenarios where the character dies, the spans reach past the
-  death minute; every call from there on must give the state of the death minute and no events.
+  death minute; every call from there on must give the state of the death minute and no events;
+- up to and including the game minute of a discovery: in the scenario DISCOVERS, whose first
+  discovery is the first chill, a call whose span reaches past that game minute ends in it, and the
+  comparison covers the game minutes up to and including it; each split, called with spans or real
+  time that reach past it, must have ended a call in that game minute, with the reference's state
+  and events there (the game minute of the first chill is 84: the task "odkrywanie", Context, the
+  vault file `odkrywanie_loop2.md`, line 99, D-82).
 
 Scenarios (the program ACCEPTANCE is the one of `tests/sim/acceptance.test.mjs`):
 - ALIVE: ACCEPTANCE sent at ALIVE_REAL_MS, 480 game minutes; it gathers, eats, builds, lights and
   feeds a campfire and stays alive;
 - DIES_IDLE: the empty program sent at ALIVE_REAL_MS, 300 game minutes; it dies in minute 243;
 - DIES_BUSY: ACCEPTANCE sent at T, 400 game minutes; it gathers, eats and builds a campfire and
-  dies before minute 400.
+  dies before minute 400;
+- DISCOVERS: the program of a new game (one empty group) sent at ALIVE_REAL_MS from `newGame()`, a
+  game that knows nothing, 100 game minutes; its first chill, in game minute 84, is a discovery.
 
 Splits, written out below: one call for the whole span; calls of 2 minutes, 1 then 2 minutes, 3,
 7 and 60 minutes; calls of growing sizes 1, 2, 3, 5, 8, ...; passRealTime in whole seconds of
@@ -43,7 +53,9 @@ state, an event left out, two events swapped, an event added and a changed carry
 is compared; the splits together end a call at every game minute of each span; ALIVE ends a
 gathering, an eating, a crafting, a lighting and a feeding of a campfire and is alive at its last
 minute; DIES_IDLE dies in minute 243 and DIES_BUSY before its span ends, after a gathering, an
-eating and a crafting.
+eating and a crafting; in DISCOVERS the reference's state in game minute 84 is paused and holds a
+discovery, every split ends a call there, and one call of the whole span, which is 100 minutes,
+reaches game minute 84 and no further.
 
 Does NOT cover: maps, archetypes, programs and seeds other than these; a program changed, a
 pause or a restart within the span; the browser view's clock.
@@ -122,6 +134,9 @@ SCENARIOS = {
     "DIES_BUSY": (ACCEPTANCE, T, 400),
 }
 IDLE_DEATH_MINUTE = 243
+# The scenario of a new game that knows nothing: (real time of the send, span in game minutes, the
+# game minute of its first discovery, the first chill).
+DISCOVERS = ("DISCOVERS", ALIVE_REAL_MS, 100, 84)
 
 REFERENCE = "one minute a call"
 
@@ -182,9 +197,9 @@ const [gamePath, runsPath, outPath] = process.argv.slice(2);
 const game = await import(pathToFileURL(gamePath).href);
 const runs = JSON.parse(readFileSync(runsPath, 'utf8'));
 const out = {};
-for (const [key, { program, sent, realMs, calls }] of Object.entries(runs)) {
-  let state = await newKnowingGame(game, gamePath);
-  state = game.setProgram(state, program).state;
+for (const [key, { program, sent, realMs, calls, bare }] of Object.entries(runs)) {
+  let state = bare ? game.newGame() : await newKnowingGame(game, gamePath);
+  if (program) state = game.setProgram(state, program).state;
   state = game.createCharacter(state, 'Ala').state;
   state = game.send(state, sent, realMs).state;
   const records = [{ state: JSON.parse(JSON.stringify(state)), events: [] }];
@@ -222,6 +237,9 @@ def drive():
         for split, (make, _carry) in SPLITS.items():
             runs[run_key(scenario, split)] = {"program": program, "sent": SENT,
                                               "realMs": real_ms, "calls": make(span)}
+    for split, (make, _carry) in SPLITS.items():
+        runs[run_key(DISCOVERS[0], split)] = {"program": None, "sent": SENT, "bare": True,
+                                              "realMs": DISCOVERS[1], "calls": make(DISCOVERS[2])}
     directory = tempfile.mkdtemp(prefix="loop2-minute-span-split-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -299,6 +317,15 @@ def findings(reference, split, compare_carry):
     return found
 
 
+def up_to_discovery(run_records):
+    """The records up to and including the first one that reaches the game minute of the first
+    discovery or goes past it."""
+    for index, record in enumerate(run_records):
+        if minute(record) >= DISCOVERS[3]:
+            return run_records[:index + 1]
+    return run_records
+
+
 def finished_kinds(run_records):
     return {e["activity"]["action"]["kind"] for r in run_records for e in r["events"]
             if e["kind"] == "activityFinished" and e["activity"]["kind"] == "rule"}
@@ -369,6 +396,35 @@ class MinuteSpanSplit(unittest.TestCase):
             self.assertGreater(last, 200, f"{scenario} passes too few game minutes")
             if scenario == "ALIVE":
                 self.assertEqual(last, span)
+
+    def test_every_split_ends_a_call_in_the_minute_of_the_discovery_with_the_reference_state(self):
+        # invariant: minute-span-split
+        result = records()
+        reference = up_to_discovery(result[run_key(DISCOVERS[0], REFERENCE)])
+        for split, (_make, carry) in SPLITS.items():
+            if split == REFERENCE:
+                continue
+            with self.subTest(split=split):
+                covered = up_to_discovery(result[run_key(DISCOVERS[0], split)])
+                self.assertEqual(minute(covered[-1]), DISCOVERS[3],
+                                 "no call ended in the game minute of the discovery")
+                self.assertEqual(findings(reference, covered, carry), [])
+
+    def test_control_the_discovery_scenario_stops_at_a_discovery(self):
+        # invariant: minute-span-split
+        result = records()
+        reference = up_to_discovery(result[run_key(DISCOVERS[0], REFERENCE)])
+        self.assertEqual(minute(reference[-1]), DISCOVERS[3])
+        stopped = reference[-1]["state"]
+        self.assertTrue(stopped["paused"], "the game minute of the discovery leaves no pause")
+        self.assertIsNotNone(stopped["discovery"], "the stop holds no discovery")
+        self.assertEqual([e["kind"] for e in reference[-1]["events"]
+                          if e["kind"] == "discovered"], ["discovered"])
+        whole = result[run_key(DISCOVERS[0], "one call")]
+        self.assertEqual(len(whole), 2)
+        self.assertEqual(minute(whole[-1]), DISCOVERS[3],
+                         "one call of the whole span went past the game minute of the discovery")
+        self.assertLess(DISCOVERS[3], DISCOVERS[2])
 
     def test_control_the_comparison_flags_breaks(self):
         # invariant: minute-span-split

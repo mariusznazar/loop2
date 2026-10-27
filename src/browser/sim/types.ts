@@ -189,6 +189,11 @@ export type GameState = {
   /** Seed of the latest send; INITIAL_SEED at start. */
   lastSeed: number;
   paused: boolean;
+  /**
+   * What the last game minute of a discovery revealed, set together with the pause that minute
+   * leaves, and null once the player moves on (resume, restart, end, send); null in a new game.
+   */
+  discovery: Understanding | null;
   /** Scaled real ms not yet turned into a game minute, 0 <= x < 1000. */
   realMsCarry: number;
 };

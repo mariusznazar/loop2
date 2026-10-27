@@ -12,8 +12,10 @@ import {
   createCharacter,
   end,
   newGame,
+  passRealTime,
   restart,
   send,
+  setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { sameHex, tileAt } from "../../dist/public/sim/hex.js";
@@ -83,6 +85,17 @@ function gatherRandomOf(hit) {
   }
 }
 
+// The span `minutes` called again after each stop at a discovery, until the character dies: the
+// stops are the game's, so a test that wants the minutes past them goes on as the player does.
+function toDeath(state) {
+  let current = state;
+  for (let calls = 0; !current.run.death; calls += 1) {
+    assert.ok(calls < 100, "the character dies");
+    current = advanceMinutes(current, 3000).state;
+  }
+  return current;
+}
+
 function explorationRule(id) {
   return { id, condition: { kind: "always" }, action: { kind: "explore" } };
 }
@@ -139,14 +152,24 @@ test("a new game sent with its one empty group waits until the minute of the fir
 });
 
 test("the same span of minutes, however split, reaches the same game state with the same events through the first chill", () => {
-  const whole = advanceMinutes(sentNew(), 130);
-  const first = advanceMinutes(sentNew(), 84);
-  const second = advanceMinutes(first.state, 46);
-  assert.deepEqual(second.state, whole.state);
-  assert.deepEqual([...first.events, ...second.events], whole.events);
+  // One minute a call, up to and including the minute of the first finished exploration, 104.
+  let state = sentNew();
+  const reference = [];
+  while (state.run.minute < 104) {
+    const result = advanceMinutes(state, 1);
+    state = result.state;
+    reference.push(...result.events);
+  }
+  // A span of 100 minutes called twice stops at the first chill, 84, and goes on to 104.
+  const first = advanceMinutes(sentNew(), 100);
+  const second = advanceMinutes(first.state, 100);
+  assert.equal(first.state.run.minute, 84);
+  assert.equal(second.state.run.minute, 104);
+  assert.deepEqual(second.state, state);
+  assert.deepEqual([...first.events, ...second.events], reference);
   // The first chill at minute 84 and the first finished exploration at minute 104.
   assert.deepEqual(
-    discoveries(whole.events).map((event) => event.minute),
+    discoveries(reference).map((event) => event.minute),
     [84, 104],
   );
 });
@@ -224,7 +247,7 @@ test("a chill that reveals nothing new writes no rule", () => {
 });
 
 test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, Zapas poniżej and the items of the tile, read from the tile", () => {
-  const explored = advanceMinutes(sentNew(), 104);
+  const explored = advanceMinutes(advanceMinutes(sentNew(), 84).state, 20);
   const run = explored.state.run;
   assert.equal(run.minute, 104);
   const tile = tileAt(run.tiles, run.character.at);
@@ -234,7 +257,7 @@ test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, 
     held.length > 0,
     "precondition: the explored tile holds a resource",
   );
-  assert.deepEqual(discoveries(explored.events).slice(1), [
+  assert.deepEqual(discoveries(explored.events), [
     {
       kind: "discovered",
       minute: 104,
@@ -458,7 +481,7 @@ test("the Understanding stands after death, Restart and Zakończ, and stands for
   state = createCharacter(state, "Ala").state;
   state = createCharacter(state, "Bartek").state;
   state = send(state, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
-  const dead = advanceMinutes(state, 3000).state;
+  const dead = toDeath(state);
   assert.ok(dead.run.death, "the character died");
   const tile = tileAt(dead.run.tiles, dead.run.character.at);
   const held = RESOURCES.filter((item) => Object.hasOwn(tile.stock, item));
@@ -552,10 +575,109 @@ test("a revealing event reveals what of its row is still new, though its actions
 });
 
 test("a map run ended in death passes no further minute at the level of the run", () => {
-  const dead = advanceMinutes(sentNew(), 3000).state;
+  const dead = toDeath(sentNew());
   assert.ok(dead.run.death, "the character died");
   assert.deepEqual(stepMinute(dead.run, MAPS[MAP_ID], dead.program), {
     run: dead.run,
     events: [],
   });
+});
+
+// Slice 10 (O2, O3, O4, O5; task To do 5): game time stops after the whole minute of a discovery,
+// in the pause of "Pauza", and the game state holds what that minute revealed until the player
+// moves on. Minute 84 is the first chill (task Context, line 99); the first exploration ends at
+// minute 104.
+const CHILL_REVEALED = {
+  actions: ["explore", "wander"],
+  conditions: ["temperatureBelow"],
+  items: [],
+};
+
+test("a span of minutes of a new game sent, given 100, ends at the minute of the first chill, paused, holding what the chill revealed, and called again goes on", () => {
+  const first = advanceMinutes(sentNew(), 100);
+  assert.equal(first.state.run.minute, 84);
+  assert.equal(first.state.paused, true);
+  assert.deepEqual(first.state.discovery, CHILL_REVEALED);
+  assert.deepEqual(
+    discoveries(first.events).map((event) => event.minute),
+    [84],
+  );
+  // The span goes on from there, also while paused, and ends at the next discovery.
+  const second = advanceMinutes(first.state, 100);
+  assert.equal(second.state.run.minute, 104);
+  assert.equal(second.state.paused, true);
+  assert.deepEqual(
+    discoveries(second.events).map((event) => event.minute),
+    [104],
+  );
+  assert.deepEqual(second.state.discovery, {
+    actions: discoveries(second.events)[0].actions,
+    conditions: discoveries(second.events)[0].conditions,
+    items: discoveries(second.events)[0].items,
+  });
+  assert.ok(second.state.discovery.actions.includes("walkTo"));
+});
+
+test("a span that meets no discovery leaves the game unpaused and holding no discovery", () => {
+  const state = advanceMinutes(sentNew(), 83).state;
+  assert.equal(state.paused, false);
+  assert.equal(state.discovery, null);
+});
+
+test("real time passed across the first chill ends at minute 84 paused with no carry, moves nothing more until the player goes on, and going on clears the discovery", () => {
+  for (const realMs of [84500, 100000]) {
+    const stopped = passRealTime(sentNew(), realMs);
+    assert.equal(stopped.state.run.minute, 84, `real time ${realMs}`);
+    assert.equal(stopped.state.paused, true);
+    assert.equal(stopped.state.realMsCarry, 0);
+    assert.deepEqual(stopped.state.discovery, CHILL_REVEALED);
+    const later = passRealTime(stopped.state, 5000);
+    assert.deepEqual(later.state, stopped.state);
+    assert.deepEqual(later.events, []);
+    const resumed = setPaused(stopped.state, false).state;
+    assert.equal(resumed.paused, false);
+    assert.equal(resumed.discovery, null);
+    assert.equal(resumed.run.minute, 84);
+    assert.equal(passRealTime(resumed, 1000).state.run.minute, 85);
+  }
+});
+
+test("a pause the player sets keeps what the last minute revealed, and going on clears it", () => {
+  const stopped = advanceMinutes(sentNew(), 100).state;
+  const pausing = setPaused(stopped, true);
+  const held = pausing.state;
+  assert.deepEqual(held.discovery, CHILL_REVEALED);
+  assert.deepEqual(pausing.events, []);
+  const resuming = setPaused(held, false);
+  assert.equal(resuming.state.discovery, null);
+  assert.deepEqual(resuming.events, []);
+});
+
+test("restart, end and send clear what the last minute revealed, and a new game holds none", () => {
+  assert.equal(newGame().discovery, null);
+  const stopped = advanceMinutes(sentNew(), 100).state;
+  assert.deepEqual(stopped.discovery, CHILL_REVEALED);
+  const restarted = restart(stopped).state;
+  assert.equal(restarted.discovery, null);
+  assert.equal(restarted.paused, false);
+  const ended = end(stopped).state;
+  assert.equal(ended.discovery, null);
+  assert.equal(ended.paused, false);
+  const next = send(ended, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
+  assert.equal(next.discovery, null);
+});
+
+test("real time passed over a minute that gave events but no discovery keeps its carry and does not pause", () => {
+  const state = prepared(NOTHING, (run) => ({
+    tiles: onStandingTile(run, { revealed: true, stock: { stick: 5 } }),
+    gatherRandom: gatherRandomOf(false),
+    current: ending(run, { kind: "gather", resource: "stick" }),
+  }));
+  const result = passRealTime(state, 1500);
+  assert.ok(result.events.length > 0, "precondition: the minute gave events");
+  assert.deepEqual(discoveries(result.events), []);
+  assert.equal(result.state.run.minute, 1);
+  assert.equal(result.state.realMsCarry, 500);
+  assert.equal(result.state.paused, false);
+  assert.equal(result.state.discovery, null);
 });

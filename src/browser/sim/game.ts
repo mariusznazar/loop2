@@ -31,6 +31,7 @@ import type {
   ProgramRule,
   ResourceId,
   Traits,
+  Understanding,
 } from "./types.js";
 
 export type { GameEvent };
@@ -334,6 +335,7 @@ function startRun(
       ruleCounts: countStarts(zeros, started.events),
       run: started.run,
       paused: false,
+      discovery: null,
       realMsCarry: 0,
     },
     events: [{ kind: "mapRunStarted", seed }, ...started.events],
@@ -358,6 +360,7 @@ export function newGame(): GameState {
     run: null,
     lastSeed: INITIAL_SEED,
     paused: false,
+    discovery: null,
     realMsCarry: 0,
   };
 }
@@ -462,22 +465,35 @@ export function restart(state: GameState): GameResult {
 export function end(state: GameState): GameResult {
   requireRun(state, "end");
   return {
-    state: { ...state, run: null, paused: false, realMsCarry: 0 },
+    state: {
+      ...state,
+      run: null,
+      paused: false,
+      discovery: null,
+      realMsCarry: 0,
+    },
     events: [{ kind: "mapRunEnded" }],
   };
 }
 
-/** Pauses or resumes the map run in progress; without one, nothing changes. */
+/**
+ * Pauses or resumes the map run in progress; without one, nothing changes. Resuming is the player
+ * moving on, so what the last game minute of a discovery revealed is cleared with it.
+ */
 export function setPaused(state: GameState, paused: boolean): GameResult {
   if (!state.run) return { state, events: [] };
-  return { state: { ...state, paused }, events: [] };
+  return {
+    state: { ...state, paused, ...(!paused && { discovery: null }) },
+    events: [],
+  };
 }
 
 /**
  * The only way real time enters the simulation. Ignored without a map run, with one ended in
  * death, while paused, or when realMs is not a finite number above zero; otherwise every whole
  * scaled second becomes a game minute and the rest carries over to the next call. Where the
- * character dies, time stops there and nothing carries over.
+ * character dies, time stops there and nothing carries over; the same where the span ends at a
+ * discovery, which leaves the game paused.
  */
 export function passRealTime(state: GameState, realMs: number): GameResult {
   if (
@@ -494,7 +510,10 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
   const minutes = Math.floor(total / MS_PER_SECOND);
   const carried = { ...state, realMsCarry: total - minutes * MS_PER_SECOND };
   const result = advanceMinutes(carried, minutes);
-  if (!result.state.run?.death) return result;
+  const stopped =
+    result.state.run?.death ||
+    result.events.some((event) => event.kind === "discovered");
+  if (!stopped) return result;
   return { state: { ...result.state, realMsCarry: 0 }, events: result.events };
 }
 
@@ -503,7 +522,9 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * between the minute's last effect and the pick: what the minute revealed enters the Understanding,
  * at the first chill the rule "Zawsze → Eksploruj" enters the program, and the pick that ends the
  * minute is made from the program and the Understanding as they then stand. A span that reaches
- * the character's death stops there; a map run ended in death changes nothing.
+ * the character's death, or the whole minute of a discovery, stops there; a stop at a discovery
+ * leaves the game paused, holding what the minute revealed. A map run ended in death changes
+ * nothing.
  */
 export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (
@@ -522,6 +543,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   let current = state;
   let run = state.run;
   let program = programOf(current, run.character.id);
+  let revealed: Understanding | null = null;
   for (let minute = 0; minute < minutes; minute += 1) {
     const stepped = minuteBeforePick(run, map);
     events.push(...stepped.events);
@@ -542,6 +564,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         }),
       };
       program = programOf(current, run.character.id);
+      revealed = found.revealed;
       events.push({
         kind: "discovered",
         minute: stepped.run.minute,
@@ -554,11 +577,12 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
       run = picked.run;
       events.push(...picked.events);
     }
-    if (run.death) break;
+    if (run.death || revealed) break;
   }
   return {
     state: {
       ...current,
+      ...(revealed && { paused: true, discovery: revealed }),
       run,
       ruleCounts: countStarts(current.ruleCounts, events),
     },

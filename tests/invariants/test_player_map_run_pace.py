@@ -1,15 +1,20 @@
 """Invariant player-map-run-pace: Real time passed to the simulation for a map run the player
 starts moves the map run on, until it ends, by one game minute for each whole real second passed
-while it is not paused, and by no game minute for real time passed while it is paused.
+while it is not paused, and by no game minute for real time passed while it is paused, and a game
+minute in which something is discovered leaves the map run paused, the real time passed in the
+same call beyond that game minute moving it on by no game minute.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send`, `passRealTime`, `setPaused`, `restart` and `end`, each returning `{state, events}`. After
-every input the script records the map run's game minute and whether the game is paused.
+every input the script records the map run's game minute, whether the game is paused, the real
+time carried over (`realMsCarry`) and whether the game holds a discovery (`discovery` not null).
 The new game of each sent character is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
-program stay what the check drives.
+program stay what the check drives and no game minute discovers anything; the discovery scenario
+alone starts from the new game `newGame()` gives, which knows nothing, and its program of one
+empty group.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
@@ -21,6 +26,13 @@ Reading of the sentence:
   passed to an earlier map run counts for none of a later one;
 - by no game minute while paused: real time passed between `setPaused(true)` and
   `setPaused(false)` leaves the minute where it is, and does not count towards the next second;
+- a game minute in which something is discovered: the first chill of a new game, in game minute 84
+  (the task "odkrywanie", Context: minute 83 at 35,008 degrees, minute 84 at 34,984), and the
+  first finished exploration after it, in game minute 104;
+- leaves the map run paused, the real time beyond that game minute moving it on by no game minute:
+  real time that would carry the map run past the game minute of a discovery ends it in that game
+  minute, paused, with no real time carried over; further real time passed moves it no further;
+  after `setPaused(false)` it moves on by one game minute for each whole real second again;
 - until it ends: the map runs below pass at most 212 game minutes, and none ends within them; a
   map run ended in the character's death is the invariant `minute-span-split`'s.
 
@@ -29,7 +41,9 @@ The expected minute after each input is written out beside it below.
 Control, so the check can fail: the same inputs without the pause move the map run on by the
 real time that the paused inputs would have brought (minute 9 to 10, 70 and 71), and whether the
 game is paused is checked after each `setPaused`, so the paused part of the scenario is not
-vacuous.
+vacuous; the same real time passed to a game that knows everything is not stopped by any game
+minute (minute 184, not paused, the part of a second carried over), so the stop of the
+discovery scenario is the discovery's.
 
 Does NOT cover: real time passed with no map run; zero, negative or non-finite real time; inputs
 whose sum is not exact in binary floating point; the view's clock.
@@ -117,6 +131,35 @@ CONTROL = PREFIX + (
     (passed(500), 71, False),
 )
 
+# The discovery scenario: (input, the map run's game minute after it, whether the game is paused
+# after it, the real time carried over after it, whether the game holds a discovery). The new game
+# is the one that knows nothing, sent with its program of one empty group: its first chill is in
+# game minute 84 (the task "odkrywanie", Context, line 99 of the vault file `odkrywanie_loop2.md`,
+# D-82) and writes the rule that makes it explore, whose exploration ends, a discovery too, in
+# game minute 104.
+BARE_START = [["newBareGame"], CREATE, ["send", SENT, T]]
+DISCOVERY_SCENARIO = (
+    (passed(83500), 83, False, 500, False),
+    (passed(1000), 84, True, 0, True),
+    (passed(5000), 84, True, 0, True),
+    (passed(60000), 84, True, 0, True),
+    (RESUME, 84, False, 0, False),
+    (passed(500), 84, False, 500, False),
+    (passed(600), 85, False, 100, False),
+    (passed(100000), 104, True, 0, True),
+    (passed(3000), 104, True, 0, True),
+    (PAUSE, 104, True, 0, True),
+    (RESUME, 104, False, 0, False),
+    (passed(2000), 106, False, 0, False),
+    (["restart"], 0, False, 0, False),
+)
+# The same real time passed to a game that knows everything: no stop, the whole seconds counted.
+KNOWING_CONTROL = (
+    (passed(83500), 83, False, 500, False),
+    (passed(1000), 84, False, 500, False),
+    (passed(100000), 184, False, 500, False),
+)
+
 DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -127,8 +170,11 @@ const steps = JSON.parse(readFileSync(stepsPath, 'utf8'));
 let state;
 const records = [];
 for (const [name, ...args] of steps) {
-  state = name === 'newGame' ? await newKnowingGame(game, gamePath) : game[name](state, ...args).state;
-  records.push({ step: name, minute: state.run ? state.run.minute : null, paused: state.paused });
+  if (name === 'newGame') state = await newKnowingGame(game, gamePath);
+  else if (name === 'newBareGame') state = game.newGame();
+  else state = game[name](state, ...args).state;
+  records.push({ step: name, minute: state.run ? state.run.minute : null, paused: state.paused,
+                carry: state.realMsCarry, discovery: state.discovery !== null });
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
@@ -187,6 +233,25 @@ class PlayerMapRunPace(unittest.TestCase):
     def test_control_the_paused_inputs_would_move_an_unpaused_run(self):
         # invariant: player-map-run-pace
         self.run_and_compare(CONTROL)
+
+    def run_and_compare_discovery(self, start, table):
+        records = drive(start + [list(step) for step, *_rest in table])
+        self.assertEqual(len(records), len(start) + len(table))
+        for index, (step, minute, paused, carry, discovery) in enumerate(table):
+            record = records[len(start) + index]
+            where = f"input {index}, {json.dumps(step)}"
+            self.assertEqual(record["minute"], minute, f"game minute after {where}")
+            self.assertEqual(record["paused"], paused, f"paused after {where}")
+            self.assertEqual(record["carry"], carry, f"real time carried over after {where}")
+            self.assertEqual(record["discovery"], discovery, f"discovery held after {where}")
+
+    def test_a_game_minute_of_discovery_stops_the_run_and_drops_the_real_time_beyond_it(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(BARE_START, DISCOVERY_SCENARIO)
+
+    def test_control_a_game_that_knows_everything_is_not_stopped(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(START[:3] + [["send", SENT, T]], KNOWING_CONTROL)
 
 
 if __name__ == "__main__":
