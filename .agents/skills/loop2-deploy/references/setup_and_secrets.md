@@ -125,16 +125,24 @@ logged or shared session.
 
 **Creating the file** (once, before the first deployment of a commit with accounts; without
 it that deployment ends with exit 8). The sequence does nothing if the file already exists,
-since replacing it signs every player out:
+since replacing it signs every player out. Each block below runs in a subshell, so the
+`umask` does not stay set in your shell, and each step depends on the one before it, so the
+block can be pasted whole: when a check fails, nothing after it runs and the file is not
+changed.
 
 ```sh
-test ! -e /etc/loop2/session-secrets && umask 077 &&
+f=/etc/loop2/session-secrets
+( umask 077
+  test ! -e "$f" &&
+  key=$(head -c 32 /dev/urandom | base64 -w0 | tr '+/' '-_' | tr -d '=') &&
+  test "${#key}" -eq 43 &&
   tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX) &&
-  printf '["%s"]\n' "$(head -c 32 /dev/urandom | base64 -w0 | tr '+/' '-_' | tr -d '=')" > "$tmp" &&
+  trap 'rm -f -- "$tmp"' EXIT &&
+  printf '["%s"]\n' "$key" > "$tmp" &&
   chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" &&
-  mv -T -- "$tmp" /etc/loop2/session-secrets
-stat -c '%U %g %a' /etc/loop2/session-secrets
-wc -c < /etc/loop2/session-secrets
+  mv -T -- "$tmp" "$f" )
+stat -c '%U %g %a' "$f"
+wc -c < "$f"
 ```
 
 Expected: `root 1000 440`, then `48` (two quotes, two brackets, 43 characters, a newline).
@@ -143,22 +151,27 @@ private terminal and paste it there. Do this before the deployment.
 
 **Rotating: a new key first, the old one kept.**
 
-1. Set the file from the current one with a new key prepended. The `case` line prints STOP if
-   the file is not in the one-line form this procedure writes:
+1. Set the file from the current one with a new key prepended. The block stops, with the file
+   unchanged, if the file is not in the one-line form this procedure writes (`["<key>"]` or
+   `["<key>","<key>"]`; an empty or pretty-printed file is refused). Its guard prints STOP and
+   then fails, and every later step depends on it:
 
    ```sh
    f=/etc/loop2/session-secrets
-   umask 077
-   current=$(cat "$f")
-   case $current in '["'*'"]') ;; *) echo "STOP: not in the one-line form" ;; esac
-   tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX)
-   printf '["%s",%s\n' "$(head -c 32 /dev/urandom | base64 -w0 | tr '+/' '-_' | tr -d '=')" "${current#\[}" > "$tmp"
-   chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" && mv -T -- "$tmp" "$f"
+   ( umask 077
+     current=$(cat "$f") &&
+     case $current in '["'*'"]') ;; *) echo "STOP: not in the one-line form"; false ;; esac &&
+     key=$(head -c 32 /dev/urandom | base64 -w0 | tr '+/' '-_' | tr -d '=') &&
+     test "${#key}" -eq 43 &&
+     tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX) &&
+     trap 'rm -f -- "$tmp"' EXIT &&
+     printf '["%s",%s\n' "$key" "${current#\[}" > "$tmp" &&
+     chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" && mv -T -- "$tmp" "$f" )
    stat -c '%U %g %a' "$f"
    ```
 
-   When it printed STOP, do not run the last three lines: remove the temporary file and bring
-   the file into the form `["<key>","<key>"]` first.
+   After STOP the file is as it was; bring it into the one-line form from the private note
+   first, then run the block again.
 2. Replace the private note's copy with the file's new content.
 3. Read the running application commit from its label (not the checkout's HEAD) and deploy
    exactly that commit with the installed script, as for the tunnel token. Deployment
@@ -176,16 +189,17 @@ in the file, this drops the oldest one (the last):
 
 ```sh
 f=/etc/loop2/session-secrets
-umask 077
-current=$(cat "$f")
-case $current in '["'*'","'*'"]') ;; *) echo "STOP: fewer than two keys, or not the one-line form" ;; esac
-tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX)
-printf '%s]\n' "${current%,\"*}" > "$tmp"
-chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" && mv -T -- "$tmp" "$f"
+( umask 077
+  current=$(cat "$f") &&
+  case $current in '["'*'","'*'"]') ;; *) echo "STOP: fewer than two keys, or not the one-line form"; false ;; esac &&
+  tmp=$(mktemp /etc/loop2/.session-secrets.XXXXXX) &&
+  trap 'rm -f -- "$tmp"' EXIT &&
+  printf '%s]\n' "${current%,\"*}" > "$tmp" &&
+  chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" && mv -T -- "$tmp" "$f" )
 stat -c '%U %g %a' "$f"
 ```
 
-When it printed STOP, do not run the last four lines. Update the private note, then redeploy
+After STOP the file is as it was. Otherwise update the private note, then redeploy
 the running application commit as in step 3. A key that leaked is removed at once, accepting
 that the players with cookies signed by it must log in again.
 
