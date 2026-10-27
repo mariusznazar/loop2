@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { ACTIONS } from "../../dist/public/sim/data/actions.js";
+import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
+import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
 import {
   advanceMinutes,
   createCharacter,
@@ -61,7 +64,7 @@ const EMPTY_PROGRAM = programFromRules();
 /** The game sent to Las with the program on the named seed, then advanced by `minutes`. */
 function played(program, minutes) {
   const ready = createCharacter(
-    setProgram(newGame(), program).state,
+    setProgram(newKnowingGame(), program).state,
     "Ala",
   ).state;
   const sent = send(ready, SENT, ALIVE_REAL_MS).state;
@@ -78,6 +81,21 @@ function finishedKinds(events) {
       .map((e) => e.activity.action.kind),
   );
 }
+
+test("precondition: the knowing game these tests start from holds every action and condition of the closed lists", () => {
+  const { understanding } = newKnowingGame();
+  assert.deepEqual(
+    Object.keys(ACTIONS).filter((a) => !understanding.actions.includes(a)),
+    [],
+  );
+  assert.deepEqual(
+    Object.keys(CONDITIONS).filter(
+      (c) => !understanding.conditions.includes(c),
+    ),
+    [],
+  );
+  assert.deepEqual(understanding, fullUnderstanding());
+});
 
 test("the map is Las and the send takes the seed named here", () => {
   assert.equal(forest.name, "Las");
