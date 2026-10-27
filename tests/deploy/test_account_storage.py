@@ -4,6 +4,8 @@ The deployment replaces the application container and keeps its named volume `lo
 mounted at `/app/data`. This test builds the image from the working tree, starts its normal
 command with explicit production account settings on a fresh data volume and a synthetic
 read-only session secret under 512 MiB, and checks as node that the fresh volume is writable.
+The database path and the volume's mount point are those `compose.yaml` gives the `app`
+service, so a deployment that would keep the database outside its volume loses it here.
 Through the running server's own HTTP port, from inside the container, it creates an account
 with a synthetic address and password and reads it with the session cookie it got. It then
 removes that container, starts a new one from the same image on the same two volumes, and checks
@@ -29,6 +31,7 @@ import unittest
 import uuid
 
 from tests.invariants import account_container_support as support
+from tests.invariants import loop2_invariant_support as compose
 
 DAEMON_TIMEOUT = 30     # seconds for `docker version` to answer
 BUILD_TIMEOUT = 1200    # seconds for the image build
@@ -62,6 +65,19 @@ fetch("http://127.0.0.1:" + process.env.LOOP2_LISTEN_PORT + spec.path, {
   console.log(JSON.stringify({ status: response.status, body, cookie: cookie ?? null }));
 }, (error) => { console.error(String(error)); process.exit(1); });
 """
+
+
+def compose_account_storage():
+    """(database path, mount point of the `accounts` volume) of compose.yaml's `app` service."""
+    _top, services = compose.compose_outline(compose.read_required("compose.yaml"))
+    app = services["app"]
+    environment = compose._yaml_mapping(app["environment"].block, app["environment"].line + 1)
+    mounts = [line.strip()[2:].strip() for line in app["volumes"].block
+              if line.strip().startswith("- ")]
+    destinations = [mount.split(":")[1] for mount in mounts if mount.split(":")[0] == "accounts"]
+    if len(destinations) != 1:
+        raise AssertionError(f"compose.yaml mounts the accounts volume {len(destinations)} times")
+    return environment["LOOP2_DATABASE_PATH"].value, destinations[0]
 
 
 def docker():
@@ -98,12 +114,13 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=account-storage-check",
                                   "-t", tag, ".", timeout=BUILD_TIMEOUT)
         self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
+        storage = compose_account_storage()
         data_volume, secret_volume = support.create_account_volumes(self, tag)
         password = secrets.token_hex(16)
 
         first = "loop2-account-storage-first-" + suffix
-        support.start_application(self, tag, first, data_volume, secret_volume)
-        support.verify_account_resources(self, first, data_volume, secret_volume)
+        support.start_application(self, tag, first, data_volume, secret_volume, *storage)
+        support.verify_account_resources(self, first, data_volume, secret_volume, *storage)
         self.wait_until_serving(first)
         created = self.request(first, "/api/accounts", body={
             "email": EMAIL, "password": password, "passwordConfirmation": password})
@@ -121,8 +138,8 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         self.assertEqual(code, 0, f"the data volume went with its container: {output}")
 
         second = "loop2-account-storage-second-" + suffix
-        support.start_application(self, tag, second, data_volume, secret_volume)
-        support.verify_account_resources(self, second, data_volume, secret_volume)
+        support.start_application(self, tag, second, data_volume, secret_volume, *storage)
+        support.verify_account_resources(self, second, data_volume, secret_volume, *storage)
         self.wait_until_serving(second)
         after = self.request(second, "/api/account", cookie=cookie)
         self.assertEqual((after["status"], after["body"]), (200, account),

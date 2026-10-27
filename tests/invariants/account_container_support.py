@@ -14,6 +14,8 @@ import uuid
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 COMMAND_TIMEOUT = 120
+DATABASE_PATH = "/app/data/accounts.sqlite"
+DATA_DESTINATION = "/app/data"
 
 SECRET_SETUP = """
 const fs = require('node:fs');
@@ -81,13 +83,17 @@ def create_account_volumes(test, tag):
     return data_volume, secret_volume
 
 
-def start_application(test, tag, name, data_volume, secret_volume):
-    """Start the image's normal command with explicit production settings on the given volumes."""
+def start_application(test, tag, name, data_volume, secret_volume, database_path=DATABASE_PATH,
+                      data_destination=DATA_DESTINATION):
+    """Start the image's normal command with explicit production settings on the given volumes.
+
+    The database path and the data volume's mount point default to those of compose.yaml; a test
+    reading them from compose.yaml passes what it read."""
     test.addCleanup(run, "rm", "-f", name)
     code, output = run("run", "-d", "--init", "--name", name, "--memory", "512m",
-                       "--mount", f"type=volume,src={data_volume},dst=/app/data",
+                       "--mount", f"type=volume,src={data_volume},dst={data_destination}",
                        "--mount", f"type=volume,src={secret_volume},dst=/run/secrets,readonly",
-                       "-e", "LOOP2_DATABASE_PATH=/app/data/accounts.sqlite",
+                       "-e", f"LOOP2_DATABASE_PATH={database_path}",
                        "-e", "LOOP2_SESSION_SECRET_FILE=/run/secrets/loop2_session_secrets",
                        "-e", "LOOP2_PUBLIC_ORIGIN=https://loop2.mariusznazar.com",
                        "-e", "LOOP2_PROXY_MODE=cloudflare-tunnel", tag)
@@ -101,8 +107,9 @@ def start_production_container(test, tag, name):
     verify_account_resources(test, name, data_volume, secret_volume)
 
 
-def verify_account_resources(test, name, data_volume, secret_volume):
-    """Node writes the data volume and opens the database; settings, limit and mounts hold."""
+def verify_account_resources(test, name, data_volume, secret_volume,
+                             database_path=DATABASE_PATH, data_destination=DATA_DESTINATION):
+    """Node writes /app/data and opens the database; settings, limit and mounts hold."""
     code, output = run("exec", "-i", name, "node", "-", script=RESOURCE_PROBE)
     test.assertEqual(code, 0, f"node cannot use fresh account resources: {output}")
     # The successful probe writes one JSON line; Node may append SQLite's experimental warning.
@@ -111,7 +118,7 @@ def verify_account_resources(test, name, data_volume, secret_volume):
         "uid": 1000, "gid": 1000, "directoryUid": 1000, "directoryGid": 1000,
         "written": "written by node", "secretUid": 0, "secretGid": 1000,
         "secretMode": 0o440, "keyBytes": [32],
-        "databasePath": "/app/data/accounts.sqlite", "databaseFile": True,
+        "databasePath": database_path, "databaseFile": True,
         "production": "production",
         "origin": "https://loop2.mariusznazar.com", "proxyMode": "cloudflare-tunnel",
     })
@@ -120,9 +127,9 @@ def verify_account_resources(test, name, data_volume, secret_volume):
     container = json.loads(output)[0]
     test.assertEqual(container["HostConfig"]["Memory"], 512 * 1024 * 1024)
     mounts = {mount["Destination"]: mount for mount in container["Mounts"]}
-    test.assertEqual(set(mounts), {"/app/data", "/run/secrets"})
-    test.assertEqual(mounts["/app/data"].get("Name"), data_volume)
-    test.assertTrue(mounts["/app/data"]["RW"])
+    test.assertEqual(set(mounts), {data_destination, "/run/secrets"})
+    test.assertEqual(mounts[data_destination].get("Name"), data_volume)
+    test.assertTrue(mounts[data_destination]["RW"])
     test.assertFalse(mounts["/run/secrets"]["RW"])
     test.assertEqual(container["HostConfig"]["PortBindings"], {})
     print(f"Production image {container['Image']}; container {name}; data volume {data_volume}; "
