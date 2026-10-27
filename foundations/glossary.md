@@ -102,3 +102,28 @@ A unit test executes simulation rules or view logic in memory, possibly across s
 An integration test checks a specific operation or connection using real files, local HTTP or processes, including scripts checking repository files.
 
 - **Not:** none
+
+## predisposition
+
+A predisposition is a character skill that a character's archetype lets the character learn.
+
+- **Not:** none
+
+## archetype
+
+An archetype is the kind of character that sets its predispositions.
+
+- **Not:** none
+
+## Understanding
+
+The Understanding is the record of the game's actions, items and conditions that the player has
+discovered, together with the condition „Zawsze”, which it holds from the start of a new game.
+
+- **Not:** none
+
+## repertoire
+
+A character's repertoire is the subset of the Understanding that the character can use in a program.
+
+- **Not:** none

@@ -199,11 +199,13 @@ the program changes or the condition of another program rule comes to hold befor
 
 Real time passed to the simulation for a map run the player starts moves the map run on, until it
 ends, by one game minute for each whole real second passed while it is not paused, and by no game
-minute for real time passed while it is paused.
+minute for real time passed while it is paused, and a game minute in which something is discovered
+leaves the map run paused, the real time passed in the same call beyond that game minute moving it
+on by no game minute.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-21
+- **Derives from:** D-21 · D-118 · D-122
 - **Part:** simulation
 - **Violated:** no
 
@@ -244,14 +246,15 @@ resource or an archetype, outside its comments, by the identifier or the name th
 ## program-rule-pick
 
 In each free game minute of a map run, the character starts to carry out the first program rule
-whose condition holds and whose action the character can carry out then, taking rule groups in
-order and the program rules within each in order, passing over a group whose condition does not
-hold or which holds no such program rule, and carries out no program rule where no group offers
-one.
+whose condition, action and action's target lie in the character's repertoire, whose condition
+holds and whose action the character can carry out then, taking rule groups in order and the
+program rules within each in order, passing over a group whose condition does not hold or which
+holds no such program rule, carries out no program rule where no group offers one, and leaves every
+program rule it passes over in the program.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-23
+- **Derives from:** D-23 · D-126
 - **Part:** simulation
 - **Violated:** no
 
@@ -521,11 +524,11 @@ Every character belongs to exactly one team.
 
 ## minute-span-split
 
-A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the character's death.
+A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the game minute of the character's death or of a discovery.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-04 · D-71
+- **Derives from:** D-04 · D-71 · D-118
 - **Part:** simulation
 - **Violated:** no
 
