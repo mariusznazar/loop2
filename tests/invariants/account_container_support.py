@@ -2,6 +2,8 @@
 
 Files are created inside the daemon's volumes, so a remote disposable daemon needs no
 host-path bind mount. No credential is passed in arguments, environment or output.
+`start_production_container` starts one container on fresh volumes; a test replacing the
+container calls its three steps itself and starts the next container on the same volumes.
 """
 
 import json
@@ -54,8 +56,11 @@ def run(*arguments, script=None):
     return result.returncode, (result.stdout + result.stderr).decode("utf-8", "replace")
 
 
-def start_production_container(test, tag, name):
-    """Start the image's normal command with fresh database and read-only secret volumes."""
+def create_account_volumes(test, tag):
+    """Fresh data and secret volumes, the secret holding synthetic session material.
+
+    The volumes are removed when the test ends; the data volume outlives any one container, so a
+    test can replace the application container and keep it."""
     suffix = uuid.uuid4().hex
     data_volume = "loop2-account-data-check-" + suffix
     secret_volume = "loop2-account-secret-check-" + suffix
@@ -66,13 +71,18 @@ def start_production_container(test, tag, name):
         test.addCleanup(run, "volume", "rm", volume)
         code, output = run("volume", "create", volume)
         test.assertEqual(code, 0, output)
-    setup = name + "-secret-setup"
+    setup = "loop2-account-secret-setup-" + suffix[:12]
     test.addCleanup(run, "rm", "-f", setup)
     code, output = run("run", "--rm", "-i", "--name", setup, "--network", "none",
                        "--memory", "512m", "--user", "0:0", "--entrypoint", "node",
                        "--mount", f"type=volume,src={secret_volume},dst=/run/secrets",
                        tag, "-", script=SECRET_SETUP)
     test.assertEqual(code, 0, f"temporary secret setup failed: {output}")
+    return data_volume, secret_volume
+
+
+def start_application(test, tag, name, data_volume, secret_volume):
+    """Start the image's normal command with explicit production settings on the given volumes."""
     test.addCleanup(run, "rm", "-f", name)
     code, output = run("run", "-d", "--init", "--name", name, "--memory", "512m",
                        "--mount", f"type=volume,src={data_volume},dst=/app/data",
@@ -82,6 +92,17 @@ def start_production_container(test, tag, name):
                        "-e", "LOOP2_PUBLIC_ORIGIN=https://loop2.mariusznazar.com",
                        "-e", "LOOP2_PROXY_MODE=cloudflare-tunnel", tag)
     test.assertEqual(code, 0, f"production container start failed: {output}")
+
+
+def start_production_container(test, tag, name):
+    """Start the image's normal command with fresh database and read-only secret volumes."""
+    data_volume, secret_volume = create_account_volumes(test, tag)
+    start_application(test, tag, name, data_volume, secret_volume)
+    verify_account_resources(test, name, data_volume, secret_volume)
+
+
+def verify_account_resources(test, name, data_volume, secret_volume):
+    """Node writes the data volume and opens the database; settings, limit and mounts hold."""
     code, output = run("exec", "-i", name, "node", "-", script=RESOURCE_PROBE)
     test.assertEqual(code, 0, f"node cannot use fresh account resources: {output}")
     # The successful probe writes one JSON line; Node may append SQLite's experimental warning.
@@ -100,9 +121,10 @@ def start_production_container(test, tag, name):
     test.assertEqual(container["HostConfig"]["Memory"], 512 * 1024 * 1024)
     mounts = {mount["Destination"]: mount for mount in container["Mounts"]}
     test.assertEqual(set(mounts), {"/app/data", "/run/secrets"})
+    test.assertEqual(mounts["/app/data"].get("Name"), data_volume)
     test.assertTrue(mounts["/app/data"]["RW"])
     test.assertFalse(mounts["/run/secrets"]["RW"])
     test.assertEqual(container["HostConfig"]["PortBindings"], {})
-    print(f"Production image {container['Image']}; container {name}; fresh data {data_volume}; "
+    print(f"Production image {container['Image']}; container {name}; data volume {data_volume}; "
           f"secret volume {secret_volume}; uid/gid 1000; memory 536870912; resources verified",
           flush=True)

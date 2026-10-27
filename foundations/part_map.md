@@ -56,7 +56,7 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game, handles the HTTP requests sent to it and owns account and session persistence.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns account and session persistence and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs
@@ -74,7 +74,7 @@ The part is the account and save server: it serves the built game, handles the H
 
 ## build-tools
 
-The part installs dependencies, checks code quality and types, audits introduced dependency versions and builds and launches the application, and builds and serves the browser view's kitchen-sink page on the developer's machine.
+The part installs dependencies, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, and builds and serves the browser view's kitchen-sink page on the developer's machine.
 
 - **Files:** /package.json
   /package-lock.json
@@ -97,6 +97,7 @@ The part installs dependencies, checks code quality and types, audits introduced
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
   tests/invariants/test_application_build_kitchen_sink.py
+  tests/password-measurement.test.mjs
 - **Depends on:** browser-view · simulation · account-server · product-foundation
 - **Trust boundary:** package-lock.json
   scripts/audit_dependencies.py

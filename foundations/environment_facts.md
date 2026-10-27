@@ -283,6 +283,12 @@ Cloudflare sets X-Forwarded-Proto to the client's protocol and overwrites a diff
 
 - **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/fundamentals/reference/http-headers.mdx § X-Forwarded-Proto — "If the client set a different value, it will be overwritten."; read 2026-10-27
 
+## cgroup-memory-peak
+
+Linux 6.12's cgroup v2 interface reports in a non-root cgroup's `memory.peak` the highest memory usage recorded for the cgroup and its descendants since the cgroup's creation or the last reset through the same file descriptor, and counts in its `memory.events` `oom_kill` the cgroup's processes killed by any OOM killer.
+
+- **Source:** https://raw.githubusercontent.com/torvalds/linux/v6.12/Documentation/admin-guide/cgroup-v2.rst § Memory Interface Files, memory.peak — "The max memory usage recorded for the cgroup and its descendants since either the creation of the cgroup or the most recent reset for that FD." · § Memory Interface Files, memory.events, oom_kill — "The number of processes belonging to this cgroup killed by any kind of OOM killer."; read 2026-10-27
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
