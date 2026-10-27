@@ -104,4 +104,5 @@ def start_production_container(test, tag, name):
     test.assertFalse(mounts["/run/secrets"]["RW"])
     test.assertEqual(container["HostConfig"]["PortBindings"], {})
     print(f"Production image {container['Image']}; container {name}; fresh data {data_volume}; "
-          f"secret volume {secret_volume}; uid/gid 1000; memory 536870912; resources verified")
+          f"secret volume {secret_volume}; uid/gid 1000; memory 536870912; resources verified",
+          flush=True)
