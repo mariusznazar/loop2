@@ -1799,7 +1799,6 @@ The account server hashes and verifies player passwords with the `argon2` packag
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
 - **Relations:** none
 - **Verification:** invariants: player-argon2-password-hash · player-argon2-deployment-check.
-- **Review when:** Package installation fails or the configured operation exceeds the intended container's resource budget.
 - **Origin:** none
 
 *Rationale:* The package handles salt generation, an encoded password hash and verification, so the project writes less security-sensitive code than with a lower-level hash API. A native dependency can fail to install or consume more memory than the target permits; compatible published binaries support feasibility rather than proving this particular image. Explicit settings and target measurements address that uncertainty.
@@ -1813,7 +1812,6 @@ The account server uses `express-session` to issue and maintain player sessions,
 - **Based on:** express-session-store-contract · node-sqlite-database
 - **Relations:** derives from D-99
 - **Verification:** invariants: player-express-session-sqlite-store.
-- **Review when:** The project-owned Store causes recurring session failures or needs a different session database.
 - **Origin:** none
 
 *Rationale:* The library supplies cookie and session lifecycle while the project supplies a database adapter, signing keys and the correct proxy boundary. A custom adapter remains maintenance work and can introduce expiry or concurrency faults.
@@ -1827,7 +1825,6 @@ The built game and the account and save server use one public HTTPS origin at lo
 - **Based on:** fetch-same-origin-credentials
 - **Relations:** derives from D-05 · derives from D-10
 - **Verification:** invariants: loop2-shared-public-origin.
-- **Review when:** The game and account server need separate public origins.
 - **Origin:** none
 
 *Rationale:* A shared origin carries eligible session cookies without a separate cross-origin agreement. An API moved to another machine can keep its public route through forwarding, at the cost of maintaining that forwarding.
@@ -1882,7 +1879,6 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
 - **Relations:** derives from D-96 · derives from D-101 · derives from D-104
 - **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check.
-- **Review when:** The password library or measured container profile changes.
 - **Origin:** none
 
 *Rationale:* A first file makes password work's admission and package boundary visible for later account routes. Two slots are the selected candidate, not evidence that this cost fits the target image.
