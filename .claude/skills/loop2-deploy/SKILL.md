@@ -73,8 +73,7 @@ script installation and rollback through the route change.
   redacted diagnosis, not raw logs.
 - The running application commit comes from its label, not the checkout or connector image.
   Run this in bash on the server (it is what `mikrus` `exec` gives); it is not for Windows
-  PowerShell 5.1, which drops the nested double quotes before Docker sees them (the
-  PowerShell form is in `references/setup_and_secrets.md`, "Measuring the password work"):
+  PowerShell 5.1, which drops the nested double quotes before Docker sees them:
   `docker inspect --type container --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' loop2`
 - State and health: `docker inspect --type container --format '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' loop2-cloudflared`;
   use the same scoped read for `loop2`. Connector health means an active edge connection,

@@ -7,16 +7,20 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { measure, parseArguments } from "../scripts/measure-passwords.mjs";
+import {
+  measure,
+  measurementLimit,
+  parseArguments,
+} from "../scripts/measure-passwords.mjs";
 
 const entryPoint = fileURLToPath(
   new URL("../dist/server/measure-passwords.js", import.meta.url),
 );
 const commit = "0123456789abcdef0123456789abcdef01234567";
-const limit = 536870912; // 512 MiB, compose.yaml mem_limit
-// 80% of 512 MiB = 0.8 * 536870912 = 429496729.6 bytes (spec, section 6).
-const lastPeakBelowBudget = 429496729;
-const firstPeakAtBudget = 429496730;
+const deploymentLimit = 536870912; // 512 MiB, compose.yaml mem_limit
+// 80% of 512 MiB is 409.6 MiB (spec, section 6); rounded down to whole MiB,
+// 409 * 1048576 = 428867584 bytes is the measurement container's limit.
+const limit = 428867584;
 
 async function cgroupDirectory(t, files) {
   const directory = await mkdtemp(join(tmpdir(), "loop2-measure-"));
@@ -27,14 +31,15 @@ async function cgroupDirectory(t, files) {
   return directory;
 }
 
-const containerCgroup = {
-  "memory.max": "536870912\n",
-  "memory.peak": "123456789\n",
+// The memory files of a container's cgroup on the test server's kernel 5.15, which
+// has no memory.peak (reports/63-human-remarks.md, item 4).
+const kernel515Cgroup = {
+  "memory.max": "428867584\n",
   "memory.current": "100000000\n",
   "memory.swap.max": "0\n",
-  "memory.events":
-    "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\n",
 };
+const containerCgroup = { ...kernel515Cgroup, "memory.peak": "123456789\n" };
 
 function runEntryPoint(args, env = {}) {
   const result = spawnSync(process.execPath, [entryPoint, ...args], {
@@ -98,10 +103,10 @@ test("the entrypoint measures the production profile and gate with synthetic pas
   assert.equal(result.measured.hash.count, result.measured.hashes);
   // The cgroup's own numbers are passed on as read.
   assert.equal(result.memory.cgroupVersion, 2);
-  assert.equal(result.memory.cgroupLimitBytes, 536870912);
+  assert.equal(result.memory.cgroupLimitBytes, 428867584);
   assert.equal(result.memory.cgroupPeakBytes, 123456789);
   assert.equal(result.memory.cgroupSwapLimitBytes, 0);
-  assert.equal(result.memory.oomEvents, 0);
+  assert.equal(result.memory.limitHitEvents, 0);
   assert.equal(result.memory.oomKillEvents, 0);
   assert.equal(result.versions.argon2, "0.45.1"); // package.json pins it
   assert.equal(result.versions.node, process.versions.node);
@@ -110,12 +115,12 @@ test("the entrypoint measures the production profile and gate with synthetic pas
 });
 
 test("the entrypoint reads a cgroup v1 memory controller, counting every hit of its limit", async (t) => {
-  // Swap allowed is memsw minus the memory limit: 536870912 - 536870912 = 0.
+  // Swap allowed is memsw minus the memory limit: 428867584 - 428867584 = 0.
   const directory = await cgroupDirectory(t, {});
   await mkdir(join(directory, "memory"));
   for (const [name, text] of Object.entries({
-    "memory.limit_in_bytes": "536870912\n",
-    "memory.memsw.limit_in_bytes": "536870912\n",
+    "memory.limit_in_bytes": "428867584\n",
+    "memory.memsw.limit_in_bytes": "428867584\n",
     "memory.max_usage_in_bytes": "222222222\n",
     "memory.usage_in_bytes": "111111111\n",
     "memory.failcnt": "3\n",
@@ -129,25 +134,52 @@ test("the entrypoint reads a cgroup v1 memory controller, counting every hit of 
     { ...run.result.memory, processMaxRssBytes: undefined },
     {
       cgroupVersion: 1,
-      cgroupLimitBytes: 536870912,
-      cgroupPeakBytes: 222222222,
-      cgroupCurrentBytes: 111111111,
+      cgroupLimitBytes: 428867584,
       cgroupSwapLimitBytes: 0,
-      oomEvents: 3,
+      limitHitEvents: 3,
       oomKillEvents: 1,
+      cgroupCurrentBytes: 111111111,
+      cgroupPeakBytes: 222222222,
       processMaxRssBytes: undefined,
     },
   );
 });
 
-test("the entrypoint refuses to measure where the cgroup reports no peak memory", async (t) => {
-  const { "memory.peak": _peak, ...withoutPeak } = containerCgroup;
-  const directory = await cgroupDirectory(t, withoutPeak);
+test("the entrypoint measures where the kernel keeps no peak, as kernel 5.15 does", async (t) => {
+  const directory = await cgroupDirectory(t, {
+    ...kernel515Cgroup,
+    "memory.events": "low 0\nhigh 0\nmax 2\noom 0\noom_kill 1\n",
+  });
+  const run = runEntryPoint(["--cgroup-directory", directory]);
+
+  assert.equal(run.status, 0, run.stdout);
+  assert.equal(run.result.measured.hashes, 20);
+  assert.deepEqual(
+    { ...run.result.memory, processMaxRssBytes: undefined },
+    {
+      cgroupVersion: 2,
+      cgroupLimitBytes: 428867584,
+      cgroupSwapLimitBytes: 0,
+      limitHitEvents: 2,
+      oomKillEvents: 1,
+      cgroupCurrentBytes: 100000000,
+      cgroupPeakBytes: null,
+      processMaxRssBytes: undefined,
+    },
+  );
+});
+
+test("the entrypoint refuses to measure where the cgroup does not count hits of its limit", async (t) => {
+  const directory = await cgroupDirectory(t, {
+    ...kernel515Cgroup,
+    "memory.events": "low 0\nhigh 0\noom 0\noom_kill 0\n",
+  });
   const run = runEntryPoint(["--cgroup-directory", directory]);
 
   assert.notEqual(run.status, 0);
   assert.equal(run.result.ok, false);
-  assert.match(run.result.errors.join(" "), /memory\.peak/);
+  assert.equal(run.result.measured, undefined);
+  assert.match(run.result.errors.join(" "), /memory\.events names no max/);
 });
 
 test("the entrypoint stops with a failure when its deadline passes first", async (t) => {
@@ -182,10 +214,10 @@ function passingResult() {
     measured: { concurrency: 2, maxActive: 2, hashes: 20, verifies: 20 },
     memory: {
       cgroupLimitBytes: limit,
-      cgroupPeakBytes: lastPeakBelowBudget,
       cgroupSwapLimitBytes: 0,
-      oomEvents: 0,
+      limitHitEvents: 0,
       oomKillEvents: 0,
+      cgroupPeakBytes: 123456789,
     },
   };
 }
@@ -238,7 +270,12 @@ function fakeDocker({
   return { docker, calls };
 }
 
-const request = { image: "loop2-app", commit, memoryBytes: limit };
+const request = {
+  image: "loop2-app",
+  commit,
+  memoryBytes: deploymentLimit,
+  limitBytes: limit,
+};
 
 test("the launcher passes a measured image within every bound and runs it isolated", () => {
   const { docker, calls } = fakeDocker();
@@ -249,8 +286,8 @@ test("the launcher passes a measured image within every bound and runs it isolat
   const run = calls.find((args) => args[0] === "run");
   assert.ok(run, "no container was run");
   const value = (flag) => run[run.indexOf(flag) + 1];
-  assert.equal(value("--memory"), "536870912");
-  assert.equal(value("--memory-swap"), "536870912");
+  assert.equal(value("--memory"), "428867584");
+  assert.equal(value("--memory-swap"), "428867584");
   assert.equal(value("--network"), "none");
   assert.equal(value("--restart"), "no");
   assert.ok(run.includes(imageId), "the image is run by its inspected id");
@@ -277,10 +314,14 @@ test("the launcher measures nothing when the image's label names another commit"
 });
 
 test("the launcher fails each run that breaks one bound and still removes its container", () => {
-  const overBudget = passingResult();
-  overBudget.memory.cgroupPeakBytes = firstPeakAtBudget;
+  const limitHit = passingResult();
+  limitHit.memory.limitHitEvents = 1;
   const oomEvent = passingResult();
   oomEvent.memory.oomKillEvents = 1;
+  const uncounted = passingResult();
+  delete uncounted.memory.limitHitEvents;
+  const otherLimit = passingResult();
+  otherLimit.memory.cgroupLimitBytes = deploymentLimit;
   const reportedError = passingResult();
   reportedError.ok = false;
   reportedError.errors = ["a wrong password was accepted"];
@@ -292,8 +333,10 @@ test("the launcher fails each run that breaks one bound and still removes its co
     "killed for lack of memory": { oomKilled: true },
     restarted: { restartCount: 1 },
     "nonzero exit": { exitCode: 1 },
-    "another memory limit": { memory: 268435456 },
-    "peak at 80% of 512 MiB": { result: overBudget },
+    "the deployment's limit instead of 80% of it": { memory: deploymentLimit },
+    "another limit seen in the cgroup": { result: otherLimit },
+    "one hit of the limit": { result: limitHit },
+    "no count of limit hits": { result: uncounted },
     "an OOM kill in the cgroup": { result: oomEvent },
     "an error the entrypoint reports": { result: reportedError },
     "19 measured verifications": { result: tooFew },
@@ -314,14 +357,28 @@ test("the launcher fails each run that breaks one bound and still removes its co
   }
 });
 
+test("the launcher passes a run whose kernel keeps no peak, judging by its counts", () => {
+  const result = passingResult();
+  result.memory.cgroupPeakBytes = null;
+  const { docker } = fakeDocker({ result });
+  assert.deepEqual(measure(request, docker).problems, []);
+});
+
+test("the measurement container's limit is 80% of the deployment's, rounded down to whole MiB", () => {
+  // 0.8 * 512 MiB = 409.6 MiB -> 409 MiB; 0.8 * 64 MiB = 51.2 MiB -> 51 MiB = 53477376.
+  assert.equal(measurementLimit(536870912), 428867584);
+  assert.equal(measurementLimit(67108864), 53477376);
+});
+
 test("the launcher takes only a commit name and a memory limit up to the deployment's", () => {
   assert.deepEqual(
     parseArguments(["--image", "abc", "--commit", commit, "--memory", "512m"]),
-    { image: "abc", commit, memoryBytes: 536870912 },
+    { image: "abc", commit, memoryBytes: 536870912, limitBytes: 428867584 },
   );
   const refused = [
     ["--image", "abc", "--commit", commit, "--memory", "513m"],
     ["--image", "abc", "--commit", commit, "--memory", "1g"],
+    ["--image", "abc", "--commit", commit, "--memory", "7m"],
     ["--image", "abc", "--commit", commit.toUpperCase(), "--memory", "512m"],
     ["--image", "abc", "--commit", "main", "--memory", "512m"],
     ["--commit", commit, "--memory", "512m"],

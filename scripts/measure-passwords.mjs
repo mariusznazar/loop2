@@ -3,6 +3,11 @@
 //
 //   node scripts/measure-passwords.mjs --image <image id> --commit <40-hex commit> --memory 512m
 //
+// --memory is the deployment's limit. The container runs under 80% of it, rounded
+// down to whole MiB, and passes only if the kernel never counted a hit of that
+// limit or an OOM kill: then its memory stayed below 80% of the deployment's limit.
+// Built-in modules only, so the server's own Node.js 20 runs it too.
+//
 // The docker commands go to the daemon the docker CLI is set to (DOCKER_HOST or
 // its context), so the image measured is one that daemon holds. The container
 // gets no network, volume, secret or environment of the application.
@@ -12,11 +17,13 @@ import { pathToFileURL } from "node:url";
 
 // compose.yaml gives the application service mem_limit: 512m.
 export const DEPLOYMENT_MEMORY_LIMIT = 512 * 1024 * 1024;
-// Peak memory must stay below this share of the deployment's limit (spec, section 6).
-export const PEAK_BUDGET_FRACTION = 0.8;
+// Memory must stay below this share of the deployment's limit (spec, section 6).
+export const BUDGET_FRACTION = 0.8;
 export const MEASURED_PER_KIND = 20;
 const ENTRYPOINT = "dist/server/measure-passwords.js";
-const MINIMUM_MEMORY = 6 * 1024 * 1024;
+const MIB = 1024 * 1024;
+// Docker refuses a container memory limit below 6 MiB; 80% of 8 MiB rounds down to it.
+const MINIMUM_MEMORY = 8 * MIB;
 const COMMAND_TIMEOUT_MS = 60_000;
 export const RUN_TIMEOUT_MS = 300_000;
 
@@ -30,12 +37,18 @@ export function parseMemory(text) {
   ];
   const bytes = Number(found[1]) * unit;
   if (!Number.isSafeInteger(bytes) || bytes < MINIMUM_MEMORY)
-    throw new UsageError("--memory must be at least 6m");
+    throw new UsageError("--memory must be at least 8m");
   if (bytes > DEPLOYMENT_MEMORY_LIMIT)
     throw new UsageError(
       "--memory may not exceed the deployment's limit of 512m",
     );
   return bytes;
+}
+
+// The container's limit: the budget rounded down to whole MiB, which every page size
+// divides, so the kernel keeps it exactly and it never exceeds the budget.
+export function measurementLimit(memoryBytes) {
+  return Math.floor((BUDGET_FRACTION * memoryBytes) / MIB) * MIB;
 }
 
 export function parseArguments(argv) {
@@ -55,10 +68,12 @@ export function parseArguments(argv) {
     throw new UsageError(
       "--commit must be 40 lowercase hexadecimal characters",
     );
+  const memoryBytes = parseMemory(values["--memory"]);
   return {
     image: values["--image"],
     commit: values["--commit"],
-    memoryBytes: parseMemory(values["--memory"]),
+    memoryBytes,
+    limitBytes: measurementLimit(memoryBytes),
   };
 }
 
@@ -112,9 +127,9 @@ export function judge(request, observed) {
   } else {
     if (container.Image !== image?.Id)
       problems.push("the container ran another image");
-    if (container.HostConfig?.Memory !== request.memoryBytes)
+    if (container.HostConfig?.Memory !== request.limitBytes)
       problems.push("the container's memory limit is not the requested one");
-    if (container.HostConfig?.MemorySwap !== request.memoryBytes)
+    if (container.HostConfig?.MemorySwap !== request.limitBytes)
       problems.push("the container may use swap beyond its memory limit");
     if (container.State?.OOMKilled !== false)
       problems.push("the container was killed for lack of memory");
@@ -158,19 +173,17 @@ export function judge(request, observed) {
   if (measured.concurrency !== 2 || measured.maxActive !== 2)
     problems.push("the measured operations did not run two at once");
   const memory = result.memory ?? {};
-  if (memory.cgroupLimitBytes !== request.memoryBytes)
+  if (memory.cgroupLimitBytes !== request.limitBytes)
     problems.push("the measurement saw another memory limit");
   if (memory.cgroupSwapLimitBytes !== null && memory.cgroupSwapLimitBytes !== 0)
     problems.push("the measurement could use swap");
-  if (memory.oomEvents !== 0 || memory.oomKillEvents !== 0)
-    problems.push("the container reached its memory limit");
-  const budget = PEAK_BUDGET_FRACTION * DEPLOYMENT_MEMORY_LIMIT;
-  if (!Number.isSafeInteger(memory.cgroupPeakBytes))
-    problems.push("the measurement reports no peak memory");
-  else if (!(memory.cgroupPeakBytes < budget))
+  // A peak, where the kernel has one, is information; the counts decide.
+  if (memory.limitHitEvents !== 0)
     problems.push(
-      `peak memory ${memory.cgroupPeakBytes} bytes is not below ${budget} bytes`,
+      `the container's memory reached its limit of ${request.limitBytes} bytes`,
     );
+  if (memory.oomKillEvents !== 0)
+    problems.push("a process of the container was killed for lack of memory");
   return problems;
 }
 
@@ -192,7 +205,7 @@ export function measure(request, docker = runDocker) {
     return { ok: false, problems: identity, request, imageId: image.Id };
   }
   const name = `loop2-password-measure-${randomBytes(6).toString("hex")}`;
-  const memory = String(request.memoryBytes);
+  const memory = String(request.limitBytes);
   let container = null;
   let output = { status: null, stdout: "", stderr: "" };
   const extra = [];
@@ -252,7 +265,6 @@ export function measure(request, docker = runDocker) {
       memoryBytes: container.HostConfig?.Memory,
       memorySwapBytes: container.HostConfig?.MemorySwap,
     },
-    peakBudgetBytes: PEAK_BUDGET_FRACTION * DEPLOYMENT_MEMORY_LIMIT,
     result,
   };
 }

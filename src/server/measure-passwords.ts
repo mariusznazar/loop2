@@ -110,37 +110,42 @@ async function present(directory: string, name: string): Promise<boolean> {
   }
 }
 
+// The verdict rests on the kernel's counts of limit hits and OOM kills, which cgroup v2
+// has on every kernel; a peak is reported where the kernel records one (memory.peak
+// needs Linux 5.19), but nothing is judged on it.
 interface MemoryReading {
   cgroupVersion: 1 | 2;
   cgroupLimitBytes: number | "max";
-  cgroupPeakBytes: number;
-  cgroupCurrentBytes: number | "max";
   cgroupSwapLimitBytes: number | "max" | null;
-  oomEvents: number;
+  limitHitEvents: number;
   oomKillEvents: number;
+  cgroupCurrentBytes: number | "max";
+  cgroupPeakBytes: number | null;
 }
 
-async function peak(directory: string, name: string): Promise<number> {
+async function optionalPeak(
+  directory: string,
+  name: string,
+): Promise<number | null> {
+  if (!(await present(directory, name))) return null;
   const bytes = await cgroupBytes(directory, name);
-  if (bytes === "max") throw new Error(`cgroup file ${name} holds no peak`);
-  return bytes;
+  return bytes === "max" ? null : bytes;
 }
 
 async function readVersion2(directory: string): Promise<MemoryReading> {
   return {
     cgroupVersion: 2,
     cgroupLimitBytes: await cgroupBytes(directory, "memory.max"),
-    cgroupPeakBytes: await peak(directory, "memory.peak"),
-    cgroupCurrentBytes: await cgroupBytes(directory, "memory.current"),
     cgroupSwapLimitBytes: (await present(directory, "memory.swap.max"))
       ? await cgroupBytes(directory, "memory.swap.max")
       : null,
-    oomEvents: await cgroupCount(directory, "memory.events", "oom"),
+    limitHitEvents: await cgroupCount(directory, "memory.events", "max"),
     oomKillEvents: await cgroupCount(directory, "memory.events", "oom_kill"),
+    cgroupCurrentBytes: await cgroupBytes(directory, "memory.current"),
+    cgroupPeakBytes: await optionalPeak(directory, "memory.peak"),
   };
 }
 
-// Version 1 has no count of failed allocations; every hit of the limit counts instead.
 async function readVersion1(directory: string): Promise<MemoryReading> {
   const limit = await cgroupBytes(directory, "memory.limit_in_bytes");
   let swap: number | "max" | null = null;
@@ -151,15 +156,15 @@ async function readVersion1(directory: string): Promise<MemoryReading> {
   return {
     cgroupVersion: 1,
     cgroupLimitBytes: limit,
-    cgroupPeakBytes: await peak(directory, "memory.max_usage_in_bytes"),
-    cgroupCurrentBytes: await cgroupBytes(directory, "memory.usage_in_bytes"),
     cgroupSwapLimitBytes: swap,
-    oomEvents: Number(await cgroupBytes(directory, "memory.failcnt")),
+    limitHitEvents: Number(await cgroupBytes(directory, "memory.failcnt")),
     oomKillEvents: await cgroupCount(
       directory,
       "memory.oom_control",
       "oom_kill",
     ),
+    cgroupCurrentBytes: await cgroupBytes(directory, "memory.usage_in_bytes"),
+    cgroupPeakBytes: await optionalPeak(directory, "memory.max_usage_in_bytes"),
   };
 }
 
@@ -299,7 +304,7 @@ async function measure(options: Options) {
 
 type Measurement = Awaited<ReturnType<typeof measure>>;
 
-// The memory budget is judged by the launcher, which knows the deployment's limit.
+// The memory counts are judged by the launcher, which knows the limit it set.
 function functionalErrors(result: Measurement): string[] {
   const errors: string[] = [];
   if (result.profile.type !== "argon2id")

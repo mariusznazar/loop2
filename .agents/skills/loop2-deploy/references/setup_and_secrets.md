@@ -263,74 +263,71 @@ been done on its head commit. The human does everything here (D-12).
 ## Measuring the password work of the deployed image
 
 The human runs this after `loop2-deploy` has deployed the request's head commit, to check
-`player-argon2-deployment-check` on the test server. Agents do not run it: it works on the
-server's Docker daemon.
+`player-argon2-deployment-check` on the test server. Agents do not run it: it starts a
+container on the server.
 
 **What it needs**
 
-- A computer with **Windows PowerShell 5.1** (`powershell.exe`, the shell Windows ships). The
-  commands below are written for 5.1. Its quoting differs from PowerShell 7 and from bash, so
-  do not paste them into another shell.
-- On that computer: Node.js 24; the Docker CLI; a checkout of this repository at the deployed
-  commit; an SSH login to the test server for an account that may use Docker, reachable through
-  an alias `<alias>` in `~/.ssh/config`.
-
-The server needs no Node.js. The Docker commands go over SSH to the server's Docker daemon.
+- A shell on the server as root, the shell the deployment is run from. The commands below are
+  bash.
+- The host's Node.js, version 20 or later (`node --version`). The launcher uses only Node's
+  built-in modules; the measurement itself runs on the image's own Node.js 24.
+- The checkout `/srv/loop2`, which the deployment leaves at the deployed commit.
 
 **Steps**
 
-1. Check that the server has room for a temporary container of 512 MiB. Run this in PowerShell
-   on the computer:
+1. Check that the server has room for a temporary container of 409 MiB:
 
-   ```powershell
-   ssh <alias> grep MemAvailable /proc/meminfo
+   ```bash
+   grep MemAvailable /proc/meminfo
    ```
 
    The value should be at least `1048576 kB`, the deployment's own build threshold. If it is
    lower, wait and check again.
-2. In Windows PowerShell 5.1, in the checkout of the deployed commit:
+2. Measure:
 
-   ```powershell
-   $sha = '<the 40-character deployed commit>'
+   ```bash
+   sha=<the 40-character request head>
+   cd /srv/loop2
    git rev-parse HEAD
-   $env:DOCKER_HOST = 'ssh://<alias>'
-   $labels = docker inspect --type container --format '{{json .Config.Labels}}' loop2 | ConvertFrom-Json
-   $labels.'org.opencontainers.image.revision'
-   $image = docker inspect --type container --format '{{.Image}}' loop2
-   node scripts/measure-passwords.mjs --image $image --commit $sha --memory 512m | Out-File -Encoding utf8 "measure-$sha.txt"
-   $LASTEXITCODE
-   Get-Content "measure-$sha.txt" -Tail 1
-   Remove-Item Env:DOCKER_HOST
+   docker inspect --type container --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' loop2
+   node --version
+   image=$(docker inspect --type container --format '{{.Image}}' loop2)
+   node scripts/measure-passwords.mjs --image "$image" --commit "$sha" --memory 512m > "/tmp/measure-$sha.txt"
+   echo $?
+   tail -n 1 "/tmp/measure-$sha.txt"
    ```
 
-   - `git rev-parse HEAD` and `$labels.'org.opencontainers.image.revision'` must both print the
-     value of `$sha`. If the label differs, the running container is not the deployed commit:
-     stop and report.
-   - The Docker format strings contain no double quotes. Windows PowerShell 5.1 drops double
-     quotes nested inside an argument before Docker sees them, so the labels are read as JSON,
-     and PowerShell picks the revision out of it. The label template in `SKILL.md`, with its
-     nested quotes, is for bash on the server only.
-   - `Remove-Item Env:DOCKER_HOST` sends later Docker commands back to the local daemon. Run
-     it even if a step failed.
-3. Read the result. `$LASTEXITCODE` is the measurement's exit code, and the last line of
-   `measure-$sha.txt` is its verdict.
-   - **0, last line `PASS`:** the deployed image passed. Keep `measure-$sha.txt`. It holds the
-     JSON report: Node and argon2 versions, profile, gate, operation counts, times, cgroup
-     version, memory limit, peak memory, OOM and restart data. It holds no password, hash,
-     cookie or secret.
+   - `git rev-parse HEAD` and the label must both print the value of `$sha`. If the label
+     differs, the running container is not the request head: stop and report. If git refuses
+     the checkout as root with `dubious ownership`, `cat /srv/loop2/.git/HEAD` prints the same
+     commit, because the deployment leaves the checkout detached at it.
+   - `--memory 512m` is the deployment's memory limit. The launcher runs the measurement under
+     80% of it, rounded down to whole MiB: 409 MiB, 428867584 bytes.
+3. Read the result. The number `echo $?` printed is the measurement's exit code, and the last
+   line of the file is its verdict.
+   - **0, last line `PASS`:** the deployed image passed. In a container limited to 409 MiB with
+     no swap, the kernel counted no hit of that limit and no OOM kill, so its memory stayed
+     below 80% of 512 MiB. Keep the file. It holds the JSON report: Node and argon2 versions,
+     profile, gate, operation counts, times, cgroup version, limit, the counts of limit hits
+     and OOM kills, current memory and, where the kernel records one, peak memory; kernel 5.15
+     records none, so the peak reads `null`. It holds no password, hash, cookie or secret.
+     `/tmp` does not keep the file for long: copy its content into the report on the request.
    - **1, last line `FAIL: ...`:** the deployed image did not pass, or its environment could
      not be measured. Report the file.
-     - A peak at or above 429496729.6 bytes (80 % of 512 MiB), or an OOM, means the password
-       profile or the gate has to change in code; then rebuild, redeploy and measure again.
-       Never measure an older image instead.
-     - `cgroup memory accounting is unavailable` or `cgroup file memory.peak is unavailable`
-       means Docker on the server does not show the memory data the verdict needs. The result
+     - `the container's memory reached its limit of 428867584 bytes`, `a process of the
+       container was killed for lack of memory` or `the container was killed for lack of
+       memory` means the password work does not fit in 80% of 512 MiB. The password profile or
+       the gate has to change in code; then rebuild, redeploy and measure again. Never measure
+       an older image instead.
+     - `cgroup memory accounting is unavailable`, or another line naming a `cgroup file`, means
+       Docker on the server does not show the memory counts the verdict needs. The result
        cannot be judged and goes back to the task's cycle.
    - **2, the file is empty:** the arguments were wrong. The reason and the usage line went to
-     the console, not to the file, because `Out-File` keeps only standard output.
+     the terminal, not to the file, because `>` keeps only standard output.
 
 **What it changes on the server.** The launcher starts one container from the deployed image:
-no network, no volume, no secret and no environment of the application; limited to 512 MiB
+no network, no volume, no secret and no environment of the application; limited to 409 MiB
 with no swap, with no restarts; named `loop2-password-measure-<random>`. It removes the
 container afterwards, also after a failure. The running `loop2` container, its database volume
 and its secrets are not touched. The extra load is two password operations at a time for a few

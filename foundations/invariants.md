@@ -641,7 +641,7 @@ The account server stores an encoded Argon2id hash made by the `argon2` package 
 
 ## player-argon2-deployment-check
 
-The deployed loop2 container image has passed, under its 512 MiB memory limit and after warmup, at least 20 hashes and 20 verifications with the configured Argon2id cost settings two at a time, a correct and a wrong password check and the refusal of a third concurrent operation, with no out-of-memory kill or restart and with the peak memory of its container's cgroup below 80% of that limit.
+The deployed loop2 container image has passed, after warmup, at least 20 hashes and 20 verifications with the configured Argon2id cost settings two at a time, a correct and a wrong password check and the refusal of a third concurrent operation in a container limited, without swap, to at most 80% of its 512 MiB deployment limit, which did not restart and whose cgroup counted no hit of that limit and no out-of-memory kill.
 
 - **Method:** review
 - **Rests on:** cgroup-memory-accounting
