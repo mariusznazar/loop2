@@ -1,6 +1,6 @@
 ---
 name: loop2-deploy
-description: How loop2's test-server deployment works - seeing which commit runs, reading the deploy log and its exit codes 2-8, rolling back, what an agent may read on the server versus what only the human changes, secrets, setup and failed deployments. Use for any question about deploying or the test server.
+description: How loop2's test-server deployment works - seeing which commit runs, reading the deploy log and its exit codes 2-8, rolling back, blocking or unblocking a player account, what an agent may read on the server versus what only the human changes, secrets, setup and failed deployments. Use for any question about deploying or the test server.
 ---
 
 # loop2-deploy
@@ -125,6 +125,38 @@ the old game's state and installed-script mismatches are also logged.
   `references/setup_and_secrets.md`: deployment, persistence check, password measurement in the
   deployed image, public browser journey.
 
+## Blocking a player account
+
+The owner blocks a player account, and unblocks it, with one command run in the application
+container from a shell on the server. Only the human runs it; an agent never does (D-12). The
+address is the account's email address, as the player logs in with it; letter case and
+surrounding spaces do not matter.
+
+```sh
+docker exec loop2 node dist/server/account-block.js block <email>
+docker exec loop2 node dist/server/account-block.js unblock <email>
+```
+
+- **`block`** marks the account blocked and ends its sessions in every browser in the same
+  step. A blocked player who reloads the page sees the forms again; a login with the right
+  password shows `To konto jest zablokowane.`, and a wrong password still shows
+  `Nieprawidłowy adres e-mail lub hasło.`. A game already open in a browser plays on until the
+  page is reloaded or the player logs out.
+- **`unblock`** lets the account log in again. The sessions the block ended stay ended, so the
+  player logs in anew.
+- **What it prints.** One line. Exit 0 means the account is now in the state asked for: blocked,
+  already blocked, unblocked, or was not blocked. Every other exit changed nothing: 1 the
+  database could not be opened or changed, for example because it stayed busy longer than the
+  wait (run the command again); 2 wrong arguments, or an address without a single `@` with text
+  on both sides; 3 `LOOP2_DATABASE_PATH` names no existing database file (the command never
+  creates one); 4 no account has that address.
+- **What it touches.** It opens the account database beside the running application, makes one
+  short change and closes it; the application keeps serving. It prints no password hash,
+  session identifier or database error. The address stays in the server's shell history.
+- **What it does not do.** The account stays in the database, so its address cannot be
+  registered again; the person can still register with another address. A login of the
+  blocked account does not count towards the limit of failed logins.
+
 ## Rollback
 
 An ordinary rollback within the same route is one deployment: merge a revert request, or the
@@ -136,7 +168,9 @@ they are; accounts made after the target commit are not undone and nothing is re
 an earlier time. Rolling back to a commit without accounts leaves the volume and the key file
 unused but intact; deploying forward again brings the accounts back. An application refuses a
 database whose schema version is newer than it knows, so an old commit may fail health with
-exit 8 on a newer database. Details and recovery: "Rollback and the accounts" in
+exit 8 on a newer database. The first deployment of a commit with account blocking moves the
+database to schema version 2, so from then on a rollback to a commit from before account
+blocking fails health with exit 8. Details and recovery: "Rollback and the accounts" in
 `references/troubleshooting.md`.
 
 **Crossing the tunnel transition also requires the matching installed script and Cloudflare
