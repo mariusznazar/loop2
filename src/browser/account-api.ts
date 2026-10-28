@@ -14,6 +14,7 @@ export const refusalCodes = [
   "invalid-password",
   "password-mismatch",
   "invalid-credentials",
+  "account-blocked",
   "unauthenticated",
   "account-exists",
   "too-many-attempts",

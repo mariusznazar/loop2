@@ -57,7 +57,7 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns account and session persistence and measures its own password work in the image it runs in.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns account and session persistence, gives the operator a command that blocks and unblocks a player account, and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs

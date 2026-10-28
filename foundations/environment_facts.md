@@ -313,6 +313,12 @@ The Fetch Standard's HTTP-network-or-cache fetch gives a request whose method is
 
 - **Source:** https://raw.githubusercontent.com/whatwg/fetch/e9460d1b22ead1c6a72eeac37fb2ec0dc01aeb1d/fetch.bs § HTTP-network-or-cache fetch — "Append a request `Origin` header for httpRequest." · § `Origin` header, append a request `Origin` header — "Otherwise, if request's method is neither `GET` nor `HEAD`, then:" · "If request's mode is not "cors", then switch on request's referrer policy:" · "Append (`Origin`, serializedOrigin) to request's header list." · § Request class, new Request(input, init) — "Set fallbackMode to "cors"."; read 2026-10-27
 
+## sqlite-wal-concurrency
+
+In SQLite's write-ahead log mode, readers and a writer of one database run at the same time, and only one writer at a time writes to it.
+
+- **Source:** https://www.sqlite.org/wal.html (archived: https://web.archive.org/web/20261027035005/https://www.sqlite.org/wal.html, 2026-10-27) § 2.2. Concurrency — "Because writers do nothing that would interfere with the actions of readers, writers and readers can run at the same time. However, since there is only one WAL file, there can only be one writer at a time."; read 2026-10-28
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

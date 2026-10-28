@@ -671,7 +671,7 @@ The browser carries a random session identifier in a loop2 host-scoped, Secure a
 
 - **Method:** test
 - **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security
-- **Derives from:** D-101
+- **Derives from:** D-101 · D-138
 - **Part:** account-server · browser-view · deployment
 - **Violated:** no
 
@@ -757,7 +757,7 @@ Production startup without all valid account settings and every startup with par
 
 ## account-schema-lifecycle
 
-Opening the account database initializes a new schema transactionally, preserves existing version-1 accounts and sessions and refuses a newer unknown schema before readiness.
+Opening the account database initializes a new schema transactionally, moves an existing older known schema to the current version in one transaction keeping its accounts and sessions, and refuses a newer unknown schema before readiness.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -767,7 +767,7 @@ Opening the account database initializes a new schema transactionally, preserves
 
 ## account-database-schema
 
-Opening an account database initializes version 1 atomically, preserves its existing accounts and sessions on reopen, and rejects an unknown newer schema without changing its version or records.
+Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account and session and their values kept, preserves them on reopen, and rejects an unknown newer schema without changing its version or records.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -777,10 +777,10 @@ Opening an account database initializes version 1 atomically, preserves its exis
 
 ## account-session-storage
 
-The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
+The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, stores no session for a blocked account, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
 
 - **Method:** test
-- **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation
+- **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation · sqlite-wal-concurrency
 - **Derives from:** D-112 · D-115
 - **Part:** account-server
 - **Violated:** no
@@ -833,6 +833,36 @@ A change of the program rules or rule groups that a map run carries out sets the
 - **Rests on:** none
 - **Derives from:** D-131 · D-136
 - **Part:** every
+- **Violated:** no
+
+## blocked-account-access
+
+A blocked account cannot sign in or use authenticated game endpoints.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-137 · D-139
+- **Part:** account-server
+- **Violated:** no
+
+## player-server-session
+
+The account server validates authenticated requests against a server-side SQLite session record and invalidates that record on logout or account blocking.
+
+- **Method:** test
+- **Rests on:** node-sqlite-database · sqlite-wal-concurrency
+- **Derives from:** D-138 · D-137
+- **Part:** account-server
+- **Violated:** no
+
+## unblock-restores-no-session
+
+A session removed when its account was blocked authorizes no request after the account is unblocked.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-137
+- **Part:** account-server
 - **Violated:** no
 
 ## Withdrawn identifiers

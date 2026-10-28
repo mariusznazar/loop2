@@ -153,3 +153,9 @@ A streak is a count of successive game minutes of one map run that a map's solvi
 for.
 
 - **Not:** none
+
+## blocked account
+
+A blocked account is a player account the operator has cut off from signing in and playing, which stays so until the operator unblocks it.
+
+- **Not:** an email address refused for 15 minutes after five failed logins (D-102) — "locked"

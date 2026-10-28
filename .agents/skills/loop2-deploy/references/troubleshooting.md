@@ -101,9 +101,15 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   visible. Deploying forward again shows them. Until then no loop2 container references the
   volume, which is exactly the state a volume prune would clear; run none.
 - **A database newer than the code:** an application refuses a database whose schema version
-  it does not know. The current code writes schema version 1. A target commit that knows only
-  an older schema fails health (exit 8) on a newer database; the recovery is deploying a
-  commit that knows the schema, since the data has no way back.
+  it does not know. The current code writes schema version 2, which adds to version 1 the
+  blocked state of each account. Its first start on a version-1 database moves it to version 2
+  in one transaction, keeping every account and session, none of them blocked; a failure there
+  leaves version 1 as it was and stops the start (exit 8). A commit from before account
+  blocking knows only version 1, so once the database is at version 2, a rollback to such a
+  commit fails health (exit 8). A target commit that knows only an older schema fails health
+  (exit 8) on a newer database; the recovery is deploying a commit that knows the schema,
+  since the data has no way back: there is no step from version 2 to version 1 and no copy of
+  the database from before the move.
 - **Session keys in a rollback:** restoring an old private copy of the key file puts an old
   key first again; follow "Putting an old key first again" in `setup_and_secrets.md`.
 

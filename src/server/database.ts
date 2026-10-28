@@ -6,7 +6,42 @@ export interface Account {
   email: string;
   passwordHash: string;
   createdAt: number;
+  // Cut off by the operator from signing in and playing until unblocked; not
+  // the 15-minute email lock of the account policy.
+  blocked: boolean;
 }
+
+export type BlockOutcome = "blocked" | "already-blocked" | "unknown";
+export type UnblockOutcome = "unblocked" | "not-blocked" | "unknown";
+
+// The schema's history, one step per version: step N turns version N - 1 into
+// version N. A new database runs every step, an existing one the steps after
+// its version. A step that has reached the test server is never edited, since
+// databases at its version exist there; a later schema adds one step at the end.
+const schemaSteps = [
+  `
+    CREATE TABLE accounts (
+      id TEXT PRIMARY KEY NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    ) STRICT;
+    CREATE TABLE sessions (
+      id TEXT PRIMARY KEY NOT NULL,
+      account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      data TEXT NOT NULL,
+      expires_at INTEGER NOT NULL
+    ) STRICT;
+    CREATE INDEX sessions_expiry ON sessions(expires_at);
+    CREATE INDEX sessions_account ON sessions(account_id);
+  `,
+  `
+    ALTER TABLE accounts
+      ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0 CHECK (blocked IN (0, 1));
+  `,
+];
+
+const currentVersion = schemaSteps.length;
 
 export interface StoredSession {
   accountId: string;
@@ -95,38 +130,39 @@ export class AccountDatabase {
     }
   }
 
-  private initializeSchema(): void {
+  // One write transaction: it commits whole or rolls back whole.
+  private transaction<Result>(work: () => Result): Result {
     this.connection.exec("BEGIN IMMEDIATE");
+    let result: Result;
     try {
-      const version = this.connection
-        .prepare("PRAGMA user_version")
-        .get()?.user_version;
-      if (version === 0) {
-        this.connection.exec(`
-          CREATE TABLE accounts (
-            id TEXT PRIMARY KEY NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password_hash TEXT NOT NULL,
-            created_at INTEGER NOT NULL
-          ) STRICT;
-          CREATE TABLE sessions (
-            id TEXT PRIMARY KEY NOT NULL,
-            account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-            data TEXT NOT NULL,
-            expires_at INTEGER NOT NULL
-          ) STRICT;
-          CREATE INDEX sessions_expiry ON sessions(expires_at);
-          CREATE INDEX sessions_account ON sessions(account_id);
-          PRAGMA user_version = 1;
-        `);
-      } else if (version !== 1) {
-        throw new Error("Unsupported account database schema");
-      }
+      result = work();
       this.connection.exec("COMMIT");
     } catch (error) {
       this.connection.exec("ROLLBACK");
       throw error;
     }
+    return result;
+  }
+
+  // Version 0 is a new database. The version is read inside the transaction
+  // that migrates, so two processes opening one database cannot both migrate it.
+  private initializeSchema(): void {
+    this.transaction(() => {
+      const version = this.connection
+        .prepare("PRAGMA user_version")
+        .get()?.user_version;
+      if (
+        typeof version !== "number" ||
+        !Number.isSafeInteger(version) ||
+        version < 0 ||
+        version > currentVersion
+      ) {
+        throw new Error("Unsupported account database schema");
+      }
+      if (version === currentVersion) return;
+      for (const step of schemaSteps.slice(version)) this.connection.exec(step);
+      this.connection.exec(`PRAGMA user_version = ${currentVersion}`);
+    });
   }
 
   createAccount(email: string, passwordHash: string): Account | null {
@@ -135,6 +171,7 @@ export class AccountDatabase {
       email,
       passwordHash,
       createdAt: this.now(),
+      blocked: false,
     };
     const result = this.connection
       .prepare(
@@ -162,7 +199,8 @@ export class AccountDatabase {
       typeof row.id !== "string" ||
       typeof row.email !== "string" ||
       typeof row.password_hash !== "string" ||
-      typeof row.created_at !== "number"
+      typeof row.created_at !== "number" ||
+      (row.blocked !== 0 && row.blocked !== 1)
     ) {
       throw new Error("Invalid stored account");
     }
@@ -171,6 +209,7 @@ export class AccountDatabase {
       email: row.email,
       passwordHash: row.password_hash,
       createdAt: row.created_at,
+      blocked: row.blocked === 1,
     };
   }
 
@@ -181,16 +220,29 @@ export class AccountDatabase {
     ) {
       throw new Error("Invalid session expiry");
     }
+    // The account's state is read by the statement that writes, so a block
+    // committed by another connection either precedes it and stores nothing or
+    // follows it and deletes what it stored. An unknown account still fails on
+    // the foreign key; the WHERE clause also keeps the upsert unambiguous.
     const result = this.connection
       .prepare(
         `
-      INSERT INTO sessions (id, account_id, data, expires_at) VALUES (?, ?, ?, ?)
+      INSERT INTO sessions (id, account_id, data, expires_at)
+      SELECT ?, ?, ?, ?
+      WHERE NOT EXISTS (SELECT 1 FROM accounts WHERE id = ? AND blocked = 1)
       ON CONFLICT(id) DO UPDATE SET data = excluded.data,
         expires_at = MAX(sessions.expires_at, excluded.expires_at)
       WHERE sessions.account_id = excluded.account_id AND sessions.expires_at > ?
     `,
       )
-      .run(id, session.accountId, session.data, session.expiresAt, this.now());
+      .run(
+        id,
+        session.accountId,
+        session.data,
+        session.expiresAt,
+        session.accountId,
+        this.now(),
+      );
     if (result.changes === 0) throw new Error("Session cannot be replaced");
   }
 
@@ -228,6 +280,35 @@ export class AccountDatabase {
     `,
       )
       .run(expiresAt, id, accountId, this.now());
+  }
+
+  // Marks the account of a normalized address blocked and deletes every
+  // session of it in the same transaction; already blocked, it deletes again.
+  blockAccount(email: string): BlockOutcome {
+    return this.transaction(() => {
+      const account = this.findAccountByEmail(email);
+      if (!account) return "unknown";
+      this.connection
+        .prepare("UPDATE accounts SET blocked = 1 WHERE id = ?")
+        .run(account.id);
+      this.connection
+        .prepare("DELETE FROM sessions WHERE account_id = ?")
+        .run(account.id);
+      return account.blocked ? "already-blocked" : "blocked";
+    });
+  }
+
+  // Clears the blocked state only; the sessions deleted by the block stay gone.
+  unblockAccount(email: string): UnblockOutcome {
+    return this.transaction(() => {
+      const account = this.findAccountByEmail(email);
+      if (!account) return "unknown";
+      if (!account.blocked) return "not-blocked";
+      this.connection
+        .prepare("UPDATE accounts SET blocked = 0 WHERE id = ?")
+        .run(account.id);
+      return "unblocked";
+    });
   }
 
   destroySession(id: string): void {
