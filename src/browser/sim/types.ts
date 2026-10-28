@@ -1,4 +1,5 @@
 import type { ArchetypeId } from "./data/archetypes.js";
+import type { BALANCE } from "./data/balance.js";
 import type { CAMPFIRE } from "./data/campfire.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
@@ -6,6 +7,9 @@ import type { ResourceId } from "./data/resources.js";
 import type { Traits } from "./data/traits.js";
 
 export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
+
+/** A multiplier of the game minutes per real second that the player picks, from the data. */
+export type Pace = (typeof BALANCE.paces)[number];
 
 /** Axial hex coordinates. */
 export type Hex = { q: number; r: number };
@@ -134,6 +138,9 @@ export type DeathCause = "cold" | "hunger";
 /** The end of a map run in the character's death. */
 export type Death = { minute: number; cause: DeathCause };
 
+/** The end of a map run in a completion: the map's solving condition met. */
+export type Completion = { minute: number };
+
 export type MapRun = {
   mapId: MapId;
   /** uint32 */
@@ -154,8 +161,15 @@ export type MapRun = {
   wanderRandom: number;
   /** Generator state of the gathering stream. */
   gatherRandom: number;
+  /**
+   * The successive game minutes, up to the latest, in which the character lost no health to cold or
+   * hunger; 0 at start, and 0 in the game minute of death.
+   */
+  streak: number;
   /** Set once the character dies; then no game minute passes. */
   death: Death | null;
+  /** Set once the map run meets the solving condition of its map; then no game minute passes. */
+  completion: Completion | null;
 };
 
 /** Tells the characters of the team apart; two characters may share a name. */
@@ -190,10 +204,20 @@ export type GameState = {
   lastSeed: number;
   paused: boolean;
   /**
+   * The maps solved in this game, by identifier, in the order of their first completion, each
+   * once; `[]` in a new game. Only the game minute of a completion adds to it, and nothing removes.
+   */
+  solvedMaps: MapId[];
+  /**
+   * The pace the player picked, 1 in a new game; only `setPace` changes it, so it stays through
+   * pausing, restarting, ending and sending.
+   */
+  pace: Pace;
+  /**
    * What the last game minute of a discovery revealed, set together with the pause that minute
    * leaves, and null once the player moves on (resume, restart, end, send); null in a new game.
    */
   discovery: Understanding | null;
-  /** Scaled real ms not yet turned into a game minute, 0 <= x < 1000. */
+  /** Scaled real ms (at the pace in force when passed) not yet a game minute, 0 <= x < 1000. */
   realMsCarry: number;
 };

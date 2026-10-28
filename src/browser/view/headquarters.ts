@@ -21,6 +21,16 @@ export function sendMaps(): MapId[] {
   return Object.keys(MAPS) as MapId[];
 }
 
+/** The map's name in a character's row: „Mapa: {name}”, with „ · rozwiązana” once the map is solved. Pure. */
+export function mapLabel(mapId: MapId, solved: boolean): string {
+  return `Mapa: ${MAPS[mapId].name}${solved ? " · rozwiązana" : ""}`;
+}
+
+/** The map's solving condition as a sentence: „{name} — {solvingText}”, both from the map's data. Pure. */
+export function solvingSentence(mapId: MapId): string {
+  return `${MAPS[mapId].name} — ${MAPS[mapId].solvingText}`;
+}
+
 /**
  * What the chest shows: one line „{name}: {count}” for each resource it holds some of, in the
  * order of the resources' data; no line for an empty chest. Pure.
@@ -65,7 +75,7 @@ function emptyNote(text: string): HTMLElement {
  * created, each with its name, the name of its archetype and the button „Wyślij” for each map, and
  * the creation of a character; and the section „Skrzynka” with the team's chest. Every name of the
  * game's content comes from the data. The name field and its button are made once, so they keep
- * focus; the list of characters is rebuilt when the team changes.
+ * focus; the list of characters is rebuilt when the team or the solved maps change.
  */
 export function createHeadquarters(
   controls: HeadquartersControls,
@@ -120,9 +130,10 @@ export function createHeadquarters(
   nameField.input.addEventListener("input", () => nameField.setError(null));
 
   let shownTeam: Team | null = null;
+  let shownSolved: MapId[] | null = null;
   let sendButtons: HTMLButtonElement[] = [];
 
-  function renderTeam(shown: Team): void {
+  function renderTeam(shown: Team, solved: MapId[]): void {
     sendButtons = [];
     const rows = shown.characters.map((character) => {
       const row = document.createElement("li");
@@ -135,8 +146,13 @@ export function createHeadquarters(
       archetype.textContent = ARCHETYPES[character.archetypeId].name;
       row.append(name, archetype);
       for (const mapId of sendMaps()) {
+        const isSolved = solved.includes(mapId);
         const where = document.createElement("span");
-        where.textContent = `Mapa: ${MAPS[mapId].name}`;
+        where.className = isSolved ? "map-label solved" : "map-label";
+        where.textContent = mapLabel(mapId, isSolved);
+        const condition = document.createElement("span");
+        condition.className = "map-solving";
+        condition.textContent = solvingSentence(mapId);
         const button = createButton("Wyślij", {
           label: `Wyślij: ${character.name}, mapa ${MAPS[mapId].name}`,
         });
@@ -144,7 +160,7 @@ export function createHeadquarters(
           controls.send(character.id, mapId),
         );
         sendButtons.push(button);
-        row.append(where, button);
+        row.append(where, condition, button);
       }
       return row;
     });
@@ -165,9 +181,10 @@ export function createHeadquarters(
   return {
     element,
     update(state: GameState): void {
-      if (state.team !== shownTeam) {
+      if (state.team !== shownTeam || state.solvedMaps !== shownSolved) {
         shownTeam = state.team;
-        renderTeam(state.team);
+        shownSolved = state.solvedMaps;
+        renderTeam(state.team, state.solvedMaps);
       }
       // One map run at a time: while one goes on, no other character can be sent.
       for (const button of sendButtons) button.disabled = state.run !== null;

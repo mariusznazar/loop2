@@ -2,7 +2,11 @@
 // the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chestLines } from "../../dist/public/view/headquarters.js";
+import {
+  chestLines,
+  mapLabel,
+  solvingSentence,
+} from "../../dist/public/view/headquarters.js";
 
 test("importing the headquarters touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");
@@ -19,4 +23,16 @@ test("a chest holding pieces shows a line per resource held, in the order of the
     "patyk: 5",
     "mech: 2",
   ]);
+});
+
+test("a map's label is „Mapa: {name}”, with „ · rozwiązana” once solved, the name from the data", () => {
+  assert.equal(mapLabel("forest", false), "Mapa: Las");
+  assert.equal(mapLabel("forest", true), "Mapa: Las · rozwiązana");
+});
+
+test("the condition sentence is the map's name, a dash and the solving text of its data", () => {
+  assert.equal(
+    solvingSentence("forest"),
+    "Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+  );
 });

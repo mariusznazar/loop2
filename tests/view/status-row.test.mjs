@@ -9,6 +9,7 @@ import {
   createCharacter,
   newGame,
   send,
+  setPace,
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
@@ -45,9 +46,36 @@ function doing(state, action) {
   return { ...state, run: { ...state.run, current } };
 }
 
+/** The same game with its map run's streak set. */
+function withStreak(state, streak) {
+  return { ...state, run: { ...state.run, streak } };
+}
+
+test("a running map run on the forest with a streak of 120 reads the minute, the activity and the streak against 480", () => {
+  const state = withStreak(
+    advanceMinutes(
+      sent([{ condition: ALWAYS, action: { kind: "explore" } }]),
+      3,
+    ).state,
+    120,
+  );
+  const run = { ...state.run, minute: 312 };
+  assert.equal(
+    statusText(run, false),
+    "Minuta 312 · Eksploruje · Passa 120/480",
+  );
+  assert.equal(
+    statusText(run, true),
+    "Minuta 312 · Eksploruje · Passa 120/480 (pauza)",
+  );
+});
+
 test("exploring shows the minute and „Eksploruje”", () => {
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  assert.equal(statusText(state.run, state.paused), "Minuta 0 · Eksploruje");
+  assert.equal(
+    statusText(state.run, state.paused),
+    "Minuta 0 · Eksploruje · Passa 0/480",
+  );
 });
 
 test("the minute shown is the map run's game minute", () => {
@@ -56,13 +84,19 @@ test("the minute shown is the map run's game minute", () => {
     7,
   ).state;
   assert.equal(state.run.minute, 7);
-  assert.equal(statusText(state.run, state.paused), "Minuta 7 · Eksploruje");
+  assert.equal(
+    statusText(state.run, state.paused),
+    "Minuta 7 · Eksploruje · Passa 7/480",
+  );
 });
 
 test("wandering shows „Wędruje”", () => {
   const state = sent([{ condition: ALWAYS, action: { kind: "wander" } }]);
   assert.equal(state.run.current.activity.action.kind, "wander");
-  assert.equal(statusText(state.run, state.paused), "Minuta 0 · Wędruje");
+  assert.equal(
+    statusText(state.run, state.paused),
+    "Minuta 0 · Wędruje · Passa 0/480",
+  );
 });
 
 test("walking to a resource shows „Idzie po: ” and the resource's name from data, for each resource", () => {
@@ -73,12 +107,12 @@ test("walking to a resource shows „Idzie po: ” and the resource's name from 
     const walking = doing(state, { kind: "walkTo", resource: id });
     assert.equal(
       statusText(walking.run, false),
-      `Minuta 0 · Idzie po: ${RESOURCES[id].name}`,
+      `Minuta 0 · Idzie po: ${RESOURCES[id].name} · Passa 0/480`,
     );
   }
   assert.equal(
     statusText(doing(state, { kind: "walkTo", resource: ids[0] }).run, false),
-    "Minuta 0 · Idzie po: patyk",
+    "Minuta 0 · Idzie po: patyk · Passa 0/480",
   );
 });
 
@@ -87,7 +121,7 @@ test("waiting because no rule applies shows „Czeka — żadna reguła nie pasu
   assert.equal(state.run.current.activity.kind, "wait");
   assert.equal(
     statusText(state.run, state.paused),
-    "Minuta 0 · Czeka — żadna reguła nie pasuje",
+    "Minuta 0 · Czeka — żadna reguła nie pasuje · Passa 0/480",
   );
 });
 
@@ -99,19 +133,27 @@ test("a paused map run gets „ (pauza)” appended, and loses it when resumed",
   const paused = setPaused(running, true).state;
   assert.equal(
     statusText(paused.run, paused.paused),
-    "Minuta 3 · Eksploruje (pauza)",
+    "Minuta 3 · Eksploruje · Passa 3/480 (pauza)",
   );
   const waiting = setPaused(sent([]), true).state;
   assert.equal(
     statusText(waiting.run, waiting.paused),
-    "Minuta 0 · Czeka — żadna reguła nie pasuje (pauza)",
+    "Minuta 0 · Czeka — żadna reguła nie pasuje · Passa 0/480 (pauza)",
   );
   const resumed = setPaused(paused, false).state;
   assert.equal(
     statusText(resumed.run, resumed.paused),
-    "Minuta 3 · Eksploruje",
+    "Minuta 3 · Eksploruje · Passa 3/480",
   );
 });
+
+/** The same game with its map run ended in a completion at the given minute. */
+function completed(state, minute) {
+  return {
+    ...state,
+    run: { ...state.run, minute, completion: { minute } },
+  };
+}
 
 /** The same game with its map run ended in death of the given cause at the given minute. */
 function dead(state, minute, cause) {
@@ -127,12 +169,12 @@ test("gathering shows „Zbiera: ” and the resource's name from data, for each
     const gathering = doing(state, { kind: "gather", resource: id });
     assert.equal(
       statusText(gathering.run, false),
-      `Minuta 0 · Zbiera: ${RESOURCES[id].name}`,
+      `Minuta 0 · Zbiera: ${RESOURCES[id].name} · Passa 0/480`,
     );
   }
   assert.equal(
     statusText(doing(state, { kind: "gather", resource: "berry" }).run, false),
-    "Minuta 0 · Zbiera: jagoda",
+    "Minuta 0 · Zbiera: jagoda · Passa 0/480",
   );
 });
 
@@ -149,7 +191,7 @@ test("an action without a target shows its status text from data alone", () => {
   for (const [kind, text] of Object.entries(expected)) {
     assert.equal(
       statusText(doing(state, { kind }).run, false),
-      `Minuta 0 · ${text}`,
+      `Minuta 0 · ${text} · Passa 0/480`,
     );
   }
 });
@@ -202,19 +244,35 @@ test("a mage left without a program dies, and the status row reads the minute of
 function fakeDocument() {
   return {
     createElement(tag) {
-      return {
+      const element = {
         tag,
         children: [],
         textContent: "",
         hidden: false,
         className: "",
-        classList: { add() {}, toggle() {} },
-        setAttribute() {},
-        addEventListener() {},
+        classes: new Set(),
+        classList: {
+          add(name) {
+            element.classes.add(name);
+          },
+          toggle(name, force) {
+            if (force) element.classes.add(name);
+            else element.classes.delete(name);
+          },
+        },
+        attributes: {},
+        setAttribute(name, value) {
+          this.attributes[name] = value;
+        },
+        listeners: {},
+        addEventListener(type, listener) {
+          this.listeners[type] = listener;
+        },
         append(...items) {
           this.children.push(...items);
         },
       };
+      return element;
     },
   };
 }
@@ -227,10 +285,12 @@ test("on the screen the pause button is hidden after death; „Restart” and �
   try {
     const row = createStatusRow({
       togglePause() {},
+      setPace() {},
       restart() {},
       end() {},
     });
-    const [text, pause, restartButton, endButton] = row.element.children;
+    const [text, pause, , , , , , restartButton, endButton] =
+      row.element.children;
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
     row.update(running);
     assert.equal(pause.hidden, false);
@@ -301,7 +361,12 @@ test("on the screen the line is shown while the game holds a discovery and hidde
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {
-    const row = createStatusRow({ togglePause() {}, restart() {}, end() {} });
+    const row = createStatusRow({
+      togglePause() {},
+      setPace() {},
+      restart() {},
+      end() {},
+    });
     const line = row.discovery;
     assert.equal(line.hidden, true);
     let state = createCharacter(newGame(), "Ala").state;
@@ -316,12 +381,129 @@ test("on the screen the line is shown while the game holds a discovery and hidde
     );
     assert.equal(
       row.element.children[0].textContent,
-      "Minuta 84 · Eksploruje (pauza)",
+      "Minuta 84 · Eksploruje · Passa 0/480 (pauza)",
     );
     assert.equal(row.element.children[1].textContent, "Wznów");
     row.update(setPaused(stopped, false).state);
     assert.equal(line.hidden, true);
     assert.equal(line.textContent, "");
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+/** The status row built on the hand-made document, with the paces its pace buttons asked for. */
+async function rowAskingPaces() {
+  const { createStatusRow } =
+    await import("../../dist/public/view/status-row.js");
+  const asked = [];
+  const row = createStatusRow({
+    togglePause() {},
+    setPace(pace) {
+      asked.push(pace);
+    },
+    restart() {},
+    end() {},
+  });
+  return { row, asked, paceButtons: row.element.children.slice(2, 7) };
+}
+
+test("the row shows five pace buttons, 1× to 16×, with the one of the state's pace selected", async () => {
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const { row, paceButtons } = await rowAskingPaces();
+    assert.deepEqual(
+      paceButtons.map((button) => button.textContent),
+      ["1×", "2×", "4×", "8×", "16×"],
+    );
+    const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+    const selected = () =>
+      paceButtons.map((button) => button.attributes["aria-pressed"]);
+    row.update(running);
+    assert.deepEqual(selected(), ["true", "false", "false", "false", "false"]);
+    row.update(setPace(running, 8).state);
+    assert.deepEqual(selected(), ["false", "false", "false", "true", "false"]);
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+test("a click on a pace button asks for that pace; the buttons stay while paused and go with death", async () => {
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const { row, asked, paceButtons } = await rowAskingPaces();
+    const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+    paceButtons[4].listeners.click();
+    paceButtons[1].listeners.click();
+    assert.deepEqual(asked, [16, 2]);
+    row.update(setPaused(running, true).state);
+    assert.ok(paceButtons.every((button) => !button.hidden));
+    row.update(dead(running, 312, "cold"));
+    assert.ok(paceButtons.every((button) => button.hidden));
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+test("after a completion the status reads the minute and the map's completion text, and no pause is appended", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const done = completed(state, 480);
+  assert.equal(statusText(done.run, false), "Minuta 480 · Las rozwiązany");
+  assert.equal(statusText(done.run, true), "Minuta 480 · Las rozwiązany");
+});
+
+test("no pause button after a completion, as after death", () => {
+  const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  assert.equal(pauseLabel(completed(running, 480)), null);
+  assert.equal(
+    pauseLabel(completed(setPaused(running, true).state, 480)),
+    null,
+  );
+});
+
+test("on the screen the text is positive after a completion and only then; the pace and pause buttons go, Restart and Zakończ stay", async () => {
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const { row, paceButtons } = await rowAskingPaces();
+    const [text, pause, , , , , , restartButton, endButton] =
+      row.element.children;
+    const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+    row.update(running);
+    assert.equal(text.classes.has("positive"), false);
+    row.update(completed(running, 480));
+    assert.equal(text.textContent, "Minuta 480 · Las rozwiązany");
+    assert.equal(text.classes.has("positive"), true);
+    assert.equal(pause.hidden, true);
+    assert.ok(paceButtons.every((button) => button.hidden));
+    assert.equal(restartButton.hidden, false);
+    assert.equal(endButton.hidden, false);
+    row.update(running);
+    assert.equal(text.classes.has("positive"), false);
+    assert.equal(pause.hidden, false);
+    row.update(dead(running, 312, "cold"));
+    assert.equal(text.classes.has("positive"), false);
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+test("a discovery held at a completion stands under the completion's row", async () => {
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const { row } = await rowAskingPaces();
+    const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+    const discovery = { actions: ["explore"], conditions: [], items: [] };
+    row.update({ ...completed(running, 480), discovery });
+    assert.equal(row.discovery.hidden, false);
+    assert.equal(row.discovery.textContent, "Odkryto: Eksploruj.");
+    assert.equal(
+      row.element.children[0].textContent,
+      "Minuta 480 · Las rozwiązany",
+    );
   } finally {
     globalThis.document = saved;
   }

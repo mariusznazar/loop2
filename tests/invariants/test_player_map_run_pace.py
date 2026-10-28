@@ -1,52 +1,72 @@
 """Invariant player-map-run-pace: Real time passed to the simulation for a map run the player
-starts moves the map run on, until it ends, by one game minute for each whole real second passed
-while it is not paused, and by no game minute for real time passed while it is paused, and a game
-minute in which something is discovered leaves the map run paused, the real time passed in the
-same call beyond that game minute moving it on by no game minute.
+starts moves the map run on, until it ends, by one game minute for each whole 1/pace of a real
+second passed while it is not paused, at the pace in force when that real time is passed - at
+16x, for each whole sixteenth of a second - an incomplete rest carrying over to the next real time
+passed, and by no game minute for real time passed while it is paused, and a game minute in which
+something is discovered leaves the map run paused unless the map run ends in it, the real time
+passed in the same call beyond that game minute moving it on by no game minute.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
-`send`, `passRealTime`, `setPaused`, `restart` and `end`, each returning `{state, events}`. After
-every input the script records the map run's game minute, whether the game is paused, the real
-time carried over (`realMsCarry`) and whether the game holds a discovery (`discovery` not null).
-The new game of each sent character is one whose Understanding holds everything the built data
-modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
-program stay what the check drives and no game minute discovers anything; the discovery scenario
-alone starts from the new game `newGame()` gives, which knows nothing, and its program of one
-empty group.
+`send`, `passRealTime`, `setPaused`, `setPace`, `restart` and `end`, each returning
+`{state, events}`. After every input the script records the map run's game minute, whether the
+game is paused, the pace (`pace`), the real time carried over (`realMsCarry`) and whether the game
+holds a discovery (`discovery` not null). The new game of each sent character is one whose
+Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
+`program_fixture.py` gives it, so that the rules of the program stay what the check drives and no
+game minute discovers anything; the discovery scenarios alone start from the new game `newGame()`
+gives, which knows nothing, and its program of one empty group.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
 - real time passed to the simulation: `passRealTime(state, realMs)` with a positive number of
   milliseconds;
-- one game minute for each whole real second passed while it is not paused: after each input the
-  map run's minute is the number of whole seconds in all the real time passed to that map run
-  while not paused — parts of a second carry over from one input to the next, and real time
-  passed to an earlier map run counts for none of a later one;
+- the pace in force: the one `setPace` last set, 1 in a new game; a pace of 1, 2, 4, 8 or 16 is
+  set, and the pace stays through a pause, `restart`, `end` and the next `send`;
+- one game minute for each whole 1/pace of a real second passed while it is not paused: the real
+  time passed is scaled by the pace in force when it is passed, and after each input the map run's
+  minute is the number of whole seconds in all the scaled real time passed to that map run while
+  not paused - parts of a second carry over from one input to the next, scaled at the pace they
+  were passed at, and a change of pace leaves what is carried; real time passed to an earlier map
+  run counts for none of a later one;
 - by no game minute while paused: real time passed between `setPaused(true)` and
   `setPaused(false)` leaves the minute where it is, and does not count towards the next second;
+  setting a pace while paused changes the pace and leaves the map run paused where it stands;
 - a game minute in which something is discovered: the first chill of a new game, in game minute 84
   (the task "odkrywanie", Context: minute 83 at 35,008 degrees, minute 84 at 34,984), and the
   first finished exploration after it, in game minute 104;
 - leaves the map run paused, the real time beyond that game minute moving it on by no game minute:
   real time that would carry the map run past the game minute of a discovery ends it in that game
-  minute, paused, with no real time carried over; further real time passed moves it no further;
-  after `setPaused(false)` it moves on by one game minute for each whole real second again;
-- until it ends: the map runs below pass at most 212 game minutes, and none ends within them; a
-  map run ended in the character's death is the invariant `minute-span-split`'s.
+  minute, paused, with no real time carried over - also at 16x, where one real second carries up
+  to 16 game minutes; further real time passed moves it no further; after `setPaused(false)` it
+  moves on by one game minute for each whole 1/pace of a real second again;
+- paused unless the map run ends in it: a game minute in which the map run completes (its streak
+  reaching 480, the solving condition of Las, D-80) leaves it not paused, ended, with no real time
+  carried over - also at 16x, where the same real time would carry it 16 game minutes on - and
+  further real time passed moves it no further; the map run is brought to a streak of 479 at
+  minute 0 by replacing that field of the map run in the game state (a patch step of the driver),
+  since no program of the scenarios completes within the minutes they pass;
+- until it ends: the map runs below pass at most 212 game minutes, and none ends within them, other
+  than the completion scenario, which ends in its first game minute; a map run ended in the
+  character's death is the invariant `minute-span-split`'s.
 
-The expected minute after each input is written out beside it below.
+The expected minute after each input is written out beside it below; each scaled value is the real
+time times the pace (62.5 ms at 16x is 1000).
 
 Control, so the check can fail: the same inputs without the pause move the map run on by the
 real time that the paused inputs would have brought (minute 9 to 10, 70 and 71), and whether the
 game is paused is checked after each `setPaused`, so the paused part of the scenario is not
 vacuous; the same real time passed to a game that knows everything is not stopped by any game
 minute (minute 184, not paused, the part of a second carried over), so the stop of the
-discovery scenario is the discovery's.
+discovery scenario is the discovery's; the same inputs of the pace scenario at the pace 1 would
+move the map run on by a sixteenth of the minutes, so that scenario is not vacuous; the same
+real time passed to a map run whose streak stands at 100 is not stopped (game minute 16, a carry of
+160), so the stop of the completion scenario is the completion's.
 
 Does NOT cover: real time passed with no map run; zero, negative or non-finite real time; inputs
-whose sum is not exact in binary floating point; the view's clock.
+whose sum is not exact in binary floating point; the view's clock; real time passed to a map run
+ended in the character's death.
 """
 
 import json
@@ -78,6 +98,16 @@ def passed(ms):
 
 PAUSE = ["setPaused", True]
 RESUME = ["setPaused", False]
+
+
+def pace(value):
+    return ["setPace", value]
+
+
+def patch_run(fields):
+    """Replace fields of the map run in the game state: explicit state, not a public function."""
+    return ["patchRun", fields]
+
 
 START = [["newGame"], CREATE, ["setProgram", PROGRAM], ["send", SENT, T]]
 
@@ -160,6 +190,82 @@ KNOWING_CONTROL = (
     (passed(100000), 184, False, 500, False),
 )
 
+# The pace scenario, on a game that knows everything: (input, the map run's game minute after it,
+# whether the game is paused after it, the real time carried over after it, whether the game
+# holds a discovery, the pace after it). The task "rozwiazanie-lasu", To do 1 and 2: a game minute
+# for each whole 1/pace of a real second, the pace staying until the player changes it.
+PACE_SCENARIO = (
+    (pace(16), 0, False, 0, False, 16),
+    (passed(62), 0, False, 992, False, 16),
+    (passed(0.5), 1, False, 0, False, 16),
+    (passed(1000), 17, False, 0, False, 16),
+    (passed(100), 18, False, 600, False, 16),
+    (pace(1), 18, False, 600, False, 1),
+    (passed(399), 18, False, 999, False, 1),
+    (passed(1), 19, False, 0, False, 1),
+    (pace(4), 19, False, 0, False, 4),
+    (passed(250), 20, False, 0, False, 4),
+    (PAUSE, 20, True, 0, False, 4),
+    (pace(8), 20, True, 0, False, 8),
+    (passed(5000), 20, True, 0, False, 8),
+    (RESUME, 20, False, 0, False, 8),
+    (passed(125), 21, False, 0, False, 8),
+    (pace(2), 21, False, 0, False, 2),
+    (passed(500), 22, False, 0, False, 2),
+    (pace(16), 22, False, 0, False, 16),
+    (["restart"], 0, False, 0, False, 16),
+    (passed(62.5), 1, False, 0, False, 16),
+    (["end"], None, False, 0, False, 16),
+    (["send", SENT, T_OTHER], 0, False, 0, False, 16),
+    (passed(62.5), 1, False, 0, False, 16),
+)
+# The same real time without a choice of pace: a sixteenth of the minutes.
+PACE_CONTROL = (
+    (passed(62), 0, False, 62, False, 1),
+    (passed(0.5), 0, False, 62.5, False, 1),
+    (passed(1000), 1, False, 62.5, False, 1),
+    (passed(100), 1, False, 162.5, False, 1),
+)
+# The discovery at 16x: 5200 ms make 83 game minutes with 200 ms carried over; 1000 ms more would
+# make 16 but are stopped by the discovery of game minute 84, which drops the carry of 200 and the
+# rest. A pace chosen in the stop changes the pace and leaves the map run stopped.
+DISCOVERY_PACE_SCENARIO = (
+    (pace(16), 0, False, 0, False, 16),
+    (passed(5200), 83, False, 200, False, 16),
+    (passed(1000), 84, True, 0, True, 16),
+    (pace(2), 84, True, 0, True, 2),
+    (passed(60000), 84, True, 0, True, 2),
+    (pace(16), 84, True, 0, True, 16),
+    (RESUME, 84, False, 0, False, 16),
+    (passed(31.25), 84, False, 500, False, 16),
+    (pace(1), 84, False, 500, False, 1),
+    (passed(499), 84, False, 999, False, 1),
+    (passed(1), 85, False, 0, False, 1),
+)
+
+# The completion at 16x, on a game that knows everything: 1010 ms at 16x would make 16 game
+# minutes with 160 ms carried over. (input, the map run's game minute after it, whether the game
+# is paused after it, the real time carried over after it, whether the game holds a discovery, the
+# pace after it, whether the map run has completed). A streak of 479 completes in game minute 1,
+# which drops the carry and the rest; the restart that follows goes on at the pace in force.
+COMPLETION_SCENARIO = (
+    (pace(16), 0, False, 0, False, 16, False),
+    (patch_run({"streak": 479}), 0, False, 0, False, 16, False),
+    (passed(1010), 1, False, 0, False, 16, True),
+    (passed(1000), 1, False, 0, False, 16, True),
+    (PAUSE, 1, True, 0, False, 16, True),
+    (RESUME, 1, False, 0, False, 16, True),
+    (passed(60000), 1, False, 0, False, 16, True),
+    (["restart"], 0, False, 0, False, 16, False),
+    (passed(62.5), 1, False, 0, False, 16, False),
+)
+# The same real time to a map run whose streak stands at 100: no completion, 16 game minutes.
+COMPLETION_CONTROL = (
+    (pace(16), 0, False, 0, False, 16, False),
+    (patch_run({"streak": 100}), 0, False, 0, False, 16, False),
+    (passed(1010), 16, False, 160, False, 16, False),
+)
+
 DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -172,9 +278,11 @@ const records = [];
 for (const [name, ...args] of steps) {
   if (name === 'newGame') state = await newKnowingGame(game, gamePath);
   else if (name === 'newBareGame') state = game.newGame();
+  else if (name === 'patchRun') state = { ...state, run: { ...state.run, ...args[0] } };
   else state = game[name](state, ...args).state;
   records.push({ step: name, minute: state.run ? state.run.minute : null, paused: state.paused,
-                carry: state.realMsCarry, discovery: state.discovery !== null });
+                carry: state.realMsCarry, discovery: state.discovery !== null, pace: state.pace,
+                completed: state.run ? state.run.completion !== null : false });
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
@@ -237,8 +345,14 @@ class PlayerMapRunPace(unittest.TestCase):
     def run_and_compare_discovery(self, start, table):
         records = drive(start + [list(step) for step, *_rest in table])
         self.assertEqual(len(records), len(start) + len(table))
-        for index, (step, minute, paused, carry, discovery) in enumerate(table):
+        for index, (step, minute, paused, carry, discovery, *after) in enumerate(table):
             record = records[len(start) + index]
+            if after:
+                self.assertEqual(record["pace"], after[0], f"pace after input {index}, "
+                                                            f"{json.dumps(step)}")
+            if len(after) > 1:
+                self.assertEqual(record["completed"], after[1],
+                                 f"completion after input {index}, {json.dumps(step)}")
             where = f"input {index}, {json.dumps(step)}"
             self.assertEqual(record["minute"], minute, f"game minute after {where}")
             self.assertEqual(record["paused"], paused, f"paused after {where}")
@@ -252,6 +366,26 @@ class PlayerMapRunPace(unittest.TestCase):
     def test_control_a_game_that_knows_everything_is_not_stopped(self):
         # invariant: player-map-run-pace
         self.run_and_compare_discovery(START[:3] + [["send", SENT, T]], KNOWING_CONTROL)
+
+    def test_a_chosen_pace_scales_the_real_time_and_stays_until_changed(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(START, PACE_SCENARIO)
+
+    def test_control_the_same_real_time_at_the_pace_one_moves_the_run_less(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(START, PACE_CONTROL)
+
+    def test_a_discovery_inside_one_real_second_at_16x_stops_the_run(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(BARE_START, DISCOVERY_PACE_SCENARIO)
+
+    def test_a_completion_ends_the_run_unpaused_and_drops_the_real_time_beyond_it(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(START, COMPLETION_SCENARIO)
+
+    def test_control_the_same_real_time_at_a_streak_of_100_is_not_stopped(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(START, COMPLETION_CONTROL)
 
 
 if __name__ == "__main__":

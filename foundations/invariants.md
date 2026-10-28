@@ -198,10 +198,12 @@ the program changes or the condition of another program rule comes to hold befor
 ## player-map-run-pace
 
 Real time passed to the simulation for a map run the player starts moves the map run on, until it
-ends, by one game minute for each whole real second passed while it is not paused, and by no game
-minute for real time passed while it is paused, and a game minute in which something is discovered
-leaves the map run paused, the real time passed in the same call beyond that game minute moving it
-on by no game minute.
+ends, by one game minute for each whole 1/pace of a real second passed while it is not paused, at
+the pace in force when that real time is passed — at 16×, for each whole sixteenth of a second — an
+incomplete rest carrying over to the next real time passed, and by no game minute for real time
+passed while it is paused, and a game minute in which something is discovered leaves the map run
+paused unless the map run ends in it, the real time passed in the same call beyond that game minute
+moving it on by no game minute.
 
 - **Method:** test
 - **Rests on:** none
@@ -525,7 +527,7 @@ Every character belongs to exactly one team.
 
 ## minute-span-split
 
-A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the game minute of the character's death or of a discovery.
+A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the game minute in which the map run ends or something is discovered.
 
 - **Method:** test
 - **Rests on:** none
@@ -821,6 +823,16 @@ The browser account client returns an account only for the success status of its
 - **Rests on:** none
 - **Derives from:** D-117
 - **Part:** browser-view
+- **Violated:** no
+
+## streak-program-change
+
+A change of the program rules or rule groups that a map run carries out sets the streak of that map run to zero, on every map.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-131 · D-136
+- **Part:** every
 - **Violated:** no
 
 ## Withdrawn identifiers

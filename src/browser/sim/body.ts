@@ -39,13 +39,14 @@ export function eatenBody(body: Body, satiety: number): Body {
  * of the map's ambient temperature, capped at the starting temperature; satiety falls, not below
  * 0; health falls for chilled and for starving, read from the values just computed, or rises where
  * neither, not above the starting health. Health at 0 or less stands at 0 and gives the cause of
- * death: cold where chilled, otherwise hunger.
+ * death: cold where chilled, otherwise hunger. `lostHealth` says whether the character lost health
+ * to cold or hunger in this minute, that is, was chilled or starving after the step.
  */
 export function bodyMinute(
   body: Body,
   warmth: number,
   map: MapDef,
-): { body: Body; death: DeathCause | null } {
+): { body: Body; death: DeathCause | null; lostHealth: boolean } {
   const rules = BALANCE.body;
   const cooling = decimal(
     rules.coolingPerDegreeBelow *
@@ -61,6 +62,7 @@ export function bodyMinute(
   );
   const chilled = temperature < rules.chilledBelow;
   const starving = satiety < rules.starvingBelow;
+  const lostHealth = chilled || starving;
 
   let health = body.health;
   if (chilled) health = decimal(health - rules.healthLossChilled);
@@ -72,7 +74,8 @@ export function bodyMinute(
     return {
       body: { temperature, satiety, health: 0 },
       death: chilled ? "cold" : "hunger",
+      lostHealth,
     };
   }
-  return { body: { temperature, satiety, health }, death: null };
+  return { body: { temperature, satiety, health }, death: null, lostHealth };
 }
