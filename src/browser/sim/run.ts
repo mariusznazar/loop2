@@ -288,6 +288,7 @@ export function newMapRun(
     burningItems: [],
     wanderRandom: streamState(seed, "wander"),
     gatherRandom: streamState(seed, "gather"),
+    streak: 0,
     death: null,
   };
   const started = startActivity(base, map, program);
@@ -312,13 +313,19 @@ export type MinuteBeforePick = {
   picks: boolean;
 };
 
+/** The streak after a game minute's body step: one more where no health was lost, otherwise 0. */
+function streakAfter(streak: number, lostHealth: boolean): number {
+  return lostHealth ? 0 : streak + 1;
+}
+
 /**
  * One game minute, in the order of D-71, up to the pick. First the body, warmed by what burns on
  * its tile; where the character dies, the step stops there: what burns and the tiles stay as they
  * stood, the current activity too, giving no finish, and no program rule is picked. Otherwise what
  * burns loses a minute and the tiles renew their stock; then, when the current activity ends in
  * this minute, its finish applies and the pick is left to `pickActivity`. A map run ended in death
- * passes no minute. Inputs are not changed.
+ * passes no minute. The streak follows the body step, in the death branch too. Inputs are not
+ * changed.
  */
 export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   if (run.death) return { run, events: [], picks: false };
@@ -327,18 +334,25 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   if (lived.death) {
     const cause = lived.death;
     return {
-      run: { ...run, minute, body: lived.body, death: { minute, cause } },
+      run: {
+        ...run,
+        minute,
+        body: lived.body,
+        streak: streakAfter(run.streak, lived.lostHealth),
+        death: { minute, cause },
+      },
       events: [{ kind: "characterDied", minute, cause }],
       picks: false,
     };
   }
   const body = lived.body;
+  const streak = streakAfter(run.streak, lived.lostHealth);
   const world = worldMinute(run, map, minute);
   // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
   // instead of never; for every duration of 1 minute or more the two are the same.
   if (minute < run.current.endMinute)
     return {
-      run: { ...run, minute, body, ...world },
+      run: { ...run, minute, body, streak, ...world },
       events: [],
       picks: false,
     };
@@ -396,6 +410,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
       campfires: landed.campfires,
       burningItems: landed.burningItems,
       gatherRandom,
+      streak,
     },
     events,
     picks: true,

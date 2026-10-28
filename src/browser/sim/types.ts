@@ -158,6 +158,11 @@ export type MapRun = {
   wanderRandom: number;
   /** Generator state of the gathering stream. */
   gatherRandom: number;
+  /**
+   * The successive game minutes, up to the latest, in which the character lost no health to cold or
+   * hunger; 0 at start, and 0 in the game minute of death.
+   */
+  streak: number;
   /** Set once the character dies; then no game minute passes. */
   death: Death | null;
 };

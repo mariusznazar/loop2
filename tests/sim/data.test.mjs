@@ -488,3 +488,22 @@ test("an activity of 0 minutes from faulty data still finishes in the next minut
     JSON.stringify(step.events),
   );
 });
+
+test("each map's solving condition holds a requirement, each a whole number above zero, and Las's is the task's", () => {
+  for (const [id, map] of Object.entries(MAPS)) {
+    const requirements = Object.entries(map.solving);
+    assert.ok(requirements.length >= 1, `map ${id} solving`);
+    for (const [kind, value] of requirements) {
+      assert.ok(
+        Number.isInteger(value) && value > 0,
+        `map ${id} solving ${kind} = ${value}`,
+      );
+    }
+  }
+  assert.deepEqual(MAPS.forest.solving, { streak: 480 });
+  assert.equal(
+    MAPS.forest.solvingText,
+    "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+  );
+  assert.equal(MAPS.forest.completionText, "Las rozwiązany");
+});
