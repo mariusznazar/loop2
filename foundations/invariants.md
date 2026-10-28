@@ -778,7 +778,7 @@ Opening an account database initializes the current schema version atomically, m
 The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, stores no session for a blocked account, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
 
 - **Method:** test
-- **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation
+- **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation · sqlite-wal-concurrency
 - **Derives from:** D-112 · D-115
 - **Part:** account-server
 - **Violated:** no
@@ -838,7 +838,7 @@ A blocked account cannot sign in or use authenticated game endpoints.
 The account server validates authenticated requests against a server-side SQLite session record and invalidates that record on logout or account blocking.
 
 - **Method:** test
-- **Rests on:** node-sqlite-database
+- **Rests on:** node-sqlite-database · sqlite-wal-concurrency
 - **Derives from:** D-130 · D-129
 - **Part:** account-server
 - **Violated:** no
