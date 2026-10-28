@@ -367,17 +367,35 @@ export function newGame(): GameState {
   };
 }
 
+/** Deep equality of plain data: the same keys with equal values, arrays in order. */
+function sameData(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!isObject(a) || !isObject(b) || Array.isArray(a) !== Array.isArray(b))
+    return false;
+  const keys = Object.keys(a);
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every((key) => Object.hasOwn(b, key) && sameData(a[key], b[key]))
+  );
+}
+
 /**
  * Replaces the program. Allowed with or without a map run; the running activity is left as it
- * is, and the program takes effect when the character next picks a program rule.
+ * is, and the program takes effect when the character next picks a program rule. Where the
+ * program checked differs from the one the state holds — groups and rules in order with their
+ * identities, conditions and actions, and the identity counters — the streak of a map run not
+ * ended in death becomes 0, paused or not; a program handed back as it stands leaves it.
  */
 export function setProgram(state: GameState, program: Program): GameResult {
   const checked = checkProgram(program, state.run);
+  const zeroed =
+    state.run && !state.run.death && !sameData(state.program, checked);
   return {
     state: {
       ...state,
       program: checked,
       ruleCounts: reconcileCounts(state, checked),
+      ...(zeroed && state.run && { run: { ...state.run, streak: 0 } }),
     },
     events: [],
   };
