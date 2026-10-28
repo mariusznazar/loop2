@@ -1,0 +1,53 @@
+Product: C:\Storage\repos\loop2-wt\rozwiazanie-lasu
+Process commit: 3aee7d958835cc19b95519f4d21b37538b78e3e1
+Submodule URL: https://github.com/mariusznazar/the-way.git
+MOVE .the-way from 574a37b9ab9572f876298f4cc10754581222d3f0 to 3aee7d958835cc19b95519f4d21b37538b78e3e1 (checks it out and stages the gitlink)
+KEEP foundations/decisions.md
+KEEP foundations/invariants.md
+KEEP foundations/glossary.md
+KEEP foundations/part_map.md
+KEEP foundations/environment_facts.md
+KEEP .claude/skills/the-way-record-decision/SKILL.md
+KEEP .agents/skills/the-way-record-decision/SKILL.md
+KEEP .claude/skills/the-way-record-invariant/SKILL.md
+KEEP .agents/skills/the-way-record-invariant/SKILL.md
+KEEP .claude/skills/the-way-record-glossary-term/SKILL.md
+KEEP .agents/skills/the-way-record-glossary-term/SKILL.md
+KEEP .claude/skills/the-way-update-part-map/SKILL.md
+KEEP .agents/skills/the-way-update-part-map/SKILL.md
+KEEP .claude/skills/the-way-record-environment-fact/SKILL.md
+KEEP .agents/skills/the-way-record-environment-fact/SKILL.md
+KEEP .claude/skills/the-way-find-foundation-entries/SKILL.md
+KEEP .agents/skills/the-way-find-foundation-entries/SKILL.md
+KEEP .claude/skills/the-way-define-project/SKILL.md
+KEEP .agents/skills/the-way-define-project/SKILL.md
+KEEP .claude/skills/the-way-plan-project/SKILL.md
+KEEP .agents/skills/the-way-plan-project/SKILL.md
+KEEP .claude/skills/the-way-lead-project/SKILL.md
+KEEP .agents/skills/the-way-lead-project/SKILL.md
+KEEP .claude/skills/the-way-settle-technology/SKILL.md
+KEEP .agents/skills/the-way-settle-technology/SKILL.md
+KEEP .claude/skills/the-way-refine-task/SKILL.md
+KEEP .agents/skills/the-way-refine-task/SKILL.md
+KEEP .claude/skills/the-way-implement-task/SKILL.md
+KEEP .agents/skills/the-way-implement-task/SKILL.md
+KEEP .claude/skills/the-way-plan-task/SKILL.md
+KEEP .agents/skills/the-way-plan-task/SKILL.md
+KEEP .claude/skills/the-way-write-spec/SKILL.md
+KEEP .agents/skills/the-way-write-spec/SKILL.md
+KEEP .claude/skills/the-way-make-change/SKILL.md
+KEEP .agents/skills/the-way-make-change/SKILL.md
+KEEP .claude/skills/the-way-review-change/SKILL.md
+KEEP .agents/skills/the-way-review-change/SKILL.md
+KEEP .claude/skills/the-way-critique/SKILL.md
+KEEP .agents/skills/the-way-critique/SKILL.md
+KEEP .claude/skills/the-way-maintain-styleguide/SKILL.md
+KEEP .agents/skills/the-way-maintain-styleguide/SKILL.md
+KEEP .claude/skills/the-way-maintain-coding-guidelines/SKILL.md
+KEEP .agents/skills/the-way-maintain-coding-guidelines/SKILL.md
+KEEP .claude/skills/the-way-maintain-testing-guidelines/SKILL.md
+KEEP .agents/skills/the-way-maintain-testing-guidelines/SKILL.md
+KEEP AGENTS.md
+KEEP .gitignore
+KEEP CLAUDE.md
+Apply these changes? [y/N] Installed. Commit the product files and gitlink when ready.
