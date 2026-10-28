@@ -437,7 +437,7 @@ until „Wznów”.
   - violates: a map run the player can hold still only by ending it; a pace picked during a pause
     resuming the map run; a control that takes a map run straight to its result or back to an
     earlier game minute
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop at 1×: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · in loop's repository, not loop2's: the data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1` · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "2. Czy cykl tego zadania zmienia decyzję D-21 i niezmiennik `player-map-run-pace`, które dziś trzymają przejście na jednej minucie gry na sekundę realną?", "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?" and "13. Co robi wybranie tempa w czasie pauzy — także w zatrzymaniu przy odkryciu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D22
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop at 1×: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · in loop's repository, not loop2's: the data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1` · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "2. Czy cykl tego zadania zmienia decyzję D-21 i niezmiennik `player-map-run-pace`, które dziś trzymają przejście na jednej minucie gry na sekundę realną?", "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?" and "13. Co robi wybranie tempa w czasie pauzy — także w zatrzymaniu przy odkryciu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D22 · the part on a manual map run: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How fast does the earning loop go?"
 
 *Rationale:* solving a map is a puzzle the player may fast-forward: at one game minute per real
 second, the pace at which the predecessor game, loop, runs at 1×, each attempt at the 480 game
@@ -2349,7 +2349,7 @@ stands.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
-- **Relations:** none
+- **Relations:** derives from D-136
 - **Verification:** invariants: streak-program-change. An agent compares a change with the decision:
   - complies: „↑” on the first program rule leaving a streak of 120 at 120; a program rule's action
     changed in a pause setting the streak to 0 while the character's action in progress goes on; a
@@ -2454,3 +2454,28 @@ with it: at a death of cold or hunger the streak stands at zero, so the screen a
 tell how near the map run came to its map's condition.
 *Rejected:* the longest streak of a map run kept, as the predecessor game, loop, kept it, and shown
 on the screen after death.
+
+### D-136 — How is a map solved?
+
+The condition that solves a map stands in the map's data, as a streak that the map run reaches. A
+streak counts the successive game minutes in which the character loses no health to cold or hunger:
+a game minute with such a loss sets it to zero, and every change of the program rules or rule groups
+the map run carries out sets it to zero, on every map.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: streak-program-change. For the condition in the map's data and the
+  rest of the streak, an agent compares a change with the decision:
+  - complies: Las asking for a streak of 480 game minutes, written in its row of the game maps'
+    data
+  - violates: a solving condition coded in the engine for one map; a game minute in which the
+    character is starving leaving the streak as it stood
+- **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a map solved, and what opens the next one?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 and D17
+
+*Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
+it, so a change of the program starts the streak again. The condition differs from map to map, so it
+lives in the map's data.
+*Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
+the backpack at completion as a kind of solving condition while no map asks for it — code and tests
+of a kind the game does not use, a kind that can come with a map that needs it.

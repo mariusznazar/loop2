@@ -831,7 +831,7 @@ A change of the program rules or rule groups that a map run carries out sets the
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-131
+- **Derives from:** D-131 · D-136
 - **Part:** every
 - **Violated:** no
 
