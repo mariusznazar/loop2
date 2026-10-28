@@ -198,10 +198,12 @@ the program changes or the condition of another program rule comes to hold befor
 ## player-map-run-pace
 
 Real time passed to the simulation for a map run the player starts moves the map run on, until it
-ends, by one game minute for each whole real second passed while it is not paused, and by no game
-minute for real time passed while it is paused, and a game minute in which something is discovered
-leaves the map run paused, the real time passed in the same call beyond that game minute moving it
-on by no game minute.
+ends, by one game minute for each whole 1/pace of a real second passed while it is not paused, at
+the pace in force when that real time is passed — at 16×, for each whole sixteenth of a second — an
+incomplete rest carrying over to the next real time passed, and by no game minute for real time
+passed while it is paused, and a game minute in which something is discovered leaves the map run
+paused unless the map run ends in it, the real time passed in the same call beyond that game minute
+moving it on by no game minute.
 
 - **Method:** test
 - **Rests on:** none
@@ -525,7 +527,7 @@ Every character belongs to exactly one team.
 
 ## minute-span-split
 
-A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the game minute of the character's death or of a discovery.
+A map run advanced by a span of game minutes reaches the same game state, with the same events in the same order, at every game minute, however the span is split into calls of the simulation, up to and including the game minute in which the map run ends or something is discovered.
 
 - **Method:** test
 - **Rests on:** none
@@ -669,7 +671,7 @@ The browser carries a random session identifier in a loop2 host-scoped, Secure a
 
 - **Method:** test
 - **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security
-- **Derives from:** D-101 · D-130
+- **Derives from:** D-101 · D-138
 - **Part:** account-server · browser-view · deployment
 - **Violated:** no
 
@@ -823,13 +825,23 @@ The browser account client returns an account only for the success status of its
 - **Part:** browser-view
 - **Violated:** no
 
+## streak-program-change
+
+A change of the program rules or rule groups that a map run carries out sets the streak of that map run to zero, on every map.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-131 · D-136
+- **Part:** every
+- **Violated:** no
+
 ## blocked-account-access
 
 A blocked account cannot sign in or use authenticated game endpoints.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-129 · D-131
+- **Derives from:** D-137 · D-139
 - **Part:** account-server
 - **Violated:** no
 
@@ -839,7 +851,7 @@ The account server validates authenticated requests against a server-side SQLite
 
 - **Method:** test
 - **Rests on:** node-sqlite-database · sqlite-wal-concurrency
-- **Derives from:** D-130 · D-129
+- **Derives from:** D-138 · D-137
 - **Part:** account-server
 - **Violated:** no
 
@@ -849,7 +861,7 @@ A session removed when its account was blocked authorizes no request after the a
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-129
+- **Derives from:** D-137
 - **Part:** account-server
 - **Violated:** no
 

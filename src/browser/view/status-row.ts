@@ -1,16 +1,20 @@
 import { ACTIONS } from "../sim/data/actions.js";
+import { BALANCE } from "../sim/data/balance.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { ITEMS } from "../sim/data/items.js";
+import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type {
   Activity,
   DeathCause,
   GameState,
   MapRun,
+  Pace,
   Understanding,
 } from "../sim/types.js";
-import { createButton } from "./controls/button.js";
+import { mapRunEnded } from "../sim/game.js";
+import { createButton, setButtonSelected } from "./controls/button.js";
 
 const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
 const PAUSED_SUFFIX = " (pauza)";
@@ -34,21 +38,27 @@ function activityText(activity: Activity): string {
 }
 
 /**
- * The status row's text: „Minuta {minute} · {activity}”, with „ (pauza)” while paused; after the
- * character's death „Minuta {minute of death} · {cause}”, never paused. Pure.
+ * The status row's text: „Minuta {minute} · {activity} · Passa {streak}/{streak requirement of the
+ * map}”, with „ (pauza)” at its end while paused; after the character's death „Minuta {minute of
+ * death} · {cause}”, and after a completion „Minuta {minute of completion} · {completionText of the
+ * map}”, both never paused. Pure.
  */
 export function statusText(run: MapRun, paused: boolean): string {
   if (run.death)
     return `Minuta ${run.death.minute} · ${DEATH_TEXTS[run.death.cause]}`;
-  return `Minuta ${run.minute} · ${activityText(run.current.activity)}${paused ? PAUSED_SUFFIX : ""}`;
+  const map = MAPS[run.mapId];
+  if (run.completion)
+    return `Minuta ${run.completion.minute} · ${map.completionText}`;
+  return `Minuta ${run.minute} · ${activityText(run.current.activity)} · Passa ${run.streak}/${map.solving.streak}${paused ? PAUSED_SUFFIX : ""}`;
 }
 
 /**
  * The pause button's text: „Pauza” for a running map run, „Wznów” for a paused one, and null after
- * the character's death, when time stands still and the button is gone (D-62). Pure.
+ * the end of the map run, in death or a completion, when time stands still and the button is gone
+ * (D-62). Pure.
  */
 export function pauseLabel(state: GameState): string | null {
-  if (state.run?.death) return null;
+  if (state.run && mapRunEnded(state.run)) return null;
   return state.paused ? "Wznów" : "Pauza";
 }
 
@@ -95,6 +105,8 @@ export function discoveryText(discovery: Understanding): string {
 export type StatusRowControls = {
   /** „Pauza” or „Wznów”: pauses a running map run, resumes a paused one. */
   togglePause(): void;
+  /** A pace button: the player picks the pace; paused or not, the pause stays as it is. */
+  setPace(pace: Pace): void;
   restart(): void;
   end(): void;
 };
@@ -111,9 +123,11 @@ export type StatusRow = {
 };
 
 /**
- * Builds the status row: its text and the buttons „Pauza”/„Wznów”, „Restart”, „Zakończ”; after the
- * character's death the pause button is hidden, and „Restart” and „Zakończ” act on the map run
- * ended in death. The elements are made once and updated in place, so a button keeps focus across
+ * Builds the status row: its text and the buttons „Pauza”/„Wznów”, one per pace of the data
+ * (the number and „×”, the one of the state's pace selected), „Restart”, „Zakończ”; after the
+ * end of the map run, in death or a completion, the pause and pace buttons are hidden, and „Restart”
+ * and „Zakończ” act on the map run ended; after a completion the text element carries the class
+ * `positive`, and then only. The elements are made once and updated in place, so a button keeps focus across
  * clock ticks.
  */
 export function createStatusRow(controls: StatusRowControls): StatusRow {
@@ -125,10 +139,15 @@ export function createStatusRow(controls: StatusRowControls): StatusRow {
   discovery.className = "discovery-text";
   discovery.hidden = true;
   const pauseButton = createButton("");
+  const paceButtons = BALANCE.paces.map((pace) => {
+    const button = createButton(`${pace}×`);
+    button.addEventListener("click", () => controls.setPace(pace));
+    return button;
+  });
   // „Restart” and „Zakończ” end the map run as it stands: destructive buttons (D-44).
   const restartButton = createButton("Restart", { kind: "destructive" });
   const endButton = createButton("Zakończ", { kind: "destructive" });
-  element.append(text, pauseButton, restartButton, endButton);
+  element.append(text, pauseButton, ...paceButtons, restartButton, endButton);
 
   pauseButton.addEventListener("click", () => controls.togglePause());
   restartButton.addEventListener("click", () => controls.restart());
@@ -144,10 +163,15 @@ export function createStatusRow(controls: StatusRowControls): StatusRow {
       if (!state.run) return;
       const shown = statusText(state.run, state.paused);
       if (text.textContent !== shown) text.textContent = shown;
+      text.classList.toggle("positive", state.run.completion !== null);
       const label = pauseLabel(state);
       pauseButton.hidden = label === null;
       if (label !== null && pauseButton.textContent !== label)
         pauseButton.textContent = label;
+      paceButtons.forEach((button, index) => {
+        button.hidden = label === null;
+        setButtonSelected(button, BALANCE.paces[index] === state.pace);
+      });
     },
   };
 }

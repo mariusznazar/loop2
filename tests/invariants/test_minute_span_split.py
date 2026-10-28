@@ -1,7 +1,7 @@
 """Invariant minute-span-split: A map run advanced by a span of game minutes reaches the same game
 state, with the same events in the same order, at every game minute, however the span is split
-into calls of the simulation, up to and including the game minute of the character's death or of a
-discovery.
+into calls of the simulation, up to and including the game minute in which the map run ends or
+something is discovered.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
@@ -26,8 +26,10 @@ Reading of the sentence:
   not whole seconds leaves real time not yet turned into a game minute in `realMsCarry`; that
   carry belongs to the split, not to a game minute, so for such a split the state is compared less
   `realMsCarry`; everything else is compared whole;
-- up to and including death: in the scenarios where the character dies, the spans reach past the
-  death minute; every call from there on must give the state of the death minute and no events;
+- up to and including the game minute in which the map run ends: in the scenarios where the
+  character dies, the spans reach past the death minute; in the scenario COMPLETES, the span reaches
+  past the game minute of the completion; every call from there on must give the state of that
+  minute and no events;
 - up to and including the game minute of a discovery: in the scenario DISCOVERS, whose first
   discovery is the first chill, a call whose span reaches past that game minute ends in it, and the
   comparison covers the game minutes up to and including it; each split, called with spans or real
@@ -41,6 +43,10 @@ Scenarios (the program ACCEPTANCE is the one of `tests/sim/acceptance.test.mjs`)
 - DIES_IDLE: the empty program sent at ALIVE_REAL_MS, 300 game minutes; it dies in minute 243;
 - DIES_BUSY: ACCEPTANCE sent at T, 400 game minutes; it gathers, eats and builds a campfire and
   dies before minute 400;
+- COMPLETES: ACCEPTANCE sent at ALIVE_REAL_MS with the streak of its map run replaced by 460 in the
+  game state at game minute 0 (explicit state: the scenarios above reach 480 minutes without a
+  loss in none), 40 game minutes; no loss to cold or hunger happens before minute 84, so the streak
+  reaches 480, the solving condition of Las (D-80), in game minute 20, where the map run completes;
 - DISCOVERS: the program of a new game (one empty group) sent at ALIVE_REAL_MS from `newGame()`, a
   game that knows nothing, 100 game minutes; its first chill, in game minute 84, is a discovery.
 
@@ -55,7 +61,10 @@ gathering, an eating, a crafting, a lighting and a feeding of a campfire and is 
 minute; DIES_IDLE dies in minute 243 and DIES_BUSY before its span ends, after a gathering, an
 eating and a crafting; in DISCOVERS the reference's state in game minute 84 is paused and holds a
 discovery, every split ends a call there, and one call of the whole span, which is 100 minutes,
-reaches game minute 84 and no further.
+reaches game minute 84 and no further; in COMPLETES the reference completes once, in game minute
+20, unpaused, adds Las to the solved maps and stands from there on, every split ends a call at
+each game minute up to 20, and one call of the whole span, which is 40 minutes, reaches game
+minute 20 and no further.
 
 Does NOT cover: maps, archetypes, programs and seeds other than these; a program changed, a
 pause or a restart within the span; the browser view's clock.
@@ -137,6 +146,10 @@ IDLE_DEATH_MINUTE = 243
 # The scenario of a new game that knows nothing: (real time of the send, span in game minutes, the
 # game minute of its first discovery, the first chill).
 DISCOVERS = ("DISCOVERS", ALIVE_REAL_MS, 100, 84)
+# The scenario whose map run completes: (program, real time of the send, span in game minutes, the
+# fields of the map run replaced at game minute 0, the game minute of the completion). A streak of
+# 460 plus one for each of the minutes 1 to 20 is 480, the solving condition of Las (D-80).
+COMPLETES = ("COMPLETES", ACCEPTANCE, ALIVE_REAL_MS, 40, {"streak": 460}, 20)
 
 REFERENCE = "one minute a call"
 
@@ -197,11 +210,12 @@ const [gamePath, runsPath, outPath] = process.argv.slice(2);
 const game = await import(pathToFileURL(gamePath).href);
 const runs = JSON.parse(readFileSync(runsPath, 'utf8'));
 const out = {};
-for (const [key, { program, sent, realMs, calls, bare }] of Object.entries(runs)) {
+for (const [key, { program, sent, realMs, calls, bare, patch }] of Object.entries(runs)) {
   let state = bare ? game.newGame() : await newKnowingGame(game, gamePath);
   if (program) state = game.setProgram(state, program).state;
   state = game.createCharacter(state, 'Ala').state;
   state = game.send(state, sent, realMs).state;
+  if (patch) state = { ...state, run: { ...state.run, ...patch } };
   const records = [{ state: JSON.parse(JSON.stringify(state)), events: [] }];
   for (const [name, arg] of calls) {
     const result = game[name](state, arg);
@@ -240,6 +254,10 @@ def drive():
     for split, (make, _carry) in SPLITS.items():
         runs[run_key(DISCOVERS[0], split)] = {"program": None, "sent": SENT, "bare": True,
                                               "realMs": DISCOVERS[1], "calls": make(DISCOVERS[2])}
+    for split, (make, _carry) in SPLITS.items():
+        runs[run_key(COMPLETES[0], split)] = {"program": COMPLETES[1], "sent": SENT,
+                                              "realMs": COMPLETES[2], "calls": make(COMPLETES[3]),
+                                              "patch": COMPLETES[4]}
     directory = tempfile.mkdtemp(prefix="loop2-minute-span-split-")
     try:
         script = os.path.join(directory, "driver.mjs")
@@ -348,6 +366,42 @@ class MinuteSpanSplit(unittest.TestCase):
                 with self.subTest(scenario=scenario, split=split):
                     self.assertEqual(findings(reference, result[run_key(scenario, split)], carry),
                                      [])
+
+    def test_every_split_reaches_the_same_state_and_events_through_a_completion(self):
+        # invariant: minute-span-split
+        result = records()
+        reference = result[run_key(COMPLETES[0], REFERENCE)]
+        for split, (_make, carry) in SPLITS.items():
+            if split == REFERENCE:
+                continue
+            with self.subTest(split=split):
+                self.assertEqual(findings(reference, result[run_key(COMPLETES[0], split)], carry),
+                                 [])
+
+    def test_control_the_completion_scenario_completes_once_and_the_map_run_then_stands(self):
+        # invariant: minute-span-split
+        result = records()
+        reference = result[run_key(COMPLETES[0], REFERENCE)]
+        completions = [(i, e) for i, r in enumerate(reference) for e in r["events"]
+                       if e["kind"] == "mapRunCompleted"]
+        self.assertEqual([e["minute"] for _i, e in completions], [COMPLETES[5]])
+        at_completion = reference[completions[0][0]]
+        self.assertEqual(minute(at_completion), COMPLETES[5])
+        self.assertEqual(at_completion["state"]["run"]["completion"], {"minute": COMPLETES[5]})
+        self.assertEqual(at_completion["state"]["solvedMaps"], [SENT["mapId"]])
+        self.assertFalse(at_completion["state"]["paused"])
+        self.assertEqual(at_completion["events"][-1]["kind"], "mapRunCompleted")
+        self.assertLess(COMPLETES[5], COMPLETES[3], "the span does not reach past the completion")
+        for later in reference[completions[0][0] + 1:]:
+            self.assertEqual(later["events"], [])
+            self.assertEqual(later["state"], at_completion["state"])
+        whole = result[run_key(COMPLETES[0], "one call")]
+        self.assertEqual(minute(whole[-1]), COMPLETES[5],
+                         "one call of the whole span went past the game minute of the completion")
+        ended = {minute(r) for split in SPLITS if split != REFERENCE
+                 for r in result[run_key(COMPLETES[0], split)][1:]}
+        self.assertEqual(sorted(set(range(1, COMPLETES[5] + 1)) - ended), [],
+                         "no split other than one minute a call ends a call at these game minutes")
 
     def test_a_dead_character_stays_dead_and_gives_no_events(self):
         # invariant: minute-span-split

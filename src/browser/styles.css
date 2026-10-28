@@ -335,6 +335,16 @@ header h1 {
   font-variant-numeric: tabular-nums;
 }
 
+/* A completed map run: the status text says something works, is in order (D-39). */
+.status-text.positive {
+  color: var(--positive);
+}
+
+/* A map solved in the headquarters, beside the character's row (D-39). */
+.map-label.solved {
+  color: var(--positive);
+}
+
 /* What the last game minute of a discovery revealed, under the status row (D-39). */
 .discovery-text {
   margin: var(--space-xs) 0 0;

@@ -276,3 +276,19 @@ test("restart and end take a map run ended in death as one in progress", () => {
   assert.equal(again.run.character.id, characterId);
   assert.equal(again.run.death, null);
 });
+
+test("the body step reports a loss only when the character is chilled or starving after it", () => {
+  // Worked by hand: Las cools the body by 0.024 °C and satiety falls by 0.6 in a minute.
+  const cases = [
+    [body(37, 100, 100), false, "warm and fed"],
+    [body(35.02, 100, 100), true, "35.02 − 0.024 = 34.996, below 35.0"],
+    [body(35.1, 100, 100), false, "35.1 − 0.024 = 35.076, not below 35.0"],
+    [body(37, 30.5, 100), true, "30.5 − 0.6 = 29.9, below 30"],
+    [body(37, 31, 100), false, "31 − 0.6 = 30.4, not below 30"],
+    [body(37, 100, 20), false, "wounded but neither chilled nor starving"],
+    [body(34, 50, 0.2), true, "chilled to death in this minute"],
+  ];
+  for (const [before, lost, why] of cases) {
+    assert.equal(bodyMinute(before, 0, forest).lostHealth, lost, why);
+  }
+});

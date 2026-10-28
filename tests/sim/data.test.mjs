@@ -175,6 +175,8 @@ test("every item and every item of the campfire names an item of the data", () =
 test("the archetype and the pace are in data", () => {
   assert.equal(ARCHETYPES.elementalMage.name, "Mag żywiołów");
   assert.equal(BALANCE.gameMinutesPerRealSecond, 1);
+  // The paces of the task "rozwiazanie-lasu", Question 3 (Mariusz, 2026-10-25).
+  assert.deepEqual(BALANCE.paces, [1, 2, 4, 8, 16]);
   assert.equal(BALANCE.waitMinutes, 1);
   assert.equal(INITIAL_SEED, 1);
 });
@@ -485,4 +487,23 @@ test("an activity of 0 minutes from faulty data still finishes in the next minut
     ),
     JSON.stringify(step.events),
   );
+});
+
+test("each map's solving condition holds a requirement, each a whole number above zero, and Las's is the task's", () => {
+  for (const [id, map] of Object.entries(MAPS)) {
+    const requirements = Object.entries(map.solving);
+    assert.ok(requirements.length >= 1, `map ${id} solving`);
+    for (const [kind, value] of requirements) {
+      assert.ok(
+        Number.isInteger(value) && value > 0,
+        `map ${id} solving ${kind} = ${value}`,
+      );
+    }
+  }
+  assert.deepEqual(MAPS.forest.solving, { streak: 480 });
+  assert.equal(
+    MAPS.forest.solvingText,
+    "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+  );
+  assert.equal(MAPS.forest.completionText, "Las rozwiązany");
 });

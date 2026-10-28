@@ -10,6 +10,15 @@ export type MapResourceDef = {
   renewMinutes?: number;
 };
 
+/**
+ * What a map run must meet to solve the map: every requirement the object holds. Each is named by
+ * its kind.
+ */
+export type SolvingDef = {
+  /** Successive game minutes of the streak, a whole number above zero. */
+  streak: number;
+};
+
 export type MapDef = {
   name: string;
   width: number;
@@ -21,6 +30,12 @@ export type MapDef = {
   stepMinutes: number;
   /** Order is part of the layout contract: reordering changes every seed's layout. */
   resources: MapResourceDef[];
+  /** The solving condition of the map. */
+  solving: SolvingDef;
+  /** The condition as a sentence without the map's name; the headquarters shows it after the name. */
+  solvingText: string;
+  /** The whole text the status row shows after a completion, agreeing with the name. */
+  completionText: string;
 };
 
 export const MAPS = {
@@ -37,6 +52,10 @@ export const MAPS = {
       { id: "moss", density: 0.4, stock: 6, renewMinutes: 60 },
       { id: "fiber", density: 0.4, stock: 6, renewMinutes: 60 },
     ],
+    solving: { streak: 480 },
+    solvingText:
+      "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    completionText: "Las rozwiązany",
   },
 } as const satisfies Record<string, MapDef>;
 

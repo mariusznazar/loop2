@@ -3,6 +3,7 @@ import {
   end,
   newGame,
   restart,
+  setPace,
   setPaused,
   setProgram,
   type GameResult,
@@ -91,6 +92,11 @@ export function createGameView(): GameView {
     togglePause() {
       clock.flush();
       store.apply(setPaused(state, !state.paused));
+    },
+    // Real time elapsed before the click is passed at the old pace.
+    setPace(pace) {
+      clock.flush();
+      store.apply(setPace(state, pace));
     },
     restart() {
       clock.flush();

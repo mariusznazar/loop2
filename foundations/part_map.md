@@ -51,6 +51,7 @@ The part computes the game: the game state, the map run, the character's program
   tests/invariants/test_map_run_layout.py
   tests/invariants/test_character_team.py
   tests/invariants/test_minute_span_split.py
+  tests/invariants/test_streak_program_change.py
 - **Depends on:** none
 - **Trust boundary:** none
 

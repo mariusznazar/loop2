@@ -421,21 +421,37 @@ two versions of the program in force at once.
 
 ### D-21 — How does time pass in a map run the player starts?
 
-A map run the player starts passes at one game minute per real second, and the player can pause and
-resume it.
+A map run the player starts passes at one game minute per real second times the pace the player
+picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it. Picking a pace while the
+map run is paused, the pause at a discovery included, changes the pace and leaves the map run paused
+until „Wznów”.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: player-map-run-pace. For the player's way to pause and resume a map
-  run, an agent compares the change with the decision:
-  - complies: a control of the browser view that pauses the map run in progress and resumes it
-  - violates: a map run the player can hold still only by ending it
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · in loop's repository, not loop2's: the data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1`
+  run, to pick a pace and to fast-forward, an agent compares the change with the decision:
+  - complies: a control of the browser view that pauses the map run in progress and resumes it; a
+    map run at 16× passing sixteen game minutes, one after another, in one real second; „8×” picked
+    during a pause leaving the game minute where it stands until „Wznów”
+  - violates: a map run the player can hold still only by ending it; a pace picked during a pause
+    resuming the map run; a control that takes a map run straight to its result or back to an
+    earlier game minute
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop at 1×: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · in loop's repository, not loop2's: the data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1` · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "2. Czy cykl tego zadania zmienia decyzję D-21 i niezmiennik `player-map-run-pace`, które dziś trzymają przejście na jednej minucie gry na sekundę realną?", "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?" and "13. Co robi wybranie tempa w czasie pauzy — także w zatrzymaniu przy odkryciu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D22 · the part on a manual map run: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How fast does the earning loop go?"
 
-*Rationale:* one game minute per real second is the pace at which the predecessor game, loop, runs
-without fast-forwarding, and a pause holds a map run without ending it.
-*Rejected:* the same pace with no pause; a faster pace while the game has no fast-forwarding.
+*Rationale:* solving a map is a puzzle the player may fast-forward: at one game minute per real
+second, the pace at which the predecessor game, loop, runs at 1×, each attempt at the 480 game
+minutes of Las takes eight real minutes, and at 16× half a real minute. Fast-forwarding is a faster
+pace of the same game minutes, which pass one after another in sight, so the player still watches
+the program act. A pause holds a map run without ending it, and it stays an act of its own, so a pace
+picked in a pause leaves the map run standing. Accepted with it: at 16× the screen moves on several
+game minutes at each refresh; real time passes in a hidden browser tab too, so a map run at 16× left
+in a hidden tab passes the whole of Las unseen, its end included; a player who picks a pace in a
+pause sees nothing move until „Wznów”.
+*Rejected:* the same pace with no pause; a jump of a map run to its result, and a way back to an
+earlier game minute — the player would no longer watch the program act; picking a pace in a pause
+resuming the map run — the pace and the pause would stop being two acts; the pace buttons shown
+inactive during a pause — the player could not set the pace before going on.
 
 ### D-22 — Where does the simulation's randomness come from?
 
@@ -1171,18 +1187,18 @@ A character dies in the game minute in which its health reaches zero, also durin
 
 ### D-62 — What does the screen show, and what can the player do, after a character's death?
 
-After a character's death the screen stays on the state of the game minute of death and time stands still, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character.
+After a character's death the screen stays on the state of the game minute of death and time stands still, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character. After a character's death the pace buttons are gone together with „Pauza”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: after a death of cold in game minute 312 the status row reads „Minuta 312 · Mag zamarzł”, „Pauza” is gone, the game minute stays at 312, and „Restart” starts game minute zero on the same seed;
-  - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?"
+  - complies: after a death of cold in game minute 312 the status row reads „Minuta 312 · Mag zamarzł”, „Pauza” and the pace buttons are gone, the game minute stays at 312, and „Restart” starts game minute zero on the same seed;
+  - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?"
 
-*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen from which the player sends the character, whatever that screen becomes.
-*Rejected:* going back to sending the character at once after death — the player loses the state that explains the death.
+*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen from which the player sends the character, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
+*Rejected:* going back to sending the character at once after death — the player loses the state that explains the death; the pace buttons kept active after death while gone after a completion, and the pace buttons shown inactive or active on both screens of an end — the screens of the two ends would differ, or show controls of a time that stands still.
 
 ### D-63 — How does a character light a campfire or a stick?
 
@@ -1306,18 +1322,18 @@ A campfire shows on the terrain panel's drawing of the game map as an icon on it
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
-A game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and the program picks a program rule from what that minute has made. Something discovered in a game minute is discovered where that order brings it — a chill with the character's body, an action of the character with its effect — so the rest of the minute takes effect and the program's pick at its end draws on the Understanding and the program as the discovery has left them, a program rule written at the discovery included; in the game minute of death no effect of an ending action takes hold, and so it brings no discovery. A map run in which something is discovered stops once the whole game minute of the discovery has taken effect.
+A game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither — and with it the streak of the map run, as D-136 counts it; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and then, where the map run meets its game map's solving condition, the map run ends in a completion in place of the program's pick, and otherwise the program picks a program rule from what that minute has made. Something discovered in a game minute is discovered where that order brings it — a chill with the character's body, an action of the character with its effect — so the rest of the minute takes effect and the program's pick at its end draws on the Understanding and the program as the discovery has left them, a program rule written at the discovery included; in the game minute of death no effect of an ending action takes hold, and so it brings no discovery. A map run in which something is discovered stops once the whole game minute of the discovery has taken effect.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-04 · derives from D-23 · derives from D-118
+- **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136
 - **Verification:** invariants: minute-span-split. An agent compares a change with the decision:
-  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage first chilled in game minute 84 discovering „Eksploruj” and starting „Zawsze → Eksploruj” at the pick of game minute 84, before the map run stops;
-  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?"
+  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage first chilled in game minute 84 discovering „Eksploruj” and starting „Zawsze → Eksploruj” at the pick of game minute 84, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute;
+  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "8. W której chwili minuty gry przejście się domyka i co z akcją postaci kończącą się w tej minucie?"
 
-*Rationale:* The world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so every effect of an action of the character acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel.
-*Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it.
+*Rationale:* The world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so every effect of an action of the character acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; the order of a game minute grows longer by the streak and the completion.
+*Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it; a completion right after the character's body, as death comes — the effect of an action ending in that game minute would be lost.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
 
@@ -1622,9 +1638,9 @@ During a map run every program rule shows how many times it fired in that map ru
 number followed by „×”, such as „3×”. The count starts from zero at the start of each map run,
 a map run restart included, and when the program rule's condition or action changes; it survives
 reordering the rule, moving it to another rule group, and changing its group's condition or name.
-Before the game's first map run the rules show no counts, and after a map run ends, in death or
-through „Zakończ”, its counts remain beside the rules until the next send or map run restart,
-subject to the same reset on a change of a rule's content.
+Before the game's first map run the rules show no counts, and after a map run ends, in death, in a
+completion or through „Zakończ”, its counts remain beside the rules until the next send or map run
+restart, subject to the same reset on a change of a rule's content.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -1632,20 +1648,25 @@ subject to the same reset on a change of a rule's content.
 - **Verification:** an agent compares a change with the decision:
   - complies: a program rule moved up or into another group keeping its count; a changed group
     condition leaving its rules' counts intact; a rule whose condition changed starting again
-    from zero; counts retained after death and after „Zakończ”, reset on the next send or restart
+    from zero; counts retained after death, after a completion and after „Zakończ”, reset on the
+    next send or restart
   - violates: counts kept per position in the list; a rename of a group resetting its rules'
-    counts; a count shown before the first map run; „Zakończ” hiding the completed run's counts
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14
+    counts; a count shown before the first map run; „Zakończ” hiding the ended run's counts; a
+    completion clearing the counts of its map run
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14 · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "17. Co pokazują liczniki reguł programu po domknięciu przejścia — zostają przy regułach jak po śmierci i po „Zakończ”, aż do następnego wysłania albo „Restart”?"
 
 *Rationale:* The count is the sign that a program rule is dead — one standing too low is caught
 by one above it and stays silent for a whole map run. A program rule whose content changed is
 another program rule, so its count starts again, while its group and its place arrange when the
 same rule can act. Keeping the last run's counts lets the player inspect the program after that
-run ends. Accepted with it: a count earned under a group's former condition remains when the
-condition changes, and the next run gives a fresh picture of the edited program.
+run ends, whichever way it ends, the run that solved a map included. Accepted with it: a count
+earned under a group's former condition remains when the condition changes, and the next run gives
+a fresh picture of the edited program.
 *Rejected:* counts per position — moving a rule would attach another rule's history to it;
 resetting on a move or group edit — arranging the same rules would erase their history; hiding
-the counts after „Zakończ” — the player would lose the completed run's evidence while editing.
+the counts after „Zakończ” — the player would lose the ended run's evidence while editing; clearing
+the counts at a completion — the player could not see which rules worked in the run that solved the
+map.
 
 ### D-94 — Where does loop2 use a mutation testing tool?
 
@@ -1737,7 +1758,7 @@ The account server normalizes email with ECMAScript trim and lowercase, stores t
 
 ### D-100 — What do duplicate registration and failed login tell the player?
 
-Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two; a blocked account's correct password is refused as D-131 gives.
+Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two; a blocked account's correct password is refused as D-139 gives.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
@@ -1840,7 +1861,7 @@ The account server uses `express-session` to issue and maintain player sessions,
 
 - **Scope:** account-server, build-tools, deployment
 - **Based on:** express-session-store-contract · node-sqlite-database
-- **Relations:** derives from D-101 · derives from D-130
+- **Relations:** derives from D-101 · derives from D-138
 - **Verification:** invariants: player-express-session-sqlite-store.
 - **Origin:** none
 
@@ -1916,7 +1937,7 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 
 ### D-112 — How does the account database open and preserve its schema?
 
-The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-129 opens one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 2 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account and session and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time and blocked state, and sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state and deletes its sessions in one transaction, and a session write for a blocked account stores nothing.
+The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137 opens one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 2 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account and session and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time and blocked state, and sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state and deletes its sessions in one transaction, and a session write for a blocked account stores nothing.
 
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · sqlite-wal-concurrency
@@ -2096,7 +2117,9 @@ campfire come with the first crafted campfire, later than in loop.
 When something is discovered in a map run the player starts, the map run stops in the same pause
 as after „Pauza”: the status row adds „ (pauza)”, and the player goes on with „Wznów”. Below the
 status row a line in the role `discovery` names what was discovered, the discoveries of one game
-minute in one line, and it stands until the player goes on.
+minute in one line, and it stands until the player goes on. Where the map run ends in a completion
+in the game minute of a discovery, the screen after the completion takes the place of the pause, and
+the line stands below its status row until „Restart” or „Zakończ”.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -2104,16 +2127,26 @@ minute in one line, and it stands until the player goes on.
 - **Verification:** invariants: player-map-run-pace. An agent compares a change with the decision:
   - complies: after the first finished exploration the status row ending in „ (pauza)” and below
     it the line „Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu leży
-    mniej niż … szt., Zapas poniżej … szt.”, gone once the player presses „Wznów”
+    mniej niż … szt., Zapas poniżej … szt.”, gone once the player presses „Wznów”; a completion of
+    Las in the game minute of a discovery showing „Minuta 480 · Las rozwiązany” with no „ (pauza)”
+    and the line of that discovery below it until „Restart”
   - violates: a button of its own for going on after a discovery; the line of discoveries still
-    standing after „Wznów”; two discoveries of one game minute in two lines
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?"
+    standing after „Wznów”; two discoveries of one game minute in two lines; a completion in the
+    game minute of a discovery leaving the map run paused with „Wznów”; the line of that discovery
+    gone from the screen after the completion before „Restart” or „Zakończ”
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?"
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
-whatever treats a paused map run treats a map run stopped by a discovery the same. Accepted with
-it: a stop at a discovery cannot be told apart in the game state from the player's pause, and a
-player who goes on at once loses the list of discoveries, since the game keeps no record of them.
-*Rejected:* a stop at a discovery as a game state of its own, with a button of its own.
+whatever treats a paused map run treats a map run stopped by a discovery the same. A map run that
+ends in the game minute of a discovery has nothing to go on to, so the screen of its end stands
+in place of the pause, and the player still reads what that game minute discovered, which enters the
+Understanding as any discovery does. Accepted with it: a stop at a discovery cannot be told apart in
+the game state from the player's pause, and a player who goes on at once loses the list of
+discoveries, since the game keeps no record of them; the line of discoveries ends in two ways,
+„Wznów” or „Restart” and „Zakończ”, and the screen after a completion holds two lines.
+*Rejected:* a stop at a discovery as a game state of its own, with a button of its own; the screen
+after a completion with no line of the discovery made in its game minute — the player would not
+learn what that game minute discovered.
 
 ### D-123 — What does the game write into the program at the first chill?
 
@@ -2260,7 +2293,195 @@ a change of its code where it reads the event.
 conditions — a thing would be defined in one place and revealed in another; the chain written into
 the simulation's code — each later discovery would take a change of code.
 
-### D-129 — How does the operator block and unblock a player account?
+### D-129 — How long does the pace the player picks stay?
+
+The pace the player picks stays until the player picks another, through a pause, the pause at a
+discovery included, „Restart”, „Zakończ” and the next send of a character, and a new game starts at
+1×.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-21
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Restart” after a death at 16× going on at 16×; a character sent after „Zakończ” of a
+    map run at 4× moving at 4×; the first map run of a new game passing at 1×
+  - violates: „Restart”, „Zakończ” or a new send bringing the pace back to 1×; a stop at a
+    discovery changing the pace
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co dzieje się z wybranym tempem przy pauzie, „Restart”, „Zakończ” i kolejnym wysłaniu postaci?" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?"
+
+*Rationale:* the pace is the player's setting of how fast a map run passes, kept from one attempt to
+the next until the player changes it, and a stop at a discovery is the same pause as „Pauza”, so
+whatever treats a pause treats both the same. Accepted with it: a player who ended a map run at 16×
+starts the next one at 16× and can miss its start; with the browser tab hidden, a mage sent then
+passes the whole of Las unseen in half a real minute.
+*Rejected:* each map run, a map run restart included, starting again at 1× — the player would pick
+the pace anew for each attempt.
+
+### D-130 — Where does the player pick the pace, and with which control?
+
+The player picks the pace with five buttons „1×”, „2×”, „4×”, „8×” and „16×” beside „Pauza” in the
+status row of the map run, and the button of the pace in force is a button selected in its group.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-21 · derives from D-44
+- **Verification:** an agent compares a change with the decision:
+  - complies: „4×” shown selected among the five buttons beside „Pauza” while the map run passes at
+    4×, each button made with the shared button selected in its group
+  - violates: a select list of paces; a pace button that creates and styles a `<button>` of its
+    own; the pace in force marked in a way no shared control holds
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?"
+
+*Rationale:* the pace stands where the player watches the map run, beside „Pauza”, the other
+control of its time, and the button selected in its group marks the pace in force with a shared
+control the browser view already holds.
+*Rejected:* a pace control standing apart from „Pauza”, or one built from a control of its own —
+the controls of a map run's time would stand in two places, or the browser view would gain a
+control the shared controls do not hold.
+
+### D-131 — Which edits of the program set a map run's streak to zero?
+
+Of the edits of the program, an edit after which the program differs from the program before it sets
+the streak of the map run in progress to zero — adding, deleting or reordering a program rule,
+changing its condition or action, and changing a rule group — also while the map run is paused; an
+act of the program editor after which the program is the same as before it leaves the streak as it
+stands.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-136
+- **Verification:** invariants: streak-program-change. An agent compares a change with the decision:
+  - complies: „↑” on the first program rule leaving a streak of 120 at 120; a program rule's action
+    changed in a pause setting the streak to 0 while the character's action in progress goes on; a
+    rule group renamed setting the streak to 0
+  - violates: „↑” on the first program rule setting the streak to 0; a program rule deleted in a
+    pause leaving the streak as it stood
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "9. Która zmiana programu zeruje passę — także czynność edytora, po której program jest taki sam jak przed nią?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16
+
+*Rationale:* a map checks whether a program survives on its own, not whether the player keeps
+fixing it, so a program that differs starts the streak again, in a pause as well; an act that leaves
+the program as it was changes nothing the map checks. Accepted with it: a player who presses „↑” on
+the first program rule keeps the streak, though the player touched the program.
+*Rejected:* every act of the program editor setting the streak to zero, an act that leaves the
+program the same included, as the predecessor game, loop, did — the player would lose the streak for
+an act that changes nothing.
+
+### D-132 — What does the screen show, and what can the player do, after a completion?
+
+After a completion the screen stays on the state of the game minute of the completion and time
+stands still, and the status row reads, in Las, „Minuta {game minute} · Las rozwiązany”, such as
+„Minuta 480 · Las rozwiązany”, in the role `positive`. „Pauza” and the pace buttons are gone, and the
+player has „Restart” and „Zakończ” as after a character's death.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: after a completion in game minute 480 of Las the status row reads „Minuta 480 · Las
+    rozwiązany” in `positive`, „Pauza” and the pace buttons are gone, the game minute stays at 480,
+    „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the headquarters
+  - violates: the game going back to the headquarters with a message the moment the map run
+    completes; „Pauza” or a pace button standing after a completion; the text of the completion
+    written in a role other than `positive`
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?"
+
+*Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
+which the program met the map's condition, can repeat the same seed with „Restart” and returns with
+„Zakończ”. The role `positive` says that something works, which a completion shows of the program.
+*Rejected:* going back to the headquarters with a message at the completion — the player would lose
+the state of the map run that solved the map.
+
+### D-133 — Where does the player see a map run's streak and a map's solving condition?
+
+During a map run the status row shows its streak beside the game minute and the character's
+activity, as „Minuta 312 · Eksploruje · Passa 120/480”, the second number being the streak the
+map's solving condition asks for, and the headquarters shows by the map the sentence of its solving
+condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany
+programu”.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a paused map run reading „Minuta 312 · Eksploruje · Passa 120/480 (pauza)”; the
+    sentence of Las standing by the map in the row of each character in the headquarters
+  - violates: a progress bar in place of „Passa 120/480”; the sentence of the condition written in
+    the code of the headquarters
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?"
+
+*Rationale:* the player sees during a map run how far the program has come towards the map's
+condition, and in the headquarters what each map asks before sending a character. Accepted with it:
+a longer status row, and a new text in each map's data.
+*Rejected:* a progress bar, or the streak with no number of the condition beside it — the player
+would not read how many game minutes the condition still asks for.
+
+### D-134 — Where does the player see that a map is solved?
+
+From the first completion of a map by any of the player's characters, the headquarters shows by
+that map „Mapa: {map} · rozwiązana”, such as „Mapa: Las · rozwiązana”, in the role `positive`.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: after the first completion of Las, the row of each character naming Las reading
+    „Mapa: Las · rozwiązana” in `positive`, also after a later map run on Las ends in death
+  - violates: the mark shown on the screen after the completion and missing from the headquarters;
+    the mark gone once a later map run on Las ends in death
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "7. Gdzie gracz widzi, że Las jest rozwiązany?"
+
+*Rationale:* a solved map stays solved, so the player sees in the headquarters, from which
+characters go out, which maps a program has solved. Accepted with it: a reload of the page starts a
+new game, and the mark goes with it.
+*Rejected:* the solving seen at the moment of the completion alone — the player would not see later
+which maps are solved.
+
+### D-135 — Does the game show the longest streak of a map run?
+
+The game does not show today the longest streak that a map run has reached, during the map run or
+after its end.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the screen after a death of cold reading „Minuta 312 · Mag zamarzł”, with no streak
+  - violates: the screen after a death showing the longest streak the map run reached
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?"
+
+*Rationale:* the streak a map's solving condition counts is the one the status row shows. Accepted
+with it: at a death of cold or hunger the streak stands at zero, so the screen after death does not
+tell how near the map run came to its map's condition.
+*Rejected:* the longest streak of a map run kept, as the predecessor game, loop, kept it, and shown
+on the screen after death.
+
+### D-136 — How is a map solved?
+
+The condition that solves a map stands in the map's data, as a streak that the map run reaches. A
+streak counts the successive game minutes in which the character loses no health to cold or hunger:
+a game minute with such a loss sets it to zero, and every change of the program rules or rule groups
+the map run carries out sets it to zero, on every map.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: streak-program-change. For the condition in the map's data and the
+  rest of the streak, an agent compares a change with the decision:
+  - complies: Las asking for a streak of 480 game minutes, written in its row of the game maps'
+    data
+  - violates: a solving condition coded in the engine for one map; a game minute in which the
+    character is chilled growing the streak; a game minute in which the character is starving
+    leaving the streak as it stood
+- **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a map solved, and what opens the next one?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 and D17
+
+*Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
+it, so a change of the program starts the streak again. The condition differs from map to map, so it
+lives in the map's data.
+*Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
+the backpack at completion as a kind of solving condition while no map asks for it — code and tests
+of a kind the game does not use, a kind that can come with a map that needs it.
+
+### D-137 — How does the operator block and unblock a player account?
 
 The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses. Blocking marks the account blocked and deletes every session of the account in one transaction; unblocking clears the mark and restores no session. The `loop2-deploy` skill describes the command, and only a human runs it on the server.
 
@@ -2275,7 +2496,7 @@ The operator blocks and unblocks a player account, named by its email address no
 *Rationale:* the owner already reaches the server through SSH, so a command in the container adds no new way into the server, and it reports its outcome where the owner typed it. Blocking is possible only from the server's terminal, with no view in the browser, the player's address stays in the server's shell history, and the command opens the database beside the running server, waiting at most the bounded busy timeout for its write. Deleting the sessions at the block, as logout deletes one, leaves nothing that unblocking could bring back.
 *Rejected:* an owner panel in the browser with an owner role — a new route inside the trust boundary to defend; changing the database file by hand with an SQLite tool — skips the normalization of the address, the deletion of the sessions and the schema check; a block that cannot be undone — the operator could not take back a mistaken block; marking the sessions invalid instead of deleting them — every read and renewal has to check the mark, and unblocking must never clear it; an operator-only HTTP route reached from inside the container — has to prove that the tunnel cannot reach it, and needs a secret or an address check; a signal or a file the running server watches — a new channel into the server with no outcome to report.
 
-### D-130 — How is a player's login kept between requests?
+### D-138 — How is a player's login kept between requests?
 
 The browser holds an opaque, random session identifier in a host-scoped, Secure and HttpOnly cookie. The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout or account blocking.
 
@@ -2288,13 +2509,13 @@ The browser holds an opaque, random session identifier in a host-scoped, Secure 
 *Rationale:* the existing account database can hold a small server-side session record. The server can end access immediately after logout or account blocking, without maintaining a token denylist. This adds database lookups and cleanup of expired records. A signed token would avoid session records, but immediate account blocking would still require checking server state or a denylist.
 *Rejected:* self-contained signed session tokens — their revocation adds state or a delay before a blocked account loses access; session secrets in browser storage or URLs — expose them to client code or URL leakage.
 
-### D-131 — What does the login of a blocked account tell the player?
+### D-139 — What does the login of a blocked account tell the player?
 
 A login of a blocked account with the correct password is refused with „To konto jest zablokowane.”, status 403 and the code `account-blocked`, and no session, while a wrong password of a blocked account gets the login message of D-100. That refusal is neither a failed nor a successful login for the attempt limits of D-102: it adds no failure and clears none, and an address locked by failures refuses it as it refuses every login.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
-- **Relations:** derives from D-129
+- **Relations:** derives from D-137
 - **Verification:** invariants: blocked-account-access. An agent compares a change with the decision:
   - complies: the login route checks the password through the gate first and settles a blocked account's correct password by releasing its admission, answering 403 `account-blocked`
   - violates: the blocked message for an address whose password was not checked or was wrong; a blocked login counted as a failure, so that five of them lock the address
