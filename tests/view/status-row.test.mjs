@@ -9,6 +9,7 @@ import {
   createCharacter,
   newGame,
   send,
+  setPace,
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
@@ -209,8 +210,14 @@ function fakeDocument() {
         hidden: false,
         className: "",
         classList: { add() {}, toggle() {} },
-        setAttribute() {},
-        addEventListener() {},
+        attributes: {},
+        setAttribute(name, value) {
+          this.attributes[name] = value;
+        },
+        listeners: {},
+        addEventListener(type, listener) {
+          this.listeners[type] = listener;
+        },
         append(...items) {
           this.children.push(...items);
         },
@@ -227,10 +234,12 @@ test("on the screen the pause button is hidden after death; „Restart” and �
   try {
     const row = createStatusRow({
       togglePause() {},
+      setPace() {},
       restart() {},
       end() {},
     });
-    const [text, pause, restartButton, endButton] = row.element.children;
+    const [text, pause, , , , , , restartButton, endButton] =
+      row.element.children;
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
     row.update(running);
     assert.equal(pause.hidden, false);
@@ -301,7 +310,12 @@ test("on the screen the line is shown while the game holds a discovery and hidde
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {
-    const row = createStatusRow({ togglePause() {}, restart() {}, end() {} });
+    const row = createStatusRow({
+      togglePause() {},
+      setPace() {},
+      restart() {},
+      end() {},
+    });
     const line = row.discovery;
     assert.equal(line.hidden, true);
     let state = createCharacter(newGame(), "Ala").state;
@@ -322,6 +336,61 @@ test("on the screen the line is shown while the game holds a discovery and hidde
     row.update(setPaused(stopped, false).state);
     assert.equal(line.hidden, true);
     assert.equal(line.textContent, "");
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+/** The status row built on the hand-made document, with the paces its pace buttons asked for. */
+async function rowAskingPaces() {
+  const { createStatusRow } =
+    await import("../../dist/public/view/status-row.js");
+  const asked = [];
+  const row = createStatusRow({
+    togglePause() {},
+    setPace(pace) {
+      asked.push(pace);
+    },
+    restart() {},
+    end() {},
+  });
+  return { row, asked, paceButtons: row.element.children.slice(2, 7) };
+}
+
+test("the row shows five pace buttons, 1× to 16×, with the one of the state's pace selected", async () => {
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const { row, paceButtons } = await rowAskingPaces();
+    assert.deepEqual(
+      paceButtons.map((button) => button.textContent),
+      ["1×", "2×", "4×", "8×", "16×"],
+    );
+    const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+    const selected = () =>
+      paceButtons.map((button) => button.attributes["aria-pressed"]);
+    row.update(running);
+    assert.deepEqual(selected(), ["true", "false", "false", "false", "false"]);
+    row.update(setPace(running, 8).state);
+    assert.deepEqual(selected(), ["false", "false", "false", "true", "false"]);
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+test("a click on a pace button asks for that pace; the buttons stay while paused and go with death", async () => {
+  const saved = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const { row, asked, paceButtons } = await rowAskingPaces();
+    const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+    paceButtons[4].listeners.click();
+    paceButtons[1].listeners.click();
+    assert.deepEqual(asked, [16, 2]);
+    row.update(setPaused(running, true).state);
+    assert.ok(paceButtons.every((button) => !button.hidden));
+    row.update(dead(running, 312, "cold"));
+    assert.ok(paceButtons.every((button) => button.hidden));
   } finally {
     globalThis.document = saved;
   }
