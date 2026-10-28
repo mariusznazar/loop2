@@ -90,10 +90,14 @@ test("a minute that leaves the character neither chilled nor starving grows the 
   assert.equal(after.run.streak, 42);
 });
 
-test("a streak below 480 grows past it where nothing ends the map run yet", () => {
+test("a streak of 479 grows to 480 in the next minute, where the map run completes and passes no minute after it", () => {
+  // Changed by the task "rozwiazanie-lasu": a streak at the solving number of Las (480) now ends
+  // the map run in a completion, so it no longer grows past 480.
   const state = withRun({ body: body(37, 100, 100), streak: 479 });
   assert.equal(advanceMinutes(state, 1).state.run.streak, 480);
-  assert.equal(advanceMinutes(state, 2).state.run.streak, 481);
+  const two = advanceMinutes(state, 2).state;
+  assert.equal(two.run.streak, 480);
+  assert.equal(two.run.minute, 1);
 });
 
 test("a map run ended in death holds a streak of 0", () => {

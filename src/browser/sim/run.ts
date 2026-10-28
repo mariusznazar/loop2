@@ -51,6 +51,7 @@ export type GameEvent =
   | { kind: "tileRevealed"; minute: number; at: Hex }
   | { kind: "moved"; minute: number; from: Hex; to: Hex }
   | { kind: "characterDied"; minute: number; cause: DeathCause }
+  | { kind: "mapRunCompleted"; minute: number }
   /** What a game minute revealed to the player, each list in the order of its data. */
   | ({ kind: "discovered"; minute: number } & Understanding);
 
@@ -290,6 +291,7 @@ export function newMapRun(
     gatherRandom: streamState(seed, "gather"),
     streak: 0,
     death: null,
+    completion: null,
   };
   const started = startActivity(base, map, program);
   return {
@@ -313,6 +315,19 @@ export type MinuteBeforePick = {
   picks: boolean;
 };
 
+/** Whether the map run has ended: the character died or the map run completed. */
+export function mapRunEnded(run: MapRun): boolean {
+  return run.death !== null || run.completion !== null;
+}
+
+/**
+ * Whether the map run meets every requirement of the solving condition of its map: for now the
+ * streak, which must reach the map's number.
+ */
+export function meetsSolving(run: MapRun, map: MapDef): boolean {
+  return run.streak >= map.solving.streak;
+}
+
 /** The streak after a game minute's body step: one more where no health was lost, otherwise 0. */
 function streakAfter(streak: number, lostHealth: boolean): number {
   return lostHealth ? 0 : streak + 1;
@@ -323,12 +338,12 @@ function streakAfter(streak: number, lostHealth: boolean): number {
  * its tile; where the character dies, the step stops there: what burns and the tiles stay as they
  * stood, the current activity too, giving no finish, and no program rule is picked. Otherwise what
  * burns loses a minute and the tiles renew their stock; then, when the current activity ends in
- * this minute, its finish applies and the pick is left to `pickActivity`. A map run ended in death
- * passes no minute. The streak follows the body step, in the death branch too. Inputs are not
+ * this minute, its finish applies and the pick is left to `pickActivity`. A map run that has ended,
+ * in death or a completion, passes no minute. The streak follows the body step, in the death branch too. Inputs are not
  * changed.
  */
 export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
-  if (run.death) return { run, events: [], picks: false };
+  if (mapRunEnded(run)) return { run, events: [], picks: false };
   const minute = run.minute + 1;
   const lived = bodyMinute(run.body, warmthAt(run, run.character.at), map);
   if (lived.death) {
@@ -440,7 +455,7 @@ export function pickActivity(
 
 /**
  * One game minute, in the order of D-71: `minuteBeforePick`, then, when the minute ended an
- * activity, `pickActivity` with the program given now. A map run ended in death passes no minute.
+ * activity, `pickActivity` with the program given now. A map run that has ended passes no minute.
  * Inputs are not changed.
  */
 export function stepMinute(

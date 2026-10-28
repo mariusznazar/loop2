@@ -13,6 +13,8 @@ import { MAPS, type MapDef } from "./data/maps.js";
 import { conditionNumber, onStep } from "./program.js";
 import { mixSeed } from "./random.js";
 import {
+  mapRunEnded,
+  meetsSolving,
   minuteBeforePick,
   newMapRun,
   pickActivity,
@@ -35,6 +37,7 @@ import type {
   Understanding,
 } from "./types.js";
 
+export { mapRunEnded };
 export type { GameEvent };
 
 /** What every state-changing function of the game returns. */
@@ -361,6 +364,7 @@ export function newGame(): GameState {
     run: null,
     lastSeed: INITIAL_SEED,
     paused: false,
+    solvedMaps: [],
     pace: 1,
     discovery: null,
     realMsCarry: 0,
@@ -384,12 +388,13 @@ function sameData(a: unknown, b: unknown): boolean {
  * is, and the program takes effect when the character next picks a program rule. Where the
  * program checked differs from the one the state holds — groups and rules in order with their
  * identities, conditions and actions, and the identity counters — the streak of a map run not
- * ended in death becomes 0, paused or not; a program handed back as it stands leaves it.
+ * ended, in death or a completion, becomes 0, paused or not; a program handed back as it stands
+ * leaves it.
  */
 export function setProgram(state: GameState, program: Program): GameResult {
   const checked = checkProgram(program, state.run);
   const zeroed =
-    state.run && !state.run.death && !sameData(state.program, checked);
+    state.run && !mapRunEnded(state.run) && !sameData(state.program, checked);
   return {
     state: {
       ...state,
@@ -463,7 +468,8 @@ export function send(
 }
 
 /**
- * Ends the map run in progress, or one ended in death, and starts a new one of the same map,
+ * Ends the map run in progress, or one ended in death or a completion, and starts a new one of the
+ * same map,
  * character, traits and seed.
  */
 export function restart(state: GameState): GameResult {
@@ -481,7 +487,10 @@ export function restart(state: GameState): GameResult {
   };
 }
 
-/** Ends the map run in progress, or one ended in death; the program and the last seed stay. */
+/**
+ * Ends the map run in progress, or one ended in death or a completion; the program, the last seed
+ * and the solved maps stay.
+ */
 export function end(state: GameState): GameResult {
   requireRun(state, "end");
   return {
@@ -520,16 +529,16 @@ export function setPace(state: GameState, pace: Pace): GameResult {
 
 /**
  * The only way real time enters the simulation. Ignored without a map run, with one ended in
- * death, while paused, or when realMs is not a finite number above zero; otherwise every whole
- * scaled second becomes a game minute, real time scaled by the pace in force, and the rest carries
- * over to the next call at the pace it was passed at. Where the
- * character dies, time stops there and nothing carries over; the same where the span ends at a
+ * death or a completion, while paused, or when realMs is not a finite number above zero; otherwise
+ * every whole scaled second becomes a game minute, real time scaled by the pace in force, and the
+ * rest carries over to the next call at the pace it was passed at. Where the character dies or the
+ * map run completes, time stops there and nothing carries over; the same where the span ends at a
  * discovery, which leaves the game paused.
  */
 export function passRealTime(state: GameState, realMs: number): GameResult {
   if (
     !state.run ||
-    state.run.death ||
+    mapRunEnded(state.run) ||
     state.paused ||
     typeof realMs !== "number" ||
     !Number.isFinite(realMs) ||
@@ -544,6 +553,7 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
   const result = advanceMinutes(carried, minutes);
   const stopped =
     result.state.run?.death ||
+    result.state.run?.completion ||
     result.events.some((event) => event.kind === "discovered");
   if (!stopped) return result;
   return { state: { ...result.state, realMsCarry: 0 }, events: result.events };
@@ -555,8 +565,12 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * at the first chill the rule "Zawsze → Eksploruj" enters the program, and the pick that ends the
  * minute is made from the program and the Understanding as they then stand. A span that reaches
  * the character's death, or the whole minute of a discovery, stops there; a stop at a discovery
- * leaves the game paused, holding what the minute revealed. A map run ended in death changes
- * nothing.
+ * leaves the game paused, holding what the minute revealed. A map run that meets the solving
+ * condition of its map in a minute completes there, once the minute's discovery has taken hold: the
+ * rest of the minute has taken effect, the event `mapRunCompleted` follows the minute's other
+ * events, no program rule is picked and the map is added to the solved maps; where that minute is
+ * also a discovery's, the game holds the discovery and is not paused. A map run that has ended
+ * changes nothing.
  */
 export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (
@@ -568,7 +582,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
       `advanceMinutes: ${String(minutes)} is not a whole number of minutes from 0 up`,
     );
   }
-  if (!state.run || state.run.death || minutes === 0)
+  if (!state.run || mapRunEnded(state.run) || minutes === 0)
     return { state, events: [] };
   const map = mapOf(state.run.mapId);
   const events: GameEvent[] = [];
@@ -576,6 +590,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   let run = state.run;
   let program = programOf(current, run.character.id);
   let revealed: Understanding | null = null;
+  let completed = false;
   for (let minute = 0; minute < minutes; minute += 1) {
     const stepped = minuteBeforePick(run, map);
     events.push(...stepped.events);
@@ -604,6 +619,12 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
       });
     }
     run = stepped.run;
+    if (!mapRunEnded(run) && meetsSolving(run, map)) {
+      run = { ...run, completion: { minute: run.minute } };
+      events.push({ kind: "mapRunCompleted", minute: run.minute });
+      completed = true;
+      break;
+    }
     if (stepped.picks) {
       const picked = pickActivity(run, map, program);
       run = picked.run;
@@ -614,7 +635,11 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   return {
     state: {
       ...current,
-      ...(revealed && { paused: true, discovery: revealed }),
+      ...(revealed && { discovery: revealed, paused: !completed }),
+      ...(completed &&
+        !current.solvedMaps.includes(run.mapId) && {
+          solvedMaps: [...current.solvedMaps, run.mapId],
+        }),
       run,
       ruleCounts: countStarts(current.ruleCounts, events),
     },

@@ -138,6 +138,9 @@ export type DeathCause = "cold" | "hunger";
 /** The end of a map run in the character's death. */
 export type Death = { minute: number; cause: DeathCause };
 
+/** The end of a map run in a completion: the map's solving condition met. */
+export type Completion = { minute: number };
+
 export type MapRun = {
   mapId: MapId;
   /** uint32 */
@@ -165,6 +168,8 @@ export type MapRun = {
   streak: number;
   /** Set once the character dies; then no game minute passes. */
   death: Death | null;
+  /** Set once the map run meets the solving condition of its map; then no game minute passes. */
+  completion: Completion | null;
 };
 
 /** Tells the characters of the team apart; two characters may share a name. */
@@ -198,6 +203,11 @@ export type GameState = {
   /** Seed of the latest send; INITIAL_SEED at start. */
   lastSeed: number;
   paused: boolean;
+  /**
+   * The maps solved in this game, by identifier, in the order of their first completion, each
+   * once; `[]` in a new game. Only the game minute of a completion adds to it, and nothing removes.
+   */
+  solvedMaps: MapId[];
   /**
    * The pace the player picked, 1 in a new game; only `setPace` changes it, so it stays through
    * pausing, restarting, ending and sending.
