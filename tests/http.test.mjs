@@ -494,6 +494,7 @@ test(
   "logout destroys only this browser's session and clears the same host cookie",
   { timeout: 20000 },
   async (t) => {
+    // invariant: player-server-session
     // D-97 and D-101: other browsers of the same account stay signed in.
     const f = await accountFixture(t);
     const one = seed(f, "logout-one", f.first);

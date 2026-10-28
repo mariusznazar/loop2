@@ -1737,7 +1737,7 @@ The account server normalizes email with ECMAScript trim and lowercase, stores t
 
 ### D-100 — What do duplicate registration and failed login tell the player?
 
-Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. An unsuccessful credential login shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing an unknown address from a wrong password.
+Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two; a blocked account's correct password is refused as D-131 gives.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
@@ -1840,7 +1840,7 @@ The account server uses `express-session` to issue and maintain player sessions,
 
 - **Scope:** account-server, build-tools, deployment
 - **Based on:** express-session-store-contract · node-sqlite-database
-- **Relations:** derives from D-101
+- **Relations:** derives from D-101 · derives from D-130
 - **Verification:** invariants: player-express-session-sqlite-store.
 - **Origin:** none
 
@@ -1916,7 +1916,7 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 
 ### D-112 — How does the account database open and preserve its schema?
 
-The account server opens one application-owned SQLite connection before readiness, transactionally initializes version 1 with accounts and sessions on a new database, retains an existing version 1 without resetting records and refuses an unknown newer schema. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash and creation time, and sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session.
+The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-129 opens one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 2 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account and session and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time and blocked state, and sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state and deletes its sessions in one transaction, and a session write for a blocked account stores nothing.
 
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database
@@ -1924,8 +1924,8 @@ The account server opens one application-owned SQLite connection before readines
 - **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage.
 - **Origin:** none
 
-*Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema.
-*Rejected:* A destructive startup reset — loses accounts; unversioned schema assumptions — let old code misread newer data; transactions held across password work — prolong locks; session touch implemented as an upsert — revives logout.
+*Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. One ordered list of steps builds a new database and moves an existing one by the same statements, so the two cannot drift apart, at the cost of a new database running through the history of steps. A second connection from the operator's command waits out the server's short transactions within the busy timeout, and a block committed while a login is in progress either deletes the session that login stored or makes its write store nothing. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema: once a database is moved forward, code that knows only an older version refuses it.
+*Rejected:* A destructive startup reset — loses accounts; unversioned schema assumptions — let old code misread newer data; creating the latest schema directly on a new database beside separate upgrade steps — two definitions of one schema that have to agree, the first difference showing only on a moved database; rebuilding the tables at every version — moves every row and lengthens the write lock where adding a column suffices; a step back from a newer version, or a copy of the database before a move — not provided, so a rollback across a schema change fails until code that knows the newer version is deployed; transactions held across password work — prolong locks; session touch implemented as an upsert — revives logout; deleting a blocked account's sessions without guarding the session write — a login in progress at the block stores its session afterwards.
 
 ### D-114 — Which file is the exemplar for database access?
 
@@ -2259,3 +2259,46 @@ a change of its code where it reads the event.
 *Rejected:* the whole chain of revelations in a table of its own, apart from the actions, items and
 conditions — a thing would be defined in one place and revealed in another; the chain written into
 the simulation's code — each later discovery would take a change of code.
+
+### D-129 — How does the operator block and unblock a player account?
+
+The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses. Blocking marks the account blocked and deletes every session of the account in one transaction; unblocking clears the mark and restores no session. The `loop2-deploy` skill describes the command, and only a human runs it on the server.
+
+- **Scope:** account-server, deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-12 · derives from D-99
+- **Verification:** invariants: blocked-account-access · player-server-session · unblock-restores-no-session. An agent compares a change with the decision:
+  - complies: the owner runs `docker exec loop2 node dist/server/account-block.js block <email>` and the account's sessions in every browser end with the block, while the running server keeps serving
+  - violates: an HTTP route of the account server that blocks accounts; a skill instruction in which an agent runs the command through the `mikrus` MCP server; unblocking that makes the sessions ended by the block valid again
+- **Origin:** blokada_konta_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 2, and § Settlements to record, row 1
+
+*Rationale:* the owner already reaches the server through SSH, so a command in the container adds no new way into the server, and it reports its outcome where the owner typed it. Blocking is possible only from the server's terminal, with no view in the browser, the player's address stays in the server's shell history, and the command opens the database beside the running server, waiting at most the bounded busy timeout for its write. Deleting the sessions at the block, as logout deletes one, leaves nothing that unblocking could bring back.
+*Rejected:* an owner panel in the browser with an owner role — a new route inside the trust boundary to defend; changing the database file by hand with an SQLite tool — skips the normalization of the address, the deletion of the sessions and the schema check; a block that cannot be undone — the operator could not take back a mistaken block; marking the sessions invalid instead of deleting them — every read and renewal has to check the mark, and unblocking must never clear it; an operator-only HTTP route reached from inside the container — has to prove that the tunnel cannot reach it, and needs a secret or an address check; a signal or a file the running server watches — a new channel into the server with no outcome to report.
+
+### D-130 — How is a player's login kept between requests?
+
+The browser holds an opaque, random session identifier in a host-scoped, Secure and HttpOnly cookie. The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout or account blocking.
+
+- **Scope:** account-server, browser-view
+- **Based on:** OWASP Session Management Cheat Sheet, session identifiers, server-side expiry and invalidation (https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html, read 2026-10-04) · MDN Set-Cookie, Secure and HttpOnly attributes and host scope (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie, read 2026-10-04) · OWASP JSON Web Token Cheat Sheet, token revocation trade-off (https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html, read 2026-10-04)
+- **Relations:** none
+- **Verification:** invariants: player-opaque-session-cookie · player-server-session
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a player's login kept between requests?"
+
+*Rationale:* the existing account database can hold a small server-side session record. The server can end access immediately after logout or account blocking, without maintaining a token denylist. This adds database lookups and cleanup of expired records. A signed token would avoid session records, but immediate account blocking would still require checking server state or a denylist.
+*Rejected:* self-contained signed session tokens — their revocation adds state or a delay before a blocked account loses access; session secrets in browser storage or URLs — expose them to client code or URL leakage.
+
+### D-131 — What does the login of a blocked account tell the player?
+
+A login of a blocked account with the correct password is refused with „To konto jest zablokowane.”, status 403 and the code `account-blocked`, and no session, while a wrong password of a blocked account gets the login message of D-100. That refusal is neither a failed nor a successful login for the attempt limits of D-102: it adds no failure and clears none, and an address locked by failures refuses it as it refuses every login.
+
+- **Scope:** account-server, browser-view
+- **Based on:** none
+- **Relations:** derives from D-129
+- **Verification:** invariants: blocked-account-access. An agent compares a change with the decision:
+  - complies: the login route checks the password through the gate first and settles a blocked account's correct password by releasing its admission, answering 403 `account-blocked`
+  - violates: the blocked message for an address whose password was not checked or was wrong; a blocked login counted as a failure, so that five of them lock the address
+- **Origin:** blokada_konta_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 3
+
+*Rationale:* a player who knows the password learns why the game stays closed, while someone who knows only the address learns nothing more than from any wrong password, so the block is no clue for an address alone. The refusal is no guess of credentials, so it does not count towards a lock, and no sign-in, so it clears nothing; someone who knows a blocked account's password may repeat the attempt unslowed by the limits, each attempt still passing the bounded password gate. A new refusal code changes the server and the browser's client together.
+*Rejected:* the login message of D-100 for a blocked account too — the blocked player does not learn why; the blocked message for the address alone, before the password is checked — tells anyone who knows an address that its account is blocked; counting the refusal as a failed login — after five tries with the correct password the address locks and the player sees the limit's message, and people behind the same client address lose failures of their budget; counting it as a success — clears the address's failures on a refused login, so wrong guesses mixed with the correct password never lock it; status 401 — the status this API gives to missing credentials or session.

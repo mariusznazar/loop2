@@ -302,6 +302,7 @@ async function versionOneFixture(t, extraSchema = "") {
 }
 
 // invariant: account-database-schema
+// invariant: account-schema-lifecycle
 test("a version-1 database opens as version 2 with every account and session intact and no account blocked", async (t) => {
   const { path, raw, track } = await versionOneFixture(t);
   const database = track(new AccountDatabase(path, { now: () => 1000 }));

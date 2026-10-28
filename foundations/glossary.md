@@ -127,3 +127,9 @@ discovered, together with the condition „Zawsze”, which it holds from the st
 A character's repertoire is the subset of the Understanding that the character can use in a program.
 
 - **Not:** none
+
+## blocked account
+
+A blocked account is a player account the operator has cut off from signing in and playing, which stays so until the operator unblocks it.
+
+- **Not:** an email address refused for 15 minutes after five failed logins (D-102) — "locked"
