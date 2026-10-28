@@ -66,7 +66,7 @@ A rule group is a named set of program rules under a condition of its own.
 
 A map run restart is a map run of the same character on the same game map, which the
 player starts in place of the map run in progress or of a map run ended in the character's death
-that still stands on the screen.
+or in a completion that still stands on the screen.
 
 - **Not:** none
 
@@ -125,5 +125,31 @@ discovered, together with the condition „Zawsze”, which it holds from the st
 ## repertoire
 
 A character's repertoire is the subset of the Understanding that the character can use in a program.
+
+- **Not:** none
+
+## manual map run
+
+A manual map run is a map run that the player starts outside an earning loop.
+
+- **Not:** none
+
+## completion
+
+A completion is the end of a map run that meets its map's solving condition.
+
+- **Not:** none
+
+## solved map
+
+A solved map is a map on which a map run of any of the player's characters has had a completion,
+whether or not an earning-loop program survives every seed.
+
+- **Not:** none
+
+## streak
+
+A streak is a count of successive game minutes of one map run that a map's solving condition can ask
+for.
 
 - **Not:** none
