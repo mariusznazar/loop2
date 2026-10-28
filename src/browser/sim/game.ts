@@ -27,6 +27,7 @@ import type {
   ItemId,
   MapId,
   MapRun,
+  Pace,
   Program,
   ProgramRule,
   ResourceId,
@@ -360,6 +361,7 @@ export function newGame(): GameState {
     run: null,
     lastSeed: INITIAL_SEED,
     paused: false,
+    pace: 1,
     discovery: null,
     realMsCarry: 0,
   };
@@ -489,9 +491,20 @@ export function setPaused(state: GameState, paused: boolean): GameResult {
 }
 
 /**
+ * Sets the pace the player picked and nothing else: not the pause, the discovery held or the
+ * carried real time, with or without a map run. Throws on a pace outside the data's list.
+ */
+export function setPace(state: GameState, pace: Pace): GameResult {
+  if (!(BALANCE.paces as readonly unknown[]).includes(pace))
+    throw new Error(`setPace: ${String(pace)} is not a pace of the data`);
+  return { state: { ...state, pace }, events: [] };
+}
+
+/**
  * The only way real time enters the simulation. Ignored without a map run, with one ended in
  * death, while paused, or when realMs is not a finite number above zero; otherwise every whole
- * scaled second becomes a game minute and the rest carries over to the next call. Where the
+ * scaled second becomes a game minute, real time scaled by the pace in force, and the rest carries
+ * over to the next call at the pace it was passed at. Where the
  * character dies, time stops there and nothing carries over; the same where the span ends at a
  * discovery, which leaves the game paused.
  */
@@ -506,7 +519,8 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
   ) {
     return { state, events: [] };
   }
-  const total = state.realMsCarry + realMs * BALANCE.gameMinutesPerRealSecond;
+  const total =
+    state.realMsCarry + realMs * BALANCE.gameMinutesPerRealSecond * state.pace;
   const minutes = Math.floor(total / MS_PER_SECOND);
   const carried = { ...state, realMsCarry: total - minutes * MS_PER_SECOND };
   const result = advanceMinutes(carried, minutes);

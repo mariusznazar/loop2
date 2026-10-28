@@ -1,4 +1,5 @@
 import type { ArchetypeId } from "./data/archetypes.js";
+import type { BALANCE } from "./data/balance.js";
 import type { CAMPFIRE } from "./data/campfire.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
@@ -6,6 +7,9 @@ import type { ResourceId } from "./data/resources.js";
 import type { Traits } from "./data/traits.js";
 
 export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
+
+/** A multiplier of the game minutes per real second that the player picks, from the data. */
+export type Pace = (typeof BALANCE.paces)[number];
 
 /** Axial hex coordinates. */
 export type Hex = { q: number; r: number };
@@ -190,10 +194,15 @@ export type GameState = {
   lastSeed: number;
   paused: boolean;
   /**
+   * The pace the player picked, 1 in a new game; only `setPace` changes it, so it stays through
+   * pausing, restarting, ending and sending.
+   */
+  pace: Pace;
+  /**
    * What the last game minute of a discovery revealed, set together with the pause that minute
    * leaves, and null once the player moves on (resume, restart, end, send); null in a new game.
    */
   discovery: Understanding | null;
-  /** Scaled real ms not yet turned into a game minute, 0 <= x < 1000. */
+  /** Scaled real ms (at the pace in force when passed) not yet a game minute, 0 <= x < 1000. */
   realMsCarry: number;
 };

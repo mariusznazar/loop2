@@ -10,12 +10,13 @@ import {
   passRealTime,
   restart,
   send,
+  setPace,
   setPaused,
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { mixSeed } from "../../dist/public/sim/random.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
 
 const mapId = Object.keys(MAPS)[0];
 // The first character a new game creates takes the id 1.
@@ -47,6 +48,7 @@ test("a new game has an empty program, a team with no character and an empty che
   assert.equal(state.run, null);
   assert.equal(state.lastSeed, INITIAL_SEED);
   assert.equal(state.paused, false);
+  assert.equal(state.pace, 1);
   assert.equal(state.realMsCarry, 0);
 });
 
@@ -159,4 +161,51 @@ test("Restart and Zakończ without a map run are refused", () => {
   const state = newGame();
   assert.throws(() => restart(state), Error);
   assert.throws(() => end(state), Error);
+});
+
+// The pace the player picked stays until the player changes it: task "rozwiazanie-lasu", To do 2.
+
+test("setPace sets the pace and nothing else, with a map run or without", () => {
+  const running = sent().state;
+  const held = {
+    ...setPaused(running, true).state,
+    discovery: fullUnderstanding(),
+    realMsCarry: 250,
+  };
+  for (const state of [newGame(), newKnowingGame(), running, held]) {
+    for (const pace of [1, 2, 4, 8, 16]) {
+      const result = setPace(state, pace);
+      assert.deepEqual(result.state, { ...state, pace });
+      assert.deepEqual(result.events, []);
+    }
+  }
+});
+
+test("setPace throws on a pace outside the list of paces and leaves the game as it was", () => {
+  const state = sent().state;
+  for (const pace of [0, 3, 5, 32, -1, 1.5, "2", null, undefined, Number.NaN]) {
+    assert.throws(() => setPace(state, pace), Error, `pace ${String(pace)}`);
+    assert.throws(
+      () => setPace(newGame(), pace),
+      Error,
+      `pace ${String(pace)}`,
+    );
+  }
+  assert.equal(state.pace, 1);
+});
+
+test("the pace survives a pause, a resume, Restart, Zakończ and the next send", () => {
+  let state = setPace(sent().state, 8).state;
+  state = setPaused(state, true).state;
+  assert.equal(state.pace, 8);
+  state = setPaused(state, false).state;
+  assert.equal(state.pace, 8);
+  state = advanceMinutes(state, 3).state;
+  assert.equal(state.pace, 8);
+  state = restart(state).state;
+  assert.equal(state.pace, 8);
+  state = end(state).state;
+  assert.equal(state.pace, 8);
+  state = send(state, SENT, LATER_MS).state;
+  assert.equal(state.pace, 8);
 });

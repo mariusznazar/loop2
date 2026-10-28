@@ -175,6 +175,8 @@ test("every item and every item of the campfire names an item of the data", () =
 test("the archetype and the pace are in data", () => {
   assert.equal(ARCHETYPES.elementalMage.name, "Mag żywiołów");
   assert.equal(BALANCE.gameMinutesPerRealSecond, 1);
+  // The paces of the task "rozwiazanie-lasu", Question 3 (Mariusz, 2026-10-25).
+  assert.deepEqual(BALANCE.paces, [1, 2, 4, 8, 16]);
   assert.equal(BALANCE.waitMinutes, 1);
   assert.equal(INITIAL_SEED, 1);
 });

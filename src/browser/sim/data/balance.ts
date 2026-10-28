@@ -1,5 +1,8 @@
 export const BALANCE = {
+  /** Game minutes that pass in one real second at the pace 1. */
   gameMinutesPerRealSecond: 1,
+  /** The paces the player picks from; the game starts at the first. */
+  paces: [1, 2, 4, 8, 16],
   /** Minutes the character waits when no rule applies. */
   waitMinutes: 1,
   /** Chance that a gathering succeeds. */
