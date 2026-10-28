@@ -284,6 +284,8 @@ test("an error status is a refusal carrying the server's code and message, even 
       "Sesja wygasła albo nie istnieje.",
     ],
     ["login", 503, "session-unavailable", "Nie udało się zalogować."],
+    // Task blokada-konta, To do 4: a blocked account's correct password.
+    ["login", 403, "account-blocked", "To konto jest zablokowane."],
     ["logout", 500, "logout-failed", "Nie udało się wylogować."],
   ]) {
     respond = (_request, response) =>

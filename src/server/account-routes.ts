@@ -41,13 +41,16 @@ function refuse(
 }
 
 // Only the stored session names the account; nothing the request supplies does.
+// Blocking deletes an account's sessions; a session read just before the block
+// committed still finds the account blocked here, and authorizes nothing.
 function sessionAccount(
   runtime: AccountRuntime,
   request: Request,
 ): Account | null {
   const accountId: unknown = request.session?.accountId;
   if (typeof accountId !== "string") return null;
-  return runtime.database.findAccountById(accountId);
+  const account = runtime.database.findAccountById(accountId);
+  return account && !account.blocked ? account : null;
 }
 
 function unauthenticated(response: Response): void {
@@ -79,6 +82,11 @@ function invalidCredentials(response: Response): void {
     "invalid-credentials",
     "Nieprawidłowy adres e-mail lub hasło.",
   );
+}
+
+// Only after the password is checked: the block is no clue for an address alone.
+function accountBlocked(response: Response): void {
+  refuse(response, 403, "account-blocked", "To konto jest zablokowane.");
 }
 
 const registrationProblems = {
@@ -285,6 +293,9 @@ export function accountRoutes(
         account?.passwordHash ?? runtime.dummyHash,
         checked.password,
       );
+      // A block committed while the password was checked counts as a block.
+      if (account && verified)
+        account = runtime.database.findAccountById(account.id);
     } catch (error) {
       ticket.release();
       if (error instanceof PasswordCapacityError) {
@@ -296,6 +307,13 @@ export function accountRoutes(
     if (!account || !verified) {
       ticket.fail();
       invalidCredentials(response);
+      return;
+    }
+    // Neither a guess of credentials nor a sign-in: it adds no failure and
+    // clears none.
+    if (account.blocked) {
+      ticket.release();
+      accountBlocked(response);
       return;
     }
     ticket.succeed();

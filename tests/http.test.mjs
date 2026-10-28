@@ -314,8 +314,7 @@ function signedCookie(id, key) {
   return `__Host-loop2.sid=${encodeURIComponent(`s:${id}.${signature}`)}`;
 }
 
-function seed(f, id, account, expiresAt = Date.now() + 86_400_000) {
-  // One day remains of a 30-day session, so a renewal visibly moves its expiry.
+function sessionData(account, expiresAt) {
   const cookie = new session.Cookie({
     path: "/",
     secure: true,
@@ -325,7 +324,12 @@ function seed(f, id, account, expiresAt = Date.now() + 86_400_000) {
   });
   cookie.expires = new Date(expiresAt);
   cookie.originalMaxAge = sessionLifetime;
-  const data = JSON.stringify({ accountId: account.id, cookie });
+  return JSON.stringify({ accountId: account.id, cookie });
+}
+
+function seed(f, id, account, expiresAt = Date.now() + 86_400_000) {
+  // One day remains of a 30-day session, so a renewal visibly moves its expiry.
+  const data = sessionData(account, expiresAt);
   f.runtime.database.saveSession(id, {
     accountId: account.id,
     data,
@@ -1358,5 +1362,169 @@ test(
       (await login(f, "kept@example.test", password, { address })).status,
       200,
     );
+  },
+);
+
+// Blocking by the owner (task blokada-konta, To do 3 and 4). The message is the
+// one the owner settled (task, question 4; Mariusz, 2026-10-28).
+const blockedMessage = "To konto jest zablokowane.";
+
+test(
+  "no session of a blocked account authorizes lookup or logout, in any browser, also after unblocking",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: blocked-account-access
+    // invariant: player-server-session
+    // invariant: unblock-restores-no-session
+    // Faults: blocking that leaves the account's sessions stored; authorization
+    // that ignores the account's state; unblocking that revives removed sessions.
+    const f = await accountFixture(t);
+    const email = "blocked-browsers@example.test";
+    const created = await register(f, email, { address: "198.51.100.90" });
+    assert.equal(created.status, 201, "precondition: registered");
+    const first = issuedSession(created, "first browser");
+    const second = issuedSession(
+      await login(f, email, password, { address: "198.51.100.91" }),
+      "second browser",
+    );
+    const other = seed(f, "blocked-other", f.second);
+    for (const cookie of [first.cookie, second.cookie])
+      assert.equal((await readAccount(f, cookie)).status, 200, "precondition");
+
+    assert.equal(f.runtime.database.blockAccount(email), "blocked");
+    for (const [label, session] of [
+      ["first browser", first],
+      ["second browser", second],
+    ]) {
+      assert.equal(storedRow(f, session.id), undefined, `${label}: removed`);
+      assertRefusal(
+        await readAccount(f, session.cookie),
+        401,
+        `${label} lookup`,
+      );
+      assertRefusal(await logout(f, session.cookie), 401, `${label} logout`);
+    }
+    assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
+      id: f.second.id,
+      email: "second@example.test",
+    });
+
+    // A session row of the blocked account stored past the write guard, as by
+    // a read that loaded its session just before the block committed.
+    const account = storedAccount(f, email);
+    f.inspection
+      .prepare("INSERT INTO sessions VALUES (?, ?, ?, ?)")
+      .run(
+        "blocked-late",
+        account.id,
+        sessionData(account, Date.now() + 86_400_000),
+        Date.now() + 86_400_000,
+      );
+    const late = signedCookie("blocked-late", f.keys[0]);
+    assertRefusal(await readAccount(f, late), 401, "a row past the guard");
+    assertRefusal(
+      await logout(f, late),
+      401,
+      "logout with a row past the guard",
+    );
+    f.inspection
+      .prepare("DELETE FROM sessions WHERE id = 'blocked-late'")
+      .run();
+
+    assert.equal(f.runtime.database.unblockAccount(email), "unblocked");
+    for (const [label, session] of [
+      ["first browser", first],
+      ["second browser", second],
+    ]) {
+      assertRefusal(
+        await readAccount(f, session.cookie),
+        401,
+        `${label} after unblocking`,
+      );
+      assert.equal(
+        storedRow(f, session.id),
+        undefined,
+        `${label}: not revived`,
+      );
+    }
+    const again = await login(f, email, password, { address: "198.51.100.92" });
+    assert.equal(again.status, 200, "the unblocked account signs in anew");
+    assert.equal(
+      (await readAccount(f, issuedSession(again, "new login").cookie)).status,
+      200,
+    );
+  },
+);
+
+test(
+  "a blocked account's correct password gets its own refusal and no session, a wrong one the common message, and only the wrong one counts",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: blocked-account-access
+    // Faults: a blocked login signed in, or answered with the common message;
+    // the block revealed before the password is checked; a blocked login
+    // counted as a failure (it would lock the address) or as a success (it
+    // would clear the address's failures).
+    const f = await accountFixture(t);
+    const email = "blocked-login@example.test";
+    assert.equal(
+      (await register(f, email, { address: "198.51.100.93" })).status,
+      201,
+    );
+    assert.equal(f.runtime.database.blockAccount(email), "blocked");
+    const right = () => login(f, email, password);
+    const wrong = () => login(f, email, `${password}!`);
+
+    const refused = await right();
+    assertMessage(refused, 403, blockedMessage, "correct password");
+    assert.equal(JSON.parse(refused.body).code, "account-blocked");
+    assert.ok(!("id" in JSON.parse(refused.body)), "no account");
+    assert.equal(sessionCount(f), 0, "no session is stored");
+    assertLoginRefused(await wrong(), "a wrong password of a blocked account");
+
+    // D-102: five failures lock the address. Four wrong passwords, then five
+    // blocked logins: none of them locks, and none clears the four.
+    for (let attempt = 2; attempt <= 4; attempt += 1)
+      assertLoginRefused(await wrong(), `failure ${attempt}`);
+    for (let attempt = 1; attempt <= 5; attempt += 1)
+      assertMessage(await right(), 403, blockedMessage, `blocked ${attempt}`);
+    assertLoginRefused(await wrong(), "the fifth failure");
+    assertLimited(await right(), "the locked address refuses before the block");
+    assert.equal(sessionCount(f), 0);
+
+    f.clock.time += 15 * minute;
+    assert.equal(f.runtime.database.unblockAccount(email), "unblocked");
+    const signedIn = await right();
+    assert.equal(signedIn.status, 200, "unblocked, the password signs in");
+    issuedSession(signedIn, "after unblocking");
+  },
+);
+
+test(
+  "a block committed while the password is checked refuses that login as blocked and clears no failure",
+  { timeout: 30000 },
+  async (t) => {
+    // Faults: the login deciding on the account it read before the password
+    // check, so that it answers 503 and its success clears the four failures.
+    const f = await accountFixture(t);
+    const email = "blocked-during@example.test";
+    assert.equal(
+      (await register(f, email, { address: "198.51.100.94" })).status,
+      201,
+    );
+    for (let attempt = 1; attempt <= 4; attempt += 1)
+      assertLoginRefused(
+        await login(f, email, `${password}!`),
+        `failure ${attempt}`,
+      );
+    const pending = login(f, email, password);
+    // The account is read before the password work starts, in the same turn
+    // that admits the attempt (as in the disconnected-login case above).
+    await waitFor(() => f.policy.inFlight === 1, "login admitted");
+    assert.equal(f.runtime.database.blockAccount(email), "blocked");
+    assertMessage(await pending, 403, blockedMessage, "blocked meanwhile");
+    assert.equal(sessionCount(f), 0, "no session is stored");
+    assertLoginRefused(await login(f, email, `${password}!`), "fifth failure");
+    assertLimited(await login(f, email, password), "the four still counted");
   },
 );

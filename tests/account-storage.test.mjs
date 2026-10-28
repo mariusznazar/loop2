@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { DatabaseSync } from "node:sqlite";
+import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
 import { spawn } from "node:child_process";
 import session from "express-session";
@@ -177,9 +178,11 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     "encoded-hash",
   );
   reopened.close();
-  raw.exec("PRAGMA user_version = 2");
+  // Version 2 is the blocked state of task blokada-konta (spec, Decision 1), so
+  // 3 is the first version this code does not know.
+  raw.exec("PRAGMA user_version = 3");
   assert.throws(() => new AccountDatabase(path), /Unsupported.*schema/);
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
   assert.equal(
     raw.prepare("SELECT count(*) AS count FROM accounts").get().count,
     1,
@@ -214,6 +217,196 @@ test("a schema initialization failure rolls back every new table and version", a
   raw.exec("DROP TABLE sessions");
   repaired = new AccountDatabase(path);
   assert.ok(repaired.createAccount("after@example.test", "hash"));
+});
+
+// The version-1 schema exactly as loop2 6540e4c created it on a new database
+// (src/server/database.ts:105-121 there), the schema the test server's database
+// holds. It is written out here, not produced by the code under test, so a
+// migration that only fits the code's own idea of version 1 is caught.
+const versionOneSchema = `
+  CREATE TABLE accounts (
+    id TEXT PRIMARY KEY NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  ) STRICT;
+  CREATE TABLE sessions (
+    id TEXT PRIMARY KEY NOT NULL,
+    account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    data TEXT NOT NULL,
+    expires_at INTEGER NOT NULL
+  ) STRICT;
+  CREATE INDEX sessions_expiry ON sessions(expires_at);
+  CREATE INDEX sessions_account ON sessions(account_id);
+`;
+
+const versionOneRows = `
+  INSERT INTO accounts VALUES ('account-a', 'a@example.test', 'hash-a', 100);
+  INSERT INTO accounts VALUES ('account-b', 'b@example.test', 'hash-b', 200);
+  INSERT INTO sessions VALUES ('browser-a1', 'account-a', '{"n":1}', 9000);
+  INSERT INTO sessions VALUES ('browser-a2', 'account-a', '{"n":2}', 9500);
+  INSERT INTO sessions VALUES ('browser-b1', 'account-b', '{"n":3}', 8000);
+`;
+
+const versionOneAccounts = [
+  { id: "account-a", email: "a@example.test", hash: "hash-a", created: 100 },
+  { id: "account-b", email: "b@example.test", hash: "hash-b", created: 200 },
+];
+
+const versionOneSessions = [
+  { id: "browser-a1", account: "account-a", data: '{"n":1}', expires: 9000 },
+  { id: "browser-a2", account: "account-a", data: '{"n":2}', expires: 9500 },
+  { id: "browser-b1", account: "account-b", data: '{"n":3}', expires: 8000 },
+];
+
+function rows(raw, sql) {
+  return raw
+    .prepare(sql)
+    .all()
+    .map((row) => ({ ...row }));
+}
+
+function storedVersionOneRows(raw) {
+  return {
+    accounts: rows(
+      raw,
+      "SELECT id, email, password_hash AS hash, created_at AS created FROM accounts ORDER BY id",
+    ),
+    sessions: rows(
+      raw,
+      "SELECT id, account_id AS account, data, expires_at AS expires FROM sessions ORDER BY id",
+    ),
+  };
+}
+
+async function versionOneFixture(t, extraSchema = "") {
+  const directory = await mkdtemp(join(tmpdir(), "loop2-migration-"));
+  const path = join(directory, "accounts.sqlite");
+  const raw = new DatabaseSync(path);
+  const connections = [];
+  t.after(async () => {
+    for (const connection of connections) connection.close();
+    raw.close();
+    await rm(directory, { recursive: true, force: true });
+  });
+  raw.exec(versionOneSchema + versionOneRows + extraSchema);
+  raw.exec("PRAGMA user_version = 1");
+  return {
+    path,
+    raw,
+    track: (connection) => {
+      connections.push(connection);
+      return connection;
+    },
+  };
+}
+
+// invariant: account-database-schema
+test("a version-1 database opens as version 2 with every account and session intact and no account blocked", async (t) => {
+  const { path, raw, track } = await versionOneFixture(t);
+  const database = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.deepEqual(storedVersionOneRows(raw), {
+    accounts: versionOneAccounts,
+    sessions: versionOneSessions,
+  });
+  for (const account of versionOneAccounts)
+    assert.deepEqual(database.findAccountByEmail(account.email), {
+      id: account.id,
+      email: account.email,
+      passwordHash: account.hash,
+      createdAt: account.created,
+      blocked: false,
+    });
+  for (const session of versionOneSessions)
+    assert.deepEqual(database.readSession(session.id), {
+      accountId: session.account,
+      data: session.data,
+      expiresAt: session.expires,
+    });
+  // A migrated account takes the blocked state, and it outlasts a reopen.
+  assert.equal(database.blockAccount("b@example.test"), "blocked");
+  database.close();
+  const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(reopened.findAccountByEmail("b@example.test").blocked, true);
+  assert.equal(reopened.findAccountByEmail("a@example.test").blocked, false);
+  assert.equal(reopened.readSession("browser-a1").accountId, "account-a");
+});
+
+// invariant: account-database-schema
+test("a failing migration step leaves a version-1 database at version 1 with its rows unchanged", async (t) => {
+  // A column of that name already there makes the step that adds the blocked
+  // state fail after the transaction has begun.
+  const { path, raw } = await versionOneFixture(
+    t,
+    "ALTER TABLE accounts ADD COLUMN blocked TEXT;",
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /duplicate column/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 1);
+  assert.deepEqual(storedVersionOneRows(raw), {
+    accounts: versionOneAccounts,
+    sessions: versionOneSessions,
+  });
+});
+
+// invariant: unblock-restores-no-session
+test("blocking deletes every session of that account and no other, and unblocking brings none back", async (t) => {
+  const { store, database, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  for (const id of ["one", "two"])
+    await call(store, "set", id, data(account.id));
+  await call(store, "set", "other", data(other.id));
+  const sessionsOf = (id) =>
+    raw
+      .prepare("SELECT count(*) AS n FROM sessions WHERE account_id = ?")
+      .get(id).n;
+  assert.equal(sessionsOf(account.id), 2, "precondition: two browsers");
+
+  assert.equal(database.blockAccount("player@example.test"), "blocked");
+  assert.equal(sessionsOf(account.id), 0);
+  assert.equal(database.findAccountById(account.id).blocked, true);
+  assert.equal((await call(store, "get", "other")).accountId, other.id);
+  assert.equal(database.findAccountById(other.id).blocked, false);
+  assert.equal(database.blockAccount("player@example.test"), "already-blocked");
+
+  assert.equal(database.unblockAccount("player@example.test"), "unblocked");
+  assert.deepEqual(database.findAccountById(account.id), {
+    ...account,
+    blocked: false,
+  });
+  for (const id of ["one", "two"])
+    assert.equal(await call(store, "get", id), null, id);
+  assert.equal(sessionsOf(account.id), 0);
+  assert.equal(database.unblockAccount("player@example.test"), "not-blocked");
+
+  assert.equal(database.blockAccount("nobody@example.test"), "unknown");
+  assert.equal(database.unblockAccount("nobody@example.test"), "unknown");
+  assert.equal(sessionsOf(other.id), 1);
+});
+
+// invariant: account-session-storage
+test("a session write for a blocked account stores nothing, also under an identifier it held", async (t) => {
+  const { store, database, raw, account } = await fixture(t);
+  await call(store, "set", "held", data(account.id));
+  database.blockAccount("player@example.test");
+  for (const id of ["held", "new"]) {
+    await assert.rejects(call(store, "set", id, data(account.id, 3000)), id);
+    await call(store, "touch", id, data(account.id, 3000));
+    assert.equal(
+      raw.prepare("SELECT id FROM sessions WHERE id = ?").get(id),
+      undefined,
+      id,
+    );
+  }
+  // The guard reads the state at the write: once unblocked, a new login stores.
+  database.unblockAccount("player@example.test");
+  await call(store, "set", "after", data(account.id));
+  assert.equal((await call(store, "get", "after")).accountId, account.id);
+  assert.equal(await call(store, "get", "held"), null);
 });
 
 // invariant: account-session-storage
@@ -659,4 +852,168 @@ test("opening a new database fails within the busy timeout when another connecti
   // configured one, or none, waits the 1000 ms lock out.
   assert.ok(waited >= 100, `the open gave up after ${waited} ms`);
   assert.ok(waited < 500, `the open waited ${waited} ms`);
+});
+
+const blockCommand = fileURLToPath(
+  new URL("../dist/server/account-block.js", import.meta.url),
+);
+
+// Runs the owner's command as `docker exec loop2 node dist/server/account-block.js`
+// does: its own process, with the database path its only setting.
+function runBlockCommand(args, databasePath) {
+  const env = { ...process.env };
+  for (const name of Object.keys(env))
+    if (name.startsWith("LOOP2_")) delete env[name];
+  if (databasePath !== undefined) env.LOOP2_DATABASE_PATH = databasePath;
+  const child = spawn(process.execPath, [blockCommand, ...args], {
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let stdout = "";
+  let stderr = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk) => {
+    stdout += chunk;
+  });
+  child.stderr.setEncoding("utf8").on("data", (chunk) => {
+    stderr += chunk;
+  });
+  return new Promise((resolve, reject) => {
+    const deadline = setTimeout(() => {
+      child.kill();
+      reject(new Error("block command deadline"));
+    }, 10_000);
+    child.once("error", (error) => {
+      clearTimeout(deadline);
+      reject(error);
+    });
+    child.once("close", (code) => {
+      clearTimeout(deadline);
+      resolve({ code, stdout, stderr, output: stdout + stderr });
+    });
+  });
+}
+
+// The command opens its own connection and prunes by the real clock, so its
+// sessions expire a day from now.
+const liveExpiry = () => Date.now() + 86_400_000;
+
+test("the owner's command blocks and unblocks by address beside an open connection and says which outcome it reached", async (t) => {
+  // The fixture's open AccountDatabase stands in for the running server's.
+  const { path, database, store, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  for (const id of ["one", "two"])
+    await call(store, "set", id, data(account.id, liveExpiry()));
+  await call(store, "set", "other", data(other.id, liveExpiry()));
+  const sessionsOf = (id) =>
+    raw
+      .prepare("SELECT count(*) AS n FROM sessions WHERE account_id = ?")
+      .get(id).n;
+
+  // D-99: the address is normalized as login normalizes it.
+  const blocked = await runBlockCommand(
+    ["block", " Player@EXAMPLE.test "],
+    path,
+  );
+  assert.equal(blocked.code, 0, blocked.output);
+  assert.equal(database.findAccountById(account.id).blocked, true);
+  assert.equal(sessionsOf(account.id), 0, "every browser's session ended");
+  assert.equal(sessionsOf(other.id), 1, "another account keeps its session");
+  assert.equal(database.findAccountById(other.id).blocked, false);
+
+  const again = await runBlockCommand(["block", "player@example.test"], path);
+  assert.equal(again.code, 0, again.output);
+  assert.equal(database.findAccountById(account.id).blocked, true);
+
+  const unblocked = await runBlockCommand(
+    ["unblock", "player@example.test"],
+    path,
+  );
+  assert.equal(unblocked.code, 0, unblocked.output);
+  assert.equal(database.findAccountById(account.id).blocked, false);
+  assert.equal(sessionsOf(account.id), 0, "unblocking brings no session back");
+
+  const notBlocked = await runBlockCommand(
+    ["unblock", "player@example.test"],
+    path,
+  );
+  assert.equal(notBlocked.code, 0, notBlocked.output);
+  assert.equal(database.findAccountById(account.id).blocked, false);
+
+  const outcomes = [blocked, again, unblocked, notBlocked].map((run) =>
+    run.stdout.trim(),
+  );
+  for (const outcome of outcomes) {
+    assert.ok(outcome !== "", "each outcome is reported");
+    assert.match(outcome, /player@example\.test/, "it names the account");
+  }
+  assert.equal(new Set(outcomes).size, 4, "each outcome reads differently");
+  for (const run of [blocked, again, unblocked, notBlocked])
+    assert.doesNotMatch(run.output, /encoded-hash|\bone\b|\btwo\b/);
+});
+
+test("the owner's command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
+  const { path, database, store, raw, account } = await fixture(t);
+  await call(store, "set", "one", data(account.id, liveExpiry()));
+  const unchanged = (label) => {
+    assert.equal(database.findAccountById(account.id).blocked, false, label);
+    assert.ok(
+      raw.prepare("SELECT id FROM sessions WHERE id = 'one'").get(),
+      `${label}: the session stays`,
+    );
+  };
+  const refusals = [];
+  for (const [label, args] of [
+    ["no arguments", []],
+    ["no address", ["block"]],
+    ["an extra argument", ["block", "player@example.test", "now"]],
+    ["an unknown action", ["delete", "player@example.test"]],
+    ["an address without a valid form", ["block", "player-example.test"]],
+    ["an unknown address", ["block", "nobody@example.test"]],
+    ["an unknown address to unblock", ["unblock", "nobody@example.test"]],
+  ]) {
+    const run = await runBlockCommand(args, path);
+    assert.notEqual(run.code, 0, label);
+    assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
+    unchanged(label);
+    refusals.push(run);
+  }
+
+  const directory = join(path, "..");
+  const absent = join(directory, "absent.sqlite");
+  for (const [label, databasePath] of [
+    ["an unset database path", undefined],
+    ["an empty database path", ""],
+    ["an in-memory database", ":memory:"],
+    ["a database file that does not exist", absent],
+  ]) {
+    const run = await runBlockCommand(
+      ["block", "player@example.test"],
+      databasePath,
+    );
+    assert.notEqual(run.code, 0, label);
+    assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
+    refusals.push(run);
+  }
+  await assert.rejects(access(absent), "the command creates no database");
+  unchanged("a refused database");
+
+  // Another connection holds the write lock past the command's busy timeout.
+  raw.exec("BEGIN IMMEDIATE");
+  let busy;
+  try {
+    busy = await runBlockCommand(["block", "player@example.test"], path);
+  } finally {
+    raw.exec("ROLLBACK");
+  }
+  assert.notEqual(busy.code, 0, busy.output);
+  assert.ok(busy.output.trim() !== "", "the database failure is reported");
+  unchanged("a busy database");
+  refusals.push(busy);
+
+  for (const run of refusals)
+    assert.doesNotMatch(
+      run.output,
+      /encoded-hash|\bone\b|database is locked|SQLITE_|errcode/i,
+      "no hash, session identifier or database error detail",
+    );
 });
