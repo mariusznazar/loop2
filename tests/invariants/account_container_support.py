@@ -1,7 +1,8 @@
 """Disposable production account resources for local application-image smoke tests.
 
 Files are created inside the daemon's volumes, so a remote disposable daemon needs no
-host-path bind mount. No credential is passed in arguments, environment or output.
+host-path bind mount. No credential is passed in arguments, environment or output; the
+synthetic SMTP password lies in a file of the secret volume, and only its path is passed.
 `start_production_container` starts one container on fresh volumes; a test replacing the
 container calls its three steps itself and starts the next container on the same volumes.
 """
@@ -16,6 +17,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 COMMAND_TIMEOUT = 120
 DATABASE_PATH = "/app/data/accounts.sqlite"
 DATA_DESTINATION = "/app/data"
+SMTP_PASSWORD_FILE = "/run/secrets/loop2_smtp_password"
 
 SECRET_SETUP = """
 const fs = require('node:fs');
@@ -24,6 +26,9 @@ const path = '/run/secrets/loop2_session_secrets';
 fs.writeFileSync(path, JSON.stringify([randomBytes(32).toString('base64url')]),
                  { mode: 0o440, flag: 'wx' });
 fs.chownSync(path, 0, 1000);
+const smtpPath = '/run/secrets/loop2_smtp_password';
+fs.writeFileSync(smtpPath, 'synthetic-smtp-password', { mode: 0o440, flag: 'wx' });
+fs.chownSync(smtpPath, 0, 1000);
 """
 
 RESOURCE_PROBE = """
@@ -34,6 +39,7 @@ const path = process.env.LOOP2_DATABASE_PATH;
 const secret = process.env.LOOP2_SESSION_SECRET_FILE;
 const stat = fs.statSync('/app/data');
 const secretStat = fs.statSync(secret);
+const smtpStat = fs.statSync(process.env.LOOP2_SMTP_PASSWORD_FILE);
 const keys = JSON.parse(fs.readFileSync(secret, 'utf8'));
 fs.writeFileSync('/app/data/node-write-probe', 'written by node', { flag: 'wx' });
 const written = fs.readFileSync('/app/data/node-write-probe', 'utf8');
@@ -43,7 +49,10 @@ database.close();
 console.log(JSON.stringify({ uid: process.getuid(), gid: process.getgid(),
   directoryUid: stat.uid, directoryGid: stat.gid, written,
   secretUid: secretStat.uid, secretGid: secretStat.gid,
-  secretMode: secretStat.mode & 0o777, keyBytes: keys.map(k => Buffer.from(k, 'base64url').length),
+  secretMode: secretStat.mode & 0o777,
+  smtpUid: smtpStat.uid, smtpGid: smtpStat.gid, smtpMode: smtpStat.mode & 0o777,
+  smtpPasswordFile: process.env.LOOP2_SMTP_PASSWORD_FILE,
+  keyBytes: keys.map(k => Buffer.from(k, 'base64url').length),
   databasePath: path, production: process.env.NODE_ENV,
   databaseFile: fs.statSync(path).isFile(),
   origin: process.env.LOOP2_PUBLIC_ORIGIN, proxyMode: process.env.LOOP2_PROXY_MODE }));
@@ -96,7 +105,12 @@ def start_application(test, tag, name, data_volume, secret_volume, database_path
                        "-e", f"LOOP2_DATABASE_PATH={database_path}",
                        "-e", "LOOP2_SESSION_SECRET_FILE=/run/secrets/loop2_session_secrets",
                        "-e", "LOOP2_PUBLIC_ORIGIN=https://loop2.mariusznazar.com",
-                       "-e", "LOOP2_PROXY_MODE=cloudflare-tunnel", tag)
+                       "-e", "LOOP2_PROXY_MODE=cloudflare-tunnel",
+                       "-e", "LOOP2_MAIL_FROM=sender@mail.example.test",
+                       "-e", "LOOP2_SMTP_HOST=smtp.example.test",
+                       "-e", "LOOP2_SMTP_PORT=587",
+                       "-e", "LOOP2_SMTP_USER=sender@mail.example.test",
+                       "-e", f"LOOP2_SMTP_PASSWORD_FILE={SMTP_PASSWORD_FILE}", tag)
     test.assertEqual(code, 0, f"production container start failed: {output}")
 
 
@@ -117,7 +131,8 @@ def verify_account_resources(test, name, data_volume, secret_volume,
     test.assertEqual(actual, {
         "uid": 1000, "gid": 1000, "directoryUid": 1000, "directoryGid": 1000,
         "written": "written by node", "secretUid": 0, "secretGid": 1000,
-        "secretMode": 0o440, "keyBytes": [32],
+        "secretMode": 0o440, "smtpUid": 0, "smtpGid": 1000, "smtpMode": 0o440,
+        "smtpPasswordFile": SMTP_PASSWORD_FILE, "keyBytes": [32],
         "databasePath": database_path, "databaseFile": True,
         "production": "production",
         "origin": "https://loop2.mariusznazar.com", "proxyMode": "cloudflare-tunnel",

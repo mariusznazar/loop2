@@ -38,11 +38,18 @@ async function fixture(t, mode = "cloudflare-tunnel") {
   const secretFile = join(directory, "keys.json");
   const path = join(directory, "accounts.sqlite");
   await writeFile(secretFile, JSON.stringify(keys));
+  const smtpPasswordFile = join(directory, "smtp-password");
+  await writeFile(smtpPasswordFile, "synthetic-smtp-password");
   runtime = await openAccountRuntime({
     LOOP2_DATABASE_PATH: path,
     LOOP2_SESSION_SECRET_FILE: secretFile,
     LOOP2_PUBLIC_ORIGIN: origin,
     LOOP2_PROXY_MODE: mode,
+    LOOP2_MAIL_FROM: "sender@mail.example.test",
+    LOOP2_SMTP_HOST: "smtp.example.test",
+    LOOP2_SMTP_PORT: "587",
+    LOOP2_SMTP_USER: "sender@mail.example.test",
+    LOOP2_SMTP_PASSWORD_FILE: smtpPasswordFile,
   });
   inspection = new DatabaseSync(path);
   const account = runtime.database.createAccount(
