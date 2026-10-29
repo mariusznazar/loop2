@@ -130,6 +130,13 @@
   color: var(--text-secondary);
 }
 
+/* The header's line for the row of an unconfirmed address, as `header` in styles.css lays it out. */
+.header-sample {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .tile-samples {
   display: flex;
   flex-wrap: wrap;

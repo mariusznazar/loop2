@@ -156,7 +156,7 @@ z jego testem.
 
 - **Decision:** D-38 · D-44
 - **Invariant:** none
-- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”.
+- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
 
 Wspólne kontrolki stoją w `src/browser/view/controls/`, a ekrany budują z nich
@@ -177,7 +177,8 @@ stanów:
   przycisk jest wyłączony, a jego tekst stoi w `text-disabled`; przycisk
   wysyłający formularz zmienia napis na „Logowanie…” albo „Zakładanie
   konta…” zależnie od formularza, a pola tego formularza są wyłączone, więc
-  też mają tekst w `text-disabled`. Nie ma ruchomego wskaźnika. Odmowa
+  też mają tekst w `text-disabled`; przycisk „Wyślij ponownie” z nagłówka,
+  który nie wysyła formularza, zmienia napis na „Wysyłanie…”. Nie ma ruchomego wskaźnika. Odmowa
   serwera i brak połączenia przy formularzu stoją jednym zdaniem pod
   formularzem w `warning` (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
@@ -271,8 +272,10 @@ produktu, nie część tekstu styleguide'u. Buduje ją i otwiera lokalnie osobna
 komenda `npm run kitchen-sink`; nic, co pisze `npm run build`, a to trafia na
 serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontrolkę
 w każdym stanie albo z powodem, dla którego stan nie dotyczy, formularze
-logowania i zakładania konta czekające na serwer i ze zdaniem odmowy pod nimi
-(z wartościami zmyślonymi, bez stanu gry), każdą rolę
+logowania i zakładania konta czekające na serwer i ze zdaniem odmowy pod nimi,
+wiersz nagłówka z niepotwierdzonym adresem z przyciskiem „Wyślij ponownie”
+czekającym na serwer („Wysyłanie…”) i ze zdaniem odmowy obok przycisku
+(wszystko z wartościami zmyślonymi, bez stanu gry), każdą rolę
 z tabeli Roles i próbki wyglądu kafelków w każdym stanie, narysowane rolami —
 nigdy rysunek gry ze stanu gry (D-04, D-45). Nowa wspólna kontrolka, nowy stan
 albo nowa rola trafia na stronę w tej samej zmianie.
