@@ -1,3 +1,0 @@
-# Re-review of the one spec revision
-
-Resume your independent spec review under the original full handoff `reports/04-spec-review-handoff.md` in this cycle directory. Same worktree, methods, selected sources and read-only boundary. Read the revised spec and `reports/07-spec-revision-report.md`, check your Finding 1 and that the one-row correction introduces no contradiction. The orchestrator verified pinned foundation_step.md: accepted To do 6/Q1 requires the D-58 combat exception; this is not a new human choice. Write the full re-review to `reports/08-spec-rereview.md`, preserving the original review. Return PASS/FAIL and report path, checks with commands/exit codes and unchecked steps. No gate or implementation.
