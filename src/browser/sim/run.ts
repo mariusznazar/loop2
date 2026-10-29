@@ -1,4 +1,5 @@
 import { bodyMinute, eatenBody, startingBody } from "./body.js";
+import { resolveCombat } from "./combat.js";
 import {
   backpackCap,
   backpackCount,
@@ -25,6 +26,9 @@ import type {
   Activity,
   Backpack,
   CharacterId,
+  CombatExchange,
+  CombatOutcome,
+  CreatureId,
   CurrentActivity,
   DeathCause,
   Hex,
@@ -52,6 +56,9 @@ export type GameEvent =
   | { kind: "moved"; minute: number; from: Hex; to: Hex }
   | { kind: "characterDied"; minute: number; cause: DeathCause }
   | { kind: "mapRunCompleted"; minute: number }
+  | { kind: "attacked"; minute: number; creature: CreatureId }
+  | { kind: "combatExchange"; minute: number; exchange: CombatExchange }
+  | { kind: "combatEnded"; minute: number; outcome: CombatOutcome }
   /** What a game minute revealed to the player, each list in the order of its data. */
   | ({ kind: "discovered"; minute: number } & Understanding);
 
@@ -289,7 +296,12 @@ export function newMapRun(
     burningItems: [],
     wanderRandom: streamState(seed, "wander"),
     gatherRandom: streamState(seed, "gather"),
+    attackRandom: streamState(seed, "attack"),
+    attackCooldownStart: 0,
+    activeCombat: null,
+    lastCombat: null,
     streak: 0,
+    defeatedAttacks: 0,
     death: null,
     completion: null,
   };
@@ -305,9 +317,9 @@ export function newMapRun(
 }
 
 /**
- * What a game minute leaves before the pick: the run as the minute made it and the events so far.
- * Where `picks` is true the minute ended an activity, so `run.current` is still the finished
- * activity and `pickActivity` must follow; otherwise the run is complete.
+ * The body/world/action phase of a minute, not a complete minute. Where `picks` is true an
+ * ordinary activity ended; `finishMinute` still checks combat, completion and attacks before
+ * deciding whether to start another one. Discovery can update the program between these phases.
  */
 export type MinuteBeforePick = {
   run: MapRun;
@@ -321,11 +333,15 @@ export function mapRunEnded(run: MapRun): boolean {
 }
 
 /**
- * Whether the map run meets every requirement of the solving condition of its map: for now the
- * streak, which must reach the map's number.
+ * Whether the map run meets every solving requirement the map data defines.
  */
 export function meetsSolving(run: MapRun, map: MapDef): boolean {
-  return run.streak >= map.solving.streak;
+  const requirements = map.solving;
+  return (
+    (requirements.streak === undefined || run.streak >= requirements.streak) &&
+    (requirements.defeatedAttacks === undefined ||
+      run.defeatedAttacks >= requirements.defeatedAttacks)
+  );
 }
 
 /** The streak after a game minute's body step: one more where no health was lost, otherwise 0. */
@@ -338,13 +354,25 @@ function streakAfter(streak: number, lostHealth: boolean): number {
  * its tile; where the character dies, the step stops there: what burns and the tiles stay as they
  * stood, the current activity too, giving no finish, and no program rule is picked. Otherwise what
  * burns loses a minute and the tiles renew their stock; then, when the current activity ends in
- * this minute, its finish applies and the pick is left to `pickActivity`. A map run that has ended,
- * in death or a completion, passes no minute. The streak follows the body step, in the death branch too. Inputs are not
- * changed.
+ * this minute, its finish applies. Combat minutes skip the body and ordinary action, advancing
+ * only the world and streak here. `finishMinute` must follow to resolve combat, completion,
+ * attacks and the ordinary pick. A map run that has ended passes no minute. Inputs stay unchanged.
  */
 export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   if (mapRunEnded(run)) return { run, events: [], picks: false };
   const minute = run.minute + 1;
+  if (run.activeCombat) {
+    return {
+      run: {
+        ...run,
+        minute,
+        streak: run.streak + 1,
+        ...worldMinute(run, map, minute),
+      },
+      events: [],
+      picks: false,
+    };
+  }
   const lived = bodyMinute(run.body, warmthAt(run, run.character.at), map);
   if (lived.death) {
     const cause = lived.death;
@@ -365,7 +393,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   const world = worldMinute(run, map, minute);
   // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
   // instead of never; for every duration of 1 minute or more the two are the same.
-  if (minute < run.current.endMinute)
+  if (!run.current || minute < run.current.endMinute)
     return {
       run: { ...run, minute, body, streak, ...world },
       events: [],
@@ -434,7 +462,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
 
 /**
  * The pick of D-71's last step: the next activity chosen in the run's minute with the program
- * given now, and the run holding it. Follows `minuteBeforePick` where its `picks` is true.
+ * given now, and the run holding it. Used after completion and attacks have been ruled out.
  * Inputs are not changed.
  */
 export function pickActivity(
@@ -454,9 +482,9 @@ export function pickActivity(
 }
 
 /**
- * One game minute, in the order of D-71: `minuteBeforePick`, then, when the minute ended an
- * activity, `pickActivity` with the program given now. A map run that has ended passes no minute.
- * Inputs are not changed.
+ * One complete run minute, including combat, completion, attacks and the ordinary pick. The
+ * supplied program is already filtered to the character's repertoire; game-level discovery
+ * belongs to `advanceMinutes`. A map run that has ended passes no minute. Inputs stay unchanged.
  */
 export function stepMinute(
   run: MapRun,
@@ -464,10 +492,106 @@ export function stepMinute(
   program: Program,
 ): { run: MapRun; events: GameEvent[] } {
   const stepped = minuteBeforePick(run, map);
-  if (!stepped.picks) return { run: stepped.run, events: stepped.events };
-  const picked = pickActivity(stepped.run, map, program);
+  if (mapRunEnded(run)) return { run, events: [] };
+  const finished = finishMinute(stepped, map, program);
   return {
-    run: picked.run,
-    events: [...stepped.events, ...picked.events],
+    run: finished.run,
+    events: [...stepped.events, ...finished.events],
   };
+}
+
+/**
+ * Finishes an already advanced minute: combat turns, death, completion, attack and ordinary pick.
+ * The caller supplies its current repertoire-filtered program after ordinary discoveries.
+ * Returned events contain only this phase, not the input phase's events. Inputs stay unchanged.
+ */
+export function finishMinute(
+  stepped: MinuteBeforePick,
+  map: MapDef,
+  program: Program,
+): { run: MapRun; events: GameEvent[] } {
+  let run = stepped.run;
+  if (mapRunEnded(run)) return { run, events: [] };
+  const events: GameEvent[] = [];
+  const combat = run.activeCombat;
+  let picks = stepped.picks;
+  if (combat && run.minute >= combat.resolveMinute) {
+    const result = resolveCombat(run, map, combat.creatureId, program);
+    run = {
+      ...run,
+      body: { ...run.body, health: result.characterHealth },
+      activeCombat: null,
+      lastCombat: { ...combat, result },
+      attackCooldownStart: run.minute,
+      defeatedAttacks:
+        run.defeatedAttacks + (result.outcome === "creatureDefeated" ? 1 : 0),
+    };
+    events.push(
+      ...result.exchanges.map((exchange): GameEvent => ({
+        kind: "combatExchange",
+        minute: run.minute,
+        exchange,
+      })),
+    );
+    events.push({
+      kind: "combatEnded",
+      minute: run.minute,
+      outcome: result.outcome,
+    });
+    if (result.outcome === "characterDied") {
+      run = { ...run, death: { minute: run.minute, cause: "combat" } };
+      events.push({
+        kind: "characterDied",
+        minute: run.minute,
+        cause: "combat",
+      });
+      return { run, events };
+    }
+    picks = true;
+  }
+  if (meetsSolving(run, map)) {
+    run = {
+      ...run,
+      completion: { minute: run.minute },
+      activeCombat: null,
+      ...(combat && { attackCooldownStart: run.minute }),
+    };
+    events.push({ kind: "mapRunCompleted", minute: run.minute });
+    return { run, events };
+  }
+  // Even the final combat minute cannot draw another attack.
+  if (!combat) {
+    const attacker = map.attackers?.[0];
+    if (
+      attacker &&
+      run.minute - run.attackCooldownStart > attacker.cooldownMinutes
+    ) {
+      const draw = nextRandom(run.attackRandom);
+      run = { ...run, attackRandom: draw.state };
+      if (draw.value < attacker.chancePerMinute) {
+        const activeCombat = {
+          creatureId: attacker.id,
+          attackMinute: run.minute,
+          resolveMinute: run.minute + BALANCE.combatMinutes,
+        };
+        run = {
+          ...run,
+          current: null,
+          activeCombat,
+          lastCombat: { ...activeCombat, result: null },
+        };
+        events.push({
+          kind: "attacked",
+          minute: run.minute,
+          creature: attacker.id,
+        });
+        return { run, events };
+      }
+    }
+  }
+  if (picks) {
+    const picked = pickActivity(run, map, program);
+    return { run: picked.run, events: [...events, ...picked.events] };
+  }
+  return { run, events };
 }

@@ -73,7 +73,7 @@ or in a completion that still stands on the screen.
 ## free game minute
 
 A free game minute is a game minute of a map run at which the map run starts, or at which the
-character's action or the character's waiting ends and the map run goes on.
+character's action, waiting or encounter ends and the map run goes on.
 
 - **Not:** none
 
@@ -117,7 +117,7 @@ An archetype is the kind of character that sets its predispositions.
 
 ## Understanding
 
-The Understanding is the record of the game's actions, items and conditions that the player has
+The Understanding is the record of the game's actions, items, conditions and creatures that the player has
 discovered, together with the condition „Zawsze”, which it holds from the start of a new game.
 
 - **Not:** none
@@ -159,3 +159,15 @@ for.
 A blocked account is a player account the operator has cut off from signing in and playing, which stays so until the operator unblocks it.
 
 - **Not:** an email address refused for 15 minutes after five failed logins (D-102) — "locked"
+
+## beaten attack
+
+A beaten attack is an attack in which the creature reaches zero health in combat, as distinct from an attack whose creature departs at the turn limit.
+
+- **Not:** none
+
+## combat turn
+
+A combat turn is an exchange in which each side has one action, ending early when either side dies before the other side’s response.
+
+- **Not:** none

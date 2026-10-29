@@ -358,6 +358,8 @@ function newCondition(
     case "temperatureBelow":
     case "satietyBelow":
     case "campfireLeftBelow":
+    case "healthBelow":
+    case "opponentHealthBelow":
       return { kind, value };
   }
 }

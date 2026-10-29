@@ -47,6 +47,41 @@ test("the entrance is the fixed one and lies on the map", () => {
   }
 });
 
+test("Las — głębiej draws its entrance from every row-major tile after resources", () => {
+  const deep = MAPS.forestDeep;
+  const seedOne = drawLayout(deep, 1);
+  assert.ok(
+    resourceIds.every((id) => seedOne.tiles.some((tile) => id in tile.stock)),
+    "precondition: seed 1 needs no resource-guarantee draws",
+  );
+  let drawState = streamState(1, "layout");
+  for (
+    let index = 0;
+    index < deep.width * deep.height * deep.resources.length;
+    index += 1
+  ) {
+    drawState = nextRandom(drawState).state;
+  }
+  const entranceDraw = nextRandom(drawState).value;
+  const entranceIndex = Math.floor(entranceDraw * deep.width * deep.height);
+  assert.deepEqual(
+    seedOne.entrance,
+    offsetToAxial(
+      entranceIndex % deep.width,
+      Math.floor(entranceIndex / deep.width),
+    ),
+    "entrance draw follows all row-major resource draws",
+  );
+  const entries = new Set();
+  for (let seed = 1; seed <= 40; seed += 1) {
+    const { tiles, entrance } = drawLayout(deep, seed);
+    const entranceTile = tiles.find((tile) => sameHex(tile.at, entrance));
+    assert.ok(entranceTile);
+    entries.add(`${entranceTile.col},${entranceTile.row}`);
+  }
+  assert.ok(entries.size > 1, "the entrance does not stay fixed across seeds");
+});
+
 test("the same seed gives the same tiles, another seed other tiles", () => {
   assert.deepEqual(drawLayout(map, 7), drawLayout(map, 7));
   assert.notDeepEqual(drawLayout(map, 1).tiles, drawLayout(map, 2).tiles);

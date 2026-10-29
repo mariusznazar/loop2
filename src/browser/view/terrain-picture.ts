@@ -116,7 +116,7 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
       : null;
     const outline = sameHex(tile.at, run.character.at)
       ? "character"
-      : run.current.stepTo && sameHex(tile.at, run.current.stepTo)
+      : run.current?.stepTo && sameHex(tile.at, run.current.stepTo)
         ? "stepTarget"
         : null;
     return {
