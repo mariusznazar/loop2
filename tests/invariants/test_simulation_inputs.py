@@ -43,8 +43,10 @@ Inputs (written out below, or reached by driving `game.js` from them):
 
 Controls, so the check can fail: the same checker, given made-up functions that change a top-level
 key of a state, push onto a program's rules, lower a tile's stock, delete a key, add a key set to
-`undefined` and set a number to `NaN`, reports each; a made-up function that builds a new state
-from its input without changing it is not reported. The run must also make more than 1000 calls
+`undefined` and set a number to `NaN`, reports each; the made-up state has the shape of the game
+state, a list of programs and a map run carrying the copy of its program (D-164), and a push onto
+the rules of a program of the list and a push onto the rules of the copy are each reported; a
+made-up function that builds a new state from its input without changing it is not reported. The run must also make more than 1000 calls
 and call every function of the table at least once.
 
 Does NOT cover: a change made later, after the function returned, through an object it kept;
@@ -222,11 +224,19 @@ const check = (label, fn, args) => {
 };
 
 // --- controls of the checker (not passed to the product) ---
-const makeState = () => ({ program: { rules: [{ condition: { kind: 'always' }, action: { kind: 'wander' } }] },
-  run: { tiles: [{ at: { q: 0, r: 0 }, stock: { stick: 3 } }], minute: 1 }, paused: false, lastSeed: 1 });
+// A made-up state of the shape of the game state: the player's list of programs and a map run
+// carrying its copy (D-164).
+const makeProgram = () => ({ groups: [{ id: 1, name: 'Program', condition: { kind: 'always' },
+  rules: [{ id: 1, condition: { kind: 'always' }, action: { kind: 'wander' } }] }],
+  nextGroupId: 2, nextRuleId: 2 });
+const makeState = () => ({ programs: [{ id: 1, name: 'Program', program: makeProgram() }],
+  run: { tiles: [{ at: { q: 0, r: 0 }, stock: { stick: 3 } }], minute: 1,
+    copy: { program: makeProgram(), programId: 1, deletedName: null, base: makeProgram() } },
+  paused: false, lastSeed: 1 });
 const controls = {
   topLevel: (s) => { s.paused = !s.paused; return s; },
-  pushRule: (s) => { s.program.rules.push(s.program.rules[0]); },
+  pushRule: (s) => { s.programs[0].program.groups[0].rules.push(s.programs[0].program.groups[0].rules[0]); },
+  pushCopyRule: (s) => { s.run.copy.program.groups[0].rules.push(s.run.copy.program.groups[0].rules[0]); },
   lowerStock: (s) => { s.run.tiles[0].stock.stick -= 1; },
   deleteKey: (s) => { delete s.lastSeed; },
   addUndefined: (s) => { s.extra = undefined; },
@@ -476,7 +486,7 @@ class SimulationInputs(unittest.TestCase):
     def test_control_the_checker_sees_each_kind_of_change(self):
         # invariant: simulation-inputs
         controls = report()["controls"]
-        for name in ("topLevel", "pushRule", "lowerStock", "deleteKey", "addUndefined",
+        for name in ("topLevel", "pushRule", "pushCopyRule", "lowerStock", "deleteKey", "addUndefined",
                      "setNaN"):
             self.assertIs(controls.get(name), True,
                           f"the checker misses the change the made-up function {name} makes")

@@ -8,12 +8,23 @@ import {
   setProgram,
   type GameResult,
 } from "../sim/game.js";
+import {
+  createProgram,
+  deleteProgram,
+  discardCopyChanges,
+  editProgram,
+  pickProgram,
+  renameProgram,
+  saveCopyAsNewProgram,
+  saveCopyIntoProgram,
+  switchProgram,
+} from "../sim/programs.js";
 import type { GameState } from "../sim/types.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createHeadquarters } from "./headquarters.js";
 import { createCombatLine } from "./combat-line.js";
-import { createProgramEditor } from "./program-editor.js";
+import { createProgramPanel } from "./program-panel.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
 
@@ -37,9 +48,6 @@ export function createGameView(): GameView {
 
   const element = document.createElement("div");
   element.className = "columns";
-  // Left column: the program panel, always visible.
-  const programPanel = document.createElement("section");
-  programPanel.className = "program-panel";
   // Right column: the headquarters without a map run; during one the status row, the row of the
   // body and the backpack under it, and the terrain panel.
   const mapColumn = document.createElement("section");
@@ -49,35 +57,57 @@ export function createGameView(): GameView {
   // The terrain panel draws the map run and lists its revealed tiles.
   const terrainPanel = createTerrainPanel();
   const combatLine = createCombatLine();
-  element.append(programPanel, mapColumn);
 
-  // The editor passes each edited program to the simulation; setProgram validates and replaces it.
-  // Real time elapsed before the edit is passed first, so it runs under the program it ran under.
-  const programEditor = createProgramEditor((program) => {
-    clock.flush();
-    store.apply(setProgram(state, program));
+  // Left column: the program panel, always visible. Each of its acts goes to the simulation, which
+  // checks it; real time elapsed before the act is passed first, so it runs under the program it
+  // ran under.
+  const programPanel = createProgramPanel({
+    editCopy(program) {
+      clock.flush();
+      if (state.run) store.apply(setProgram(state, program));
+    },
+    editProgram(programId, program) {
+      clock.flush();
+      store.apply(editProgram(state, programId, program));
+    },
+    createProgram() {
+      clock.flush();
+      store.apply(createProgram(state));
+    },
+    renameProgram(programId, name) {
+      clock.flush();
+      store.apply(renameProgram(state, programId, name));
+    },
+    deleteProgram(programId) {
+      clock.flush();
+      store.apply(deleteProgram(state, programId));
+    },
+    saveCopy() {
+      clock.flush();
+      store.apply(saveCopyIntoProgram(state));
+    },
+    saveCopyAsNew(name) {
+      clock.flush();
+      store.apply(saveCopyAsNewProgram(state, name));
+    },
+    discardCopy() {
+      clock.flush();
+      store.apply(discardCopyChanges(state));
+    },
+    switchProgram(programId) {
+      clock.flush();
+      store.apply(switchProgram(state, programId));
+    },
   });
-  programPanel.append(programEditor.element);
+  element.append(programPanel.element, mapColumn);
 
   const store: GameStore = {
     get: () => state,
     apply(result: GameResult): void {
       if (result.state === state) return;
-      const previous = state;
       state = result.state;
       renderMapColumn();
-      // Content updates only on a program/map change or when the Understanding changes (what the
-      // lists offer). A tick or restart updates counts alone, leaving partial field input and focus
-      // intact.
-      if (
-        state.program !== previous.program ||
-        state.run?.mapId !== previous.run?.mapId ||
-        state.understanding !== previous.understanding
-      ) {
-        programEditor.update(state);
-      } else {
-        programEditor.updateCounts(state.ruleCounts);
-      }
+      programPanel.update(state, result.events);
     },
   };
   const clock = startClock(store);
@@ -86,8 +116,12 @@ export function createGameView(): GameView {
     create(name) {
       store.apply(createCharacter(state, name));
     },
-    send(characterId, mapId) {
-      if (!state.run) clock.send({ mapId, characterId });
+    pick(characterId, programId) {
+      clock.flush();
+      store.apply(pickProgram(state, characterId, programId));
+    },
+    send(characterId, mapId, programId) {
+      if (!state.run) clock.send({ mapId, characterId, programId });
     },
   });
   const statusRow = createStatusRow({
@@ -130,7 +164,7 @@ export function createGameView(): GameView {
   }
 
   renderMapColumn();
-  programEditor.update(state);
+  programPanel.update(state, []);
 
   return {
     element,

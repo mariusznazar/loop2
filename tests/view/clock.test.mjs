@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { createCharacter, newGame } from "../../dist/public/sim/game.js";
+import { createProgram } from "../../dist/public/sim/programs.js";
 import { startClock } from "../../dist/public/view/clock.js";
 
 /**
@@ -98,5 +99,26 @@ test("games started and disposed one after another leave only the last clock run
       stores.map((store) => store.applied),
       [0, 0, 5],
     );
+  });
+});
+
+test("the clock's send carries the program number to the simulation's send", () => {
+  withTimers(() => {
+    const withCharacter = createCharacter(newGame(), "Ala").state;
+    const state = createProgram(withCharacter).state;
+    const second = state.programs[1];
+    let applied = null;
+    const store = {
+      get: () => state,
+      apply(result) {
+        applied = result.state;
+      },
+    };
+    const clock = startClock(store);
+    clock.send({ mapId: "forest", characterId: 1, programId: second.id });
+    assert.equal(applied.run.copy.programId, second.id);
+    clock.send({ mapId: "forest", characterId: 1 });
+    assert.equal(applied.run.copy.programId, state.programs[0].id);
+    clock.dispose();
   });
 });

@@ -215,6 +215,13 @@ test("„Z dala od — ognisko” holds where no campfire stands on the characte
   }
 });
 
+/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+function heldProgram(state) {
+  return state.run === null
+    ? state.programs[0].program
+    : state.run.copy.program;
+}
+
 /** The program `setProgram` holds after taking `condition` in, on the sending screen and in a run. */
 function held(condition) {
   const program = programFromRules(rule(condition, EXPLORE));
@@ -225,7 +232,7 @@ function held(condition) {
   ).state;
   return [newGame(), running].map(
     (state) =>
-      programRules(setProgram(state, program).state.program)[0].condition,
+      programRules(heldProgram(setProgram(state, program).state))[0].condition,
   );
 }
 

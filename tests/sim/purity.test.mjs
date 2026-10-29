@@ -93,7 +93,7 @@ test("the program held by the state does not follow later changes of the object 
   const { state } = setProgram(newGame(), program);
   programRules(program).pop();
   programRules(program)[0].condition.value = 7;
-  assert.deepEqual(state.program, PROGRAM);
+  assert.deepEqual(state.programs[0].program, PROGRAM);
 });
 
 test("a returned state is plain JSON", () => {

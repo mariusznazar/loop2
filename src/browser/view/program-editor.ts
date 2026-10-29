@@ -545,10 +545,14 @@ type RowView = ConditionView & {
 export type ProgramEditor = {
   element: HTMLElement;
   /**
-   * Shows the given game state's program; call when the program, the run's map or the
-   * Understanding changes.
+   * Shows `program` with `counts` beside its rules, offering what the given game state's run's map
+   * and Understanding give; call when the program shown, the run's map or the Understanding changes.
    */
-  update(state: GameState): void;
+  update(
+    state: GameState,
+    program: Program,
+    counts: GameState["ruleCounts"],
+  ): void;
   /** Refreshes counts alone; never writes a field value, rebuilds rows or changes focus. */
   updateCounts(counts: GameState["ruleCounts"]): void;
 };
@@ -599,7 +603,8 @@ function offerOf(state: GameState): Offer {
 }
 
 /**
- * Builds the program panel: heading „Program”, editable groups and their conditions, one row per
+ * Builds the program editor under the program panel's list, which names the program shown, so the
+ * editor carries no heading of its own: editable groups and their conditions, one row per
  * program rule — condition select, for a condition that takes a number a number field with the
  * range and step of its kind, for „Tu leży
  * mniej niż” a resource select, for „Zapas poniżej” an item select, „→”, action select, for „Idź”
@@ -618,11 +623,9 @@ export function createProgramEditor(
 ): ProgramEditor {
   const element = document.createElement("div");
   element.className = "program-editor";
-  const heading = document.createElement("h2");
-  heading.textContent = "Program";
   const groupsElement = document.createElement("div");
   const addGroupButton = createButton("Dodaj grupę");
-  element.append(heading, groupsElement, addGroupButton);
+  element.append(groupsElement, addGroupButton);
 
   let program: Program = { groups: [], nextGroupId: 1, nextRuleId: 1 };
   let offer: Offer = { conditions: [], actions: [], resources: [], items: [] };
@@ -1035,11 +1038,15 @@ export function createProgramEditor(
   return {
     element,
     updateCounts,
-    update(state: GameState): void {
+    update(
+      state: GameState,
+      shown: Program,
+      counts: GameState["ruleCounts"],
+    ): void {
       const nextOffer = offerOf(state);
       if (JSON.stringify(nextOffer) !== JSON.stringify(offer)) rebuild = true;
       offer = nextOffer;
-      program = state.program;
+      program = shown;
       if (
         rebuild ||
         groups.length !== program.groups.length ||
@@ -1063,7 +1070,7 @@ export function createProgramEditor(
         const addDisabled = offer.actions.length === 0;
         if (view.add.disabled !== addDisabled) view.add.disabled = addDisabled;
       });
-      updateCounts(state.ruleCounts);
+      updateCounts(counts);
       if (pendingFocus) {
         const target = pendingFocus;
         pendingFocus = null;

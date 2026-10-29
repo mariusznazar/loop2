@@ -1,5 +1,5 @@
 import { passRealTime, send, type GameResult } from "../sim/game.js";
-import type { CharacterId, GameState, MapId } from "../sim/types.js";
+import type { CharacterId, GameState, MapId, ProgramId } from "../sim/types.js";
 
 /** Access to the one game state the app holds; `apply` replaces it with a simulation result. */
 export type GameStore = {
@@ -10,8 +10,15 @@ export type GameStore = {
 export type Clock = {
   /** Passes the real time elapsed since the clock's previous reading to the simulation now. */
   flush(): void;
-  /** Sends a character, passing the real date to the simulation as the send's real time. */
-  send(ids: { mapId: MapId; characterId: CharacterId }): void;
+  /**
+   * Sends a character, passing the real date to the simulation as the send's real time; the
+   * program number, where given, goes to the simulation's send with it.
+   */
+  send(ids: {
+    mapId: MapId;
+    characterId: CharacterId;
+    programId?: ProgramId;
+  }): void;
   /**
    * Stops the clock for good: its interval is cleared, and `flush` and `send` no longer reach
    * the simulation. A game leaving the page disposes its clock, so no hidden game runs on.

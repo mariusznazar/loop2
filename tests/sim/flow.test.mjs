@@ -40,9 +40,12 @@ function sent(program = EXPLORING, realMs = REAL_MS) {
   return send(game.state, SENT, realMs);
 }
 
-test("a new game has an empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
+// Task "programy-gracza", To do 1: the player's programs replace the game's one program, and a
+// new game holds one, „Program”, with no program rule.
+test("a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
   const state = newGame();
-  assert.deepEqual(programRules(state.program), []);
+  assert.equal(state.programs.length, 1);
+  assert.deepEqual(programRules(state.programs[0].program), []);
   assert.deepEqual(state.team, { characters: [], chest: { pieces: {} } });
   assert.equal(state.nextCharacterId, 1);
   assert.equal(state.run, null);
@@ -62,7 +65,8 @@ test("a send starts a map run at minute 0 with the seed mixed from the last seed
   assert.equal(state.run.character.id, SENT.characterId);
   assert.equal(state.paused, false);
   assert.equal(state.realMsCarry, 0);
-  assert.deepEqual(state.program, EXPLORING);
+  // Task "programy-gracza", To do 6: the map run carries out a copy of the program sent with.
+  assert.deepEqual(state.run.copy.program, EXPLORING);
   assert.deepEqual(
     events.map((event) => event.kind),
     ["mapRunStarted", "activityStarted"],
@@ -100,7 +104,9 @@ test("a program edit during a 20-minute exploration does not interrupt it and ap
   assert.equal(events.at(-1).kind, "activityStarted");
 });
 
-test("Restart starts a new map run at minute 0 with the same seed and tiles and the current program", () => {
+// Task "programy-gracza", To do 6: „Restart” goes on with the copy of the map run it replaces, its
+// unsaved changes included.
+test("Restart starts a new map run at minute 0 with the same seed and tiles and the copy as it stands", () => {
   const start = sent().state;
   let state = advanceMinutes(start, 45).state;
   state = setProgram(state, WANDER_FIRST).state;
@@ -111,7 +117,7 @@ test("Restart starts a new map run at minute 0 with the same seed and tiles and 
   assert.equal(restarted.run.minute, 0);
   assert.equal(restarted.run.seed, start.run.seed);
   assert.deepEqual(restarted.run.tiles, start.run.tiles);
-  assert.deepEqual(restarted.program, WANDER_FIRST);
+  assert.deepEqual(restarted.run.copy.program, WANDER_FIRST);
   assert.equal(restarted.run.current.activity.kind, "rule");
   assert.deepEqual(restarted.run.current.activity.action, { kind: "wander" });
   assert.equal(restarted.lastSeed, start.lastSeed);
@@ -130,12 +136,14 @@ test("Restart with the starting program gives back the sent map run", () => {
   assert.deepEqual(restart(later).state, start);
 });
 
+// Task "programy-gracza", To do 10: „Zakończ” drops the copy; the program sent with stays.
 test("Zakończ ends the map run, keeps the program and the last seed", () => {
   let state = advanceMinutes(sent().state, 30).state;
   state = passRealTime(state, 600).state;
   state = setPaused(state, true).state;
   const { state: ended, events } = end(state);
-  assert.deepEqual(ended.program, EXPLORING);
+  assert.deepEqual(ended.programs, state.programs);
+  assert.deepEqual(ended.programs[0].program, EXPLORING);
   assert.deepEqual(ended.team, state.team);
   assert.equal(ended.nextCharacterId, state.nextCharacterId);
   assert.equal(ended.run, null);

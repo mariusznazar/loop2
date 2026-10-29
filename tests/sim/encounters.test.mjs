@@ -339,7 +339,7 @@ test("combat filters unavailable actions and group conditions through the curren
     assert.equal(result.run.body.health, 58, blocked);
     assert.deepEqual(result.ruleCounts, { 1: 0, 2: 8 }, blocked);
     assert.deepEqual(
-      result.program,
+      result.run.copy.program,
       program,
       "unavailable rules stay in the program",
     );
@@ -358,7 +358,7 @@ test("a creature-only discovery pauses before turns and does not write a combat 
     items: [],
     creatures: ["wolf"],
   });
-  assert.deepEqual(result.state.program, state.program);
+  assert.deepEqual(result.state.run.copy.program, state.run.copy.program);
   assert.equal(result.state.run.lastCombat.result, null);
   assert.deepEqual(passRealTime(result.state, 10000).state, result.state);
   const resumed = setPaused(result.state, false).state;
@@ -430,7 +430,7 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
     items: ["stick"],
     creatures: ["wolf"],
   });
-  assert.deepEqual(result.state.program, state.program);
+  assert.deepEqual(result.state.run.copy.program, state.run.copy.program);
   assert.equal(result.state.paused, true);
   assert.equal(result.state.run.lastCombat.result, null);
 });
@@ -445,8 +445,8 @@ test("first chill and attack in one minute keep the automatic exploration rule b
   };
   state.run.body.temperature = 35;
   const result = advanceMinutes(state, 10);
-  assert.equal(result.state.program.groups[0].rules.length, 1);
-  assert.deepEqual(result.state.program.groups[0].rules[0].action, {
+  assert.equal(result.state.run.copy.program.groups[0].rules.length, 1);
+  assert.deepEqual(result.state.run.copy.program.groups[0].rules[0].action, {
     kind: "explore",
   });
   assert.deepEqual(result.state.ruleCounts, { 1: 0 });
@@ -501,7 +501,11 @@ test("stepMinute and game advancement have the same attack and combat ordering",
     fighting(),
     { ...fighting(), run: { ...fighting().run, minute: 185 } },
   ]) {
-    const stepped = stepMinute(state.run, MAPS.forestDeep, state.program);
+    const stepped = stepMinute(
+      state.run,
+      MAPS.forestDeep,
+      state.run.copy.program,
+    );
     const advanced = advanceMinutes(state, 1);
     assert.deepEqual(stepped.run, advanced.state.run);
     assert.deepEqual(stepped.events, advanced.events);

@@ -194,8 +194,8 @@ Kontrolki odstępujące od tej listy stanów:
 - `src/browser/view/controls/button.ts` — przycisk, przycisk niszczący
   i przycisk wybrany w grupie: error nie dotyczy, bo przycisk nie ma
   niepoprawnej wartości; empty nie dotyczy, bo przycisk nie ma pozycji ani
-  wpisu. Przycisk niszczący ma tekst w `danger`; są nim „Zakończ”, „Usuń”
-  i „Restart” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
+  wpisu. Przycisk niszczący ma tekst w `danger`; są nim „Zakończ”, „Usuń”,
+  „Restart”, „Porzuć zmiany” i „Przełącz postać na ten program” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40). Loading dotyczy tylko zwykłego przycisku, który
   czeka na odpowiedź serwera; przycisk niszczący i przycisk wybrany w grupie
   nie czekają na serwer.

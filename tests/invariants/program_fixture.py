@@ -45,3 +45,21 @@ async function newKnowingGame(game, gamePath) {
   };
 }
 """
+
+
+# Source text of JavaScript functions for the Node drivers to embed, reading the programs of a game
+# state the way the player's list and the map run hold them (D-164): `heldProgram` is the program
+# the state edits and carries out, the copy of the map run during one and else the program of the
+# list the team goes with (the one last entered with while it is on the list, else the first);
+# `heldPrograms` is every program the state holds, the list's programs and the copy.
+HELD_PROGRAMS_JS = """
+function heldProgram(state) {
+  if (state.run) return state.run.copy.program;
+  const saved = state.programs.find((p) => p.id === state.lastEnteredProgram) ?? state.programs[0];
+  return saved.program;
+}
+function heldPrograms(state) {
+  const programs = state.programs.map((p) => p.program);
+  return state.run ? [...programs, state.run.copy.program] : programs;
+}
+"""

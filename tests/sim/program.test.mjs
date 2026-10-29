@@ -175,7 +175,7 @@ const grouped = (...groups) => ({ nextGroupId: 100, nextRuleId: 1000, groups });
 const identified = (id, condition, action) => ({ id, condition, action });
 
 test("a new game starts with one empty Program group under always", () => {
-  const initial = newGame().program;
+  const initial = newGame().programs[0].program;
   assert.ok(
     Array.isArray(initial.groups),
     "the program is an ordered list of groups",
@@ -203,7 +203,7 @@ test("group order skips false, empty and infeasible groups and then takes the fi
   );
   let accepted;
   assert.doesNotThrow(() => {
-    accepted = setProgram(newGame(), candidate).state.program;
+    accepted = setProgram(newGame(), candidate).state.programs[0].program;
   });
   assert.deepEqual(chooseActivity(freshRun(), map, accepted), {
     kind: "rule",
@@ -219,7 +219,7 @@ test("all empty groups and an empty list of groups leave the character waiting",
   ]) {
     let accepted;
     assert.doesNotThrow(() => {
-      accepted = setProgram(newGame(), candidate).state.program;
+      accepted = setProgram(newGame(), candidate).state.programs[0].program;
     });
     assert.deepEqual(chooseActivity(freshRun(), map, accepted), {
       kind: "wait",
@@ -236,7 +236,7 @@ test("identical rule contents keep distinct identities when groups and rules mov
   );
   let accepted;
   assert.doesNotThrow(() => {
-    accepted = setProgram(newGame(), candidate).state.program;
+    accepted = setProgram(newGame(), candidate).state.programs[0].program;
   });
   assert.equal(chooseActivity(freshRun(), map, accepted).ruleId, 91);
   const moved = {
@@ -266,7 +266,7 @@ test("group conditions use the same legal number, resource and item values as ru
     );
     let accepted;
     assert.doesNotThrow(() => {
-      accepted = setProgram(newGame(), candidate).state.program;
+      accepted = setProgram(newGame(), candidate).state.programs[0].program;
     });
     assert.deepEqual(accepted, candidate);
   }

@@ -90,10 +90,22 @@ const ITEMS_LISTED = Object.keys(ITEMS);
 /** A deep copy, to show that an edit leaves its input as it was. */
 const copy = (value) => JSON.parse(JSON.stringify(value));
 
+/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+function heldProgram(state) {
+  return state.run === null
+    ? state.programs[0].program
+    : state.run.copy.program;
+}
+
+/** Shows `program` (default: the only program of the list) with the state's counts, as the panel does outside a map run. */
+function show(editor, state, program = state.programs[0].program) {
+  editor.update(state, program, state.ruleCounts);
+}
+
 // Task grupy-regul-i-liczniki, To do 3–4 (Mariusz, 2026-10-24); D-90 and D-93.
 // Catches reused numbers, lost groups, insertion before removal and counts tied to position.
 test("groups append with monotonic numbers through rename and deletion, including the last group", () => {
-  const initial = newGame().program;
+  const initial = newGame().programs[0].program;
   const added = addGroup(initial);
   assert.equal(added.groups.length, 2);
   assert.deepEqual(added.groups[1], {
@@ -116,9 +128,12 @@ test("groups append with monotonic numbers through rename and deletion, includin
   assert.equal(again.groups[0].id, 3);
   assert.equal(again.nextRuleId, 2);
   for (const candidate of [added, renamed, populated, removed, empty, again]) {
-    assert.deepEqual(setProgram(newGame(), candidate).state.program, candidate);
+    assert.deepEqual(
+      heldProgram(setProgram(newGame(), candidate).state),
+      candidate,
+    );
   }
-  assert.deepEqual(initial, newGame().program);
+  assert.deepEqual(initial, newGame().programs[0].program);
 });
 
 test("group arrows move the whole group and leave the edges unchanged", () => {
@@ -142,6 +157,7 @@ test("group conditions offer the same kinds and editable fields while preserving
   const state = {
     ...setProgram(newGame(), THREE).state,
     ruleCounts: { 1: 7, 2: 3, 3: 1 },
+    countsProgram: 1,
   };
   for (const [kind, expected] of [
     ["hereBelow", { kind: "hereBelow", resource: "stick", value: 1 }],
@@ -229,10 +245,11 @@ test("native drop targets place a rule before the target after removal, or appen
     const state = {
       ...setProgram(newGame(), input).state,
       ruleCounts: { 1: 7, 2: 3, 3: 1 },
+      countsProgram: 1,
     };
     const checked = setProgram(state, moved).state;
     assert.deepEqual(checked.ruleCounts, { 1: 7, 2: 3, 3: 1 });
-    assert.deepEqual(checked.program, moved);
+    assert.deepEqual(heldProgram(checked), moved);
   }
   const transferred = dropRule(input, 2, 8);
   const back = dropRule(transferred, 2, 1, 3);
@@ -321,7 +338,7 @@ test("count-only refresh changes count text without writing field values or repl
     const editor = createProgramEditor(() =>
       assert.fail("count update committed a program"),
     );
-    editor.update(state);
+    show(editor, state);
     const elements = descendants(editor.element);
     const counts = elements.filter(
       (element) => element.className === "rule-count",
@@ -526,7 +543,7 @@ test("the number field's range and step follow the condition kind; a kind with n
 });
 
 test("„Dodaj regułę” appends a fresh „Zawsze → Eksploruj” to the named group", () => {
-  assert.deepEqual(addRule(newGame().program, 1).groups[0].rules, [
+  assert.deepEqual(addRule(newGame().programs[0].program, 1).groups[0].rules, [
     ALWAYS_EXPLORE,
   ]);
   const before = copy(THREE);
@@ -925,7 +942,7 @@ test("the existing condition picker creates both combat health conditions with t
       creatures: [],
     });
     const editor = createProgramEditor((program) => committed.push(program));
-    editor.update({ ...known, program: THREE });
+    show(editor, known, THREE);
 
     for (const [kind, expected] of [
       ["healthBelow", { kind: "healthBelow", value: 50 }],
@@ -936,7 +953,7 @@ test("the existing condition picker creates both combat health conditions with t
       condition.value = kind;
       condition.listeners.change();
       assert.deepEqual(committed.at(-1).groups[0].condition, expected);
-      editor.update({ ...known, program: committed.at(-1) });
+      show(editor, known, committed.at(-1));
     }
   });
 });
@@ -951,13 +968,13 @@ test("a new game's editor offers „Zawsze” alone and a disabled „Dodaj regu
   withEditorDocument(() => {
     const committed = [];
     const editor = createProgramEditor((program) => committed.push(program));
-    editor.update(newGame());
+    show(editor, newGame());
     const [groupCondition] = selectsLabelled(editor, "Warunek grupy");
     assert.deepEqual(optionValues(groupCondition), ["always"]);
     const [add] = addRuleButtons(editor);
     assert.equal(add.disabled, true);
 
-    editor.update(gameKnowing(AFTER_FIRST_CHILL));
+    show(editor, gameKnowing(AFTER_FIRST_CHILL));
     const [chilledCondition] = selectsLabelled(editor, "Warunek grupy");
     assert.deepEqual(optionValues(chilledCondition), [
       "always",
@@ -969,10 +986,7 @@ test("a new game's editor offers „Zawsze” alone and a disabled „Dodaj regu
     assert.equal(committed.length, 1);
     assert.deepEqual(committed[0].groups[0].rules, [ALWAYS_EXPLORE]);
 
-    editor.update({
-      ...gameKnowing(AFTER_FIRST_CHILL),
-      program: committed[0],
-    });
+    show(editor, gameKnowing(AFTER_FIRST_CHILL), committed[0]);
     const [action] = selectsLabelled(editor, "Akcja");
     assert.deepEqual(optionValues(action), ["explore", "wander"]);
     const [condition] = selectsLabelled(editor, "Warunek");
@@ -983,15 +997,16 @@ test("a new game's editor offers „Zawsze” alone and a disabled „Dodaj regu
 test("a rule holding a kind or a target outside the lists still shows it, after the lists", () => {
   withEditorDocument(() => {
     const editor = createProgramEditor(() => assert.fail("committed"));
-    editor.update({
-      ...gameKnowing({
+    show(
+      editor,
+      gameKnowing({
         actions: ["explore"],
         conditions: ["always"],
         items: ["stick"],
         creatures: [],
       }),
-      program: THREE,
-    });
+      THREE,
+    );
     const [first, second, third] = selectsLabelled(editor, "Warunek");
     assert.deepEqual(optionValues(first), ["always"]);
     assert.deepEqual(optionValues(second), ["always", "hereBelow"]);
@@ -1018,15 +1033,16 @@ test("the item list of „Zapas poniżej” offers the backpack items of the Und
       item: "stick",
       value: 2,
     };
-    editor.update({
-      ...gameKnowing({
+    show(
+      editor,
+      gameKnowing({
         actions: ["explore"],
         conditions: ["always", "itemBelow"],
         items: ["fiber", "campfire", "berry"],
         creatures: [],
       }),
       program,
-    });
+    );
     const [first] = selectsLabelled(editor, "Przedmiot warunku");
     assert.deepEqual(optionValues(first), ["berry", "fiber", "stick"]);
     assert.equal(first.value, "stick");
@@ -1063,7 +1079,7 @@ test("kinds that name a resource or an item are not offered while the Understand
 test("with no target offered the selects list only choices that commit: the rule's kind stays the one shown", () => {
   withEditorDocument(() => {
     const editor = createProgramEditor(() => assert.fail("committed"));
-    editor.update({ ...gameKnowing(NO_TARGETS), program: THREE });
+    show(editor, gameKnowing(NO_TARGETS), THREE);
     const [, , action] = selectsLabelled(editor, "Akcja");
     assert.deepEqual(optionValues(action), ["explore", "wander", "walkTo"]);
     const [condition] = selectsLabelled(editor, "Warunek");
@@ -1131,7 +1147,7 @@ test("every program the editor builds passes setProgram, before sending and duri
 
   // Every pair of kinds, every resource and item in every slot, and the number at its ends, off its
   // step and outside them.
-  let program = newGame().program;
+  let program = newGame().programs[0].program;
   const built = [];
   const keep = (next) => {
     if (next) {
@@ -1201,7 +1217,7 @@ test("every program the editor builds passes setProgram, before sending and duri
   for (const candidate of built) {
     for (const state of [before, during]) {
       const result = setProgram(state, candidate);
-      assert.deepEqual(result.state.program, candidate);
+      assert.deepEqual(heldProgram(result.state), candidate);
     }
   }
 });
@@ -1255,6 +1271,9 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
   );
   assert.deepEqual(input, before);
   for (const candidate of [added, moved, changed, removed]) {
-    assert.deepEqual(setProgram(newGame(), candidate).state.program, candidate);
+    assert.deepEqual(
+      heldProgram(setProgram(newGame(), candidate).state),
+      candidate,
+    );
   }
 });

@@ -6,7 +6,9 @@ The simulation is built by `npm run build` in a temporary copy of the working tr
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send` and `advanceMinutes` one game minute at a time. After every input the script records the
-JSON of the map run.
+JSON of the map run and of the program the map run carries out: the copy of the map run
+(`heldProgram` in `HELD_PROGRAMS_JS` of `program_fixture.py`, D-164), taken from the player's list
+by the send.
 The new game of each sent character is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
 program stay what the check drives; the scenario of a rule outside the repertoire takes from that
@@ -60,7 +62,7 @@ Understanding lacks the item "stick", the program "STOCK -> wander, always -> ex
 Understanding lacks the condition "itemBelow", a program whose first group stands under STOCK and
 holds "always -> wander", followed by a group under "always" holding "always -> explore", starts the
 explore rule of the second group, because the first group's condition is not in the repertoire. In
-both, the program the game holds after the send is the program set. Controls: in the game that
+both, the program the map run carries out after the send, its copy, is the program set. Controls: in the game that
 knows everything, the same programs start the wander rule, so STOCK holds and a pick that ignored
 the repertoire would start it in both.
 
@@ -80,7 +82,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import KNOWING_GAME_JS, program_from_rules
+from program_fixture import HELD_PROGRAMS_JS, KNOWING_GAME_JS, program_from_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -135,7 +137,7 @@ def waiting(minute):
             "endMinute": minute + WAIT_MINUTES, "stepTo": None}
 
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -158,7 +160,7 @@ for (const [name, ...args] of steps) {
     state = game[name](state, ...args).state;
   }
   runs.push({ step: name, run: JSON.parse(JSON.stringify(state.run)),
-              program: JSON.parse(JSON.stringify(state.program)) });
+              program: JSON.parse(JSON.stringify(heldProgram(state))) });
 }
 writeFileSync(outPath, JSON.stringify(runs));
 """

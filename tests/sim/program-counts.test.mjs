@@ -246,8 +246,10 @@ test("canonical equivalent content preserves history despite key order, extra fi
     17: 4,
     91: 2,
   });
+  // Task "programy-gracza", To do 1: the program handed back is program 1 of the player's list.
   assert.deepEqual(
-    setProgram(state, structuredClone(state.program)).state.ruleCounts,
+    setProgram(state, structuredClone(state.programs[0].program)).state
+      .ruleCounts,
     { 17: 4, 91: 2 },
   );
 });

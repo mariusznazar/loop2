@@ -827,12 +827,32 @@ The browser account client returns an account only for the success status of its
 
 ## streak-program-change
 
-A change of the program rules or rule groups that a map run carries out sets the streak of that map run to zero, on every map.
+A change of the program rules or rule groups of the copy a map run carries out, and every switch of the character to another program during the map run, to one holding the same rules included, sets the streak of that map run to zero, on every map.
 
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-131 · D-136
 - **Part:** every
+- **Violated:** no
+
+## saved-program-edit
+
+An edit of a saved program during a map run leaves the copy the map run carries out, the map run's streak and the firing counts of the copy's program rules as they were.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-164 · D-131 · D-93
+- **Part:** simulation · browser-view
+- **Violated:** no
+
+## copy-save
+
+„Zapisz w programie” and „Zapisz jako nowy program” leave the content of the copy a map run carries out and the map run's streak as they were, and „Zapisz jako nowy program” is no switch of the character to another program.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-164 · D-171 · D-131
+- **Part:** simulation · browser-view
 - **Violated:** no
 
 ## blocked-account-access

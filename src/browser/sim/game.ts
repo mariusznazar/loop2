@@ -8,9 +8,19 @@ import {
   withFirstChillRule,
 } from "./understanding.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
-import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
-import { conditionNumber, onStep } from "./program.js";
+import {
+  checkProgram,
+  emptyProgram,
+  FIRST_PROGRAM_NAME,
+  programById,
+  reconcileCounts,
+  rowProgram,
+  teamProgram,
+  withCopyProgram,
+  withProgramContent,
+  zeroCounts,
+} from "./programs.js";
 import { mixSeed } from "./random.js";
 import {
   mapRunEnded,
@@ -20,18 +30,16 @@ import {
   type GameEvent,
 } from "./run.js";
 import type {
-  Action,
   Character,
   CharacterId,
-  Condition,
+  GameMapRun,
   GameState,
-  ItemId,
   MapId,
   MapRun,
   Pace,
   Program,
-  ProgramRule,
-  ResourceId,
+  ProgramCopy,
+  ProgramId,
   Traits,
   Understanding,
 } from "./types.js";
@@ -59,242 +67,9 @@ export function canSendMap(
   );
 }
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-/** The resources a program may name: the run's map's, or without a run those of any map. */
-function allowedResources(run: MapRun | null): ReadonlySet<string> {
-  const maps: MapDef[] = run ? [mapOf(run.mapId)] : Object.values(MAPS);
-  return new Set(
-    maps.flatMap((map) => map.resources.map((resource) => resource.id)),
-  );
-}
-
-function checkResource(
-  value: unknown,
-  allowed: ReadonlySet<string>,
-): ResourceId {
-  if (typeof value !== "string" || !allowed.has(value)) {
-    throw new Error(
-      `program: resource ${String(value)} is not a resource of the map`,
-    );
-  }
-  return value as ResourceId;
-}
-
-/** An item of the data, bound to no map. */
-function checkItem(value: unknown): ItemId {
-  if (typeof value !== "string" || !Object.hasOwn(ITEMS, value)) {
-    throw new Error(
-      `program: item ${String(value)} is not an item of the data`,
-    );
-  }
-  return value as ItemId;
-}
-
-/**
- * How far a number may lie from its step's grid and still be taken, as a part of the step: binary
- * rounding, never a number the player could type.
- */
-const STEP_TOLERANCE = 1e-9;
-
-/**
- * The number of a condition of `kind`: a finite number from the kind's minimum to its maximum, on
- * its step counted from the minimum, held as the decimal of that step.
- */
-function checkNumber(kind: Condition["kind"], value: unknown): number {
-  const number = conditionNumber(kind);
-  if (!number)
-    throw new Error(`program: condition kind ${kind} takes no number`);
-  const { min, max, step } = number;
-  if (
-    typeof value !== "number" ||
-    !Number.isFinite(value) ||
-    value < min ||
-    value > max
-  ) {
-    throw new Error(
-      `program: ${String(value)} is not a number from ${min} to ${max}`,
-    );
-  }
-  const held = onStep(value, number);
-  if (Math.abs(value - held) > step * STEP_TOLERANCE) {
-    throw new Error(
-      `program: ${String(value)} does not lie on the step ${step} from ${min}`,
-    );
-  }
-  return held;
-}
-
-function checkCondition(
-  value: unknown,
-  allowed: ReadonlySet<string>,
-): Condition {
-  if (!isObject(value)) throw new Error("program: a rule has no condition");
-  switch (value.kind) {
-    case "always":
-      return { kind: "always" };
-    case "hereBelow": {
-      const number = checkNumber("hereBelow", value.value);
-      return {
-        kind: "hereBelow",
-        resource: checkResource(value.resource, allowed),
-        value: number,
-      };
-    }
-    case "itemBelow": {
-      const number = checkNumber("itemBelow", value.value);
-      return { kind: "itemBelow", item: checkItem(value.item), value: number };
-    }
-    // The body's conditions and those on the campfire name nothing: the simulation reads the
-    // character's body, and the campfire on its tile or the nearest one.
-    case "temperatureBelow":
-    case "satietyBelow":
-    case "campfireLeftBelow":
-    case "healthBelow":
-    case "opponentHealthBelow":
-      return { kind: value.kind, value: checkNumber(value.kind, value.value) };
-    case "awayFromCampfire":
-      return { kind: "awayFromCampfire" };
-    default:
-      throw new Error(
-        `program: condition kind ${String(value.kind)} is not on the closed list`,
-      );
-  }
-}
-
-function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
-  if (!isObject(value)) throw new Error("program: a rule has no action");
-  switch (value.kind) {
-    case "explore":
-      return { kind: "explore" };
-    case "wander":
-      return { kind: "wander" };
-    case "walkTo":
-      return {
-        kind: "walkTo",
-        resource: checkResource(value.resource, allowed),
-      };
-    case "gather":
-      return {
-        kind: "gather",
-        resource: checkResource(value.resource, allowed),
-      };
-    // The actions on the campfire and the backpack name nothing: the simulation picks the
-    // campfire on the character's tile, or the nearest one, and the pieces they use.
-    case "walkToCampfire":
-      return { kind: "walkToCampfire" };
-    case "craftCampfire":
-      return { kind: "craftCampfire" };
-    case "lightCampfire":
-      return { kind: "lightCampfire" };
-    case "lightItem":
-      return { kind: "lightItem" };
-    case "feedCampfire":
-      return { kind: "feedCampfire" };
-    case "eat":
-      return { kind: "eat" };
-    case "strikeWithStick":
-      return { kind: "strikeWithStick" };
-    case "kick":
-      return { kind: "kick" };
-    case "dodge":
-      return { kind: "dodge" };
-    default:
-      throw new Error(
-        `program: action kind ${String(value.kind)} is not on the closed list`,
-      );
-  }
-}
-
-/** A positive safe integer, so a stored identity remains exact. */
-function checkIdentity(value: unknown): number {
-  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1)
-    throw new Error("program: an identity is not a positive safe integer");
-  return value;
-}
-
-/** Each identity occurs once and precedes its next-identity counter. */
-function uniqueIdentity(
-  value: unknown,
-  next: number,
-  seen: Set<number>,
-): number {
-  const id = checkIdentity(value);
-  if (id >= next || seen.has(id))
-    throw new Error(
-      "program: an identity is duplicated or reaches its next counter",
-    );
-  seen.add(id);
-  return id;
-}
-
-/** A copy of the program built from the closed list; throws on anything outside it. */
-function checkProgram(value: unknown, run: MapRun | null): Program {
-  if (!isObject(value) || !Array.isArray(value.groups))
-    throw new Error("program: no list of groups");
-  const nextGroupId = checkIdentity(value.nextGroupId);
-  const nextRuleId = checkIdentity(value.nextRuleId);
-  const allowed = allowedResources(run);
-  const groupIds = new Set<number>();
-  const ruleIds = new Set<number>();
-  const groups = value.groups.map((group: unknown) => {
-    if (
-      !isObject(group) ||
-      typeof group.name !== "string" ||
-      !Array.isArray(group.rules) ||
-      Object.hasOwn(group, "groups")
-    )
-      throw new Error(
-        "program: a group must hold a name and a list of rules at one level",
-      );
-    const id = uniqueIdentity(group.id, nextGroupId, groupIds);
-    const condition = checkCondition(group.condition, allowed);
-    const rules = group.rules.map((rule: unknown): ProgramRule => {
-      if (!isObject(rule))
-        throw new Error(
-          "program: a rule is not a pair of a condition and an action",
-        );
-      return {
-        id: uniqueIdentity(rule.id, nextRuleId, ruleIds),
-        condition: checkCondition(rule.condition, allowed),
-        action: checkAction(rule.action, allowed),
-      };
-    });
-    return { id, name: group.name, condition, rules };
-  });
-  return { groups, nextGroupId, nextRuleId };
-}
-
-function requireRun(state: GameState, name: string): MapRun {
+function requireRun(state: GameState, name: string): GameMapRun {
   if (!state.run) throw new Error(`${name}: there is no map run`);
   return state.run;
-}
-
-/** Counts follow rule identity and canonical validated content, never group or position. */
-function reconcileCounts(
-  state: GameState,
-  program: Program,
-): GameState["ruleCounts"] {
-  if (state.ruleCounts === null) return null;
-  const previous = new Map(
-    state.program.groups.flatMap((group) =>
-      group.rules.map((rule) => [rule.id, rule] as const),
-    ),
-  );
-  return Object.fromEntries(
-    program.groups.flatMap((group) =>
-      group.rules.map((rule) => {
-        const old = previous.get(rule.id);
-        const unchanged =
-          old &&
-          JSON.stringify([old.condition, old.action]) ===
-            JSON.stringify([rule.condition, rule.action]);
-        return [rule.id, unchanged ? (state.ruleCounts?.[rule.id] ?? 0) : 0];
-      }),
-    ),
-  );
 }
 
 /** Consume starts once; waits and finishes have no firing to count. Inputs stay unchanged. */
@@ -320,46 +95,50 @@ function countStarts(
 }
 
 /**
- * The program as the character `characterId` can carry it out: reduced to the repertoire of its
- * archetype over the game's Understanding. A rule outside it is passed over and stays in
- * `state.program`; a character the team does not list takes the archetype of created characters.
+ * The copy `program` as the character `characterId` can carry it out: reduced to the repertoire of
+ * its archetype over the game's Understanding. A rule outside it is passed over and stays in the
+ * copy; a character the team does not list takes the archetype of created characters.
  */
-function programOf(state: GameState, characterId: CharacterId): Program {
+function programOf(
+  state: GameState,
+  program: Program,
+  characterId: CharacterId,
+): Program {
   const character = state.team.characters.find(
     (listed) => listed.id === characterId,
   );
   const archetype = ARCHETYPES[character?.archetypeId ?? CREATED_ARCHETYPE];
   return programInRepertoire(
-    state.program,
+    program,
     repertoireOf(state.understanding, archetype.predispositions),
   );
 }
 
-/** A new map run at minute 0 with the current program; events mapRunStarted, activityStarted. */
+/**
+ * A new map run at minute 0 carrying out `copy`, every count of the copy's rules starting from
+ * zero; events mapRunStarted, activityStarted.
+ */
 function startRun(
   state: GameState,
   mapId: MapId,
   characterId: CharacterId,
   seed: number,
   traits: Traits,
+  copy: ProgramCopy,
 ): GameResult {
-  const zeros = Object.fromEntries(
-    state.program.groups.flatMap((group) =>
-      group.rules.map((rule) => [rule.id, 0]),
-    ),
-  );
   const started = newMapRun(
     mapOf(mapId),
     seed,
-    programOf(state, characterId),
+    programOf(state, copy.program, characterId),
     { mapId, characterId },
     traits,
   );
   return {
     state: {
       ...state,
-      ruleCounts: countStarts(zeros, started.events),
-      run: started.run,
+      ruleCounts: countStarts(zeroCounts(copy.program), started.events),
+      countsProgram: null,
+      run: { ...started.run, copy },
       paused: false,
       discovery: null,
       realMsCarry: 0,
@@ -368,19 +147,21 @@ function startRun(
   };
 }
 
-/** The game as it stands before anything is done: no program rules, a team with no character
- * and an empty chest, no map run. */
+/**
+ * The game as it stands before anything is done: program 1, „Program”, with the empty rule group
+ * „Program” under „Zawsze” and the next program number 2, a team with no character and an empty
+ * chest, no map run.
+ */
 export function newGame(): GameState {
   return {
-    program: {
-      groups: [
-        { id: 1, name: "Program", condition: { kind: "always" }, rules: [] },
-      ],
-      nextGroupId: 2,
-      nextRuleId: 1,
-    },
+    programs: [{ id: 1, name: FIRST_PROGRAM_NAME, program: emptyProgram() }],
+    nextProgramId: 2,
+    pickedPrograms: {},
+    lastUsedPrograms: {},
+    lastEnteredProgram: null,
     understanding: newUnderstanding(),
     ruleCounts: null,
+    countsProgram: null,
     team: { characters: [], chest: { pieces: {} } },
     nextCharacterId: 1,
     run: null,
@@ -393,39 +174,35 @@ export function newGame(): GameState {
   };
 }
 
-/** Deep equality of plain data: the same keys with equal values, arrays in order. */
-function sameData(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (!isObject(a) || !isObject(b) || Array.isArray(a) !== Array.isArray(b))
-    return false;
-  const keys = Object.keys(a);
-  return (
-    keys.length === Object.keys(b).length &&
-    keys.every((key) => Object.hasOwn(b, key) && sameData(a[key], b[key]))
-  );
-}
-
 /**
- * Replaces the program. Allowed with or without a map run; the running activity is left as it
- * is, and the program takes effect when the character next picks a program rule. Where the
- * program checked differs from the one the state holds — groups and rules in order with their
- * identities, conditions and actions, and the identity counters — the streak and defeated-attack
- * count of a map run not ended, in death or a completion, become 0, paused or not; a program handed
- * back as it stands leaves both.
+ * Within a map run, replaces the copy the map run carries out, checked against the run's map; the
+ * copy's program and base stay. The running activity is left as it is, and the copy takes effect
+ * when the character next picks a program rule. Where the copy checked differs from the copy before
+ * it — groups and rules in order with their identities, conditions and actions, and the identity
+ * counters — the streak and defeated-attack count of a map run not ended, in death or a completion,
+ * become 0, paused or not; a copy handed back as it stands leaves both.
+ *
+ * Without a map run, replaces the content of the program a character with no pick and no program
+ * used last goes with, `teamProgram`, checked against the resources of every map; the counts are
+ * reconciled where they stand beside that program.
  */
 export function setProgram(state: GameState, program: Program): GameResult {
-  const checked = checkProgram(program, state.run);
-  const zeroed =
-    state.run && !mapRunEnded(state.run) && !sameData(state.program, checked);
+  const run = state.run;
+  if (run) {
+    return {
+      state: withCopyProgram(state, run, checkProgram(program, run)),
+      events: [],
+    };
+  }
+  const edited = teamProgram(state);
+  const checked = checkProgram(program, null);
   return {
     state: {
       ...state,
-      program: checked,
-      ruleCounts: reconcileCounts(state, checked),
-      ...(zeroed &&
-        state.run && {
-          run: { ...state.run, streak: 0, defeatedAttacks: 0 },
-        }),
+      programs: withProgramContent(state.programs, edited.id, checked),
+      ...(state.countsProgram === edited.id && {
+        ruleCounts: reconcileCounts(state.ruleCounts, edited.program, checked),
+      }),
     },
     events: [],
   };
@@ -468,17 +245,21 @@ export function createCharacter(state: GameState, name: string): GameResult {
 }
 
 /**
- * Sends a character of the team to a map: a new map run at minute 0, seeded from the last seed and
- * real time, its character carrying its own copy of the traits of the team's character sent.
- * Throws while a map run is in progress, so one map run goes on at a time.
+ * Sends a character of the team to a map with the program numbered `programId`, or without one with
+ * its headquarters row's program, `rowProgram`: a new map run at minute 0, seeded from the last
+ * seed and real time, its character carrying its own copy of the traits of the team's character
+ * sent, carrying out a copy of that program whose base is the program's content. That program
+ * becomes the character's program used last and the one a character last entered a map with, and
+ * the character's pick is cleared. Throws while a map run is in progress, so one map run goes on at
+ * a time, and on a program number not on the list.
  */
 export function send(
   state: GameState,
-  ids: { mapId: MapId; characterId: CharacterId },
+  ids: { mapId: MapId; characterId: CharacterId; programId?: ProgramId },
   realMs: number,
 ): GameResult {
   if (state.run) throw new Error("send: a map run is in progress");
-  const { mapId, characterId } = ids;
+  const { mapId, characterId, programId } = ids;
   if (typeof mapId !== "string" || !Object.hasOwn(MAPS, mapId))
     throw new Error(`send: no map ${String(mapId)}`);
   if (!canSendMap(state.solvedMaps, mapId))
@@ -488,16 +269,40 @@ export function send(
   );
   if (!sent)
     throw new Error(`send: no character ${String(characterId)} in the team`);
+  const chosen =
+    programId === undefined
+      ? rowProgram(state, characterId)
+      : programById(state.programs, programId);
+  if (!chosen)
+    throw new Error(`send: no program ${String(programId)} on the list`);
   const seed = mixSeed(state.lastSeed, realMs);
-  return startRun({ ...state, lastSeed: seed }, mapId, characterId, seed, {
-    ...sent.traits,
-  });
+  const pickedPrograms = { ...state.pickedPrograms };
+  delete pickedPrograms[characterId];
+  return startRun(
+    {
+      ...state,
+      lastSeed: seed,
+      pickedPrograms,
+      lastUsedPrograms: { ...state.lastUsedPrograms, [characterId]: chosen.id },
+      lastEnteredProgram: chosen.id,
+    },
+    mapId,
+    characterId,
+    seed,
+    { ...sent.traits },
+    {
+      program: chosen.program,
+      programId: chosen.id,
+      deletedName: null,
+      base: chosen.program,
+    },
+  );
 }
 
 /**
  * Ends the map run in progress, or one ended in death or a completion, and starts a new one of the
- * same map,
- * character, traits and seed.
+ * same map, character, traits and seed, carrying out the copy record of the map run it replaces as
+ * it is, unsaved changes included; every count starts from zero.
  */
 export function restart(state: GameState): GameResult {
   const run = requireRun(state, "restart");
@@ -507,6 +312,7 @@ export function restart(state: GameState): GameResult {
     run.character.id,
     run.seed,
     run.character.traits,
+    run.copy,
   );
   return {
     state: started.state,
@@ -515,14 +321,22 @@ export function restart(state: GameState): GameResult {
 }
 
 /**
- * Ends the map run in progress, or one ended in death or a completion; the program, the last seed
- * and the solved maps stay.
+ * Ends the map run in progress, or one ended in death or a completion, and drops its copy; the
+ * programs, the last seed and the solved maps stay. The counts are reconciled against the copy's
+ * program, which they then stand beside: a rule of that program keeps the count of the copy's rule
+ * of the same identity where the two have the same condition and action, and stands at 0 otherwise.
+ * Where the copy's program is gone, the counts are cleared.
  */
 export function end(state: GameState): GameResult {
-  requireRun(state, "end");
+  const run = requireRun(state, "end");
+  const owner = programById(state.programs, run.copy.programId);
   return {
     state: {
       ...state,
+      ruleCounts: owner
+        ? reconcileCounts(state.ruleCounts, run.copy.program, owner.program)
+        : null,
+      countsProgram: owner ? owner.id : null,
       run: null,
       paused: false,
       discovery: null,
@@ -589,8 +403,10 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
 /**
  * A span of game minutes: the minute of D-71 repeated, also while paused. A discovery takes hold
  * between the minute's last effect and the pick: what the minute revealed enters the Understanding,
- * at the first chill the rule "Zawsze → Eksploruj" enters the program, and the pick that ends the
- * minute is made from the program and the Understanding as they then stand. A span that reaches
+ * at the first chill the rule "Zawsze → Eksploruj" enters the copy, its base and the copy's program
+ * while that program is on the list, each by `withFirstChillRule` on its own content, and no other
+ * program, and the pick that ends the minute is made from the copy and the Understanding as they
+ * then stand. A span that reaches
  * the character's death, or the whole minute of a discovery, stops there; a stop at a discovery
  * leaves the game paused, holding what the minute revealed. A map run that meets the solving
  * condition of its map in a minute completes there, once the minute's discovery has taken hold: the
@@ -614,8 +430,9 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   const map = mapOf(state.run.mapId);
   const events: GameEvent[] = [];
   let current = state;
-  let run = state.run;
-  let program = programOf(current, run.character.id);
+  let run: MapRun = state.run;
+  let copy = state.run.copy;
+  let program = programOf(current, copy.program, run.character.id);
   let revealed: Understanding | null = null;
   let completed = false;
   for (let minute = 0; minute < minutes; minute += 1) {
@@ -629,16 +446,32 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
       stepped.events,
     );
     if (found) {
-      const written = found.chill ? withFirstChillRule(current.program) : null;
-      current = {
-        ...current,
-        understanding: found.understanding,
-        ...(written && {
+      current = { ...current, understanding: found.understanding };
+      if (found.chill) {
+        const written = withFirstChillRule(copy.program);
+        const owner = programById(current.programs, copy.programId);
+        current = {
+          ...current,
+          ruleCounts: reconcileCounts(
+            current.ruleCounts,
+            copy.program,
+            written,
+          ),
+          ...(owner && {
+            programs: withProgramContent(
+              current.programs,
+              owner.id,
+              withFirstChillRule(owner.program),
+            ),
+          }),
+        };
+        copy = {
+          ...copy,
           program: written,
-          ruleCounts: reconcileCounts(current, written),
-        }),
-      };
-      program = programOf(current, run.character.id);
+          base: withFirstChillRule(copy.base),
+        };
+      }
+      program = programOf(current, copy.program, run.character.id);
     }
     const finished = finishMinute(stepped, map, program);
     // Collect the entire minute once in catalog order, including its attack, after the
@@ -676,7 +509,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         !current.solvedMaps.includes(run.mapId) && {
           solvedMaps: [...current.solvedMaps, run.mapId],
         }),
-      run,
+      run: { ...run, copy },
       ruleCounts: countStarts(current.ruleCounts, events),
     },
     events,
