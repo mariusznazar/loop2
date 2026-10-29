@@ -1,0 +1,9 @@
+# Review the one fix
+
+Resume as independent original reviewer in C:/Storage/repos/loop2-wt/plan-wyprawy, task/plan-wyprawy, same model/class. Read .the-way/task-cycle/review/SKILL.md whole as needed; this is review of the fix, not a new broad whole-change review. Pin a8dfe8ac62885e88bc8f463e93ab16b621d48e92 unchanged and must match gitlink. Do not read cycle.md or edit tracked files.
+
+Review range c39e10ca539ee79048d6989f1287582119751c8c..0533a13aa5ac9a147f81da768227d101dbace033: one file tests/sim/trip.test.mjs +16/-0, clean worktree confirmed. Inputs: frozen full task .runs/task-cycles/plan-wyprawy/task.md, your reports/review-report.md and reports/review-findings.md, author's reports/fix-report.md, original review handoff. No spec/plan. No trust boundary or irreversible operation, no product/foundation change in fix; confirm against actual range.
+
+Judge whether I1 scenario is closed and whether fix introduces a blocking issue, without reevaluating unrelated settled code. Author reports exact temporary <=1 mutation causes assertion failure and restored production passes14; you independently verify as your method/D94 requires. Full gate remains parent scope; do not run complete npm test. Keep each exact command+exit, including failures; classify mutant and carry earlier Minor/outside-scope findings unchanged. Parent has not graded fix.
+
+Write full reports/fix-review-report.md, first line PASS/FAIL with head or questions. Include range/file counts, I1 resolution evidence, any new finding grade and scope, checks, reaches, Searches not found or unclear, unrun and remaining concerns. Return verdict/head/report path. This is the one fix review allowed by the cycle; if blocking issue remains, parent takes blocked route rather than another fix.

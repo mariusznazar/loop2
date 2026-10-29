@@ -1,0 +1,9 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_program_closed_lists.py
+
+...
+----------------------------------------------------------------------
+Ran 3 tests in 2.728s
+
+OK

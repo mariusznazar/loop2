@@ -1,0 +1,6 @@
+# Repair author report command evidence
+Work from C:/Storage/repos/loop2-wt/plan-wyprawy. Resume your original one-author stage through .the-way/task-cycle/change/SKILL.md, report-only correction. Do not read cycle.md or edit product files. Keep head c39e10ca539ee79048d6989f1287582119751c8c unchanged.
+
+Your author-report.md has rows `node ... prettier ... <explicit changed source/test paths>` and `node ... eslint ... <changed TS/MJS source/test paths>`. The orchestration method requires actual command and exit for every claimed check. Replace placeholders with exact arguments for each executed invocation, or reference a companion report containing exact command+exit. Recover original tool calls; do not rerun to recreate evidence. Keep initial unretained compile diagnostic explicitly unretained. Report if exact command cannot be recovered rather than invent it.
+
+Write correction into existing .runs/task-cycles/plan-wyprawy/reports/author-report.md, plus a short reports/author-report-repair.md naming repaired rows and any still missing. Return code head unchanged and exact evidence status. Existing task/author handoff remain inputs. This is not the return step; independent review follows.
