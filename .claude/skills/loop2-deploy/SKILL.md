@@ -153,10 +153,21 @@ private note. The agent reads the file's metadata only and never its content.
   message from a monthly allowance of 1000.
 - **What an agent may read:** the mailer's failure line in the bounded service logs,
   `Account mail failed: <code>`, with the error code only (never an address, link or
-  password). `EAUTH` means Outsider refused the login or the password; any other code, for
-  example `ECONNECTION`, `ETIMEDOUT` or `ETLS`, means a connection or TLS failure. The line
-  `Account mail missed its deadline` means the send was abandoned after 10 seconds. The agent
-  reports the code; the human changes the login in `compose.yaml` or the password file.
+  password). Read the code like this:
+  - `EAUTH`: Outsider refused the login or the password.
+  - `ECONNECTION`, `ETIMEDOUT`, `ESOCKET`, `EDNS`, `ETLS`, `EREQUIRETLS`: a connection, name
+    lookup or TLS failure towards Outsider on port 587.
+  - `EENVELOPE`, `EMESSAGE`: Outsider accepted the login but refused the sender, the recipient
+    or the message, for example because the monthly allowance is used up; the human checks
+    Outsider's panel.
+  - `unknown`: the library gave no code: the send ran out of its 10 seconds, the connection
+    ended or was not upgraded to TLS, or the mailer refused the address before connecting.
+    The line `Account mail missed its deadline` is the same 10-second limit seen from the
+    route.
+  - Any other code (for example `EPROTOCOL`): report it as it is.
+
+  In every case the agent reports the code; the human changes the login in `compose.yaml` or
+  the password file, or looks in Outsider's panel.
 - **Startup:** the five mail settings are required with the other account settings; a missing
   or invalid setting, or a missing or invalid password file, stops the application before it
   listens (exit 8). A password file that is missing at `compose up` fails there instead.

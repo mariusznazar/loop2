@@ -276,8 +276,8 @@ credential moves.
 **Trying delivery (H4)** belongs to the request that brings this change: the human deploys the
 request's head with `loop2-deploy <sha>`, creates an account with an address on an external
 mailbox, receives the message and opens its link; the address is then confirmed. If the
-message does not come, the agent reads the failure line (`EAUTH` against a connection or TLS
-code) and reports it. This deployment moves the database to schema version 3; if the request
+message does not come, the agent reads the failure line and reports its code (`EAUTH`, a connection
+code, `EENVELOPE`, `EMESSAGE` or `unknown`; see "Account mail" in `SKILL.md`). This deployment moves the database to schema version 3; if the request
 is not merged, the code on `main` refuses that database and only the human repairs it (see
 "Rollback and the accounts" in `troubleshooting.md`).
 
