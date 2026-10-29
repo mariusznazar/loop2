@@ -1229,7 +1229,7 @@ game's concept and loop name the spell's verb „Zapal”.
 
 ### D-64 — What does the backpack's cap count, and what sets its height?
 
-The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity. Carrying capacity is 15 pieces, and the character skill trees have no branch that raises it.
+The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity. Carrying capacity is currently 15 pieces, and the character skill trees currently have no branch that raises it.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -3223,7 +3223,7 @@ An action ending in effect adds one practice to the character skill its pair of 
 
 ### D-182 — When does a manual map run pay its practice to its character?
 
-A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of every completion, including a completion of an already solved map. A death, or a run cut short by „Restart” or „Zakończ” before completion, leaves the character’s practice and bought ranks as they were.
+A manual map run holds the practice it gathers separately by character skill and currently pays all of it once to the character making the run in the game minute of every completion, including a completion of an already solved map. A death, or a run cut short by „Restart” or „Zakończ” before completion, currently leaves the character’s practice and bought ranks as they were.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3253,7 +3253,7 @@ A character skill tree with all its branches enters the Understanding in the gam
 
 ### D-184 — Which branch actions does the program editor offer outside a map run?
 
-Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions, without any branches bought by a character. During a map run, both the copy editor and the saved-program editor use the running character’s repertoire, including its bought branches.
+Outside a map run the program editor currently offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches currently contribute no actions to that editor's offer. During a map run, both the copy editor and the saved-program editor use the running character’s repertoire, including its bought branches.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3298,7 +3298,7 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 
 ### D-187 — What does the headquarters show of character skills?
 
-At each character the headquarters shows „Umiejętności” only after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price without numerical before-and-after values. A fully bought branch keeps its present value if numerical and omits the next value and price.
+At each character the headquarters currently shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -3313,7 +3313,7 @@ At each character the headquarters shows „Umiejętności” only after a tree 
 
 ### D-188 — Where does the player buy a branch rank, and when does it act?
 
-The player buys a branch rank with „Kup” in the headquarters outside a map run, and the rank acts from that character’s next map run. There is no purchase in the map-run view and no undo of a purchase.
+The player currently buys a branch rank with „Kup” in the headquarters outside a map run, and the rank acts from that character’s next map run. The game currently has no purchase in the map-run view and no undo of a purchase.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3328,7 +3328,7 @@ The player buys a branch rank with „Kup” in the headquarters outside a map r
 
 ### D-189 — What does the map-run view show of its practice?
 
-Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, containing only skills with positive practice gathered in that run. The line is absent at zero and remains after death and completion until „Restart” or „Zakończ”.
+Below the body row the map-run view currently shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. Zero-valued skills and the line at zero are currently absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none

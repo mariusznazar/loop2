@@ -251,6 +251,36 @@ test("numeric branches shorten exploration, crafting, both spells and eating at 
   }
 });
 
+test("meal and walking bonuses apply to their own actions when both are bought", () => {
+  // Accepted Q8: Szybki posiłek 1 shortens eating 5 - 1 = 4;
+  // Długi krok 1 shortens walking 5 - 2 = 3, not both by their sum.
+  const skills = {
+    ...ranks("eating", { quickMeal: 1 }, 15),
+    ...ranks("exploration", { longStep: 1 }, 15),
+  };
+  const run = base(skills);
+  const fixture = {
+    ...run,
+    character: {
+      ...run.character,
+      backpack: { ...run.character.backpack, berry: 1 },
+    },
+  };
+  const before = structuredClone(fixture);
+  for (const [kind, minutes] of [
+    ["eat", 4],
+    ["wander", 3],
+  ]) {
+    const started = pickActivity(fixture, MAPS.forest, program({ kind })).run;
+    assert.equal(started.current.activity.action.kind, kind);
+    assert.equal(
+      started.current.endMinute - started.current.startMinute,
+      minutes,
+    );
+  }
+  assert.deepEqual(fixture, before);
+});
+
 test("send and restart take independent rank snapshots and a restart discards run practice", () => {
   const hq = buyBranch(headquarters(), 1, "patrol").state;
   const before = structuredClone(hq);
@@ -465,6 +495,43 @@ test("combat practice counts damaging effects and effective dodges, not last or 
     program({ kind: "dodge" }),
   );
   assert.deepEqual(dead.practice, {});
+});
+
+test("the combat resolution minute adds its successful strikes to the run's earlier practice", () => {
+  // Accepted Q8: 6 + 3*2 = 12 damage, so two strikes defeat the 24-health wolf.
+  // The two effects add to three earlier strikes, while seven gathers stay seven.
+  const run = newMapRun(
+    MAPS.forestDeep,
+    1,
+    empty,
+    { ...ids, mapId: "forestDeep" },
+    undefined,
+    ranks("oneHandedCombat", { strongerStrike: 3 }, 200),
+  ).run;
+  const fixture = {
+    ...run,
+    minute: 4,
+    practice: { smallItemGathering: 7, oneHandedCombat: 3 },
+    character: {
+      ...run.character,
+      backpack: { ...run.character.backpack, stick: 1 },
+    },
+    activeCombat: { creatureId: "wolf", attackMinute: 0, resolveMinute: 5 },
+  };
+  const before = structuredClone(fixture);
+  const result = stepMinute(
+    fixture,
+    MAPS.forestDeep,
+    program({ kind: "strikeWithStick" }),
+  );
+  assert.equal(result.run.minute, 5);
+  assert.equal(result.run.activeCombat, null);
+  assert.equal(result.run.lastCombat.result.outcome, "creatureDefeated");
+  assert.deepEqual(result.run.practice, {
+    smallItemGathering: 7,
+    oneHandedCombat: 5,
+  });
+  assert.deepEqual(fixture, before);
 });
 
 test("completion pays this minute's practice once to the runner, also on a previously solved map; death and early exits pay nothing", () => {
