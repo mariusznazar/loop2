@@ -1,9 +1,0 @@
-
-> loop2@0.0.0 dev
-> npm run build && npm start
-
-npm notice run loop2@0.0.0 build
-npm notice run node scripts/build.mjs
-npm notice run loop2@0.0.0 start
-npm notice run node dist/server/main.js
-Loop: http://127.0.0.1:34526

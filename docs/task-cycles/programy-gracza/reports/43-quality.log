@@ -1,9 +1,0 @@
-
-> loop2@0.0.0 test
-> python -B scripts/test.py tests/quality/test_quality_invariants.py
-
-.....
-----------------------------------------------------------------------
-Ran 5 tests in 6.398s
-
-OK
