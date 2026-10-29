@@ -1,0 +1,543 @@
+{
+  "program": {
+    "groups": [
+      {
+        "id": 1,
+        "name": "Combat",
+        "condition": {
+          "kind": "always"
+        },
+        "rules": [
+          {
+            "condition": {
+              "kind": "always"
+            },
+            "action": {
+              "kind": "strikeWithStick"
+            },
+            "id": 18
+          },
+          {
+            "condition": {
+              "kind": "always"
+            },
+            "action": {
+              "kind": "kick"
+            },
+            "id": 19
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Existing",
+        "condition": {
+          "kind": "always"
+        },
+        "rules": [
+          {
+            "condition": {
+              "kind": "satietyBelow",
+              "value": 35
+            },
+            "action": {
+              "kind": "eat"
+            },
+            "id": 1
+          },
+          {
+            "condition": {
+              "kind": "temperatureBelow",
+              "value": 36
+            },
+            "action": {
+              "kind": "lightCampfire"
+            },
+            "id": 2
+          },
+          {
+            "condition": {
+              "kind": "temperatureBelow",
+              "value": 36.5
+            },
+            "action": {
+              "kind": "feedCampfire"
+            },
+            "id": 3
+          },
+          {
+            "condition": {
+              "kind": "temperatureBelow",
+              "value": 35.2
+            },
+            "action": {
+              "kind": "walkToCampfire"
+            },
+            "id": 4
+          },
+          {
+            "condition": {
+              "kind": "campfireLeftBelow",
+              "value": 1
+            },
+            "action": {
+              "kind": "craftCampfire"
+            },
+            "id": 5
+          },
+          {
+            "condition": {
+              "kind": "itemBelow",
+              "item": "berry",
+              "value": 1
+            },
+            "action": {
+              "kind": "gather",
+              "resource": "berry"
+            },
+            "id": 6
+          },
+          {
+            "condition": {
+              "kind": "itemBelow",
+              "item": "berry",
+              "value": 1
+            },
+            "action": {
+              "kind": "walkTo",
+              "resource": "berry"
+            },
+            "id": 7
+          },
+          {
+            "condition": {
+              "kind": "hereBelow",
+              "resource": "berry",
+              "value": 1
+            },
+            "action": {
+              "kind": "explore"
+            },
+            "id": 8
+          },
+          {
+            "condition": {
+              "kind": "itemBelow",
+              "item": "berry",
+              "value": 1
+            },
+            "action": {
+              "kind": "wander"
+            },
+            "id": 9
+          },
+          {
+            "condition": {
+              "kind": "itemBelow",
+              "item": "stick",
+              "value": 8
+            },
+            "action": {
+              "kind": "gather",
+              "resource": "stick"
+            },
+            "id": 10
+          },
+          {
+            "condition": {
+              "kind": "itemBelow",
+              "item": "stick",
+              "value": 8
+            },
+            "action": {
+              "kind": "walkTo",
+              "resource": "stick"
+            },
+            "id": 11
+          },
+          {
+            "condition": {
+              "kind": "temperatureBelow",
+              "value": 36
+            },
+            "action": {
+              "kind": "lightItem"
+            },
+            "id": 12
+          },
+          {
+            "condition": {
+              "kind": "always"
+            },
+            "action": {
+              "kind": "explore"
+            },
+            "id": 13
+          },
+          {
+            "condition": {
+              "kind": "awayFromCampfire"
+            },
+            "action": {
+              "kind": "walkToCampfire"
+            },
+            "id": 14
+          },
+          {
+            "condition": {
+              "kind": "always"
+            },
+            "action": {
+              "kind": "gather",
+              "resource": "stick"
+            },
+            "id": 15
+          },
+          {
+            "condition": {
+              "kind": "always"
+            },
+            "action": {
+              "kind": "gather",
+              "resource": "berry"
+            },
+            "id": 16
+          },
+          {
+            "condition": {
+              "kind": "always"
+            },
+            "action": {
+              "kind": "wander"
+            },
+            "id": 17
+          }
+        ]
+      }
+    ],
+    "nextGroupId": 3,
+    "nextRuleId": 20
+  },
+  "results": [
+    {
+      "seed": 1,
+      "before": [
+        "died",
+        247
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 247,
+      "natureEnergy": 90,
+      "lowestNatureEnergy": 90,
+      "lightingsFinished": 1,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 2,
+      "before": [
+        "died",
+        258
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 258,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 3,
+      "before": [
+        "died",
+        256
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 256,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 4,
+      "before": [
+        "died",
+        202
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 202,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 5,
+      "before": [
+        "died",
+        253
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 253,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 6,
+      "before": [
+        "died",
+        306
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 306,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 7,
+      "before": [
+        "died",
+        276
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 276,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 8,
+      "before": [
+        "died",
+        223
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 223,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 9,
+      "before": [
+        "died",
+        256
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 256,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 10,
+      "before": [
+        "died",
+        252
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 252,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 11,
+      "before": [
+        "died",
+        202
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 202,
+      "natureEnergy": 90,
+      "lowestNatureEnergy": 90,
+      "lightingsFinished": 1,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 12,
+      "before": [
+        "died",
+        243
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 243,
+      "natureEnergy": 90,
+      "lowestNatureEnergy": 90,
+      "lightingsFinished": 1,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 13,
+      "before": [
+        "died",
+        272
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 272,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 14,
+      "before": [
+        "died",
+        247
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 247,
+      "natureEnergy": 90,
+      "lowestNatureEnergy": 90,
+      "lightingsFinished": 1,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 15,
+      "before": [
+        "died",
+        229
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 229,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 16,
+      "before": [
+        "died",
+        247
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 247,
+      "natureEnergy": 90,
+      "lowestNatureEnergy": 90,
+      "lightingsFinished": 1,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 17,
+      "before": [
+        "died",
+        722
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 722,
+      "natureEnergy": 40,
+      "lowestNatureEnergy": 40,
+      "lightingsFinished": 6,
+      "passedForEnergy": 0,
+      "streak": 42,
+      "defeatedAttacks": 2
+    },
+    {
+      "seed": 18,
+      "before": [
+        "died",
+        253
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 253,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    },
+    {
+      "seed": 19,
+      "before": [
+        "died",
+        202
+      ],
+      "outcome": "died",
+      "cause": "cold",
+      "minute": 202,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 0,
+      "defeatedAttacks": 1
+    },
+    {
+      "seed": 20,
+      "before": [
+        "died",
+        249
+      ],
+      "outcome": "died",
+      "cause": "combat",
+      "minute": 249,
+      "natureEnergy": 100,
+      "lowestNatureEnergy": 100,
+      "lightingsFinished": 0,
+      "passedForEnergy": 0,
+      "streak": 5,
+      "defeatedAttacks": 0
+    }
+  ]
+}
