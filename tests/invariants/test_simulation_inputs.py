@@ -22,6 +22,8 @@ Inputs (written out below, or reached by driving `game.js` from them):
   after a restart and after an end;
 - for the functions of `game.js`: each of those states with names typed for a new character,
   programs, sends, real times, minutes and pause flags written out below;
+- for `canSendMap`: solved-map lists with a map that has no prerequisite and one whose prerequisite
+  is either absent or present;
 - for the functions taking a map run: the map runs of those states, and copies of some of them
   with a stick burning on the character's tile, with a body one game minute from death and with
   the character dead; the map `forest` as the data module `maps.js` gives it; conditions of every
@@ -61,7 +63,7 @@ BUILT_DIRECTORY = "dist/public/sim"
 
 # Every exported function this check calls with inputs chosen for it, by module.
 TABLE = {
-    "game.js": ["newGame", "characterName", "createCharacter", "setProgram", "send", "restart",
+    "game.js": ["newGame", "characterName", "createCharacter", "setProgram", "send", "canSendMap", "restart",
                 "end", "setPaused", "passRealTime", "advanceMinutes"],
     "hex.js": ["offsetToAxial", "sameHex", "hexDistance", "tileAt", "neighbours", "nearestTile",
                "hexCenter", "hexCorners", "tileLabel"],
@@ -303,6 +305,9 @@ for (const s of sample(states, 40)) {
   for (const ms of I.realMs) call('game.js', 'passRealTime', [s, ms]);
   for (const minutes of I.advance) call('game.js', 'advanceMinutes', [s, minutes]);
 }
+call('game.js', 'canSendMap', [[], 'forest']);
+call('game.js', 'canSendMap', [[], 'forestDeep']);
+call('game.js', 'canSendMap', [['forest'], 'forestDeep']);
 // hex.js
 for (const [col, row] of I.offsets) call('hex.js', 'offsetToAxial', [col, row]);
 const predicates = [(t) => t.revealed, () => true, () => false, (t) => (t.stock.berry || 0) > 0];
