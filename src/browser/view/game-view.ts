@@ -13,6 +13,7 @@ import {
   deleteProgram,
   discardCopyChanges,
   editProgram,
+  pickProgram,
   renameProgram,
   saveCopyAsNewProgram,
   saveCopyIntoProgram,
@@ -115,8 +116,12 @@ export function createGameView(): GameView {
     create(name) {
       store.apply(createCharacter(state, name));
     },
-    send(characterId, mapId) {
-      if (!state.run) clock.send({ mapId, characterId });
+    pick(characterId, programId) {
+      clock.flush();
+      store.apply(pickProgram(state, characterId, programId));
+    },
+    send(characterId, mapId, programId) {
+      if (!state.run) clock.send({ mapId, characterId, programId });
     },
   });
   const statusRow = createStatusRow({

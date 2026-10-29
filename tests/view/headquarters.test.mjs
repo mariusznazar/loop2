@@ -2,9 +2,12 @@
 // the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { createCharacter, newGame } from "../../dist/public/sim/game.js";
+import { rowProgram } from "../../dist/public/sim/programs.js";
 import {
   chestLines,
   mapLabel,
+  programPositions,
   sendMaps,
   solvingSentence,
 } from "../../dist/public/view/headquarters.js";
@@ -42,4 +45,31 @@ test("the headquarters hides maps until their prerequisites are solved; the edit
   assert.deepEqual(sendMaps(), ["forest", "forestDeep"]);
   assert.deepEqual(sendMaps([]), ["forest"]);
   assert.deepEqual(sendMaps(["forest"]), ["forest", "forestDeep"]);
+});
+
+const PROGRAMS = [
+  { id: 1, name: "Program", program: { rules: [] } },
+  { id: 4, name: "Las nocą", program: { rules: [] } },
+  { id: 7, name: "program", program: { rules: [] } },
+];
+
+test("the row of a character that has not gone shows the first program of the list", () => {
+  const state = createCharacter(newGame(), "Ala").state;
+  const id = state.team.characters[0].id;
+  const positions = programPositions(state.programs, rowProgram(state, id));
+  assert.equal(positions.value, String(state.programs[0].id));
+  assert.equal(positions.options[0][1], state.programs[0].name);
+});
+
+test("the positions of a row's list are the programs' names in list order, valued by their numbers", () => {
+  assert.deepEqual(programPositions(PROGRAMS, PROGRAMS[0]).options, [
+    ["1", "Program"],
+    ["4", "Las nocą"],
+    ["7", "program"],
+  ]);
+});
+
+test("the list shows the program given, whichever place it has on the list", () => {
+  assert.equal(programPositions(PROGRAMS, PROGRAMS[1]).value, "4");
+  assert.equal(programPositions(PROGRAMS, PROGRAMS[2]).value, "7");
 });

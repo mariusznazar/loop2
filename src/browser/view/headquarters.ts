@@ -2,15 +2,19 @@ import { ARCHETYPES, CREATED_ARCHETYPE } from "../sim/data/archetypes.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import { canSendMap, characterName } from "../sim/game.js";
+import { rowProgram } from "../sim/programs.js";
 import type {
   CharacterId,
   Chest,
   GameState,
   MapId,
+  ProgramId,
+  SavedProgram,
   ResourceId,
   Team,
 } from "../sim/types.js";
 import { createButton } from "./controls/button.js";
+import { createSelectList, type SelectOption } from "./controls/select-list.js";
 import { createTextField } from "./controls/text-field.js";
 
 /** The message under the name field when the name typed is empty once trimmed. */
@@ -45,16 +49,39 @@ export function chestLines(chest: Chest): string[] {
   });
 }
 
+/** One row's „Program:” list (D-158): the positions and the value shown. */
+export type ProgramPositions = {
+  options: SelectOption[];
+  value: string;
+};
+
+/**
+ * The positions of a row's program list, the names of `programs` in list order with the program's
+ * number as the value, and the value of the program the row shows. Pure.
+ */
+export function programPositions(
+  programs: readonly SavedProgram[],
+  shown: SavedProgram,
+): ProgramPositions {
+  return {
+    options: programs.map((saved) => [String(saved.id), saved.name]),
+    value: String(shown.id),
+  };
+}
+
 /** What the headquarters asks for; the app turns each into a simulation call. */
 export type HeadquartersControls = {
   /** Creates a character of the given name, already trimmed and not empty. */
   create(name: string): void;
-  send(characterId: CharacterId, mapId: MapId): void;
+  /** Picks the program of a character's row, kept until the character is sent. */
+  pick(characterId: CharacterId, programId: ProgramId): void;
+  /** Sends a character to a map with the program its row shows. */
+  send(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
 };
 
 export type Headquarters = {
   element: HTMLElement;
-  /** Shows the team and its chest of the given game state. */
+  /** Shows the team, its chest and each row's program of the given game state. */
   update(state: GameState): void;
 };
 
@@ -75,10 +102,11 @@ function emptyNote(text: string): HTMLElement {
 
 /**
  * Builds the headquarters: the section „Drużyna” with the team's characters in the order they were
- * created, each with its name, the name of its archetype and the button „Wyślij” for each map, and
- * the creation of a character; and the section „Skrzynka” with the team's chest. Every name of the
+ * created, each with its name, the name of its archetype, one list „Program:” and the button
+ * „Wyślij” for each map, and the creation of a character; and the section „Skrzynka” with the team's chest. Every name of the
  * game's content comes from the data. The name field and its button are made once, so they keep
- * focus; the list of characters is rebuilt when the team or the solved maps change.
+ * focus; the list of characters is rebuilt when the team, the solved maps or the programs' numbers
+ * and names change, and the row's program list is only set to the program the row shows otherwise.
  */
 export function createHeadquarters(
   controls: HeadquartersControls,
@@ -134,10 +162,17 @@ export function createHeadquarters(
 
   let shownTeam: Team | null = null;
   let shownSolved: MapId[] | null = null;
+  let shownPrograms = "";
   let sendButtons: HTMLButtonElement[] = [];
+  let programLists = new Map<CharacterId, HTMLSelectElement>();
 
-  function renderTeam(shown: Team, solved: MapId[]): void {
+  function renderTeam(
+    shown: Team,
+    solved: MapId[],
+    programs: readonly SavedProgram[],
+  ): void {
     sendButtons = [];
+    programLists = new Map();
     const rows = shown.characters.map((character) => {
       const row = document.createElement("li");
       row.className = "team-member";
@@ -147,7 +182,18 @@ export function createHeadquarters(
       const archetype = document.createElement("span");
       archetype.className = "team-member-archetype";
       archetype.textContent = ARCHETYPES[character.archetypeId].name;
-      row.append(name, archetype);
+      const programLabel = document.createElement("span");
+      programLabel.className = "team-member-program-label";
+      programLabel.textContent = "Program:";
+      const programList = createSelectList(
+        `Program: ${character.name}`,
+        programPositions(programs, programs[0]).options,
+      );
+      programList.addEventListener("change", () =>
+        controls.pick(character.id, Number(programList.value)),
+      );
+      programLists.set(character.id, programList);
+      row.append(name, archetype, programLabel, programList);
       for (const mapId of sendMaps(solved)) {
         const isSolved = solved.includes(mapId);
         const where = document.createElement("span");
@@ -160,7 +206,7 @@ export function createHeadquarters(
           label: `Wyślij: ${character.name}, mapa ${MAPS[mapId].name}`,
         });
         button.addEventListener("click", () =>
-          controls.send(character.id, mapId),
+          controls.send(character.id, mapId, Number(programList.value)),
         );
         sendButtons.push(button);
         row.append(where, condition, button);
@@ -184,11 +230,25 @@ export function createHeadquarters(
   return {
     element,
     update(state: GameState): void {
-      if (state.team !== shownTeam || state.solvedMaps !== shownSolved) {
+      const programsKey = JSON.stringify(
+        state.programs.map((saved) => [saved.id, saved.name]),
+      );
+      if (
+        state.team !== shownTeam ||
+        state.solvedMaps !== shownSolved ||
+        programsKey !== shownPrograms
+      ) {
         shownTeam = state.team;
         shownSolved = state.solvedMaps;
-        renderTeam(state.team, state.solvedMaps);
+        shownPrograms = programsKey;
+        renderTeam(state.team, state.solvedMaps, state.programs);
       }
+      // Each row shows the program of D-158 as the simulation gives it.
+      for (const [characterId, programList] of programLists)
+        programList.value = programPositions(
+          state.programs,
+          rowProgram(state, characterId),
+        ).value;
       // One map run at a time: while one goes on, no other character can be sent.
       for (const button of sendButtons) button.disabled = state.run !== null;
     },

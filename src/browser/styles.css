@@ -364,6 +364,10 @@ header h1 {
   color: var(--text-secondary);
 }
 
+.team-member-program-label {
+  color: var(--text-label);
+}
+
 .character-creation-label {
   color: var(--text-label);
 }
