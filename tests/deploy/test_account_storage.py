@@ -125,7 +125,9 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         created = self.request(first, "/api/accounts", body={
             "email": EMAIL, "password": password, "passwordConfirmation": password})
         self.assertEqual(created["status"], 201, created["body"])
-        account = created["body"]
+        # The registration answer also carries its confirmation message's outcome
+        # (D-145); the account reads that follow carry only the account's fields.
+        account = {key: created["body"][key] for key in ("id", "email", "emailConfirmed")}
         self.assertEqual(account["email"], EMAIL)
         cookie = created["cookie"]
         self.assertIsNotNone(cookie, "registration set no session cookie")
