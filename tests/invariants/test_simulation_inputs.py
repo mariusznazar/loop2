@@ -119,10 +119,11 @@ ACTIONS = ([{"kind": "explore"}, {"kind": "wander"}] + [walk_to(r) for r in RESO
 CONDITIONS = ([ALWAYS] + [here_below(r, v) for r in RESOURCES for v in (0, 1, 7, 50)]
               + [below("temperatureBelow", v) for v in (30, 35.2, 36.5, 37)]
               + [below("satietyBelow", v) for v in (0, 30, 50, 100)]
+              + [below("natureEnergyBelow", v) for v in (0, 30, 100)]
               + [item_below(i, v) for i in ITEMS for v in (0, 1, 8)]
               + [below("campfireLeftBelow", v) for v in (0, 1, 20, 120)] + [AWAY])
-CONDITION_KINDS = ["always", "hereBelow", "temperatureBelow", "satietyBelow", "itemBelow",
-                   "campfireLeftBelow", "awayFromCampfire"]
+CONDITION_KINDS = ["always", "hereBelow", "temperatureBelow", "satietyBelow", "natureEnergyBelow",
+                   "itemBelow", "campfireLeftBelow", "awayFromCampfire"]
 PROGRAMS = [
     program_from_rules([]),
     # Every condition kind and every action kind: the acceptance program of

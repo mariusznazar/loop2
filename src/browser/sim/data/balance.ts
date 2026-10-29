@@ -27,6 +27,15 @@ export const BALANCE = {
     /** Regained a minute in which the character is neither chilled nor starving. */
     healthRegain: 0.05,
   },
+  /** The mage's nature energy, with which spells are paid. */
+  natureEnergy: {
+    /** The cap, which is also the energy every map run starts with. */
+    max: 100,
+    /** Regained a game minute outside combat in which the character is well fed. */
+    regain: 0.5,
+    /** Well fed at this satiety or above, read after the game minute's fall. */
+    wellFedFrom: 60,
+  },
 } as const;
 
 /** Seed of the first send; later sends derive theirs from the previous one. */

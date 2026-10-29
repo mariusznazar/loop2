@@ -23,6 +23,30 @@ export function startingBody(): Body {
   };
 }
 
+/** The nature energy of a character entering a map run: the cap, a new run and a restart alike. */
+export function startingNatureEnergy(): number {
+  return BALANCE.natureEnergy.max;
+}
+
+/**
+ * The nature energy after the body's step of a game minute outside combat: it rises by the data's
+ * regain where `satiety`, the satiety after that minute's fall, is at the well-fed threshold or
+ * above, not above the cap; otherwise it stands.
+ */
+export function regainedNatureEnergy(energy: number, satiety: number): number {
+  const rules = BALANCE.natureEnergy;
+  if (satiety < rules.wellFedFrom) return energy;
+  return Math.min(rules.max, decimal(energy + rules.regain));
+}
+
+/**
+ * The nature energy after paying `cost` for a spell; the payment is made only with at least that
+ * much energy, so the energy stays at 0 or above.
+ */
+export function paidNatureEnergy(energy: number, cost: number): number {
+  return decimal(energy - cost);
+}
+
 /** The body after eating a piece that gives `satiety`: satiety rises, not above the starting one. */
 export function eatenBody(body: Body, satiety: number): Body {
   return {

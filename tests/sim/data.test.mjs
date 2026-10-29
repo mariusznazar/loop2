@@ -325,10 +325,10 @@ const ROWS = [
     items: [],
   },
   {
-    // odkrywanie_loop2.md:25
+    // odkrywanie_loop2.md:25; the condition: plomyk_loop2.md:22 (task plomyk, To do 5)
     event: { kind: "lit" },
     actions: ["feedCampfire"],
-    conditions: [],
+    conditions: ["natureEnergyBelow"],
     items: [],
   },
   {

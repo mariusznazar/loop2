@@ -163,6 +163,8 @@ test("group conditions offer the same kinds and editable fields while preserving
     ["hereBelow", { kind: "hereBelow", resource: "stick", value: 1 }],
     ["temperatureBelow", { kind: "temperatureBelow", value: 36.5 }],
     ["satietyBelow", { kind: "satietyBelow", value: 50 }],
+    // Task plomyk, To do 5: „Energia natury poniżej” starts at 30.
+    ["natureEnergyBelow", { kind: "natureEnergyBelow", value: 30 }],
     ["itemBelow", { kind: "itemBelow", item: "stick", value: 8 }],
     ["campfireLeftBelow", { kind: "campfireLeftBelow", value: 20 }],
     ["healthBelow", { kind: "healthBelow", value: 50 }],
@@ -528,6 +530,11 @@ test("the number field's range and step follow the condition kind; a kind with n
   showFieldRange(input, "hereBelow");
   assert.deepEqual(input, { min: "0", max: "50", step: "1" });
   showFieldRange(input, "satietyBelow");
+  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
+  showFieldRange(input, "campfireLeftBelow");
+  assert.deepEqual(input, { min: "0", max: "120", step: "1" });
+  // Task plomyk, To do 5: from 0 to 100 by 1.
+  showFieldRange(input, "natureEnergyBelow");
   assert.deepEqual(input, { min: "0", max: "100", step: "1" });
   showFieldRange(input, "campfireLeftBelow");
   assert.deepEqual(input, { min: "0", max: "120", step: "1" });
@@ -1127,6 +1134,7 @@ test("every program the editor builds passes setProgram, before sending and duri
     "hereBelow",
     "temperatureBelow",
     "satietyBelow",
+    "natureEnergyBelow",
     "itemBelow",
     "campfireLeftBelow",
     "healthBelow",

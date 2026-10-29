@@ -1199,18 +1199,34 @@ After a character's death the screen stays on the state of the game minute of de
 
 ### D-63 — How does a character light a campfire or a stick?
 
-A character lights a campfire and a stick with „Zapal”, an ordinary action of the character whose price is the sticks it uses.
+A mage lights a campfire and a stick with the spell Płomyk: the actions „Zapal — ognisko” and
+„Zapal — patyk”, ordinary actions of the character carried out outside combat, whose price is the
+sticks they use and nature energy. The sticks and the nature energy leave together when the lighting
+finishes, and a lighting an attack interrupts takes neither.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zapal — ognisko” using two sticks from the backpack and nothing more;
-  - violates: „Zapal” using no sticks, or asking for a price besides the sticks it uses.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Czym i za co mag zapala ognisko w tym zadaniu, skoro zapalanie ognia jest w koncepcji czarem maga Płomyk, płaconym energią natury, którą wnosi dopiero zadanie 9?"
+- **Relations:** derives from D-175
+- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
+  - complies: „Zapal — ognisko” taking two sticks from the backpack and the nature energy of its
+    price in the game minute it finishes; a lighting interrupted by an attack in its third game
+    minute leaving the sticks and the nature energy as they were;
+  - violates: „Zapal” using no sticks, or no nature energy; the nature energy taken when the
+    lighting starts; „Zapal — patyk” carried out as a combat action.
+- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Czym mag płaci za Płomyk — patykami jak dziś i do tego energią natury, czy samą energią — i w której chwili energia schodzi?" and "Q7. Czy akcje czaru zostają „Zapal — ognisko” i „Zapal — patyk”, ze statusem „Zapala ognisko” / „Zapala patyk”, czy zmieniają nazwę na Płomyk?" · ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Czym i za co mag zapala ognisko w tym zadaniu, skoro zapalanie ognia jest w koncepcji czarem maga Płomyk, płaconym energią natury, którą wnosi dopiero zadanie 9?"
 
-*Rationale:* The MVP's plan gives lighting a fire to this stage of the game, before the mage has nature energy, while the game's concept makes lighting a spell paid with that energy; an ordinary action of the character paid with sticks lets a program light a fire now and leaves one action for the spell to take over. Accepted with it: until the spell exists, lighting costs no more than sticks, so Las is easier than it is meant to be, and the spell changes how an existing action works, which asks again whether a well-built program survives.
-*Rejected:* lighting as the spell Płomyk from the start, with a price in nature energy — the game has no nature energy yet.
+*Rationale:* Płomyk keeps the sticks lighting has used and adds nature energy, so a spell that lights
+a campfire with no sticks, by the mage's energy alone, keeps a sense of its own as a later branch of
+the spell. As an ordinary action of the character it keeps its place in the program, its names and
+its statuses. The energy leaves with the sticks once the spell has taken place, so a lighting cut
+short costs nothing. Accepted with it: Las is harder than before as far as nature energy runs out,
+and until the game shows character skills the player learns that lighting is a spell from the
+energy falling.
+*Rejected:* nature energy alone, with no sticks — the branch „Czysty płomień”, a campfire lit with
+no sticks by the mage's energy alone, would lose its sense; the energy taken when the lighting
+starts — in loop the energy is taken in the moment the spell has taken place, not at its start;
+the actions renamed „Płomyk — ognisko” and „Płomyk — patyk”, with the status „Rzuca Płomyk” — the
+game's concept and loop name the spell's verb „Zapal”.
 
 ### D-64 — What does the backpack's cap count, and what sets its height?
 
@@ -1319,18 +1335,18 @@ A campfire shows on the terrain panel's drawing of the game map as an icon on it
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
-Outside combat a game minute takes effect in this order: the character's body cools by the map's ambient temperature and warms by what burns on its tile, satiety falls, health changes for cold and hunger or recovers, and the streak follows D-136; health at zero ends the map run in death at that point, otherwise burning loses a minute, tiles renew, the ending action takes effect, completion is checked, and a continuing run tries an eligible attack before the ordinary program pick, with an attack replacing that pick and interrupting any action still running. In each game minute of combat the body stands still, the streak grows, burning loses a minute and tiles renew, then in the last combat minute all combat turns resolve, their result and cooldown are recorded, a creature defeated in those turns adds a beaten attack and death ends the run before completion is checked; completion is checked in the earlier combat minutes too and ends the encounter with its attack description and no turns or outcome, while a continuing run after the final combat minute picks its next ordinary action in that same minute. Discoveries enter the Understanding where their cause occurs — body, ending action or attack — and the following effects and picks read that updated Understanding and program, a rule written by a discovery included, with discoveries collected once for the whole minute and the pause taken after that minute has finished.
+Outside combat a game minute takes effect in this order: the character's body cools by the map's ambient temperature and warms by what burns on its tile, satiety falls, the nature energy of a well-fed mage comes back, up to its cap, health changes for cold and hunger or recovers, and the streak follows D-136; health at zero ends the map run in death at that point, otherwise burning loses a minute, tiles renew, the ending action takes effect, completion is checked, and a continuing run tries an eligible attack before the ordinary program pick, with an attack replacing that pick and interrupting any action still running. In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew, then in the last combat minute all combat turns resolve, their result and cooldown are recorded, a creature defeated in those turns adds a beaten attack and death ends the run before completion is checked; completion is checked in the earlier combat minutes too and ends the encounter with its attack description and no turns or outcome, while a continuing run after the final combat minute picks its next ordinary action in that same minute. Discoveries enter the Understanding where their cause occurs — body, ending action or attack — and the following effects and picks read that updated Understanding and program, a rule written by a discovery included, with discoveries collected once for the whole minute and the pause taken after that minute has finished.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136 · narrows D-140 · narrows D-141 · derives from D-142 · derives from D-146
-- **Verification:** invariants: minute-span-split. An agent compares a change with the decision:
-  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage first chilled in game minute 84 discovering „Eksploruj” and starting „Zawsze → Eksploruj” at the pick of game minute 84, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute;
-  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; a completion checked before combat turns in their final minute; an attack tried again after those turns.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "8. W której chwili minuty gry przejście się domyka i co z akcją postaci kończącą się w tej minucie?"
+- **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136 · narrows D-140 · narrows D-141 · derives from D-142 · derives from D-146 · derives from D-175
+- **Verification:** invariants: minute-span-split · nature-energy-range. An agent compares a change with the decision:
+  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage first chilled in game minute 84 discovering „Eksploruj” and starting „Zawsze → Eksploruj” at the pick of game minute 84, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute; a well-fed mage at full nature energy finishing a lighting in a game minute having after it the nature energy of the cap less the lighting's price, the energy that minute gives back lost at the cap;
+  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; nature energy coming back after the effect of the action ending in its game minute, or in a game minute of combat; a completion checked before combat turns in their final minute; an attack tried again after those turns.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "8. W której chwili minuty gry przejście się domyka i co z akcją postaci kończącą się w tej minucie?" · plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Czy energia natury wraca w minutach walki?" and "Q10. W którym miejscu kolejności minuty gry (D-71) energia natury wraca — razem z ciałem, zaraz po spadku sytości, czy dopiero po skutku akcji kończącej się w tej minucie?"
 
-*Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
-*Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it; a completion right after the character's body, as death comes — the effect of an action ending in that game minute would be lost; completion before the final combat turns — the encounter's result would be skipped; waiting another game minute for the ordinary pick after combat — an extra idle minute beyond the combat's fixed cost.
+*Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Nature energy comes back with the body, as health does, before the action ending in the game minute lands, so a spell paid in that minute pays from the energy the minute has already given back. Accepted with it: a mage at full nature energy loses the energy one game minute gives back for each lighting it finishes; a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
+*Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it; a completion right after the character's body, as death comes — the effect of an action ending in that game minute would be lost; completion before the final combat turns — the encounter's result would be skipped; waiting another game minute for the ordinary pick after combat — an extra idle minute beyond the combat's fixed cost; nature energy coming back after the effect of the action ending in the game minute, satiety read after its fall — a mage at full nature energy finishing a lighting would keep the energy that minute gives back.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
 
@@ -2100,8 +2116,8 @@ poniżej” and the items lying on the tile it reveals, each tile revealed later
 lying on it, moss and fibre included. The first gathered stick brings „Wytwórz — ognisko”, „Zapal —
 ognisko”, „Zapal — patyk” and the campfire, and the first crafted campfire brings „Idź — ognisko”
 and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”. The first finished
-„Zapal”, of a campfire or of a stick, brings „Zasil — ognisko”, and the first gathered berry brings
-„Zjedz — jagoda” and the condition „Sytość poniżej”.
+„Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury
+poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -2109,17 +2125,21 @@ and the conditions „Zostało mniej niż — ognisko” and „Z dala od — og
 - **Verification:** an agent compares a change with the decision:
   - complies: a mage of a new game first chilled in game minute 84 bringing „Eksploruj”, „Wędruj”
     and „Temperatura poniżej” into the Understanding; the program editor offering „Idź” and a
-    condition „Tu leży mniej niż” once the first exploration has finished
+    condition „Tu leży mniej niż” once the first exploration has finished; the first finished
+    „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury poniżej” in one line of discoveries
   - violates: the conditions on the campfire offered after the first gathered stick, before any
-    campfire has been crafted; „Zasil — ognisko” discovered with the first gathered stick
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "1. Co odsłania co — które zdarzenie gry wprowadza do Zrozumienia które akcje, przedmioty i warunki Lasu, i co gracz zna od startu nowej gry?"
+    campfire has been crafted; „Zasil — ognisko” discovered with the first gathered stick;
+    „Energia natury poniżej” discovered before the first finished „Zapal”
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "1. Co odsłania co — które zdarzenie gry wprowadza do Zrozumienia które akcje, przedmioty i warunki Lasu, i co gracz zna od startu nowej gry?" · plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Co wprowadza warunek „Energia natury poniżej” do Zrozumienia?"
 
 *Rationale:* the first map run is a linear tutorial, so each discovery in Las offers the program
 what the tutorial needs next — cold, the tile, sticks, fire, food — in the order a character
-meets them. Accepted with it: moss and fibre enter the Understanding although nothing uses them
-yet; the first lit stick reveals „Zasil — ognisko” as a lit campfire does; the conditions on the
-campfire come with the first crafted campfire, later than in loop.
-*Rejected:* the conditions on the campfire coming with the first gathered stick, as in loop.
+meets them. The condition on nature energy comes with the first finished lighting, the game minute
+in which the energy first falls. Accepted with it: moss and fibre enter the Understanding although
+nothing uses them yet; the first lit stick reveals „Zasil — ognisko” as a lit campfire does; the
+conditions on the campfire come with the first crafted campfire, later than in loop.
+*Rejected:* the conditions on the campfire coming with the first gathered stick, as in loop;
+„Energia natury poniżej” brought by the first finished „Zapal — ognisko” and not by a lit stick.
 
 ### D-122 — What does a map run do, and what does the player see, when something is discovered?
 
@@ -2575,18 +2595,18 @@ always to the character — branches granting it would give nothing.
 
 ### D-141 — When do combat turns take effect?
 
-An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards. During M+1 through M+5 the needs and automatic health recovery stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5. Editing the program during the encounter leaves its resolution minute, attack generator and cooldown intact, and resets solving progress as D-131 gives.
+An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards. During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5. Editing the program during the encounter leaves its resolution minute, attack generator and cooldown intact, and resets solving progress as D-131 gives.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-140 · derives from D-131
 - **Verification:** an agent compares a change with the decision:
   - complies: an attack in minute 200 resolving its turns in minute 205 with the program edited during the pause
-  - violates: an attack resolving before its discovery pause or automatic recovery raising health during its waiting minutes
-- **Origin:** none
+  - violates: an attack resolving before its discovery pause or automatic recovery raising health during its waiting minutes; a well-fed mage's nature energy rising during those minutes
+- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Czy energia natury wraca w minutach walki?"
 
-*Rationale:* The player has time to write combat rules after the first attack reveals them, while the game minute remains the unit of time; the cost is reading the actions afterwards instead of watching them unfold.
-*Rejected:* turns paced by real time — introduces finer simulation time; resolving in the attack minute — the first encounter resolves before the player can write combat rules.
+*Rationale:* The player has time to write combat rules after the first attack reveals them, while the game minute remains the unit of time; the cost is reading the actions afterwards instead of watching them unfold. Nature energy stands with the needs, so the encounter's minutes leave the body and the energy as they were; the game has no spell of combat today.
+*Rejected:* turns paced by real time — introduces finer simulation time; resolving in the attack minute — the first encounter resolves before the player can write combat rules; nature energy coming back in the encounter's minutes while the mage is well fed.
 
 ### D-142 — When can a creature attack a map run?
 
@@ -3072,3 +3092,87 @@ During a map run, picking a saved program on the program panel's list opens it f
 
 *Rationale:* the panel's list opens programs for editing during a map run, so the switch is an act of its own, standing beside the program it switches to. A save as a new program is no switch, so the button stands beside the program the copy was taken from and is gone beside the program the copy now belongs to. Accepted with it: two moves, a pick on the list and the button, and one button more in the panel.
 *Rejected:* the panel's list switching the character, as in loop — the list would stop opening a program for editing during a map run; the button standing beside every saved program other than the one the copy was taken from — after a save as a new program it would stand beside the program the copy belongs to, and its click would set the streak to zero though that save is no switch.
+
+### D-175 — What does a mage pay for spells with?
+
+Each spell costs the mage nature energy, which comes back by itself only while the mage is well fed;
+empty nature energy closes the spells and takes no health. A character without nature energy has no
+spells and pays nothing for them.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a hungry mage whose nature energy stops coming back, spells closing before health falls
+  - violates: a spell that lowers satiety; nature energy at zero taking health
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D52 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a mage pay for spells with?"
+
+*Rationale:* a need hurts when it runs out; nature energy only closes the spells, so it is no third
+need. Satiety stays an indirect price: a mage's program keeps eating higher than another's, and a
+mage who eats too little loses the spells first and only then, like anyone, health.
+*Rejected:* satiety as the price of spells — every spell would bring hunger nearer, and a mage
+casting spells would be a mage dying.
+
+### D-176 — With how much nature energy does a mage start a map run?
+
+A mage starts every map run, a new one and one started by „Restart”, with its nature energy at the
+cap.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-175
+- **Verification:** an agent compares a change with the decision:
+  - complies: a mage whose map run ended in death with 20 nature energy starting with 100 both the
+    map run „Restart” starts and the next map run it is sent on
+  - violates: nature energy carried from one map run into the next; „Restart” keeping the nature
+    energy of the game minute of death
+- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2. Jakie liczby ma energia natury: pułap, start przejścia, cena Płomyka, tempo powrotu, próg „dobrze najedzony” i chwila jego porównania, czy czar wymaga energii co najmniej równej cenie, zakres i wartość domyślna warunku „Energia natury poniżej”?"
+
+*Rationale:* nature energy belongs to the map run, as the body does, so every map run starts from
+the same state, and a „Restart” repeats its map run from game minute zero on the same seed, the
+energy included (D-62).
+*Rejected:* other numbers, or other answers to the points of the question, given point by point.
+
+### D-177 — What does too little nature energy do to Płomyk?
+
+A mage carries out Płomyk while its nature energy reaches the spell's price; with less, the program
+passes over a program rule with „Zapal — ognisko” or „Zapal — patyk” and picks a later one, as for
+any action of the character not feasible then, and the rule stays in the program.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-23 · derives from D-175
+- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
+  - complies: a program rule „Zapal — patyk” passed over with 5 nature energy at a price of 10, and
+    the next program rule carried out; „Zapal — ognisko” carried out with 10 nature energy at a
+    price of 10
+  - violates: Płomyk carried out with less nature energy than its price; a program rule of Płomyk
+    taken out of the program for want of nature energy
+- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2. Jakie liczby ma energia natury: pułap, start przejścia, cena Płomyka, tempo powrotu, próg „dobrze najedzony” i chwila jego porównania, czy czar wymaga energii co najmniej równej cenie, zakres i wartość domyślna warunku „Energia natury poniżej”?"
+
+*Rationale:* a spell the mage cannot pay for is no action of the character to carry out then, so the
+program moves on to a program rule that does something, as with a full backpack (D-65), and the
+rule acts again once the energy has come back. Energy equal to the price is enough, so a mage can
+spend its energy down to zero.
+*Rejected:* other numbers, or other answers to the points of the question, given point by point.
+
+### D-178 — What does the body row show of a mage's nature energy?
+
+The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number,
+from game minute zero, in the role `text` at every value of the energy, zero included.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-125
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Temperatura 36,9 °C · Sytość 82 % · Zdrowie 100 · Energia natury 90”; „Energia
+    natury 0” in the role `text`
+  - violates: „Energia natury 0” in the role `danger`; 89.5 nature energy shown as „Energia natury
+    90”; the energy left out of the body row until „Energia natury poniżej” is discovered
+- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Czy i jak wiersz ciała pokazuje energię natury maga?"
+
+*Rationale:* the player reads the energy that opens and closes the spells beside the values of the
+body, as the game state holds it (D-125). Empty energy closes the spells and takes no health, so it
+threatens no loss of the character and stands in `text` (D-39). Accepted with it: a longer body
+row, and a player who sees the energy before discovering the condition on it.
+*Rejected:* the body row as it stood, with no nature energy.

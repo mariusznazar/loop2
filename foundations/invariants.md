@@ -935,6 +935,16 @@ The account server submits player email confirmation messages to Mikrus Outsider
 - **Part:** account-server · build-tools
 - **Violated:** no
 
+## nature-energy-range
+
+At every game minute of a map run, the mage's nature energy lies between 0 and the cap the data files of `src/browser/sim/data/` give it, both included.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-63 · D-71 · D-177
+- **Part:** simulation
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

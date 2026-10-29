@@ -357,6 +357,7 @@ function newCondition(
     }
     case "temperatureBelow":
     case "satietyBelow":
+    case "natureEnergyBelow":
     case "campfireLeftBelow":
     case "healthBelow":
     case "opponentHealthBelow":

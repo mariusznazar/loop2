@@ -177,3 +177,10 @@ A combat turn is an exchange in which each side has one action, ending early whe
 A copy is the program a map run carries out, taken from one of the player's programs at the start of the map run, at a switch of the character to another program or at the start of an earning loop, whose changes reach a program by the player's save and on which a map run restart carries on.
 
 - **Not:** none
+
+## well fed
+
+A mage is well fed in a game minute in which its satiety, after that game minute's fall, reaches the
+threshold the data files give.
+
+- **Not:** none

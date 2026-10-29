@@ -216,6 +216,51 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
   );
 });
 
+test("nature energy stands through the five combat minutes and comes back after them", () => {
+  // Task plomyk, Q3 and To do 4 (plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania,
+  // lines 21 and 36): in the minutes of combat nature energy stands, as the needs and recovery do;
+  // the next ordinary minute, satiety 100 falling to 99.4, gives back 0.5.
+  let state = fighting(KICK, 235);
+  state.run.body = { ...HEALTHY };
+  state.run.natureEnergy = 50;
+  for (let elapsed = 1; elapsed <= 5; elapsed++) {
+    state = advanceMinutes(state, 1).state;
+    assert.equal(state.run.natureEnergy, 50, `minute ${235 + elapsed}`);
+  }
+  assert.equal(state.run.death, null, "precondition: the mage lives on");
+  assert.equal(state.run.activeCombat, null, "precondition: combat is over");
+  state = advanceMinutes(state, 1).state;
+  assert.equal(state.run.minute, 241);
+  assert.equal(state.run.natureEnergy, 50.5);
+});
+
+test("a lighting interrupted by an attack takes neither its sticks nor its nature energy", () => {
+  // Task plomyk, To do 2 (plomyk_loop2.md, line 19). Satiety 50 falls below 60, so no energy
+  // comes back meanwhile and the energy shows only a payment.
+  const state = prepared();
+  const at = state.run.character.at;
+  state.run.body = { temperature: 37, satiety: 50, health: 100 };
+  state.run.natureEnergy = 50;
+  state.run.campfires = [{ at: { ...at }, minutesLeft: 0 }];
+  state.run.character = {
+    ...state.run.character,
+    backpack: { ...state.run.character.backpack, stick: 2 },
+  };
+  state.run.current = {
+    activity: { kind: "rule", ruleId: 1, action: { kind: "lightCampfire" } },
+    startMinute: 178,
+    endMinute: 183,
+    stepTo: null,
+  };
+  const attacked = advanceMinutes(state, 1).state;
+  assert.equal(attacked.run.activeCombat.attackMinute, 181, "precondition");
+  const after = advanceMinutes(attacked, 5).state;
+  assert.equal(after.run.minute, 186);
+  assert.equal(after.run.character.backpack.stick, 2);
+  assert.equal(after.run.natureEnergy, 50);
+  assert.deepEqual(after.run.campfires, [{ at, minutesLeft: 0 }]);
+});
+
 test("each waiting minute M+1 through M+4 can complete without turns or an invented result", () => {
   for (const offset of [1, 2, 3, 4]) {
     const state = fighting();

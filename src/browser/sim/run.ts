@@ -1,4 +1,11 @@
-import { bodyMinute, eatenBody, startingBody } from "./body.js";
+import {
+  bodyMinute,
+  eatenBody,
+  paidNatureEnergy,
+  regainedNatureEnergy,
+  startingBody,
+  startingNatureEnergy,
+} from "./body.js";
 import { resolveCombat } from "./combat.js";
 import {
   backpackCap,
@@ -17,6 +24,7 @@ import {
   campfireTarget,
   chooseActivity,
   itemFor,
+  natureEnergyCost,
   walkTarget,
 } from "./program.js";
 import { nextRandom, streamState } from "./random.js";
@@ -179,7 +187,7 @@ function without(backpack: Backpack, item: ItemId, count: number): Backpack {
 /** What the end of an action of the character on the campfire or the backpack changes. */
 type Landing = Pick<
   MapRun,
-  "character" | "body" | "campfires" | "burningItems"
+  "character" | "body" | "natureEnergy" | "campfires" | "burningItems"
 >;
 
 /**
@@ -191,7 +199,7 @@ type Landing = Pick<
  * included (D-69, D-71); eating adds the food's satiety, not above the starting satiety (D-59).
  * Where what the action needs is no longer there, nothing changes.
  */
-function finishUse(state: Landing, action: Action): Landing {
+function landUse(state: Landing, action: Action): Landing {
   const { character } = state;
   const at = character.at;
   const here = state.campfires.find((campfire) => sameHex(campfire.at, at));
@@ -269,6 +277,22 @@ function finishUse(state: Landing, action: Action): Landing {
 }
 
 /**
+ * The end of an action on the campfire or the backpack, as `landUse` gives it, with a spell's price
+ * in nature energy taken together with its pieces where its effect takes hold. Where the energy no
+ * longer reaches the price, or the effect does not take hold, nothing changes and nothing is paid.
+ */
+function finishUse(state: Landing, action: Action): Landing {
+  const cost = natureEnergyCost(action);
+  if (state.natureEnergy < cost) return state;
+  const landed = landUse(state, action);
+  if (landed === state || cost === 0) return landed;
+  return {
+    ...landed,
+    natureEnergy: paidNatureEnergy(landed.natureEnergy, cost),
+  };
+}
+
+/**
  * A new map run at minute 0: the layout drawn from the seed, the first activity chosen. The
  * character carries the given traits, or those of a new character, and an empty backpack.
  */
@@ -292,6 +316,7 @@ export function newMapRun(
       backpack: newBackpack(),
     },
     body: startingBody(),
+    natureEnergy: startingNatureEnergy(),
     campfires: [],
     burningItems: [],
     wanderRandom: streamState(seed, "wander"),
@@ -351,11 +376,12 @@ function streakAfter(streak: number, lostHealth: boolean): number {
 
 /**
  * One game minute, in the order of D-71, up to the pick. First the body, warmed by what burns on
- * its tile; where the character dies, the step stops there: what burns and the tiles stay as they
+ * its tile, and the nature energy regained after satiety has fallen; where the character dies, the
+ * step stops there: what burns and the tiles stay as they
  * stood, the current activity too, giving no finish, and no program rule is picked. Otherwise what
  * burns loses a minute and the tiles renew their stock; then, when the current activity ends in
- * this minute, its finish applies. Combat minutes skip the body and ordinary action, advancing
- * only the world and streak here. `finishMinute` must follow to resolve combat, completion,
+ * this minute, its finish applies. Combat minutes skip the body, the nature energy included, and
+ * the ordinary action, advancing only the world and streak here. `finishMinute` must follow to resolve combat, completion,
  * attacks and the ordinary pick. A map run that has ended passes no minute. Inputs stay unchanged.
  */
 export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
@@ -374,6 +400,11 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
     };
   }
   const lived = bodyMinute(run.body, warmthAt(run, run.character.at), map);
+  // Nature energy comes back in the body's step, right after satiety falls (D-71).
+  const natureEnergy = regainedNatureEnergy(
+    run.natureEnergy,
+    lived.body.satiety,
+  );
   if (lived.death) {
     const cause = lived.death;
     return {
@@ -381,6 +412,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
         ...run,
         minute,
         body: lived.body,
+        natureEnergy,
         streak: streakAfter(run.streak, lived.lostHealth),
         death: { minute, cause },
       },
@@ -395,7 +427,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   // instead of never; for every duration of 1 minute or more the two are the same.
   if (!run.current || minute < run.current.endMinute)
     return {
-      run: { ...run, minute, body, streak, ...world },
+      run: { ...run, minute, body, natureEnergy, streak, ...world },
       events: [],
       picks: false,
     };
@@ -410,6 +442,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   let landed: Landing = {
     character,
     body,
+    natureEnergy,
     campfires: world.campfires,
     burningItems: world.burningItems,
   };
@@ -450,6 +483,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
       tiles,
       character,
       body: landed.body,
+      natureEnergy: landed.natureEnergy,
       campfires: landed.campfires,
       burningItems: landed.burningItems,
       gatherRandom,

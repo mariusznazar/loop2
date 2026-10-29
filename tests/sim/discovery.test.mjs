@@ -381,7 +381,8 @@ const ROWS = [
       current: ending(run, { kind: "lightCampfire" }),
     }),
     actions: ["feedCampfire"],
-    conditions: [],
+    // Task plomyk, To do 5 (plomyk_loop2.md:22): with „Zasil — ognisko”, in one discovery line.
+    conditions: ["natureEnergyBelow"],
     items: [],
     creatures: [],
   },
@@ -395,7 +396,7 @@ const ROWS = [
       current: ending(run, { kind: "lightItem" }),
     }),
     actions: ["feedCampfire"],
-    conditions: [],
+    conditions: ["natureEnergyBelow"],
     items: [],
     creatures: [],
   },

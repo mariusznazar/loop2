@@ -21,6 +21,7 @@ export type Condition =
   | { kind: "hereBelow"; resource: ResourceId; value: number }
   | { kind: "temperatureBelow"; value: number }
   | { kind: "satietyBelow"; value: number }
+  | { kind: "natureEnergyBelow"; value: number }
   | { kind: "itemBelow"; item: ItemId; value: number }
   | { kind: "campfireLeftBelow"; value: number }
   | { kind: "healthBelow"; value: number }
@@ -227,6 +228,11 @@ export type MapRun = {
   tiles: Tile[];
   character: RunCharacter;
   body: Body;
+  /**
+   * The character's nature energy, with which spells are paid: from 0 up to the cap of the data, the
+   * cap at the start of every map run; six decimal places, as the body's numbers.
+   */
+  natureEnergy: number;
   /** None at start. */
   campfires: Campfire[];
   /** None at start. */

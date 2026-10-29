@@ -16,12 +16,13 @@ function tenths(value: number): string {
 }
 
 /**
- * The values of the body row: temperature cut down to tenths, satiety and health cut down to whole
- * numbers (spec Decision 3). Temperature below the threshold of chill and satiety below that of
- * hunger stand in `danger`; cut down, a shown value is below a threshold exactly when the body's
- * is. Pure.
+ * The values of the body row: temperature cut down to tenths, satiety, health and nature energy cut
+ * down to whole numbers (spec Decision 3; task plomyk, To do 6). Temperature below the threshold of
+ * chill and satiety below that of hunger stand in `danger`; cut down, a shown value is below a
+ * threshold exactly when the body's is. Nature energy never stands in `danger`, at 0 too: empty
+ * energy closes the spells and takes no health. Pure.
  */
-export function bodyValues(body: Body): BodyValue[] {
+export function bodyValues(body: Body, natureEnergy: number): BodyValue[] {
   const rules = BALANCE.body;
   return [
     {
@@ -33,6 +34,7 @@ export function bodyValues(body: Body): BodyValue[] {
       danger: body.satiety < rules.starvingBelow,
     },
     { text: `Zdrowie ${Math.floor(body.health)}`, danger: false },
+    { text: `Energia natury ${Math.floor(natureEnergy)}`, danger: false },
   ];
 }
 
@@ -63,7 +65,7 @@ export function createBodyRow(): BodyRow {
   element.className = "body-row";
   const bodyText = document.createElement("p");
   bodyText.className = "body-text";
-  const values = [0, 1, 2].map(() => {
+  const values = [0, 1, 2, 3].map(() => {
     const value = document.createElement("span");
     value.className = "body-value";
     return value;
@@ -80,11 +82,13 @@ export function createBodyRow(): BodyRow {
     element,
     update(state: GameState): void {
       if (!state.run) return;
-      bodyValues(state.run.body).forEach((shown, index) => {
-        const value = values[index];
-        if (value.textContent !== shown.text) value.textContent = shown.text;
-        value.classList.toggle("danger", shown.danger);
-      });
+      bodyValues(state.run.body, state.run.natureEnergy).forEach(
+        (shown, index) => {
+          const value = values[index];
+          if (value.textContent !== shown.text) value.textContent = shown.text;
+          value.classList.toggle("danger", shown.danger);
+        },
+      );
       const packed = backpackText(state.run.character);
       if (backpack.textContent !== packed) backpack.textContent = packed;
     },

@@ -9,6 +9,12 @@ export type ActionDef = {
   minutes: number | null;
   /** The event that reveals the action to the player. */
   revealedBy: Revelation;
+  /**
+   * The nature energy the action costs: a spell. The character can start it with at least this much
+   * energy, and the energy is taken when the action finishes, together with the pieces it uses.
+   * Absent for an action that costs none.
+   */
+  natureEnergy?: number;
   /** Combat-only effect; absent actions belong to ordinary map time. */
   combat?: { damage: number; item?: ItemId } | { reducesNextDamageBy: number };
 };
@@ -57,17 +63,21 @@ export const ACTIONS = {
     minutes: 20,
     revealedBy: { kind: "gathered", item: "stick" },
   },
+  // „Zapal — ognisko” and „Zapal — patyk” are the spell Płomyk, paid with nature energy besides
+  // their sticks.
   lightCampfire: {
     label: "Zapal — ognisko",
     status: "Zapala ognisko",
     minutes: 5,
     revealedBy: { kind: "gathered", item: "stick" },
+    natureEnergy: 10,
   },
   lightItem: {
     label: "Zapal — patyk",
     status: "Zapala patyk",
     minutes: 5,
     revealedBy: { kind: "gathered", item: "stick" },
+    natureEnergy: 10,
   },
   feedCampfire: {
     label: "Zasil — ognisko",

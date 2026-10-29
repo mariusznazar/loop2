@@ -24,8 +24,13 @@ import type {
 /** The part of a map run the program reads: never the generator, never the current activity. */
 export type RunView = Pick<
   MapRun,
-  "tiles" | "character" | "campfires" | "body"
+  "tiles" | "character" | "campfires" | "body" | "natureEnergy"
 >;
+
+/** The nature energy an action costs, from the actions' data; 0 for an action that costs none. */
+export function natureEnergyCost(action: Action): number {
+  return (ACTIONS[action.kind] as ActionDef).natureEnergy ?? 0;
+}
 
 /** The number a kind of condition takes, from the conditions' data. */
 export type ConditionNumber = {
@@ -141,6 +146,8 @@ export function conditionHolds(
       return run.body.temperature < condition.value;
     case "satietyBelow":
       return run.body.satiety < condition.value;
+    case "natureEnergyBelow":
+      return run.natureEnergy < condition.value;
     case "healthBelow":
       return (context?.health ?? run.body.health) < condition.value;
     case "opponentHealthBelow":
@@ -181,12 +188,16 @@ export function campfireTarget(
   );
 }
 
-/** Whether an action can start now. Never draws: the wander generator is left as it is. */
+/**
+ * Whether an action can start now. A spell needs at least the nature energy it costs, as the other
+ * actions need their pieces. Never draws: the wander generator is left as it is.
+ */
 export function actionFeasible(
   run: RunView,
   _map: MapDef,
   action: Action,
 ): boolean {
+  if (run.natureEnergy < natureEnergyCost(action)) return false;
   switch (action.kind) {
     case "explore": {
       const here = tileAt(run.tiles, run.character.at);
