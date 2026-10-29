@@ -49,7 +49,7 @@ export function chestLines(chest: Chest): string[] {
   });
 }
 
-/** One row's „Program:” list (D-158): the positions and the value shown. */
+/** One row's „Program:” list (D-170): the positions and the value shown. */
 export type ProgramPositions = {
   options: SelectOption[];
   value: string;
@@ -243,7 +243,7 @@ export function createHeadquarters(
         shownPrograms = programsKey;
         renderTeam(state.team, state.solvedMaps, state.programs);
       }
-      // Each row shows the program of D-158 as the simulation gives it.
+      // Each row shows the program of D-170 as the simulation gives it.
       for (const [characterId, programList] of programLists)
         programList.value = programPositions(
           state.programs,

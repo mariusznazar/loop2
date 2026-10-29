@@ -263,7 +263,7 @@ const counts = (panel) =>
 
 const groupCount = (program) => program.groups.length;
 
-// Task programy-gracza, To do 2–3; D-154, D-155. Catches a list missing its program or the last
+// Task programy-gracza, To do 2–3; D-166, D-167. Catches a list missing its program or the last
 // program left deletable.
 test("a new game's panel lists „Program”, shows it, and „Usuń” is disabled", () => {
   withPanelDocument(() => {
@@ -298,7 +298,7 @@ test("„Nowy program” shows „Program 2”, makes „Usuń” active, and th
   });
 });
 
-// To do 4; D-157 and spec decision 7, the name field. Catches a missing or wrong message, a
+// To do 4; D-169 and spec decision 7, the name field. Catches a missing or wrong message, a
 // program's own name in another letter case refused, and a refused name saved.
 test("„Zmień nazwę” fills the field with the name, warns of an empty or taken name, and saves a trimmed one", () => {
   withPanelDocument((document) => {
@@ -357,7 +357,7 @@ test("the name field leaves without saving at „Zmień nazwę” again and at a
   });
 });
 
-// To do 3; D-155 and spec decision 7, „Usuń” of the shown program shows the first of the list.
+// To do 3; D-167 and spec decision 7, „Usuń” of the shown program shows the first of the list.
 // Catches the panel left on a deleted program and the last program deleted.
 test("„Usuń” of the shown program shows the first program of the list, and is disabled with one left", () => {
   withPanelDocument(() => {
@@ -383,7 +383,7 @@ test("„Usuń” of the shown program shows the first program of the list, and 
   });
 });
 
-// To do 2, 7 and 9; D-154, D-93 and spec decisions 6–7. Catches the copy missing from the top of
+// To do 2, 7 and 9; D-166, D-93 and spec decisions 6–7. Catches the copy missing from the top of
 // the list, rename or delete offered for the copy, counts beside a saved program during a map run,
 // a pick changing the game state, and an edit reaching the wrong program.
 test("during a map run the copy stands first and is shown with counts; a saved program picked shows none and takes its own edits", () => {
@@ -419,7 +419,7 @@ test("during a map run the copy stands first and is shown with counts; a saved p
   });
 });
 
-// To do 10; D-93, D-161 and spec decision 7, which program the panel shows. Catches „Restart”
+// To do 10; D-93, D-173 and spec decision 7, which program the panel shows. Catches „Restart”
 // leaving a saved program shown, the copy lost after a death, and „Zakończ” showing another
 // program, dropping the counts or putting them beside another program.
 test("„Restart” and a death show the copy with counts; „Zakończ” shows the copy's program with them", () => {
@@ -456,7 +456,7 @@ test("„Restart” and a death show the copy with counts; „Zakończ” shows 
   });
 });
 
-// To do 10 and 3; D-156 and spec decision 7. Catches „Zakończ” after the copy's program was
+// To do 10 and 3; D-168 and spec decision 7. Catches „Zakończ” after the copy's program was
 // deleted showing a program that is gone, or a count beside the first program.
 test("„Zakończ” after the copy's program was deleted shows the first program of the list, without counts", () => {
   withPanelDocument(() => {
@@ -606,7 +606,7 @@ test("„Zapisz w programie” writes the copy into its program, and the line an
   });
 });
 
-// To do 9; D-160 and spec decision 7. Catches the line missing when the program changed and the
+// To do 9; D-172 and spec decision 7. Catches the line missing when the program changed and the
 // copy has no changes, the line staying after the save, and a wrong program name in it.
 test("the line of a changed program stands with and without unsaved changes, and goes after „Zapisz w programie”", () => {
   withPanelDocument(() => {
@@ -639,7 +639,7 @@ test("the line of a changed program stands with and without unsaved changes, and
   });
 });
 
-// To do 8; D-159 and spec decision 7. Catches an empty or wrong first value of the field, a
+// To do 8; D-171 and spec decision 7. Catches an empty or wrong first value of the field, a
 // refused name saved, and the panel leaving the copy or keeping the old program number.
 test("„Zapisz jako nowy program” offers the first free name, refuses a taken one, and the copy then belongs to the new program", () => {
   withPanelDocument(() => {
@@ -703,7 +703,7 @@ test("„Porzuć zmiany” restores the copy's program and the line goes", () =>
   });
 });
 
-// To do 3 and 8; D-156 and spec decision 7. Catches the heading losing the name of a deleted
+// To do 3 and 8; D-168 and spec decision 7. Catches the heading losing the name of a deleted
 // program, „Zapisz w programie” and „Porzuć zmiany” offered for a program that is gone, and
 // „Zapisz jako nowy program” withdrawn.
 test("a copy whose program was deleted keeps its heading, offers only „Zapisz jako nowy program”, and it is active", () => {
@@ -730,7 +730,7 @@ test("a copy whose program was deleted keeps its heading, offers only „Zapisz 
   });
 });
 
-// To do 12; D-162 and spec decision 7. Catches the button missing beside another program, shown
+// To do 12; D-174 and spec decision 7. Catches the button missing beside another program, shown
 // beside the copy's own program or the copy, and a click that does not switch and show the copy.
 test("„Przełącz postać na ten program” stands beside another saved program only, and a click switches and shows the copy", () => {
   withPanelDocument(() => {
@@ -763,7 +763,7 @@ test("„Przełącz postać na ten program” stands beside another saved progra
   });
 });
 
-// To do 12; D-162 and spec decision 7. Catches the button standing beside the new program after
+// To do 12; D-174 and spec decision 7. Catches the button standing beside the new program after
 // „Zapisz jako nowy program”, and not beside the program the copy was taken from.
 test("after „Zapisz jako nowy program” the switch button stands beside the first program and not beside the new one", () => {
   withPanelDocument(() => {

@@ -44,7 +44,7 @@ Inputs (written out below, or reached by driving `game.js` from them):
 Controls, so the check can fail: the same checker, given made-up functions that change a top-level
 key of a state, push onto a program's rules, lower a tile's stock, delete a key, add a key set to
 `undefined` and set a number to `NaN`, reports each; the made-up state has the shape of the game
-state, a list of programs and a map run carrying the copy of its program (D-152), and a push onto
+state, a list of programs and a map run carrying the copy of its program (D-164), and a push onto
 the rules of a program of the list and a push onto the rules of the copy are each reported; a
 made-up function that builds a new state from its input without changing it is not reported. The run must also make more than 1000 calls
 and call every function of the table at least once.
@@ -225,7 +225,7 @@ const check = (label, fn, args) => {
 
 // --- controls of the checker (not passed to the product) ---
 // A made-up state of the shape of the game state: the player's list of programs and a map run
-// carrying its copy (D-152).
+// carrying its copy (D-164).
 const makeProgram = () => ({ groups: [{ id: 1, name: 'Program', condition: { kind: 'always' },
   rules: [{ id: 1, condition: { kind: 'always' }, action: { kind: 'wander' } }] }],
   nextGroupId: 2, nextRuleId: 2 });

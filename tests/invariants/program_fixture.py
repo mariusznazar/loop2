@@ -48,7 +48,7 @@ async function newKnowingGame(game, gamePath) {
 
 
 # Source text of JavaScript functions for the Node drivers to embed, reading the programs of a game
-# state the way the player's list and the map run hold them (D-152): `heldProgram` is the program
+# state the way the player's list and the map run hold them (D-164): `heldProgram` is the program
 # the state edits and carries out, the copy of the map run during one and else the program of the
 # list the team goes with (the one last entered with while it is on the list, else the first);
 # `heldPrograms` is every program the state holds, the list's programs and the copy.

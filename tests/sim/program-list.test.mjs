@@ -1,6 +1,6 @@
 // The operations on the player's program list. Expectations come from the task "programy-gracza",
-// the vault file `programy_gracza_loop2.md` (To do 3, 4, 5 and 9), and from D-152, D-153, D-156,
-// D-157 and D-158 in foundations/decisions.md. Every expected value is written out here.
+// the vault file `programy_gracza_loop2.md` (To do 3, 4, 5 and 9), and from D-164, D-165, D-168,
+// D-169 and D-170 in foundations/decisions.md. Every expected value is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";

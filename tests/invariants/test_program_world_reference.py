@@ -12,7 +12,7 @@ program stay what the check drives.
 Reading of the sentence:
 - a program the simulation holds: every program of the game state (`heldPrograms` in
   `HELD_PROGRAMS_JS` of `program_fixture.py`) — the programs of the player's list and, during a map
-  run, the copy the map run carries out (D-152) — after `setProgram` took one in, and as they stand
+  run, the copy the map run carries out (D-164) — after `setProgram` took one in, and as they stand
   after a send and after 30 game minutes of a map run; the program `setProgram` edits (`heldProgram`:
   the copy during a map run, in the headquarters the list's program the team goes with) must hold the
   offer as offered;

@@ -293,7 +293,7 @@ export function programById(
 }
 
 /**
- * The program a character with no pick and no program used last goes with (D-158): the program
+ * The program a character with no pick and no program used last goes with (D-170): the program
  * with which a character last entered a map while it is on the list, or else the first of the list.
  */
 export function teamProgram(state: GameState): SavedProgram {
@@ -303,7 +303,7 @@ export function teamProgram(state: GameState): SavedProgram {
 }
 
 /**
- * The program of a character's headquarters row (D-158): the first still on the list of the
+ * The program of a character's headquarters row (D-170): the first still on the list of the
  * program picked on that row, the character's program used last, the program with which a
  * character last entered a map and the first program of the list.
  */
@@ -330,7 +330,7 @@ export function withProgramContent(
 }
 
 /**
- * The name a program takes from typed text (D-157): the text without white space at its start and
+ * The name a program takes from typed text (D-169): the text without white space at its start and
  * end. It is refused as `empty` where nothing is left, and as `taken` where the name of a program
  * other than `ownId` equals it regardless of letter case; a program's own name in another letter
  * case does not block its rename. The length is not limited.

@@ -1,6 +1,6 @@
 // The copy a manual map run carries out and the player's programs in the game state. Expectations
 // come from the task "programy-gracza", the vault file `programy_gracza_loop2.md` (D-82), its To do
-// 1, 5, 6, 7, 10 and 11, and from D-93, D-123, D-152, D-153 and D-158 in foundations/decisions.md.
+// 1, 5, 6, 7, 10 and 11, and from D-93, D-123, D-164, D-165 and D-170 in foundations/decisions.md.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
@@ -92,7 +92,7 @@ test("an edit during a map run leaves program 1 as it was while the map run carr
   assert.deepEqual(ended.programs[0].program, EXPLORING);
 });
 
-// D-152, D-158: a send takes a copy of the program passed and records it for the character.
+// D-164, D-170: a send takes a copy of the program passed and records it for the character.
 test("a send with a program number carries out a copy of that program, whose base is its content, makes it the character's program used last and the one entered with last, and clears the character's pick", () => {
   const state = twoPrograms({ pickedPrograms: { 1: 1, 2: 1 } });
   const { run, ...records } = send(
@@ -127,7 +127,7 @@ test("a send refuses a program number not on the list, a deleted program's inclu
   assert.deepEqual(state, before);
 });
 
-// D-158; To do 5: the program a headquarters row stands on, which a send without a number takes.
+// D-170; To do 5: the program a headquarters row stands on, which a send without a number takes.
 test("a send without a program number takes the first still on the list of the row's pick, the character's program used last, the program entered with last and the first program", () => {
   const variants = [
     ["no record", {}, 1],

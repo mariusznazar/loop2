@@ -68,7 +68,7 @@ export type Program = {
   nextRuleId: RuleId;
 };
 
-/** Tells the player's programs apart; given once, never again after a deletion (D-153). */
+/** Tells the player's programs apart; given once, never again after a deletion (D-165). */
 export type ProgramId = number;
 
 /** A program of the player's list: its number, its name and its content. */
@@ -82,7 +82,7 @@ export type ProgramNameCheck =
   { ok: true; name: string } | { ok: false; reason: ProgramNameRefusal };
 
 /**
- * The copy a map run carries out (D-152): the copied content, the program it belongs to and its
+ * The copy a map run carries out (D-164): the copied content, the program it belongs to and its
  * base, the content of that program as the copy was taken from it or last saved into it.
  */
 export type ProgramCopy = {

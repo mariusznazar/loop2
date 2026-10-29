@@ -1,6 +1,6 @@
 // The operations on a manual map run's copy: the two measures of its record, the saves, the
 // discard and the switch. Expectations come from the task "programy-gracza", the vault file
-// `programy_gracza_loop2.md` (To do 6 to 12), and from D-93, D-131, D-136, D-152, D-159 and D-162
+// `programy_gracza_loop2.md` (To do 6 to 12), and from D-93, D-131, D-136, D-164, D-171 and D-174
 // in foundations/decisions.md. Every expected value is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";

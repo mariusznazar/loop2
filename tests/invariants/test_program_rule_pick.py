@@ -7,7 +7,7 @@ is never written) and driven through its public functions in `dist/public/sim/ga
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send` and `advanceMinutes` one game minute at a time. After every input the script records the
 JSON of the map run and of the program the map run carries out: the copy of the map run
-(`heldProgram` in `HELD_PROGRAMS_JS` of `program_fixture.py`, D-152), taken from the player's list
+(`heldProgram` in `HELD_PROGRAMS_JS` of `program_fixture.py`, D-164), taken from the player's list
 by the send.
 The new game of each sent character is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the

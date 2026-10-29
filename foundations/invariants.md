@@ -841,7 +841,7 @@ An edit of a saved program during a map run leaves the copy the map run carries 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-152 · D-131 · D-93
+- **Derives from:** D-164 · D-131 · D-93
 - **Part:** simulation · browser-view
 - **Violated:** no
 
@@ -851,7 +851,7 @@ An edit of a saved program during a map run leaves the copy the map run carries 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-152 · D-159 · D-131
+- **Derives from:** D-164 · D-171 · D-131
 - **Part:** simulation · browser-view
 - **Violated:** no
 

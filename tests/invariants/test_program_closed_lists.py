@@ -6,7 +6,7 @@ is never written) and driven through its public functions in `dist/public/sim/ga
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram` and
 `send`. The program the check reads is the one `setProgram` edits (`heldProgram` in
 `HELD_PROGRAMS_JS` of `program_fixture.py`): the copy of the map run during a map run, in the
-headquarters the program of the player's list the team goes with (D-152; the copy is the program
+headquarters the program of the player's list the team goes with (D-164; the copy is the program
 the map run carries out).
 The new game of each game with a map run is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the

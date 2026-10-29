@@ -23,7 +23,7 @@ import {
 import { createTextField } from "./controls/text-field.js";
 import { createProgramEditor } from "./program-editor.js";
 
-/** What the panel shows: the copy of the map run, or a saved program by its number (D-153). */
+/** What the panel shows: the copy of the map run, or a saved program by its number (D-165). */
 export type ShownProgram =
   { kind: "copy" } | { kind: "saved"; programId: ProgramId };
 
