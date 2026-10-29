@@ -867,7 +867,7 @@ A session removed when its account was blocked authorizes no request after the a
 
 ## email-confirmation-link
 
-An emailed confirmation link confirms its account's address only once, only before its expiry, only until a later confirmation message of its account has been sent, and only while its account is not blocked, and a link it refuses changes nothing.
+An emailed confirmation link confirms its account's address only once, only before its expiry, only until a later confirmation link of its account has been recorded, and only while its account is not blocked, and a link it refuses changes nothing.
 
 - **Method:** test
 - **Rests on:** none
