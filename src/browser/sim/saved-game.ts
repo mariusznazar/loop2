@@ -866,8 +866,20 @@ function namesAbsentArchetype(value: unknown): boolean {
 }
 
 /**
- * The game state of a saved document, the `save` the server hands back or a document kept in page
- * memory, or the reason it gives none, in this order: no object with a whole `version` is `shape`;
+ * The keys of a saved document: the version and the game, and, in the `save` the server hands
+ * back, the revision it gave the save, a positive safe integer the game state does not hold.
+ */
+function savedDocument(value: unknown): Record<"version" | "game", unknown> {
+  const keys = Reflect.ownKeys(plainObject(value));
+  if (!keys.includes("revision")) return fields(value, ["version", "game"]);
+  const read = fields(value, ["version", "revision", "game"]);
+  identity(read.revision);
+  return read;
+}
+
+/**
+ * The game state of a saved document, the `save` the server hands back with its revision or a
+ * document kept in page memory, or the reason it gives none, in this order: no object with a whole `version` is `shape`;
  * another version than the current one is `version`; a readable team naming an archetype the data
  * lacks is `archetype`; anything else the game state's types, closed lists and data do not admit
  * is `shape`. A map run that goes on comes back paused at its game minute, pace and carried real
@@ -880,7 +892,7 @@ export function loadSavedGame(value: unknown): LoadedGame {
   if (version !== SAVED_GAME_VERSION) return { ok: false, reason: "version" };
   if (namesAbsentArchetype(value)) return { ok: false, reason: "archetype" };
   try {
-    return { ok: true, state: game(fields(value, ["version", "game"]).game) };
+    return { ok: true, state: game(savedDocument(value).game) };
   } catch {
     return { ok: false, reason: "shape" };
   }

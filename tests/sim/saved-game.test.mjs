@@ -395,6 +395,20 @@ test("the current version is the one the document of the current version is writ
   assert.equal(SAVED_GAME_VERSION, DOCUMENT.version);
 });
 
+// The `save` the server hands back: exactly `version`, `revision` and `game` (spec, decision 1).
+test("the server's save of the current version loads into the game it holds, its revision left out", () => {
+  const save = {
+    version: 1,
+    revision: 3,
+    game: structuredClone(DOCUMENT.game),
+  };
+  assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
+  assert.deepEqual(loadSavedGame({ ...save, version: 2 }), {
+    ok: false,
+    reason: "version",
+  });
+});
+
 /** A copy of `document` with `change` made to it. */
 function changed(change, document = DOCUMENT) {
   const copy = structuredClone(document);
@@ -576,6 +590,19 @@ const CRAFTED = {
   // Keys exactly: none added.
   "a key beside the version and the game": (document) =>
     (document.savedAtMs = 1760000000000),
+  "a key beside the version, the revision and the game": (document) => {
+    document.revision = 3;
+    document.savedAtMs = 1760000000000;
+  },
+  "a revision of 0": (document) => (document.revision = 0),
+  "a revision below 0": (document) => (document.revision = -1),
+  "a fractional revision": (document) => (document.revision = 2.5),
+  "a revision as text": (document) => (document.revision = "3"),
+  "a revision of none": (document) => (document.revision = null),
+  "a revision beyond the safe integers": (document) =>
+    (document.revision = 2 ** 53),
+  "a wait holding a rule's number": (document) =>
+    (document.game.run.current.activity = { kind: "wait", ruleId: 2 }),
   "a key added to the game": (document) => (document.game.gold = 100),
   "a key added to the map run": (document) => (document.game.run.speed = 2),
   "a key added to a character": (document) =>
@@ -825,10 +852,64 @@ function deeper(until) {
   return state;
 }
 
+/** A program that explores, walks to berries where none lie here and wanders. */
+const WALKING = programFromRules(
+  { condition: ALWAYS, action: { kind: "explore" } },
+  {
+    condition: { kind: "hereBelow", resource: "berry", value: 1 },
+    action: { kind: "walkTo", resource: "berry" },
+  },
+  { condition: ALWAYS, action: { kind: "wander" } },
+);
+
+/** A program that builds a campfire from gathered sticks, wanders off and walks back to it. */
+const RETURNING = programFromRules(
+  { condition: ALWAYS, action: { kind: "walkToCampfire" } },
+  { condition: ALWAYS, action: { kind: "craftCampfire" } },
+  { condition: ALWAYS, action: { kind: "explore" } },
+  {
+    condition: { kind: "itemBelow", item: "stick", value: 6 },
+    action: { kind: "gather", resource: "stick" },
+  },
+  { condition: ALWAYS, action: { kind: "wander" } },
+);
+
+/** The kind of what the map run's character is doing: a wait, or the action of its rule. */
+function doing(run) {
+  const activity = run.current?.activity;
+  return activity?.kind === "rule" ? activity.action.kind : activity?.kind;
+}
+
+/**
+ * The first character sent to Las with `program`, a new game's empty „Program” where none is
+ * given, moved on minute by minute until it is doing `kind`.
+ */
+function sentDoing(kind, program) {
+  let state = newKnowingGame();
+  if (program) state = setProgram(state, program).state;
+  state = createCharacter(state, "Ala").state;
+  state = send(state, { mapId: "forest", characterId: 1 }, REAL_MS).state;
+  for (let minute = 0; minute < 400 && doing(state.run) !== kind; minute += 1)
+    state = advanceMinutes(state, 1).state;
+  return state;
+}
+
 test("a game state the simulation made loads back from its saved document", () => {
   const ended = end(played()).state;
   const states = {
     "a new game": { state: newGame(), goesOn: false },
+    "a wait under the empty „Program”": {
+      state: sentDoing("wait"),
+      goesOn: true,
+    },
+    "a walk to a resource": {
+      state: sentDoing("walkTo", WALKING),
+      goesOn: true,
+    },
+    "a walk to a campfire": {
+      state: sentDoing("walkToCampfire", RETURNING),
+      goesOn: true,
+    },
     "a map run going on": { state: played(), goesOn: true },
     "a map run whose copy's program was deleted": {
       state: deleteProgram(played(), 1).state,
@@ -852,6 +933,19 @@ test("a game state the simulation made loads back from its saved document", () =
     },
   };
   // Preconditions: each state holds what its name says.
+  assert.equal(
+    doing(states["a wait under the empty „Program”"].state.run),
+    "wait",
+  );
+  for (const [name, kind] of [
+    ["a walk to a resource", "walkTo"],
+    ["a walk to a campfire", "walkToCampfire"],
+  ]) {
+    const { run } = states[name].state;
+    assert.equal(doing(run), kind);
+    assert.notEqual(run.current.stepTo, null);
+    assert.equal(run.death, null);
+  }
   assert.equal(states["a map run going on"].state.realMsCarry, 200);
   assert.equal(
     states["a map run whose copy's program was deleted"].state.run.copy
