@@ -1,0 +1,35 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/deploy/test_account_storage.py
+
+Production image sha256:a9fec7f62239efbd945bb731547f264a716f80243d5d5af9647b13d4aff666e0; container loop2-account-storage-first-aac0a8df7fdb; data volume loop2-account-data-check-cbf49ce6e3394a2ca65734a1f0ba0196; secret volume loop2-account-secret-check-cbf49ce6e3394a2ca65734a1f0ba0196; uid/gid 1000; memory 536870912; resources verified
+F
+======================================================================
+FAIL: test_replaced_container_keeps_accounts_and_sessions (test_account_storage.AccountsSurviveContainerReplacement.test_replaced_container_keeps_accounts_and_sessions)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-wt\potwierdzenie-adresu\tests\deploy\test_account_storage.py", line 133, in test_replaced_container_keeps_accounts_and_sessions
+    self.assertEqual((before["status"], before["body"]), (200, account))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: (200,[85 chars]om', 'emailConfirmed': False}) != (200,[85 chars]om', 'emailConfirmed': False, 'confirmationMessage': 'failed'})
+
+First differing element 1:
+{'id'[78 chars]com', 'emailConfirmed': False}
+{'id'[78 chars]com', 'emailConfirmed': False, 'confirmationMessage': 'failed'}
+
+  (200,
++  {'confirmationMessage': 'failed',
+-  {'email': 'replacement-check@example.com',
+?  ^
+
++   'email': 'replacement-check@example.com',
+?  ^
+
+    'emailConfirmed': False,
+    'id': '02364e33-2d3b-411d-996e-01f43f0e346d'})
+
+----------------------------------------------------------------------
+Ran 1 test in 21.229s
+
+FAILED (failures=1)
+exit 1

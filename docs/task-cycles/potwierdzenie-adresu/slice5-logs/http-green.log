@@ -1,0 +1,73 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/http.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ serves the built HTML and JavaScript from another working directory (29.0984ms)
+✔ API keeps its JSON error across paths, methods, queries and HTML negotiation (50.6691ms)
+✔ ordinary missing routes and files do not become the home page or API (6.3085ms)
+✔ raw and encoded traversal cannot expose files outside dist/public (20.5858ms)
+✔ unconfigured accounts answer the canonical account routes as unavailable JSON (11.6244ms)
+✔ a stored session alone selects the account, whatever identifier the request supplies (279.5885ms)
+✔ absent, tampered, unknown, expired and deleted sessions authorize neither lookup nor logout (230.4152ms)
+✔ logout destroys only this browser's session and clears the same host cookie (185.5229ms)
+✔ a failed session destruction is not reported as logout and leaves the browser signed in (208.9523ms)
+✔ a read that loaded its session before logout cannot revive it afterwards (193.4606ms)
+✔ registration stores an Argon2id hash of the exact password and signs this browser in at once (960.6626ms)
+✔ a credential success replaces only this browser's session with a fresh identity (459.111ms)
+✔ one normalized address holds one account and a duplicate gets the required message, also in a race (489.0249ms)
+✔ passwords count 12 to 128 Unicode code points and keep their exact content (1050.0239ms)
+✔ malformed fields and out-of-shape credentials are refused before password work or writes (1106.9088ms)
+✔ a known address with a wrong password and an unknown address fail login identically (686.5056ms)
+✔ a failed session save keeps the new account usable and issues no success cookie (661.147ms)
+✔ five failed logins lock an address for 15 minutes from the fifth, also for its correct password (2953.9417ms)
+✔ one client address is admitted twenty failed logins per rolling 15 minutes and success does not clear them (2651.6518ms)
+✔ one client address creates five accounts per rolling hour, and refused registrations take no slot (1278.3644ms)
+✔ a disconnected login keeps its reservation until its password work completes and still counts (1294.0555ms)
+✔ full limiter tables refuse newcomers without evicting a live restriction (1500.509ms)
+✔ no session of a blocked account authorizes lookup or logout, in any browser, also after unblocking (647.8543ms)
+✔ a blocked account's correct password gets its own refusal and no session, a wrong one the common message, and only the wrong one counts (2069.8316ms)
+✔ a block committed while the password is checked refuses that login as blocked and clears no failure (1133.8085ms)
+Account mail failed: unknown
+Account mail missed its deadline
+Account confirmation link could not be recorded
+✔ registration answers 201 with its message's outcome in every case and the player stays signed in (1407.6513ms)
+✔ a refused registration or one whose session is not stored hands no message on and records no link (791.864ms)
+✔ only a valid session of an unblocked account asks for a message, and it goes only to that account's own address (246.6275ms)
+✔ above three messages an hour for an account or thirty in total a resend answers limited and hands nothing on, until the hour has passed (284.2745ms)
+✔ a link confirms its own account once, with or without a session, and every malformed, unknown or used token gets the one refusal and changes nothing (540.6198ms)
+✔ a later message's link stops earlier ones, also when its sending failed, and an expired or other-kind link confirms nothing (406.4854ms)
+Error: Session cannot be replaced
+    at AccountDatabase.saveSession (file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/database.js:219:19)
+    at file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/session-store.js:114:27
+    at SqliteSessionStore.complete (file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/session-store.js:136:13)
+    at SqliteSessionStore.set (file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/session-store.js:111:14)
+    at Session.save (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express-session\session\session.js:72:25)
+    at ServerResponse.end (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express-session\index.js:350:21)
+    at ServerResponse.send (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express\lib\response.js:221:10)
+    at ServerResponse.json (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express\lib\response.js:252:15)
+    at file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/account-routes.js:300:30
+Error: Session cannot be replaced
+    at AccountDatabase.saveSession (file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/database.js:219:19)
+    at file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/session-store.js:114:27
+    at SqliteSessionStore.complete (file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/session-store.js:136:13)
+    at SqliteSessionStore.set (file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/session-store.js:111:14)
+    at Session.save (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express-session\session\session.js:72:25)
+    at ServerResponse.end (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express-session\index.js:350:21)
+    at ServerResponse.send (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express\lib\response.js:221:10)
+    at ServerResponse.json (C:\Storage\repos\loop2-wt\potwierdzenie-adresu\node_modules\express\lib\response.js:252:15)
+    at file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/dist/server/account-routes.js:300:30
+✔ a block committed through another connection while the message is on its way stops its link for good, and a block just before recording sends nothing (567.347ms)
+✔ no response and no line of the server's log holds a link's token (729.7559ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25424.9884
+exit 0

@@ -1,0 +1,63 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/account-storage.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ an account insertion returns an opaque identity and persists across reopen (33.4092ms)
+✔ two connections cannot insert the same normalized email and SQL characters remain data (100.3058ms)
+✔ schema reopen preserves accounts and sessions and rejects a newer version without rewriting it (50.6462ms)
+✔ a schema initialization failure rolls back every new table and version (66.3308ms)
+✔ a version-1 database opens as version 3 with every account and session intact, no account blocked and no address confirmed (95.0843ms)
+✔ a failing migration step leaves a version-1 database at version 1 with its rows unchanged (66.567ms)
+✔ a version-2 database opens as version 3 with every account, blocked state and session intact and no address confirmed (126.3407ms)
+✔ a failing step 3 leaves a version-2 database at version 2 with its rows and columns unchanged (99.7011ms)
+✔ an account is admitted three messages within an hour; the fourth is refused, records nothing and stops no link, until the first is an hour old (59.8639ms)
+✔ confirmation and password-reset messages count against one account's limit together (49.092ms)
+✔ thirty messages within an hour across accounts refuse the thirty-first for any account until the hour has passed (92.0104ms)
+✔ the hour's count of messages survives closing and reopening the database (33.1994ms)
+✔ issuing refuses a window longer than the hour links are kept for, an unusable lifetime or limit, and an unknown account, and records nothing (37.3813ms)
+✔ a confirmation link confirms its account once, stops the account's other confirmation links, and leaves its other kind of link working (38.9331ms)
+✔ an unknown link or a link of another kind confirms nothing and changes nothing (30.3144ms)
+✔ a confirmation link works until the millisecond before its expiry and not at it (24.1614ms)
+✔ issuing a confirmation link stops the account's earlier one at once, before its message is handed on, so a failed sending leaves no earlier link working (37.2065ms)
+✔ a confirmation link of a blocked account changes nothing, also one the block did not stop (30.6622ms)
+✔ a block committed through another connection stops every link issued before it, which confirms nothing after unblocking, and a block before an issue records nothing (58.8258ms)
+✔ cleanup removes, in bounded batches, only links both expired and an hour old, so pruning never readmits a message (120.3992ms)
+✔ blocking deletes every session of that account and no other, and unblocking brings none back (35.7494ms)
+✔ a session write for a blocked account stores nothing, also under an identifier it held (32.9078ms)
+✔ missing and expired records authorize nothing, including equality to expiry (19.1121ms)
+✔ out-of-order renewal preserves the later expiry and never changes identity (22.554ms)
+✔ a delayed touch after destroy cannot recreate a session or revoke another browser (30.4393ms)
+✔ set rejects unknown accounts and replacement of an existing session identity (22.5882ms)
+✔ crafted persisted payloads fail through Store callbacks before package hydration (40.7146ms)
+▶ persisted cookies must be usable after database expiry replacement and package renewal
+  ✔ invalid path (35.149ms)
+  ✔ invalid domain (36.2797ms)
+  ✔ unrepresentable renewal age (33.3259ms)
+  ✔ unrepresentable database expiry (35.7167ms)
+✔ persisted cookies must be usable after database expiry replacement and package renewal (141.405ms)
+▶ set and touch refuse unusable cookie input without changing stored sessions
+  ✔ invalid path (41.0831ms)
+  ✔ invalid domain (40.0217ms)
+  ✔ unrepresentable renewal age (40.3649ms)
+✔ set and touch refuse unusable cookie input without changing stored sessions (122.2665ms)
+✔ Store callback failures are delivered once and callback exceptions are not swallowed (20.1424ms)
+✔ busy writes fail within a bound and keep the valid account for a later retry (99.1424ms)
+✔ startup and bounded periodic cleanup remove expired rows and disposal stops its timer (90.7422ms)
+✔ opening a new database waits within the busy timeout for another connection's write lock (1251.9359ms)
+✔ opening a new database fails within the busy timeout when another connection's write lock outlasts it (1333.0717ms)
+✔ the owner's command blocks and unblocks by address beside an open connection and says which outcome it reached (1093.0537ms)
+✔ the owner's command stops every emailed link of the account it blocks, and its unblock brings none back (519.0235ms)
+✔ the owner's command changes nothing on a usage error, an unknown address or an unusable database, and creates none (6487.9483ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12757.4172
+exit 0

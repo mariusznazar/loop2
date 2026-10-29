@@ -1,0 +1,45 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/transport.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ transport refuses ambiguous proxy metadata before loading live sessions (218.3158ms)
+✖ transport refuses both link routes before the session, the link or the mail service (177.4141ms)
+✔ canonical transport identity ignores caller-selected forwarding chains (162.3787ms)
+✔ local proxy mode uses the peer and direct mode ignores forwarded HTTPS (307.6167ms)
+✔ mutation guards reject foreign origins, non-JSON and malformed bodies (572.551ms)
+✔ refused state-changing requests change no account or session and do no password work (1043.0723ms)
+✔ rolling static responses use the newest signing key and touch real SQLite without rewriting identity (182.0823ms)
+✔ new opaque sessions persist in SQLite while anonymous and invalid cookies create nothing (188.4814ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3421.1975
+
+✖ failing tests:
+
+test at tests\transport.test.mjs:243:1
+✖ transport refuses both link routes before the session, the link or the mail service (177.4141ms)
+  AssertionError [ERR_ASSERTION]: /api/email-confirmation {}
+  
+  204 !== 403
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/potwierdzenie-adresu/tests/transport.test.mjs:286:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 204,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+exit 1

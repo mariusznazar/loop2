@@ -1,0 +1,33 @@
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 8.777s
+
+OK
+QUALITY EXIT 0
+E
+======================================================================
+ERROR: setUpClass (test_loop2_one_serving_process.OneExpressProcessServesGameAndApi)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-wt\potwierdzenie-adresu\tests\invariants\test_loop2_one_serving_process.py", line 177, in setUpClass
+    cls.listeners = tcp_listeners()
+                    ~~~~~~~~~~~~~^^
+  File "C:\Storage\repos\loop2-wt\potwierdzenie-adresu\tests\invariants\test_loop2_one_serving_process.py", line 118, in tcp_listeners
+    raise AssertionError("Get-NetTCPConnection failed: "
+                         + result.stderr.decode("utf-8", "replace"))
+AssertionError: Get-NetTCPConnection failed: Get-NetTCPConnection : No MSFT_NetTCPConnection objects found with property 'State' equal to 'Listen'.  Verify the valu
+e of the property and retry.
+At line:1 char:1
++ Get-NetTCPConnection -State Listen | ForEach-Object { '{0} {1} {2}' - ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (Listen:State) [Get-NetTCPConnection], CimJobException
+    + FullyQualifiedErrorId : CmdletizationQuery_NotFound_State,Get-NetTCPConnection
+ 
+
+
+----------------------------------------------------------------------
+Ran 0 tests in 12.482s
+
+FAILED (errors=1)
+No test executed in the selected file.
+ONE-PROCESS EXIT 1
