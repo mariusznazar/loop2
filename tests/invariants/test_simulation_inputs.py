@@ -24,7 +24,8 @@ Inputs (written out below, or reached by driving `game.js` from them):
   programs, sends, real times, minutes and pause flags written out below;
 - for `canSendMap`: solved-map lists with a map that has no prerequisite and one whose prerequisite
   is either absent or present;
-- for the functions taking a map run: the map runs of those states, and copies of some of them
+- for the functions taking a map run: the map runs of those states, a successful combat resolution,
+  a selected combat rule, and a completed combat minute, plus copies of some runs
   with a stick burning on the character's tile, with a body one game minute from death and with
   the character dead; the map `forest` as the data module `maps.js` gives it; conditions of every
   kind of the closed list (`always`, "fewer than N here" for each resource and N in 0, 1, 7, 50,
@@ -69,9 +70,11 @@ TABLE = {
                "hexCenter", "hexCorners", "tileLabel"],
     "layout.js": ["drawLayout"],
     "program.js": ["conditionHolds", "walkTarget", "actionFeasible", "chooseActivity",
+                   "chooseCombatRule",
                    "conditionNumber", "onStep", "itemFor", "campfireTarget"],
     "random.js": ["nextRandom", "streamState", "mixSeed"],
-    "run.js": ["newMapRun", "stepMinute"],
+    "run.js": ["newMapRun", "stepMinute", "finishMinute"],
+    "combat.js": ["resolveCombat"],
     "body.js": ["startingBody", "eatenBody", "bodyMinute"],
     "character.js": ["newTraits", "newBackpack", "backpackCount", "backpackCap"],
     "world.js": ["warmthAt", "worldMinute"],
@@ -200,13 +203,15 @@ const snapshot = (value, seen = new Set()) => {
   return out;
 };
 
-const report = { calls: {}, changes: [], controls: {}, total: 0, unknown: [] };
+const report = { calls: {}, changes: [], controls: {}, successes: {}, errors: {}, total: 0, unknown: [] };
 const check = (label, fn, args) => {
   const before = args.map((a) => JSON.stringify(snapshot(a)));
   let threw = null;
   try { fn(...args); } catch (error) { threw = error; }
   const after = args.map((a) => JSON.stringify(snapshot(a)));
   report.calls[label] = (report.calls[label] || 0) + 1;
+  if (!threw) report.successes[label] = (report.successes[label] || 0) + 1;
+  else report.errors[label] = String(threw.message ?? threw);
   report.total += 1;
   const changed = [];
   for (let i = 0; i < args.length; i += 1) if (before[i] !== after[i]) changed.push(i);
@@ -333,6 +338,22 @@ for (const seed of I.seeds) {
   for (const ms of [I.t, I.tOther]) call('random.js', 'mixSeed', [seed, ms]);
   for (const p of I.programs) call('run.js', 'newMapRun', [MAP, seed, clone(p), clone(I.sent)]);
 }
+// Successful frozen-input calls exercise the public combat operations beyond rejected input.
+const combatProgram = { groups: [{ condition: { kind: "always" }, rules: [
+  { id: 701, condition: { kind: "always" }, action: { kind: "kick" } },
+]}] };
+const combatMap = ns["data/maps.js"].MAPS.forestDeep;
+const combatRun = {
+  ...ns["run.js"].newMapRun(combatMap, 17, combatProgram,
+    { mapId: "forestDeep", characterId: 1 }).run,
+  minute: 5,
+  current: null,
+  activeCombat: { creatureId: "wolf", attackMinute: 1, resolveMinute: 5 },
+};
+call("combat.js", "resolveCombat", [combatRun, combatMap, "wolf", clone(combatProgram)]);
+call("program.js", "chooseCombatRule", [combatRun, combatMap, clone(combatProgram), 100, 20]);
+call("run.js", "finishMinute", [{ run: combatRun, events: [], picks: false }, combatMap,
+  clone(combatProgram)]);
 for (const run of sample(runs, 60)) {
   for (const p of I.programs) {
     call('run.js', 'stepMinute', [run, MAP, clone(p)]);
@@ -445,6 +466,11 @@ class SimulationInputs(unittest.TestCase):
             for name in names:
                 self.assertGreater(result["calls"].get(f"{module} {name}", 0), 0,
                                    f"{module} {name} was never called")
+        for label in ("combat.js resolveCombat", "program.js chooseCombatRule",
+                      "run.js finishMinute"):
+            self.assertGreater(result["successes"].get(label, 0), 0,
+                               f"{label} had no successful frozen-input call: "
+                               f"{result['errors'].get(label)}")
         self.assertGreater(result["total"], 1000, "the run made too few calls to mean much")
 
     def test_control_the_checker_sees_each_kind_of_change(self):
