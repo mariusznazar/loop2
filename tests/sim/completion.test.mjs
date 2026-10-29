@@ -8,6 +8,7 @@ import { test } from "node:test";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
+  canSendMap,
   createCharacter,
   end,
   newGame,
@@ -17,6 +18,7 @@ import {
   setProgram,
 } from "../../dist/public/sim/game.js";
 import { sameHex } from "../../dist/public/sim/hex.js";
+import { meetsSolving } from "../../dist/public/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
@@ -244,4 +246,82 @@ test("the program edited on a map run that has completed leaves its streak at 48
   ).state;
   assert.equal(edited.run.streak, 480);
   assert.deepEqual(edited.run.completion, { minute: 1 });
+});
+
+test("solving requirements present in data are all required and absent ones are ignored", () => {
+  const deep = MAPS.forestDeep;
+  const run = {
+    ...sent().run,
+    mapId: "forestDeep",
+    streak: 539,
+    defeatedAttacks: 1,
+  };
+  assert.equal(meetsSolving(run, deep), false);
+  assert.equal(meetsSolving({ ...run, streak: 540 }, deep), false);
+  assert.equal(meetsSolving({ ...run, defeatedAttacks: 2 }, deep), false);
+  assert.equal(
+    meetsSolving({ ...run, streak: 540, defeatedAttacks: 2 }, deep),
+    true,
+  );
+  assert.equal(
+    meetsSolving(
+      { ...run, defeatedAttacks: 1 },
+      { ...deep, solving: { defeatedAttacks: 2 } },
+    ),
+    false,
+  );
+  assert.equal(
+    meetsSolving(
+      { ...run, defeatedAttacks: 2 },
+      { ...deep, solving: { defeatedAttacks: 2 } },
+    ),
+    true,
+  );
+  assert.equal(meetsSolving({ ...run, streak: 480 }, MAPS.forest), true);
+});
+
+test("a map is sendable only after each map it opens after is solved", () => {
+  assert.deepEqual(canSendMap([], "forest"), true);
+  assert.deepEqual(canSendMap([], "forestDeep"), false);
+  assert.deepEqual(canSendMap(["forest"], "forestDeep"), true);
+  assert.throws(
+    () =>
+      send(
+        createCharacter(newGame(), "Ala").state,
+        { mapId: "forestDeep", characterId: 1 },
+        REAL_MS,
+      ),
+    /not available/,
+  );
+});
+
+test("an actual program edit resets the streak and defeated attacks; cold loss keeps defeated attacks", () => {
+  const prepared = { ...end(sent()).state, solvedMaps: ["forest"] };
+  const deeper = send(
+    prepared,
+    { mapId: "forestDeep", characterId: 1 },
+    REAL_MS,
+  ).state;
+  const progressed = {
+    ...deeper,
+    run: {
+      ...deeper.run,
+      streak: 120,
+      defeatedAttacks: 1,
+      body: { ...HEALTHY, temperature: 34.99 },
+    },
+  };
+  const changed = setProgram(
+    progressed,
+    programFromRules({
+      condition: { kind: "always" },
+      action: { kind: "wander" },
+    }),
+  ).state;
+  assert.equal(changed.run.streak, 0);
+  assert.equal(changed.run.defeatedAttacks, 0);
+
+  const lostHealth = advanceMinutes(progressed, 1).state;
+  assert.equal(lostHealth.run.streak, 0);
+  assert.equal(lostHealth.run.defeatedAttacks, 1);
 });

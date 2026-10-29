@@ -290,6 +290,7 @@ export function newMapRun(
     wanderRandom: streamState(seed, "wander"),
     gatherRandom: streamState(seed, "gather"),
     streak: 0,
+    defeatedAttacks: 0,
     death: null,
     completion: null,
   };
@@ -321,11 +322,15 @@ export function mapRunEnded(run: MapRun): boolean {
 }
 
 /**
- * Whether the map run meets every requirement of the solving condition of its map: for now the
- * streak, which must reach the map's number.
+ * Whether the map run meets every solving requirement the map data defines.
  */
 export function meetsSolving(run: MapRun, map: MapDef): boolean {
-  return run.streak >= map.solving.streak;
+  const requirements = map.solving;
+  return (
+    (requirements.streak === undefined || run.streak >= requirements.streak) &&
+    (requirements.defeatedAttacks === undefined ||
+      run.defeatedAttacks >= requirements.defeatedAttacks)
+  );
 }
 
 /** The streak after a game minute's body step: one more where no health was lost, otherwise 0. */

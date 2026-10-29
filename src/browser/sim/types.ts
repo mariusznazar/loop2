@@ -206,6 +206,8 @@ export type MapRun = {
    * hunger; 0 at start, and 0 in the game minute of death.
    */
   streak: number;
+  /** Attacks defeated in this map run; losses to cold or hunger do not change it. */
+  defeatedAttacks: number;
   /** Set once the character dies; then no game minute passes. */
   death: Death | null;
   /** Set once the map run meets the solving condition of its map; then no game minute passes. */

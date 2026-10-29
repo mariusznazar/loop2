@@ -49,6 +49,17 @@ function mapOf(mapId: MapId): MapDef {
   return MAPS[mapId];
 }
 
+/** Whether a map's prerequisite maps are all in this game's solved-map record. */
+export function canSendMap(
+  solvedMaps: readonly MapId[],
+  mapId: MapId,
+): boolean {
+  const prerequisite = mapOf(mapId).opensAfter;
+  return (
+    prerequisite === undefined || solvedMaps.includes(prerequisite as MapId)
+  );
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -395,9 +406,9 @@ function sameData(a: unknown, b: unknown): boolean {
  * Replaces the program. Allowed with or without a map run; the running activity is left as it
  * is, and the program takes effect when the character next picks a program rule. Where the
  * program checked differs from the one the state holds — groups and rules in order with their
- * identities, conditions and actions, and the identity counters — the streak of a map run not
- * ended, in death or a completion, becomes 0, paused or not; a program handed back as it stands
- * leaves it.
+ * identities, conditions and actions, and the identity counters — the streak and defeated-attack
+ * count of a map run not ended, in death or a completion, become 0, paused or not; a program handed
+ * back as it stands leaves both.
  */
 export function setProgram(state: GameState, program: Program): GameResult {
   const checked = checkProgram(program, state.run);
@@ -408,7 +419,10 @@ export function setProgram(state: GameState, program: Program): GameResult {
       ...state,
       program: checked,
       ruleCounts: reconcileCounts(state, checked),
-      ...(zeroed && state.run && { run: { ...state.run, streak: 0 } }),
+      ...(zeroed &&
+        state.run && {
+          run: { ...state.run, streak: 0, defeatedAttacks: 0 },
+        }),
     },
     events: [],
   };
@@ -464,6 +478,8 @@ export function send(
   const { mapId, characterId } = ids;
   if (typeof mapId !== "string" || !Object.hasOwn(MAPS, mapId))
     throw new Error(`send: no map ${String(mapId)}`);
+  if (!canSendMap(state.solvedMaps, mapId))
+    throw new Error(`send: map ${mapId} is not available`);
   const sent = state.team.characters.find(
     (character) => character.id === characterId,
   );

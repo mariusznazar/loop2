@@ -5,6 +5,7 @@ import { test } from "node:test";
 import {
   chestLines,
   mapLabel,
+  sendMaps,
   solvingSentence,
 } from "../../dist/public/view/headquarters.js";
 
@@ -35,4 +36,10 @@ test("the condition sentence is the map's name, a dash and the solving text of i
     solvingSentence("forest"),
     "Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
   );
+});
+
+test("the headquarters hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
+  assert.deepEqual(sendMaps(), ["forest", "forestDeep"]);
+  assert.deepEqual(sendMaps([]), ["forest"]);
+  assert.deepEqual(sendMaps(["forest"]), ["forest", "forestDeep"]);
 });

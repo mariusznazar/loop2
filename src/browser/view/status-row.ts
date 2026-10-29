@@ -3,7 +3,7 @@ import { BALANCE } from "../sim/data/balance.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { ITEMS } from "../sim/data/items.js";
-import { MAPS } from "../sim/data/maps.js";
+import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type {
   Activity,
@@ -46,10 +46,18 @@ function activityText(activity: Activity): string {
 export function statusText(run: MapRun, paused: boolean): string {
   if (run.death)
     return `Minuta ${run.death.minute} · ${DEATH_TEXTS[run.death.cause]}`;
-  const map = MAPS[run.mapId];
+  const map: MapDef = MAPS[run.mapId];
   if (run.completion)
     return `Minuta ${run.completion.minute} · ${map.completionText}`;
-  return `Minuta ${run.minute} · ${activityText(run.current.activity)} · Passa ${run.streak}/${map.solving.streak}${paused ? PAUSED_SUFFIX : ""}`;
+  const progress = [
+    map.solving.streak === undefined
+      ? null
+      : `Passa ${run.streak}/${map.solving.streak}`,
+    map.solving.defeatedAttacks === undefined
+      ? null
+      : `Pokonane napaści ${run.defeatedAttacks}/${map.solving.defeatedAttacks}`,
+  ].filter((part): part is string => part !== null);
+  return `Minuta ${run.minute} · ${activityText(run.current.activity)} · ${progress.join(" · ")}${paused ? PAUSED_SUFFIX : ""}`;
 }
 
 /**

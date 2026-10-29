@@ -70,6 +70,23 @@ test("a running map run on the forest with a streak of 120 reads the minute, the
   );
 });
 
+test("progress text shows only the solving requirements present in the map data", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const deep = {
+    ...state,
+    run: {
+      ...state.run,
+      mapId: "forestDeep",
+      streak: 120,
+      defeatedAttacks: 1,
+    },
+  };
+  assert.equal(
+    statusText(deep.run, false),
+    "Minuta 0 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2",
+  );
+});
+
 test("exploring shows the minute and „Eksploruje”", () => {
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(

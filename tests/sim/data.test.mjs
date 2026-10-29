@@ -28,6 +28,24 @@ test("the map Las has the size, entrance, step and resources of the task", () =>
   ]);
 });
 
+test("Las — głębiej has the task's map data, attacker, solving requirements and opening map", () => {
+  assert.deepEqual(MAPS.forestDeep, {
+    name: "Las — głębiej",
+    width: 5,
+    height: 5,
+    entrance: null,
+    ambientTemperature: 7,
+    stepMinutes: 5,
+    resources: MAPS.forest.resources,
+    attackers: [{ id: "wolf", chancePerMinute: 0.01 }],
+    solving: { streak: 540, defeatedAttacks: 2 },
+    solvingText:
+      "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka",
+    completionText: "Las — głębiej rozwiązany",
+    opensAfter: "forest",
+  });
+});
+
 test("every resource of the map is defined in the resource data, with name and icon", () => {
   assert.deepEqual(Object.keys(RESOURCES), ["stick", "berry", "moss", "fiber"]);
   assert.deepEqual(
