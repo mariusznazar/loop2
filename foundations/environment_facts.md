@@ -319,6 +319,24 @@ In SQLite's write-ahead log mode, readers and a writer of one database run at th
 
 - **Source:** https://www.sqlite.org/wal.html (archived: https://web.archive.org/web/20261027035005/https://www.sqlite.org/wal.html, 2026-10-27) § 2.2. Concurrency — "Because writers do nothing that would interfere with the actions of readers, writers and readers can run at the same time. However, since there is only one WAL file, there can only be one writer at a time."; read 2026-10-28
 
+## mikrus-outsider-mail
+
+Mikrus Outsider documents mailboxes for a user-owned domain configured with an MX record and `outsider.mikr.us` as the SMTP server.
+
+- **Source:** https://wiki.mikr.us/outsider/ (archived: https://web.archive.org/web/20260921154835/https://wiki.mikr.us/outsider/, 2026-09-21) § Outsider — "Możesz założyć tam dowolną liczbę skrzynek pocztowych, a nawet dodać własną domenę do DNSa i nią zarządzać." · § Jak hostować pocztę na Outsiderze? — "Musisz posiadać własną domenę (nasza darmowa nie zadziała), a następnie w ustawieniach DNS u swojego dostawcy domen dodaj do domeny serwer MX o wartości (priorytet dowolny, może być np. 5):" · § Jak hostować pocztę na Outsiderze? — "Jako serwery IMAP, POP3, SMTP itp. podajesz po prostu outsider.mikr.us lub swoją darmową domenę *.mikr.dev."; read 2026-10-29
+
+## nodemailer-require-tls
+
+Nodemailer 10.2.1's SMTP connection with `requireTLS` set overrides `ignoreTLS` and `opportunisticTLS`, sends STARTTLS after EHLO whether or not the server announces it, and fails with an error instead of going on in plain text when EHLO fails, when the server refuses STARTTLS or when the TLS upgrade fails.
+
+- **Source:** https://registry.npmjs.org/nodemailer/-/nodemailer-10.2.1.tgz § package/dist/cjs/smtp-connection/index.js, SMTPConnection options — "**requireTLS** - forces the client to use STARTTLS, takes precedence over ignoreTLS and opportunisticTLS" · § SMTPConnection constructor — "if (this.options.requireTLS && (this.options.ignoreTLS || this.options.opportunisticTLS)) {" · § _actionEHLO — "this._onError(new Error('EHLO failed but HELO does not support required STARTTLS. response=' + str), 'ECONNECTION', str, 'EHLO');" · "if (!this.secure && !this.options.ignoreTLS && (/[ -]STARTTLS\b/im.test(str) || this.options.requireTLS)) {" · § _actionSTARTTLS — "this._onError(new Error('Error upgrading connection with STARTTLS'), 'ETLS', str, 'STARTTLS');" · "this._onError(new Error('Error initiating TLS - ' + (err.message || err)), 'ETLS', false, 'STARTTLS');"; read 2026-10-29
+
+## uri-fragment-in-requests
+
+RFC 9110 excludes a URI reference's fragment from the target URI an HTTP request is sent for and from the Referer field a user agent generates, while the fragment stays visible to the user agent and to scripts running as a result of the response.
+
+- **Source:** https://www.rfc-editor.org/rfc/rfc9110.txt § 7.1. Determining the Target Resource — "The target URI excludes the reference's fragment component, if any, since fragment identifiers are reserved for client-side processing ([URI], Section 3.5)." · § 10.1.3. Referer — "A user agent MUST NOT include the fragment and userinfo components of the URI reference [URI], if any, when generating the Referer field value." · § 17.11. Disclosure of Fragment after Redirects — "Although fragment identifiers used within URI references are not sent in requests, implementers ought to be aware that they will be visible to the user agent and any extensions or scripts running as a result of the response."; read 2026-10-29
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

@@ -166,6 +166,7 @@ the test server.
 | the GitHub repository the server fetches over its read-only key | them → us | trusted |
 | game-icons.net | them → us | untrusted |
 | github.com/vercel/geist-font | them → us | untrusted |
+| Mikrus Outsider | both | untrusted |
 
 ## Files left out on purpose
 
