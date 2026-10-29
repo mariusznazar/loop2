@@ -830,6 +830,7 @@ const AFTER_FIRST_CHILL = {
   actions: ["explore", "wander"],
   conditions: ["always", "temperatureBelow"],
   items: [],
+  creatures: [],
 };
 const gameKnowing = (understanding) => ({ ...newGame(), understanding });
 
@@ -852,6 +853,7 @@ test("target lists follow the Understanding's items: resources of the shown map 
     actions: [],
     conditions: ["always"],
     items: ["moss", "campfire", "stick"],
+    creatures: [],
   });
   assert.deepEqual(offeredResources(state), ["stick", "moss"]);
   assert.deepEqual(offeredItems(state), ["stick", "moss"]);
@@ -859,6 +861,7 @@ test("target lists follow the Understanding's items: resources of the shown map 
     actions: [],
     conditions: ["always"],
     items: ["campfire"],
+    creatures: [],
   });
   assert.deepEqual(offeredResources(onlyCampfire), []);
   assert.deepEqual(offeredItems(onlyCampfire), []);
@@ -919,6 +922,7 @@ test("the existing condition picker creates both combat health conditions with t
       actions: ["explore"],
       conditions: ["always", "healthBelow", "opponentHealthBelow"],
       items: [],
+      creatures: [],
     });
     const editor = createProgramEditor((program) => committed.push(program));
     editor.update({ ...known, program: THREE });
@@ -984,6 +988,7 @@ test("a rule holding a kind or a target outside the lists still shows it, after 
         actions: ["explore"],
         conditions: ["always"],
         items: ["stick"],
+        creatures: [],
       }),
       program: THREE,
     });
@@ -1018,6 +1023,7 @@ test("the item list of „Zapas poniżej” offers the backpack items of the Und
         actions: ["explore"],
         conditions: ["always", "itemBelow"],
         items: ["fiber", "campfire", "berry"],
+        creatures: [],
       }),
       program,
     });
@@ -1033,6 +1039,7 @@ const NO_TARGETS = {
   actions: ["explore", "wander", "walkTo", "gather"],
   conditions: ["always", "hereBelow", "itemBelow"],
   items: [],
+  creatures: [],
 };
 
 test("kinds that name a resource or an item are not offered while the Understanding holds no target for them", () => {
@@ -1117,6 +1124,9 @@ test("every program the editor builds passes setProgram, before sending and duri
     "walkToCampfire",
     "gather",
     ...CAMPFIRE_AND_BACKPACK,
+    "strikeWithStick",
+    "kick",
+    "dodge",
   ]);
 
   // Every pair of kinds, every resource and item in every slot, and the number at its ends, off its

@@ -9,6 +9,8 @@ export type CreatureRule = {
 
 export type CreatureDef = {
   name: string;
+  /** The event that reveals the creature to the player. */
+  revealedBy: { kind: "attacked"; creature: string };
   health: number;
   strikeDamage: number;
   rules: readonly CreatureRule[];
@@ -18,6 +20,7 @@ export type CreatureDef = {
 export const CREATURES = {
   wolf: {
     name: "wilk",
+    revealedBy: { kind: "attacked", creature: "wolf" },
     health: 24,
     strikeDamage: 7,
     rules: [

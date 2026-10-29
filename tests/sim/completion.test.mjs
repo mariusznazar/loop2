@@ -156,7 +156,12 @@ test("real time that ends in a completion stops there and drops the whole carry"
 test("the completion in the minute of a discovery leaves the state holding the discovery, not paused", () => {
   const unknowing = {
     ...newGame(),
-    understanding: { actions: [], conditions: ["always"], items: [] },
+    understanding: {
+      actions: [],
+      conditions: ["always"],
+      items: [],
+      creatures: [],
+    },
   };
   const result = advanceMinutes(oneShort(unknowing), 5);
   const found = result.events.findIndex((event) => event.kind === "discovered");
@@ -173,6 +178,7 @@ test("the completion in the minute of a discovery leaves the state holding the d
     actions: result.events[found].actions,
     conditions: result.events[found].conditions,
     items: result.events[found].items,
+    creatures: [],
   });
   const revealed = result.events[found];
   for (const kind of ["actions", "conditions", "items"])

@@ -101,13 +101,14 @@ export type CampfireId = typeof CAMPFIRE.id;
 
 /**
  * What the player has discovered, by data identifiers: actions and conditions by their kinds, and
- * items, the campfire included, by their ids. One for the whole game and every character. Also the
- * shape of a repertoire, the subset of it that a character can use.
+ * items, the campfire included, and creatures by their ids. One for the whole game and every
+ * character. Also the shape of a repertoire, the subset of it that a character can use.
  */
 export type Understanding = {
   actions: Action["kind"][];
   conditions: Condition["kind"][];
   items: (ItemId | CampfireId)[];
+  creatures: CreatureId[];
 };
 
 export type Tile = {

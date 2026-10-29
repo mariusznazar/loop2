@@ -4,6 +4,7 @@ import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
+import { CREATURES } from "./data/creatures.js";
 import { ITEMS } from "./data/items.js";
 import type { Revelation } from "./data/revelations.js";
 import { SKILLS, type SkillId } from "./data/skills.js";
@@ -25,7 +26,7 @@ export type Repertoire = Understanding;
 
 /** The Understanding of a new game: the condition "Zawsze" alone. */
 export function newUnderstanding(): Understanding {
-  return { actions: [], conditions: ["always"], items: [] };
+  return { actions: [], conditions: ["always"], items: [], creatures: [] };
 }
 
 /** Every action that some character skill grows. */
@@ -52,6 +53,7 @@ export function repertoireOf(
     ),
     conditions: [...understanding.conditions],
     items: [...understanding.items],
+    creatures: [...understanding.creatures],
   };
 }
 
@@ -132,7 +134,10 @@ export function editorRepertoire(state: GameState): Repertoire {
 }
 
 /** Whether two revealing events are the same event, including its named item or creature. */
-function sameRevelation(a: Revelation, b: Revelation): boolean {
+function sameRevelation(
+  a: Revelation,
+  b: { kind: string; item?: string; creature?: string },
+): boolean {
   return (
     a.kind === b.kind &&
     ("item" in a ? "item" in b && a.item === b.item : !("item" in b)) &&
@@ -234,6 +239,13 @@ function newlyRevealed(
     revealing(CAMPFIRE.revealedBy)
   )
     items.push(CAMPFIRE.id);
+  const creatures = (
+    Object.keys(CREATURES) as (keyof typeof CREATURES)[]
+  ).filter(
+    (id) =>
+      !understanding.creatures.includes(id) &&
+      revealing(CREATURES[id].revealedBy),
+  );
   return {
     actions: (Object.keys(ACTIONS) as Action["kind"][]).filter(
       (kind) =>
@@ -246,6 +258,7 @@ function newlyRevealed(
         revealing((CONDITIONS[kind] as ConditionDef).revealedBy),
     ),
     items,
+    creatures,
   };
 }
 
@@ -253,7 +266,8 @@ function isEmpty(revealed: Understanding): boolean {
   return (
     revealed.actions.length +
       revealed.conditions.length +
-      revealed.items.length ===
+      revealed.items.length +
+      revealed.creatures.length ===
     0
   );
 }
@@ -277,6 +291,7 @@ export function discover(
       actions: [...understanding.actions, ...revealed.actions],
       conditions: [...understanding.conditions, ...revealed.conditions],
       items: [...understanding.items, ...revealed.items],
+      creatures: [...understanding.creatures, ...revealed.creatures],
     },
     revealed,
     chill: !isEmpty(

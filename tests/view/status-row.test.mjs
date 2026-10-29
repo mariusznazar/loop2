@@ -330,6 +330,7 @@ const EXPLORED_REVEALED = {
   actions: ["walkTo", "gather"],
   conditions: ["hereBelow", "itemBelow"],
   items: ["stick", "berry"],
+  creatures: [],
 };
 
 test("the text for the first finished exploration of a tile with sticks and berries is the task's example", () => {
@@ -345,6 +346,7 @@ test("the text for the first chill names its actions and its condition with the 
       actions: ["explore", "wander"],
       conditions: ["temperatureBelow"],
       items: [],
+      creatures: [],
     }),
     "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
   );
@@ -356,8 +358,21 @@ test("a discovery of an action alone has no second sentence, and the campfire is
       actions: ["lightItem"],
       conditions: [],
       items: ["campfire"],
+      creatures: [],
     }),
     "Odkryto: Zapal — patyk, Ognisko.",
+  );
+});
+
+test("a discovered creature is named from the creature data", () => {
+  assert.equal(
+    discoveryText({
+      actions: [],
+      conditions: [],
+      items: [],
+      creatures: ["wolf"],
+    }),
+    "Odkryto: Wilk.",
   );
 });
 
@@ -367,6 +382,7 @@ test("a condition that takes no number is named without a unit, and a discovery 
       actions: [],
       conditions: ["awayFromCampfire"],
       items: [],
+      creatures: [],
     }),
     "W regułach można teraz sprawdzić: Z dala od — ognisko.",
   );
@@ -513,7 +529,12 @@ test("a discovery held at a completion stands under the completion's row", async
   try {
     const { row } = await rowAskingPaces();
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-    const discovery = { actions: ["explore"], conditions: [], items: [] };
+    const discovery = {
+      actions: ["explore"],
+      conditions: [],
+      items: [],
+      creatures: [],
+    };
     row.update({ ...completed(running, 480), discovery });
     assert.equal(row.discovery.hidden, false);
     assert.equal(row.discovery.textContent, "Odkryto: Eksploruj.");

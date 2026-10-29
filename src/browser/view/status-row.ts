@@ -2,6 +2,7 @@ import { ACTIONS } from "../sim/data/actions.js";
 import { BALANCE } from "../sim/data/balance.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
+import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -76,6 +77,14 @@ function discoveredItemName(id: Understanding["items"][number]): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
+/** A creature's name with a capital first letter. */
+function discoveredCreatureName(
+  id: Understanding["creatures"][number],
+): string {
+  const name = CREATURES[id].name;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 /** A condition's label, followed for a condition that takes a number by „ … ” and its unit. */
 function discoveredConditionText(kind: Understanding["conditions"][number]) {
   const condition: ConditionDef = CONDITIONS[kind];
@@ -98,6 +107,7 @@ export function discoveryText(discovery: Understanding): string {
   const found = [
     ...discovery.actions.map((kind) => ACTIONS[kind].label),
     ...discovery.items.map(discoveredItemName),
+    ...discovery.creatures.map(discoveredCreatureName),
   ];
   const checkable = discovery.conditions.map(discoveredConditionText);
   const sentences: string[] = [];
