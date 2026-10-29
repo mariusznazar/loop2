@@ -1352,7 +1352,7 @@ A character crafts a campfire and lights a stick on a revealed tile, as it gathe
 
 ### D-73 — Which testing discipline does loop2 adopt?
 
-Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79 and D-151. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
+Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79 and D-163. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
@@ -1887,7 +1887,7 @@ A visitor may create an account or attempt credential login subject to the trans
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
-- **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-144 · derives from D-145
+- **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-156 · derives from D-157
 - **Verification:** invariants: account-session-authorization.
 - **Origin:** none
 
@@ -1915,7 +1915,7 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 
 - **Scope:** account-server, deployment, build-tools
 - **Based on:** session-secret-rotation
-- **Relations:** derives from D-13 · derives from D-107 · derives from D-141
+- **Relations:** derives from D-13 · derives from D-107 · derives from D-153
 - **Verification:** invariants: account-server-default-address · account-startup-configuration.
 - **Origin:** none
 
@@ -1941,11 +1941,11 @@ The account server opens one application-owned SQLite connection before readines
 
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · sqlite-wal-concurrency
-- **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-144 · derives from D-149
+- **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-156 · derives from D-161
 - **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage.
 - **Origin:** none
 
-*Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. One ordered list of steps builds a new database and moves an existing one by the same statements, so the two cannot drift apart, at the cost of a new database running through the history of steps. A second connection from the operator's command waits out the server's short transactions within the busy timeout, and a block committed while a login is in progress either deletes the session that login stored or makes its write store nothing. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema: once a database is moved forward, code that knows only an older version refuses it. Emailed links stay after their use until they have expired and are an hour old, because they also count account messages against D-105 (D-149), and their purpose admits password reset already, because a constraint of a table cannot be widened without rebuilding it. Reading the block in the transaction that records a link means a block either comes first, so nothing is recorded or sent, or comes after and marks the recorded link as no longer working, so a message already on its way carries a link that does not work.
+*Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. One ordered list of steps builds a new database and moves an existing one by the same statements, so the two cannot drift apart, at the cost of a new database running through the history of steps. A second connection from the operator's command waits out the server's short transactions within the busy timeout, and a block committed while a login is in progress either deletes the session that login stored or makes its write store nothing. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema: once a database is moved forward, code that knows only an older version refuses it. Emailed links stay after their use until they have expired and are an hour old, because they also count account messages against D-105 (D-161), and their purpose admits password reset already, because a constraint of a table cannot be widened without rebuilding it. Reading the block in the transaction that records a link means a block either comes first, so nothing is recorded or sent, or comes after and marks the recorded link as no longer working, so a message already on its way carries a link that does not work.
 *Rejected:* A destructive startup reset — loses accounts; deleting an emailed link on use or block — loses the count of messages D-105 limits, so a blocked account's later messages escape the hourly count; a purpose admitting email confirmation alone — password reset would rebuild the table; a boolean confirmed column — the time costs no more and tells when; unversioned schema assumptions — let old code misread newer data; creating the latest schema directly on a new database beside separate upgrade steps — two definitions of one schema that have to agree, the first difference showing only on a moved database; rebuilding the tables at every version — moves every row and lengthens the write lock where adding a column suffices; a step back from a newer version, or a copy of the database before a move — not provided, so a rollback across a schema change fails until code that knows the newer version is deployed; transactions held across password work — prolong locks; session touch implemented as an upsert — revives logout; deleting a blocked account's sessions without guarding the session write — a login in progress at the block stores its session afterwards.
 
 ### D-114 — Which file is the exemplar for database access?
@@ -2524,7 +2524,7 @@ A login of a blocked account with the correct password is refused with „To kon
 *Rationale:* a player who knows the password learns why the game stays closed, while someone who knows only the address learns nothing more than from any wrong password, so the block is no clue for an address alone. The refusal is no guess of credentials, so it does not count towards a lock, and no sign-in, so it clears nothing; someone who knows a blocked account's password may repeat the attempt unslowed by the limits, each attempt still passing the bounded password gate. A new refusal code changes the server and the browser's client together.
 *Rejected:* the login message of D-100 for a blocked account too — the blocked player does not learn why; the blocked message for the address alone, before the password is checked — tells anyone who knows an address that its account is blocked; counting the refusal as a failed login — after five tries with the correct password the address locks and the player sees the limit's message, and people behind the same client address lose failures of their budget; counting it as a success — clears the address's failures on a refused login, so wrong guesses mixed with the correct password never lock it; status 401 — the status this API gives to missing credentials or session.
 
-### D-140 — How does a player sign in and reset a forgotten password?
+### D-152 — How does a player sign in and reset a forgotten password?
 
 Players register and sign in with an email address and password. They can start playing before confirming the email address; a confirmation message establishes that address.
 
@@ -2537,39 +2537,39 @@ Players register and sign in with an email address and password. They can start 
 *Rationale:* a player can enter without waiting for a message, and a confirmed address is one whose control the player has shown. The account server must store password hashes, protect registration and login from abuse, and send email for confirmation.
 *Rejected:* email code at every login — depends on message delivery every time; WebAuthn passkeys — add key enrolment and loss recovery while the game's final domain is unsettled; external OpenID Connect — adds a login provider and account linking to its identity.
 
-### D-141 — Which service delivers account emails?
+### D-153 — Which service delivers account emails?
 
 The account server sends email confirmation messages from an address under `mariusznazar.com` through the authenticated SMTP service of Mikrus Outsider available to the existing Mikrus account.
 
 - **Scope:** account-server, deployment
 - **Based on:** mikrus-outsider-mail · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
-- **Relations:** derives from D-140
+- **Relations:** derives from D-152
 - **Verification:** invariants: account-email-via-outsider.
 - **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Which service delivers account emails?"; this entry holds its first sentence for email confirmation messages, and password-reset messages and the real delivery test before public self-service account recovery is enabled enter with password reset
 
 *Rationale:* Mariusz can use Outsider with his existing Mikrus account and owns `mariusznazar.com`; this keeps the game with the domain and provider he already has. Outsider still requires a mailbox, mail DNS records, credentials and monitoring. The website's DNS records do not need to be moved for mail-only use. Acceptance by an SMTP relay does not establish that an account holder can receive the link needed to recover access.
 *Rejected:* Resend or Brevo with the same domain — each adds a separate provider account to maintain, and Brevo Free brands the messages; Cloudflare Email Sending — adds a paid sending service for arbitrary recipients; no email delivery — would leave self-service password reset unusable.
 
-### D-142 — How does the account server send email through Outsider?
+### D-154 — How does the account server send email through Outsider?
 
 The account server composes and sends email confirmation messages through Mikrus Outsider SMTP with Nodemailer 10. The SMTP connection must upgrade to TLS; sending fails when STARTTLS cannot be established.
 
 - **Scope:** account-server, build-tools
 - **Based on:** nodemailer-require-tls · Nodemailer documentation for the current 10 line, SMTP transport, `requireTLS` and `verify()` (https://nodemailer.com/, read 2026-10-04; https://nodemailer.com/smtp, read 2026-10-04) · published Nodemailer 10.0.14 manifest, built-in TypeScript types, Node support and no runtime dependencies (https://registry.npmjs.org/nodemailer/10.0.14, read 2026-10-04) · public npm download record for Nodemailer (https://api.npmjs.org/downloads/point/last-week/nodemailer, read 2026-10-04) · emailjs 5.0.3 documented client API and STARTTLS configuration (https://github.com/eleith/emailjs/blob/v5.0.3/README.md, read 2026-10-04) · emailjs 5.0.3 STARTTLS error-handling source (https://github.com/eleith/emailjs/blob/v5.0.3/src/connection.ts, read 2026-10-04) · Mikrus Outsider SMTP port 587 (https://wiki.mikr.us/outsider/, read 2026-10-04)
-- **Relations:** derives from D-141 · derives from D-01
+- **Relations:** derives from D-153 · derives from D-01
 - **Verification:** invariants: account-email-nodemailer-starttls.
 - **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does the account server send email through Outsider?"; this entry holds what that entry says of email confirmation messages, and password-reset messages enter with password reset
 
 *Rationale:* Nodemailer supplies a typed SMTP client and message composition in the same Node.js process, without another service. Its documented `requireTLS` setting refuses to send when a STARTTLS upgrade is unavailable. The package and its configuration must be maintained; SMTP credentials stay outside the definition. `verify()` can check connectivity and authentication, but only a real message test can establish that the sender is accepted and mail reaches an inbox.
 *Rejected:* `emailjs` 5 — also a typed SMTP client, but its documentation does not state an equally clear failure rule for a refused STARTTLS upgrade; its implementation suggests a possible error-handling gap that would need separate testing, not a proven Outsider failure; own SMTP code on Node sockets — adds protocol, message-format and TLS handling to this project; `smtp-connection` 4.0.2 — lacks explicit types and current versioned documentation.
 
-### D-143 — How long and how often does an emailed link work?
+### D-155 — How long and how often does an emailed link work?
 
 A link of an email confirmation message works for 24 hours and a link of a password-reset message for one hour from the moment it is recorded, and each works once. Recording a new link for an account, which comes before its message is handed to the mail service, stops in the same transaction every earlier link of the same kind for that account, so a message whose sending then fails leaves no earlier link working.
 
 - **Scope:** account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Email Ownership Verification, Recommendations — "Single-use" · "Time-limited"; read 2026-10-29 · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Introduction — "Single use and expire after an appropriate period."; read 2026-10-29
-- **Relations:** derives from D-140
+- **Relations:** derives from D-152
 - **Verification:** invariants: email-confirmation-link. An agent compares a change with the decision:
   - complies: a resend leaves only its own link of the account working, whether its sending succeeds or fails
   - violates: a confirmation link that confirms twice, or still confirms 24 hours after it was recorded; a password-reset link that works longer than one hour; earlier links stopped only after the mail service has accepted the new message
@@ -2578,13 +2578,13 @@ A link of an email confirmation message works for 24 hours and a link of a passw
 *Rationale:* a link that works once and for a bounded time limits what an intercepted or forgotten message can do, and only the newest message's link works, so the player knows which one to open. Stopping the earlier links in the transaction that records the new one leaves no moment, a database fault included, in which an earlier link outlives a newer one; a sending that fails leaves no working link, and the player asks for the message again. Whoever opens an older message after a newer one was sent sees that its link no longer works and opens the newest, and whoever does not read the mail within a day asks for the message again.
 *Rejected:* stopping the earlier links only once the mail service has accepted the new message — a database fault after the acceptance leaves the earlier links working beside the new one, and a failed sending is the only case it spares; earlier links working beside the newest one — several live links per account and kind.
 
-### D-144 — How does an emailed link confirm a player's email address?
+### D-156 — How does an emailed link confirm a player's email address?
 
 The link of a confirmation message is the configured public origin followed by `/#confirm-email=<token>`, its token 32 random bytes written in base64url, of which the account database keeps only the SHA-256 digest. The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the headquarters for a signed-in one. The server gives one and the same refusal to every token that is malformed, unknown, used, expired, of another kind or of a blocked account, and a confirmation stops every other confirmation link of the account.
 
 - **Scope:** account-server, browser-view
 - **Based on:** uri-fragment-in-requests · samesite-strict-cookie · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-29
-- **Relations:** derives from D-140 · derives from D-104
+- **Relations:** derives from D-152 · derives from D-104
 - **Verification:** invariants: email-confirmation-link. An agent compares a change with the decision:
   - complies: the page reads the token from the fragment of its address, sends it in the JSON body of a `POST` and removes the fragment once the server's answer is definitive
   - violates: a link carrying its token in its path or query; a token kept in clear in the database or written to a log; an address confirmed by the request that opens the link
@@ -2593,13 +2593,13 @@ The link of a confirmation message is the configured public origin followed by `
 *Rationale:* the page confirms with a request of its own, so a mail client or a spam filter that opens a link by itself uses up nothing, and the link works in any browser because it needs no session. A navigation from a mail service on another site brings no session cookie, but the page's own requests do, so a signed-in player sees the result above the headquarters. A fragment reaches no server, no request log and no `Referer`, a digest in the database yields no working link to whoever reads it, and one refusal for every bad token tells nothing about which it was. The start of the game page gains one more state.
 *Rejected:* confirming by the request that opens the link — needs an exception to D-104, and mail clients and spam filters that open links by themselves would use up the single-use link; the token in a query parameter or a path — reaches the request logs of the edge and the server, and a path outside the public files is not served; the token kept in clear — a read of the database yields working links; a salted or slow hash — needless for 256 random bits.
 
-### D-145 — What does a signed-in player see of an unconfirmed address, and who may ask for another confirmation message?
+### D-157 — What does a signed-in player see of an unconfirmed address, and who may ask for another confirmation message?
 
 A signed-in player whose email address is unconfirmed sees on every screen, in the header on a line under the title and „Wyloguj”, „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, and both are gone once the address is confirmed. Only a signed-in player asks for another confirmation message, and it goes only to the address of that player's own account. Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
-- **Relations:** derives from D-140 · derives from D-105
+- **Relations:** derives from D-152 · derives from D-105
 - **Verification:** an agent compares a change with the decision:
   - complies: the answer to a registration carries the outcome of its sending, and the header row starts with that outcome's sentence
   - violates: a field of the request for another message that names an address or an account; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after a sending that failed
@@ -2608,13 +2608,13 @@ A signed-in player whose email address is unconfirmed sees on every screen, in t
 *Rationale:* the player learns where the message went and can ask for it again without help, and a limit or a failure is said instead of a message that never comes. The row stands in the header on every screen until the address is confirmed, and the answer to a registration waits for the outcome of its sending, so entering the headquarters takes a few seconds more while the mail service answers slowly. The sentence after a sending notes what happened while the address is still unconfirmed, so it reads as a note rather than as something in order.
 *Rejected:* „Wysłaliśmy odnośnik potwierdzający na <adres>.” after every registration, also when the sending failed — the player reads that a message went when it did not; no sentence about the sending — changes the sentence settled for right after registration; the sending in the background with the browser asking for its outcome — adds a state, a route and a loop of requests for a wait of a few seconds; `positive` for „Wysłaliśmy odnośnik potwierdzający na <adres>.” — reads as done while the address is unconfirmed.
 
-### D-146 — From whom does the email confirmation message come, and what does it say?
+### D-158 — From whom does the email confirmation message come, and what does it say?
 
 The email confirmation message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Potwierdź adres e-mail w loop2” and a body of three paragraphs separated by an empty line: „Ktoś — zapewne Ty — założył konto w loop2 na ten adres e-mail. Aby go potwierdzić, otwórz odnośnik:” with the link alone on the next line, „Odnośnik jest ważny przez 24 godziny i działa raz.” and „Jeśli to nie Ty, zignoruj tę wiadomość.”.
 
 - **Scope:** account-server, deployment
 - **Based on:** none
-- **Relations:** derives from D-141 · derives from D-143
+- **Relations:** derives from D-153 · derives from D-155
 - **Verification:** an agent compares a change with the decision:
   - complies: a message composed for one recipient with the fixed sender, display name and subject and a text body with the link on a line of its own
   - violates: an HTML body beside the text; the recipient's address written into a header other than the recipient's
@@ -2623,7 +2623,7 @@ The email confirmation message comes from `loop2@mariusznazar.com` with the disp
 *Rationale:* the message says who sent it, why it came and what to do if it was not asked for, and the replies of players reach the sender's mailbox, which is worth looking through now and then.
 *Rejected:* the sentence „Potwierdzony adres pozwala samodzielnie zresetować zapomniane hasło.” — promises a password reset the game does not yet offer.
 
-### D-147 — Can an account's email address change?
+### D-159 — Can an account's email address change?
 
 An account's email address is the address given at its registration, and no operation of loop2 changes it, so the confirmation of an account's address is the confirmation of that one address.
 
@@ -2638,7 +2638,7 @@ An account's email address is the address given at its registration, and no oper
 *Rationale:* a confirmation and a count of messages kept for the account stay true of its address because the address does not change.
 *Rejected:* tying a confirmation to the address it confirmed against a change of address — guards against an operation loop2 does not have.
 
-### D-148 — What does an emailed link of a blocked account do?
+### D-160 — What does an emailed link of a blocked account do?
 
 An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link sees „Odnośnik jest nieważny albo wygasł.” in `warning`. A link that a block stopped stays stopped after the account is unblocked, and the player, signed in again, asks for a new confirmation message with „Wyślij ponownie”.
 
@@ -2651,26 +2651,26 @@ An emailed link of a blocked account, of an email confirmation or of a password-
 *Rationale:* a block stops what the account can do through its links as it stops its sessions, and unblocking brings back neither. A blocked player learns from a link only that it does not work, and learns why at the next sign-in.
 *Rejected:* a link that works whatever the block — a blocked account changes state despite the block, and a password-reset link would set a new password; a link that does not work during the block but works again after unblocking while unexpired — unlike the sessions, and a reset link intercepted before the block works right after the unblock.
 
-### D-149 — How does the account server count account messages against the limits of D-105?
+### D-161 — How does the account server count account messages against the limits of D-105?
 
-Every account message the account server sends or attempts counts against the limits of D-105 from the moment it is recorded in the account database, before it is handed to the mail service, whatever the outcome of its sending. The count survives a restart or deployment of the server, and the limit of three for one address is counted for the account, whose address does not change (D-147).
+Every account message the account server sends or attempts counts against the limits of D-105 from the moment it is recorded in the account database, before it is handed to the mail service, whatever the outcome of its sending. The count survives a restart or deployment of the server, and the limit of three for one address is counted for the account, whose address does not change (D-159).
 
 - **Scope:** account-server
 - **Based on:** none
-- **Relations:** derives from D-105 · derives from D-147
+- **Relations:** derives from D-105 · derives from D-159
 - **Verification:** invariants: account-message-limits.
 - **Origin:** none
 
 *Rationale:* a message handed to the mail service may have been delivered even when its answer is a failure or never comes, and D-105 says at most; counting in the database keeps the hourly limits true across a deployment within the hour. A player whose three sendings failed waits up to an hour, and the count reads at most a day of messages.
 *Rejected:* counters in process memory like the attempt limits of D-103 — a restart or deployment within the hour clears them and lets up to 30 more messages through; a separate record of counters — a second record of what the recorded links already hold; counting only messages the mail service accepted — a lost answer goes uncounted, and a player could ask a failing mail service again without bound.
 
-### D-150 — Which file is the exemplar for mail sending?
+### D-162 — Which file is the exemplar for mail sending?
 
 The exemplar for kind `mail-sending` is `src/server/account-mail.ts`, and its kind guidelines are read before adding or changing a mail-sending file. Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller, writing no credential, token, link or message to a log.
 
 - **Scope:** account-server
 - **Based on:** none
-- **Relations:** derives from D-28 · derives from D-142
+- **Relations:** derives from D-28 · derives from D-154
 - **Verification:** an agent compares a change with the decision:
   - complies: mail-sending guidelines identify the first implementation as exemplar, and a route reads the mailer's result instead of catching its errors
   - violates: a message composed in a route handler; a mailer that logs the mail service's reply or the message
@@ -2679,7 +2679,7 @@ The exemplar for kind `mail-sending` is `src/server/account-mail.ts`, and its ki
 *Rationale:* one file that owns composing and submitting keeps the safety of message headers, TLS and the handling of secrets in one place, and the routes read a result instead of SMTP errors.
 *Rejected:* composing the message in the route — mixes the order of an HTTP request's work with the text of the message and the safety of its headers; a module per concern, composer and transport — two files for about one screen of code, each showing half of the kind.
 
-### D-151 — How is the code that talks to Mikrus Outsider's SMTP service tested?
+### D-163 — How is the code that talks to Mikrus Outsider's SMTP service tested?
 
 Mikrus Outsider's SMTP service has no contract test, and no test reaches it: mail-sending code is tested as an integration test against a real SMTP server run on the loopback interface, and routes that send mail are tested with a stand-in mailer whose chosen outcomes prove the routes' reactions and not the sending. The agreement with Outsider is checked by a human who sends a message from the deployed container to an external inbox when the way messages are submitted to Outsider changes.
 

@@ -2,7 +2,7 @@ import { rootCertificates } from "node:tls";
 import MailComposer from "nodemailer/lib/mail-composer";
 import SMTPConnection from "nodemailer/lib/smtp-connection";
 
-// D-146: sender name, subject and the three paragraphs of the confirmation message.
+// D-158: sender name, subject and the three paragraphs of the confirmation message.
 const senderName = "loop2";
 const confirmationSubject = "Potwierdź adres e-mail w loop2";
 const confirmationOpening =

@@ -103,7 +103,7 @@ function accountBlocked(response: Response): void {
 
 // One answer for every token that confirms nothing, so it tells nothing of
 // why: malformed, unknown, used, expired, of another kind or of a blocked
-// account (D-144, D-148).
+// account (D-156, D-160).
 function invalidLink(response: Response): void {
   refuse(response, 400, "invalid-link", "Odnośnik jest nieważny albo wygasł.");
 }
@@ -205,8 +205,8 @@ function boundedSending(
 
 // The send step of both sending routes. It records the link before the
 // message is handed on, so the message counts against D-105 whatever its
-// sending does (D-149), and recording stops the account's earlier links
-// (D-143). It never throws: "blocked" is a block committed after the route
+// sending does (D-161), and recording stops the account's earlier links
+// (D-155). It never throws: "blocked" is a block committed after the route
 // read the account, which the route answers itself.
 async function sendConfirmation(
   runtime: AccountRuntime,

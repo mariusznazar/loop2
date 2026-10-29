@@ -126,7 +126,7 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
             "email": EMAIL, "password": password, "passwordConfirmation": password})
         self.assertEqual(created["status"], 201, created["body"])
         # The registration answer also carries its confirmation message's outcome
-        # (D-145); the account reads that follow carry only the account's fields.
+        # (D-157); the account reads that follow carry only the account's fields.
         account = {key: created["body"][key] for key in ("id", "email", "emailConfirmed")}
         self.assertEqual(account["email"], EMAIL)
         cookie = created["cookie"]

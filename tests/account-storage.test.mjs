@@ -399,7 +399,7 @@ function storedVersionTwoRows(raw) {
 }
 
 const HOUR = 3_600_000;
-// D-143: a confirmation link works for 24 hours from the moment it is recorded.
+// D-155: a confirmation link works for 24 hours from the moment it is recorded.
 const DAY = 86_400_000;
 // D-105: at most 30 account messages per hour in total, three per address.
 const limits = { windowMs: HOUR, total: 30, perAccount: 3 };

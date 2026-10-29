@@ -12,20 +12,20 @@ const defaultKeyCapacity = 10_000;
 const defaultSendingDeadline = 10_000;
 
 // D-105: at most 30 account messages an hour in total and three for one
-// address, counted for the account, whose address never changes (D-147, D-149).
+// address, counted for the account, whose address never changes (D-159, D-161).
 export const accountMessageLimits = {
   windowMs: 60 * minute,
   total: 30,
   perAccount: 3,
 } as const;
 
-// D-143: a confirmation link works for 24 hours from the moment it is recorded.
+// D-155: a confirmation link works for 24 hours from the moment it is recorded.
 export const confirmationLinkLifetime = 24 * 60 * minute;
 
 const linkTokenBytes = 32;
 const linkTokenText = /^[A-Za-z0-9_-]{43}$/;
 
-// 32 random bytes as 43 base64url characters (D-144).
+// 32 random bytes as 43 base64url characters (D-156).
 export function createLinkToken(): string {
   return randomBytes(linkTokenBytes).toString("base64url");
 }
@@ -40,7 +40,7 @@ export function isLinkToken(value: string): boolean {
   );
 }
 
-// The account database keeps only this digest of a link's token (D-144).
+// The account database keeps only this digest of a link's token (D-156).
 export function linkTokenDigest(token: string): string {
   return createHash("sha256").update(token).digest("base64url");
 }

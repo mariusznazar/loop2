@@ -228,7 +228,7 @@ const logoutHeaders = {
 // D-101: 30 days from the last request.
 const sessionLifetime = 30 * 24 * 60 * 60 * 1000;
 
-// D-151: routes are tested with a stand-in mailer. It records each message it
+// D-163: routes are tested with a stand-in mailer. It records each message it
 // is handed and answers as the case chooses: "sent", "failed", "reject" (a
 // broken mailer whose promise rejects), "never" (no answer at all) or "hold"
 // (an answer the case gives later through `held`).
@@ -1600,8 +1600,8 @@ test(
 );
 
 // Email confirmation (task potwierdzenie-adresu). The routes, bodies and the
-// one refusal of a link come from spec Decision 4 and D-144; the link's form
-// from spec Decision 2; its 24 hours from D-143; the limits from D-105.
+// one refusal of a link come from spec Decision 4 and D-156; the link's form
+// from spec Decision 2; its 24 hours from D-155; the limits from D-105.
 const invalidLink = {
   code: "invalid-link",
   error: "Odnośnik jest nieważny albo wygasł.",

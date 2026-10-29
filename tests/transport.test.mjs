@@ -56,7 +56,7 @@ async function fixture(t, mode = "cloudflare-tunnel") {
     "synthetic@example.test",
     runtime.dummyHash,
   );
-  // D-151: a stand-in mailer records what it is handed and reaches no server.
+  // D-163: a stand-in mailer records what it is handed and reaches no server.
   const mailer = {
     messages: [],
     send(message) {

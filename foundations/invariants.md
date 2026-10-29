@@ -621,7 +621,7 @@ Player accounts sign in with an email address and password.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-96 · D-140
+- **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -631,7 +631,7 @@ A player can start playing after registration before confirming their email addr
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-96 · D-140
+- **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -871,7 +871,7 @@ An emailed confirmation link confirms its account's address only once, only befo
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-143 · D-144 · D-148
+- **Derives from:** D-155 · D-156 · D-160
 - **Part:** account-server
 - **Violated:** no
 
@@ -881,7 +881,7 @@ An emailed link stopped when its account was blocked confirms nothing after the 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-137 · D-148
+- **Derives from:** D-137 · D-160
 - **Part:** account-server
 - **Violated:** no
 
@@ -891,7 +891,7 @@ The account server hands no account message to the mail service once 30 account 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-105 · D-149
+- **Derives from:** D-105 · D-161
 - **Part:** account-server
 - **Violated:** no
 
@@ -901,7 +901,7 @@ Player email confirmation messages are sent from `mariusznazar.com` through Mikr
 
 - **Method:** review
 - **Rests on:** mikrus-outsider-mail
-- **Derives from:** D-141
+- **Derives from:** D-153
 - **Part:** account-server · deployment
 - **Violated:** no
 
@@ -911,7 +911,7 @@ The account server submits player email confirmation messages to Mikrus Outsider
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-142
+- **Derives from:** D-154
 - **Part:** account-server · build-tools
 - **Violated:** no
 

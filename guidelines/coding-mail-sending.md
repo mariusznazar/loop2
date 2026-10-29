@@ -13,13 +13,13 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/server/account-mail.ts` | exemplar | D-150 |
+| `src/server/account-mail.ts` | exemplar | D-162 |
 
 ## Rules
 
 ### Wysyłka tylko po przejściu połączenia na TLS
 
-- **Decision:** D-142
+- **Decision:** D-154
 - **Invariant:** account-email-nodemailer-starttls
 - **Good:** Wiadomość wychodzi dopiero po tym, jak połączenie z serwerem poczty przeszło na TLS; serwer bez STARTTLS albo z niezaufanym certyfikatem nie dostaje ani hasła, ani wiadomości.
 - **Bad:** Wysyłka wraca do tekstu jawnego, gdy serwer nie oferuje STARTTLS, albo przekazuje hasło przed sprawdzeniem, że połączenie jest szyfrowane.
@@ -31,7 +31,7 @@ przejściu połączenia na TLS.
 
 ### Jedna wiadomość dla jednego odbiorcy, od ustalonego nadawcy
 
-- **Decision:** D-146
+- **Decision:** D-158
 - **Invariant:** none
 - **Good:** Wiadomość ma jednego odbiorcę, ustalonego nadawcę z nazwą wyświetlaną, ustalony temat i treść zwykłym tekstem, a adres odbiorcy stoi tylko w jego własnym polu.
 - **Bad:** Obok tekstu stoi część HTML, adres gracza trafia do pola innego niż pole odbiorcy albo wiadomość ma drugiego odbiorcę.
@@ -44,7 +44,7 @@ zmiany porównuje wiadomość z tą zasadą.
 
 ### Porażka jest wynikiem, nie błędem
 
-- **Decision:** D-150
+- **Decision:** D-162
 - **Invariant:** none
 - **Good:** Wysyłka kończy się wynikiem „sent” albo „failed” w ograniczonym czasie, a trasa czyta ten wynik.
 - **Bad:** Wysyłka rzuca błąd do wywołującego, czeka bez końca na serwer, który milczy, albo trasa łapie błędy biblioteki poczty.
@@ -57,7 +57,7 @@ porównuje wysyłkę z tą zasadą.
 
 ### Nic tajnego w dzienniku
 
-- **Decision:** D-150
+- **Decision:** D-162
 - **Invariant:** none
 - **Good:** Przy porażce plik zapisuje jeden stały wiersz z kodem błędu biblioteki albo słowem „unknown”.
 - **Bad:** Dziennik dostaje komunikat błędu, odpowiedź serwera poczty, treść wiadomości, odnośnik, token, login albo hasło.
@@ -68,7 +68,7 @@ z tokenem. Przegląd każdej zmiany porównuje dziennik pliku z tą zasadą.
 
 ### Składanie wiadomości poza trasą
 
-- **Decision:** D-150
+- **Decision:** D-162
 - **Invariant:** none
 - **Good:** Plik wysyłki składa wiadomość i przekazuje ją serwerowi poczty niezależnie od HTTP i bazy; trasa podaje adres i odnośnik, a odbiera wynik.
 - **Bad:** Trasa składa tekst wiadomości albo nagłówki, a plik wysyłki zna żądanie HTTP albo bazę.
@@ -122,7 +122,7 @@ nigdy nie jest wyłączana.
 ### Testowanie
 
 Nadawcę testuje się jako test integracyjny z prawdziwym serwerem SMTP na
-lokalnym interfejsie, a trasy z zastępczym nadawcą, zgodnie z D-151.
+lokalnym interfejsie, a trasy z zastępczym nadawcą, zgodnie z D-163.
 Zasady testów stoją w `guidelines/testing.md`.
 
 ## Where in code

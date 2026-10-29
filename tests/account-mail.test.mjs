@@ -422,7 +422,7 @@ test("the submitted message has one recipient, the fixed sender and subject and 
   );
 
   const { headers, text } = parse(smtp.record.messages[0].raw);
-  // Sender name, subject and body: D-146 (foundations/decisions.md).
+  // Sender name, subject and body: D-158 (foundations/decisions.md).
   assert.match(
     decodeWords(headers.get("from")[0]),
     /^(?:loop2|"loop2") <sender@example\.test>$/,

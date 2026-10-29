@@ -10,7 +10,7 @@ export interface Account {
   // the 15-minute email lock of the account policy.
   blocked: boolean;
   // The address given at registration has been confirmed through an emailed
-  // link (D-144); it never changes (D-147).
+  // link (D-156); it never changes (D-159).
   emailConfirmed: boolean;
 }
 
@@ -79,7 +79,7 @@ const currentVersion = schemaSteps.length;
 
 // An emailed link stays recorded until it has expired and is this old, because
 // its row also counts an account message against D-105's hourly limits (D-112,
-// D-149); no window of those limits may be longer.
+// D-161); no window of those limits may be longer.
 const linkRecordAgeMs = 3_600_000;
 
 export interface StoredSession {
@@ -364,12 +364,12 @@ export class AccountDatabase {
   }
 
   // Records a link before its message is handed to the mail service. Its row
-  // counts against the limits whatever the sending's outcome (D-149), so the
+  // counts against the limits whatever the sending's outcome (D-161), so the
   // count and the insert share one transaction. The block is read there too:
   // a block committed by the owner's command either comes first, and nothing
   // is recorded or sent, or comes after and stops the recorded link. Recording
   // stops every earlier link of the account and purpose at once, so a sending
-  // that then fails leaves no earlier link working (D-143).
+  // that then fails leaves no earlier link working (D-155).
   issueLink(request: LinkRequest, limits: MessageLimits): IssueOutcome {
     const lifetime = boundedInteger(request.lifetimeMs, 2 ** 31 - 1);
     const window = boundedInteger(limits.windowMs, linkRecordAgeMs);
