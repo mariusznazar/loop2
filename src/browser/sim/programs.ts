@@ -1,12 +1,270 @@
-import { checkProgram, reconcileCounts, type GameResult } from "./game.js";
+import { ITEMS } from "./data/items.js";
+import { MAPS, type MapDef } from "./data/maps.js";
+import type { GameResult } from "./game.js";
+import { conditionNumber, onStep } from "./program.js";
 import type {
+  Action,
   CharacterId,
+  Condition,
   GameState,
+  ItemId,
+  MapRun,
   Program,
   ProgramId,
   ProgramNameCheck,
+  ProgramRule,
+  ResourceId,
   SavedProgram,
 } from "./types.js";
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+/** The resources a program may name: the run's map's, or without a run those of any map. */
+function allowedResources(run: MapRun | null): ReadonlySet<string> {
+  const maps: MapDef[] = run ? [MAPS[run.mapId]] : Object.values(MAPS);
+  return new Set(
+    maps.flatMap((map) => map.resources.map((resource) => resource.id)),
+  );
+}
+
+function checkResource(
+  value: unknown,
+  allowed: ReadonlySet<string>,
+): ResourceId {
+  if (typeof value !== "string" || !allowed.has(value)) {
+    throw new Error(
+      `program: resource ${String(value)} is not a resource of the map`,
+    );
+  }
+  return value as ResourceId;
+}
+
+/** An item of the data, bound to no map. */
+function checkItem(value: unknown): ItemId {
+  if (typeof value !== "string" || !Object.hasOwn(ITEMS, value)) {
+    throw new Error(
+      `program: item ${String(value)} is not an item of the data`,
+    );
+  }
+  return value as ItemId;
+}
+
+/**
+ * How far a number may lie from its step's grid and still be taken, as a part of the step: binary
+ * rounding, never a number the player could type.
+ */
+const STEP_TOLERANCE = 1e-9;
+
+/**
+ * The number of a condition of `kind`: a finite number from the kind's minimum to its maximum, on
+ * its step counted from the minimum, held as the decimal of that step.
+ */
+function checkNumber(kind: Condition["kind"], value: unknown): number {
+  const number = conditionNumber(kind);
+  if (!number)
+    throw new Error(`program: condition kind ${kind} takes no number`);
+  const { min, max, step } = number;
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    value < min ||
+    value > max
+  ) {
+    throw new Error(
+      `program: ${String(value)} is not a number from ${min} to ${max}`,
+    );
+  }
+  const held = onStep(value, number);
+  if (Math.abs(value - held) > step * STEP_TOLERANCE) {
+    throw new Error(
+      `program: ${String(value)} does not lie on the step ${step} from ${min}`,
+    );
+  }
+  return held;
+}
+
+function checkCondition(
+  value: unknown,
+  allowed: ReadonlySet<string>,
+): Condition {
+  if (!isObject(value)) throw new Error("program: a rule has no condition");
+  switch (value.kind) {
+    case "always":
+      return { kind: "always" };
+    case "hereBelow": {
+      const number = checkNumber("hereBelow", value.value);
+      return {
+        kind: "hereBelow",
+        resource: checkResource(value.resource, allowed),
+        value: number,
+      };
+    }
+    case "itemBelow": {
+      const number = checkNumber("itemBelow", value.value);
+      return { kind: "itemBelow", item: checkItem(value.item), value: number };
+    }
+    // The body's conditions and those on the campfire name nothing: the simulation reads the
+    // character's body, and the campfire on its tile or the nearest one.
+    case "temperatureBelow":
+    case "satietyBelow":
+    case "campfireLeftBelow":
+    case "healthBelow":
+    case "opponentHealthBelow":
+      return { kind: value.kind, value: checkNumber(value.kind, value.value) };
+    case "awayFromCampfire":
+      return { kind: "awayFromCampfire" };
+    default:
+      throw new Error(
+        `program: condition kind ${String(value.kind)} is not on the closed list`,
+      );
+  }
+}
+
+function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
+  if (!isObject(value)) throw new Error("program: a rule has no action");
+  switch (value.kind) {
+    case "explore":
+      return { kind: "explore" };
+    case "wander":
+      return { kind: "wander" };
+    case "walkTo":
+      return {
+        kind: "walkTo",
+        resource: checkResource(value.resource, allowed),
+      };
+    case "gather":
+      return {
+        kind: "gather",
+        resource: checkResource(value.resource, allowed),
+      };
+    // The actions on the campfire and the backpack name nothing: the simulation picks the
+    // campfire on the character's tile, or the nearest one, and the pieces they use.
+    case "walkToCampfire":
+      return { kind: "walkToCampfire" };
+    case "craftCampfire":
+      return { kind: "craftCampfire" };
+    case "lightCampfire":
+      return { kind: "lightCampfire" };
+    case "lightItem":
+      return { kind: "lightItem" };
+    case "feedCampfire":
+      return { kind: "feedCampfire" };
+    case "eat":
+      return { kind: "eat" };
+    case "strikeWithStick":
+      return { kind: "strikeWithStick" };
+    case "kick":
+      return { kind: "kick" };
+    case "dodge":
+      return { kind: "dodge" };
+    default:
+      throw new Error(
+        `program: action kind ${String(value.kind)} is not on the closed list`,
+      );
+  }
+}
+
+/** A positive safe integer, so a stored identity remains exact. */
+function checkIdentity(value: unknown): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1)
+    throw new Error("program: an identity is not a positive safe integer");
+  return value;
+}
+
+/** Each identity occurs once and precedes its next-identity counter. */
+function uniqueIdentity(
+  value: unknown,
+  next: number,
+  seen: Set<number>,
+): number {
+  const id = checkIdentity(value);
+  if (id >= next || seen.has(id))
+    throw new Error(
+      "program: an identity is duplicated or reaches its next counter",
+    );
+  seen.add(id);
+  return id;
+}
+
+/** A copy of the program built from the closed list; throws on anything outside it. */
+export function checkProgram(value: unknown, run: MapRun | null): Program {
+  if (!isObject(value) || !Array.isArray(value.groups))
+    throw new Error("program: no list of groups");
+  const nextGroupId = checkIdentity(value.nextGroupId);
+  const nextRuleId = checkIdentity(value.nextRuleId);
+  const allowed = allowedResources(run);
+  const groupIds = new Set<number>();
+  const ruleIds = new Set<number>();
+  const groups = value.groups.map((group: unknown) => {
+    if (
+      !isObject(group) ||
+      typeof group.name !== "string" ||
+      !Array.isArray(group.rules) ||
+      Object.hasOwn(group, "groups")
+    )
+      throw new Error(
+        "program: a group must hold a name and a list of rules at one level",
+      );
+    const id = uniqueIdentity(group.id, nextGroupId, groupIds);
+    const condition = checkCondition(group.condition, allowed);
+    const rules = group.rules.map((rule: unknown): ProgramRule => {
+      if (!isObject(rule))
+        throw new Error(
+          "program: a rule is not a pair of a condition and an action",
+        );
+      return {
+        id: uniqueIdentity(rule.id, nextRuleId, ruleIds),
+        condition: checkCondition(rule.condition, allowed),
+        action: checkAction(rule.action, allowed),
+      };
+    });
+    return { id, name: group.name, condition, rules };
+  });
+  return { groups, nextGroupId, nextRuleId };
+}
+
+/**
+ * The counts of the rules of `previous` carried over to the rules of `program`: counts follow rule
+ * identity and canonical validated content, never group or position.
+ */
+export function reconcileCounts(
+  counts: GameState["ruleCounts"],
+  previous: Program,
+  program: Program,
+): GameState["ruleCounts"] {
+  if (counts === null) return null;
+  const before = new Map(
+    previous.groups.flatMap((group) =>
+      group.rules.map((rule) => [rule.id, rule] as const),
+    ),
+  );
+  return Object.fromEntries(
+    program.groups.flatMap((group) =>
+      group.rules.map((rule) => {
+        const old = before.get(rule.id);
+        const unchanged =
+          old &&
+          JSON.stringify([old.condition, old.action]) ===
+            JSON.stringify([rule.condition, rule.action]);
+        return [rule.id, unchanged ? (counts[rule.id] ?? 0) : 0];
+      }),
+    ),
+  );
+}
+
+/** Deep equality of plain data: the same keys with equal values, arrays in order. */
+export function sameData(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!isObject(a) || !isObject(b) || Array.isArray(a) !== Array.isArray(b))
+    return false;
+  const keys = Object.keys(a);
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every((key) => Object.hasOwn(b, key) && sameData(a[key], b[key]))
+  );
+}
 
 /** The name of the program a new game holds. */
 export const FIRST_PROGRAM_NAME = "Program";
