@@ -1,5 +1,6 @@
 import { backpackCap, backpackCount } from "./character.js";
 import { CAMPFIRE } from "./data/campfire.js";
+import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
@@ -15,6 +16,7 @@ import type {
   ItemId,
   MapRun,
   Program,
+  ProgramRule,
   ResourceId,
   Tile,
 } from "./types.js";
@@ -253,4 +255,31 @@ export function chooseActivity(
     }
   }
   return { kind: "wait" };
+}
+
+/** The first feasible combat rule at the actor's current health, or no action this exchange. */
+export function chooseCombatRule(
+  run: RunView,
+  map: MapDef,
+  program: Program,
+  health: number,
+  opponentHealth: number,
+): ProgramRule | null {
+  const context: ConditionContext = { health, opponentHealth };
+  for (const group of program.groups) {
+    if (!conditionHolds(run, map, group.condition, context)) continue;
+    for (const rule of group.rules) {
+      if (!conditionHolds(run, map, rule.condition, context)) continue;
+      const effect = (ACTIONS[rule.action.kind] as ActionDef).combat;
+      if (!effect) continue;
+      if (
+        "item" in effect &&
+        effect.item &&
+        run.character.backpack[effect.item] < 1
+      )
+        continue;
+      return rule;
+    }
+  }
+  return null;
 }

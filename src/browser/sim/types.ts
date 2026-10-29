@@ -68,6 +68,34 @@ export type Program = {
   nextRuleId: RuleId;
 };
 
+export type CombatOutcome =
+  "creatureDefeated" | "characterDied" | "creatureDeparted";
+
+export type CombatCreatureAction =
+  | { kind: "strike"; damage: number; characterHealth: number }
+  | { kind: "dodge" };
+
+export type CombatCharacterAction = {
+  ruleId: RuleId;
+  action: Extract<Action, { kind: "strikeWithStick" | "kick" | "dodge" }>;
+  damage: number;
+  creatureHealth: number;
+  characterHealth: number;
+};
+
+export type CombatExchange = {
+  creatureAction: CombatCreatureAction;
+  characterAction: CombatCharacterAction | null;
+};
+
+export type CombatResult = {
+  characterHealth: number;
+  creatureHealth: number;
+  outcome: CombatOutcome;
+  exchanges: CombatExchange[];
+  ruleStarts: Record<RuleId, number>;
+};
+
 /** What the Understanding records of the campfire: it is discoverable, yet no item of the backpack. */
 export type CampfireId = typeof CAMPFIRE.id;
 
