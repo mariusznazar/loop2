@@ -1352,7 +1352,7 @@ A character crafts a campfire and lights a stick on a revealed tile, as it gathe
 
 ### D-73 — Which testing discipline does loop2 adopt?
 
-Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78 and D-79. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
+Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79 and D-151. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
@@ -1432,7 +1432,7 @@ A new or changed test case has a name describing its behaviour and condition, an
 
 ### D-79 — How is the npm registry response contract checked?
 
-The npm registry, the only foreign service the tested code talks to, has no separate contract test: the real dependency audit in the gate checks its response format under D-33. Tests of the audit use controlled responses to force errors, and an unreadable real response fails the audit.
+The npm registry has no separate contract test: the real dependency audit in the gate checks its response format under D-33. Tests of the audit use controlled responses to force errors, and an unreadable real response fails the audit.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
@@ -2678,3 +2678,18 @@ The exemplar for kind `mail-sending` is `src/server/account-mail.ts`, and its ki
 
 *Rationale:* one file that owns composing and submitting keeps the safety of message headers, TLS and the handling of secrets in one place, and the routes read a result instead of SMTP errors.
 *Rejected:* composing the message in the route — mixes the order of an HTTP request's work with the text of the message and the safety of its headers; a module per concern, composer and transport — two files for about one screen of code, each showing half of the kind.
+
+### D-151 — How is the code that talks to Mikrus Outsider's SMTP service tested?
+
+Mikrus Outsider's SMTP service has no contract test, and no test reaches it: mail-sending code is tested as an integration test against a real SMTP server run on the loopback interface, and routes that send mail are tested with a stand-in mailer whose chosen outcomes prove the routes' reactions and not the sending. The agreement with Outsider is checked by a human who sends a message from the deployed container to an external inbox when the way messages are submitted to Outsider changes.
+
+- **Scope:** account-server, build-tools
+- **Based on:** none
+- **Relations:** narrows D-73 · derives from D-84
+- **Verification:** an agent compares a change with the decision:
+  - complies: the STARTTLS case of the mailer against an SMTP server the test starts on port 0 of the loopback interface; a route test whose stand-in mailer never answers
+  - violates: a test that connects to `outsider.mikr.us`; a route test that takes what the stand-in mailer recorded as proof that a message was delivered
+- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 13
+
+*Rationale:* a test against the real Outsider needs the SMTP password outside the server, the network and a share of the monthly allowance of messages, and its result changes with the service rather than with the code, while a real SMTP server on loopback exercises the same protocol, STARTTLS and authentication included. Only a delivery from the deployed container shows that Outsider accepts the sender and that mail reaches an inbox.
+*Rejected:* a contract test against the real Outsider, as the adopted template asks for a foreign service — takes the credential outside the server against D-13 and gives a result that depends on the service; a recorded transcript of Outsider's replies — a controlled response proves nothing of the service it replaces and drifts from it.
