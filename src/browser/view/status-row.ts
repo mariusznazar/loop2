@@ -8,6 +8,7 @@ import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type {
   Activity,
+  CreatureId,
   DeathCause,
   GameState,
   MapRun,
@@ -65,7 +66,7 @@ export function statusText(run: MapRun, paused: boolean): string {
       ? run.lastCombat
       : null);
   const activity = combat
-    ? "Walczy"
+    ? `Walczy z ${creatureAfterZ(combat.creatureId)}`
     : run.current
       ? activityText(run.current.activity)
       : WAIT_TEXT;
@@ -94,6 +95,11 @@ function discoveredCreatureName(
 ): string {
   const name = CREATURES[id].name;
   return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function creatureAfterZ(id: CreatureId): string {
+  const name = CREATURES[id].name;
+  return name.endsWith("k") ? `${name.slice(0, -1)}kiem` : name;
 }
 
 /** A condition's label, followed for a condition that takes a number by „ … ” and its unit. */

@@ -87,6 +87,47 @@ test("progress text shows only the solving requirements present in the map data"
   );
 });
 
+test("the encounter takes the activity label through its resolution minute, before the next ordinary action", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const lastCombat = {
+    creatureId: "wolf",
+    attackMinute: 10,
+    resolveMinute: 15,
+    result: null,
+  };
+  const active = {
+    ...state.run,
+    mapId: "forestDeep",
+    minute: 12,
+    activeCombat: lastCombat,
+    current: null,
+  };
+  assert.equal(
+    statusText(active, false),
+    "Minuta 12 · Walczy z wilkiem · Passa 0/540 · Pokonane napaści 0/2",
+  );
+  const resolved = {
+    ...active,
+    minute: 15,
+    activeCombat: null,
+    current: {
+      activity: ruleActivity({ kind: "explore" }),
+      startMinute: 15,
+      endMinute: 35,
+      stepTo: null,
+    },
+    lastCombat: { ...lastCombat, result: { outcome: "creatureDefeated" } },
+  };
+  assert.equal(
+    statusText(resolved, false),
+    "Minuta 15 · Walczy z wilkiem · Passa 0/540 · Pokonane napaści 0/2",
+  );
+  assert.equal(
+    statusText({ ...resolved, death: { minute: 15, cause: "combat" } }, false),
+    "Minuta 15 · Mag zginął w walce",
+  );
+});
+
 test("exploring shows the minute and „Eksploruje”", () => {
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(
