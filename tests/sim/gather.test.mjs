@@ -327,18 +327,26 @@ test("a map run restart starts the gathering generator anew from the seed", () =
   assert.equal(again.run.gatherRandom, streamState(seed, "gather"));
 });
 
+/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+function heldProgram(state) {
+  return state.run === null
+    ? state.programs[0].program
+    : state.run.copy.program;
+}
+
 test("the program check takes „Zbierz” with a resource of the map and refuses it without one", () => {
   const takenProgram = programFromRules(rule(ALWAYS, gather(moss)));
   const taken = setProgram(newGame(), takenProgram);
-  assert.deepEqual(taken.state.program, takenProgram);
+  assert.deepEqual(heldProgram(taken.state), takenProgram);
   const during = send(
     createCharacter(newGame(), "Ala").state,
     { mapId, characterId },
     1760000000000,
   ).state;
   assert.deepEqual(
-    setProgram(during, programFromRules(rule(ALWAYS, gather(berry)))).state
-      .program,
+    heldProgram(
+      setProgram(during, programFromRules(rule(ALWAYS, gather(berry)))).state,
+    ),
     programFromRules(rule(ALWAYS, gather(berry))),
   );
   for (const bad of [{ kind: "gather" }, gather("acorn"), gather(7)]) {

@@ -520,6 +520,13 @@ test("the action ending in the minute of death takes no effect", () => {
   assert.deepEqual(dead.character.backpack, run.character.backpack);
 });
 
+/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+function heldProgram(state) {
+  return state.run === null
+    ? state.programs[0].program
+    : state.run.copy.program;
+}
+
 test("the program check takes the six actions before sending and during a map run", () => {
   const rules = NEW_ACTIONS.map((action) => rule(ALWAYS, action));
   const during = send(
@@ -529,14 +536,14 @@ test("the program check takes the six actions before sending and during a map ru
   ).state;
   for (const state of [newGame(), during]) {
     const input = programFromRules(...rules);
-    assert.deepEqual(setProgram(state, input).state.program, input);
+    assert.deepEqual(heldProgram(setProgram(state, input).state), input);
   }
   const withField = setProgram(
     newGame(),
     programFromRules(rule(ALWAYS, { kind: "eat", item: berry })),
   );
   assert.deepEqual(
-    withField.state.program,
+    heldProgram(withField.state),
     programFromRules(rule(ALWAYS, EAT)),
   );
 });

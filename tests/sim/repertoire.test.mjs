@@ -460,7 +460,10 @@ test("a sent mage whose Understanding lacks Eksploruj passes over its rule and c
     ruleId: 2,
     action: { kind: "wander" },
   });
-  assert.deepEqual(state.program, programFromRules(EXPLORE_RULE, WANDER_RULE));
+  assert.deepEqual(
+    state.run.copy.program,
+    programFromRules(EXPLORE_RULE, WANDER_RULE),
+  );
   assert.deepEqual(state.ruleCounts, { 1: 0, 2: 1 });
 });
 
@@ -501,7 +504,10 @@ test("a rule whose target lies outside the repertoire is passed over at the star
     EXPLORE_RULE,
   );
   assert.equal(state.run.current.activity.ruleId, 2);
-  assert.deepEqual(state.program, programFromRules(stickBelow, EXPLORE_RULE));
+  assert.deepEqual(
+    state.run.copy.program,
+    programFromRules(stickBelow, EXPLORE_RULE),
+  );
 });
 
 test("a rule outside the repertoire is passed over in each game minute of the map run, and no count of it grows", () => {
@@ -559,6 +565,6 @@ test("a group whose condition lies outside the repertoire is passed over with it
   assert.equal(run(FULL).run.current.activity.ruleId, 1);
   const passed = run({ ...FULL, conditions: ["always"] });
   assert.equal(passed.run.current.activity.ruleId, 2);
-  assert.deepEqual(passed.program, program);
+  assert.deepEqual(passed.run.copy.program, program);
   assert.deepEqual(passed.ruleCounts, { 1: 0, 2: 1 });
 });

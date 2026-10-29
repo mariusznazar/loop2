@@ -421,6 +421,13 @@ const rule = (condition, action) => ({ condition, action });
 const below = (resource, value) => ({ kind: "hereBelow", resource, value });
 const walkTo = (resource) => ({ kind: "walkTo", resource });
 
+/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+function heldProgram(state) {
+  return state.run === null
+    ? state.programs[0].program
+    : state.run.copy.program;
+}
+
 test("setProgram accepts every resource of the map data list, in conditions and in walks", async () => {
   const { createCharacter, newGame, send, setProgram } =
     await import("../../dist/public/sim/game.js");
@@ -429,13 +436,13 @@ test("setProgram accepts every resource of the map data list, in conditions and 
     rule(ALWAYS, walkTo(id)),
   ]);
   const program = programFromRules(...rules);
-  assert.deepEqual(setProgram(newGame(), program).state.program, program);
+  assert.deepEqual(heldProgram(setProgram(newGame(), program).state), program);
   const running = send(
     createCharacter(newGame(), "Ala").state,
     SENT,
     REAL_MS,
   ).state;
-  assert.deepEqual(setProgram(running, program).state.program, program);
+  assert.deepEqual(heldProgram(setProgram(running, program).state), program);
 });
 
 test("setProgram accepts the empty program, both actions without a resource and the ends of the range", async () => {
@@ -455,7 +462,10 @@ test("setProgram accepts the empty program, both actions without a resource and 
       rule(below(resource, max), EXPLORE),
     ),
   ]) {
-    assert.deepEqual(setProgram(newGame(), program).state.program, program);
+    assert.deepEqual(
+      heldProgram(setProgram(newGame(), program).state),
+      program,
+    );
   }
 });
 
@@ -524,7 +534,7 @@ test("a refused program leaves the game unchanged", async () => {
   assert.throws(() =>
     setProgram(state, programFromRules(rule(ALWAYS, walkTo("granite")))),
   );
-  assert.deepEqual(state.program, programFromRules(rule(ALWAYS, EXPLORE)));
+  assert.deepEqual(heldProgram(state), programFromRules(rule(ALWAYS, EXPLORE)));
 });
 
 test("send rejects a map id not in the data and a character id not in the team", async () => {
