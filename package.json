@@ -17,7 +17,8 @@
   "dependencies": {
     "argon2": "0.45.1",
     "express": "5.2.1",
-    "express-session": "1.19.0"
+    "express-session": "1.19.0",
+    "nodemailer": "10.2.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -30,6 +31,7 @@
     "globals": "17.13.0",
     "npm": "12.2.1",
     "prettier": "3.9.10",
+    "smtp-server": "3.21.1",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "typescript-compiler": "npm:typescript@7.0.2",
     "typescript-eslint": "8.71.2"
