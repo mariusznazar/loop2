@@ -545,10 +545,14 @@ type RowView = ConditionView & {
 export type ProgramEditor = {
   element: HTMLElement;
   /**
-   * Shows the given game state's program; call when the program, the run's map or the
-   * Understanding changes.
+   * Shows `program` with `counts` beside its rules, offering what the given game state's run's map
+   * and Understanding give; call when the program shown, the run's map or the Understanding changes.
    */
-  update(state: GameState): void;
+  update(
+    state: GameState,
+    program: Program,
+    counts: GameState["ruleCounts"],
+  ): void;
   /** Refreshes counts alone; never writes a field value, rebuilds rows or changes focus. */
   updateCounts(counts: GameState["ruleCounts"]): void;
 };
@@ -1035,11 +1039,15 @@ export function createProgramEditor(
   return {
     element,
     updateCounts,
-    update(state: GameState): void {
+    update(
+      state: GameState,
+      shown: Program,
+      counts: GameState["ruleCounts"],
+    ): void {
       const nextOffer = offerOf(state);
       if (JSON.stringify(nextOffer) !== JSON.stringify(offer)) rebuild = true;
       offer = nextOffer;
-      program = state.program;
+      program = shown;
       if (
         rebuild ||
         groups.length !== program.groups.length ||
@@ -1063,7 +1071,7 @@ export function createProgramEditor(
         const addDisabled = offer.actions.length === 0;
         if (view.add.disabled !== addDisabled) view.add.disabled = addDisabled;
       });
-      updateCounts(state.ruleCounts);
+      updateCounts(counts);
       if (pendingFocus) {
         const target = pendingFocus;
         pendingFocus = null;

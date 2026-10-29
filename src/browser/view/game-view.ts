@@ -8,7 +8,8 @@ import {
   setProgram,
   type GameResult,
 } from "../sim/game.js";
-import type { GameState } from "../sim/types.js";
+import { teamProgram } from "../sim/programs.js";
+import type { GameState, Program } from "../sim/types.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createHeadquarters } from "./headquarters.js";
@@ -16,6 +17,24 @@ import { createCombatLine } from "./combat-line.js";
 import { createProgramEditor } from "./program-editor.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
+
+/**
+ * What the program panel shows: during a map run the copy it carries out with its counts, and
+ * otherwise the program `setProgram` edits outside a map run, with the counts where they stand
+ * beside it.
+ */
+function shownProgram(state: GameState): {
+  program: Program;
+  counts: GameState["ruleCounts"];
+} {
+  if (state.run)
+    return { program: state.run.copy.program, counts: state.ruleCounts };
+  const edited = teamProgram(state);
+  return {
+    program: edited.program,
+    counts: state.countsProgram === edited.id ? state.ruleCounts : null,
+  };
+}
 
 export type GameView = {
   /** The program panel and the map column, for the page to place. */
@@ -63,20 +82,23 @@ export function createGameView(): GameView {
     get: () => state,
     apply(result: GameResult): void {
       if (result.state === state) return;
-      const previous = state;
+      const previous = shownProgram(state);
+      const previousMap = state.run?.mapId;
+      const previousUnderstanding = state.understanding;
       state = result.state;
       renderMapColumn();
-      // Content updates only on a program/map change or when the Understanding changes (what the
-      // lists offer). A tick or restart updates counts alone, leaving partial field input and focus
-      // intact.
+      // Content updates only on a change of the program shown or the map, or when the
+      // Understanding changes (what the lists offer). A tick or restart updates counts alone,
+      // leaving partial field input and focus intact.
+      const shown = shownProgram(state);
       if (
-        state.program !== previous.program ||
-        state.run?.mapId !== previous.run?.mapId ||
-        state.understanding !== previous.understanding
+        shown.program !== previous.program ||
+        state.run?.mapId !== previousMap ||
+        state.understanding !== previousUnderstanding
       ) {
-        programEditor.update(state);
+        programEditor.update(state, shown.program, shown.counts);
       } else {
-        programEditor.updateCounts(state.ruleCounts);
+        programEditor.updateCounts(shown.counts);
       }
     },
   };
@@ -130,7 +152,8 @@ export function createGameView(): GameView {
   }
 
   renderMapColumn();
-  programEditor.update(state);
+  const shown = shownProgram(state);
+  programEditor.update(state, shown.program, shown.counts);
 
   return {
     element,

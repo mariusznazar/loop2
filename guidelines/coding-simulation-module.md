@@ -16,6 +16,7 @@ treści gry. Czytaj również ogólne wytyczne kodowania.
 | `src/browser/sim/hex.ts` | copy | — |
 | `src/browser/sim/layout.ts` | copy | — |
 | `src/browser/sim/program.ts` | copy | — |
+| `src/browser/sim/programs.ts` | copy | — |
 | `src/browser/sim/random.ts` | copy | — |
 | `src/browser/sim/run.ts` | copy | — |
 | `src/browser/sim/types.ts` | copy | — |

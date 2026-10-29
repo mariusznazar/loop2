@@ -68,6 +68,25 @@ export type Program = {
   nextRuleId: RuleId;
 };
 
+/** Tells the player's programs apart; given once, never again after a deletion (D-153). */
+export type ProgramId = number;
+
+/** A program of the player's list: its number, its name and its content. */
+export type SavedProgram = { id: ProgramId; name: string; program: Program };
+
+/**
+ * The copy a map run carries out (D-152): the copied content, the program it belongs to and its
+ * base, the content of that program as the copy was taken from it or last saved into it.
+ */
+export type ProgramCopy = {
+  program: Program;
+  /** The number of the copy's program; null once that program is deleted. */
+  programId: ProgramId | null;
+  /** The name the copy's program had when it was deleted; null while `programId` names it. */
+  deletedName: string | null;
+  base: Program;
+};
+
 export type CombatOutcome =
   "creatureDefeated" | "characterDied" | "creatureDeparted";
 
@@ -230,6 +249,9 @@ export type MapRun = {
   completion: Completion | null;
 };
 
+/** The map run of the game state: the map run of the minute with the record of its copy. */
+export type GameMapRun = MapRun & { copy: ProgramCopy };
+
 /** Tells the characters of the team apart; two characters may share a name. */
 export type CharacterId = number;
 
@@ -248,16 +270,30 @@ export type Chest = { pieces: Partial<Record<ResourceId, number>> };
 export type Team = { characters: Character[]; chest: Chest };
 
 export type GameState = {
-  program: Program;
+  /** The player's programs in the order they were created; never empty. */
+  programs: SavedProgram[];
+  /** The number the next created program takes. */
+  nextProgramId: ProgramId;
+  /** Per character, the program picked on its headquarters row and not yet sent with. */
+  pickedPrograms: Partial<Record<CharacterId, ProgramId>>;
+  /** Per character, the program it used last. */
+  lastUsedPrograms: Partial<Record<CharacterId, ProgramId>>;
+  /** The program with which a character last entered a map; null before the first send. */
+  lastEnteredProgram: ProgramId | null;
   /** What the player has discovered; never changed by creating, sending, restarting, ending or death. */
   understanding: Understanding;
-  /** Starts per rule in the current or last map run; null before the first run. */
+  /**
+   * Starts per rule in the current or last map run, by the rule identities of the copy during a map
+   * run and of `countsProgram` after „Zakończ”; null before the first run and once cleared.
+   */
   ruleCounts: Record<RuleId, number> | null;
+  /** The program the counts stand beside after „Zakończ”; null during a map run and before. */
+  countsProgram: ProgramId | null;
   team: Team;
   /** The id the next created character takes. */
   nextCharacterId: CharacterId;
   /** null = the headquarters. */
-  run: MapRun | null;
+  run: GameMapRun | null;
   /** Seed of the latest send; INITIAL_SEED at start. */
   lastSeed: number;
   paused: boolean;
