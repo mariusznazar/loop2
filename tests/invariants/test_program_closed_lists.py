@@ -27,7 +27,7 @@ Reading of the sentence:
   unchanged (written out below as BASE); the program the state holds is the copy of the map run
   during a map run, and in the headquarters the program of the list the team goes with;
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
-  with valid fields, including all nine condition kinds on groups, is taken in as offered (the control
+  with valid fields, including all ten condition kinds on groups, is taken in as offered (the control
   that shows refusal is no blanket refusal).
 
 Every offer is made twice: in the headquarters (no map run) and during a map run of Las
@@ -64,8 +64,9 @@ T = 1760000000000
 
 # The kinds the data files list today: the keys of CONDITIONS (conditions.ts) and of ACTIONS
 # (actions.ts).
-CONDITION_KINDS = ("always", "hereBelow", "temperatureBelow", "satietyBelow", "itemBelow",
-                   "campfireLeftBelow", "awayFromCampfire", "healthBelow", "opponentHealthBelow")
+CONDITION_KINDS = ("always", "hereBelow", "temperatureBelow", "satietyBelow", "natureEnergyBelow",
+                   "itemBelow", "campfireLeftBelow", "awayFromCampfire", "healthBelow",
+                   "opponentHealthBelow")
 ACTION_KINDS = ("explore", "wander", "walkTo", "walkToCampfire", "gather", "craftCampfire",
                 "lightCampfire", "lightItem", "feedCampfire", "eat", "strikeWithStick", "kick", "dodge")
 
@@ -86,6 +87,7 @@ VALID = program_from_rules([
     rule(ALWAYS, {"kind": "walkTo", "resource": "berry"}),
     rule({"kind": "temperatureBelow", "value": 36.5}, {"kind": "wander"}),
     rule({"kind": "satietyBelow", "value": 50}, {"kind": "wander"}),
+    rule({"kind": "natureEnergyBelow", "value": 30}, {"kind": "wander"}),
     rule({"kind": "itemBelow", "item": "berry", "value": 8}, {"kind": "wander"}),
     rule({"kind": "campfireLeftBelow", "value": 20}, {"kind": "wander"}),
     rule({"kind": "awayFromCampfire"}, {"kind": "wander"}),
@@ -239,7 +241,7 @@ class ProgramClosedLists(unittest.TestCase):
     def test_group_conditions_accept_listed_values_and_refuse_unlisted_kinds(self):
         # invariant: program-closed-lists
         valid = {
-            "nextGroupId": 10, "nextRuleId": 1,
+            "nextGroupId": 11, "nextRuleId": 1,
             "groups": [
                 {"id": index + 1, "name": "Group", "condition": condition, "rules": []}
                 for index, condition in enumerate([
@@ -252,6 +254,7 @@ class ProgramClosedLists(unittest.TestCase):
                     {"kind": "awayFromCampfire"},
                     {"kind": "healthBelow", "value": 50},
                     {"kind": "opponentHealthBelow", "value": 10},
+                    {"kind": "natureEnergyBelow", "value": 30},
                 ])
             ],
         }

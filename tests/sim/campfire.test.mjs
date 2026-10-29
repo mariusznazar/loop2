@@ -547,3 +547,149 @@ test("the program check takes the six actions before sending and during a map ru
     programFromRules(rule(ALWAYS, EAT)),
   );
 });
+
+// The spell Płomyk: „Zapal — ognisko” and „Zapal — patyk” paid with nature energy besides their
+// sticks (task plomyk, plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania: To do 2 at
+// line 19, To do 3 at line 20, To do 4 at line 21 and Q10 at line 58). Every number is written out
+// by hand from the task: each lighting costs 10 nature energy, a campfire and a stick alike; energy
+// equal to the price is enough; the energy is taken when the lighting finishes, together with its
+// sticks; a game minute whose satiety after its fall of 0.6 is 60 or above gives back 0.5 energy,
+// not above the cap of 100, in the body's step, before the finishing action takes effect.
+
+/** The run with the given nature energy and a body at 5 °C of the given satiety. */
+function withEnergy(run, natureEnergy, satiety = 100) {
+  return { ...run, natureEnergy, body: body(5, satiety, 100) };
+}
+
+test("Płomyk can be cast with nature energy reaching its price of 10, and not with less", () => {
+  const cases = [
+    [LIGHT_CAMPFIRE, at({ [stick]: 2 }, burning(0))],
+    [LIGHT_ITEM, at({ [stick]: 1 })],
+  ];
+  for (const [action, run] of cases) {
+    for (const [energy, feasible] of [
+      [100, true],
+      [10, true],
+      [9.5, false],
+      [0, false],
+    ])
+      assert.equal(
+        actionFeasible(withEnergy(run, energy), forest, action),
+        feasible,
+        `${action.kind} with ${energy}`,
+      );
+  }
+  // An action that is no spell needs no nature energy.
+  for (const [action, run] of [
+    [CRAFT, at({ [stick]: 6 })],
+    [FEED, at({ [stick]: 1 }, burning(30))],
+    [EAT, at({ [berry]: 1 })],
+  ])
+    assert.equal(
+      actionFeasible(withEnergy(run, 0), forest, action),
+      true,
+      action.kind,
+    );
+});
+
+test("with too little nature energy the program passes over a „Zapal” rule to the next one", () => {
+  const program = programFromRules(
+    rule(ALWAYS, LIGHT_ITEM),
+    rule(ALWAYS, WANDER),
+  );
+  const short = stepMinute(
+    freeNextMinute(withEnergy(at({ [stick]: 1 }), 5, 50)),
+    forest,
+    program,
+  ).run;
+  assert.deepEqual(short.current.activity, {
+    kind: "rule",
+    ruleId: 2,
+    action: WANDER,
+  });
+  const enough = stepMinute(
+    freeNextMinute(withEnergy(at({ [stick]: 1 }), 10, 50)),
+    forest,
+    program,
+  ).run;
+  assert.deepEqual(enough.current.activity, {
+    kind: "rule",
+    ruleId: 1,
+    action: LIGHT_ITEM,
+  });
+});
+
+test("a finished lighting takes its sticks and 10 nature energy together, a campfire and a stick alike", () => {
+  // Satiety 50 falls to 49.4, below 60: no energy comes back in the minute.
+  const campfire = after(
+    endingNext(
+      withEnergy(at({ [stick]: 3 }, burning(0)), 50, 50),
+      LIGHT_CAMPFIRE,
+    ),
+    1,
+  );
+  assert.deepEqual(campfire.campfires, [{ at: entrance, minutesLeft: 60 }]);
+  assert.deepEqual(
+    campfire.character.backpack,
+    backpackOf(campfire, { [stick]: 1 }),
+  );
+  assert.equal(campfire.natureEnergy, 40);
+  const lit = after(
+    endingNext(withEnergy(at({ [stick]: 2 }), 50, 50), LIGHT_ITEM),
+    1,
+  );
+  assert.equal(lit.burningItems.length, 1);
+  assert.deepEqual(lit.character.backpack, backpackOf(lit, { [stick]: 1 }));
+  assert.equal(lit.natureEnergy, 40);
+});
+
+test("the energy of a lighting is taken when it finishes, not while it goes on", () => {
+  const program = programFromRules(rule(ALWAYS, LIGHT_ITEM));
+  let run = freeNextMinute(withEnergy(at({ [stick]: 1 }), 50, 50));
+  const energies = [];
+  for (let minute = 1; minute <= 6; minute += 1) {
+    run = stepMinute(run, forest, program).run;
+    energies.push(run.natureEnergy);
+  }
+  // Picked in minute 1, it lasts 5 minutes and finishes in minute 6.
+  assert.deepEqual(energies, [50, 50, 50, 50, 50, 40]);
+});
+
+test("a mage with full nature energy who finishes a lighting has 90 after that minute", () => {
+  // Q10: the minute's 0.5 comes back before the lighting takes effect, so it is lost at the cap.
+  const full = after(
+    endingNext(withEnergy(at({ [stick]: 1 }), 100), LIGHT_ITEM),
+    1,
+  );
+  assert.equal(full.natureEnergy, 90);
+  const half = after(
+    endingNext(withEnergy(at({ [stick]: 1 }), 50), LIGHT_ITEM),
+    1,
+  );
+  assert.equal(half.natureEnergy, 40.5);
+});
+
+test("a lighting that takes no hold takes no nature energy", () => {
+  const noStick = after(endingNext(withEnergy(at(), 50, 50), LIGHT_ITEM), 1);
+  assert.equal(noStick.burningItems.length, 0);
+  assert.equal(noStick.natureEnergy, 50);
+  const alreadyBurning = after(
+    endingNext(
+      withEnergy(at({ [stick]: 2 }, burning(30)), 50, 50),
+      LIGHT_CAMPFIRE,
+    ),
+    1,
+  );
+  assert.deepEqual(alreadyBurning.campfires, [
+    { at: entrance, minutesLeft: 29 },
+  ]);
+  assert.equal(alreadyBurning.natureEnergy, 50);
+});
+
+test("empty nature energy takes no health", () => {
+  // Warm at 37 °C and fed: health comes back by 0.05, whatever the energy.
+  const run = { ...handMade({ body: body(37, 100, 50) }), natureEnergy: 0 };
+  const next = after(run, 1);
+  assert.equal(next.body.health, 50.05);
+  assert.equal(next.death, null);
+});

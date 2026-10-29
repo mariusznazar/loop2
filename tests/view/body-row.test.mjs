@@ -1,13 +1,15 @@
 // The row of the body and the backpack under the status row (spec Decision 3, "What the player
 // reads beside it"; task, To do 14): values cut down, never rounded, with a decimal comma; a value
-// below the threshold of chill or hunger in `danger`; the backpack's pieces of its cap.
+// below the threshold of chill or hunger in `danger`; the backpack's pieces of its cap. The row
+// ends with „Energia natury {n}”, cut down to a whole number, never in `danger` (task plomyk,
+// plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania, To do 6, line 23, and Q5).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { backpackText, bodyValues } from "../../dist/public/view/body-row.js";
 
 /** The texts of the body row joined as the row shows them. */
-function joined(body) {
-  return bodyValues(body)
+function joined(body, natureEnergy = 100) {
+  return bodyValues(body, natureEnergy)
     .map((value) => value.text)
     .join(" · ");
 }
@@ -22,11 +24,28 @@ function character(backpack, carryingCapacity = 15) {
   };
 }
 
-test("the body row reads temperature, satiety and health as the task's example", () => {
+test("the body row reads temperature, satiety, health and nature energy as the task's example", () => {
+  // Task plomyk, To do 6: „Temperatura 36,9 °C · Sytość 82 % · Zdrowie 100 · Energia natury 90”.
   assert.equal(
-    joined({ temperature: 36.8, satiety: 82, health: 100 }),
-    "Temperatura 36,8 °C · Sytość 82 % · Zdrowie 100",
+    joined({ temperature: 36.9, satiety: 82, health: 100 }, 90),
+    "Temperatura 36,9 °C · Sytość 82 % · Zdrowie 100 · Energia natury 90",
   );
+});
+
+test("nature energy is cut down to a whole number and never stands in danger, at zero too", () => {
+  const body = { temperature: 36.5, satiety: 50, health: 50 };
+  assert.deepEqual(bodyValues(body, 89.5)[3], {
+    text: "Energia natury 89",
+    danger: false,
+  });
+  assert.deepEqual(bodyValues(body, 0)[3], {
+    text: "Energia natury 0",
+    danger: false,
+  });
+  assert.deepEqual(bodyValues(body, 100)[3], {
+    text: "Energia natury 100",
+    danger: false,
+  });
 });
 
 test("temperature is cut down to tenths, never rounded up", () => {
@@ -116,14 +135,14 @@ function fakeDocument() {
   };
 }
 
-/** The body row built on a fake document and shown the given body and backpack. */
-async function shownRow(body, backpack) {
+/** The body row built on a fake document and shown the given body, backpack and energy. */
+async function shownRow(body, backpack, natureEnergy = 100) {
   const { createBodyRow } = await import("../../dist/public/view/body-row.js");
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {
     const row = createBodyRow();
-    row.update({ run: { body, character: character(backpack) } });
+    row.update({ run: { body, natureEnergy, character: character(backpack) } });
     const [bodyText, backpackLine] = row.element.children;
     const values = bodyText.children.filter((node) => typeof node !== "string");
     return { row, values, backpackLine };
@@ -136,27 +155,30 @@ test("the row on the screen marks only the value below its threshold as danger, 
   const { row, values, backpackLine } = await shownRow(
     { temperature: 34.99, satiety: 82, health: 40 },
     { stick: 5, berry: 2 },
+    90,
   );
   assert.deepEqual(
     values.map((value) => value.textContent),
-    ["Temperatura 34,9 °C", "Sytość 82 %", "Zdrowie 40"],
+    ["Temperatura 34,9 °C", "Sytość 82 %", "Zdrowie 40", "Energia natury 90"],
   );
   assert.deepEqual(
     values.map((value) => value.classList.contains("danger")),
-    [true, false, false],
+    [true, false, false, false],
   );
   assert.equal(backpackLine.textContent, "Plecak 7/15: patyk 5, jagoda 2");
 
   row.update({
     run: {
       body: { temperature: 36.2, satiety: 12, health: 40 },
+      natureEnergy: 0,
       character: character({}),
     },
   });
   assert.deepEqual(
     values.map((value) => value.classList.contains("danger")),
-    [false, true, false],
+    [false, true, false, false],
   );
   assert.equal(values[1].textContent, "Sytość 12 %");
+  assert.equal(values[3].textContent, "Energia natury 0");
   assert.equal(backpackLine.textContent, "Plecak 0/15");
 });

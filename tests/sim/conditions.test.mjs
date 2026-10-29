@@ -37,6 +37,7 @@ const EXPLORE = { kind: "explore" };
 const rule = (condition, action) => ({ condition, action });
 const temperatureBelow = (value) => ({ kind: "temperatureBelow", value });
 const satietyBelow = (value) => ({ kind: "satietyBelow", value });
+const natureEnergyBelow = (value) => ({ kind: "natureEnergyBelow", value });
 const itemBelow = (item, value) => ({ kind: "itemBelow", item, value });
 const campfireLeftBelow = (value) => ({ kind: "campfireLeftBelow", value });
 const healthBelow = (value) => ({ kind: "healthBelow", value });
@@ -108,6 +109,16 @@ test("„Sytość poniżej N %” holds below N and not at N", () => {
   assert.equal(holds(withBody(37, 0), satietyBelow(0)), false);
   assert.equal(holds(withBody(37, 100), satietyBelow(100)), false);
   assert.equal(holds(withBody(37, 99.4), satietyBelow(100)), true);
+});
+
+test("„Energia natury poniżej N” reads the mage's nature energy, holding below N and not at N", () => {
+  // Task plomyk, To do 5 (plomyk_loop2.md:22). The body is full: the energy alone decides.
+  const energy = (natureEnergy) => handMade({ natureEnergy });
+  assert.equal(holds(energy(29.5), natureEnergyBelow(30)), true);
+  assert.equal(holds(energy(30), natureEnergyBelow(30)), false);
+  assert.equal(holds(energy(0), natureEnergyBelow(0)), false);
+  assert.equal(holds(energy(0), natureEnergyBelow(1)), true);
+  assert.equal(holds(energy(100), natureEnergyBelow(100)), false);
 });
 
 test("„Zapas poniżej N szt.” counts only the named item of the backpack", () => {
@@ -284,6 +295,8 @@ test("the check takes the whole numbers of „Tu leży mniej niż” as before, 
 test("the check takes each new kind's numbers from its minimum to its maximum on its step", () => {
   const ranges = [
     [satietyBelow, 0, 100],
+    // Task plomyk, To do 5 (plomyk_loop2.md:22): from 0 to 100 by 1.
+    [natureEnergyBelow, 0, 100],
     [healthBelow, 0, 100],
     [opponentHealthBelow, 0, 100],
     [(value) => itemBelow(firstItem, value), 0, 50],
@@ -304,6 +317,7 @@ test("the check refuses a number that is no finite number, for every kind that t
   const makers = [
     temperatureBelow,
     satietyBelow,
+    natureEnergyBelow,
     healthBelow,
     opponentHealthBelow,
     (value) => itemBelow(firstItem, value),

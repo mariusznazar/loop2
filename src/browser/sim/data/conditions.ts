@@ -49,6 +49,15 @@ export const CONDITIONS = {
     max: 100,
     step: 1,
   },
+  natureEnergyBelow: {
+    label: "Energia natury poniżej",
+    revealedBy: { kind: "lit" },
+    unit: "pkt",
+    defaultValue: 30,
+    min: 0,
+    max: 100,
+    step: 1,
+  },
   itemBelow: {
     label: "Zapas poniżej",
     revealedBy: { kind: "explored" },

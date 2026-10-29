@@ -21,6 +21,11 @@ import {
 // (37 − 0.024 × 84 = 34.984), and starving from minute 117 (100 − 0.6 × 117 = 29.8); health,
 // full at 100, falls by 0.35 a minute from 84 to 116 (33 minutes, 11.55) and by 0.7 from 117 on,
 // so 88.45 − 0.7 × 126 = 0.25 at minute 242 and below zero in minute 243, while chilled.
+//
+// Task plomyk (plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania, To do 7, line 24):
+// once „Zapal” is the spell Płomyk, paid with 10 nature energy besides its sticks, the same program
+// still passes 480 game minutes alive on the same seed, paying for its lightings; the program
+// needed no change.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
 // The first character a new game creates takes the id 1.
@@ -154,6 +159,11 @@ test("on Las the program passes 480 game minutes alive on the named seed", () =>
   ]) {
     assert.ok(kinds.has(kind), `the program never ends a ${kind}`);
   }
+  // The price of Płomyk is in effect: its lightings spent nature energy that has not all come back.
+  assert.ok(
+    state.run.natureEnergy < 100,
+    `nature energy ${state.run.natureEnergy} at minute 480`,
+  );
 });
 
 test("on the same seed the empty program dies in game minute 243, of cold", () => {

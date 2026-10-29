@@ -107,10 +107,12 @@ function checkCondition(
       const number = checkNumber("itemBelow", value.value);
       return { kind: "itemBelow", item: checkItem(value.item), value: number };
     }
-    // The body's conditions and those on the campfire name nothing: the simulation reads the
-    // character's body, and the campfire on its tile or the nearest one.
+    // The body's conditions, nature energy's and those on the campfire name nothing: the
+    // simulation reads the character's body and energy, and the campfire on its tile or the
+    // nearest one.
     case "temperatureBelow":
     case "satietyBelow":
+    case "natureEnergyBelow":
     case "campfireLeftBelow":
     case "healthBelow":
     case "opponentHealthBelow":

@@ -292,3 +292,124 @@ test("the body step reports a loss only when the character is chilled or starvin
     assert.equal(bodyMinute(before, 0, forest).lostHealth, lost, why);
   }
 });
+
+// Nature energy (task plomyk, plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania: To do
+// 1 at line 18 and To do 4 at line 21): the cap is 100 and every map run, a restart included,
+// starts full; outside combat a game minute whose satiety after its fall of 0.6 is 60 or above
+// gives back 0.5, not above the cap.
+
+/** A game sent to Las with the program, its run's fields replaced at minute 0. */
+function sentWith(fields, program = EXPLORING) {
+  const state = sent(program);
+  return { ...state, run: { ...state.run, ...fields } };
+}
+
+test("every map run starts with full nature energy, 100: a send, a restart and a send after „Zakończ”", () => {
+  const first = sent();
+  assert.equal(first.run.natureEnergy, 100);
+  const spent = advanceMinutes(sentWith({ natureEnergy: 12 }), 3).state;
+  assert.equal(restart(spent).state.run.natureEnergy, 100);
+  const again = send(end(spent).state, SENT, REAL_MS + 1000).state;
+  assert.equal(again.run.natureEnergy, 100);
+});
+
+test("nature energy comes back by 0.5 in a game minute whose satiety after its fall is 60 or above", () => {
+  const cases = [
+    [60.6, 40.5, "60.6 − 0.6 = 60, well fed"],
+    [60.5, 40, "60.5 − 0.6 = 59.9, not well fed"],
+    [100, 40.5, "99.4, well fed"],
+    [30, 40, "29.4, starving"],
+  ];
+  for (const [satiety, energy, why] of cases) {
+    const { state } = advanceMinutes(
+      sentWith({ body: body(37, satiety, 100), natureEnergy: 40 }),
+      1,
+    );
+    assert.equal(state.run.natureEnergy, energy, why);
+  }
+});
+
+test("nature energy does not come back above its cap of 100", () => {
+  for (const [from, to] of [
+    [99.75, 100],
+    [100, 100],
+  ]) {
+    const { state } = advanceMinutes(
+      sentWith({ body: body(37, 100, 100), natureEnergy: from }),
+      1,
+    );
+    assert.equal(state.run.natureEnergy, to, `from ${from}`);
+  }
+});
+
+// Invariant nature-energy-range: the mage's nature energy lies between 0 and its cap in the data,
+// 100, at every game minute. Two map runs on Las are read minute by minute: one well fed from a
+// full energy, where every game minute gives energy back at the cap, and one hungry, lighting a
+// stick as long as it can, so that its energy reaches 0 and the program goes on picking.
+test("nature energy stays between 0 and its cap of 100 at every game minute", () => {
+  // invariant: nature-energy-range
+  const LIGHTING = programFromRules(
+    rule({ kind: "lightItem" }),
+    rule({ kind: "wander" }),
+  );
+  const lightingRun = (natureEnergy, satiety) => {
+    const state = sentWith({ natureEnergy }, LIGHTING);
+    const at = state.run.character.at;
+    return {
+      ...state,
+      run: {
+        ...state.run,
+        // A free minute next: the program picks on the revealed tile from minute 1.
+        current: {
+          activity: { kind: "wait" },
+          startMinute: 0,
+          endMinute: 1,
+          stepTo: null,
+        },
+        body: body(37, satiety, 100),
+        tiles: state.run.tiles.map((tile) =>
+          tile.at.q === at.q && tile.at.r === at.r
+            ? { ...tile, revealed: true }
+            : tile,
+        ),
+        character: {
+          ...state.run.character,
+          backpack: { ...state.run.character.backpack, [stick]: 15 },
+        },
+      },
+    };
+  };
+  const scenarios = [
+    // Well fed for 66 game minutes (100 − 0.6 × 66 = 60.4), lighting a stick every 5 minutes.
+    ["well fed at the cap", lightingRun(100, 100), 120],
+    // Hungry from the start: no energy comes back, so ten lightings spend all 100.
+    ["hungry, lighting to empty", lightingRun(100, 50), 120],
+  ];
+  const seen = { atCapWellFed: false, atZero: false, pickedAtZero: false };
+  for (const [name, start, minutes] of scenarios) {
+    let state = start;
+    for (let minute = 1; minute <= minutes; minute += 1) {
+      const before = state.run;
+      const result = advanceMinutes(state, 1);
+      state = result.state;
+      const energy = state.run.natureEnergy;
+      assert.ok(
+        energy >= 0 && energy <= 100,
+        `${name}: ${energy} in minute ${state.run.minute}`,
+      );
+      if (before.natureEnergy === 100 && state.run.body.satiety >= 60)
+        seen.atCapWellFed = true;
+      if (energy === 0) {
+        seen.atZero = true;
+        if (result.events.some((event) => event.kind === "activityStarted"))
+          seen.pickedAtZero = true;
+      }
+    }
+  }
+  // Controls: a minute that would give energy back at the cap, energy at 0, and a pick made there.
+  assert.deepEqual(seen, {
+    atCapWellFed: true,
+    atZero: true,
+    pickedAtZero: true,
+  });
+});
