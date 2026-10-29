@@ -67,7 +67,7 @@ T = 1760000000000
 CONDITION_KINDS = ("always", "hereBelow", "temperatureBelow", "satietyBelow", "natureEnergyBelow",
                    "itemBelow", "campfireLeftBelow", "awayFromCampfire", "healthBelow",
                    "opponentHealthBelow")
-ACTION_KINDS = ("explore", "wander", "walkTo", "walkToCampfire", "gather", "craftCampfire",
+ACTION_KINDS = ("explore", "wander", "walkTo", "walkToCampfire", "gather", "patrol", "craftCampfire",
                 "lightCampfire", "lightItem", "feedCampfire", "eat", "strikeWithStick", "kick", "dodge")
 
 ALWAYS = {"kind": "always"}
@@ -92,6 +92,7 @@ VALID = program_from_rules([
     rule({"kind": "campfireLeftBelow", "value": 20}, {"kind": "wander"}),
     rule({"kind": "awayFromCampfire"}, {"kind": "wander"}),
     rule(ALWAYS, {"kind": "gather", "resource": "moss"}),
+    rule(ALWAYS, {"kind": "patrol", "resource": "berry"}),
     rule(ALWAYS, {"kind": "walkToCampfire"}),
     rule(ALWAYS, {"kind": "craftCampfire"}),
     rule(ALWAYS, {"kind": "lightCampfire"}),
