@@ -337,6 +337,12 @@ RFC 9110 excludes a URI reference's fragment from the target URI an HTTP request
 
 - **Source:** https://www.rfc-editor.org/rfc/rfc9110.txt § 7.1. Determining the Target Resource — "The target URI excludes the reference's fragment component, if any, since fragment identifiers are reserved for client-side processing ([URI], Section 3.5)." · § 10.1.3. Referer — "A user agent MUST NOT include the fragment and userinfo components of the URI reference [URI], if any, when generating the Referer field value." · § 17.11. Disclosure of Fragment after Redirects — "Although fragment identifiers used within URI references are not sent in requests, implementers ought to be aware that they will be visible to the user agent and any extensions or scripts running as a result of the response."; read 2026-10-29
 
+## samesite-strict-cookie
+
+A browser sends a `SameSite=Strict` cookie only with requests originating from the site that set it, the setting suited to cookies of functionality that is always behind an initial navigation, such as authentication.
+
+- **Source:** https://raw.githubusercontent.com/mdn/content/13ef67a4ffbdb929415dfa1b3d65ab1aa9ebe5da/files/en-us/web/http/guides/cookies/index.md § Controlling third-party cookies with SameSite — "Strict causes the browser to only send the cookie in response to requests originating from the cookie's origin site. This should be used when you have cookies relating to functionality that will always be behind an initial navigation, such as authentication or storing shopping cart information."; read 2026-10-29
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
