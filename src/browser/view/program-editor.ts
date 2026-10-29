@@ -29,6 +29,7 @@ import {
 } from "./controls/select-list.js";
 import { createTextField, type Field } from "./controls/text-field.js";
 import { sendMaps } from "./headquarters.js";
+import { createTripEditor } from "./trip-editor.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
@@ -553,6 +554,7 @@ export type ProgramEditor = {
     state: GameState,
     program: Program,
     counts: GameState["ruleCounts"],
+    context?: string,
   ): void;
   /** Refreshes counts alone; never writes a field value, rebuilds rows or changes focus. */
   updateCounts(counts: GameState["ruleCounts"]): void;
@@ -626,9 +628,15 @@ export function createProgramEditor(
   element.className = "program-editor";
   const groupsElement = document.createElement("div");
   const addGroupButton = createButton("Dodaj grupę");
-  element.append(groupsElement, addGroupButton);
+  const tripEditor = createTripEditor(commit);
+  element.append(groupsElement, addGroupButton, tripEditor.element);
 
-  let program: Program = { groups: [], nextGroupId: 1, nextRuleId: 1 };
+  let program: Program = {
+    groups: [],
+    nextGroupId: 1,
+    nextRuleId: 1,
+    tripPlan: { take: [], bring: [] },
+  };
   let offer: Offer = { conditions: [], actions: [], resources: [], items: [] };
   let groups: {
     id: GroupId;
@@ -1043,11 +1051,13 @@ export function createProgramEditor(
       state: GameState,
       shown: Program,
       counts: GameState["ruleCounts"],
+      context = "program",
     ): void {
       const nextOffer = offerOf(state);
       if (JSON.stringify(nextOffer) !== JSON.stringify(offer)) rebuild = true;
       offer = nextOffer;
       program = shown;
+      tripEditor.update(shown, offer.items, context);
       if (
         rebuild ||
         groups.length !== program.groups.length ||

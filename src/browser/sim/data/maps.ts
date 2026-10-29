@@ -32,6 +32,9 @@ export type MapAttackerDef = {
 
 export type MapDef = {
   name: string;
+  /** Optional whole-piece budgets at entry and completion, including zero. */
+  carryIn?: number;
+  carryOut?: number;
   width: number;
   height: number;
   /** A fixed entrance, or null to draw one tile from the whole map. */

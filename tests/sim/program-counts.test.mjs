@@ -35,6 +35,7 @@ const PROGRAM = {
       ],
     },
   ],
+  tripPlan: { take: [], bring: [] },
   nextGroupId: 9,
   nextRuleId: 92,
 };

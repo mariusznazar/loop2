@@ -62,7 +62,13 @@ export type RuleGroup = {
   rules: ProgramRule[];
 };
 
+export type TripEntry = { item: ItemId; count: number };
+
+/** Priority runs from the first row down; each list names an item at most once. */
+export type TripPlan = { take: TripEntry[]; bring: TripEntry[] };
+
 export type Program = {
+  tripPlan: TripPlan;
   groups: RuleGroup[];
   /** Identities allocated to the next group and rule, never derived from their positions. */
   nextGroupId: GroupId;
@@ -263,7 +269,13 @@ export type MapRun = {
 };
 
 /** The map run of the game state: the map run of the minute with the record of its copy. */
-export type GameMapRun = MapRun & { copy: ProgramCopy };
+export type GameMapRun = MapRun & {
+  copy: ProgramCopy;
+  /** Bound at entry; editing or switching the copy leaves this snapshot intact. */
+  bringPlan: TripEntry[];
+  /** Actual deposit at completion; null until then. Retained with the frozen end screen. */
+  deposited: TripEntry[] | null;
+};
 
 /** Tells the characters of the team apart; two characters may share a name. */
 export type CharacterId = number;
@@ -276,8 +288,8 @@ export type Character = {
   traits: Traits;
 };
 
-/** The team's chest: pieces held, by resource; a key absent holds none. */
-export type Chest = { pieces: Partial<Record<ResourceId, number>> };
+/** The team's chest: pieces held, by item; a key absent holds none. */
+export type Chest = { pieces: Partial<Record<ItemId, number>> };
 
 /** The player's one team: its characters in the order they were created, and its chest. */
 export type Team = { characters: Character[]; chest: Chest };

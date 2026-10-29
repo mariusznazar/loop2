@@ -325,6 +325,7 @@ export function withFirstChillRule(program: Program): Program {
       nextRuleId: program.nextRuleId + 1,
     };
   return {
+    ...program,
     groups: [
       {
         id: program.nextGroupId,

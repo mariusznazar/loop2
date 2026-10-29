@@ -32,6 +32,7 @@ const EXPLORING = programFromRules(rule(ALWAYS, { kind: "explore" }));
 const WANDERING = programFromRules(rule(ALWAYS, { kind: "wander" }));
 const EMPTY = {
   groups: [{ id: 1, name: "Program", condition: ALWAYS, rules: [] }],
+  tripPlan: { take: [], bring: [] },
   nextGroupId: 2,
   nextRuleId: 1,
 };

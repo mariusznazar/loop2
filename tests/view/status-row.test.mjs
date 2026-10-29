@@ -347,8 +347,13 @@ test("on the screen the pause button is hidden after death; „Restart” and �
       restart() {},
       end() {},
     });
-    const [text, pause, , , , , , restartButton, endButton] =
-      row.element.children;
+    const [text, pause] = row.element.children;
+    const restartButton = row.element.children.find(
+      (child) => child.textContent === "Restart",
+    );
+    const endButton = row.element.children.find(
+      (child) => child.textContent === "Zakończ",
+    );
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
     row.update(running);
     assert.equal(pause.hidden, false);
@@ -542,8 +547,13 @@ test("on the screen the text is positive after a completion and only then; the p
   globalThis.document = fakeDocument();
   try {
     const { row, paceButtons } = await rowAskingPaces();
-    const [text, pause, , , , , , restartButton, endButton] =
-      row.element.children;
+    const [text, pause] = row.element.children;
+    const restartButton = row.element.children.find(
+      (child) => child.textContent === "Restart",
+    );
+    const endButton = row.element.children.find(
+      (child) => child.textContent === "Zakończ",
+    );
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
     row.update(running);
     assert.equal(text.classes.has("positive"), false);
@@ -585,5 +595,33 @@ test("a discovery held at a completion stands under the completion's row", async
     );
   } finally {
     globalThis.document = saved;
+  }
+});
+
+test("the restart warning follows the current copy's take list", async () => {
+  const saved = globalThis.document;
+  const map = MAPS.forest;
+  globalThis.document = fakeDocument();
+  MAPS.forest = { ...map, carryIn: 2 };
+  try {
+    const { row } = await rowAskingPaces();
+    const warning = row.element.children.find(
+      (child) => child.className === "trip-warning",
+    );
+    const state = sent([]);
+    row.update(state);
+    assert.equal(warning.hidden, true);
+    const changed = setProgram(state, {
+      ...state.run.copy.program,
+      tripPlan: { take: [{ item: "berry", count: 3 }], bring: [] },
+    }).state;
+    row.update(changed);
+    assert.equal(warning.hidden, false);
+    assert.ok(warning.textContent.includes("2 sztuk"));
+    row.update(state);
+    assert.equal(warning.hidden, true);
+  } finally {
+    globalThis.document = saved;
+    MAPS.forest = map;
   }
 });

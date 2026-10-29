@@ -153,6 +153,7 @@ test("a new game sent with its one empty group waits until the minute of the fir
         rules: [explorationRule(1)],
       },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 2,
     nextRuleId: 2,
   });
@@ -190,7 +191,12 @@ test("the same span of minutes, however split, reaches the same game state with 
 });
 
 test("a program with no group gets the group Program with the condition Zawsze at the first chill, holding the rule", () => {
-  const empty = { groups: [], nextGroupId: 1, nextRuleId: 1 };
+  const empty = {
+    tripPlan: { take: [], bring: [] },
+    groups: [],
+    nextGroupId: 1,
+    nextRuleId: 1,
+  };
   const state = advanceMinutes(sentNew(empty), 84).state;
   assertWritten(state, {
     groups: [
@@ -201,6 +207,7 @@ test("a program with no group gets the group Program with the condition Zawsze a
         rules: [explorationRule(1)],
       },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 2,
     nextRuleId: 2,
   });
@@ -223,6 +230,7 @@ test("the rule is appended to the first group only, after its rules, with an ide
       },
       { id: 5, name: "Reszta", condition: { kind: "always" }, rules: [] },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 9,
     nextRuleId: 12,
   };
@@ -237,6 +245,7 @@ test("the rule is appended to the first group only, after its rules, with an ide
       },
       program.groups[1],
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 9,
     nextRuleId: 13,
   });

@@ -1,4 +1,6 @@
 export const BALANCE = {
+  /** Pieces of all items together in the team's chest. */
+  chestCapacity: 60,
   /** Game minutes that pass in one real second at the pace 1. */
   gameMinutesPerRealSecond: 1,
   /** The paces the player picks from; the game starts at the first. */

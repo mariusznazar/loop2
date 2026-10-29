@@ -194,11 +194,14 @@ def naming(program):
     # Locations, not field names alone, distinguish structural metadata from world references.
     # Flat fixtures remain readable until the grouped production contract replaces them.
     children = {
+        ("program", "tripPlan"): "trip-plan",
+        ("trip-plan", "take"): "trip-list", ("trip-plan", "bring"): "trip-list",
         ("program", "groups"): "groups", ("program", "rules"): "flat-rules",
         ("group", "rules"): "rules", ("group", "condition"): "condition",
         ("rule", "condition"): "condition", ("flat-rule", "condition"): "condition",
     }
-    members = {"groups": "group", "rules": "rule", "flat-rules": "flat-rule"}
+    members = {"groups": "group", "rules": "rule", "flat-rules": "flat-rule",
+               "trip-list": "trip-entry"}
 
     def visit(value, path, position=None):
         if isinstance(value, bool) or value is None:
@@ -221,6 +224,8 @@ def naming(program):
                 identity = ((position == "program" and name in ("nextGroupId", "nextRuleId"))
                             or (position in ("group", "rule") and name == "id"))
                 if identity and type(item) is int and item > 0:
+                    continue
+                if position == "trip-entry" and name == "count" and type(item) is int and item > 0:
                     continue
                 if position == "group" and name == "name" and isinstance(item, str):
                     continue
@@ -286,9 +291,14 @@ class ProgramWorldReference(unittest.TestCase):
             ],
         }
         self.assertEqual(naming(grouped), [])
+        grouped["tripPlan"] = {"take": [{"item": "stick", "count": 5}],
+                               "bring": [{"item": "berry", "count": 10}]}
+        self.assertEqual(naming(grouped), [])
         # The same spelling in an action, condition or unexpected container is not metadata.
         intrusions = (
             ("action id", ("groups", 0, "rules", 0, "action"), "id", 7),
+            ("trip coordinates", ("tripPlan", "take", 0), "at", {"q": 1, "r": 2}),
+            ("trip count container", ("tripPlan",), "count", 5),
             ("rule tile", ("groups", 0, "rules", 0), "tile", 3),
             ("action coordinates", ("groups", 0, "rules", 0, "action"), "at", {"q": 1, "r": 2}),
             ("numbered resource", ("groups", 0, "rules", 0, "action"), "resource", "stick 2"),

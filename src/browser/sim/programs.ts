@@ -17,6 +17,7 @@ import type {
   ProgramRule,
   ResourceId,
   SavedProgram,
+  TripEntry,
 } from "./types.js";
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -192,6 +193,25 @@ function uniqueIdentity(
   return id;
 }
 
+function checkTripList(value: unknown): TripEntry[] {
+  if (!Array.isArray(value)) throw new Error("program: no trip list");
+  const seen = new Set<ItemId>();
+  return value.map((entry: unknown) => {
+    if (!isObject(entry)) throw new Error("program: no trip entry");
+    const item = checkItem(entry.item);
+    const count = entry.count;
+    if (
+      seen.has(item) ||
+      typeof count !== "number" ||
+      !Number.isInteger(count) ||
+      count < 1
+    )
+      throw new Error("program: duplicate trip item or invalid count");
+    seen.add(item);
+    return { item, count };
+  });
+}
+
 /** A copy of the program built from the closed list; throws on anything outside it. */
 export function checkProgram(value: unknown, run: MapRun | null): Program {
   if (!isObject(value) || !Array.isArray(value.groups))
@@ -226,7 +246,12 @@ export function checkProgram(value: unknown, run: MapRun | null): Program {
     });
     return { id, name: group.name, condition, rules };
   });
-  return { groups, nextGroupId, nextRuleId };
+  if (!isObject(value.tripPlan)) throw new Error("program: no trip plan");
+  const tripPlan = {
+    take: checkTripList(value.tripPlan.take),
+    bring: checkTripList(value.tripPlan.bring),
+  };
+  return { groups, nextGroupId, nextRuleId, tripPlan };
 }
 
 /**
@@ -276,6 +301,7 @@ export const FIRST_PROGRAM_NAME = "Program";
 /** The content of a new program: the empty rule group „Program” under „Zawsze” (D-91). */
 export function emptyProgram(): Program {
   return {
+    tripPlan: { take: [], bring: [] },
     groups: [
       { id: 1, name: "Program", condition: { kind: "always" }, rules: [] },
     ],
@@ -513,14 +539,20 @@ export function zeroCounts(program: Program): GameState["ruleCounts"] {
  * The state with the map run's copy replaced by `program`, already checked: the counts are
  * reconciled with it and, where it differs from the copy before it — groups and rules in order with
  * their identities, conditions and actions, and the identity counters — the streak and the beaten
- * attacks of a map run not ended become 0, paused or not. The copy's program number and base stay.
+ * attacks of a map run not ended become 0, paused or not. A trip-plan-only change leaves that
+ * progress and the counts. The copy's program number and base stay.
  */
 export function withCopyProgram(
   state: GameState,
   run: GameMapRun,
   program: Program,
 ): GameState {
-  const zeroed = !mapRunEnded(run) && !sameData(run.copy.program, program);
+  const previous = run.copy.program;
+  const ruleContentChanged = !sameData(
+    [previous.groups, previous.nextGroupId, previous.nextRuleId],
+    [program.groups, program.nextGroupId, program.nextRuleId],
+  );
+  const zeroed = !mapRunEnded(run) && ruleContentChanged;
   return {
     ...state,
     ruleCounts: reconcileCounts(state.ruleCounts, run.copy.program, program),
@@ -534,7 +566,7 @@ export function withCopyProgram(
 
 /**
  * The measure „the copy has unsaved changes”: the map run's copy differs from its base, compared
- * as `setProgram` compares programs (the identity counters included), or its program is gone from
+ * as whole data (trip plan and identity counters included), or its program is gone from
  * the list. False without a map run.
  */
 export function copyHasUnsavedChanges(state: GameState): boolean {
