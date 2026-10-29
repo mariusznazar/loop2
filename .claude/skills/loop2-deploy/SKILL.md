@@ -7,8 +7,9 @@ description: How loop2's test-server deployment works - seeing which commit runs
 
 Loop2 runs in a Docker Compose project with an application and a Cloudflare Tunnel connector.
 The application keeps player accounts and sessions in a SQLite database in the named Docker
-volume `loop2_accounts` and signs session cookies with keys read from a root-provisioned file
-on the host.
+volume `loop2_accounts`, signs session cookies with keys read from a root-provisioned file
+on the host and sends account mail through Outsider's SMTP server with a password read from
+another root-provisioned file.
 A push to `main` starts `.github/workflows/deploy.yml`, whose SSH call passes the commit to the
 installed `/usr/local/bin/loop2-deploy`. Its source is `deploy/loop2-deploy`. The server fetches
 the code, prepares both images before replacing either container, recreates both services,
@@ -28,6 +29,7 @@ host port. The connector uses HTTP/2 over IPv4, encrypted to Cloudflare, with me
 | Deploy log / lock | `/var/log/loop2-deploy.log` / `/run/loop2-deploy.lock` |
 | Host token file / container secret | `/etc/loop2/cloudflared-token` / `/run/secrets/cloudflare_tunnel_token` |
 | Host session-key file / container secret | `/etc/loop2/session-secrets` / `/run/secrets/loop2_session_secrets` |
+| Host SMTP-password file / container secret | `/etc/loop2/smtp-password` / `/run/secrets/loop2_smtp_password` |
 | Account database volume / file in the container | `loop2_accounts` / `/app/data/accounts.sqlite` |
 
 The old game (`loop`) and `foundryvtt` share the host and stay untouched. Deployment never
@@ -46,13 +48,15 @@ files or requests. The MCP has full rights, so the following limits are an agree
   `free`, `df`, `docker system df`; `git -C /srv/loop2 log`,
   `git -C /srv/loop2 --no-optional-locks status`; `cat` of the deploy script and `cmp`;
   `docker volume ls --filter name=loop2_accounts`; the metadata of the session-key file only,
-  `stat -c '%U %g %a' /etc/loop2/session-secrets` (expects `root 1000 440`).
+  `stat -c '%U %g %a' /etc/loop2/session-secrets` (expects `root 1000 440`), and likewise the
+  metadata of the SMTP-password file only, `stat -c '%U %g %a' /etc/loop2/smtp-password`
+  (expects `root 1000 440`).
 - Allowed: the fixed internal application probe and bounded connector readiness command below;
   `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844`
   (also the same check for `region2.v2.argotunnel.com`). A **Connected** line is success evidence,
   often followed by timeout exit 124; it proves host TCP/IPv4 reachability only, not UDP or
   container connectivity. See `references/troubleshooting.md`.
-- No token-file or session-key-file reads, no reading or copying of the account database or
+- No token-file, session-key-file or SMTP-password-file reads, no triggering of mail (below), no reading or copying of the account database or
   its volume (it holds e-mail addresses and password hashes), full `docker inspect`, Compose
   configuration dumps, arbitrary container execution, restarts, deployments, key changes or
   secret rotation. The MCP's changing tools
@@ -125,6 +129,42 @@ the old game's state and installed-script mismatches are also logged.
   `references/setup_and_secrets.md`: deployment, persistence check, password measurement in the
   deployed image, public browser journey.
 
+## Account mail
+
+The application sends the address-confirmation message through Outsider's SMTP server on port
+587, from `loop2@mariusznazar.com`, over TLS only. The sender address, the server, the port
+and the login are plain values of the `app` service in `compose.yaml`; the password is not an
+environment value: it lies in `/etc/loop2/smtp-password` (owner root, group 1000, mode 0440,
+outside the checkout, one line of UTF-8 without a trailing newline), which Compose mounts
+read-only into `app` alone as `/run/secrets/loop2_smtp_password`. A copy stays in the owner's
+private note. The agent reads the file's metadata only and never its content.
+
+- **Rotation is the human's:** replace the file and the private copy, then recreate the
+  application container by deploying the running commit. Sequence: "The SMTP password" in
+  `references/setup_and_secrets.md`.
+- **What the human set up outside the repository** (H1, H2): in Outsider's panel the domain
+  `mariusznazar.com`, the mailbox `loop2@mariusznazar.com` and DKIM; in the domain's DNS at
+  Cloudflare an MX record to Outsider, an SPF TXT record, the DKIM TXT record at selector `x`,
+  and a DMARC TXT record whose reports go to the sender mailbox. The records of the website
+  itself were not touched.
+- **Never by an agent:** an agent never reads or changes the password or its file, and never
+  sends mail through Outsider: it does not log in to the SMTP server and does not create an
+  account or press "Wyślij ponownie" on the test server, since each of these sends a real
+  message from a monthly allowance of 1000.
+- **What an agent may read:** the mailer's failure line in the bounded service logs,
+  `Account mail failed: <code>`, with the error code only (never an address, link or
+  password). `EAUTH` means Outsider refused the login or the password; any other code, for
+  example `ECONNECTION`, `ETIMEDOUT` or `ETLS`, means a connection or TLS failure. The line
+  `Account mail missed its deadline` means the send was abandoned after 10 seconds. The agent
+  reports the code; the human changes the login in `compose.yaml` or the password file.
+- **Startup:** the five mail settings are required with the other account settings; a missing
+  or invalid setting, or a missing or invalid password file, stops the application before it
+  listens (exit 8). A password file that is missing at `compose up` fails there instead.
+  The merge of the change deploys it, so the file must exist on the server before the merge.
+- **The first delivery (H4):** the human deploys the branch commit, creates an account with an
+  address on an external mailbox, receives the message and opens its link. That deployment
+  also moves the database to schema version 3 (see Rollback).
+
 ## Blocking a player account
 
 The owner blocks a player account, and unblocks it, with one command run in the application
@@ -170,7 +210,10 @@ unused but intact; deploying forward again brings the accounts back. An applicat
 database whose schema version is newer than it knows, so an old commit may fail health with
 exit 8 on a newer database. The first deployment of a commit with account blocking moves the
 database to schema version 2, so from then on a rollback to a commit from before account
-blocking fails health with exit 8. Details and recovery: "Rollback and the accounts" in
+blocking fails health with exit 8. The first deployment of the commit with address
+confirmation, including the human's trial deployment of its branch (H4) before the merge,
+moves the database to schema version 3: an earlier commit, `main` included, then refuses it
+and fails health with exit 8, and only the human repairs the database. Details and recovery: "Rollback and the accounts" in
 `references/troubleshooting.md`.
 
 **Crossing the tunnel transition also requires the matching installed script and Cloudflare

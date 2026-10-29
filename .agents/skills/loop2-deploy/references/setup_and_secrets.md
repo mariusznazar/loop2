@@ -208,6 +208,79 @@ key is an older one): that key signs again, so its 30 days start only at the dep
 next makes another key first; keep every key that signed meanwhile until then. Never delete
 the file to "reset" the keys: the application refuses to start without it.
 
+## The SMTP password
+
+The application sends account mail through Outsider's SMTP server with a login and a password
+that belong to the mailbox `loop2@mariusznazar.com`. In `compose.yaml` the secret
+`loop2_smtp_password` has the host file `/etc/loop2/smtp-password` as its source and is granted
+to `app` alone, which sets `LOOP2_SMTP_PASSWORD_FILE` to `/run/secrets/loop2_smtp_password`;
+the connector does not receive it. The password is never an environment value. The sender
+address, the SMTP server, port 587 and the login are plain values in `compose.yaml`. As with
+the session keys, the host file's owner and mode apply inside the container: owner root, group
+**1000**, mode **0440**.
+
+The file holds the password and nothing else: UTF-8, at most 1 KiB, **no trailing newline** and
+no control character. A newline is refused at startup, not trimmed. A missing, unreadable,
+empty or malformed file stops the application before it listens; its log names the setting
+`LOOP2_SMTP_PASSWORD_FILE`, never the contents.
+
+**Before the first deployment of this change** (the merge deploys by itself, and without the
+file the game does not start), the human does outside the repository:
+
+- H1, in Outsider's panel: the domain `mariusznazar.com`, the mailbox `loop2@mariusznazar.com`
+  and DKIM switched on.
+- H2, in the domain's DNS at Cloudflare: an MX record to Outsider; an SPF TXT record and a
+  DMARC TXT record at `_dmarc` with `p=none` and reports to the sender mailbox, both as
+  Outsider's documentation gives them; the DKIM TXT record at `x._domainkey` with the value from
+  the panel (selector `x`). The records of the website (A, CNAME) are left alone.
+- H3, on the server: the file `/etc/loop2/smtp-password` as below, and a copy of the password
+  in the owner's private note.
+
+**Creating or replacing the file.** Run in bash as root on the server, from a private terminal.
+The password is typed at the prompt without echo, so it appears in no command argument, no
+shell history and no log; the file is replaced atomically. Each step depends on the one
+before it, so the block can be pasted whole:
+
+```sh
+f=/etc/loop2/smtp-password
+( umask 077
+  IFS= read -r -s -p 'SMTP password: ' pw &&
+  echo &&
+  test -n "$pw" &&
+  tmp=$(mktemp /etc/loop2/.smtp-password.XXXXXX) &&
+  trap 'rm -f -- "$tmp"' EXIT &&
+  printf '%s' "$pw" > "$tmp" &&
+  chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" &&
+  mv -T -- "$tmp" "$f" )
+stat -c '%U %g %a' "$f"
+```
+
+Expected: `root 1000 440`. Put the same value into the private note's copy and nowhere else.
+
+**Rotating the password** (a new mailbox password in Outsider's panel):
+
+1. Set the new password in Outsider's panel.
+2. Replace the file with the block above, and replace the private note's copy.
+3. Recreate the application container: read the running application commit from its label
+   (not the checkout's HEAD) and deploy exactly that commit with the installed script, as for
+   the tunnel token. The application reads the file only at startup, so until it is recreated
+   it keeps sending with the old password, which Outsider may already refuse.
+4. Check that the application is healthy. A later send shows in the bounded service logs
+   either nothing or the failure line `Account mail failed: <code>`; `EAUTH` means the login
+   or password is refused. The agent only reads that line.
+
+**A different login.** If Outsider wants a login other than the full sender address, the
+human changes the plain value `LOOP2_SMTP_USER` in `compose.yaml` through a request; no
+credential moves.
+
+**Trying delivery (H4)** belongs to the request that brings this change: the human deploys the
+request's head with `loop2-deploy <sha>`, creates an account with an address on an external
+mailbox, receives the message and opens its link; the address is then confirmed. If the
+message does not come, the agent reads the failure line (`EAUTH` against a connection or TLS
+code) and reports it. This deployment moves the database to schema version 3; if the request
+is not merged, the code on `main` refuses that database and only the human repairs it (see
+"Rollback and the accounts" in `troubleshooting.md`).
+
 ## The account database
 
 The database is the file `/app/data/accounts.sqlite` in the named Docker volume
@@ -235,7 +308,8 @@ been done on its head commit. The human does everything here (D-12).
    `deploy/loop2-deploy`: compare it with the installed copy as `troubleshooting.md` describes
    and, if they differ in behaviour, install from the exact head as above before deploying.
    The commands in this skill work with the script as it is.
-2. **Session keys.** The file exists with the expected owner, group and mode (see above).
+2. **Session keys and SMTP password.** Both files exist with the expected owner, group and
+   mode (see above).
 3. **Deployment.** Run `loop2-deploy <request head sha>` with `SSH_ORIGINAL_COMMAND` unset.
    The server log must end with `deployed <sha>, previously <sha>`. Check both services'
    health, the internal probe and both limits with the narrow commands in `SKILL.md`.
@@ -359,6 +433,8 @@ not an additional GitHub secret; the existing automation key transports only a c
   not this rotation procedure; an existing connection may remain active after token refresh.
 - **Session signing keys:** a new key first, the old one kept 30 days; see "Session signing keys"
   above. A rotation redeploys the running application commit and signs no player out.
+- **SMTP password:** replace the file and the private copy, then deploy the running application
+  commit to recreate the container; see "The SMTP password" above.
 - **Automation key:** append the new restricted public key, replace `DEPLOY_SSH_KEY`, verify a
   deployment, then remove the old authorized line and server copy of the private key.
 - **Repository Deploy key:** add a new read-only key, update the SSH alias, verify a fetch,
