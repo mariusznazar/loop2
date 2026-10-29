@@ -32,6 +32,7 @@ async function newKnowingGame(game, gamePath) {
   const { ACTIONS } = await data('actions.js');
   const { CAMPFIRE } = await data('campfire.js');
   const { CONDITIONS } = await data('conditions.js');
+  const { CREATURES } = await data('creatures.js');
   const { ITEMS } = await data('items.js');
   return {
     ...game.newGame(),
@@ -39,6 +40,7 @@ async function newKnowingGame(game, gamePath) {
       actions: Object.keys(ACTIONS),
       conditions: Object.keys(CONDITIONS),
       items: [...Object.keys(ITEMS), CAMPFIRE.id],
+      creatures: Object.keys(CREATURES),
     },
   };
 }

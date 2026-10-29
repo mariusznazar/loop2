@@ -47,6 +47,7 @@ TYPESCRIPT_EXTENSIONS = (".ts", ".tsx", ".mts", ".cts")
 # The game maps, resources and archetypes, with the identifier and the name the data gives each.
 ENTRIES = (
     {"kind": "map", "id": "forest", "name": "Las"},
+    {"kind": "map", "id": "forestDeep", "name": "Las — głębiej"},
     {"kind": "resource", "id": "stick", "name": "patyk"},
     {"kind": "resource", "id": "berry", "name": "jagoda"},
     {"kind": "resource", "id": "moss", "name": "mech"},

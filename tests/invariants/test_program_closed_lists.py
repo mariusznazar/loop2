@@ -23,7 +23,7 @@ Reading of the sentence:
   program in — it throws, or the state it returns holds the program the state had before,
   unchanged (written out below as BASE);
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
-  with valid fields, including all seven kinds on groups, is taken in as offered (the control
+  with valid fields, including all nine condition kinds on groups, is taken in as offered (the control
   that shows refusal is no blanket refusal).
 
 Every offer is made twice: in the headquarters (no map run) and during a map run of Las
@@ -61,9 +61,9 @@ T = 1760000000000
 # The kinds the data files list today: the keys of CONDITIONS (conditions.ts) and of ACTIONS
 # (actions.ts).
 CONDITION_KINDS = ("always", "hereBelow", "temperatureBelow", "satietyBelow", "itemBelow",
-                   "campfireLeftBelow", "awayFromCampfire")
+                   "campfireLeftBelow", "awayFromCampfire", "healthBelow", "opponentHealthBelow")
 ACTION_KINDS = ("explore", "wander", "walkTo", "walkToCampfire", "gather", "craftCampfire",
-                "lightCampfire", "lightItem", "feedCampfire", "eat")
+                "lightCampfire", "lightItem", "feedCampfire", "eat", "strikeWithStick", "kick", "dodge")
 
 ALWAYS = {"kind": "always"}
 
@@ -92,6 +92,9 @@ VALID = program_from_rules([
     rule(ALWAYS, {"kind": "lightItem"}),
     rule(ALWAYS, {"kind": "feedCampfire"}),
     rule(ALWAYS, {"kind": "eat"}),
+    rule({"kind": "healthBelow", "value": 50}, {"kind": "strikeWithStick"}),
+    rule({"kind": "opponentHealthBelow", "value": 10}, {"kind": "kick"}),
+    rule(ALWAYS, {"kind": "dodge"}),
 ])
 
 # Kinds no data file lists: made-up kinds, letter-case variants, names every JavaScript object
@@ -232,7 +235,7 @@ class ProgramClosedLists(unittest.TestCase):
     def test_group_conditions_accept_listed_values_and_refuse_unlisted_kinds(self):
         # invariant: program-closed-lists
         valid = {
-            "nextGroupId": 8, "nextRuleId": 1,
+            "nextGroupId": 10, "nextRuleId": 1,
             "groups": [
                 {"id": index + 1, "name": "Group", "condition": condition, "rules": []}
                 for index, condition in enumerate([
@@ -243,6 +246,8 @@ class ProgramClosedLists(unittest.TestCase):
                     {"kind": "itemBelow", "item": "berry", "value": 8},
                     {"kind": "campfireLeftBelow", "value": 20},
                     {"kind": "awayFromCampfire"},
+                    {"kind": "healthBelow", "value": 50},
+                    {"kind": "opponentHealthBelow", "value": 10},
                 ])
             ],
         }

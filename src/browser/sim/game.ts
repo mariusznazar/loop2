@@ -14,10 +14,9 @@ import { conditionNumber, onStep } from "./program.js";
 import { mixSeed } from "./random.js";
 import {
   mapRunEnded,
-  meetsSolving,
+  finishMinute,
   minuteBeforePick,
   newMapRun,
-  pickActivity,
   type GameEvent,
 } from "./run.js";
 import type {
@@ -47,6 +46,17 @@ const MS_PER_SECOND = 1000;
 
 function mapOf(mapId: MapId): MapDef {
   return MAPS[mapId];
+}
+
+/** Whether a map's prerequisite maps are all in this game's solved-map record. */
+export function canSendMap(
+  solvedMaps: readonly MapId[],
+  mapId: MapId,
+): boolean {
+  const prerequisite = mapOf(mapId).opensAfter;
+  return (
+    prerequisite === undefined || solvedMaps.includes(prerequisite as MapId)
+  );
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -142,6 +152,8 @@ function checkCondition(
     case "temperatureBelow":
     case "satietyBelow":
     case "campfireLeftBelow":
+    case "healthBelow":
+    case "opponentHealthBelow":
       return { kind: value.kind, value: checkNumber(value.kind, value.value) };
     case "awayFromCampfire":
       return { kind: "awayFromCampfire" };
@@ -183,6 +195,12 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
       return { kind: "feedCampfire" };
     case "eat":
       return { kind: "eat" };
+    case "strikeWithStick":
+      return { kind: "strikeWithStick" };
+    case "kick":
+      return { kind: "kick" };
+    case "dodge":
+      return { kind: "dodge" };
     default:
       throw new Error(
         `program: action kind ${String(value.kind)} is not on the closed list`,
@@ -287,9 +305,13 @@ function countStarts(
   if (counts === null) return null;
   let next = counts;
   for (const event of events) {
-    if (event.kind !== "activityStarted" || event.activity.kind !== "rule")
-      continue;
-    const id = event.activity.ruleId;
+    const id =
+      event.kind === "combatExchange"
+        ? event.exchange.characterAction?.ruleId
+        : event.kind === "activityStarted" && event.activity.kind === "rule"
+          ? event.activity.ruleId
+          : undefined;
+    if (id === undefined) continue;
     if (!Object.hasOwn(next, id)) continue;
     if (next === counts) next = { ...counts };
     next[id] += 1;
@@ -387,9 +409,9 @@ function sameData(a: unknown, b: unknown): boolean {
  * Replaces the program. Allowed with or without a map run; the running activity is left as it
  * is, and the program takes effect when the character next picks a program rule. Where the
  * program checked differs from the one the state holds — groups and rules in order with their
- * identities, conditions and actions, and the identity counters — the streak of a map run not
- * ended, in death or a completion, becomes 0, paused or not; a program handed back as it stands
- * leaves it.
+ * identities, conditions and actions, and the identity counters — the streak and defeated-attack
+ * count of a map run not ended, in death or a completion, become 0, paused or not; a program handed
+ * back as it stands leaves both.
  */
 export function setProgram(state: GameState, program: Program): GameResult {
   const checked = checkProgram(program, state.run);
@@ -400,7 +422,10 @@ export function setProgram(state: GameState, program: Program): GameResult {
       ...state,
       program: checked,
       ruleCounts: reconcileCounts(state, checked),
-      ...(zeroed && state.run && { run: { ...state.run, streak: 0 } }),
+      ...(zeroed &&
+        state.run && {
+          run: { ...state.run, streak: 0, defeatedAttacks: 0 },
+        }),
     },
     events: [],
   };
@@ -456,6 +481,8 @@ export function send(
   const { mapId, characterId } = ids;
   if (typeof mapId !== "string" || !Object.hasOwn(MAPS, mapId))
     throw new Error(`send: no map ${String(mapId)}`);
+  if (!canSendMap(state.solvedMaps, mapId))
+    throw new Error(`send: map ${mapId} is not available`);
   const sent = state.team.characters.find(
     (character) => character.id === characterId,
   );
@@ -594,6 +621,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   for (let minute = 0; minute < minutes; minute += 1) {
     const stepped = minuteBeforePick(run, map);
     events.push(...stepped.events);
+    const beforeUnderstanding = current.understanding;
     const found = discover(
       current.understanding,
       run,
@@ -611,26 +639,34 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         }),
       };
       program = programOf(current, run.character.id);
-      revealed = found.revealed;
+    }
+    const finished = finishMinute(stepped, map, program);
+    // Collect the entire minute once in catalog order, including its attack, after the
+    // earlier discovery has already informed the program used by this final phase.
+    const together = finished.events.some((event) => event.kind === "attacked")
+      ? discover(beforeUnderstanding, run, finished.run, [
+          ...stepped.events,
+          ...finished.events,
+        ])
+      : found;
+    const ending: GameEvent[] = finished.events.filter(
+      (event) =>
+        event.kind === "activityStarted" || event.kind === "mapRunCompleted",
+    );
+    events.push(...finished.events.filter((event) => !ending.includes(event)));
+    if (together) {
+      current = { ...current, understanding: together.understanding };
+      revealed = together.revealed;
       events.push({
         kind: "discovered",
-        minute: stepped.run.minute,
-        ...found.revealed,
+        minute: finished.run.minute,
+        ...revealed,
       });
     }
-    run = stepped.run;
-    if (!mapRunEnded(run) && meetsSolving(run, map)) {
-      run = { ...run, completion: { minute: run.minute } };
-      events.push({ kind: "mapRunCompleted", minute: run.minute });
-      completed = true;
-      break;
-    }
-    if (stepped.picks) {
-      const picked = pickActivity(run, map, program);
-      run = picked.run;
-      events.push(...picked.events);
-    }
-    if (run.death || revealed) break;
+    events.push(...ending);
+    run = finished.run;
+    completed = run.completion !== null;
+    if (mapRunEnded(run) || revealed) break;
   }
   return {
     state: {

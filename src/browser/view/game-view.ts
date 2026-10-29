@@ -12,6 +12,7 @@ import type { GameState } from "../sim/types.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createHeadquarters } from "./headquarters.js";
+import { createCombatLine } from "./combat-line.js";
 import { createProgramEditor } from "./program-editor.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
@@ -47,6 +48,7 @@ export function createGameView(): GameView {
   runPanel.className = "run-panel";
   // The terrain panel draws the map run and lists its revealed tiles.
   const terrainPanel = createTerrainPanel();
+  const combatLine = createCombatLine();
   element.append(programPanel, mapColumn);
 
   // The editor passes each edited program to the simulation; setProgram validates and replaces it.
@@ -111,6 +113,7 @@ export function createGameView(): GameView {
   runPanel.append(
     statusRow.element,
     statusRow.discovery,
+    combatLine.element,
     bodyRow.element,
     terrainPanel.element,
   );
@@ -121,6 +124,7 @@ export function createGameView(): GameView {
     runPanel.hidden = state.run === null;
     headquarters.update(state);
     statusRow.update(state);
+    combatLine.update(state.run?.lastCombat ?? null);
     bodyRow.update(state);
     terrainPanel.update(state);
   }

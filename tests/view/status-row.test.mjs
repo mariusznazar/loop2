@@ -70,6 +70,64 @@ test("a running map run on the forest with a streak of 120 reads the minute, the
   );
 });
 
+test("progress text shows only the solving requirements present in the map data", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const deep = {
+    ...state,
+    run: {
+      ...state.run,
+      mapId: "forestDeep",
+      streak: 120,
+      defeatedAttacks: 1,
+    },
+  };
+  assert.equal(
+    statusText(deep.run, false),
+    "Minuta 0 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2",
+  );
+});
+
+test("the encounter takes the activity label through its resolution minute, before the next ordinary action", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const lastCombat = {
+    creatureId: "wolf",
+    attackMinute: 10,
+    resolveMinute: 15,
+    result: null,
+  };
+  const active = {
+    ...state.run,
+    mapId: "forestDeep",
+    minute: 12,
+    activeCombat: lastCombat,
+    current: null,
+  };
+  assert.equal(
+    statusText(active, false),
+    "Minuta 12 · Walczy z wilkiem · Passa 0/540 · Pokonane napaści 0/2",
+  );
+  const resolved = {
+    ...active,
+    minute: 15,
+    activeCombat: null,
+    current: {
+      activity: ruleActivity({ kind: "explore" }),
+      startMinute: 15,
+      endMinute: 35,
+      stepTo: null,
+    },
+    lastCombat: { ...lastCombat, result: { outcome: "creatureDefeated" } },
+  };
+  assert.equal(
+    statusText(resolved, false),
+    "Minuta 15 · Walczy z wilkiem · Passa 0/540 · Pokonane napaści 0/2",
+  );
+  assert.equal(
+    statusText({ ...resolved, death: { minute: 15, cause: "combat" } }, false),
+    "Minuta 15 · Mag zginął w walce",
+  );
+});
+
 test("exploring shows the minute and „Eksploruje”", () => {
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(
@@ -313,6 +371,7 @@ const EXPLORED_REVEALED = {
   actions: ["walkTo", "gather"],
   conditions: ["hereBelow", "itemBelow"],
   items: ["stick", "berry"],
+  creatures: [],
 };
 
 test("the text for the first finished exploration of a tile with sticks and berries is the task's example", () => {
@@ -328,6 +387,7 @@ test("the text for the first chill names its actions and its condition with the 
       actions: ["explore", "wander"],
       conditions: ["temperatureBelow"],
       items: [],
+      creatures: [],
     }),
     "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
   );
@@ -339,8 +399,21 @@ test("a discovery of an action alone has no second sentence, and the campfire is
       actions: ["lightItem"],
       conditions: [],
       items: ["campfire"],
+      creatures: [],
     }),
     "Odkryto: Zapal — patyk, Ognisko.",
+  );
+});
+
+test("a discovered creature is named from the creature data", () => {
+  assert.equal(
+    discoveryText({
+      actions: [],
+      conditions: [],
+      items: [],
+      creatures: ["wolf"],
+    }),
+    "Odkryto: Wilk.",
   );
 });
 
@@ -350,6 +423,7 @@ test("a condition that takes no number is named without a unit, and a discovery 
       actions: [],
       conditions: ["awayFromCampfire"],
       items: [],
+      creatures: [],
     }),
     "W regułach można teraz sprawdzić: Z dala od — ognisko.",
   );
@@ -496,7 +570,12 @@ test("a discovery held at a completion stands under the completion's row", async
   try {
     const { row } = await rowAskingPaces();
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-    const discovery = { actions: ["explore"], conditions: [], items: [] };
+    const discovery = {
+      actions: ["explore"],
+      conditions: [],
+      items: [],
+      creatures: [],
+    };
     row.update({ ...completed(running, 480), discovery });
     assert.equal(row.discovery.hidden, false);
     assert.equal(row.discovery.textContent, "Odkryto: Eksploruj.");

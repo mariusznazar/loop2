@@ -1,7 +1,7 @@
 import { ARCHETYPES, CREATED_ARCHETYPE } from "../sim/data/archetypes.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
-import { characterName } from "../sim/game.js";
+import { canSendMap, characterName } from "../sim/game.js";
 import type {
   CharacterId,
   Chest,
@@ -17,8 +17,11 @@ import { createTextField } from "./controls/text-field.js";
 export const EMPTY_NAME_MESSAGE = "Wpisz imię postaci.";
 
 /** The maps a character can be sent to, in the data's order. Pure. */
-export function sendMaps(): MapId[] {
-  return Object.keys(MAPS) as MapId[];
+export function sendMaps(solvedMaps?: readonly MapId[]): MapId[] {
+  const maps = Object.keys(MAPS) as MapId[];
+  return solvedMaps === undefined
+    ? maps
+    : maps.filter((mapId) => canSendMap(solvedMaps, mapId));
 }
 
 /** The map's name in a character's row: „Mapa: {name}”, with „ · rozwiązana” once the map is solved. Pure. */
@@ -145,7 +148,7 @@ export function createHeadquarters(
       archetype.className = "team-member-archetype";
       archetype.textContent = ARCHETYPES[character.archetypeId].name;
       row.append(name, archetype);
-      for (const mapId of sendMaps()) {
+      for (const mapId of sendMaps(solved)) {
         const isSolved = solved.includes(mapId);
         const where = document.createElement("span");
         where.className = isSolved ? "map-label solved" : "map-label";

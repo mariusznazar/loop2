@@ -15,6 +15,9 @@ export const ARCHETYPES = {
       "campfireCrafting",
       "eating",
       "flameSpell",
+      "oneHandedCombat",
+      "kicking",
+      "dodging",
     ],
   },
 } as const satisfies Record<string, ArchetypeDef>;

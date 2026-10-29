@@ -1,11 +1,12 @@
 /** Kinds of draw; each has its own generator, derived from the map run's seed. */
-export type Stream = "layout" | "wander" | "gather";
+export type Stream = "layout" | "wander" | "gather" | "attack";
 
 /** A fixed distinct constant per stream: adding a stream changes no existing one. */
 const STREAM_CONSTANT: Record<Stream, number> = {
   layout: 0x4c41594f,
   wander: 0x57414e44,
   gather: 0x47415448,
+  attack: 0x4154544b,
 };
 
 /** MurmurHash3's 32-bit finaliser. */

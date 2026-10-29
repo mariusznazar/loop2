@@ -90,6 +90,23 @@ test("a map run starts at minute 0 on the entrance with the first activity chose
   );
 });
 
+test("combat actions cannot be selected as ordinary map activities", () => {
+  const run = start().run;
+  for (const action of [
+    { kind: "strikeWithStick" },
+    { kind: "kick" },
+    { kind: "dodge" },
+  ]) {
+    assert.equal(actionFeasible(run, map, action), false, action.kind);
+    const program = programFromRules(rule(ALWAYS, action));
+    assert.deepEqual(
+      stepMinute(freeNextMinute(run), map, program).run.current.activity,
+      { kind: "wait" },
+      action.kind,
+    );
+  }
+});
+
 test("explore takes 20 minutes, reveals the tile and brings nothing", () => {
   assert.equal(ACTIONS.explore.minutes, 20);
   const { run } = start();

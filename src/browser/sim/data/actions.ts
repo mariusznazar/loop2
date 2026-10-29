@@ -1,4 +1,5 @@
 import type { Revelation } from "./revelations.js";
+import type { ItemId } from "./items.js";
 
 export type ActionDef = {
   label: string;
@@ -8,6 +9,8 @@ export type ActionDef = {
   minutes: number | null;
   /** The event that reveals the action to the player. */
   revealedBy: Revelation;
+  /** Combat-only effect; absent actions belong to ordinary map time. */
+  combat?: { damage: number; item?: ItemId } | { reducesNextDamageBy: number };
 };
 
 export type ActionId = keyof typeof ACTIONS;
@@ -77,5 +80,26 @@ export const ACTIONS = {
     status: "Je jagodę",
     minutes: 5,
     revealedBy: { kind: "gathered", item: "berry" },
+  },
+  strikeWithStick: {
+    label: "Uderz — patyk",
+    status: "Uderza patykiem",
+    minutes: null,
+    revealedBy: { kind: "attacked", creature: "wolf" },
+    combat: { damage: 6, item: "stick" },
+  },
+  kick: {
+    label: "Kopnij",
+    status: "Kopie",
+    minutes: null,
+    revealedBy: { kind: "attacked", creature: "wolf" },
+    combat: { damage: 3 },
+  },
+  dodge: {
+    label: "Odskocz",
+    status: "Odskakuje",
+    minutes: null,
+    revealedBy: { kind: "attacked", creature: "wolf" },
+    combat: { reducesNextDamageBy: 5 },
   },
 } as const satisfies Record<string, ActionDef>;

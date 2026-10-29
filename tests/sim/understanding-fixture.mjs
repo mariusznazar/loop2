@@ -1,6 +1,7 @@
 import { ACTIONS } from "../../dist/public/sim/data/actions.js";
 import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
 import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
+import { CREATURES } from "../../dist/public/sim/data/creatures.js";
 import { ITEMS } from "../../dist/public/sim/data/items.js";
 import { newGame } from "../../dist/public/sim/game.js";
 
@@ -13,6 +14,7 @@ export function fullUnderstanding() {
     actions: Object.keys(ACTIONS),
     conditions: Object.keys(CONDITIONS),
     items: [...Object.keys(ITEMS), CAMPFIRE.id],
+    creatures: Object.keys(CREATURES),
   };
 }
 

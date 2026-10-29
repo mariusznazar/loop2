@@ -2,11 +2,13 @@ import { ACTIONS } from "../sim/data/actions.js";
 import { BALANCE } from "../sim/data/balance.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
+import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
-import { MAPS } from "../sim/data/maps.js";
+import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type {
   Activity,
+  CreatureId,
   DeathCause,
   GameState,
   MapRun,
@@ -22,6 +24,7 @@ const PAUSED_SUFFIX = " (pauza)";
 const DEATH_TEXTS: Record<DeathCause, string> = {
   cold: "Mag zamarzł",
   hunger: "Mag umarł z głodu",
+  combat: "Mag zginął w walce",
 };
 
 /**
@@ -46,10 +49,28 @@ function activityText(activity: Activity): string {
 export function statusText(run: MapRun, paused: boolean): string {
   if (run.death)
     return `Minuta ${run.death.minute} · ${DEATH_TEXTS[run.death.cause]}`;
-  const map = MAPS[run.mapId];
+  const map: MapDef = MAPS[run.mapId];
   if (run.completion)
     return `Minuta ${run.completion.minute} · ${map.completionText}`;
-  return `Minuta ${run.minute} · ${activityText(run.current.activity)} · Passa ${run.streak}/${map.solving.streak}${paused ? PAUSED_SUFFIX : ""}`;
+  const progress = [
+    map.solving.streak === undefined
+      ? null
+      : `Passa ${run.streak}/${map.solving.streak}`,
+    map.solving.defeatedAttacks === undefined
+      ? null
+      : `Pokonane napaści ${run.defeatedAttacks}/${map.solving.defeatedAttacks}`,
+  ].filter((part): part is string => part !== null);
+  const combat =
+    run.activeCombat ||
+    (run.lastCombat?.result && run.lastCombat.resolveMinute === run.minute
+      ? run.lastCombat
+      : null);
+  const activity = combat
+    ? `Walczy z ${creatureAfterZ(combat.creatureId)}`
+    : run.current
+      ? activityText(run.current.activity)
+      : WAIT_TEXT;
+  return `Minuta ${run.minute} · ${activity} · ${progress.join(" · ")}${paused ? PAUSED_SUFFIX : ""}`;
 }
 
 /**
@@ -66,6 +87,19 @@ export function pauseLabel(state: GameState): string | null {
 function discoveredItemName(id: Understanding["items"][number]): string {
   const name = id === CAMPFIRE.id ? CAMPFIRE.name : ITEMS[id].name;
   return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+/** A creature's name with a capital first letter. */
+function discoveredCreatureName(
+  id: Understanding["creatures"][number],
+): string {
+  const name = CREATURES[id].name;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function creatureAfterZ(id: CreatureId): string {
+  const name = CREATURES[id].name;
+  return name.endsWith("k") ? `${name.slice(0, -1)}kiem` : name;
 }
 
 /** A condition's label, followed for a condition that takes a number by „ … ” and its unit. */
@@ -90,6 +124,7 @@ export function discoveryText(discovery: Understanding): string {
   const found = [
     ...discovery.actions.map((kind) => ACTIONS[kind].label),
     ...discovery.items.map(discoveredItemName),
+    ...discovery.creatures.map(discoveredCreatureName),
   ];
   const checkable = discovery.conditions.map(discoveredConditionText);
   const sentences: string[] = [];

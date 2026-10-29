@@ -1,12 +1,13 @@
 import type { ArchetypeId } from "./data/archetypes.js";
 import type { BALANCE } from "./data/balance.js";
 import type { CAMPFIRE } from "./data/campfire.js";
+import type { CreatureId } from "./data/creatures.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
 import type { Traits } from "./data/traits.js";
 
-export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
+export type { ArchetypeId, CreatureId, ItemId, MapId, ResourceId, Traits };
 
 /** A multiplier of the game minutes per real second that the player picks, from the data. */
 export type Pace = (typeof BALANCE.paces)[number];
@@ -22,7 +23,15 @@ export type Condition =
   | { kind: "satietyBelow"; value: number }
   | { kind: "itemBelow"; item: ItemId; value: number }
   | { kind: "campfireLeftBelow"; value: number }
+  | { kind: "healthBelow"; value: number }
+  | { kind: "opponentHealthBelow"; value: number }
   | { kind: "awayFromCampfire" };
+
+/** Health values for the side whose rule is being checked and its opponent, when present. */
+export type ConditionContext = {
+  health: number;
+  opponentHealth?: number;
+};
 
 export type Action =
   | { kind: "explore" }
@@ -34,7 +43,10 @@ export type Action =
   | { kind: "lightCampfire" }
   | { kind: "lightItem" }
   | { kind: "feedCampfire" }
-  | { kind: "eat" };
+  | { kind: "eat" }
+  | { kind: "strikeWithStick" }
+  | { kind: "kick" }
+  | { kind: "dodge" };
 
 /** Stable within a program, including after a rule moves to another group. */
 export type RuleId = number;
@@ -56,18 +68,56 @@ export type Program = {
   nextRuleId: RuleId;
 };
 
+export type CombatOutcome =
+  "creatureDefeated" | "characterDied" | "creatureDeparted";
+
+export type CombatCreatureAction =
+  | { kind: "strike"; damage: number; characterHealth: number }
+  | { kind: "dodge" };
+
+export type CombatCharacterAction = {
+  ruleId: RuleId;
+  action: Extract<Action, { kind: "strikeWithStick" | "kick" | "dodge" }>;
+  damage: number;
+  creatureHealth: number;
+  characterHealth: number;
+};
+
+export type CombatExchange = {
+  creatureAction: CombatCreatureAction;
+  characterAction: CombatCharacterAction | null;
+};
+
+export type CombatResult = {
+  characterHealth: number;
+  creatureHealth: number;
+  outcome: CombatOutcome;
+  exchanges: CombatExchange[];
+  ruleStarts: Record<RuleId, number>;
+};
+
+export type ActiveCombat = {
+  creatureId: CreatureId;
+  attackMinute: number;
+  resolveMinute: number;
+};
+
+/** The last attack remains readable after combat or an early completion. */
+export type LastCombat = ActiveCombat & { result: CombatResult | null };
+
 /** What the Understanding records of the campfire: it is discoverable, yet no item of the backpack. */
 export type CampfireId = typeof CAMPFIRE.id;
 
 /**
  * What the player has discovered, by data identifiers: actions and conditions by their kinds, and
- * items, the campfire included, by their ids. One for the whole game and every character. Also the
- * shape of a repertoire, the subset of it that a character can use.
+ * items, the campfire included, and creatures by their ids. One for the whole game and every
+ * character. Also the shape of a repertoire, the subset of it that a character can use.
  */
 export type Understanding = {
   actions: Action["kind"][];
   conditions: Condition["kind"][];
   items: (ItemId | CampfireId)[];
+  creatures: CreatureId[];
 };
 
 export type Tile = {
@@ -133,7 +183,7 @@ export type BurningItem = {
   minutesLeft: number;
 };
 
-export type DeathCause = "cold" | "hunger";
+export type DeathCause = "cold" | "hunger" | "combat";
 
 /** The end of a map run in the character's death. */
 export type Death = { minute: number; cause: DeathCause };
@@ -155,8 +205,14 @@ export type MapRun = {
   campfires: Campfire[];
   /** None at start. */
   burningItems: BurningItem[];
-  /** Always set while the run exists; kept as it stood when the character dies. */
-  current: CurrentActivity;
+  /** Absent in combat, and after combat death or completion before another ordinary pick. */
+  current: CurrentActivity | null;
+  activeCombat: ActiveCombat | null;
+  lastCombat: LastCombat | null;
+  /** Generator state of the independent attack stream. */
+  attackRandom: number;
+  /** Minute zero or the end of the latest encounter. */
+  attackCooldownStart: number;
   /** Generator state of the wander stream. */
   wanderRandom: number;
   /** Generator state of the gathering stream. */
@@ -166,6 +222,8 @@ export type MapRun = {
    * hunger; 0 at start, and 0 in the game minute of death.
    */
   streak: number;
+  /** Attacks defeated in this map run; losses to cold or hunger do not change it. */
+  defeatedAttacks: number;
   /** Set once the character dies; then no game minute passes. */
   death: Death | null;
   /** Set once the map run meets the solving condition of its map; then no game minute passes. */

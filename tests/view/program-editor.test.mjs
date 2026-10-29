@@ -149,6 +149,8 @@ test("group conditions offer the same kinds and editable fields while preserving
     ["satietyBelow", { kind: "satietyBelow", value: 50 }],
     ["itemBelow", { kind: "itemBelow", item: "stick", value: 8 }],
     ["campfireLeftBelow", { kind: "campfireLeftBelow", value: 20 }],
+    ["healthBelow", { kind: "healthBelow", value: 50 }],
+    ["opponentHealthBelow", { kind: "opponentHealthBelow", value: 10 }],
     ["awayFromCampfire", { kind: "awayFromCampfire" }],
   ]) {
     const changed = withConditionKind(THREE, 1, null, kind, LAS, ITEMS_LISTED);
@@ -512,6 +514,10 @@ test("the number field's range and step follow the condition kind; a kind with n
   assert.deepEqual(input, { min: "0", max: "100", step: "1" });
   showFieldRange(input, "campfireLeftBelow");
   assert.deepEqual(input, { min: "0", max: "120", step: "1" });
+  showFieldRange(input, "healthBelow");
+  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
+  showFieldRange(input, "opponentHealthBelow");
+  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
   showFieldRange(input, "itemBelow");
   assert.deepEqual(input, { min: "0", max: "50", step: "1" });
   showFieldRange(input, "always");
@@ -824,6 +830,7 @@ const AFTER_FIRST_CHILL = {
   actions: ["explore", "wander"],
   conditions: ["always", "temperatureBelow"],
   items: [],
+  creatures: [],
 };
 const gameKnowing = (understanding) => ({ ...newGame(), understanding });
 
@@ -846,6 +853,7 @@ test("target lists follow the Understanding's items: resources of the shown map 
     actions: [],
     conditions: ["always"],
     items: ["moss", "campfire", "stick"],
+    creatures: [],
   });
   assert.deepEqual(offeredResources(state), ["stick", "moss"]);
   assert.deepEqual(offeredItems(state), ["stick", "moss"]);
@@ -853,6 +861,7 @@ test("target lists follow the Understanding's items: resources of the shown map 
     actions: [],
     conditions: ["always"],
     items: ["campfire"],
+    creatures: [],
   });
   assert.deepEqual(offeredResources(onlyCampfire), []);
   assert.deepEqual(offeredItems(onlyCampfire), []);
@@ -905,6 +914,33 @@ const selectsLabelled = (editor, label) =>
     (element) => element.attributes?.["aria-label"] === label,
   );
 const optionValues = (select) => select.children.map((option) => option.value);
+
+test("the existing condition picker creates both combat health conditions with their defaults", () => {
+  withEditorDocument(() => {
+    const committed = [];
+    const known = gameKnowing({
+      actions: ["explore"],
+      conditions: ["always", "healthBelow", "opponentHealthBelow"],
+      items: [],
+      creatures: [],
+    });
+    const editor = createProgramEditor((program) => committed.push(program));
+    editor.update({ ...known, program: THREE });
+
+    for (const [kind, expected] of [
+      ["healthBelow", { kind: "healthBelow", value: 50 }],
+      ["opponentHealthBelow", { kind: "opponentHealthBelow", value: 10 }],
+    ]) {
+      const [condition] = selectsLabelled(editor, "Warunek grupy");
+      assert.ok(optionValues(condition).includes(kind));
+      condition.value = kind;
+      condition.listeners.change();
+      assert.deepEqual(committed.at(-1).groups[0].condition, expected);
+      editor.update({ ...known, program: committed.at(-1) });
+    }
+  });
+});
+
 const addRuleButtons = (editor) =>
   descendants(editor.element).filter(
     (element) =>
@@ -952,6 +988,7 @@ test("a rule holding a kind or a target outside the lists still shows it, after 
         actions: ["explore"],
         conditions: ["always"],
         items: ["stick"],
+        creatures: [],
       }),
       program: THREE,
     });
@@ -986,6 +1023,7 @@ test("the item list of „Zapas poniżej” offers the backpack items of the Und
         actions: ["explore"],
         conditions: ["always", "itemBelow"],
         items: ["fiber", "campfire", "berry"],
+        creatures: [],
       }),
       program,
     });
@@ -1001,6 +1039,7 @@ const NO_TARGETS = {
   actions: ["explore", "wander", "walkTo", "gather"],
   conditions: ["always", "hereBelow", "itemBelow"],
   items: [],
+  creatures: [],
 };
 
 test("kinds that name a resource or an item are not offered while the Understanding holds no target for them", () => {
@@ -1074,6 +1113,8 @@ test("every program the editor builds passes setProgram, before sending and duri
     "satietyBelow",
     "itemBelow",
     "campfireLeftBelow",
+    "healthBelow",
+    "opponentHealthBelow",
     "awayFromCampfire",
   ]);
   assert.deepEqual(actionKinds, [
@@ -1083,6 +1124,9 @@ test("every program the editor builds passes setProgram, before sending and duri
     "walkToCampfire",
     "gather",
     ...CAMPFIRE_AND_BACKPACK,
+    "strikeWithStick",
+    "kick",
+    "dodge",
   ]);
 
   // Every pair of kinds, every resource and item in every slot, and the number at its ends, off its

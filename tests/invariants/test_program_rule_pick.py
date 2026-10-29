@@ -152,7 +152,8 @@ for (const [name, ...args] of steps) {
     state = { ...state, understanding: {
       actions: keep(state.understanding.actions, 'actions'),
       conditions: keep(state.understanding.conditions, 'conditions'),
-      items: keep(state.understanding.items, 'items') } };
+      items: keep(state.understanding.items, 'items'),
+      creatures: keep(state.understanding.creatures, 'creatures') } };
   } else {
     state = game[name](state, ...args).state;
   }

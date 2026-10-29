@@ -57,10 +57,12 @@ const ALL_CONDITIONS = [
   "awayFromCampfire",
 ];
 const ALL_ITEMS = ["stick", "berry", "moss", "fiber", "campfire"];
+const ALL_CREATURES = ["wolf"];
 const FULL = {
   actions: ALL_ACTIONS,
   conditions: ALL_CONDITIONS,
   items: ALL_ITEMS,
+  creatures: ALL_CREATURES,
 };
 // Skill -> the actions it grows, as To do 3 gives them.
 const GROWN = {
@@ -77,11 +79,13 @@ test("a new game's Understanding holds the condition Zawsze alone", () => {
     actions: [],
     conditions: ["always"],
     items: [],
+    creatures: [],
   });
   assert.deepEqual(newGame().understanding, {
     actions: [],
     conditions: ["always"],
     items: [],
+    creatures: [],
   });
 });
 
@@ -95,11 +99,26 @@ test("the mage, with all five skills, has the Understanding as its repertoire", 
   assert.deepEqual(repertoireOf(FULL, ALL_SKILLS), FULL);
 });
 
+test("the repertoire keeps discovered creatures in their own list", () => {
+  const understanding = {
+    actions: ["kick"],
+    conditions: ["always"],
+    items: [],
+    creatures: ["wolf"],
+  };
+  const repertoire = repertoireOf(understanding, []);
+  assert.deepEqual(repertoire.creatures, ["wolf"]);
+  assert.notEqual(repertoire.creatures, understanding.creatures);
+  repertoire.creatures.length = 0;
+  assert.deepEqual(understanding.creatures, ["wolf"]);
+});
+
 test("the repertoire of the mage keeps the order of the Understanding", () => {
   const understanding = {
     actions: ["eat", "walkTo", "explore"],
     conditions: ["satietyBelow", "always"],
     items: ["campfire", "berry"],
+    creatures: [],
   };
   assert.deepEqual(repertoireOf(understanding, ALL_SKILLS), understanding);
 });
@@ -129,6 +148,7 @@ test("an action is in the repertoire only where the Understanding holds it", () 
     actions: ["wander", "gather"],
     conditions: [],
     items: [],
+    creatures: [],
   };
   assert.deepEqual(repertoireOf(understanding, ALL_SKILLS).actions, [
     "wander",
@@ -144,6 +164,7 @@ test("computing a repertoire changes neither argument and shares no array with t
     actions: ["explore", "eat"],
     conditions: ["always"],
     items: ["stick"],
+    creatures: [],
   };
   const predispositions = ["exploration"];
   const repertoire = repertoireOf(understanding, predispositions);
@@ -151,6 +172,7 @@ test("computing a repertoire changes neither argument and shares no array with t
     actions: ["explore", "eat"],
     conditions: ["always"],
     items: ["stick"],
+    creatures: [],
   });
   assert.deepEqual(predispositions, ["exploration"]);
   repertoire.conditions.push("hereBelow");
@@ -163,6 +185,7 @@ const SMALL = {
   actions: ["explore", "walkTo", "gather", "wander", "eat"],
   conditions: ["always", "hereBelow", "itemBelow", "temperatureBelow"],
   items: ["stick", "campfire"],
+  creatures: [],
 };
 
 function rule(id, condition, action) {
@@ -242,7 +265,12 @@ test("targets follow the items of the Understanding: the same rule moves in as i
 });
 
 test("an action and a condition that name no target need no item", () => {
-  const bare = { actions: ["explore"], conditions: ["always"], items: [] };
+  const bare = {
+    actions: ["explore"],
+    conditions: ["always"],
+    items: [],
+    creatures: [],
+  };
   assert.equal(actionInRepertoire(bare, { kind: "explore" }), true);
   assert.equal(conditionInRepertoire(bare, { kind: "always" }), true);
 });
@@ -336,6 +364,7 @@ test("the editor shows the repertoire of the mage through the Understanding, in 
     actions: ["explore", "wander", "eat"],
     conditions: ["always"],
     items: ["stick"],
+    creatures: [],
   };
   const hq = { ...createCharacter(newGame(), "Ala").state, understanding };
   assert.deepEqual(editorRepertoire(hq), understanding);
@@ -359,6 +388,7 @@ test("creating, sending, restarting, pausing, changing the program and ending le
     actions: ["explore", "walkTo"],
     conditions: ["always", "hereBelow"],
     items: ["stick", "campfire"],
+    creatures: [],
   };
   const expected = structuredClone(understanding);
   let state = { ...newGame(), understanding };
@@ -391,6 +421,7 @@ test("a character's death leaves the Understanding as it is", () => {
     actions: ["wander", "explore"],
     conditions: ["always", "temperatureBelow"],
     items: [],
+    creatures: [],
   };
   const state = advanceMinutes({ ...sent(), understanding }, 3000).state;
   assert.ok(state.run.death, "the character died");
@@ -398,6 +429,7 @@ test("a character's death leaves the Understanding as it is", () => {
     actions: ["wander", "explore"],
     conditions: ["always", "temperatureBelow"],
     items: [],
+    creatures: [],
   });
 });
 

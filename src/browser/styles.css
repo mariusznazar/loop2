@@ -387,6 +387,12 @@ header h1 {
   color: var(--discovery);
 }
 
+.combat-line {
+  margin: var(--space-xs) 0 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
 /* The row of the body and the backpack under the status row. */
 .body-row {
   display: flex;
