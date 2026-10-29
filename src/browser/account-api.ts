@@ -5,6 +5,15 @@
 export interface Account {
   readonly id: string;
   readonly email: string;
+  readonly emailConfirmed: boolean;
+}
+
+/** What the server reports of the confirmation message it was asked to send. */
+export type ConfirmationMessage = "sent" | "limited" | "failed";
+
+/** The account just created, with the outcome of its first confirmation message. */
+export interface RegisteredAccount extends Account {
+  readonly confirmationMessage: ConfirmationMessage;
 }
 
 /** The codes the account routes put on a refusal of their own. */
@@ -20,6 +29,8 @@ export const refusalCodes = [
   "too-many-attempts",
   "session-unavailable",
   "logout-failed",
+  "invalid-link",
+  "email-already-confirmed",
 ] as const;
 
 export type RefusalCode = (typeof refusalCodes)[number];
@@ -55,13 +66,17 @@ export interface AccountClient {
     email: string,
     password: string,
     passwordConfirmation: string,
-  ): Promise<AccountResult<Account>>;
+  ): Promise<AccountResult<RegisteredAccount>>;
   /** POST /api/session */
   login(email: string, password: string): Promise<AccountResult<Account>>;
   /** GET /api/account */
   currentAccount(): Promise<AccountResult<Account>>;
   /** POST /api/logout */
   logout(): Promise<AccountResult<null>>;
+  /** POST /api/email-confirmation: spends the link's token; needs no session. */
+  confirmEmail(token: string): Promise<AccountResult<null>>;
+  /** POST /api/email-confirmation-message: asks for a new link for the signed-in account. */
+  sendConfirmationMessage(): Promise<AccountResult<ConfirmationMessage>>;
 }
 
 export interface AccountClientOptions {
@@ -118,16 +133,48 @@ function unexpected(reply: Reply): AccountFailure {
   };
 }
 
-/** The two string fields of an account, copied; any other property is dropped. */
-function accountOf(text: string): Account | null {
+function objectOf(text: string): Record<string, unknown> | null {
   const body = parseJson(text);
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
     return null;
   }
-  const { id, email } = body as Record<string, unknown>;
+  return body as Record<string, unknown>;
+}
+
+function isConfirmationMessage(value: unknown): value is ConfirmationMessage {
+  return value === "sent" || value === "limited" || value === "failed";
+}
+
+/** The fields of an account, copied; any other property is dropped. */
+function accountOfBody(body: Record<string, unknown>): Account | null {
+  const { id, email, emailConfirmed } = body;
   if (typeof id !== "string" || id === "") return null;
   if (typeof email !== "string" || email === "") return null;
-  return { id, email };
+  if (typeof emailConfirmed !== "boolean") return null;
+  return { id, email, emailConfirmed };
+}
+
+function accountOf(text: string): Account | null {
+  const body = objectOf(text);
+  return body === null ? null : accountOfBody(body);
+}
+
+function registeredAccountOf(text: string): RegisteredAccount | null {
+  const body = objectOf(text);
+  if (body === null) return null;
+  const account = accountOfBody(body);
+  const { confirmationMessage } = body;
+  if (account === null || !isConfirmationMessage(confirmationMessage)) {
+    return null;
+  }
+  return { ...account, confirmationMessage };
+}
+
+function messageOf(text: string): ConfirmationMessage | null {
+  const confirmationMessage = objectOf(text)?.confirmationMessage;
+  return isConfirmationMessage(confirmationMessage)
+    ? confirmationMessage
+    : null;
 }
 
 async function exchange(
@@ -171,20 +218,35 @@ function isReply(outcome: Reply | AccountFailure): outcome is Reply {
   return "text" in outcome;
 }
 
-async function accountRequest(
+/** Success only for the request's own status and a body `read` accepts. */
+async function request<Value>(
   path: string,
   method: "GET" | "POST",
   payload: unknown,
   successStatus: number,
+  read: (text: string) => Value | null,
   timeoutMs: number,
-): Promise<AccountResult<Account>> {
+): Promise<AccountResult<Value>> {
   const outcome = await exchange(path, method, payload, timeoutMs);
   if (!isReply(outcome)) return { ok: false, failure: outcome };
   if (outcome.status >= 400) return { ok: false, failure: refusal(outcome) };
-  const account =
-    outcome.status === successStatus ? accountOf(outcome.text) : null;
-  if (account === null) return { ok: false, failure: unexpected(outcome) };
-  return { ok: true, value: account };
+  const value = outcome.status === successStatus ? read(outcome.text) : null;
+  if (value === null) return { ok: false, failure: unexpected(outcome) };
+  return { ok: true, value };
+}
+
+/** A success with no body: only the 204 status counts. */
+async function noContentRequest(
+  path: string,
+  payload: unknown,
+  timeoutMs: number,
+): Promise<AccountResult<null>> {
+  const outcome = await exchange(path, "POST", payload, timeoutMs);
+  if (!isReply(outcome)) return { ok: false, failure: outcome };
+  if (outcome.status >= 400) return { ok: false, failure: refusal(outcome) };
+  if (outcome.status !== 204)
+    return { ok: false, failure: unexpected(outcome) };
+  return { ok: true, value: null };
 }
 
 export function createAccountClient(
@@ -193,32 +255,36 @@ export function createAccountClient(
   const timeoutMs = options.timeoutMs ?? defaultTimeoutMs;
   return {
     register: (email, password, passwordConfirmation) =>
-      accountRequest(
+      request(
         "/api/accounts",
         "POST",
         { email, password, passwordConfirmation },
         201,
+        registeredAccountOf,
         timeoutMs,
       ),
     login: (email, password) =>
-      accountRequest(
+      request(
         "/api/session",
         "POST",
         { email, password },
         200,
+        accountOf,
         timeoutMs,
       ),
     currentAccount: () =>
-      accountRequest("/api/account", "GET", undefined, 200, timeoutMs),
-    logout: async () => {
-      const outcome = await exchange("/api/logout", "POST", {}, timeoutMs);
-      if (!isReply(outcome)) return { ok: false, failure: outcome };
-      if (outcome.status >= 400)
-        return { ok: false, failure: refusal(outcome) };
-      if (outcome.status !== 204) {
-        return { ok: false, failure: unexpected(outcome) };
-      }
-      return { ok: true, value: null };
-    },
+      request("/api/account", "GET", undefined, 200, accountOf, timeoutMs),
+    logout: () => noContentRequest("/api/logout", {}, timeoutMs),
+    confirmEmail: (token) =>
+      noContentRequest("/api/email-confirmation", { token }, timeoutMs),
+    sendConfirmationMessage: () =>
+      request(
+        "/api/email-confirmation-message",
+        "POST",
+        {},
+        200,
+        messageOf,
+        timeoutMs,
+      ),
   };
 }
