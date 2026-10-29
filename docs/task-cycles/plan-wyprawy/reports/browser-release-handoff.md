@@ -1,4 +1,0 @@
-# Release author-owned browser
-Work from C:/Storage/repos/loop2-wt/plan-wyprawy. Housekeeping of your completed one-author UI checks only; no code/report modifications beyond the short evidence below. Keep c39e10ca539ee79048d6989f1287582119751c8c unchanged. Do not read cycle.md.
-
-Independent reviewer cannot attach to Playwright because profile mcp-chrome-d96ee7f is in use. If you still own the idle Playwright browser used for your checks, call its browser_close tool to release it. Do not kill processes or another agent's browser. Keep ignored HTTP fixture server on port8768 available for reviewer. If you cannot release your browser, report exact state. Record action/outcome in reports/browser-release-report.md, with Searches not found or unclear (none if none), and return. This is tool cleanup, not a new code stage or return step.
