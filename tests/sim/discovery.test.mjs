@@ -106,6 +106,14 @@ function explorationRule(id) {
   return { id, condition: { kind: "always" }, action: { kind: "explore" } };
 }
 
+// Task "programy-gracza", To do 11 (D-123): the rule written at the first chill goes into the copy
+// the map run carries out, into its base and into program 1, the copy's program, alike.
+function assertWritten(state, program) {
+  assert.deepEqual(state.run.copy.program, program, "the copy");
+  assert.deepEqual(state.run.copy.base, program, "the copy's base");
+  assert.deepEqual(state.programs[0].program, program, "program 1");
+}
+
 test("a new game sent with its one empty group waits until the minute of the first chill, which learns Eksploruj, Wędruj and Temperatura poniżej, writes Zawsze → Eksploruj into the group Program and starts exploring in that minute", () => {
   const before = advanceMinutes(sentNew(), 83);
   assert.equal(before.state.run.minute, 83);
@@ -136,7 +144,7 @@ test("a new game sent with its one empty group waits until the minute of the fir
     },
   ]);
   assert.deepEqual(state.understanding, CHILLED);
-  assert.deepEqual(state.program, {
+  assertWritten(state, {
     groups: [
       {
         id: 1,
@@ -184,7 +192,7 @@ test("the same span of minutes, however split, reaches the same game state with 
 test("a program with no group gets the group Program with the condition Zawsze at the first chill, holding the rule", () => {
   const empty = { groups: [], nextGroupId: 1, nextRuleId: 1 };
   const state = advanceMinutes(sentNew(empty), 84).state;
-  assert.deepEqual(state.program, {
+  assertWritten(state, {
     groups: [
       {
         id: 1,
@@ -219,7 +227,7 @@ test("the rule is appended to the first group only, after its rules, with an ide
     nextRuleId: 12,
   };
   const state = advanceMinutes(sentNew(program), 84).state;
-  assert.deepEqual(state.program, {
+  assertWritten(state, {
     groups: [
       {
         id: 4,
@@ -240,7 +248,9 @@ test("a second chill and the minutes after reveal nothing and write no second ru
   const first = advanceMinutes(sentNew(), 84).state;
   const later = advanceMinutes(first, 10);
   assert.deepEqual(discoveries(later.events), []);
-  assert.deepEqual(later.state.program, first.program);
+  // Task "programy-gracza", To do 11: neither the copy nor a program gains a second rule.
+  assert.deepEqual(later.state.run.copy, first.run.copy);
+  assert.deepEqual(later.state.programs, first.programs);
   assert.deepEqual(later.state.understanding, CHILLED);
 });
 
@@ -249,7 +259,9 @@ test("a chill that reveals nothing new writes no rule", () => {
   const knowing = { ...state, understanding: CHILLED };
   const result = advanceMinutes(knowing, 1);
   assert.deepEqual(discoveries(result.events), []);
-  assert.deepEqual(result.state.program, state.program);
+  // Task "programy-gracza", To do 11: neither the copy nor a program gains a rule.
+  assert.deepEqual(result.state.run.copy, state.run.copy);
+  assert.deepEqual(result.state.programs, state.programs);
   assert.deepEqual(result.state.ruleCounts, {});
 });
 
@@ -603,7 +615,8 @@ test("a revealing event reveals what of its row is still new, though its actions
 test("a map run ended in death passes no further minute at the level of the run", () => {
   const dead = toDeath(sentNew());
   assert.ok(dead.run.death, "the character died");
-  assert.deepEqual(stepMinute(dead.run, MAPS[MAP_ID], dead.program), {
+  // Task "programy-gracza", To do 6: the map run carries out its copy.
+  assert.deepEqual(stepMinute(dead.run, MAPS[MAP_ID], dead.run.copy.program), {
     run: dead.run,
     events: [],
   });
