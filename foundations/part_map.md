@@ -55,7 +55,7 @@ The part computes the game: the game state, the map run, the character's program
   tests/invariants/test_saved_program_edit.py
   tests/invariants/test_copy_save.py
 - **Depends on:** none
-- **Trust boundary:** none
+- **Trust boundary:** src/browser/sim/saved-game.ts
 
 ## account-server
 
