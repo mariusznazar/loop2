@@ -330,7 +330,7 @@ export function withProgramContent(
 }
 
 /**
- * The name a program takes from typed text (D-156): the text without white space at its start and
+ * The name a program takes from typed text (D-157): the text without white space at its start and
  * end. It is refused as `empty` where nothing is left, and as `taken` where the name of a program
  * other than `ownId` equals it regardless of letter case; a program's own name in another letter
  * case does not block its rename. The length is not limited.
