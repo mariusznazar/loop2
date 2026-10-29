@@ -29,6 +29,7 @@
       "tests/sim/hex.test.mjs",
       "tests/sim/layout.test.mjs",
       "tests/sim/program-counts.test.mjs",
+      "tests/sim/program-list.test.mjs",
       "tests/sim/program.test.mjs",
       "tests/sim/purity.test.mjs",
       "tests/sim/random.test.mjs",

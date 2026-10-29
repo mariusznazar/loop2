@@ -242,7 +242,7 @@ function uniqueIdentity(
 }
 
 /** A copy of the program built from the closed list; throws on anything outside it. */
-function checkProgram(value: unknown, run: MapRun | null): Program {
+export function checkProgram(value: unknown, run: MapRun | null): Program {
   if (!isObject(value) || !Array.isArray(value.groups))
     throw new Error("program: no list of groups");
   const nextGroupId = checkIdentity(value.nextGroupId);
@@ -287,7 +287,7 @@ function requireRun(state: GameState, name: string): GameMapRun {
  * The counts of the rules of `previous` carried over to the rules of `program`: counts follow rule
  * identity and canonical validated content, never group or position.
  */
-function reconcileCounts(
+export function reconcileCounts(
   counts: GameState["ruleCounts"],
   previous: Program,
   program: Program,

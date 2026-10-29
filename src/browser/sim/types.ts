@@ -74,6 +74,13 @@ export type ProgramId = number;
 /** A program of the player's list: its number, its name and its content. */
 export type SavedProgram = { id: ProgramId; name: string; program: Program };
 
+/** Why a typed program name is refused: nothing left after trimming, or another program's name. */
+export type ProgramNameRefusal = "empty" | "taken";
+
+/** The name a typed text gives a program, or the reason it gives none. */
+export type ProgramNameCheck =
+  { ok: true; name: string } | { ok: false; reason: ProgramNameRefusal };
+
 /**
  * The copy a map run carries out (D-152): the copied content, the program it belongs to and its
  * base, the content of that program as the copy was taken from it or last saved into it.
