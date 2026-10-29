@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -178,11 +179,12 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     "encoded-hash",
   );
   reopened.close();
-  // Version 2 is the blocked state of task blokada-konta (spec, Decision 1), so
-  // 3 is the first version this code does not know.
-  raw.exec("PRAGMA user_version = 3");
+  // Version 3 is the email confirmation and the emailed links of task
+  // potwierdzenie-adresu (spec, Decision 3), so 4 is the first version this
+  // code does not know.
+  raw.exec("PRAGMA user_version = 4");
   assert.throws(() => new AccountDatabase(path), /Unsupported.*schema/);
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
   assert.equal(
     raw.prepare("SELECT count(*) AS count FROM accounts").get().count,
     1,
@@ -280,6 +282,14 @@ function storedVersionOneRows(raw) {
 }
 
 async function versionOneFixture(t, extraSchema = "") {
+  return olderDatabaseFixture(
+    t,
+    versionOneSchema + versionOneRows + extraSchema,
+    1,
+  );
+}
+
+async function olderDatabaseFixture(t, sql, version) {
   const directory = await mkdtemp(join(tmpdir(), "loop2-migration-"));
   const path = join(directory, "accounts.sqlite");
   const raw = new DatabaseSync(path);
@@ -289,8 +299,8 @@ async function versionOneFixture(t, extraSchema = "") {
     raw.close();
     await rm(directory, { recursive: true, force: true });
   });
-  raw.exec(versionOneSchema + versionOneRows + extraSchema);
-  raw.exec("PRAGMA user_version = 1");
+  raw.exec(sql);
+  raw.exec(`PRAGMA user_version = ${version}`);
   return {
     path,
     raw,
@@ -303,10 +313,12 @@ async function versionOneFixture(t, extraSchema = "") {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-test("a version-1 database opens as version 2 with every account and session intact and no account blocked", async (t) => {
+// The test server's database may still be at version 1 when version 3 arrives,
+// so it moves through steps 2 and 3 in one opening.
+test("a version-1 database opens as version 3 with every account and session intact, no account blocked and no address confirmed", async (t) => {
   const { path, raw, track } = await versionOneFixture(t);
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
   assert.deepEqual(storedVersionOneRows(raw), {
     accounts: versionOneAccounts,
     sessions: versionOneSessions,
@@ -318,6 +330,7 @@ test("a version-1 database opens as version 2 with every account and session int
       passwordHash: account.hash,
       createdAt: account.created,
       blocked: false,
+      emailConfirmed: false,
     });
   for (const session of versionOneSessions)
     assert.deepEqual(database.readSession(session.id), {
@@ -329,7 +342,7 @@ test("a version-1 database opens as version 2 with every account and session int
   assert.equal(database.blockAccount("b@example.test"), "blocked");
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
   assert.equal(reopened.findAccountByEmail("b@example.test").blocked, true);
   assert.equal(reopened.findAccountByEmail("a@example.test").blocked, false);
   assert.equal(reopened.readSession("browser-a1").accountId, "account-a");
@@ -352,6 +365,480 @@ test("a failing migration step leaves a version-1 database at version 1 with its
     accounts: versionOneAccounts,
     sessions: versionOneSessions,
   });
+});
+
+// A version-2 database as loop2 7a633a7 leaves it: the version-1 schema and
+// rows moved by the blocked state step of src/server/database.ts:38-41 there.
+// Account c is blocked, so the move is seen to keep a blocked state as well as
+// a cleared one.
+const versionTwoDatabase = `${versionOneSchema + versionOneRows}
+  ALTER TABLE accounts
+    ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0 CHECK (blocked IN (0, 1));
+  INSERT INTO accounts VALUES ('account-c', 'c@example.test', 'hash-c', 300, 1);
+`;
+
+const versionTwoAccounts = [
+  ...versionOneAccounts.map((account) => ({ ...account, blocked: 0 })),
+  {
+    id: "account-c",
+    email: "c@example.test",
+    hash: "hash-c",
+    created: 300,
+    blocked: 1,
+  },
+];
+
+function storedVersionTwoRows(raw) {
+  return {
+    accounts: rows(
+      raw,
+      "SELECT id, email, password_hash AS hash, created_at AS created, blocked FROM accounts ORDER BY id",
+    ),
+    sessions: storedVersionOneRows(raw).sessions,
+  };
+}
+
+const HOUR = 3_600_000;
+// D-143: a confirmation link works for 24 hours from the moment it is recorded.
+const DAY = 86_400_000;
+// D-105: at most 30 account messages per hour in total, three per address.
+const limits = { windowMs: HOUR, total: 30, perAccount: 3 };
+
+function digest(token) {
+  return createHash("sha256").update(token).digest("base64url");
+}
+
+function confirmationLink(accountId, token, lifetimeMs = DAY) {
+  return {
+    accountId,
+    purpose: "email-confirmation",
+    tokenDigest: digest(token),
+    lifetimeMs,
+  };
+}
+
+function resetLink(accountId, token) {
+  return {
+    accountId,
+    purpose: "password-reset",
+    tokenDigest: digest(token),
+    lifetimeMs: HOUR,
+  };
+}
+
+function storedLink(raw, token) {
+  const row = raw
+    .prepare("SELECT * FROM emailed_links WHERE token_digest = ?")
+    .get(digest(token));
+  return row ? { ...row } : undefined;
+}
+
+function storedLinkCount(raw) {
+  return raw.prepare("SELECT count(*) AS n FROM emailed_links").get().n;
+}
+
+// invariant: account-database-schema
+// invariant: account-schema-lifecycle
+test("a version-2 database opens as version 3 with every account, blocked state and session intact and no address confirmed", async (t) => {
+  const { path, raw, track } = await olderDatabaseFixture(
+    t,
+    versionTwoDatabase,
+    2,
+  );
+  const database = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.deepEqual(storedVersionTwoRows(raw), {
+    accounts: versionTwoAccounts,
+    sessions: versionOneSessions,
+  });
+  for (const account of versionTwoAccounts)
+    assert.deepEqual(database.findAccountByEmail(account.email), {
+      id: account.id,
+      email: account.email,
+      passwordHash: account.hash,
+      createdAt: account.created,
+      blocked: account.blocked === 1,
+      emailConfirmed: false,
+    });
+  for (const session of versionOneSessions)
+    assert.deepEqual(database.readSession(session.id), {
+      accountId: session.account,
+      data: session.data,
+      expiresAt: session.expires,
+    });
+
+  // A moved account takes links and a confirmation, and they outlast a reopen.
+  assert.equal(
+    database.issueLink(confirmationLink("account-a", "moved"), limits),
+    "issued",
+  );
+  assert.equal(
+    database.issueLink(confirmationLink("account-c", "blocked"), limits),
+    "blocked",
+  );
+  assert.equal(database.confirmEmailAddress(digest("moved")), "confirmed");
+  database.close();
+  const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.equal(reopened.findAccountById("account-a").emailConfirmed, true);
+  assert.equal(reopened.findAccountById("account-b").emailConfirmed, false);
+  assert.equal(reopened.findAccountById("account-c").blocked, true);
+  assert.equal(reopened.readSession("browser-b1").accountId, "account-b");
+});
+
+// invariant: account-database-schema
+test("a failing step 3 leaves a version-2 database at version 2 with its rows and columns unchanged", async (t) => {
+  // A table of that name already there makes step 3 fail after it has added
+  // the confirmation column, which the rollback has to take away again.
+  const { path, raw } = await olderDatabaseFixture(
+    t,
+    `${versionTwoDatabase}
+      CREATE TABLE emailed_links (marker TEXT);`,
+    2,
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /already exists/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.deepEqual(storedVersionTwoRows(raw), {
+    accounts: versionTwoAccounts,
+    sessions: versionOneSessions,
+  });
+  assert.deepEqual(
+    rows(raw, "SELECT name FROM pragma_table_info('accounts') ORDER BY cid"),
+    ["id", "email", "password_hash", "created_at", "blocked"].map((name) => ({
+      name,
+    })),
+  );
+});
+
+// invariant: account-message-limits
+test("an account is admitted three messages within an hour; the fourth is refused, records nothing and stops no link, until the first is an hour old", async (t) => {
+  const { database, raw, account, advance } = await fixture(t);
+  const issue = (token) =>
+    database.issueLink(confirmationLink(account.id, token), limits);
+  for (const [time, token] of [
+    [1000, "first"],
+    [1000 + 20 * 60_000, "second"],
+    [1000 + 40 * 60_000, "third"],
+  ]) {
+    advance(time);
+    assert.equal(issue(token), "issued", token);
+  }
+  // The first and second were stopped by the later ones and still count.
+  advance(1000 + HOUR - 1);
+  assert.equal(issue("fourth"), "limited");
+  assert.equal(storedLink(raw, "fourth"), undefined);
+  assert.equal(
+    storedLink(raw, "third").spent,
+    0,
+    "the newest link still works",
+  );
+
+  // From exactly an hour after it, the first message no longer counts.
+  advance(1000 + HOUR);
+  assert.equal(issue("fifth"), "issued");
+  assert.equal(issue("sixth"), "limited", "second, third and fifth count");
+});
+
+// invariant: account-message-limits
+test("confirmation and password-reset messages count against one account's limit together", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  assert.equal(
+    database.issueLink(resetLink(account.id, "reset-1"), limits),
+    "issued",
+  );
+  assert.equal(
+    database.issueLink(resetLink(account.id, "reset-2"), limits),
+    "issued",
+  );
+  assert.equal(
+    database.issueLink(confirmationLink(account.id, "confirm-1"), limits),
+    "issued",
+  );
+  assert.equal(
+    database.issueLink(confirmationLink(account.id, "confirm-2"), limits),
+    "limited",
+  );
+  assert.equal(
+    database.issueLink(resetLink(account.id, "reset-3"), limits),
+    "limited",
+  );
+  assert.equal(storedLinkCount(raw), 3);
+});
+
+// invariant: account-message-limits
+test("thirty messages within an hour across accounts refuse the thirty-first for any account until the hour has passed", async (t) => {
+  const { database, raw, account, advance } = await fixture(t);
+  const accounts = [account];
+  for (let index = 1; index < 10; index += 1)
+    accounts.push(database.createAccount(`player${index}@example.test`, "h"));
+  for (const [index, owner] of accounts.entries())
+    for (const copy of [1, 2, 3])
+      assert.equal(
+        database.issueLink(
+          confirmationLink(owner.id, `${index}-${copy}`),
+          limits,
+        ),
+        "issued",
+      );
+  assert.equal(storedLinkCount(raw), 30, "precondition: thirty messages");
+  const fresh = database.createAccount("fresh@example.test", "h");
+  advance(1000 + HOUR - 1);
+  assert.equal(
+    database.issueLink(confirmationLink(fresh.id, "late"), limits),
+    "limited",
+  );
+  assert.equal(storedLinkCount(raw), 30);
+  advance(1000 + HOUR);
+  assert.equal(
+    database.issueLink(confirmationLink(fresh.id, "late"), limits),
+    "issued",
+  );
+});
+
+// invariant: account-message-limits
+test("the hour's count of messages survives closing and reopening the database", async (t) => {
+  const { path, database, account, track } = await fixture(t);
+  for (const token of ["one", "two", "three"])
+    database.issueLink(confirmationLink(account.id, token), limits);
+  database.close();
+  // The reopened database stands in for the server after a deployment.
+  const restarted = track(new AccountDatabase(path, { now: () => 2000 }));
+  assert.equal(
+    restarted.issueLink(confirmationLink(account.id, "four"), limits),
+    "limited",
+  );
+});
+
+test("issuing refuses a window longer than the hour links are kept for, an unusable lifetime or limit, and an unknown account, and records nothing", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  for (const [label, request, given] of [
+    [
+      "a window past the hour",
+      confirmationLink(account.id, "a"),
+      { ...limits, windowMs: HOUR + 1 },
+    ],
+    ["no lifetime", confirmationLink(account.id, "b", 0), limits],
+    [
+      "no account limit",
+      confirmationLink(account.id, "c"),
+      { ...limits, perAccount: 0 },
+    ],
+    ["an unknown account", confirmationLink("absent", "d"), limits],
+  ])
+    assert.throws(() => database.issueLink(request, given), Error, label);
+  assert.equal(storedLinkCount(raw), 0);
+});
+
+// invariant: email-confirmation-link
+test("a confirmation link confirms its account once, stops the account's other confirmation links, and leaves its other kind of link working", async (t) => {
+  const { database, raw, account, advance } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  database.issueLink(confirmationLink(account.id, "mine"), limits);
+  database.issueLink(resetLink(account.id, "reset"), limits);
+  database.issueLink(confirmationLink(other.id, "theirs"), limits);
+  // Issuing never leaves two working confirmation links of one account, so a
+  // second one is written directly to reach the confirmation's own rule.
+  raw
+    .prepare(
+      "INSERT INTO emailed_links VALUES (?, ?, 'email-confirmation', 1000, ?, 0)",
+    )
+    .run(digest("stray"), account.id, 1000 + DAY);
+
+  advance(5000);
+  assert.equal(database.confirmEmailAddress(digest("mine")), "confirmed");
+  assert.equal(database.findAccountById(account.id).emailConfirmed, true);
+  assert.equal(
+    raw
+      .prepare("SELECT email_confirmed_at FROM accounts WHERE id = ?")
+      .get(account.id).email_confirmed_at,
+    5000,
+  );
+  assert.equal(storedLink(raw, "stray").spent, 1);
+  assert.equal(storedLink(raw, "reset").spent, 0);
+
+  advance(6000);
+  assert.equal(database.confirmEmailAddress(digest("mine")), "invalid");
+  assert.equal(database.confirmEmailAddress(digest("stray")), "invalid");
+  assert.equal(
+    raw
+      .prepare("SELECT email_confirmed_at FROM accounts WHERE id = ?")
+      .get(account.id).email_confirmed_at,
+    5000,
+    "a refused link changes nothing",
+  );
+  assert.equal(database.findAccountById(other.id).emailConfirmed, false);
+  assert.equal(database.confirmEmailAddress(digest("theirs")), "confirmed");
+});
+
+// invariant: email-confirmation-link
+test("an unknown link or a link of another kind confirms nothing and changes nothing", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  database.issueLink(confirmationLink(account.id, "confirm"), limits);
+  database.issueLink(resetLink(account.id, "reset"), limits);
+  for (const token of ["unknown", "reset"])
+    assert.equal(database.confirmEmailAddress(digest(token)), "invalid", token);
+  assert.equal(database.confirmEmailAddress(""), "invalid");
+  assert.equal(database.findAccountById(account.id).emailConfirmed, false);
+  assert.equal(storedLink(raw, "reset").spent, 0);
+  assert.equal(storedLink(raw, "confirm").spent, 0);
+  assert.equal(database.confirmEmailAddress(digest("confirm")), "confirmed");
+});
+
+// invariant: email-confirmation-link
+test("a confirmation link works until the millisecond before its expiry and not at it", async (t) => {
+  const { database, account, advance } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  database.issueLink(confirmationLink(account.id, "in-time"), limits);
+  database.issueLink(confirmationLink(other.id, "too-late"), limits);
+  advance(1000 + DAY - 1);
+  assert.equal(database.confirmEmailAddress(digest("in-time")), "confirmed");
+  advance(1000 + DAY);
+  assert.equal(database.confirmEmailAddress(digest("too-late")), "invalid");
+  assert.equal(database.findAccountById(other.id).emailConfirmed, false);
+});
+
+// invariant: email-confirmation-link
+test("issuing a confirmation link stops the account's earlier one at once, before its message is handed on, so a failed sending leaves no earlier link working", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  database.issueLink(confirmationLink(account.id, "earlier"), limits);
+  database.issueLink(confirmationLink(other.id, "neighbour"), limits);
+  assert.equal(
+    database.issueLink(confirmationLink(account.id, "later"), limits),
+    "issued",
+  );
+  // The database learns nothing of how the later message's sending went:
+  // whatever its outcome, the earlier link is already stopped.
+  assert.equal(storedLink(raw, "earlier").spent, 1);
+  assert.equal(database.confirmEmailAddress(digest("earlier")), "invalid");
+  assert.equal(database.findAccountById(account.id).emailConfirmed, false);
+  assert.equal(database.confirmEmailAddress(digest("later")), "confirmed");
+
+  // Another account's link and a link of the other kind are not stopped.
+  database.issueLink(resetLink(other.id, "reset"), limits);
+  assert.equal(database.confirmEmailAddress(digest("neighbour")), "confirmed");
+});
+
+// invariant: email-confirmation-link
+test("a confirmation link of a blocked account changes nothing, also one the block did not stop", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  database.issueLink(confirmationLink(account.id, "link"), limits);
+  // Blocked without blockAccount, so the link stays unstopped and only the
+  // confirmation's own reading of the block can refuse it.
+  raw.prepare("UPDATE accounts SET blocked = 1 WHERE id = ?").run(account.id);
+  assert.equal(database.confirmEmailAddress(digest("link")), "invalid");
+  assert.equal(storedLink(raw, "link").spent, 0);
+  assert.equal(database.findAccountById(account.id).emailConfirmed, false);
+  raw.prepare("UPDATE accounts SET blocked = 0 WHERE id = ?").run(account.id);
+  assert.equal(database.confirmEmailAddress(digest("link")), "confirmed");
+});
+
+// invariant: unblock-restores-no-link
+// invariant: email-confirmation-link
+test("a block committed through another connection stops every link issued before it, which confirms nothing after unblocking, and a block before an issue records nothing", async (t) => {
+  const { path, database, raw, account, track } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  database.issueLink(confirmationLink(account.id, "before"), limits);
+  database.issueLink(resetLink(account.id, "reset"), limits);
+  database.issueLink(confirmationLink(other.id, "theirs"), limits);
+  // The second connection stands in for the owner's command beside the server.
+  const operator = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(operator.blockAccount("player@example.test"), "blocked");
+  assert.equal(storedLink(raw, "before").spent, 1);
+  assert.equal(storedLink(raw, "reset").spent, 1);
+  assert.equal(storedLink(raw, "theirs").spent, 0);
+  assert.equal(database.confirmEmailAddress(digest("before")), "invalid");
+
+  assert.equal(
+    database.issueLink(confirmationLink(account.id, "during"), limits),
+    "blocked",
+  );
+  assert.equal(storedLink(raw, "during"), undefined);
+
+  assert.equal(operator.unblockAccount("player@example.test"), "unblocked");
+  assert.equal(database.confirmEmailAddress(digest("before")), "invalid");
+  assert.equal(storedLink(raw, "reset").spent, 1);
+  assert.equal(database.findAccountById(account.id).emailConfirmed, false);
+  // Signed in again, the player asks for a new message, whose link works.
+  assert.equal(
+    database.issueLink(confirmationLink(account.id, "after"), limits),
+    "issued",
+  );
+  assert.equal(database.confirmEmailAddress(digest("after")), "confirmed");
+});
+
+// invariant: account-message-limits
+test("cleanup removes, in bounded batches, only links both expired and an hour old, so pruning never readmits a message", async (t) => {
+  const { path, database, raw, account, advance, track } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  for (const token of ["short-1", "short-2", "short-3"])
+    database.issueLink(confirmationLink(account.id, token, 60_000), limits);
+  database.issueLink(confirmationLink(other.id, "long"), limits);
+
+  // Expired, but still within the hour that counts them.
+  advance(1000 + 120_000);
+  database.pruneExpiredLinks();
+  assert.equal(storedLinkCount(raw), 4);
+  assert.equal(
+    database.issueLink(confirmationLink(account.id, "short-4"), limits),
+    "limited",
+  );
+
+  // An hour old and expired: gone; an hour old and still working: kept.
+  advance(1000 + HOUR);
+  database.pruneExpiredLinks();
+  assert.equal(storedLink(raw, "short-1"), undefined);
+  assert.equal(storedLink(raw, "short-3"), undefined);
+  assert.ok(storedLink(raw, "long"));
+
+  const insert = raw.prepare(
+    "INSERT INTO emailed_links VALUES (?, ?, 'email-confirmation', 0, 0, 1)",
+  );
+  raw.exec("BEGIN");
+  for (let index = 0; index < 1001; index += 1)
+    insert.run(digest(`old-${index}`), account.id);
+  raw.exec("COMMIT");
+  database.pruneExpiredLinks();
+  assert.equal(storedLinkCount(raw), 2, "one old link and the long one remain");
+  database.close();
+
+  // Opening prunes one batch too, and the periodic cleanup the rest.
+  raw.exec("BEGIN");
+  for (let index = 0; index < 1001; index += 1)
+    insert.run(digest(`older-${index}`), account.id);
+  raw.exec("COMMIT");
+  const failures = [];
+  const reopened = track(
+    new AccountDatabase(path, {
+      now: () => 1000 + HOUR,
+      cleanupIntervalMs: 10,
+      onCleanupError: (error) => failures.push(error),
+    }),
+  );
+  assert.equal(
+    storedLinkCount(raw),
+    3,
+    "of 1002 old links and the long one, opening pruned a batch of 1000",
+  );
+  await new Promise((resolve, reject) => {
+    const deadline = setTimeout(() => {
+      clearInterval(poll);
+      reject(new Error("cleanup deadline"));
+    }, 2000);
+    const poll = setInterval(() => {
+      if (storedLinkCount(raw) === 1) {
+        clearInterval(poll);
+        clearTimeout(deadline);
+        resolve();
+      }
+    }, 5);
+  });
+  assert.ok(storedLink(raw, "long"));
+  reopened.close();
+  assert.deepEqual(failures, []);
 });
 
 // invariant: unblock-restores-no-session
@@ -950,6 +1437,35 @@ test("the owner's command blocks and unblocks by address beside an open connecti
   assert.equal(new Set(outcomes).size, 4, "each outcome reads differently");
   for (const run of [blocked, again, unblocked, notBlocked])
     assert.doesNotMatch(run.output, /encoded-hash|\bone\b|\btwo\b/);
+});
+
+// invariant: unblock-restores-no-link
+test("the owner's command stops every emailed link of the account it blocks, and its unblock brings none back", async (t) => {
+  // The command prunes by the real clock, so the server's connection uses it
+  // too and its links are recorded now, not at the fixture's fixed time.
+  const { path, database, raw, account } = await fixture(t, {
+    now: () => Date.now(),
+  });
+  const other = database.createAccount("other@example.test", "hash");
+  database.issueLink(confirmationLink(account.id, "confirm"), limits);
+  database.issueLink(resetLink(account.id, "reset"), limits);
+  database.issueLink(confirmationLink(other.id, "theirs"), limits);
+
+  const blocked = await runBlockCommand(["block", "player@example.test"], path);
+  assert.equal(blocked.code, 0, blocked.output);
+  assert.equal(storedLink(raw, "confirm").spent, 1);
+  assert.equal(storedLink(raw, "reset").spent, 1);
+  assert.equal(storedLink(raw, "theirs").spent, 0);
+
+  const unblocked = await runBlockCommand(
+    ["unblock", "player@example.test"],
+    path,
+  );
+  assert.equal(unblocked.code, 0, unblocked.output);
+  assert.equal(database.confirmEmailAddress(digest("confirm")), "invalid");
+  assert.equal(storedLink(raw, "reset").spent, 1);
+  assert.equal(database.findAccountById(account.id).emailConfirmed, false);
+  assert.equal(database.confirmEmailAddress(digest("theirs")), "confirmed");
 });
 
 test("the owner's command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
