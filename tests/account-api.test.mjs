@@ -122,29 +122,43 @@ const calls = {
   login: (c) => c.login("a@x.pl", "twelve chars!"),
   currentAccount: (c) => c.currentAccount(),
   logout: (c) => c.logout(),
+  confirmEmail: (c) => c.confirmEmail("tok-1_a"),
+  sendConfirmationMessage: (c) => c.sendConfirmationMessage(),
 };
+
+const accountJson = '{"id":"u1","email":"a@x.pl","emailConfirmed":false}';
+const registeredJson =
+  '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"confirmationMessage":"sent"}';
 
 // invariant: account-client-requests
 test("each call sends its documented method, relative path and JSON body", async () => {
-  respond = (request, response) =>
-    request.url === "/api/logout"
-      ? response.writeHead(204).end()
-      : reply(
-          response,
-          request.url === "/api/accounts" ? 201 : 200,
-          '{"id":"u1","email":"a@x.pl"}',
-        );
+  respond = (request, response) => {
+    if (
+      request.url === "/api/logout" ||
+      request.url === "/api/email-confirmation"
+    ) {
+      return response.writeHead(204).end();
+    }
+    if (request.url === "/api/email-confirmation-message") {
+      return reply(response, 200, '{"confirmationMessage":"limited"}');
+    }
+    return request.url === "/api/accounts"
+      ? reply(response, 201, registeredJson)
+      : reply(response, 200, accountJson);
+  };
   const c = client();
   const results = [
     await within(c.register("Ala@x.pl", "pass one two", "pass one two"), "a"),
     await within(c.login("Ala@x.pl", "pass one two"), "b"),
     await within(c.currentAccount(), "c"),
     await within(c.logout(), "d"),
+    await within(c.confirmEmail("tok-1_a"), "e"),
+    await within(c.sendConfirmationMessage(), "f"),
   ];
   // Precondition: every answer was a success, so each request was fully sent.
   assert.deepEqual(
     results.map((result) => result.ok),
-    [true, true, true, true],
+    [true, true, true, true, true, true],
   );
   assert.deepEqual(
     seen.map(({ method, url, contentType }) => ({
@@ -157,6 +171,8 @@ test("each call sends its documented method, relative path and JSON body", async
       { method: "POST", url: "/api/session", json: true },
       { method: "GET", url: "/api/account", json: false },
       { method: "POST", url: "/api/logout", json: true },
+      { method: "POST", url: "/api/email-confirmation", json: true },
+      { method: "POST", url: "/api/email-confirmation-message", json: true },
     ],
   );
   assert.deepEqual(JSON.parse(seen[0].body), {
@@ -170,6 +186,8 @@ test("each call sends its documented method, relative path and JSON body", async
   });
   assert.equal(seen[2].body, "");
   assert.deepEqual(JSON.parse(seen[3].body), {});
+  assert.deepEqual(JSON.parse(seen[4].body), { token: "tok-1_a" });
+  assert.deepEqual(JSON.parse(seen[5].body), {});
 });
 
 // invariant: account-client-requests
@@ -188,21 +206,35 @@ test("a redirect is not followed, so nothing is sent to its target", async () =>
 // invariant: account-client-outcomes
 test("the success status of each call with an account body gives that account and no other property", async () => {
   const body =
-    '{"id":"u1","email":"a@x.pl","passwordHash":"leak","sessionId":"leak"}';
-  for (const [name, status] of [
-    ["register", 201],
-    ["login", 200],
-    ["currentAccount", 200],
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":true,"confirmationMessage":"sent","passwordHash":"leak","sessionId":"leak"}';
+  for (const [name, status, value] of [
+    [
+      "register",
+      201,
+      {
+        id: "u1",
+        email: "a@x.pl",
+        emailConfirmed: true,
+        confirmationMessage: "sent",
+      },
+    ],
+    ["login", 200, { id: "u1", email: "a@x.pl", emailConfirmed: true }],
+    [
+      "currentAccount",
+      200,
+      { id: "u1", email: "a@x.pl", emailConfirmed: true },
+    ],
   ]) {
     respond = (_request, response) => reply(response, status, body);
     const result = await within(calls[name](client()), name);
-    assert.deepEqual(result, {
-      ok: true,
-      value: { id: "u1", email: "a@x.pl" },
-    });
+    assert.deepEqual(result, { ok: true, value });
   }
   respond = (_request, response) => response.writeHead(204).end();
   assert.deepEqual(await within(calls.logout(client()), "logout"), {
+    ok: true,
+    value: null,
+  });
+  assert.deepEqual(await within(calls.confirmEmail(client()), "confirm"), {
     ok: true,
     value: null,
   });
@@ -210,15 +242,21 @@ test("the success status of each call with an account body gives that account an
 
 // invariant: account-client-outcomes
 test("a success status other than the call's own is no success, whatever the body", async () => {
-  const account = '{"id":"u1","email":"a@x.pl"}';
+  const message = '{"confirmationMessage":"sent"}';
   for (const [name, status, body] of [
-    ["register", 200, account],
-    ["register", 202, account],
-    ["login", 201, account],
-    ["currentAccount", 201, account],
+    ["register", 200, registeredJson],
+    ["register", 202, registeredJson],
+    ["login", 201, accountJson],
+    ["currentAccount", 201, accountJson],
     ["currentAccount", 204, ""],
     ["logout", 200, "{}"],
     ["logout", 201, ""],
+    ["confirmEmail", 200, "{}"],
+    ["confirmEmail", 201, ""],
+    ["confirmEmail", 202, ""],
+    ["sendConfirmationMessage", 201, message],
+    ["sendConfirmationMessage", 202, message],
+    ["sendConfirmationMessage", 204, ""],
   ]) {
     respond = (_request, response) => reply(response, status, body);
     const result = await within(calls[name](client()), name);
@@ -246,6 +284,12 @@ test("a success status with a body that is not an account with string id and ema
     '{"id":"u1","email":""}',
     '{"code":"unauthenticated","error":"A refusal body at a success status"}',
   ];
+  const noConfirmedFlag = [
+    '{"id":"u1","email":"a@x.pl"}',
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":null}',
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":"false"}',
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":0}',
+  ];
   for (const [name, status] of [
     ["register", 201],
     ["login", 200],
@@ -257,6 +301,86 @@ test("a success status with a body that is not an account with string id and ema
       assert.equal(result.ok, false, `${name} with body ${body}`);
       assert.equal(result.failure.kind, "unexpected", `${name} ${body}`);
     }
+    for (const body of noConfirmedFlag) {
+      // The register body also carries a valid message, so only the flag can fail it.
+      const withMessage = body.replace(/}$/, ',"confirmationMessage":"sent"}');
+      respond = (_request, response) => reply(response, status, withMessage);
+      const result = await within(calls[name](client()), name);
+      assert.equal(result.ok, false, `${name} with body ${withMessage}`);
+      assert.equal(result.failure.kind, "unexpected", `${name} ${withMessage}`);
+    }
+  }
+});
+
+// invariant: account-client-outcomes
+test("register gives the confirmation message outcome it is told and nothing else", async () => {
+  for (const outcome of ["sent", "limited", "failed"]) {
+    respond = (_request, response) =>
+      reply(
+        response,
+        201,
+        `{"id":"u1","email":"a@x.pl","emailConfirmed":false,"confirmationMessage":"${outcome}"}`,
+      );
+    assert.deepEqual(await within(calls.register(client()), outcome), {
+      ok: true,
+      value: {
+        id: "u1",
+        email: "a@x.pl",
+        emailConfirmed: false,
+        confirmationMessage: outcome,
+      },
+    });
+  }
+  for (const value of [
+    '"SENT"',
+    '"blocked"',
+    '""',
+    "null",
+    "1",
+    "true",
+    "[]",
+  ]) {
+    respond = (_request, response) =>
+      reply(
+        response,
+        201,
+        `{"id":"u1","email":"a@x.pl","emailConfirmed":false,"confirmationMessage":${value}}`,
+      );
+    const result = await within(calls.register(client()), value);
+    assert.equal(result.ok, false, value);
+    assert.equal(result.failure.kind, "unexpected", value);
+  }
+  respond = (_request, response) => reply(response, 201, accountJson);
+  const missing = await within(calls.register(client()), "missing");
+  assert.equal(missing.ok, false);
+  assert.equal(missing.failure.kind, "unexpected");
+});
+
+// invariant: account-client-outcomes
+test("sendConfirmationMessage gives the outcome of a 200 answer and no other body is a success", async () => {
+  for (const outcome of ["sent", "limited", "failed"]) {
+    respond = (_request, response) =>
+      reply(response, 200, `{"confirmationMessage":"${outcome}"}`);
+    assert.deepEqual(
+      await within(calls.sendConfirmationMessage(client()), outcome),
+      { ok: true, value: outcome },
+    );
+  }
+  for (const body of [
+    "",
+    "not json",
+    "null",
+    "[]",
+    "{}",
+    '{"confirmationMessage":"blocked"}',
+    '{"confirmationMessage":null}',
+    '{"confirmationMessage":["sent"]}',
+    '{"outcome":"sent"}',
+  ]) {
+    respond = (_request, response) => reply(response, 200, body);
+    const result = await within(calls.sendConfirmationMessage(client()), body);
+    assert.equal(result.ok, false, body);
+    assert.equal(result.failure.kind, "unexpected", body);
   }
 });
 
@@ -287,6 +411,24 @@ test("an error status is a refusal carrying the server's code and message, even 
     // Task blokada-konta, To do 4: a blocked account's correct password.
     ["login", 403, "account-blocked", "To konto jest zablokowane."],
     ["logout", 500, "logout-failed", "Nie udało się wylogować."],
+    [
+      "confirmEmail",
+      400,
+      "invalid-link",
+      "Odnośnik jest nieważny albo wygasł.",
+    ],
+    [
+      "sendConfirmationMessage",
+      409,
+      "email-already-confirmed",
+      "Adres e-mail jest już potwierdzony.",
+    ],
+    [
+      "sendConfirmationMessage",
+      401,
+      "unauthenticated",
+      "Sesja wygasła albo nie istnieje.",
+    ],
   ]) {
     respond = (_request, response) =>
       reply(

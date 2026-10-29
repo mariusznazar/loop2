@@ -80,9 +80,9 @@ try {
 }
 
 const reports: Record<Exclude<typeof outcome, "unknown">, string> = {
-  blocked: `Blocked ${email}: it cannot sign in, and its sessions in every browser have ended.`,
-  "already-blocked": `${email} was already blocked; it has no session left.`,
-  unblocked: `Unblocked ${email}: it can sign in again; its earlier sessions stay ended.`,
+  blocked: `Blocked ${email}: it cannot sign in, its sessions in every browser have ended and its emailed links no longer work.`,
+  "already-blocked": `${email} was already blocked; it has no session and no working emailed link left.`,
+  unblocked: `Unblocked ${email}: it can sign in again; its earlier sessions and emailed links stay ended.`,
   "not-blocked": `${email} was not blocked; nothing changed.`,
 };
 if (outcome === "unknown")

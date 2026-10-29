@@ -47,6 +47,42 @@ header h1 {
   color: var(--text-strong);
 }
 
+/*
+ * The row of a signed-in player with an unconfirmed address, on a line of its own after the title
+ * and „Wyloguj”: its sentence in `text-secondary`, in `warning` when the sentence tells of
+ * something not carried out (D-39), and the shared button beside it.
+ */
+.email-status {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.email-status-sentence {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.email-status-sentence.warning {
+  color: var(--warning);
+}
+
+/* The result of a confirmation from the link, above the screen: `positive` or `warning` (D-39). */
+.confirmation-notice {
+  margin: 0 0 var(--space-m);
+}
+
+.confirmation-notice.positive {
+  color: var(--positive);
+}
+
+.confirmation-notice.warning {
+  color: var(--warning);
+}
+
 /* The place of the screen: the session check, the account forms or the game. */
 .app-main {
   flex: 1;

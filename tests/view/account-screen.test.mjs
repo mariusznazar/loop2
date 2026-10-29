@@ -280,6 +280,8 @@ function heldClient() {
       login: call("login"),
       currentAccount: call("currentAccount"),
       logout: call("logout"),
+      confirmEmail: call("confirmEmail"),
+      sendConfirmationMessage: call("sendConfirmationMessage"),
     },
     /** Gives the answer to the oldest call still waiting of the given name. */
     async answer(name, result) {
@@ -292,7 +294,14 @@ function heldClient() {
   };
 }
 
-const ACCOUNT = { ok: true, value: { id: "a1", email: "ala@example.com" } };
+const ACCOUNT = {
+  ok: true,
+  value: { id: "a1", email: "ala@example.com", emailConfirmed: true },
+};
+const UNCONFIRMED_ACCOUNT = {
+  ok: true,
+  value: { id: "a1", email: "ala@example.com", emailConfirmed: false },
+};
 const NO_SESSION = {
   ok: false,
   failure: {
@@ -311,9 +320,23 @@ const NO_CONNECTION = {
   },
 };
 
-async function startPage(held) {
+/** The page address with a fragment the test sets, counting how often it is cleared. */
+function fakeAddress(hash = "") {
+  const address = {
+    current: hash,
+    cleared: 0,
+    hash: () => address.current,
+    clearFragment() {
+      address.cleared += 1;
+      address.current = "";
+    },
+  };
+  return address;
+}
+
+async function startPage(held, address = fakeAddress()) {
   const { startApp } = await import("../../dist/public/view/app.js");
-  startApp(fakeDocument.body, held.client);
+  startApp(fakeDocument.body, held.client, address);
   await settle();
 }
 
@@ -706,5 +729,247 @@ test("an answer that comes after the screen was left is ignored", async () => {
     await held.answer("login", ACCOUNT);
     assert.deepEqual(signedIn, []);
     assert.equal(login.button.textContent, "Zaloguj się");
+  });
+});
+
+// --- the row of an unconfirmed address ------------------------------------------------------
+
+/** The header row of the unconfirmed address and its parts, or null while the page shows none. */
+function statusRow(root) {
+  const header = root.children.find((child) => child.tag === "header");
+  const row = byClass(header, "email-status").find(shown);
+  if (!row) return null;
+  const [sentence, button] = row.children;
+  return { row, header, sentence, button };
+}
+
+test("a reload or sign-in with an unconfirmed address shows the row after the title and Wyloguj, and leaves it at logout", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", UNCONFIRMED_ACCOUNT);
+    const { header, row, sentence, button } = statusRow(root);
+    assert.equal(sentence.textContent, "Adres e-mail niepotwierdzony.");
+    assert.equal(sentence.classList.contains("warning"), false);
+    assert.equal(button.textContent, "Wyślij ponownie");
+    const logout = buttonNamed(header, "Wyloguj");
+    const order = header.children.filter(
+      (child) => child === row || child.tag === "h1" || child === logout,
+    );
+    assert.deepEqual(
+      order.map((child) => child.tag),
+      ["h1", "button", "div"],
+    );
+
+    logout.fire("click");
+    await settle();
+    await held.answer("logout", { ok: true, value: null });
+    assert.equal(statusRow(root), null);
+    assert.equal(header.children.includes(row), false);
+
+    // Signing in again with the same account brings the row back, once.
+    const { "Zaloguj się": login } = forms(root);
+    login.inputs[0].value = "ala@example.com";
+    login.inputs[1].value = "dwanaście znaków";
+    login.form.fire("submit");
+    await settle();
+    await held.answer("login", UNCONFIRMED_ACCOUNT);
+    assert.equal(byClass(header, "email-status").length, 1);
+    assert.equal(
+      statusRow(root).sentence.textContent,
+      "Adres e-mail niepotwierdzony.",
+    );
+  });
+});
+
+test("a confirmed address shows no row", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    assert.equal(statusRow(root), null);
+  });
+});
+
+test("a created account starts the row with the outcome of its first message", async () => {
+  const outcomes = {
+    sent: "Wysłaliśmy odnośnik potwierdzający na ala@example.com.",
+    limited: "Za dużo wiadomości. Spróbuj ponownie za godzinę.",
+    failed: "Nie udało się wysłać wiadomości. Spróbuj ponownie później.",
+  };
+  for (const [message, sentence] of Object.entries(outcomes)) {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const { "Załóż konto": register } = await signedOutPage(held);
+      const [email, password, confirmation] = register.inputs;
+      email.value = "ala@example.com";
+      password.value = "dwanaście znaków";
+      confirmation.value = "dwanaście znaków";
+      register.form.fire("submit");
+      await settle();
+      await held.answer("register", {
+        ok: true,
+        value: {
+          ...UNCONFIRMED_ACCOUNT.value,
+          confirmationMessage: message,
+        },
+      });
+      assert.equal(statusRow(root).sentence.textContent, sentence, message);
+    });
+  }
+});
+
+test("Wyślij ponownie sends one request for the signed-in account and shows its outcome in the row", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", UNCONFIRMED_ACCOUNT);
+    const { button, sentence } = statusRow(root);
+    button.fire("click");
+    await settle();
+    assert.deepEqual(
+      held.calls.map((entry) => entry.name),
+      ["sendConfirmationMessage"],
+    );
+    assert.equal(button.textContent, "Wysyłanie…");
+    await held.answer("sendConfirmationMessage", {
+      ok: true,
+      value: "limited",
+    });
+    assert.equal(
+      sentence.textContent,
+      "Za dużo wiadomości. Spróbuj ponownie za godzinę.",
+    );
+    assert.equal(sentence.classList.contains("warning"), true);
+  });
+});
+
+// --- the confirmation from the link ---------------------------------------------------------
+
+const TOKEN = "Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE";
+const LINK = `#confirm-email=${TOKEN}`;
+const CONFIRMED = { ok: true, value: null };
+const INVALID_LINK = {
+  ok: false,
+  failure: {
+    kind: "refused",
+    status: 400,
+    code: "invalid-link",
+    message: "Odnośnik jest nieważny albo wygasł.",
+  },
+};
+
+function noticeOf(root) {
+  return byClass(root, "confirmation-notice").filter(shown);
+}
+
+test("with a token in the address the page confirms first, saying so, and checks the session only after the answer", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(LINK);
+    await startPage(held, address);
+    assert.deepEqual(
+      held.calls.map(({ name, args }) => [name, ...args]),
+      [["confirmEmail", TOKEN]],
+    );
+    const waiting = byClass(root, "session-check-text").find(shown);
+    assert.equal(waiting.textContent, "Potwierdzanie adresu…");
+    assert.equal(address.cleared, 0);
+
+    await held.answer("confirmEmail", CONFIRMED);
+    assert.equal(address.cleared, 1);
+    assert.deepEqual(
+      held.calls.map((entry) => entry.name),
+      ["currentAccount"],
+    );
+    assert.equal(
+      byClass(root, "session-check-text").find(shown).textContent,
+      "Sprawdzanie logowania…",
+    );
+  });
+});
+
+test("the result stands as one sentence above the game for a signed-in player and leaves at the next change between forms and game", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(LINK));
+    await held.answer("confirmEmail", CONFIRMED);
+    await held.answer("currentAccount", ACCOUNT);
+    const [notice] = noticeOf(root);
+    assert.equal(noticeOf(root).length, 1);
+    assert.equal(notice.textContent, "Adres e-mail potwierdzony.");
+    assert.equal(notice.classList.contains("positive"), true);
+    const main = notice.parent;
+    assert.equal(main.children.indexOf(notice), 0);
+    assert.equal(gameShown(main), true);
+
+    buttonNamed(root, "Wyloguj").fire("click");
+    await settle();
+    await held.answer("logout", CONFIRMED);
+    assert.equal(noticeOf(root).length, 0);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+  });
+});
+
+test("a refused link stands in warning above the forms for a player who is not signed in, and the fragment goes", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(LINK);
+    await startPage(held, address);
+    await held.answer("confirmEmail", INVALID_LINK);
+    await held.answer("currentAccount", NO_SESSION);
+    const [notice] = noticeOf(root);
+    assert.equal(noticeOf(root).length, 1);
+    assert.equal(notice.textContent, "Odnośnik jest nieważny albo wygasł.");
+    assert.equal(notice.classList.contains("warning"), true);
+    assert.equal(notice.parent.children.indexOf(notice), 0);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.equal(address.cleared, 1);
+  });
+});
+
+test("a lost connection on the confirmation keeps the fragment and shows the client message in warning above the screen", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(LINK);
+    await startPage(held, address);
+    await held.answer("confirmEmail", NO_CONNECTION);
+    await held.answer("currentAccount", NO_SESSION);
+    const [notice] = noticeOf(root);
+    assert.equal(notice.textContent, NO_CONNECTION.failure.message);
+    assert.equal(notice.classList.contains("warning"), true);
+    assert.equal(address.cleared, 0);
+    assert.equal(address.hash(), LINK);
+  });
+});
+
+test("an address without a token asks only for the session and shows no notice", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress("#other"));
+    assert.deepEqual(
+      held.calls.map((entry) => entry.name),
+      ["currentAccount"],
+    );
+    await held.answer("currentAccount", NO_SESSION);
+    assert.equal(noticeOf(root).length, 0);
+  });
+});
+
+test("the sentence of a confirmation waits through a failed session check and shows once it passes", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(LINK));
+    await held.answer("confirmEmail", CONFIRMED);
+    await held.answer("currentAccount", NO_CONNECTION);
+    assert.equal(noticeOf(root).length, 0);
+    buttonNamed(root, "Spróbuj ponownie").fire("click");
+    await settle();
+    await held.answer("currentAccount", ACCOUNT);
+    assert.equal(noticeOf(root).length, 1);
+    assert.equal(
+      held.calls.some((entry) => entry.name === "confirmEmail"),
+      false,
+    );
   });
 });

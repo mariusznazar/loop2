@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 const minute = 60 * 1000;
 const emailFailureLimit = 5;
@@ -9,6 +9,41 @@ const addressFailureWindow = 15 * minute;
 const registrationLimit = 5;
 const registrationWindow = 60 * minute;
 const defaultKeyCapacity = 10_000;
+const defaultSendingDeadline = 10_000;
+
+// D-105: at most 30 account messages an hour in total and three for one
+// address, counted for the account, whose address never changes (D-159, D-161).
+export const accountMessageLimits = {
+  windowMs: 60 * minute,
+  total: 30,
+  perAccount: 3,
+} as const;
+
+// D-155: a confirmation link works for 24 hours from the moment it is recorded.
+export const confirmationLinkLifetime = 24 * 60 * minute;
+
+const linkTokenBytes = 32;
+const linkTokenText = /^[A-Za-z0-9_-]{43}$/;
+
+// 32 random bytes as 43 base64url characters (D-156).
+export function createLinkToken(): string {
+  return randomBytes(linkTokenBytes).toString("base64url");
+}
+
+// Exactly the form createLinkToken writes: 43 base64url characters that decode
+// to 32 bytes and encode back to the same text, so one link has one spelling.
+export function isLinkToken(value: string): boolean {
+  if (!linkTokenText.test(value)) return false;
+  const bytes = Buffer.from(value, "base64url");
+  return (
+    bytes.length === linkTokenBytes && bytes.toString("base64url") === value
+  );
+}
+
+// The account database keeps only this digest of a link's token (D-156).
+export function linkTokenDigest(token: string): string {
+  return createHash("sha256").update(token).digest("base64url");
+}
 
 export type RegistrationCheck =
   | { ok: true; email: string; password: string }
@@ -83,6 +118,8 @@ export interface RegistrationTicket {
 interface PolicyOptions {
   now?: () => number;
   keyCapacity?: number;
+  // The whole sending of an account message, in milliseconds; tests shorten it.
+  sendingDeadline?: number;
 }
 
 function recent(times: number[], now: number, window: number): number[] {
@@ -95,12 +132,22 @@ export class AccountPolicy {
   private readonly emails = new Map<string, EmailHistory>();
   private readonly addresses = new Map<string, AddressHistory>();
   private reservations = 0;
+  // After this long a sending whose mailer has not answered counts as failed,
+  // so a registration or a resend never waits on the mail service unbounded.
+  readonly sendingDeadline: number;
 
   constructor(options: PolicyOptions = {}) {
     this.now = options.now ?? Date.now;
     this.keyCapacity = options.keyCapacity ?? defaultKeyCapacity;
     if (!Number.isSafeInteger(this.keyCapacity) || this.keyCapacity < 1)
       throw new Error("Invalid limiter capacity");
+    this.sendingDeadline = options.sendingDeadline ?? defaultSendingDeadline;
+    if (
+      !Number.isSafeInteger(this.sendingDeadline) ||
+      this.sendingDeadline < 1 ||
+      this.sendingDeadline > 2 ** 31 - 1
+    )
+      throw new Error("Invalid sending deadline");
   }
 
   // Attempts admitted and not yet settled.

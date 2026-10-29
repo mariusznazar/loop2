@@ -3,9 +3,11 @@
  * states of the styleguide's rule "States of shared controls", or the reason a state does not
  * apply; every role of the styleguide's table Roles; and samples of tiles in each state, drawn
  * with the roles by the game's own stylesheet — never a drawing of the game from a game state
- * (D-04). Code only this page needs stays in this module: beyond it the page imports only modules
+ * (D-04). Forms and the header row of an unconfirmed address are shown waiting for the server and
+ * with a refusal sentence, with made-up values. Code only this page needs stays in this module: beyond it the page imports only modules
  * the game itself uses, so nothing of the page is compiled into what `npm run build` writes.
  */
+import type { Account, ConfirmationMessage } from "../account-api.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import { hexCenter, hexCorners, tileLabel } from "../sim/hex.js";
 import type { Hex } from "../sim/types.js";
@@ -22,6 +24,7 @@ import {
   createTextField,
   type Field,
 } from "../view/controls/text-field.js";
+import { createEmailStatus } from "../view/email-status.js";
 
 /** The page's marker: it stands in this module and in the page's HTML, in no other file of src. */
 export const PAGE_MARKER = "loop2-kitchen-sink-page";
@@ -308,6 +311,53 @@ function formsSection(): HTMLElement {
   return section("Formularze czekające na serwer", list);
 }
 
+// --- header row of an unconfirmed address ---------------------------------------------------
+
+/** A made-up account: the page names no real address and holds no game state. */
+const SAMPLE_ACCOUNT: Account = {
+  id: "sample",
+  email: "przyklad@example.com",
+  emailConfirmed: false,
+};
+
+/**
+ * The header row of the module `email-status.ts` as the page shows it, on a line of the header's
+ * own kind: waiting for the answer to „Wyślij ponownie” (the button disabled and reading
+ * „Wysyłanie…”), or starting with the sentence of a refused message beside the button. The request
+ * of the waiting sample never ends and sends nothing.
+ */
+function headerRowSample(start: ConfirmationMessage | "waiting"): HTMLElement {
+  const row = createEmailStatus(
+    { sendConfirmationMessage: () => new Promise(() => undefined) },
+    SAMPLE_ACCOUNT,
+    start === "waiting" ? null : start,
+  );
+  if (start === "waiting") row.element.querySelector("button")?.click();
+  const header = document.createElement("div");
+  header.className = "header-sample";
+  header.append(row.element);
+  return header;
+}
+
+function headerRowSection(): HTMLElement {
+  const samples: readonly (readonly [string, HTMLElement])[] = [
+    ["Wyślij ponownie: oczekiwanie na serwer", headerRowSample("waiting")],
+    ["Wyślij ponownie: pułap wiadomości", headerRowSample("limited")],
+    ["Wyślij ponownie: wysyłka się nie udała", headerRowSample("failed")],
+  ];
+  const list = document.createElement("div");
+  list.className = "form-samples";
+  for (const [name, row] of samples) {
+    const figure = document.createElement("figure");
+    figure.className = "form-sample";
+    const caption = document.createElement("figcaption");
+    caption.textContent = name;
+    figure.append(row, caption);
+    list.append(figure);
+  }
+  return section("Wiersz nagłówka z niepotwierdzonym adresem", list);
+}
+
 // --- roles ----------------------------------------------------------------------------------
 
 /** The kinds of the table Roles, by their names on the page. */
@@ -590,6 +640,7 @@ document.body.append(
   header,
   controlsSection(),
   formsSection(),
+  headerRowSection(),
   rolesSection(),
   tilesSection(),
 );
