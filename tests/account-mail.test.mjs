@@ -61,8 +61,10 @@ function certificate([altNameTag, altNameValue]) {
   const name = sequence(
     der(0x31, sequence(oid("2.5.4.3"), der(0x0c, Buffer.from("loop2 test")))),
   );
+  // A DER INTEGER is minimal and positive only when its first byte is
+  // 0x01..0x7f; OpenSSL refuses a certificate whose serial has a leading zero.
   const serial = randomBytes(16);
-  serial[0] &= 0x7f;
+  serial[0] = (serial[0] & 0x7f) | 0x40;
   const now = Date.now();
   const tbs = sequence(
     der(0xa0, der(0x02, Buffer.from([2]))),
