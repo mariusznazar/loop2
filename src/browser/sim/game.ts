@@ -14,10 +14,9 @@ import { conditionNumber, onStep } from "./program.js";
 import { mixSeed } from "./random.js";
 import {
   mapRunEnded,
-  meetsSolving,
+  finishMinute,
   minuteBeforePick,
   newMapRun,
-  pickActivity,
   type GameEvent,
 } from "./run.js";
 import type {
@@ -306,9 +305,13 @@ function countStarts(
   if (counts === null) return null;
   let next = counts;
   for (const event of events) {
-    if (event.kind !== "activityStarted" || event.activity.kind !== "rule")
-      continue;
-    const id = event.activity.ruleId;
+    const id =
+      event.kind === "combatExchange"
+        ? event.exchange.characterAction?.ruleId
+        : event.kind === "activityStarted" && event.activity.kind === "rule"
+          ? event.activity.ruleId
+          : undefined;
+    if (id === undefined) continue;
     if (!Object.hasOwn(next, id)) continue;
     if (next === counts) next = { ...counts };
     next[id] += 1;
@@ -618,6 +621,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   for (let minute = 0; minute < minutes; minute += 1) {
     const stepped = minuteBeforePick(run, map);
     events.push(...stepped.events);
+    const beforeUnderstanding = current.understanding;
     const found = discover(
       current.understanding,
       run,
@@ -635,26 +639,34 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         }),
       };
       program = programOf(current, run.character.id);
-      revealed = found.revealed;
+    }
+    const finished = finishMinute(stepped, map, program);
+    // Collect the entire minute once in catalog order, including its attack, after the
+    // earlier discovery has already informed the program used by this final phase.
+    const together = finished.events.some((event) => event.kind === "attacked")
+      ? discover(beforeUnderstanding, run, finished.run, [
+          ...stepped.events,
+          ...finished.events,
+        ])
+      : found;
+    const ending: GameEvent[] = finished.events.filter(
+      (event) =>
+        event.kind === "activityStarted" || event.kind === "mapRunCompleted",
+    );
+    events.push(...finished.events.filter((event) => !ending.includes(event)));
+    if (together) {
+      current = { ...current, understanding: together.understanding };
+      revealed = together.revealed;
       events.push({
         kind: "discovered",
-        minute: stepped.run.minute,
-        ...found.revealed,
+        minute: finished.run.minute,
+        ...revealed,
       });
     }
-    run = stepped.run;
-    if (!mapRunEnded(run) && meetsSolving(run, map)) {
-      run = { ...run, completion: { minute: run.minute } };
-      events.push({ kind: "mapRunCompleted", minute: run.minute });
-      completed = true;
-      break;
-    }
-    if (stepped.picks) {
-      const picked = pickActivity(run, map, program);
-      run = picked.run;
-      events.push(...picked.events);
-    }
-    if (run.death || revealed) break;
+    events.push(...ending);
+    run = finished.run;
+    completed = run.completion !== null;
+    if (mapRunEnded(run) || revealed) break;
   }
   return {
     state: {

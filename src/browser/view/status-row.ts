@@ -23,6 +23,7 @@ const PAUSED_SUFFIX = " (pauza)";
 const DEATH_TEXTS: Record<DeathCause, string> = {
   cold: "Mag zamarzł",
   hunger: "Mag umarł z głodu",
+  combat: "Mag zginął w walce",
 };
 
 /**
@@ -58,7 +59,17 @@ export function statusText(run: MapRun, paused: boolean): string {
       ? null
       : `Pokonane napaści ${run.defeatedAttacks}/${map.solving.defeatedAttacks}`,
   ].filter((part): part is string => part !== null);
-  return `Minuta ${run.minute} · ${activityText(run.current.activity)} · ${progress.join(" · ")}${paused ? PAUSED_SUFFIX : ""}`;
+  const combat =
+    run.activeCombat ||
+    (run.lastCombat?.result && run.lastCombat.resolveMinute === run.minute
+      ? run.lastCombat
+      : null);
+  const activity = combat
+    ? "Walczy"
+    : run.current
+      ? activityText(run.current.activity)
+      : WAIT_TEXT;
+  return `Minuta ${run.minute} · ${activity} · ${progress.join(" · ")}${paused ? PAUSED_SUFFIX : ""}`;
 }
 
 /**

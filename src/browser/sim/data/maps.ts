@@ -26,6 +26,8 @@ export type MapAttackerDef = {
   id: CreatureId;
   /** Chance of an attack in each eligible game minute. */
   chancePerMinute: number;
+  /** Full protected minutes from run start or the previous encounter's end. */
+  cooldownMinutes: number;
 };
 
 export type MapDef = {
@@ -84,7 +86,7 @@ export const MAPS = {
       { id: "moss", density: 0.4, stock: 6, renewMinutes: 60 },
       { id: "fiber", density: 0.4, stock: 6, renewMinutes: 60 },
     ],
-    attackers: [{ id: "wolf", chancePerMinute: 0.01 }],
+    attackers: [{ id: "wolf", chancePerMinute: 0.01, cooldownMinutes: 180 }],
     solving: { streak: 540, defeatedAttacks: 2 },
     solvingText:
       "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka",

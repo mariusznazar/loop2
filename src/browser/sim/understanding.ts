@@ -175,6 +175,9 @@ function happened(
     found.push({ kind: "chilled" });
   if (after.death) return found;
 
+  const attacked = eventOf(events, "attacked");
+  if (attacked) found.push({ kind: "attacked", creature: attacked.creature });
+
   const finished = eventOf(events, "activityFinished");
   if (finished?.activity.kind !== "rule") return found;
   switch (finished.activity.action.kind) {

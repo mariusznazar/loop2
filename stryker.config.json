@@ -22,6 +22,7 @@
       "tests/sim/conditions.test.mjs",
       "tests/sim/data.test.mjs",
       "tests/sim/discovery.test.mjs",
+      "tests/sim/encounters.test.mjs",
       "tests/sim/flow.test.mjs",
       "tests/sim/gather.test.mjs",
       "tests/sim/hex.test.mjs",

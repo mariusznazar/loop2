@@ -7,6 +7,8 @@ export const BALANCE = {
   waitMinutes: 1,
   /** Maximum exchanges resolved in one encounter. */
   combatTurns: 40,
+  /** Whole game minutes after an attack before all its turns resolve. */
+  combatMinutes: 5,
   /** Chance that a gathering succeeds. */
   gatherChance: 0.7,
   body: {

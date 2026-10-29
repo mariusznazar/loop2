@@ -96,6 +96,15 @@ export type CombatResult = {
   ruleStarts: Record<RuleId, number>;
 };
 
+export type ActiveCombat = {
+  creatureId: CreatureId;
+  attackMinute: number;
+  resolveMinute: number;
+};
+
+/** The last attack remains readable after combat or an early completion. */
+export type LastCombat = ActiveCombat & { result: CombatResult | null };
+
 /** What the Understanding records of the campfire: it is discoverable, yet no item of the backpack. */
 export type CampfireId = typeof CAMPFIRE.id;
 
@@ -174,7 +183,7 @@ export type BurningItem = {
   minutesLeft: number;
 };
 
-export type DeathCause = "cold" | "hunger";
+export type DeathCause = "cold" | "hunger" | "combat";
 
 /** The end of a map run in the character's death. */
 export type Death = { minute: number; cause: DeathCause };
@@ -196,8 +205,14 @@ export type MapRun = {
   campfires: Campfire[];
   /** None at start. */
   burningItems: BurningItem[];
-  /** Always set while the run exists; kept as it stood when the character dies. */
-  current: CurrentActivity;
+  /** Absent in combat, and after combat death or completion before another ordinary pick. */
+  current: CurrentActivity | null;
+  activeCombat: ActiveCombat | null;
+  lastCombat: LastCombat | null;
+  /** Generator state of the independent attack stream. */
+  attackRandom: number;
+  /** Minute zero or the end of the latest encounter. */
+  attackCooldownStart: number;
   /** Generator state of the wander stream. */
   wanderRandom: number;
   /** Generator state of the gathering stream. */

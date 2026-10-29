@@ -37,7 +37,7 @@ test("Las — głębiej has the task's map data, attacker, solving requirements 
     ambientTemperature: 7,
     stepMinutes: 5,
     resources: MAPS.forest.resources,
-    attackers: [{ id: "wolf", chancePerMinute: 0.01 }],
+    attackers: [{ id: "wolf", chancePerMinute: 0.01, cooldownMinutes: 180 }],
     solving: { streak: 540, defeatedAttacks: 2 },
     solvingText:
       "540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka",
@@ -121,6 +121,7 @@ test("combat actions carry the accepted damage, item requirement and attack reve
 test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", () => {
   assert.deepEqual(CREATURES.wolf, {
     name: "wilk",
+    revealedBy: { kind: "attacked", creature: "wolf" },
     health: 24,
     strikeDamage: 7,
     rules: [
