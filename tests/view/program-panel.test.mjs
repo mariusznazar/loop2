@@ -14,8 +14,12 @@ import {
 import {
   createProgram,
   deleteProgram,
+  discardCopyChanges,
   editProgram,
   renameProgram,
+  saveCopyAsNewProgram,
+  saveCopyIntoProgram,
+  switchProgram,
 } from "../../dist/public/sim/programs.js";
 import { createProgramPanel } from "../../dist/public/view/program-panel.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
@@ -52,13 +56,30 @@ function modelElement(document, tag) {
       (this.listeners[type] ??= []).push(listener);
     },
     focus() {
+      if (document.activeElement !== this) this.valueAtFocus = this.value;
       document.activeElement = this;
+    },
+    // As in the browser, a field that loses focus with text changed since it gained focus fires
+    // `change`; a field removed from the page while focused loses focus the same way.
+    blur() {
+      if (document.activeElement !== this) return;
+      document.activeElement = null;
+      if (this.value !== this.valueAtFocus) fire(this, "change");
+    },
+    contains(other) {
+      return (
+        this === other || this.children.some((child) => child.contains?.(other))
+      );
     },
     append(...items) {
       this.children.push(...items);
     },
     replaceChildren(...items) {
+      const removed = this.children.filter((child) => !items.includes(child));
+      const active = document.activeElement;
       this.children = items;
+      if (active && removed.some((child) => child.contains?.(active)))
+        active.blur();
     },
     get options() {
       return this.children;
@@ -154,6 +175,22 @@ function wiredPanel(start = newGame()) {
     deleteProgram(programId) {
       acts.push(["deleteProgram", programId]);
       apply(deleteProgram(state, programId));
+    },
+    saveCopy() {
+      acts.push(["saveCopy"]);
+      apply(saveCopyIntoProgram(state));
+    },
+    saveCopyAsNew(name) {
+      acts.push(["saveCopyAsNew", name]);
+      apply(saveCopyAsNewProgram(state, name));
+    },
+    discardCopy() {
+      acts.push(["discardCopy"]);
+      apply(discardCopyChanges(state));
+    },
+    switchProgram(programId) {
+      acts.push(["switchProgram", programId]);
+      apply(switchProgram(state, programId));
     },
   });
   panel.update(state, []);
@@ -470,5 +507,311 @@ test("time passing keeps what is typed in the name field and in an editor field,
     assert.equal(nameOpen(game.panel), true);
     assert.equal(nameInput(game.panel).value, "Las");
     assert.equal(document.activeElement, nameInput(game.panel));
+  });
+});
+
+/** The elements of `element` the player sees: the walk skips what a hidden element holds. */
+function seen(element) {
+  return element.hidden ? [] : [element, ...element.children.flatMap(seen)];
+}
+
+/** The button with this text if the player sees it, else undefined. */
+const visibleButton = (panel, text) =>
+  seen(panel.element).find(
+    (element) => element.tag === "button" && element.textContent === text,
+  );
+
+/** The texts of the panel's lines and heading of the copy that the player sees. */
+const copyTexts = (panel) =>
+  seen(panel.element)
+    .filter(
+      (element) =>
+        element.className === "copy-line" ||
+        element.className === "copy-heading",
+    )
+    .map((element) => element.textContent);
+
+const SAVE_BUTTONS = [
+  "Zapisz w programie",
+  "Zapisz jako nowy program",
+  "Porzuć zmiany",
+];
+
+// Task programy-gracza, To do 8; spec decision 7, „When the copy is shown”. Catches the line
+// missing or standing without a change, and the three buttons active when the copy equals its
+// program or inactive when it differs.
+test("the copy shows its heading; an edit of the copy brings „Niezapisane zmiany w kopii.” and activates the three buttons", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(gameWithRule());
+    game.apply(send(game.state, SENT, REAL_MS));
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Program"]);
+    for (const text of SAVE_BUTTONS)
+      assert.equal(visibleButton(game.panel, text).disabled, true, text);
+
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    assert.deepEqual(copyTexts(game.panel), [
+      "Kopia: Program",
+      "Niezapisane zmiany w kopii.",
+    ]);
+    for (const text of SAVE_BUTTONS)
+      assert.equal(visibleButton(game.panel, text).disabled, false, text);
+  });
+});
+
+// Slice 6's observed problem (the report of that slice): text typed into an editor field and not
+// yet committed, while the panel shows another program without focus moving, must land in the
+// program it was typed into. Catches the removed focused field committing into the newly shown
+// program.
+test("uncommitted text in the copy's editor lands in the copy when the program shown changes without moving focus", () => {
+  withPanelDocument((document) => {
+    const game = wiredPanel(gameWithRule());
+    click(buttonNamed(game.panel, "Nowy program"));
+    game.apply(send(game.state, SENT, REAL_MS));
+    // The copy holds a rule that program 2 lacks, so showing program 2 rebuilds the editor's groups.
+    const groupName = descendants(game.panel.element).find(
+      (element) =>
+        element.tag === "input" &&
+        element.attributes["aria-label"] === "Nazwa grupy",
+    );
+    groupName.focus();
+    groupName.value = "Wpisane w kopii";
+    pick(game.panel, "2");
+    assert.equal(document.activeElement, null);
+    assert.equal(game.state.run.copy.program.groups[0].name, "Wpisane w kopii");
+    assert.equal(game.state.programs[1].program.groups[0].name, "Program");
+    assert.equal(game.state.programs[0].program.groups[0].name, "Program");
+  });
+});
+
+/** A map run with the copy edited: one group added, so the copy differs from its program. */
+function editedCopyGame() {
+  const game = wiredPanel(gameWithRule());
+  game.apply(send(game.state, SENT, REAL_MS));
+  click(buttonNamed(game.panel, "Dodaj grupę"));
+  return game;
+}
+
+// To do 8; spec decision 7. Catches the save writing something other than the copy into the
+// program, the line staying after the save, and the buttons staying active.
+test("„Zapisz w programie” writes the copy into its program, and the line and the activity go", () => {
+  withPanelDocument(() => {
+    const game = editedCopyGame();
+    const copy = game.state.run.copy.program;
+    click(visibleButton(game.panel, "Zapisz w programie"));
+    assert.deepEqual(game.acts.at(-1), ["saveCopy"]);
+    assert.equal(game.state.programs[0].program, copy);
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Program"]);
+    for (const text of SAVE_BUTTONS)
+      assert.equal(visibleButton(game.panel, text).disabled, true, text);
+  });
+});
+
+// To do 9; D-160 and spec decision 7. Catches the line missing when the program changed and the
+// copy has no changes, the line staying after the save, and a wrong program name in it.
+test("the line of a changed program stands with and without unsaved changes, and goes after „Zapisz w programie”", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(gameWithRule());
+    game.apply(send(game.state, SENT, REAL_MS));
+    pick(game.panel, "1");
+    click(buttonNamed(game.panel, "Zmień nazwę"));
+    typeName(game.panel, "Las");
+    click(buttonNamed(game.panel, "Zapisz"));
+    // The program, not the copy, gets a group.
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    pick(game.panel, "copy");
+    const lacks =
+      "Program Las ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.";
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Las", lacks]);
+    assert.equal(
+      visibleButton(game.panel, "Zapisz w programie").disabled,
+      true,
+    );
+
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    assert.deepEqual(copyTexts(game.panel), [
+      "Kopia: Las",
+      "Niezapisane zmiany w kopii.",
+      lacks,
+    ]);
+    click(visibleButton(game.panel, "Zapisz w programie"));
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Las"]);
+    assert.equal(groupCount(game.state.programs[0].program), 2);
+  });
+});
+
+// To do 8; D-159 and spec decision 7. Catches an empty or wrong first value of the field, a
+// refused name saved, and the panel leaving the copy or keeping the old program number.
+test("„Zapisz jako nowy program” offers the first free name, refuses a taken one, and the copy then belongs to the new program", () => {
+  withPanelDocument(() => {
+    const game = editedCopyGame();
+    click(visibleButton(game.panel, "Zapisz jako nowy program"));
+    assert.equal(nameOpen(game.panel), true);
+    assert.equal(nameInput(game.panel).value, "Program 2");
+
+    typeName(game.panel, "PROGRAM");
+    assert.equal(nameMessage(game.panel), "Program o tej nazwie już istnieje.");
+    click(buttonNamed(game.panel, "Zapisz"));
+    assert.ok(!game.acts.some(([act]) => act === "saveCopyAsNew"));
+    assert.equal(nameOpen(game.panel), true);
+
+    typeName(game.panel, " Las ");
+    click(buttonNamed(game.panel, "Zapisz"));
+    assert.deepEqual(game.acts.at(-1), ["saveCopyAsNew", " Las "]);
+    assert.equal(nameOpen(game.panel), false);
+    assert.equal(programList(game.panel).value, "copy");
+    assert.deepEqual(positions(programList(game.panel)), [
+      "Kopia w przejściu",
+      "Program",
+      "Las",
+    ]);
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Las"]);
+    assert.equal(game.state.run.copy.programId, 2);
+    for (const text of SAVE_BUTTONS)
+      assert.equal(visibleButton(game.panel, text).disabled, true, text);
+  });
+});
+
+// To do 8; spec decision 7. Catches the suggestion ignoring the names taken, the field staying
+// open after the copy lost its changes, and the same action not leaving the field.
+test("„Zapisz jako nowy program” suggests „Program 3” beside „Program 2”, and its field leaves at the same action again", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(createProgram(gameWithRule()).state);
+    game.apply(send(game.state, SENT, REAL_MS));
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    click(visibleButton(game.panel, "Zapisz jako nowy program"));
+    assert.equal(nameInput(game.panel).value, "Program 3");
+    click(visibleButton(game.panel, "Zapisz jako nowy program"));
+    assert.equal(nameOpen(game.panel), false);
+    click(visibleButton(game.panel, "Zapisz jako nowy program"));
+    assert.equal(nameOpen(game.panel), true);
+    click(visibleButton(game.panel, "Porzuć zmiany"));
+    assert.equal(nameOpen(game.panel), false, "no changes, nothing to save");
+  });
+});
+
+// To do 8; spec decision 7. Catches the discard leaving the copy's edit, the line staying, and
+// the discard not going to the simulation.
+test("„Porzuć zmiany” restores the copy's program and the line goes", () => {
+  withPanelDocument(() => {
+    const game = editedCopyGame();
+    click(visibleButton(game.panel, "Porzuć zmiany"));
+    assert.deepEqual(game.acts.at(-1), ["discardCopy"]);
+    assert.equal(groupCount(game.state.run.copy.program), 1);
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Program"]);
+    for (const text of SAVE_BUTTONS)
+      assert.equal(visibleButton(game.panel, text).disabled, true, text);
+  });
+});
+
+// To do 3 and 8; D-156 and spec decision 7. Catches the heading losing the name of a deleted
+// program, „Zapisz w programie” and „Porzuć zmiany” offered for a program that is gone, and
+// „Zapisz jako nowy program” withdrawn.
+test("a copy whose program was deleted keeps its heading, offers only „Zapisz jako nowy program”, and it is active", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(createProgram(gameWithRule()).state);
+    game.apply(send(game.state, SENT, REAL_MS));
+    pick(game.panel, "1");
+    click(buttonNamed(game.panel, "Usuń"));
+    pick(game.panel, "copy");
+    assert.deepEqual(copyTexts(game.panel), [
+      "Kopia: Program",
+      "Niezapisane zmiany w kopii.",
+    ]);
+    assert.equal(visibleButton(game.panel, "Zapisz w programie"), undefined);
+    assert.equal(visibleButton(game.panel, "Porzuć zmiany"), undefined);
+    assert.equal(
+      visibleButton(game.panel, "Zapisz jako nowy program").disabled,
+      false,
+    );
+    click(visibleButton(game.panel, "Zapisz jako nowy program"));
+    assert.equal(nameInput(game.panel).value, "Program 3");
+    click(buttonNamed(game.panel, "Zapisz"));
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Program 3"]);
+  });
+});
+
+// To do 12; D-162 and spec decision 7. Catches the button missing beside another program, shown
+// beside the copy's own program or the copy, and a click that does not switch and show the copy.
+test("„Przełącz postać na ten program” stands beside another saved program only, and a click switches and shows the copy", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(createProgram(gameWithRule()).state);
+    game.apply(send(game.state, SENT, REAL_MS));
+    const SWITCH = "Przełącz postać na ten program";
+    assert.equal(visibleButton(game.panel, SWITCH), undefined, "copy shown");
+    pick(game.panel, "1");
+    assert.equal(visibleButton(game.panel, SWITCH), undefined, "own program");
+    pick(game.panel, "2");
+    assert.ok(visibleButton(game.panel, SWITCH));
+    assert.ok(
+      visibleButton(game.panel, SWITCH).classes.has("destructive"),
+      "a destructive button",
+    );
+
+    click(visibleButton(game.panel, SWITCH));
+    assert.deepEqual(game.acts.at(-1), ["switchProgram", 2]);
+    assert.equal(game.state.run.copy.programId, 2);
+    assert.equal(game.state.run.streak, 0);
+    assert.deepEqual(counts(game.panel), []);
+    assert.equal(programList(game.panel).value, "copy");
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Program 2"]);
+    assert.equal(visibleButton(game.panel, SWITCH), undefined);
+    pick(game.panel, "1");
+    assert.ok(
+      visibleButton(game.panel, SWITCH),
+      "now beside the first program",
+    );
+  });
+});
+
+// To do 12; D-162 and spec decision 7. Catches the button standing beside the new program after
+// „Zapisz jako nowy program”, and not beside the program the copy was taken from.
+test("after „Zapisz jako nowy program” the switch button stands beside the first program and not beside the new one", () => {
+  withPanelDocument(() => {
+    const game = editedCopyGame();
+    click(visibleButton(game.panel, "Zapisz jako nowy program"));
+    click(buttonNamed(game.panel, "Zapisz"));
+    pick(game.panel, "2");
+    assert.equal(
+      visibleButton(game.panel, "Przełącz postać na ten program"),
+      undefined,
+    );
+    pick(game.panel, "1");
+    assert.ok(visibleButton(game.panel, "Przełącz postać na ten program"));
+  });
+});
+
+// To do 10 and 12; spec decision 7. Catches the switch button standing on the screen after a death
+// and the copy's buttons not working there.
+test("on the screen after a death the copy's buttons work and there is no switch button", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(createProgram(gameWithRule()).state);
+    game.apply(send(game.state, SENT, REAL_MS));
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    game.apply({
+      state: {
+        ...game.state,
+        run: { ...game.state.run, death: { minute: 3, cause: "cold" } },
+      },
+      events: [],
+    });
+    click(visibleButton(game.panel, "Zapisz w programie"));
+    assert.deepEqual(game.acts.at(-1), ["saveCopy"]);
+    assert.deepEqual(copyTexts(game.panel), ["Kopia: Program"]);
+    pick(game.panel, "2");
+    assert.equal(
+      visibleButton(game.panel, "Przełącz postać na ten program"),
+      undefined,
+    );
+  });
+});
+
+// To do 10; spec decision 7. Catches the copy's section staying after „Zakończ”, when a saved
+// program is shown.
+test("after „Zakończ” with unsaved changes the copy's section is gone", () => {
+  withPanelDocument(() => {
+    const game = editedCopyGame();
+    game.apply(end(game.state));
+    assert.deepEqual(copyTexts(game.panel), []);
+    assert.equal(visibleButton(game.panel, "Zapisz w programie"), undefined);
   });
 });
