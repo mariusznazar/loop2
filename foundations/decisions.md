@@ -867,18 +867,18 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń” and „Restart” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…” or „Zakładanie konta…” for the corresponding form, and that form's fields are disabled. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, and the kitchen-sink page shows the waiting and refusal states.
+The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany” and „Przełącz postać na ten program” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…” or „Zakładanie konta…” for the corresponding form, and that form's fields are disabled. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, and the kitchen-sink page shows the waiting and refusal states.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** an agent compares a change with the decision:
   - complies: the button „Wyślij” of a new screen made with the shared button;
-  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?"
+  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany” or „Przełącz postać na ten program” made as a plain button.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?"
 
-*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run or deletes a program rule. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous.
-*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen.
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes.
+*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
 
@@ -1631,26 +1631,34 @@ counting completed actions — a rule whose action was cut short by death would 
 
 ### D-93 — What does a program rule show the player?
 
-During a map run every program rule shows how many times it fired in that map run, written as a
-number followed by „×”, such as „3×”. The count starts from zero at the start of each map run,
-a map run restart included, and when the program rule's condition or action changes; it survives
-reordering the rule, moving it to another rule group, and changing its group's condition or name.
-Before the game's first map run the rules show no counts, and after a map run ends, in death, in a
-completion or through „Zakończ”, its counts remain beside the rules until the next send or map run
-restart, subject to the same reset on a change of a rule's content.
+During a map run every program rule of the copy the map run carries out shows how many times it
+fired in that map run, written as a number followed by „×”, such as „3×”, while the rules of a saved
+program the program panel shows then show no count. The count starts from zero at the start of each
+map run, a map run restart included, at a switch of the character to another program, and when the
+program rule's condition or action changes; it survives reordering the rule, moving it to another
+rule group, changing its group's condition or name, and a save of the copy. Before the game's first
+map run the rules show no counts; after a map run ends in death or in a completion its counts remain
+beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to,
+each rule there showing the count of the same rule of the copy where the two have the same condition
+and action and „0×” otherwise, and beside the rules of no other program, until the next send or map
+run restart, subject to the same reset on a change of a rule's content.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
-- **Relations:** derives from D-92
-- **Verification:** an agent compares a change with the decision:
+- **Relations:** derives from D-92 · derives from D-152
+- **Verification:** invariants: saved-program-edit. An agent compares a change with the decision:
   - complies: a program rule moved up or into another group keeping its count; a changed group
     condition leaving its rules' counts intact; a rule whose condition changed starting again
     from zero; counts retained after death, after a completion and after „Zakończ”, reset on the
-    next send or restart
+    next send or restart; a switch to another program starting every count of the new copy's rules
+    from zero; after „Zakończ” the rules of the copy's program showing the copy's counts, and „0×”
+    beside a rule whose action there differs from the copy's
   - violates: counts kept per position in the list; a rename of a group resetting its rules'
     counts; a count shown before the first map run; „Zakończ” hiding the ended run's counts; a
-    completion clearing the counts of its map run
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14 · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "17. Co pokazują liczniki reguł programu po domknięciu przejścia — zostają przy regułach jak po śmierci i po „Zakończ”, aż do następnego wysłania albo „Restart”?"
+    completion clearing the counts of its map run; counts shown beside a saved program opened
+    during a map run; the counts of the former copy kept after a switch; after „Zakończ” a count
+    of the copy shown beside a rule of the program whose condition there differs
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14 · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "17. Co pokazują liczniki reguł programu po domknięciu przejścia — zostają przy regułach jak po śmierci i po „Zakończ”, aż do następnego wysłania albo „Restart”?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?" and "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?"
 
 *Rationale:* The count is the sign that a program rule is dead — one standing too low is caught
 by one above it and stays silent for a whole map run. A program rule whose content changed is
@@ -1658,12 +1666,16 @@ another program rule, so its count starts again, while its group and its place a
 same rule can act. Keeping the last run's counts lets the player inspect the program after that
 run ends, whichever way it ends, the run that solved a map included. Accepted with it: a count
 earned under a group's former condition remains when the condition changes, and the next run gives
-a fresh picture of the edited program.
+a fresh picture of the edited program. A switch brings another program, whose rules have fired
+nothing in the map run. After „Zakończ” the counts stand beside the program the player goes back to,
+and a rule whose content differs there is not the rule that fired.
 *Rejected:* counts per position — moving a rule would attach another rule's history to it;
 resetting on a move or group edit — arranging the same rules would erase their history; hiding
 the counts after „Zakończ” — the player would lose the ended run's evidence while editing; clearing
 the counts at a completion — the player could not see which rules worked in the run that solved the
-map.
+map; counts kept for every program — the copy is what fires, so a store for the other programs would
+hold nothing; counts beside every program's rules by the rule's identity alone — another program's
+rules would show numbers they did not earn.
 
 ### D-94 — Where does loop2 use a mutation testing tool?
 
@@ -2145,28 +2157,38 @@ discoveries, since the game keeps no record of them; the line of discoveries end
 after a completion with no line of the discovery made in its game minute — the player would not
 learn what that game minute discovered.
 
-### D-123 — What does the game write into the program at the first chill?
+### D-123 — What does the game write into the program at a discovery?
 
-When the first chill brings „Eksploruj” into the Understanding, the game writes the program rule
-„Zawsze → Eksploruj” into the first rule group of the program, and where the program holds no rule
-group, it adds the rule group „Program” with the condition „Zawsze” and writes the rule into it.
+A program rule the game writes at a discovery goes into the first rule group of the copy the map run
+carries out and into the first rule group of the program the copy belongs to, while that program is
+on the player's list, and where either holds no rule group, the game adds the rule group „Program”
+with the condition „Zawsze” and writes the rule into it; the other programs of the list stay as they
+were. Today the game writes one such rule, „Zawsze → Eksploruj”, when the first chill brings
+„Eksploruj” into the Understanding. The rule so written counts neither as an unsaved change of the
+copy nor as a change of the program that a save of the copy announces.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-90 · derives from D-121
+- **Relations:** derives from D-90 · derives from D-121 · derives from D-152
 - **Verification:** an agent compares a change with the decision:
   - complies: a new game's mage first chilled in game minute 84 with the empty rule group „Program”
-    gaining „Zawsze → Eksploruj” there; a first chill in a program whose rule groups the player has
-    all deleted adding the rule group „Program” with the condition „Zawsze” and the rule in it
+    of the copy and of the program „Program” each gaining „Zawsze → Eksploruj” there, „Program 2”
+    staying as it was and the copy showing no unsaved changes; a first chill in a copy whose rule
+    groups the player has all deleted adding the rule group „Program” with the condition „Zawsze”
+    and the rule in it
   - violates: the rule written again at a later chill or in a later map run; the rule written into
-    a rule group of its own beside the program's first rule group
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "2. Czy przy pierwszym wychłodzeniu gra sama dopisuje do programu regułę „Zawsze → Eksploruj”, jak w loop?"
+    a rule group of its own beside the first rule group; the rule written into every program of the
+    list; the rule lighting „Niezapisane zmiany w kopii.” or the line of a program that changed
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "2. Czy przy pierwszym wychłodzeniu gra sama dopisuje do programu regułę „Zawsze → Eksploruj”, jak w loop?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q7. Do którego programu gra wpisuje regułę przy odkryciu, gdy przejście wykonuje kopię programu — do kopii, do zapisanego programu czy do obu? (pytanie planu dla zadania 12)"
 
 *Rationale:* until the first chill the character knows no action and stands, so the rule written
-then sets it moving and shows the player the shape of a program rule in the program editor.
-Accepted with it: once in a game the game changes the player's program with no move of the player,
-who sees the rule in the program editor and can delete it.
-*Rejected:* the program left as the player wrote it at the first chill.
+then sets it moving and shows the player the shape of a program rule in the program editor. Written
+into the copy and its program alike, the rule acts in the map run and stays in the program the next
+map run takes, and since both receive it, it gives the player nothing to save and nothing to lose.
+Accepted with it: once in a game the game changes a saved program of the player with no move of the
+player, who sees the rule in the program editor and can delete it.
+*Rejected:* the program left as the player wrote it at the first chill; the rule written into the
+copy alone, into the saved program alone or into every program of the list.
 
 ### D-124 — What does „Dodaj regułę” do before the player has discovered an action?
 
@@ -2335,32 +2357,39 @@ control the browser view already holds.
 the controls of a map run's time would stand in two places, or the browser view would gain a
 control the shared controls do not hold.
 
-### D-131 — Which edits of the program reset a map run's solving progress?
+### D-131 — Which changes of the program a map run carries out reset its solving progress?
 
-Of the edits of the program, an edit after which the program differs from the program before it sets
+Of the edits of the copy a map run carries out, an edit after which the copy differs from the copy before it, the discard of the copy's unsaved changes included, sets
 the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule,
 changing its condition or action, and changing a rule group — also while the map run is paused; an
-act of the program editor after which the program is the same as before it leaves the streak as it
-stands, together with the number of beaten attacks. A map run starts with zero beaten attacks, and a game minute with health lost to cold or hunger leaves their count as it stands.
+act of the program editor after which the copy is the same as before it, a save of the copy and an edit of a saved program leave the streak as it
+stands, together with the number of beaten attacks. Every switch of the character to another program sets the streak and the number of beaten attacks of the map run to zero, also where that program holds the same rules. A map run starts with zero beaten attacks, and a game minute with health lost to cold or hunger leaves their count as it stands.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
-- **Relations:** derives from D-136
-- **Verification:** invariants: streak-program-change. An agent compares a change with the decision:
+- **Relations:** derives from D-136 · derives from D-152
+- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save. An agent compares a change with the decision:
   - complies: „↑” on the first program rule leaving a streak of 120 at 120; a program rule's action
     changed in a pause setting the streak to 0 while the character's action in progress goes on; a
-    rule group renamed setting the streak to 0
+    rule group renamed setting the streak to 0; „Porzuć zmiany” after a rule was added to the copy
+    setting the streak to 0; „Zapisz w programie” leaving a streak of 120 at 120; „Program 2” edited
+    during a map run on the copy of „Program” leaving the streak; a switch to a program of the same
+    rules setting the streak and the beaten attacks to 0
   - violates: „↑” on the first program rule setting the streak to 0; a program rule deleted in a
-    pause leaving the streak as it stood
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "9. Która zmiana programu zeruje passę — także czynność edytora, po której program jest taki sam jak przed nią?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16
+    pause leaving the streak as it stood; „Zapisz jako nowy program” setting the streak to 0; a
+    switch leaving the beaten attacks as they stood
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "9. Która zmiana programu zeruje passę — także czynność edytora, po której program jest taki sam jak przed nią?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?" and "Q15. Czy „Zapisz w programie” i „Zapisz jako nowy program” zostawiają passę i kopię bez zmian?"
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps
 fixing it, so a program that differs starts the streak again, in a pause as well; an act that leaves
-the program as it was changes nothing the map checks. Accepted with it: a player who presses „↑” on
+the program as it was changes nothing the map checks. A switch brings another program, which the map
+checks anew, also where it holds the same rules. A save moves the copy's content into a program and
+changes nothing the map run carries out, and a saved program reaches a map run at a next entry or a
+switch. Accepted with it: a player who presses „↑” on
 the first program rule keeps the streak, though the player touched the program; the same program has to supply the beaten attacks and the streak, which can lengthen the attempt after an edit.
 *Rejected:* every act of the program editor setting the streak to zero, an act that leaves the
 program the same included, as the predecessor game, loop, did — the player would lose the streak for
-an act that changes nothing; keeping beaten attacks through a changed program — different programs would supply the two kinds of progress; clearing beaten attacks after cold or hunger — the streak already accounts for those losses.
+an act that changes nothing; keeping beaten attacks through a changed program — different programs would supply the two kinds of progress; clearing beaten attacks after cold or hunger — the streak already accounts for those losses; „Zapisz jako nowy program” setting the streak to zero as a switch does — a fix saved under a new name would cost the progress on the map.
 
 ### D-132 — What does the screen show, and what can the player do, after a completion?
 
@@ -2453,7 +2482,8 @@ The condition that solves a map stands in the map's data — a streak, a number 
 alone or together — and a map opens when the map its data names as its opener is solved. A streak
 counts the successive game minutes in which the character loses no health to cold or hunger: a game
 minute with such a loss sets it to zero, wounds taken in combat do not, and every change of the
-program rules or rule groups the map run carries out sets it to zero, on every map.
+program rules or rule groups the map run carries out, and every switch of the character to another
+program, sets it to zero, on every map.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -2463,7 +2493,8 @@ program rules or rule groups the map run carries out sets it to zero, on every m
   - complies: Las — głębiej asking for a streak and two beaten attacks, written in its data
   - violates: a solving condition coded in the engine for one map; a game minute in which the
     character is chilled growing the streak; a game minute in which the character is starving
-    leaving the streak as it stood; a streak broken by a wolf's bite
+    leaving the streak as it stood; a streak broken by a wolf's bite; a switch of the character to
+    another program leaving the streak as it stood
 - **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a map solved, and what opens the next one?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 and D17
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
@@ -2706,3 +2737,168 @@ The condition „Zdrowie poniżej” compares the acting side’s current health
 
 *Rationale:* One meaning for a shared condition lets each side read its own situation; health points keep the wolf’s threshold tied to its wounds, and the explicit actor context costs careful handling.
 *Rejected:* a separate language of creature conditions — duplicates rule meanings; percentages — changes the accepted wolf threshold; a full player program for a creature — adds groups and player knowledge to its ordered pairs.
+
+### D-152 — Who owns a program?
+
+Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run carries out a copy taken at its start, except that a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included, and that during a manual map run the player can switch the character to another program, the map run going on with a fresh copy of that program. A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program; saving a copy over a program that changed since the copy was taken from it or last saved into it is announced, never blocked. A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart or at the next switch to it during a manual map run.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: saved-program-edit · copy-save. An agent compares a change with the decision:
+  - complies: „Restart” after a death carrying on the copy with the unsaved fix the player made in it; a character switched to another program in the middle of a manual map run, the map run going on with the same seed on a fresh copy of that program
+  - violates: a program stored as a field of the character; saving a program that rewrites the copies of characters already out; a save over a changed program refused; „Restart” taking a fresh copy of the program and dropping the copy's unsaved fix
+- **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Who owns a program?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D39
+
+*Rationale:* a saved program serves every character. A program carried out live would reset the streaks of characters in an earning loop and move them in the middle of a map run at every fix; locking a program that has copies would close exactly the programs in use, since copies live for hours. Programs are the player's work, not the character's. A fix made after a death and tried by a restart on the same seed is the basic rhythm of tuning a program, so a restart keeps the copy with its unsaved fix; a switch to another program lets the player try another program on the same seed without ending the map run.
+*Rejected:* programs held by the character — a saved program has to serve all characters; one program carried out live without a copy; locking the editing of a program that has copies; a restart taking a fresh copy of the program — a fix made in the copy after a death is lost, or has to be saved into the program before every try on the same seed; a restart refused while the copy holds unsaved changes — one more step before every restart with a fix; another program only by ending the map run — another program cannot be tried on the same seed.
+
+### D-153 — How does the game state tell one program from another?
+
+Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included. Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked on a character's row of the headquarters, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-152
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Program 2” renamed „Las nocą” and „Program” deleted, the copy's program, the program its character used last and a row's pick still naming program 2; a program created after program 3 was deleted taking the number 4
+  - violates: a record naming a program by its name or by its place on the list; a number given again to a program created after a deletion
+- **Origin:** none
+
+*Rationale:* a rename changes no record that names a program, and a deleted program's number comes to mean no other program, so a record left naming it finds no program. The name a copy keeps once its program is deleted stands in the copy's heading and names no program. Counting up keeps the number out of the simulation's randomness, as it does for characters (D-56). A later change of how programs are told apart would touch every record naming one and, once the game state is saved, saved games.
+*Rejected:* the name — a rename would cut every record naming the program, and names are compared regardless of letter case; the place on the list — a deletion before a program shifts it; a number drawn at random — every random draw of the simulation comes from the generators of a map run.
+
+### D-154 — Where does the player see the player's programs and pick the one to edit?
+
+The program panel holds at its top the select list „Program: {name}” with every program of the player, and the program editor below it shows the program picked there. During a map run the list holds „Kopia w przejściu” at its top and the player's saved programs below it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-152
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new game's panel showing „Program: Program” above the editor of the program „Program”; during a map run the list reading „Kopia w przejściu”, „Program”, „Program 2”, and „Program 2” picked there showing that program in the editor
+  - violates: a section of the headquarters or a screen of its own listing the programs; a list during a map run on which the copy stands below the saved programs
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?"
+
+*Rationale:* the programs stand where the player edits them, in the panel that stands beside the headquarters and beside the map run, and one list reaches both the copy and the saved programs, the copy first as what the map run carries out.
+*Rejected:* a section of the headquarters or a screen of its own for the programs — the programs would stand apart from the editor that edits them.
+
+### D-155 — What can the player do with the list of programs?
+
+The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń”, and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”. A program left alone on the list stays there, „Usuń” leaving it in place. The game has today no action that duplicates a program.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-152 · derives from D-91
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Nowy program” adding „Program 2” with the empty rule group „Program” under „Zawsze”; „Usuń” inactive while the list holds one program
+  - violates: a new program holding no rule group; the one program of the list deleted; a button that duplicates a program
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2. Jakie czynności na liście programów daje to zadanie — nowy program, zmiana nazwy, usunięcie, duplikat?"
+
+*Rationale:* a new program starts as a new game's program does, with a place for its first rule (D-91). A list that keeps one program at least leaves the editor a program to show and a character a program to enter a map with. A variant of a program comes through the copy, saved as a new program.
+*Rejected:* a new program with no rule group, as in loop — the player would create a group before writing its first rule; deleting the last program — the list would hold no program to edit or to enter a map with; a duplicate of a program — a variant comes through the copy saved as a new program.
+
+### D-156 — What becomes of a map run whose copy's program the player deletes?
+
+Deleting the program the copy of the map run belongs to leaves the map run going on with the copy; „Zapisz w programie” and „Porzuć zmiany” are then gone, and „Zapisz jako nowy program” stays.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-152
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Program 2” deleted during a map run on its copy, the map run going on from the same game minute with „Zapisz jako nowy program” as the one save left
+  - violates: the deletion ending the map run; „Usuń” refused for the program of a running copy; „Zapisz w programie” standing with no program to save into
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2. Jakie czynności na liście programów daje to zadanie — nowy program, zmiana nazwy, usunięcie, duplikat?"
+
+*Rationale:* the copy belongs to the map run, so the map run goes on with it, and a save as a new program keeps the player's work in it, while a save into the program and a discard have no program left to refer to.
+*Rejected:* the deletion ending the map run — an act on the list would end the attempt; „Usuń” refused for the program of a running copy — the player would end the map run before deleting; the two buttons left standing — they would have nothing to do.
+
+### D-157 — How is a program named?
+
+The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number. A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets today no limit to a name's length.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-152
+- **Verification:** an agent compares a change with the decision:
+  - complies: „ Las nocą ” typed for a rename naming the program „Las nocą”; „program 2” refused while „Program 2” stands on the list, with the message under the name field in `warning`; „Program 3” given to a new program while „Program” and „Program 2” stand
+  - violates: two programs named „Program 2” on the list; a name of spaces alone taken; a name cut at a length
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jak nazywa się program nowej gry i nowy program, czy dwa programy mogą nosić tę samą nazwę i czy nazwa ma limit długości?"
+
+*Rationale:* the player tells programs apart by their names on the select lists of the program panel and of the headquarters, and two names that differ in letter case alone read there as one. Accepted with it: the first program „Program” holds the rule group „Program”, so the panel shows the same word twice.
+*Rejected:* names that may repeat, as characters' names may (D-52) — two positions of one select list would read the same; a limit to a name's length, which loop has — nothing in the game asks for one.
+
+### D-158 — Where does the player pick the program a character enters a map with, and which one stands there first?
+
+The player picks the program a character enters a map with on the select list „Program: {name}” in that character's row of the headquarters, beside „Mapa: …” and „Wyślij”, one list for each row whatever the number of maps. The list shows the first program still on the player's list of these: the program picked on that row before the character is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-152 · derives from D-53
+- **Verification:** an agent compares a change with the decision:
+  - complies: a character that entered Las with „Program 2” showing „Program: Program 2” in its row afterwards; a character switched to „Program 3” during its map run showing „Program 3”; a new character showing the program the last character sent entered with; „Program 3” picked on a row and kept through the creation of another character until that character is sent; „Program 2” deleted while it is a character's program used last, its row showing the program with which a character last entered a map
+  - violates: a select list of programs for each map of a row; a new character showing the first program of the list after another character entered a map with „Program 2”; a pick on a row lost when the team's rows are drawn again
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Gdzie gracz wybiera program przy wysłaniu postaci i który program jest domyślny dla postaci, która jeszcze nie chodziła?" and "Q13. Który program jest domyślny przy następnym wysłaniu postaci, która w trakcie przejścia została przełączona na inny program?"
+
+*Rationale:* the player picks the program where the character is sent from, and the program that stands first keeps a character with the program it went with last, so a send repeats the last attempt unless the player picks another; a character that has not gone yet takes the program the team went with last.
+*Rejected:* a step after „Wyślij” for picking the program — one more move at every send; a list for each map of a row — the same pick repeated once for each map.
+
+### D-159 — How does the program panel show the copy and its unsaved changes?
+
+During a map run the program panel shows the copy under the heading „Kopia: {program name}”; while the copy differs from its program as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive. „Zapisz jako nowy program” offers the first free name of a program, and after that save the copy belongs to the new program, which becomes the program the character used last.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-152 · derives from D-39
+- **Verification:** invariants: copy-save. An agent compares a change with the decision:
+  - complies: a program rule added to the copy showing „Niezapisane zmiany w kopii.” in `warning` under „Kopia: Program”, with the three buttons active; „Zapisz jako nowy program” offering „Program 2”, after which the heading reads „Kopia: Program 2” and the character's row in the headquarters shows „Program 2”
+  - violates: the three buttons active while the copy is the same as its program; the copy still belonging to „Program” after it was saved as „Program 2”
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?"
+
+*Rationale:* the player sees during a map run what the map run carries out and whether it holds work not yet saved, and the buttons act where there is something to save or to discard. After a save as a new program the copy belongs to the program that holds its content, so the next save and the next discard refer to that program.
+*Rejected:* the three buttons active whatever the copy holds — a save or a discard that does nothing; the copy kept with its former program after a save as a new program — the next save would overwrite the program the player kept apart.
+
+### D-160 — How does the game announce a save of the copy over a program that changed?
+
+While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.”; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-152 · derives from D-39
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Program” edited during a map run on its copy, the line standing beside the save buttons, and „Zapisz w programie” saving at the first click with the line gone
+  - violates: a window asking to confirm the save; the save refused while the program holds such changes; the line still standing after the save
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" and "Q14. Jak brzmi linia, którą gra ogłasza zapis kopii nad programem, który zmienił się od wzięcia z niego kopii albo od ostatniego zapisu kopii w nim?"
+
+*Rationale:* the player can edit a program during a map run, so a save of the copy can replace changes the copy lacks; the line says so before the save, and the save stays one click, as D-152 announces such a save and blocks none. The line names what the save replaces, which holds after „Restart” and after a switch as well. Accepted with it: a longer text, which does not say when the program changed.
+*Rejected:* a window asking to confirm the save — one more click at every such save; a message after the save — the changes are gone before the player reads it; the line „Program {nazwa} zmienił się od startu przejścia — zapis w programie zastąpi te zmiany.” — after „Restart” and after a switch it would name the wrong moment.
+
+### D-161 — What can the player do with the copy after a map run ends?
+
+On the screens after a character's death and after a completion, editing the copy, „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” act as during the map run until the player picks „Restart” or „Zakończ”. „Zakończ” ends the map run at once, and the copy's unsaved changes go with it; after „Zakończ” the program panel shows the program the copy belongs to.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-152
+- **Verification:** an agent compares a change with the decision:
+  - complies: a fix made in the copy after a death and saved into „Program” with „Zapisz w programie” before „Zakończ”; „Zakończ” with unsaved changes returning to the headquarters at once, „Program” standing in the panel as it was saved
+  - violates: the save buttons gone after a completion; „Zakończ” asking whether to save the copy; the copy's unsaved changes reaching the program at „Zakończ”
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?"
+
+*Rationale:* the screens after an end show the state that explains it, which is where the player finds the fix, so the copy stays open to editing and saving until the player leaves it. Accepted with it: unsaved changes are lost in one click of „Zakończ”, which the line „Niezapisane zmiany w kopii.” announces before it.
+*Rejected:* the copy closed to saving once the map run ends — a fix found after a death would be made anew in the program; „Zakończ” asking about unsaved changes — one more click at every end of a map run holding them.
+
+### D-162 — How does the player switch the character to another program during a map run?
+
+During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again. Beside the program the copy belongs to, the button is gone.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-152
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Program 2” picked during a map run on the copy of „Program”, the button standing under the list, and its click going on from the same game minute with a fresh copy of „Program 2”, the panel showing „Kopia w przejściu”; after „Zapisz jako nowy program” as „Program 2”, the button standing beside „Program” and gone beside „Program 2”
+  - violates: a pick on the panel's list switching the character; the button standing beside the program the copy belongs to; a question about the copy's unsaved changes before the switch; the button standing on the screen after a death
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?", "Q12. Jak gracz przełącza postać na inny program w trakcie przejścia, skoro lista wyboru panelu wybiera w trakcie przejścia program do edycji (Q6)?" and "Q17. Po „Zapisz jako nowy program” przycisk „Przełącz postać na ten program” nie stoi przy nowym programie (do którego należy kopia), a stoi przy programie, z którego kopię wzięto na starcie — tak?"
+
+*Rationale:* the panel's list opens programs for editing during a map run, so the switch is an act of its own, standing beside the program it switches to. A save as a new program is no switch, so the button stands beside the program the copy was taken from and is gone beside the program the copy now belongs to. Accepted with it: two moves, a pick on the list and the button, and one button more in the panel.
+*Rejected:* the panel's list switching the character, as in loop — the list would stop opening a program for editing during a map run; the button standing beside every saved program other than the one the copy was taken from — after a save as a new program it would stand beside the program the copy belongs to, and its click would set the streak to zero though that save is no switch.
