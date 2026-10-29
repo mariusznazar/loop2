@@ -2800,18 +2800,18 @@ The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń
 
 ### D-156 — What becomes of a map run whose copy's program the player deletes?
 
-Deleting the program the copy of the map run belongs to leaves the map run going on with the copy; „Zapisz w programie” and „Porzuć zmiany” are then gone, and „Zapisz jako nowy program” stays.
+Deleting the program the copy of the map run belongs to leaves the map run going on with the copy, whose heading keeps the name the program had. „Zapisz w programie” and „Porzuć zmiany” are then gone, and the copy counts as holding unsaved changes: the line „Niezapisane zmiany w kopii.” stands and „Zapisz jako nowy program” is active until the copy is saved as a new program.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-152
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” deleted during a map run on its copy, the map run going on from the same game minute with „Zapisz jako nowy program” as the one save left
-  - violates: the deletion ending the map run; „Usuń” refused for the program of a running copy; „Zapisz w programie” standing with no program to save into
+  - complies: „Program 2” deleted during a map run on its copy, the map run going on from the same game minute with „Zapisz jako nowy program” as the one save left; a copy with no edit of its own whose program „Program 2” is deleted standing under „Kopia: Program 2” with „Niezapisane zmiany w kopii.” and „Zapisz jako nowy program” active
+  - violates: the deletion ending the map run; „Usuń” refused for the program of a running copy; „Zapisz w programie” standing with no program to save into; „Zapisz jako nowy program” inactive after the deletion of the copy's program; the heading left with no name after the deletion
 - **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2. Jakie czynności na liście programów daje to zadanie — nowy program, zmiana nazwy, usunięcie, duplikat?"
 
-*Rationale:* the copy belongs to the map run, so the map run goes on with it, and a save as a new program keeps the player's work in it, while a save into the program and a discard have no program left to refer to.
-*Rejected:* the deletion ending the map run — an act on the list would end the attempt; „Usuń” refused for the program of a running copy — the player would end the map run before deleting; the two buttons left standing — they would have nothing to do.
+*Rationale:* the copy belongs to the map run, so the map run goes on with it, and a save as a new program keeps the player's work in it, while a save into the program and a discard have no program left to refer to. Once its program is gone, no program of the list holds the copy's content, so the copy counts as unsaved and the one save left can keep it; the heading keeps the name by which the player knew the program.
+*Rejected:* the deletion ending the map run — an act on the list would end the attempt; „Usuń” refused for the program of a running copy — the player would end the map run before deleting; the two buttons left standing — they would have nothing to do; the copy measured against the deleted program's content — a copy with no edit of its own would leave „Zapisz jako nowy program” inactive, and the copy would be lost at „Zakończ”.
 
 ### D-157 — How is a program named?
 
@@ -2845,7 +2845,7 @@ The player picks the program a character enters a map with on the select list �
 
 ### D-159 — How does the program panel show the copy and its unsaved changes?
 
-During a map run the program panel shows the copy under the heading „Kopia: {program name}”; while the copy differs from its program as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive. „Zapisz jako nowy program” offers the first free name of a program, and after that save the copy belongs to the new program, which becomes the program the character used last.
+During a map run the program panel shows the copy under the heading „Kopia: {program name}”. While the copy's program is on the player's list and the copy differs from it as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive; a copy whose program is gone shows as D-156 gives. „Zapisz jako nowy program” offers the first free name of a program, and after that save the copy belongs to the new program, which becomes the program the character used last.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
