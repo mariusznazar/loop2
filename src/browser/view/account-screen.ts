@@ -1,4 +1,9 @@
-import type { Account, AccountClient, AccountResult } from "../account-api.js";
+import type {
+  Account,
+  AccountClient,
+  AccountResult,
+  ConfirmationMessage,
+} from "../account-api.js";
 import { createButton, setButtonWaiting } from "./controls/button.js";
 import {
   createFormWarning,
@@ -41,6 +46,28 @@ export function registrationProblems(
   if (confirmation !== password)
     problems.confirmation = PROBLEM_MESSAGES.confirmation;
   return problems;
+}
+
+/** The account a form signed in, with the outcome of a confirmation message it sent, if any. */
+type SignedInEntry = {
+  account: Account;
+  message: ConfirmationMessage | null;
+};
+
+/** The entry for a successful answer; the account's fields are copied, nothing else passes on. */
+function entryOf<Value extends Account>(
+  result: AccountResult<Value>,
+  messageOf: (value: Value) => ConfirmationMessage | null,
+): AccountResult<SignedInEntry> {
+  if (!result.ok) return result;
+  const { id, email, emailConfirmed } = result.value;
+  return {
+    ok: true,
+    value: {
+      account: { id, email, emailConfirmed },
+      message: messageOf(result.value),
+    },
+  };
 }
 
 export type AccountScreen = {
@@ -95,14 +122,15 @@ function accountForm(title: string, fields: Field[]): AccountForm {
 /**
  * Builds the screen of a player who is not signed in: the form „Zaloguj się” (address, password)
  * and the form „Załóż konto” (address, password, repeated password), and passes the account to
- * `signedIn` once the server has signed this browser in. One form waits at a time: while it does,
+ * `signedIn`, with the outcome of the confirmation message a registration sent (null after a
+ * sign-in), once the server has signed this browser in. One form waits at a time: while it does,
  * the fields and buttons of both are locked and its button shows the waiting text. A refusal or a
  * lost connection stands as one sentence under the form that sent it, and focus returns to the
  * field or button the player sent it from.
  */
 export function createAccountScreen(
   client: Pick<AccountClient, "login" | "register">,
-  signedIn: (account: Account) => void,
+  signedIn: (account: Account, message: ConfirmationMessage | null) => void,
 ): AccountScreen {
   const element = document.createElement("div");
   element.className = "account-screen";
@@ -158,7 +186,7 @@ export function createAccountScreen(
   async function send(
     form: AccountForm,
     waitingText: string,
-    request: () => Promise<AccountResult<Account>>,
+    request: () => Promise<AccountResult<SignedInEntry>>,
   ): Promise<void> {
     if (waiting) return;
     // The control the player sent the form from: the field where Enter was pressed or the button.
@@ -180,7 +208,7 @@ export function createAccountScreen(
     lock(false);
     if (result.ok) {
       reset();
-      signedIn(result.value);
+      signedIn(result.value.account, result.value.message);
       return;
     }
     form.warning.set(result.failure.message);
@@ -191,8 +219,11 @@ export function createAccountScreen(
     event.preventDefault();
     if (waiting) return;
     clearMessages();
-    void send(login, "Logowanie…", () =>
-      client.login(loginEmail.input.value, loginPassword.input.value),
+    void send(login, "Logowanie…", async () =>
+      entryOf(
+        await client.login(loginEmail.input.value, loginPassword.input.value),
+        () => null,
+      ),
     );
   });
 
@@ -220,11 +251,14 @@ export function createAccountScreen(
       first.input.focus();
       return;
     }
-    void send(register, "Zakładanie konta…", () =>
-      client.register(
-        registerEmail.input.value,
-        registerPassword.input.value,
-        registerConfirmation.input.value,
+    void send(register, "Zakładanie konta…", async () =>
+      entryOf(
+        await client.register(
+          registerEmail.input.value,
+          registerPassword.input.value,
+          registerConfirmation.input.value,
+        ),
+        (registered) => registered.confirmationMessage,
       ),
     );
   });

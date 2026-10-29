@@ -9,10 +9,30 @@ export interface Account {
   // Cut off by the operator from signing in and playing until unblocked; not
   // the 15-minute email lock of the account policy.
   blocked: boolean;
+  // The address given at registration has been confirmed through an emailed
+  // link (D-156); it never changes (D-159).
+  emailConfirmed: boolean;
 }
 
 export type BlockOutcome = "blocked" | "already-blocked" | "unknown";
 export type UnblockOutcome = "unblocked" | "not-blocked" | "unknown";
+
+export type LinkPurpose = "email-confirmation" | "password-reset";
+export type IssueOutcome = "issued" | "limited" | "blocked";
+export type ConfirmOutcome = "confirmed" | "invalid";
+
+export interface LinkRequest {
+  accountId: string;
+  purpose: LinkPurpose;
+  tokenDigest: string;
+  lifetimeMs: number;
+}
+
+export interface MessageLimits {
+  windowMs: number;
+  total: number;
+  perAccount: number;
+}
 
 // The schema's history, one step per version: step N turns version N - 1 into
 // version N. A new database runs every step, an existing one the steps after
@@ -39,9 +59,28 @@ const schemaSteps = [
     ALTER TABLE accounts
       ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0 CHECK (blocked IN (0, 1));
   `,
+  `
+    ALTER TABLE accounts ADD COLUMN email_confirmed_at INTEGER;
+    CREATE TABLE emailed_links (
+      token_digest TEXT PRIMARY KEY NOT NULL,
+      account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      purpose TEXT NOT NULL
+        CHECK (purpose IN ('email-confirmation', 'password-reset')),
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      spent INTEGER NOT NULL DEFAULT 0 CHECK (spent IN (0, 1))
+    ) STRICT;
+    CREATE INDEX emailed_links_account ON emailed_links(account_id);
+    CREATE INDEX emailed_links_created ON emailed_links(created_at);
+  `,
 ];
 
 const currentVersion = schemaSteps.length;
+
+// An emailed link stays recorded until it has expired and is this old, because
+// its row also counts an account message against D-105's hourly limits (D-112,
+// D-161); no window of those limits may be longer.
+const linkRecordAgeMs = 3_600_000;
 
 export interface StoredSession {
   accountId: string;
@@ -95,6 +134,7 @@ export class AccountDatabase {
       this.connection.exec("PRAGMA synchronous = FULL");
       this.initializeSchema();
       this.pruneExpiredSessions();
+      this.pruneExpiredLinks();
     } catch (error) {
       this.connection.close();
       throw error;
@@ -102,11 +142,14 @@ export class AccountDatabase {
     this.cleanupTimer = setInterval(() => {
       try {
         this.pruneExpiredSessions();
+        this.pruneExpiredLinks();
       } catch (error) {
         const failure =
-          error instanceof Error ? error : new Error("Session cleanup failed");
+          error instanceof Error
+            ? error
+            : new Error("Account database cleanup failed");
         if (options.onCleanupError) options.onCleanupError(failure);
-        else console.error("Session cleanup failed");
+        else console.error("Account database cleanup failed");
       }
     }, interval);
     this.cleanupTimer.unref();
@@ -172,6 +215,7 @@ export class AccountDatabase {
       passwordHash,
       createdAt: this.now(),
       blocked: false,
+      emailConfirmed: false,
     };
     const result = this.connection
       .prepare(
@@ -200,7 +244,9 @@ export class AccountDatabase {
       typeof row.email !== "string" ||
       typeof row.password_hash !== "string" ||
       typeof row.created_at !== "number" ||
-      (row.blocked !== 0 && row.blocked !== 1)
+      (row.blocked !== 0 && row.blocked !== 1) ||
+      (row.email_confirmed_at !== null &&
+        !Number.isSafeInteger(row.email_confirmed_at))
     ) {
       throw new Error("Invalid stored account");
     }
@@ -210,6 +256,7 @@ export class AccountDatabase {
       passwordHash: row.password_hash,
       createdAt: row.created_at,
       blocked: row.blocked === 1,
+      emailConfirmed: row.email_confirmed_at !== null,
     };
   }
 
@@ -282,8 +329,9 @@ export class AccountDatabase {
       .run(expiresAt, id, accountId, this.now());
   }
 
-  // Marks the account of a normalized address blocked and deletes every
-  // session of it in the same transaction; already blocked, it deletes again.
+  // Marks the account of a normalized address blocked, deletes every session
+  // of it and stops every emailed link of it in the same transaction; already
+  // blocked, it does so again.
   blockAccount(email: string): BlockOutcome {
     return this.transaction(() => {
       const account = this.findAccountByEmail(email);
@@ -294,11 +342,15 @@ export class AccountDatabase {
       this.connection
         .prepare("DELETE FROM sessions WHERE account_id = ?")
         .run(account.id);
+      this.connection
+        .prepare("UPDATE emailed_links SET spent = 1 WHERE account_id = ?")
+        .run(account.id);
       return account.blocked ? "already-blocked" : "blocked";
     });
   }
 
-  // Clears the blocked state only; the sessions deleted by the block stay gone.
+  // Clears the blocked state only; the sessions deleted and the links stopped
+  // by the block stay so.
   unblockAccount(email: string): UnblockOutcome {
     return this.transaction(() => {
       const account = this.findAccountByEmail(email);
@@ -309,6 +361,125 @@ export class AccountDatabase {
         .run(account.id);
       return "unblocked";
     });
+  }
+
+  // Records a link before its message is handed to the mail service. Its row
+  // counts against the limits whatever the sending's outcome (D-161), so the
+  // count and the insert share one transaction. The block is read there too:
+  // a block committed by the owner's command either comes first, and nothing
+  // is recorded or sent, or comes after and stops the recorded link. Recording
+  // stops every earlier link of the account and purpose at once, so a sending
+  // that then fails leaves no earlier link working (D-155).
+  issueLink(request: LinkRequest, limits: MessageLimits): IssueOutcome {
+    const lifetime = boundedInteger(request.lifetimeMs, 2 ** 31 - 1);
+    const window = boundedInteger(limits.windowMs, linkRecordAgeMs);
+    const total = boundedInteger(limits.total, 2 ** 31 - 1);
+    const perAccount = boundedInteger(limits.perAccount, 2 ** 31 - 1);
+    return this.transaction(() => {
+      const now = this.now();
+      const account = this.connection
+        .prepare("SELECT blocked FROM accounts WHERE id = ?")
+        .get(request.accountId);
+      if (!account) throw new Error("Unknown account");
+      if (account.blocked !== 0) return "blocked";
+      const counted = this.connection
+        .prepare(
+          `
+      SELECT count(*) AS total, count(CASE WHEN account_id = ? THEN 1 END) AS own
+      FROM emailed_links WHERE created_at > ?
+    `,
+        )
+        .get(request.accountId, now - window);
+      if (
+        typeof counted?.total !== "number" ||
+        typeof counted.own !== "number"
+      ) {
+        throw new Error("Invalid message count");
+      }
+      if (counted.total >= total || counted.own >= perAccount) return "limited";
+      this.connection
+        .prepare(
+          `
+      UPDATE emailed_links SET spent = 1
+      WHERE account_id = ? AND purpose = ? AND spent = 0
+    `,
+        )
+        .run(request.accountId, request.purpose);
+      this.connection
+        .prepare(
+          `
+      INSERT INTO emailed_links
+        (token_digest, account_id, purpose, created_at, expires_at, spent)
+      VALUES (?, ?, ?, ?, ?, 0)
+    `,
+        )
+        .run(
+          request.tokenDigest,
+          request.accountId,
+          request.purpose,
+          now,
+          now + lifetime,
+        );
+      return "issued";
+    });
+  }
+
+  // A link confirms while it is unspent, before its expiry (equal to now is
+  // expired, as for sessions) and while its account is not blocked, the block
+  // read in the same transaction. Every refusal changes nothing. A confirmation
+  // stops every confirmation link of the account, the one used included.
+  confirmEmailAddress(tokenDigest: string): ConfirmOutcome {
+    return this.transaction(() => {
+      const now = this.now();
+      const link = this.connection
+        .prepare(
+          `
+      SELECT emailed_links.account_id AS account_id FROM emailed_links
+      JOIN accounts ON accounts.id = emailed_links.account_id
+      WHERE token_digest = ? AND purpose = 'email-confirmation'
+        AND spent = 0 AND expires_at > ? AND accounts.blocked = 0
+    `,
+        )
+        .get(tokenDigest, now);
+      if (!link) return "invalid";
+      if (typeof link.account_id !== "string") {
+        throw new Error("Invalid stored link");
+      }
+      this.connection
+        .prepare(
+          `
+      UPDATE accounts SET email_confirmed_at = ?
+      WHERE id = ? AND email_confirmed_at IS NULL
+    `,
+        )
+        .run(now, link.account_id);
+      this.connection
+        .prepare(
+          `
+      UPDATE emailed_links SET spent = 1
+      WHERE account_id = ? AND purpose = 'email-confirmation' AND spent = 0
+    `,
+        )
+        .run(link.account_id);
+      return "confirmed";
+    });
+  }
+
+  // Removes, in a bounded batch, links that have expired and no longer count
+  // against the hourly limits.
+  pruneExpiredLinks(): void {
+    const now = this.now();
+    this.connection
+      .prepare(
+        `
+      DELETE FROM emailed_links WHERE token_digest IN (
+        SELECT token_digest FROM emailed_links
+        WHERE created_at <= ? AND expires_at <= ?
+        ORDER BY created_at LIMIT 1000
+      )
+    `,
+      )
+      .run(now - linkRecordAgeMs, now);
   }
 
   destroySession(id: string): void {

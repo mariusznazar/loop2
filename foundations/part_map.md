@@ -57,7 +57,7 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns account and session persistence, gives the operator a command that blocks and unblocks a player account, and measures its own password work in the image it runs in.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns account and session persistence, sends account email through the mail service, gives the operator a command that blocks and unblocks a player account, and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs
@@ -65,6 +65,7 @@ The part is the account and save server: it serves the built game, handles the H
   tests/transport.test.mjs
   tests/passwords.test.mjs
   tests/account-storage.test.mjs
+  tests/account-mail.test.mjs
   tests/invariants/test_account_server_express_http.py
   tests/invariants/test_loop2_api_error_route.py
   tests/invariants/test_loop2_one_serving_process.py
@@ -166,6 +167,7 @@ the test server.
 | the GitHub repository the server fetches over its read-only key | them → us | trusted |
 | game-icons.net | them → us | untrusted |
 | github.com/vercel/geist-font | them → us | untrusted |
+| Mikrus Outsider | both | untrusted |
 
 ## Files left out on purpose
 

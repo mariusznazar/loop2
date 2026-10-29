@@ -44,7 +44,13 @@ const accountSettings = [
   "LOOP2_SESSION_SECRET_FILE",
   "LOOP2_PUBLIC_ORIGIN",
   "LOOP2_PROXY_MODE",
+  "LOOP2_MAIL_FROM",
+  "LOOP2_SMTP_HOST",
+  "LOOP2_SMTP_PORT",
+  "LOOP2_SMTP_USER",
+  "LOOP2_SMTP_PASSWORD_FILE",
 ];
+const smtpPassword = "synthetic-smtp-password-ünï";
 function cleanEnvironment() {
   const environment = { ...process.env, NODE_ENV: "test" };
   for (const name of accountSettings) delete environment[name];
@@ -60,9 +66,12 @@ async function configurationFixture(t) {
     randomBytes(32).toString("base64url"),
   ];
   await writeFile(keyFile, JSON.stringify(keys));
+  const smtpFile = join(directory, "smtp-password");
+  await writeFile(smtpFile, smtpPassword);
   return {
     directory,
     keyFile,
+    smtpFile,
     keys,
     environment: {
       ...cleanEnvironment(),
@@ -71,6 +80,11 @@ async function configurationFixture(t) {
       LOOP2_SESSION_SECRET_FILE: keyFile,
       LOOP2_PUBLIC_ORIGIN: "https://game.example.test:8443",
       LOOP2_PROXY_MODE: "cloudflare-tunnel",
+      LOOP2_MAIL_FROM: "sender@mail.example.test",
+      LOOP2_SMTP_HOST: "smtp.example.test",
+      LOOP2_SMTP_PORT: "587",
+      LOOP2_SMTP_USER: "sender@mail.example.test",
+      LOOP2_SMTP_PASSWORD_FILE: smtpFile,
     },
   };
 }
@@ -280,6 +294,160 @@ test(
     assert.deepEqual(actual.secrets, f.keys);
     assert.equal(actual.publicOrigin, "https://game.example.test:8443");
     assert.equal(await readAccountConfiguration({ NODE_ENV: "test" }), null);
+  },
+);
+
+test(
+  "each mail setting that is invalid refuses readiness naming the setting and nothing of its value",
+  { timeout: 60000 },
+  async (t) => {
+    // invariant: account-startup-configuration
+    // Fault: an invalid mail setting is accepted or echoed, so a typo reaches
+    // Outsider or a value lands in the log. D-111, spec Decision 7.
+    const f = await configurationFixture(t);
+    const cases = [
+      ["LOOP2_MAIL_FROM", "no-at-sign.example.test"],
+      ["LOOP2_MAIL_FROM", "two@at@example.test"],
+      ["LOOP2_MAIL_FROM", "@example.test"],
+      ["LOOP2_MAIL_FROM", "sender@"],
+      ["LOOP2_MAIL_FROM", "send er@example.test"],
+      ["LOOP2_MAIL_FROM", "sender@example.test,other@example.test"],
+      ["LOOP2_MAIL_FROM", "<sender@example.test>"],
+      ["LOOP2_MAIL_FROM", "sénder@example.test"],
+      ["LOOP2_SMTP_HOST", "smtp_host.example.test"],
+      ["LOOP2_SMTP_HOST", "smtp.example.test:587"],
+      ["LOOP2_SMTP_HOST", "smtp..example.test"],
+      ["LOOP2_SMTP_HOST", `${"a".repeat(250)}.example.test`],
+      ["LOOP2_SMTP_PORT", "0"],
+      ["LOOP2_SMTP_PORT", "65536"],
+      ["LOOP2_SMTP_PORT", "58x7"],
+      ["LOOP2_SMTP_PORT", "-587"],
+      ["LOOP2_SMTP_PORT", "5.87"],
+      ["LOOP2_SMTP_USER", "login with space"],
+      ["LOOP2_SMTP_USER", "login\tcontrol"],
+      ["LOOP2_SMTP_USER", "u".repeat(255)],
+      ["LOOP2_MAIL_FROM", "   "],
+      ["LOOP2_SMTP_PASSWORD_FILE", join(f.directory, "no-such-password-file")],
+    ];
+    for (const [setting, value] of cases) {
+      const environment = { ...f.environment, [setting]: value };
+      await assert.rejects(
+        readAccountConfiguration(environment),
+        (error) => {
+          assert.equal(
+            error.message,
+            `Invalid or unavailable account configuration: ${setting}`,
+          );
+          return true;
+        },
+        `${setting}=${JSON.stringify(value)}`,
+      );
+    }
+    // The whole process: the setting is named, its value is not.
+    for (const [setting, value] of [
+      ["LOOP2_MAIL_FROM", "sentinel-sender-value"],
+      ["LOOP2_SMTP_HOST", "sentinel_host_value"],
+      ["LOOP2_SMTP_PORT", "sentinel-port-value"],
+      ["LOOP2_SMTP_USER", "sentinel user value"],
+    ]) {
+      const stderr = (
+        await refusedStart({ ...f.environment, [setting]: value })
+      ).stderr;
+      assert.match(stderr, new RegExp(setting));
+      assert.ok(
+        !stderr.includes(value),
+        `stderr echoes the value of ${setting}`,
+      );
+    }
+  },
+);
+
+test(
+  "the SMTP password file must be a small non-empty UTF-8 regular file without control characters and is refused without echoing its contents",
+  { timeout: 60000 },
+  async (t) => {
+    // invariant: account-startup-configuration
+    // Fault: a password file with a trailing newline, a directory or a huge or
+    // binary file is accepted, hiding a rotation mistake until the first failed login.
+    const f = await configurationFixture(t);
+    const secret = "sentinel-smtp-secret";
+    const invalid = [
+      "",
+      `${secret}\n`,
+      `${secret}\r\n`,
+      `${secret}\u0000`,
+      `${secret}\u0085`,
+      `${secret}\t`,
+      Buffer.from([0x73, 0xff, 0xfe, 0x73]),
+      Buffer.from(`${secret}Ã`, "latin1"),
+      secret.padEnd(1025, "x"),
+    ];
+    for (const content of invalid) {
+      await writeFile(f.smtpFile, content);
+      await assert.rejects(readAccountConfiguration(f.environment), (error) => {
+        assert.equal(
+          error.message,
+          "Invalid or unavailable account configuration: LOOP2_SMTP_PASSWORD_FILE",
+        );
+        return true;
+      });
+    }
+    await assert.rejects(
+      readAccountConfiguration({
+        ...f.environment,
+        LOOP2_SMTP_PASSWORD_FILE: f.directory,
+      }),
+      /LOOP2_SMTP_PASSWORD_FILE/,
+    );
+    // The process names the path's setting and none of the file's content.
+    await writeFile(f.smtpFile, `${secret}\n`);
+    const stderr = (await refusedStart(f.environment)).stderr;
+    assert.match(stderr, /LOOP2_SMTP_PASSWORD_FILE/);
+    assert.ok(!stderr.includes(secret), "stderr echoes the password file");
+    // The limit is 1 KiB inclusive: the longest accepted file is read whole.
+    const longest = "p".repeat(1024);
+    await writeFile(f.smtpFile, longest);
+    const configuration = await readAccountConfiguration(f.environment);
+    assert.equal(configuration.mail.password, longest);
+  },
+);
+
+test(
+  "a full valid set of settings starts, carries the mail settings and password, and a mailer, without contacting the mail server",
+  { timeout: 20000 },
+  async (t) => {
+    const f = await configurationFixture(t);
+    const connections = [];
+    const listener = createServer((socket) => {
+      connections.push(socket);
+      socket.destroy();
+    });
+    await new Promise((resolve, reject) => {
+      listener.once("error", reject);
+      listener.listen(0, "127.0.0.1", resolve);
+    });
+    t.after(() => new Promise((resolve) => listener.close(resolve)));
+    const environment = {
+      ...f.environment,
+      LOOP2_SMTP_HOST: "127.0.0.1",
+      LOOP2_SMTP_PORT: String(listener.address().port),
+    };
+    const configuration = await readAccountConfiguration(environment);
+    assert.deepEqual(configuration.mail, {
+      from: "sender@mail.example.test",
+      host: "127.0.0.1",
+      port: listener.address().port,
+      user: "sender@mail.example.test",
+      password: smtpPassword,
+    });
+    const runtime = await openAccountRuntime(environment);
+    try {
+      assert.equal(typeof runtime.mailer.send, "function");
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      assert.equal(connections.length, 0, "startup contacted the mail server");
+    } finally {
+      runtime.close();
+    }
   },
 );
 

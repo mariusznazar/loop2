@@ -154,7 +154,7 @@ The application port is inaccessible from the Internet outside Cloudflare.
 
 ## loop2-host-sharing
 
-A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and neither loop2 Compose service asks the host for a privilege a default container lacks apart from the connector's read-only tunnel-token grant and the application's read-only session-key grant under D-13 and its own named account-database volume under D-17.
+A deployment of loop2 stops, removes, replaces or reconfigures no container, image, network or volume on the host other than loop2's own, and neither loop2 Compose service asks the host for a privilege a default container lacks apart from the connector's read-only tunnel-token grant and the application's read-only session-key and SMTP-password grants under D-13 and its own named account-database volume under D-17.
 
 - **Method:** test
 - **Rests on:** none
@@ -621,7 +621,7 @@ Player accounts sign in with an email address and password.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-96
+- **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -631,7 +631,7 @@ A player can start playing after registration before confirming their email addr
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-96
+- **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -717,7 +717,7 @@ The browser loads the built game and sends account and save requests to relative
 
 ## account-session-authorization
 
-The account API returns JSON 401 for `GET /api/account`, and for `POST /api/logout` that meets the Origin, media-type and body requirements, without a valid server-side session, and an account identifier supplied by the caller cannot authorize reading or changing another account or session.
+The account API returns JSON 401 for `GET /api/account`, and for `POST /api/email-confirmation-message` and `POST /api/logout` that meet the Origin, media-type and body requirements, without a valid server-side session, and an account identifier or email address supplied by the caller cannot authorize reading or changing another account or session or direct a message to another address.
 
 - **Method:** test
 - **Rests on:** none
@@ -817,7 +817,7 @@ The browser account client sends each account request to one of the relative `/a
 
 ## account-client-outcomes
 
-The browser account client returns an account only for the success status of its request with a body holding a non-empty string `id` and `email`, and returns every other answer, a failed connection and an answer not complete within its time limit as a failure.
+The browser account client returns an account only for the success status of its request with a body holding a non-empty string `id` and `email` and a boolean `emailConfirmed`, and returns every other answer, a failed connection and an answer not complete within its time limit as a failure.
 
 - **Method:** test
 - **Rests on:** none
@@ -863,6 +863,56 @@ A session removed when its account was blocked authorizes no request after the a
 - **Rests on:** none
 - **Derives from:** D-137
 - **Part:** account-server
+- **Violated:** no
+
+## email-confirmation-link
+
+An emailed confirmation link confirms its account's address only once, only before its expiry, only until a later confirmation link of its account has been recorded, and only while its account is not blocked, and a link it refuses changes nothing.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-155 · D-156 · D-160
+- **Part:** account-server
+- **Violated:** no
+
+## unblock-restores-no-link
+
+An emailed link stopped when its account was blocked confirms nothing after the account is unblocked.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-137 · D-160
+- **Part:** account-server
+- **Violated:** no
+
+## account-message-limits
+
+The account server hands no account message to the mail service once 30 account messages in total, or three for the same email address, have been sent or attempted within the last hour, also across a restart of the server.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-105 · D-161
+- **Part:** account-server
+- **Violated:** no
+
+## account-email-via-outsider
+
+Player email confirmation messages are sent from `mariusznazar.com` through Mikrus Outsider.
+
+- **Method:** review
+- **Rests on:** mikrus-outsider-mail
+- **Derives from:** D-153
+- **Part:** account-server · deployment
+- **Violated:** no
+
+## account-email-nodemailer-starttls
+
+The account server submits player email confirmation messages to Mikrus Outsider with Nodemailer 10 only when the SMTP connection has upgraded to TLS.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-154
+- **Part:** account-server · build-tools
 - **Violated:** no
 
 ## Withdrawn identifiers

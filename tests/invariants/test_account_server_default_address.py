@@ -30,7 +30,9 @@ import loop2_invariant_support as support
 
 LISTEN_VARIABLES = ("LOOP2_LISTEN_HOST", "LOOP2_LISTEN_PORT")
 ACCOUNT_VARIABLES = ("LOOP2_DATABASE_PATH", "LOOP2_SESSION_SECRET_FILE",
-                     "LOOP2_PUBLIC_ORIGIN", "LOOP2_PROXY_MODE")
+                     "LOOP2_PUBLIC_ORIGIN", "LOOP2_PROXY_MODE",
+                     "LOOP2_MAIL_FROM", "LOOP2_SMTP_HOST", "LOOP2_SMTP_PORT",
+                     "LOOP2_SMTP_USER", "LOOP2_SMTP_PASSWORD_FILE")
 DEFAULT_READY_LINE = re.compile(r"(?m)^Loop: http://127\.0\.0\.1:3000$")
 ANY_READY_LINE = re.compile(r"(?m)^Loop: .*$")
 OCCUPIED_DEFAULT = re.compile(r"127\.0\.0\.1:3000.*EADDRINUSE|EADDRINUSE.*127\.0\.0\.1:3000")

@@ -1,6 +1,6 @@
 """Invariant loop2-host-sharing: A deployment of loop2 stops, removes, replaces or reconfigures
 no container, image, network or volume on the host other than loop2's own, and neither Compose
-service asks for extra host privilege apart from its own read-only runtime secret grant and
+service asks for extra host privilege apart from its own read-only runtime secret grants and
 the application's own named database volume.
 
 The check reads the server-side script `deploy/loop2-deploy` and `compose.yaml` as they stand and
@@ -28,8 +28,8 @@ Reading of the sentence:
   the old loop instance but such a read-only `inspect`. A function that wraps
   `docker … "$@"` is read at each call;
 - asks the host for no privilege a default container lacks: `compose.yaml` holds at its top only
-  `name`, `services`, the two exact file-backed `secrets` definitions and the own named account
-  volume; each secret is granted only to its consumer and only the application mounts the volume
+  `name`, `services`, the three exact file-backed `secrets` definitions and the own named account
+  volume; each secret is granted only to its consumers and only the application mounts the volume
   at /app/data. External volumes, custom drivers and other sources or mounts fail. Its service
   sets only keys that grant nothing beyond a default
   container (`container_name`, `build`, `ports`, `expose`, `mem_limit`, `memswap_limit`, `cpus`,
@@ -209,7 +209,8 @@ def compose_problems(words):
 
 
 def secret_problems(top, services):
-    """Permit only the two file-backed secrets, each granted to its own consumer."""
+    """Permit only the three file-backed secrets, each granted to its own consumers: the tunnel
+    token to the connector, the session keys and the SMTP password to the application."""
     problems = []
     secret_key = top.get("secrets")
     if secret_key is None or secret_key.value:
@@ -218,9 +219,11 @@ def secret_problems(top, services):
     expected = {
         EXPECTED_SECRET: EXPECTED_SECRET_FILE,
         "loop2_session_secrets": "/etc/loop2/session-secrets",
+        "loop2_smtp_password": "/etc/loop2/smtp-password",
     }
     if set(definitions) != set(expected):
-        return ["secrets must define only the tunnel token and application session keys"]
+        return ["secrets must define only the tunnel token, the session keys and the SMTP "
+                "password"]
     for name, path in expected.items():
         definition = definitions[name]
         if definition.value:
@@ -231,7 +234,8 @@ def secret_problems(top, services):
             problems.append(f"{name} must use only a file source")
         elif fields["file"].value != path or fields["file"].block:
             problems.append(f"{name} names another host source")
-    grants = {"app": "loop2_session_secrets", "cloudflared": EXPECTED_SECRET}
+    grants = {"app": ["loop2_session_secrets", "loop2_smtp_password"],
+              "cloudflared": [EXPECTED_SECRET]}
     for name, keys in services.items():
         grant = keys.get("secrets")
         if name not in grants:
@@ -239,8 +243,8 @@ def secret_problems(top, services):
                 problems.append(f"secret granted to unexpected service {name}")
             continue
         if grant is None or grant.value or [line.strip() for line in grant.block
-                                           if line.strip()] != ["- " + grants[name]]:
-            problems.append(f"{name} must receive only its named short-form secret")
+                                           if line.strip()] != ["- " + g for g in grants[name]]:
+            problems.append(f"{name} must receive only its named short-form secrets")
         if name == "cloudflared":
             for key in ("environment", "env_file", "entrypoint", "user"):
                 if key in keys:
@@ -437,7 +441,8 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         self.assertEqual(volume_problems(self.top, self.services), [])
 
     def test_production_account_configuration_is_fixed(self):
-        # D-111; missing or drifting settings must not reach deployment unnoticed.
+        # D-111, D-13: missing or drifting settings must not reach deployment unnoticed; the SMTP
+        # password stays out of the environment, only the path of its secret file stands.
         environment = self.services["app"].get("environment")
         self.assertIsNotNone(environment, "application account settings are missing")
         fields = support._yaml_mapping(environment.block, environment.line + 1)
@@ -446,6 +451,11 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
             "LOOP2_SESSION_SECRET_FILE": "/run/secrets/loop2_session_secrets",
             "LOOP2_PUBLIC_ORIGIN": "https://loop2.mariusznazar.com",
             "LOOP2_PROXY_MODE": "cloudflare-tunnel",
+            "LOOP2_MAIL_FROM": "loop2@mariusznazar.com",
+            "LOOP2_SMTP_HOST": "outsider.mikr.us",
+            "LOOP2_SMTP_PORT": "587",
+            "LOOP2_SMTP_USER": "loop2@mariusznazar.com",
+            "LOOP2_SMTP_PASSWORD_FILE": "/run/secrets/loop2_smtp_password",
         })
 
     def test_no_docker_socket(self):
@@ -460,6 +470,7 @@ services:
   app:
     secrets:
       - loop2_session_secrets
+      - loop2_smtp_password
     volumes:
       - accounts:/app/data
   cloudflared:
@@ -470,6 +481,8 @@ secrets:
     file: /etc/loop2/cloudflared-token
   loop2_session_secrets:
     file: /etc/loop2/session-secrets
+  loop2_smtp_password:
+    file: /etc/loop2/smtp-password
 volumes:
   accounts:
     name: loop2_accounts
@@ -498,6 +511,24 @@ class NarrowAllowances(unittest.TestCase):
         cases = {
             "other tunnel host file": approved.replace("/etc/loop2/cloudflared-token", "/etc/shadow"),
             "other session host file": approved.replace("/etc/loop2/session-secrets", "/etc/shadow"),
+            "other SMTP host file": approved.replace("/etc/loop2/smtp-password", "/etc/shadow"),
+            "environment source for the SMTP password": approved.replace(
+                "file: /etc/loop2/smtp-password", "environment: SMTP_PASSWORD"),
+            "external source for the SMTP password": approved.replace(
+                "file: /etc/loop2/smtp-password", "external: true"),
+            "additional field on the SMTP password": approved.replace(
+                "file: /etc/loop2/smtp-password",
+                "file: /etc/loop2/smtp-password\n    name: shared-secret"),
+            "connector gets the SMTP password": approved.replace(
+                "- cloudflare_tunnel_token", "- cloudflare_tunnel_token\n      - loop2_smtp_password"),
+            "connector gets only the SMTP password": approved.replace(
+                "- cloudflare_tunnel_token", "- loop2_smtp_password"),
+            "application lacks the SMTP password": approved.replace(
+                "      - loop2_smtp_password\n", ""),
+            "application gets a fourth grant": approved.replace(
+                "- loop2_smtp_password", "- loop2_smtp_password\n      - cloudflare_tunnel_token"),
+            "long grant of the SMTP password with override": approved.replace(
+                "- loop2_smtp_password", "- source: loop2_smtp_password\n        mode: 0444"),
             "environment source": approved.replace("file: /etc/loop2/session-secrets",
                                                     "environment: SESSION_KEYS"),
             "external source": approved.replace("file: /etc/loop2/session-secrets",

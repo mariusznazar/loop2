@@ -21,6 +21,12 @@ setting, never a value):
 | Log text | Human check |
 |---|---|
 | `Invalid or unavailable account configuration: LOOP2_SESSION_SECRET_FILE` | `/etc/loop2/session-secrets` exists with `stat -c '%U %g %a'` giving `root 1000 440`, is one JSON array of distinct 43-character base64url keys and is at most 16 KiB. Rebuild it with the sequences in `setup_and_secrets.md`, not by editing it by hand. |
+| `Invalid or unavailable account configuration: LOOP2_SMTP_PASSWORD_FILE` | `/etc/loop2/smtp-password` exists with `stat -c '%U %g %a'` giving `root 1000 440`, holds the password alone, non-empty, at most 1 KiB, with no trailing newline. Replace it with the sequence in "The SMTP password" in `setup_and_secrets.md`, not by editing it by hand. |
+| `Invalid or unavailable account configuration: LOOP2_MAIL_FROM`, `LOOP2_SMTP_HOST`, `LOOP2_SMTP_PORT` or `LOOP2_SMTP_USER` | Compose supplies them; a mismatch means the checkout's `compose.yaml` was changed. Report to the task. |
+| `Account mail failed: EAUTH` | Outsider refused the login or the password: the human checks the login in `compose.yaml` and the password file against the mailbox, as in "The SMTP password". |
+| `Account mail failed: ECONNECTION`, `ETIMEDOUT`, `ESOCKET`, `EDNS`, `ETLS` or `EREQUIRETLS` | A connection, name lookup or TLS failure towards Outsider on port 587, not a credential problem. Whether the container can reach that port is shown only by the human's trial (H4). Report the code. |
+| `Account mail failed: EENVELOPE` or `EMESSAGE` | Outsider accepted the connection, TLS and login but refused the sender, the recipient or the message, for example because the monthly allowance of 1000 is used up. The human looks in Outsider's panel. Report the code. |
+| `Account mail failed: unknown` or `Account mail missed its deadline` | No library code: the send ran out of its 10 seconds, the connection ended or was not upgraded to TLS, or the mailer refused the address before connecting. Cannot tell a network fault from a slow Outsider; the human's trial (H4) decides. Report the line. |
 | `Invalid or unavailable account configuration: LOOP2_DATABASE_PATH` | The volume `loop2_accounts` is mounted at `/app/data` and writable by uid 1000 (`docker volume inspect loop2_accounts`), and the database is not from a newer schema than this commit knows (see below). |
 | `Invalid or unavailable account configuration: LOOP2_PUBLIC_ORIGIN` or `LOOP2_PROXY_MODE` | Compose supplies them; a mismatch means the checkout's `compose.yaml` was changed. Report to the task. |
 | `Account password readiness failed` | The password hash self-test failed at start; report with the bounded log. |
@@ -101,15 +107,21 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   visible. Deploying forward again shows them. Until then no loop2 container references the
   volume, which is exactly the state a volume prune would clear; run none.
 - **A database newer than the code:** an application refuses a database whose schema version
-  it does not know. The current code writes schema version 2, which adds to version 1 the
-  blocked state of each account. Its first start on a version-1 database moves it to version 2
-  in one transaction, keeping every account and session, none of them blocked; a failure there
-  leaves version 1 as it was and stops the start (exit 8). A commit from before account
-  blocking knows only version 1, so once the database is at version 2, a rollback to such a
-  commit fails health (exit 8). A target commit that knows only an older schema fails health
-  (exit 8) on a newer database; the recovery is deploying a commit that knows the schema,
-  since the data has no way back: there is no step from version 2 to version 1 and no copy of
-  the database from before the move.
+  it does not know. The current code writes schema version 3. Version 2 added to version 1 the
+  blocked state of each account; version 3 adds to version 2 the confirmation state of each
+  account's address and the table of emailed links. The first start on an older database moves
+  it to version 3 in one transaction, keeping every account and session; accounts that exist
+  stay with an unconfirmed address, and a failure leaves the database as it was and stops the
+  start (exit 8). **The first deployment of this change, also the human's trial deployment of
+  its branch before the merge (H4), moves the persistent database of the test server to
+  version 3.** From then on a commit that knows only version 2 or 1, `main` before this change
+  included, fails health (exit 8): a rollback to it fails, and an unmerged branch leaves `main`
+  unable to start. A target commit that knows only an older schema fails health (exit 8) on a
+  newer database; the recovery is deploying a commit that knows the schema, since the data has
+  no way back: there is no step from version 3 to version 2 and no copy of the database from
+  before the move. Only the human repairs the database.
+- **The SMTP password in a rollback:** the file `/etc/loop2/smtp-password` is not rolled back
+  with the code; a commit from before this change does not mention it and leaves it unused.
 - **Session keys in a rollback:** restoring an old private copy of the key file puts an old
   key first again; follow "Putting an old key first again" in `setup_and_secrets.md`.
 
