@@ -1,11 +1,22 @@
 import {
   createAccountClient,
+  type Account,
   type AccountClient,
   type AccountFailure,
+  type ConfirmationMessage,
 } from "../account-api.js";
 import { createAccountScreen } from "./account-screen.js";
 import { createButton, setButtonWaiting } from "./controls/button.js";
 import { createFormWarning } from "./controls/text-field.js";
+import {
+  browserAddress,
+  confirmFromAddress,
+  createConfirmationNotice,
+  readConfirmationToken,
+  type ConfirmationNotice,
+  type PageAddress,
+} from "./email-confirmation.js";
+import { createEmailStatus, type EmailStatus } from "./email-status.js";
 import { createFooter } from "./footer.js";
 import { createGameView, type GameView } from "./game-view.js";
 
@@ -22,10 +33,17 @@ function signedOut(failure: AccountFailure): boolean {
  * „Wyloguj” beside the title ends this browser's session; the game leaves the page only when the
  * server confirms it, and stays with a warning when the outcome is uncertain. One transition runs
  * at a time, and an answer that comes after the page moved on is ignored.
+ *
+ * Under the title, on a line of its own, a signed-in player with an unconfirmed address sees the
+ * row of `email-status.ts`. When the page's address carries a confirmation token, the page first
+ * sends it — showing „Potwierdzanie adresu…” where it shows the session check — and only then
+ * checks the session; the result stands as one sentence above the first screen that check leads
+ * to, and leaves at the next change between forms and game.
  */
 export function startApp(
   root: HTMLElement,
   client: AccountClient = createAccountClient(),
+  address: PageAddress = browserAddress(),
 ): void {
   const header = document.createElement("header");
   const title = document.createElement("h1");
@@ -49,15 +67,33 @@ export function startApp(
   retryButton.hidden = true;
   check.append(checking, checkWarning.element, retryButton);
 
-  const accountScreen = createAccountScreen(client, () => showGame());
+  const accountScreen = createAccountScreen(client, (account, message) =>
+    showGame(account, message),
+  );
   let game: GameView | null = null;
+  let emailStatus: EmailStatus | null = null;
+  // The result of a confirmation from the address, until the first screen shows it.
+  let pendingNotice: ConfirmationNotice | null = null;
   // Each request of the page takes the next number; an answer counts only while it is the last.
   let latest = 0;
 
-  function showGame(): void {
+  /** The notice to stand above the screen about to be shown, once; nothing after that. */
+  function noticeElements(): HTMLElement[] {
+    const notice = pendingNotice;
+    pendingNotice = null;
+    return notice === null ? [] : [createConfirmationNotice(notice)];
+  }
+
+  function showGame(
+    account: Account,
+    message: ConfirmationMessage | null,
+  ): void {
     game?.dispose();
+    emailStatus?.dispose();
     game = createGameView();
-    main.replaceChildren(game.element);
+    emailStatus = createEmailStatus(client, account, message);
+    header.append(emailStatus.element);
+    main.replaceChildren(...noticeElements(), game.element);
     logoutWarning.set(null);
     logoutButton.hidden = false;
   }
@@ -65,10 +101,12 @@ export function startApp(
   function showForms(): void {
     game?.dispose();
     game = null;
+    emailStatus?.dispose();
+    emailStatus = null;
     logoutButton.hidden = true;
     logoutWarning.set(null);
     accountScreen.reset();
-    main.replaceChildren(accountScreen.element);
+    main.replaceChildren(...noticeElements(), accountScreen.element);
   }
 
   async function checkSession(): Promise<void> {
@@ -84,7 +122,7 @@ export function startApp(
     if (mine !== latest) return;
     setButtonWaiting(retryButton, null);
     if (result.ok) {
-      showGame();
+      showGame(result.value, null);
     } else if (signedOut(result.failure)) {
       showForms();
     } else {
@@ -120,6 +158,18 @@ export function startApp(
     })();
   });
 
+  /** The confirmation from the address, where there is one, then the session check. */
+  async function start(): Promise<void> {
+    if (readConfirmationToken(address.hash()) !== null) {
+      checking.textContent = "Potwierdzanie adresu…";
+      main.replaceChildren(check);
+      const notice = await confirmFromAddress(client, address);
+      checking.textContent = "Sprawdzanie logowania…";
+      pendingNotice = notice;
+    }
+    await checkSession();
+  }
+
   root.append(header, main, createFooter());
-  void checkSession();
+  void start();
 }
