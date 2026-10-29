@@ -10,7 +10,7 @@ import {
 
 export type NumberFieldOptions = FieldOptions & {
   min: number;
-  max: number;
+  max?: number;
   step: number;
 };
 
@@ -18,7 +18,7 @@ export type NumberFieldOptions = FieldOptions & {
 export function createNumberField(options: NumberFieldOptions): Field {
   const field = createInputField("number", options);
   field.input.min = String(options.min);
-  field.input.max = String(options.max);
+  if (options.max !== undefined) field.input.max = String(options.max);
   field.input.step = String(options.step);
   return field;
 }

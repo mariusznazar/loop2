@@ -454,7 +454,7 @@ export function createProgramPanel(
       next.mapId !== drawn.mapId ||
       next.understanding !== drawn.understanding
     ) {
-      editor.update(current, content.program, content.counts);
+      editor.update(current, content.program, content.counts, value);
       drawn = next;
     } else {
       editor.updateCounts(content.counts);

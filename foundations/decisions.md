@@ -957,16 +957,15 @@ Every start of the loop2 server process by a loop2 test on the machine that runs
 
 ### D-50 — Whose is the chest?
 
-The chest belongs to a team. Each character belongs to exactly one team, and a character has no
-chest of its own.
+The chest belongs to a team and has a cap on the total count of pieces, by the same rule of capacity as the backpack. Each character belongs to exactly one team and uses its chest, and a character has no chest of its own.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: character-team. For the chest, an agent compares a change with the
+- **Verification:** invariants: character-team · trip-transfer. For the chest, an agent compares a change with the
   decision:
   - complies: a lone character shown with the chest of its one-member team
-  - violates: a character with a personal chest beside the team's; a character outside every team
+  - violates: a character with a personal chest beside the team's; a character outside every team; a chest capped per kind of item
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D37 and §4 "Kierunek: przedmioty krążą między mapami" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Whose is the chest?"
 
 *Rationale:* a team of one behaves exactly as a lone character with a chest of its own; the shared
@@ -1588,7 +1587,7 @@ For a change touching a category deliberately left without tests, its author and
 
 ### D-90 — Where do the program rules of a program belong?
 
-A program is an ordered list of rule groups, and every program rule belongs to exactly one of
+A program holds an ordered list of rule groups, and every program rule belongs to exactly one of
 those groups; the game has no program rule standing outside a rule group.
 
 - **Scope:** simulation, browser-view
@@ -1662,7 +1661,7 @@ run restart, subject to the same reset on a change of a rule's content.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-92 · derives from D-164
-- **Verification:** invariants: saved-program-edit. An agent compares a change with the decision:
+- **Verification:** invariants: saved-program-edit · trip-plan-progress. An agent compares a change with the decision:
   - complies: a program rule moved up or into another group keeping its count; a changed group
     condition leaving its rules' counts intact; a rule whose condition changed starting again
     from zero; counts retained after death, after a completion and after „Zakończ”, reset on the
@@ -2379,16 +2378,16 @@ control the shared controls do not hold.
 
 ### D-131 — Which changes of the program a map run carries out reset its solving progress?
 
-Of the edits of the copy a map run carries out, an edit after which the copy differs from the copy before it, the discard of the copy's unsaved changes included, sets
+Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets
 the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule,
 changing its condition or action, and changing a rule group — also while the map run is paused; an
-act of the program editor after which the copy is the same as before it, a save of the copy and an edit of a saved program leave the streak as it
+act of the program editor after which the copy is the same as before it, an edit or discard changing the trip plan alone, a save of the copy and an edit of a saved program leave the streak as it
 stands, together with the number of beaten attacks. Every switch of the character to another program sets the streak and the number of beaten attacks of the map run to zero, also where that program holds the same rules. A map run starts with zero beaten attacks, and a game minute with health lost to cold or hunger leaves their count as it stands.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-164
-- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save. An agent compares a change with the decision:
+- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save · trip-plan-progress. An agent compares a change with the decision:
   - complies: „↑” on the first program rule leaving a streak of 120 at 120; a program rule's action
     changed in a pause setting the streak to 0 while the character's action in progress goes on; a
     rule group renamed setting the streak to 0; „Porzuć zmiany” after a rule was added to the copy
@@ -2401,7 +2400,7 @@ stands, together with the number of beaten attacks. Every switch of the characte
 - **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "9. Która zmiana programu zeruje passę — także czynność edytora, po której program jest taki sam jak przed nią?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?" and "Q15. Czy „Zapisz w programie” i „Zapisz jako nowy program” zostawiają passę i kopię bez zmian?"
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps
-fixing it, so a program that differs starts the streak again, in a pause as well; an act that leaves
+fixing it, so changed rules or rule groups start the streak again, in a pause as well; an act that leaves
 the program as it was changes nothing the map checks. A switch brings another program, which the map
 checks anew, also where it holds the same rules. A save moves the copy's content into a program and
 changes nothing the map run carries out, and a saved program reaches a map run at a next entry or a
@@ -2503,12 +2502,12 @@ alone or together — and a map opens when the map its data names as its opener 
 counts the successive game minutes in which the character loses no health to cold or hunger: a game
 minute with such a loss sets it to zero, wounds taken in combat do not, and every change of the
 program rules or rule groups the map run carries out, and every switch of the character to another
-program, sets it to zero, on every map.
+program, sets it to zero, on every map, while a change of the trip plan alone leaves it.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: streak-program-change. For the condition in the map's data and the
+- **Verification:** invariants: streak-program-change · trip-plan-progress. For the condition in the map's data and the
   rest of the streak, an agent compares a change with the decision:
   - complies: Las — głębiej asking for a streak and two beaten attacks, written in its data
   - violates: a solving condition coded in the engine for one map; a game minute in which the
@@ -2518,7 +2517,7 @@ program, sets it to zero, on every map.
 - **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a map solved, and what opens the next one?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 and D17
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
-it, so a change of the program starts the streak again. Wounds from combat do not break it: a
+it, so a change of the program's rules or rule groups starts the streak again. Wounds from combat do not break it: a
 program is to handle an attack, not avoid it. The condition differs from map to map, so it lives in
 the map's data, and so does the map that opens it.
 *Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
@@ -3176,3 +3175,161 @@ body, as the game state holds it (D-125). Empty energy closes the spells and tak
 threatens no loss of the character and stands in `text` (D-39). Accepted with it: a longer body
 row, and a player who sees the energy before discovering the condition on it.
 *Rejected:* the body row as it stood, with no nature energy.
+
+### D-179 — How do items go into a map run and out of it?
+
+The trip plan is a field of the program, both its lists are bound at the start of a map run — the list of what comes out as a frozen snapshot — and at a completion only what that list names goes to the chest. Reality cuts the trip plan down and never up: outside a manual map run of a map already solved, what the chest lacks does not go into the backpack, what the backpack lacks does not come back, and where items compete for one budget — the backpack, the map's cap, the free room in the chest — as many go in from the top of the list as fit. The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-50 · derives from D-64 · derives from D-164
+- **Verification:** invariants: trip-transfer. An agent compares a change with the decision:
+  - complies: an item added to the trip plan during a map run that comes out only from the next map run; a trip plan over the map's cap entering cut, with a notice shown before the start; a character switched to another program in the middle of a map run bringing out at completion what the trip plan of the program it entered with names
+  - violates: a backpack filled beyond what the chest held; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How do items go into a map run and out of it?"
+
+*Rationale:* The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it.
+*Rejected:* a choice made by a click before each start — the earning loop could not carry it out without the player.
+
+### D-180 — Where does the player arrange the trip plan?
+
+The program panel shows a section „Plan wyprawy” below the rule groups, with the lists „Zabierz” and „Wynieś”. Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-44 · derives from D-166 · derives from D-173 · derives from D-179
+- **Verification:** none
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2"
+
+*Rationale:* The plan stays with the program the player edits, at the cost of scrolling past a long program.
+*Rejected:* the section above the rule groups; the plan in the headquarters character row — the running copy could not be edited there.
+
+### D-181 — Which entries does a trip list accept?
+
+The game currently accepts an item once on each trip list, and the same item can stand on both lists. A position's count is an integer from 1 up, with its upper range currently left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-119 · derives from D-120 · derives from D-179
+- **Verification:** none
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3" and "Q11", part a
+
+*Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds.
+*Rejected:* all game items offered from the start — contradicts discovery; restoring the previous count in the field at once — hides the invalid draft the player entered.
+
+### D-182 — What trip plan does a new program hold?
+
+The program of a new game and a newly created program have both trip lists empty.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-91 · derives from D-167 · derives from D-179
+- **Verification:** none
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3"
+
+*Rationale:* The first plan belongs to the player, and before an item is discovered the chest is empty as well.
+*Rejected:* unknown
+
+### D-183 — What happens to carried items when the player stops a run or completes with items outside its plan?
+
+When „Zakończ” or „Restart” ends a map run before completion, its carried items — brought in and gathered — are lost. At completion, the items outside the frozen bring list are lost.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-179
+- **Verification:** invariants: trip-run-end.
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6"
+
+*Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents.
+*Rejected:* unknown
+
+### D-184 — How does the headquarters show the chest's capacity?
+
+The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}”, such as „Skrzynka 12/60”, and for an empty chest as „Skrzynka 0/60” above „Skrzynka jest pusta.”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-50
+- **Verification:** none
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4", part 2
+
+*Rationale:* The shared space is visible where the player prepares the next attempt; the heading changes with its contents.
+*Rejected:* the cap kept out of the headquarters — its remaining room would be hidden.
+
+### D-185 — Where does the player read what completion deposited?
+
+After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands below the discovery line and last-encounter paragraph when present and above the body and backpack, directly below the status row when neither is present, until „Restart” or „Zakończ”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-122 · derives from D-147 · derives from D-179
+- **Verification:** none
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12"
+
+*Rationale:* The transfer remains readable with the final state, even when discovery and a long encounter place it further below the status.
+*Rejected:* placing it above discovery — changes the established order; placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
+
+### D-186 — What does the running map show of the frozen bring plan?
+
+During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap. The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-179
+- **Verification:** none
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8", "Q10", part c, and "Q11", parts c–e
+
+*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record.
+*Rejected:* a completion line alone — the running snapshot stays hidden; a line hidden for an empty snapshot — an item added during the run looks as though it could leave; a line from minute zero for every empty plan — persistent empty information; keeping the preview after the run ends; the role `text`.
+
+### D-187 — How does a map cap equipment and loot?
+
+A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset. The entry cap clips the trip plan when the character enters and the exit cap at completion; gathering during the run is currently bounded by the character's carrying capacity, which the map cap currently leaves unchanged.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-64 · derives from D-179
+- **Verification:** invariants: trip-transfer.
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1" and "Q10", part a
+
+*Rationale:* A map can ask for different equipment at entry and loot at exit, while carrying capacity describes the character during the attempt; this keeps two boundaries to check even where current maps leave them unset.
+*Rejected:* one cap for both directions — zero at entry would also prevent loot at exit; giving a current map a cap — adds a balance value beyond the accepted definition; removing caps from the definition — reopens readiness and the plan; leaving the definition intact and omitting the mechanism.
+
+### D-188 — Where does the player learn that a map cuts the trip plan?
+
+In the headquarters, at a character's map, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that row's chosen program and the character's carrying capacity. The same line stands in the status row beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is currently absent.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-170 · derives from D-179 · derives from D-187
+- **Verification:** none
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10", part b
+
+*Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places.
+*Rejected:* a warning confined to the headquarters — omits the next restart.
+
+### D-189 — Which current runs take equipment and pay loot?
+
+Earned loot reaches the chest on completion. The game currently takes equipment from the chest at each map run's start and deposits according to its frozen bring list at each completion, including a manual map run of an already solved map.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-179
+- **Verification:** invariants: trip-transfer · trip-run-end.
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What pays, and what takes from the chest?" · plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5", "Q6" and § Settlements to record, row 11
+
+*Rationale:* The current run lifecycle spends equipment and deposits completed loot alike for solved and unsolved maps; repeated manual completions therefore pay too.
+*Rejected:* unknown
+
+### D-190 — What does a character's death take?
+
+A character's death takes what it carried, including pieces taken from the chest, and leaves the chest as it stood.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-179
+- **Verification:** invariants: trip-run-end.
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a character's death take?"
+
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it.
+*Rejected:* unknown
