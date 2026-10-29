@@ -6,6 +6,7 @@ import { MAPS } from "../../dist/public/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
+  end,
   passRealTime,
   restart,
   send,
@@ -24,13 +25,17 @@ const KICK = programFromRules({ condition: ALWAYS, action: { kind: "kick" } });
 const HEALTHY = { temperature: 37, satiety: 100, health: 100 };
 // This real generator state draws 0.0074537..., below the map's 0.01 chance.
 const HIT = 35;
-function prepared(program = KICK) {
+function sent(program = KICK) {
   const game = setProgram(
     createCharacter({ ...newKnowingGame(), solvedMaps: ["forest"] }, "Ala")
       .state,
     program,
   ).state;
-  const state = send(game, { mapId: "forestDeep", characterId: 1 }, 1000).state;
+  return send(game, { mapId: "forestDeep", characterId: 1 }, 1000).state;
+}
+
+function prepared(program = KICK) {
+  const state = sent(program);
   return {
     ...state,
     run: {
@@ -361,6 +366,41 @@ test("a creature-only discovery pauses before turns and does not write a combat 
   assert.deepEqual(resumed.run.lastCombat, result.state.run.lastCombat);
 });
 
+// D-118, D-119, D-143: the first attack permanently teaches the wolf, so the
+// next attack must use that very knowledge, not an independently knowing game.
+// Sources: foundations/decisions.md:2008, :2032, :2575.
+test("the discovered wolf stays known through another attack, restart and end", () => {
+  const initial = prepared();
+  initial.understanding.creatures = [];
+  const discovered = advanceMinutes(initial, 1).state;
+  assert.deepEqual(discovered.understanding.creatures, ["wolf"]);
+  const resolved = advanceMinutes(setPaused(discovered, false).state, 5).state;
+  assert.equal(resolved.run.lastCombat.result.outcome, "creatureDefeated");
+  assert.deepEqual(resolved.understanding.creatures, ["wolf"]);
+
+  // Prepare only the next eligible minute and a real hit draw. Keep the
+  // knowledge and completed encounter obtained above throughout this lifecycle.
+  const eligible = {
+    ...resolved,
+    run: {
+      ...resolved.run,
+      minute: resolved.run.attackCooldownStart + 180,
+      attackRandom: HIT,
+    },
+  };
+  const repeated = advanceMinutes(eligible, 1);
+  assert.ok(repeated.events.some((event) => event.kind === "attacked"));
+  assert.ok(!repeated.events.some((event) => event.kind === "discovered"));
+  assert.equal(repeated.state.paused, false);
+  assert.equal(repeated.state.discovery, null);
+  assert.deepEqual(repeated.state.understanding.creatures, ["wolf"]);
+  const restarted = restart(repeated.state).state;
+  assert.deepEqual(restarted.understanding.creatures, ["wolf"]);
+  const ended = end(restarted).state;
+  assert.equal(ended.run, null);
+  assert.deepEqual(ended.understanding.creatures, ["wolf"]);
+});
+
 test("an ending exploration and first wolf produce one catalog-ordered discovery", () => {
   const state = prepared();
   state.understanding = {
@@ -515,4 +555,163 @@ test("M+5 counts the second defeated attack before checking both map requirement
   assert.equal(result.state.run.body.health, 58);
   assert.equal(result.state.run.activeCombat, null);
   assert.equal(result.state.run.lastCombat.result.outcome, "creatureDefeated");
+});
+
+// Invariant minute-span-split: compare the whole state and the ordered event
+// prefix at every chunk boundary against single minutes, through discovery or
+// an ending minute. No state field is normalized. Real-time chunks are whole
+// seconds, so their carry is also directly comparable. advanceMinutes ignores
+// pause by contract; stop its driver at discovery instead of silently resuming.
+// Source: foundations/invariants.md:528.
+function traceChunks(initial, chunks, advance = advanceMinutes) {
+  let state = initial;
+  const events = [];
+  const records = [];
+  for (const chunk of chunks) {
+    const result = advance(state, chunk);
+    state = result.state;
+    events.push(...result.events);
+    records.push({ state, events: [...events] });
+    if (result.events.some((event) => event.kind === "discovered")) break;
+  }
+  return records;
+}
+
+const COMBAT_SPLITS = [
+  {
+    name: "first wolf discovery",
+    creatures: [],
+    streak: 0,
+    defeats: 0,
+    program: KICK,
+    stop: 181,
+    outcome: null,
+  },
+  {
+    name: "known attack and M+5",
+    creatures: ["wolf"],
+    streak: 0,
+    defeats: 0,
+    program: KICK,
+    stop: 190,
+    outcome: "creatureDefeated",
+  },
+  {
+    name: "combat death",
+    creatures: ["wolf"],
+    streak: 0,
+    defeats: 0,
+    program: programFromRules(),
+    stop: 186,
+    outcome: "characterDied",
+  },
+  // Starting at 537 yields 538 in M, 539 in M+1 and completion in M+2.
+  {
+    name: "completion before turns",
+    creatures: ["wolf"],
+    streak: 537,
+    defeats: 2,
+    program: KICK,
+    stop: 183,
+    outcome: null,
+  },
+  // Starting at 534 reaches 540 in M+5, when the second wolf is defeated.
+  {
+    name: "completion after turns",
+    creatures: ["wolf"],
+    streak: 534,
+    defeats: 1,
+    program: KICK,
+    stop: 186,
+    outcome: "creatureDefeated",
+  },
+];
+
+for (const scenario of COMBAT_SPLITS) {
+  test(`combat time splitting preserves every state and ordered event: ${scenario.name}`, () => {
+    const initial = prepared(scenario.program);
+    initial.understanding.creatures = scenario.creatures;
+    if (scenario.creatures.length === 0) initial.run.minute = 179;
+    initial.run.streak = scenario.streak;
+    initial.run.defeatedAttacks = scenario.defeats;
+    const reference = traceChunks(initial, Array(10).fill(1));
+    const final = reference.at(-1);
+    // Independent controls prevent an equal but noncombat pair from passing.
+    assert.equal(final.state.run.minute, scenario.stop);
+    assert.deepEqual(final.events[0], {
+      kind: "attacked",
+      minute: 181,
+      creature: "wolf",
+    });
+    assert.equal(
+      final.state.run.lastCombat.result?.outcome ?? null,
+      scenario.outcome,
+    );
+    if (scenario.creatures.length === 0) {
+      assert.deepEqual(
+        final.events.map((event) => event.kind),
+        ["attacked", "discovered"],
+      );
+      assert.deepEqual(final.state.understanding.creatures, ["wolf"]);
+      assert.equal(final.state.paused, true);
+    } else if (scenario.outcome === "characterDied") {
+      assert.deepEqual(final.state.run.death, { minute: 186, cause: "combat" });
+      assert.equal(final.events.at(-1).kind, "characterDied");
+    } else if (scenario.defeats > 0) {
+      assert.deepEqual(final.state.run.completion, { minute: scenario.stop });
+      assert.equal(final.events.at(-1).kind, "mapRunCompleted");
+    }
+    const exchanges = final.events.filter(
+      (event) => event.kind === "combatExchange",
+    );
+    // D-144: 24 / 3 = 8 kicks; without a reply, ceil(100 / 7) = 15 bites.
+    // Source: foundations/decisions.md:2590.
+    assert.equal(
+      exchanges.length,
+      scenario.outcome === null
+        ? 0
+        : scenario.outcome === "characterDied"
+          ? 15
+          : 8,
+    );
+    assert.ok(exchanges.every((event) => event.minute === 186));
+    for (const chunks of [[10], [2, 3, 5], [1, 4, 1, 4]]) {
+      for (const advance of [
+        advanceMinutes,
+        (state, minutes) => passRealTime(state, minutes * 1000),
+      ]) {
+        const records = traceChunks(initial, chunks, advance);
+        for (const record of records) {
+          const expected = reference.find(
+            (entry) => entry.state.run.minute === record.state.run.minute,
+          );
+          assert.ok(
+            expected,
+            `single minutes reached ${record.state.run.minute}`,
+          );
+          assert.deepEqual(record, expected);
+        }
+        assert.deepEqual(records.at(-1), final);
+      }
+    }
+  });
+}
+
+// Invariants map-run-repeatability and restart-seed: start with an ordinary
+// public send, then replay the same real-time inputs after restart. No patched
+// random state, clock, counters or body: even the initial whole states agree.
+// Sources: foundations/invariants.md:165, :309; decisions.md:450 (D-22).
+test("restart replays the actual attack stream and combat minute by minute", () => {
+  const initial = sent();
+  const reference = traceChunks(initial, Array(250).fill(1000), passRealTime);
+  const final = reference.at(-1);
+  const attacks = final.events.filter((event) => event.kind === "attacked");
+  assert.equal(attacks.length, 1, "precondition: this seed reaches a wolf");
+  assert.ok(final.events.some((event) => event.kind === "combatExchange"));
+  assert.equal(final.state.run.death.cause, "combat");
+  assert.equal(final.state.run.death.minute, attacks[0].minute + 5);
+  const restarted = restart(final.state).state;
+  assert.deepEqual(restarted, initial);
+  const replay = traceChunks(restarted, Array(250).fill(1000), passRealTime);
+  assert.deepEqual(replay, reference);
 });

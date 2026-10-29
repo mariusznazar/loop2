@@ -178,3 +178,68 @@ test("combat checks group conditions in order against post-strike health", () =>
   assert.equal(result.ruleStarts[11], 8);
   assert.equal(result.ruleStarts[22], undefined);
 });
+
+// Invariant program-rule-pick: a false group must be skipped, while a true
+// earlier group wins. The first bite leaves 100 - 7 = 93 health.
+// Sources: foundations/decisions.md:476 (D-23), :2590 (D-144).
+test("combat skips a false first group and selects it when its condition holds", () => {
+  for (const [threshold, expectedAction, expectedWolfHealth] of [
+    [50, "kick", 21],
+    [94, "dodge", 24],
+  ]) {
+    const program = {
+      groups: [
+        {
+          id: 1,
+          name: "Wounded",
+          condition: { kind: "healthBelow", value: threshold },
+          rules: [
+            { id: 1, condition: { kind: "always" }, action: { kind: "dodge" } },
+          ],
+        },
+        {
+          id: 2,
+          name: "Fallback",
+          condition: { kind: "always" },
+          rules: [
+            { id: 2, condition: { kind: "always" }, action: { kind: "kick" } },
+          ],
+        },
+      ],
+      nextGroupId: 3,
+      nextRuleId: 3,
+    };
+    const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+    const first = result.exchanges[0];
+    assert.equal(first.creatureAction.characterHealth, 93);
+    assert.equal(first.characterAction.action.kind, expectedAction);
+    assert.equal(first.characterAction.creatureHealth, expectedWolfHealth);
+  }
+});
+
+// Invariant program-rule-pick: a false rule passes to the next rule within the
+// same group. The wolf still has 24 health before the character's first action.
+// Sources: foundations/decisions.md:476 (D-23), :2590 (D-144).
+test("combat skips a false first rule and selects it when its condition holds", () => {
+  for (const [threshold, expectedAction, expectedWolfHealth] of [
+    [10, "kick", 21],
+    [25, "dodge", 24],
+  ]) {
+    const program = programFromRules(
+      {
+        condition: { kind: "opponentHealthBelow", value: threshold },
+        action: { kind: "dodge" },
+      },
+      { condition: { kind: "always" }, action: { kind: "kick" } },
+    );
+    const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+    assert.equal(
+      result.exchanges[0].characterAction.action.kind,
+      expectedAction,
+    );
+    assert.equal(
+      result.exchanges[0].characterAction.creatureHealth,
+      expectedWolfHealth,
+    );
+  }
+});
