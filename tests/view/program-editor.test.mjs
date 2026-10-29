@@ -149,6 +149,8 @@ test("group conditions offer the same kinds and editable fields while preserving
     ["satietyBelow", { kind: "satietyBelow", value: 50 }],
     ["itemBelow", { kind: "itemBelow", item: "stick", value: 8 }],
     ["campfireLeftBelow", { kind: "campfireLeftBelow", value: 20 }],
+    ["healthBelow", { kind: "healthBelow", value: 50 }],
+    ["opponentHealthBelow", { kind: "opponentHealthBelow", value: 10 }],
     ["awayFromCampfire", { kind: "awayFromCampfire" }],
   ]) {
     const changed = withConditionKind(THREE, 1, null, kind, LAS, ITEMS_LISTED);
@@ -512,6 +514,10 @@ test("the number field's range and step follow the condition kind; a kind with n
   assert.deepEqual(input, { min: "0", max: "100", step: "1" });
   showFieldRange(input, "campfireLeftBelow");
   assert.deepEqual(input, { min: "0", max: "120", step: "1" });
+  showFieldRange(input, "healthBelow");
+  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
+  showFieldRange(input, "opponentHealthBelow");
+  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
   showFieldRange(input, "itemBelow");
   assert.deepEqual(input, { min: "0", max: "50", step: "1" });
   showFieldRange(input, "always");
@@ -905,6 +911,32 @@ const selectsLabelled = (editor, label) =>
     (element) => element.attributes?.["aria-label"] === label,
   );
 const optionValues = (select) => select.children.map((option) => option.value);
+
+test("the existing condition picker creates both combat health conditions with their defaults", () => {
+  withEditorDocument(() => {
+    const committed = [];
+    const known = gameKnowing({
+      actions: ["explore"],
+      conditions: ["always", "healthBelow", "opponentHealthBelow"],
+      items: [],
+    });
+    const editor = createProgramEditor((program) => committed.push(program));
+    editor.update({ ...known, program: THREE });
+
+    for (const [kind, expected] of [
+      ["healthBelow", { kind: "healthBelow", value: 50 }],
+      ["opponentHealthBelow", { kind: "opponentHealthBelow", value: 10 }],
+    ]) {
+      const [condition] = selectsLabelled(editor, "Warunek grupy");
+      assert.ok(optionValues(condition).includes(kind));
+      condition.value = kind;
+      condition.listeners.change();
+      assert.deepEqual(committed.at(-1).groups[0].condition, expected);
+      editor.update({ ...known, program: committed.at(-1) });
+    }
+  });
+});
+
 const addRuleButtons = (editor) =>
   descendants(editor.element).filter(
     (element) =>
@@ -1074,6 +1106,8 @@ test("every program the editor builds passes setProgram, before sending and duri
     "satietyBelow",
     "itemBelow",
     "campfireLeftBelow",
+    "healthBelow",
+    "opponentHealthBelow",
     "awayFromCampfire",
   ]);
   assert.deepEqual(actionKinds, [

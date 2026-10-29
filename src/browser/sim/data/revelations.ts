@@ -16,4 +16,6 @@ export type Revelation =
   /** The first campfire crafted. */
   | { kind: "campfireCrafted" }
   /** The first finished lighting, of a campfire or of an item. */
-  | { kind: "lit" };
+  | { kind: "lit" }
+  /** A creature attack, which reveals combat conditions and actions. */
+  | { kind: "attacked" };

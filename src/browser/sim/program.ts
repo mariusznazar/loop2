@@ -10,6 +10,7 @@ import type {
   Backpack,
   Campfire,
   Condition,
+  ConditionContext,
   Hex,
   ItemId,
   MapRun,
@@ -127,6 +128,7 @@ export function conditionHolds(
   run: RunView,
   _map: MapDef,
   condition: Condition,
+  context?: ConditionContext,
 ): boolean {
   switch (condition.kind) {
     case "always":
@@ -137,6 +139,13 @@ export function conditionHolds(
       return run.body.temperature < condition.value;
     case "satietyBelow":
       return run.body.satiety < condition.value;
+    case "healthBelow":
+      return (context?.health ?? run.body.health) < condition.value;
+    case "opponentHealthBelow":
+      return (
+        context?.opponentHealth !== undefined &&
+        context.opponentHealth < condition.value
+      );
     case "itemBelow":
       return run.character.backpack[condition.item] < condition.value;
     case "campfireLeftBelow":

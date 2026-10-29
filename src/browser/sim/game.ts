@@ -142,6 +142,8 @@ function checkCondition(
     case "temperatureBelow":
     case "satietyBelow":
     case "campfireLeftBelow":
+    case "healthBelow":
+    case "opponentHealthBelow":
       return { kind: value.kind, value: checkNumber(value.kind, value.value) };
     case "awayFromCampfire":
       return { kind: "awayFromCampfire" };

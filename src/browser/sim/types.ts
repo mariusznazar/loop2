@@ -22,7 +22,15 @@ export type Condition =
   | { kind: "satietyBelow"; value: number }
   | { kind: "itemBelow"; item: ItemId; value: number }
   | { kind: "campfireLeftBelow"; value: number }
+  | { kind: "healthBelow"; value: number }
+  | { kind: "opponentHealthBelow"; value: number }
   | { kind: "awayFromCampfire" };
+
+/** Health values for the side whose rule is being checked and its opponent, when present. */
+export type ConditionContext = {
+  health: number;
+  opponentHealth?: number;
+};
 
 export type Action =
   | { kind: "explore" }

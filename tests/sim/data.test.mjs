@@ -88,6 +88,27 @@ test("conditions carry labels and the value range of hereBelow", () => {
   });
 });
 
+test("health conditions use the approved thresholds and are revealed by an attack", () => {
+  assert.deepEqual(CONDITIONS.healthBelow, {
+    label: "Zdrowie poniżej",
+    revealedBy: { kind: "attacked" },
+    unit: "pkt",
+    defaultValue: 50,
+    min: 0,
+    max: 100,
+    step: 1,
+  });
+  assert.deepEqual(CONDITIONS.opponentHealthBelow, {
+    label: "Przeciwnik ma poniżej",
+    revealedBy: { kind: "attacked" },
+    unit: "pkt",
+    defaultValue: 10,
+    min: 0,
+    max: 100,
+    step: 1,
+  });
+});
+
 test("Las has an ambient temperature of 25 degrees in its map data", () => {
   assert.equal(MAPS.forest.ambientTemperature, 25);
   for (const [id, map] of Object.entries(MAPS)) {
@@ -253,6 +274,13 @@ const ROWS = [
     event: { kind: "gathered", item: "berry" },
     actions: ["eat"],
     conditions: ["satietyBelow"],
+    items: [],
+  },
+  {
+    // The first creature attack reveals the combat health conditions.
+    event: { kind: "attacked" },
+    actions: [],
+    conditions: ["healthBelow", "opponentHealthBelow"],
     items: [],
   },
   ...["stick", "berry", "moss", "fiber"].map((item) => ({

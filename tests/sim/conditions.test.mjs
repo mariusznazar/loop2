@@ -39,6 +39,8 @@ const temperatureBelow = (value) => ({ kind: "temperatureBelow", value });
 const satietyBelow = (value) => ({ kind: "satietyBelow", value });
 const itemBelow = (item, value) => ({ kind: "itemBelow", item, value });
 const campfireLeftBelow = (value) => ({ kind: "campfireLeftBelow", value });
+const healthBelow = (value) => ({ kind: "healthBelow", value });
+const opponentHealthBelow = (value) => ({ kind: "opponentHealthBelow", value });
 const AWAY = { kind: "awayFromCampfire" };
 const hereBelow = (value) => ({ kind: "hereBelow", resource, value });
 
@@ -67,6 +69,30 @@ function carrying(pieces) {
 }
 
 const holds = (run, condition) => conditionHolds(run, forest, condition);
+
+test("health conditions compare the acting side and its opponent in health points", () => {
+  const woundedWolf = { health: 6, opponentHealth: 100 };
+  assert.equal(
+    conditionHolds(handMade(), forest, healthBelow(8), woundedWolf),
+    true,
+  );
+  assert.equal(
+    conditionHolds(handMade(), forest, healthBelow(6), woundedWolf),
+    false,
+    "the threshold is strict",
+  );
+  assert.equal(
+    conditionHolds(handMade(), forest, opponentHealthBelow(101), woundedWolf),
+    true,
+  );
+  assert.equal(
+    conditionHolds(handMade(), forest, opponentHealthBelow(100), woundedWolf),
+    false,
+    "the opponent threshold is strict",
+  );
+  assert.equal(holds(withBody(37, 100), healthBelow(101)), true);
+  assert.equal(holds(handMade(), opponentHealthBelow(101)), false);
+});
 
 test("„Temperatura poniżej N °C” holds below N and not at N, also for tenths", () => {
   assert.equal(holds(withBody(34.999999, 100), temperatureBelow(35)), true);
@@ -251,6 +277,8 @@ test("the check takes the whole numbers of „Tu leży mniej niż” as before, 
 test("the check takes each new kind's numbers from its minimum to its maximum on its step", () => {
   const ranges = [
     [satietyBelow, 0, 100],
+    [healthBelow, 0, 100],
+    [opponentHealthBelow, 0, 100],
     [(value) => itemBelow(firstItem, value), 0, 50],
     [campfireLeftBelow, 0, 120],
   ];
@@ -269,6 +297,8 @@ test("the check refuses a number that is no finite number, for every kind that t
   const makers = [
     temperatureBelow,
     satietyBelow,
+    healthBelow,
+    opponentHealthBelow,
     (value) => itemBelow(firstItem, value),
     campfireLeftBelow,
     hereBelow,
