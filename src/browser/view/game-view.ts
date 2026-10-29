@@ -8,33 +8,20 @@ import {
   setProgram,
   type GameResult,
 } from "../sim/game.js";
-import { teamProgram } from "../sim/programs.js";
-import type { GameState, Program } from "../sim/types.js";
+import {
+  createProgram,
+  deleteProgram,
+  editProgram,
+  renameProgram,
+} from "../sim/programs.js";
+import type { GameState } from "../sim/types.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createHeadquarters } from "./headquarters.js";
 import { createCombatLine } from "./combat-line.js";
-import { createProgramEditor } from "./program-editor.js";
+import { createProgramPanel } from "./program-panel.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
-
-/**
- * What the program panel shows: during a map run the copy it carries out with its counts, and
- * otherwise the program `setProgram` edits outside a map run, with the counts where they stand
- * beside it.
- */
-function shownProgram(state: GameState): {
-  program: Program;
-  counts: GameState["ruleCounts"];
-} {
-  if (state.run)
-    return { program: state.run.copy.program, counts: state.ruleCounts };
-  const edited = teamProgram(state);
-  return {
-    program: edited.program,
-    counts: state.countsProgram === edited.id ? state.ruleCounts : null,
-  };
-}
 
 export type GameView = {
   /** The program panel and the map column, for the page to place. */
@@ -56,9 +43,6 @@ export function createGameView(): GameView {
 
   const element = document.createElement("div");
   element.className = "columns";
-  // Left column: the program panel, always visible.
-  const programPanel = document.createElement("section");
-  programPanel.className = "program-panel";
   // Right column: the headquarters without a map run; during one the status row, the row of the
   // body and the backpack under it, and the terrain panel.
   const mapColumn = document.createElement("section");
@@ -68,38 +52,41 @@ export function createGameView(): GameView {
   // The terrain panel draws the map run and lists its revealed tiles.
   const terrainPanel = createTerrainPanel();
   const combatLine = createCombatLine();
-  element.append(programPanel, mapColumn);
 
-  // The editor passes each edited program to the simulation; setProgram validates and replaces it.
-  // Real time elapsed before the edit is passed first, so it runs under the program it ran under.
-  const programEditor = createProgramEditor((program) => {
-    clock.flush();
-    store.apply(setProgram(state, program));
+  // Left column: the program panel, always visible. Each of its acts goes to the simulation, which
+  // checks it; real time elapsed before the act is passed first, so it runs under the program it
+  // ran under.
+  const programPanel = createProgramPanel({
+    editCopy(program) {
+      clock.flush();
+      if (state.run) store.apply(setProgram(state, program));
+    },
+    editProgram(programId, program) {
+      clock.flush();
+      store.apply(editProgram(state, programId, program));
+    },
+    createProgram() {
+      clock.flush();
+      store.apply(createProgram(state));
+    },
+    renameProgram(programId, name) {
+      clock.flush();
+      store.apply(renameProgram(state, programId, name));
+    },
+    deleteProgram(programId) {
+      clock.flush();
+      store.apply(deleteProgram(state, programId));
+    },
   });
-  programPanel.append(programEditor.element);
+  element.append(programPanel.element, mapColumn);
 
   const store: GameStore = {
     get: () => state,
     apply(result: GameResult): void {
       if (result.state === state) return;
-      const previous = shownProgram(state);
-      const previousMap = state.run?.mapId;
-      const previousUnderstanding = state.understanding;
       state = result.state;
       renderMapColumn();
-      // Content updates only on a change of the program shown or the map, or when the
-      // Understanding changes (what the lists offer). A tick or restart updates counts alone,
-      // leaving partial field input and focus intact.
-      const shown = shownProgram(state);
-      if (
-        shown.program !== previous.program ||
-        state.run?.mapId !== previousMap ||
-        state.understanding !== previousUnderstanding
-      ) {
-        programEditor.update(state, shown.program, shown.counts);
-      } else {
-        programEditor.updateCounts(shown.counts);
-      }
+      programPanel.update(state, result.events);
     },
   };
   const clock = startClock(store);
@@ -152,8 +139,7 @@ export function createGameView(): GameView {
   }
 
   renderMapColumn();
-  const shown = shownProgram(state);
-  programEditor.update(state, shown.program, shown.counts);
+  programPanel.update(state, []);
 
   return {
     element,

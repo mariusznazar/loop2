@@ -219,11 +219,25 @@ header h1 {
   min-width: 0;
 }
 
-.program-editor h2 {
-  margin: 0 0 var(--space-s);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-emphasis);
-  color: var(--text-strong);
+/* The program panel's list „Program:”, its actions and the name field, above the editor. */
+.program-list,
+.program-actions,
+.program-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+/* The name field's message stands under it, so „Zapisz” keeps to the line of the input. */
+.program-name {
+  align-items: flex-start;
+}
+
+/* The name of the list „Program:”, a field name in `text-label` (D-40). */
+.program-list-label {
+  color: var(--text-label);
 }
 
 .rule-group {
