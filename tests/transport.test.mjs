@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createHmac, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { request } from "node:http";
 import { tmpdir } from "node:os";
@@ -56,7 +56,15 @@ async function fixture(t, mode = "cloudflare-tunnel") {
     "synthetic@example.test",
     runtime.dummyHash,
   );
-  const app = createApp(runtime);
+  // D-151: a stand-in mailer records what it is handed and reaches no server.
+  const mailer = {
+    messages: [],
+    send(message) {
+      mailer.messages.push(message);
+      return Promise.resolve("sent");
+    },
+  };
+  const app = createApp({ ...runtime, mailer });
   // Test-only consumers exercise the production middleware, without adding account routes.
   app.get("/test-identity", (req, res) =>
     res.json({
@@ -133,7 +141,7 @@ async function fixture(t, mode = "cloudflare-tunnel") {
       });
       outgoing.end(body);
     });
-  return { runtime, inspection, keys, account, send };
+  return { runtime, inspection, keys, account, mailer, send };
 }
 
 function signedCookie(id, key) {
@@ -142,6 +150,22 @@ function signedCookie(id, key) {
     .digest("base64")
     .replace(/=+$/, "");
   return `__Host-loop2.sid=${encodeURIComponent(`s:${id}.${signature}`)}`;
+}
+
+// A confirmation link recorded for the account, with the token it was made of.
+function issueLink(f, accountId) {
+  const token = randomBytes(32).toString("base64url");
+  const outcome = f.runtime.database.issueLink(
+    {
+      accountId,
+      purpose: "email-confirmation",
+      tokenDigest: createHash("sha256").update(token).digest("base64url"),
+      lifetimeMs: 86_400_000,
+    },
+    { windowMs: 3_600_000, total: 30, perAccount: 3 },
+  );
+  assert.equal(outcome, "issued", "precondition: a link is recorded");
+  return token;
 }
 
 function seed(f, id, expiresAt = Date.now() + 86_400_000) {
@@ -213,6 +237,78 @@ test(
       (await f.send("/api/account", { headers: proxyHeaders })).status,
       401,
     );
+  },
+);
+
+test(
+  "transport refuses both link routes before the session, the link or the mail service",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-request-transport
+    // Fault: a new account route outside the transport gate.
+    const f = await fixture(t);
+    const id = "link-transport-record";
+    seed(f, id);
+    const cookie = signedCookie(id, f.keys[0]);
+    const before = f.runtime.database.readSession(id);
+    const token = issueLink(f, f.account.id);
+    const state = () =>
+      f.inspection
+        .prepare(
+          "SELECT email_confirmed_at AS at, (SELECT count(*) FROM emailed_links) AS links FROM accounts WHERE id = ?",
+        )
+        .get(f.account.id);
+    const unchanged = state();
+    const routes = [
+      ["/api/email-confirmation", { token }],
+      ["/api/email-confirmation-message", {}],
+    ];
+    for (const headers of [
+      {},
+      { "X-Forwarded-Proto": "https" },
+      { ...proxyHeaders, "X-Forwarded-Proto": "http" },
+      { ...proxyHeaders, "X-Forwarded-Proto": "https,http" },
+      { ...proxyHeaders, "CF-Connecting-IP": ["192.0.2.7", "192.0.2.7"] },
+      { ...proxyHeaders, "CF-Connecting-IP": "192.0.2.7,192.0.2.8" },
+    ]) {
+      for (const [path, body] of routes) {
+        const response = await f.send(path, {
+          method: "POST",
+          headers: {
+            ...headers,
+            Origin: origin,
+            "Content-Type": "application/json",
+            Cookie: cookie,
+          },
+          body: JSON.stringify(body),
+        });
+        const name = `${path} ${JSON.stringify(headers)}`;
+        assert.equal(response.status, 403, name);
+        assert.equal(response.headers["cache-control"], "no-store", name);
+        assert.equal(response.headers["set-cookie"], undefined, name);
+        assert.deepEqual(f.runtime.database.readSession(id), before, name);
+        assert.deepEqual(state(), unchanged, name);
+        assert.equal(f.mailer.messages.length, 0, name);
+      }
+    }
+    // Valid transport reaches both routes.
+    const valid = {
+      ...proxyHeaders,
+      Origin: origin,
+      "Content-Type": "application/json",
+    };
+    const confirmed = await f.send("/api/email-confirmation", {
+      method: "POST",
+      headers: valid,
+      body: JSON.stringify({ token }),
+    });
+    assert.equal(confirmed.status, 204);
+    const resent = await f.send("/api/email-confirmation-message", {
+      method: "POST",
+      headers: valid,
+      body: "{}",
+    });
+    assert.equal(resent.status, 401, "no session reaches the session guard");
   },
 );
 
@@ -382,6 +478,19 @@ test(
     const renewal = signedCookie(live, f.keys[0]);
     const count = (table) =>
       f.inspection.prepare(`SELECT count(*) AS n FROM ${table}`).get().n;
+    // A link of another account, so that confirming it and asking for a
+    // message to the session's account would both succeed.
+    const linked = f.runtime.database.createAccount(
+      "linked@example.test",
+      f.runtime.dummyHash,
+    );
+    const token = issueLink(f, linked.id);
+    const confirmed = () =>
+      f.inspection
+        .prepare(
+          "SELECT count(*) AS n FROM accounts WHERE email_confirmed_at IS NOT NULL",
+        )
+        .get().n;
     const accounts = count("accounts");
     // Each body would succeed if its request were admitted.
     const routes = [
@@ -395,6 +504,8 @@ test(
       ],
       ["/api/session", { email: "guarded@example.test", password: secret }],
       ["/api/logout", {}],
+      ["/api/email-confirmation", { token }],
+      ["/api/email-confirmation-message", {}],
     ];
     const json = (value) => () => JSON.stringify(value);
     const variants = (fields) => [
@@ -487,6 +598,9 @@ test(
         );
         assert.equal(count("accounts"), accounts, `${name}: no account`);
         assert.equal(count("sessions"), 1, `${name}: no session`);
+        assert.equal(count("emailed_links"), 1, `${name}: no link recorded`);
+        assert.equal(confirmed(), 0, `${name}: no address confirmed`);
+        assert.equal(f.mailer.messages.length, 0, `${name}: nothing sent`);
         const current = f.runtime.database.readSession(live);
         assert.ok(
           current?.accountId === stored.accountId &&
@@ -502,6 +616,8 @@ test(
       "Content-Type": "application/json",
     };
     for (const [path, fields, expected] of [
+      ["/api/email-confirmation-message", {}, 200],
+      ["/api/email-confirmation", { token }, 204],
       ["/api/logout", {}, 204],
       ["/api/session", routes[1][1], 200],
       ["/api/accounts", routes[0][1], 201],
@@ -515,6 +631,11 @@ test(
     }
     assert.equal(f.runtime.database.readSession(live), null);
     assert.equal(count("accounts"), accounts + 1);
+    assert.equal(confirmed(), 1);
+    assert.deepEqual(
+      f.mailer.messages.slice(0, 1).map((message) => message.to),
+      ["synthetic@example.test"],
+    );
   },
 );
 

@@ -1,12 +1,19 @@
 import express from "express";
 import type { Request, Response, Router } from "express";
+import { composeConfirmationMessage } from "./account-mail.js";
+import type { SendOutcome } from "./account-mail.js";
 import {
   AccountPolicy,
+  accountMessageLimits,
   checkLogin,
   checkRegistration,
+  confirmationLinkLifetime,
+  createLinkToken,
+  isLinkToken,
+  linkTokenDigest,
 } from "./account-policy.js";
 import type { AccountRuntime } from "./configuration.js";
-import type { Account } from "./database.js";
+import type { Account, IssueOutcome } from "./database.js";
 import {
   hashPassword,
   PasswordCapacityError,
@@ -29,7 +36,12 @@ const paths = {
   session: "/api/session",
   account: "/api/account",
   logout: "/api/logout",
+  emailConfirmation: "/api/email-confirmation",
+  confirmationMessage: "/api/email-confirmation-message",
 };
+
+// The outcome of one confirmation message, as both sending routes report it.
+type ConfirmationMessage = "sent" | "limited" | "failed";
 
 function refuse(
   response: Response,
@@ -89,6 +101,21 @@ function accountBlocked(response: Response): void {
   refuse(response, 403, "account-blocked", "To konto jest zablokowane.");
 }
 
+// One answer for every token that confirms nothing, so it tells nothing of
+// why: malformed, unknown, used, expired, of another kind or of a blocked
+// account (D-144, D-148).
+function invalidLink(response: Response): void {
+  refuse(response, 400, "invalid-link", "Odnośnik jest nieważny albo wygasł.");
+}
+
+function accountBody(account: Account) {
+  return {
+    id: account.id,
+    email: account.email,
+    emailConfirmed: account.emailConfirmed,
+  };
+}
+
 const registrationProblems = {
   "invalid-email": "Podaj adres e-mail w postaci nazwa@domena.",
   "invalid-password": "Hasło musi mieć od 12 do 128 znaków.",
@@ -134,22 +161,87 @@ function establishSession(
   });
 }
 
+// Answers the refusal itself when the session cannot be stored.
 async function signIn(
   request: Request,
   response: Response,
   account: Account,
-  status: number,
-): Promise<void> {
-  if (!(await establishSession(request, account.id))) {
-    refuse(
-      response,
-      503,
-      "session-unavailable",
-      "Nie udało się zalogować. Spróbuj zalogować się ponownie.",
+): Promise<boolean> {
+  if (await establishSession(request, account.id)) return true;
+  refuse(
+    response,
+    503,
+    "session-unavailable",
+    "Nie udało się zalogować. Spróbuj zalogować się ponownie.",
+  );
+  return false;
+}
+
+// The mailer's answer, or "failed" once the deadline passes or if the mailer
+// breaks its promise never to reject; a late answer is ignored.
+function boundedSending(
+  sending: Promise<SendOutcome>,
+  deadline: number,
+): Promise<SendOutcome> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      console.error("Account mail missed its deadline");
+      resolve("failed");
+    }, deadline);
+    timer.unref();
+    sending.then(
+      (outcome) => {
+        clearTimeout(timer);
+        resolve(outcome === "sent" ? "sent" : "failed");
+      },
+      () => {
+        clearTimeout(timer);
+        console.error("Account mail failed: unknown");
+        resolve("failed");
+      },
     );
-    return;
+  });
+}
+
+// The send step of both sending routes. It records the link before the
+// message is handed on, so the message counts against D-105 whatever its
+// sending does (D-149), and recording stops the account's earlier links
+// (D-143). It never throws: "blocked" is a block committed after the route
+// read the account, which the route answers itself.
+async function sendConfirmation(
+  runtime: AccountRuntime,
+  policy: AccountPolicy,
+  account: Account,
+): Promise<ConfirmationMessage | "blocked"> {
+  const token = createLinkToken();
+  let issued: IssueOutcome;
+  try {
+    issued = runtime.database.issueLink(
+      {
+        accountId: account.id,
+        purpose: "email-confirmation",
+        tokenDigest: linkTokenDigest(token),
+        lifetimeMs: confirmationLinkLifetime,
+      },
+      accountMessageLimits,
+    );
+  } catch {
+    // A message whose link has no row could never confirm, so none is sent.
+    console.error("Account confirmation link could not be recorded");
+    return "failed";
   }
-  response.status(status).json({ id: account.id, email: account.email });
+  if (issued !== "issued") return issued;
+  const link = `${runtime.configuration.publicOrigin}/#confirm-email=${token}`;
+  let sending: Promise<SendOutcome>;
+  try {
+    sending = runtime.mailer.send(
+      composeConfirmationMessage(account.email, link),
+    );
+  } catch {
+    console.error("Account mail failed: unknown");
+    return "failed";
+  }
+  return boundedSending(sending, policy.sendingDeadline);
 }
 
 export function accountRoutes(
@@ -173,7 +265,13 @@ export function accountRoutes(
   if (!runtime) return router;
 
   router.post(
-    [paths.accounts, paths.session, paths.logout],
+    [
+      paths.accounts,
+      paths.session,
+      paths.logout,
+      paths.emailConfirmation,
+      paths.confirmationMessage,
+    ],
     ...mutationGuards(runtime.configuration.publicOrigin),
   );
 
@@ -183,7 +281,57 @@ export function accountRoutes(
       unauthenticated(response);
       return;
     }
-    response.json({ id: account.id, email: account.email });
+    response.json(accountBody(account));
+  });
+
+  // The link alone authorizes confirming its own account (D-109): no session
+  // is needed, and a session sent along neither helps nor is changed.
+  router.post(paths.emailConfirmation, (request, response) => {
+    const input = stringFields(request.body, ["token"] as const);
+    if (!input) {
+      invalidRequest(response);
+      return;
+    }
+    if (
+      !isLinkToken(input.token) ||
+      runtime.database.confirmEmailAddress(linkTokenDigest(input.token)) !==
+        "confirmed"
+    ) {
+      invalidLink(response);
+      return;
+    }
+    response.status(204).end();
+  });
+
+  // A session asks for a message only to its own account's address; the body
+  // is an empty object, so no field may name an address or an account.
+  router.post(paths.confirmationMessage, async (request, response) => {
+    if (Object.keys(request.body as object).length > 0) {
+      invalidRequest(response);
+      return;
+    }
+    const account = sessionAccount(runtime, request);
+    if (!account) {
+      unauthenticated(response);
+      return;
+    }
+    if (account.emailConfirmed) {
+      refuse(
+        response,
+        409,
+        "email-already-confirmed",
+        "Adres e-mail jest już potwierdzony.",
+      );
+      return;
+    }
+    const outcome = await sendConfirmation(runtime, policy, account);
+    // A block committed after the session was read: answered as every request
+    // of a blocked account's deleted session is (D-137).
+    if (outcome === "blocked") {
+      unauthenticated(response);
+      return;
+    }
+    response.json({ confirmationMessage: outcome });
   });
 
   router.post(paths.logout, (request, response) => {
@@ -264,7 +412,15 @@ export function accountRoutes(
       return;
     }
     ticket.created();
-    await signIn(request, response, account, 201);
+    if (!(await signIn(request, response, account))) return;
+    // The account exists and the player is signed in whatever the sending
+    // does, so every outcome is a 201; a block committed meanwhile sent
+    // nothing.
+    const outcome = await sendConfirmation(runtime, policy, account);
+    response.status(201).json({
+      ...accountBody(account),
+      confirmationMessage: outcome === "blocked" ? "failed" : outcome,
+    });
   });
 
   router.post(paths.session, async (request, response) => {
@@ -317,7 +473,8 @@ export function accountRoutes(
       return;
     }
     ticket.succeed();
-    await signIn(request, response, account, 200);
+    if (await signIn(request, response, account))
+      response.status(200).json(accountBody(account));
   });
 
   return router;

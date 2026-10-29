@@ -11,6 +11,7 @@ import session from "express-session";
 import { AccountPolicy } from "../dist/server/account-policy.js";
 import { createApp } from "../dist/server/app.js";
 import { openAccountRuntime } from "../dist/server/configuration.js";
+import { AccountDatabase } from "../dist/server/database.js";
 import { hashPassword } from "../dist/server/passwords.js";
 
 let server;
@@ -193,13 +194,15 @@ test("raw and encoded traversal cannot expose files outside dist/public", async 
   }
 });
 
-test("unconfigured accounts answer the four canonical routes as unavailable JSON", async () => {
+test("unconfigured accounts answer the canonical account routes as unavailable JSON", async () => {
   // D-111: wholly unconfigured non-production serves JSON 503 from known account routes.
   for (const [method, path] of [
     ["POST", "/api/accounts"],
     ["POST", "/api/session"],
     ["GET", "/api/account"],
     ["POST", "/api/logout"],
+    ["POST", "/api/email-confirmation"],
+    ["POST", "/api/email-confirmation-message"],
   ]) {
     const response = await send(path, { method });
     assert.equal(response.status, 503, `${method} ${path}`);
@@ -225,7 +228,33 @@ const logoutHeaders = {
 // D-101: 30 days from the last request.
 const sessionLifetime = 30 * 24 * 60 * 60 * 1000;
 
-async function accountFixture(t, { keyCapacity } = {}) {
+// D-151: routes are tested with a stand-in mailer. It records each message it
+// is handed and answers as the case chooses: "sent", "failed", "reject" (a
+// broken mailer whose promise rejects), "never" (no answer at all) or "hold"
+// (an answer the case gives later through `held`).
+function standInMailer() {
+  const mailer = {
+    outcome: "sent",
+    messages: [],
+    held: [],
+    send(message) {
+      mailer.messages.push(message);
+      switch (mailer.outcome) {
+        case "never":
+          return new Promise(() => {});
+        case "reject":
+          return Promise.reject(new Error("synthetic mailer fault"));
+        case "hold":
+          return new Promise((resolve) => mailer.held.push(resolve));
+        default:
+          return Promise.resolve(mailer.outcome);
+      }
+    },
+  };
+  return mailer;
+}
+
+async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
   const directory = await mkdtemp(join(tmpdir(), "loop2-account-http-"));
   let runtime, inspection, listening;
   let release = () => {};
@@ -271,8 +300,27 @@ async function accountFixture(t, { keyCapacity } = {}) {
   assert.ok(first && second, "precondition: two persisted accounts");
   // The limiter's clock stands still unless a case moves it.
   const clock = { time: Date.now() };
-  const policy = new AccountPolicy({ now: () => clock.time, keyCapacity });
-  const app = createApp(runtime, policy);
+  const policy = new AccountPolicy({
+    now: () => clock.time,
+    keyCapacity,
+    sendingDeadline,
+  });
+  const mailer = standInMailer();
+  // A case may act just before a route records a link, as another connection
+  // committing between the route's session check and its write would.
+  const hooks = { beforeIssue: null };
+  const database = new Proxy(runtime.database, {
+    get(target, name) {
+      const value = Reflect.get(target, name, target);
+      if (typeof value !== "function") return value;
+      if (name !== "issueLink") return value.bind(target);
+      return (...parameters) => {
+        hooks.beforeIssue?.();
+        return value.apply(target, parameters);
+      };
+    },
+  });
+  const app = createApp({ ...runtime, database, mailer }, policy);
   // A test-only ordinary read that holds its response until released, so a
   // logout can complete between its session load and its renewal.
   let reached;
@@ -294,6 +342,9 @@ async function accountFixture(t, { keyCapacity } = {}) {
   return {
     runtime,
     inspection,
+    path,
+    mailer,
+    hooks,
     keys,
     first,
     second,
@@ -397,6 +448,7 @@ test(
     assert.deepEqual(JSON.parse(response.body), {
       id: f.first.id,
       email: "first@example.test",
+      emailConfirmed: false,
     });
     assert.ok(
       storedRow(f, "lookup-first").data === before.data,
@@ -405,6 +457,7 @@ test(
     assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
       id: f.second.id,
       email: "second@example.test",
+      emailConfirmed: false,
     });
     assertRefusal(
       await readAccount(f, null, `/api/account?${foreign}`, {
@@ -537,10 +590,12 @@ test(
     assert.deepEqual(JSON.parse((await readAccount(f, two)).body), {
       id: f.first.id,
       email: "first@example.test",
+      emailConfirmed: false,
     });
     assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
       id: f.second.id,
       email: "second@example.test",
+      emailConfirmed: false,
     });
     assert.equal((await logout(f, one)).status, 401);
   },
@@ -742,6 +797,8 @@ test(
     assert.deepEqual(JSON.parse(created.body), {
       id: stored.id,
       email: "new.player@example.test",
+      emailConfirmed: false,
+      confirmationMessage: "sent",
     });
     assert.ok(
       /^\$argon2id\$v=19\$m=65536,p=1,t=3\$/.test(stored.hash),
@@ -757,10 +814,12 @@ test(
     assert.deepEqual(JSON.parse((await readAccount(f, session.cookie)).body), {
       id: stored.id,
       email: "new.player@example.test",
+      emailConfirmed: false,
     });
     assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
       id: f.second.id,
       email: "second@example.test",
+      emailConfirmed: false,
     });
     assertLoginRefused(
       await login(f, "new.player@example.test", password.trim()),
@@ -771,6 +830,7 @@ test(
     assert.deepEqual(JSON.parse(again.body), {
       id: stored.id,
       email: "new.player@example.test",
+      emailConfirmed: false,
     });
   },
 );
@@ -811,10 +871,11 @@ test(
     assert.deepEqual(JSON.parse((await readAccount(f, kept)).body), {
       id: f.second.id,
       email: "second@example.test",
+      emailConfirmed: false,
     });
     assert.deepEqual(
       JSON.parse((await readAccount(f, registered.cookie)).body),
-      { id: account, email: "fresh@example.test" },
+      { id: account, email: "fresh@example.test", emailConfirmed: false },
       "the registering browser stays signed in",
     );
   },
@@ -1415,6 +1476,7 @@ test(
     assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
       id: f.second.id,
       email: "second@example.test",
+      emailConfirmed: false,
     });
 
     // A session row of the blocked account stored past the write guard, as by
@@ -1534,5 +1596,598 @@ test(
     assert.equal(sessionCount(f), 0, "no session is stored");
     assertLoginRefused(await login(f, email, `${password}!`), "fifth failure");
     assertLimited(await login(f, email, password), "the four still counted");
+  },
+);
+
+// Email confirmation (task potwierdzenie-adresu). The routes, bodies and the
+// one refusal of a link come from spec Decision 4 and D-144; the link's form
+// from spec Decision 2; its 24 hours from D-143; the limits from D-105.
+const invalidLink = {
+  code: "invalid-link",
+  error: "Odnośnik jest nieważny albo wygasł.",
+};
+const day = 24 * 60 * minute;
+
+function confirm(f, fields, options = {}) {
+  return post(f, "/api/email-confirmation", fields, options);
+}
+
+function resend(f, cookie, fields = {}, options = {}) {
+  return post(f, "/api/email-confirmation-message", fields, {
+    ...options,
+    cookie,
+  });
+}
+
+// The configured public origin, `/#confirm-email=` and 43 base64url
+// characters, alone on a line of the message.
+function tokenOf(message) {
+  assert.ok(message, "a message was handed on");
+  const link =
+    /^https:\/\/game\.example\.test:8443\/#confirm-email=([A-Za-z0-9_-]{43})$/m.exec(
+      message.text,
+    );
+  assert.ok(link, "the message holds the link on a line of its own");
+  return link[1];
+}
+
+const lastToken = (f) => tokenOf(f.mailer.messages.at(-1));
+
+function linkCount(f, accountId) {
+  return accountId === undefined
+    ? f.inspection.prepare("SELECT count(*) AS n FROM emailed_links").get().n
+    : f.inspection
+        .prepare("SELECT count(*) AS n FROM emailed_links WHERE account_id = ?")
+        .get(accountId).n;
+}
+
+function confirmedAt(f, email) {
+  return f.inspection
+    .prepare("SELECT email_confirmed_at AS at FROM accounts WHERE email = ?")
+    .get(email).at;
+}
+
+function outcomeOf(response, status, label) {
+  assert.equal(response.status, status, label);
+  assert.match(response.headers["content-type"], /^application\/json/, label);
+  assert.equal(response.headers["cache-control"], "no-store", label);
+  return JSON.parse(response.body).confirmationMessage;
+}
+
+function assertInvalidLink(response, label) {
+  assert.equal(response.status, 400, label);
+  assert.match(response.headers["content-type"], /^application\/json/, label);
+  assert.equal(response.headers["cache-control"], "no-store", label);
+  assert.deepEqual(JSON.parse(response.body), invalidLink, label);
+}
+
+function assertInvalidRequest(response, label) {
+  assert.equal(response.status, 400, label);
+  assert.equal(JSON.parse(response.body).code, "invalid-request", label);
+}
+
+// Another connection to the same file, as the owner's block command opens.
+function asOwner(f, action) {
+  const owner = new AccountDatabase(f.path);
+  try {
+    return action(owner);
+  } finally {
+    owner.close();
+  }
+}
+
+// Messages recorded directly, as earlier sendings within the hour would be.
+function recordMessages(f, accountId, count) {
+  const insert = f.inspection.prepare(`
+    INSERT INTO emailed_links
+      (token_digest, account_id, purpose, created_at, expires_at, spent)
+    VALUES (?, ?, 'email-confirmation', ?, ?, 1)
+  `);
+  const now = Date.now();
+  for (let index = 0; index < count; index += 1)
+    insert.run(
+      randomBytes(32).toString("base64url"),
+      accountId,
+      now,
+      now + day,
+    );
+}
+
+test(
+  "registration answers 201 with its message's outcome in every case and the player stays signed in",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-message-limits
+    // Faults: waiting on a silent mailer without bound; a failed, broken or
+    // limited sending reported as sent or failing the registration; a message
+    // handed on whose link was never recorded.
+    const f = await accountFixture(t, { sendingDeadline: 300 });
+    const cases = [
+      ["sent", "sent", "sent@example.test"],
+      ["failed", "failed", "failed@example.test"],
+      ["reject", "failed", "broken@example.test"],
+      ["never", "failed", "silent@example.test"],
+    ];
+    for (const [index, [behaviour, expected, email]] of cases.entries()) {
+      f.mailer.outcome = behaviour;
+      const handed = f.mailer.messages.length;
+      const created = await register(f, email, {
+        address: `198.51.100.${100 + index}`,
+      });
+      assert.equal(outcomeOf(created, 201, behaviour), expected, behaviour);
+      const stored = storedAccount(f, email);
+      assert.deepEqual(
+        JSON.parse(created.body),
+        {
+          id: stored.id,
+          email,
+          emailConfirmed: false,
+          confirmationMessage: expected,
+        },
+        behaviour,
+      );
+      const session = issuedSession(created, behaviour);
+      assert.equal(
+        storedRow(f, session.id)?.account_id,
+        stored.id,
+        `${behaviour}: signed in`,
+      );
+      assert.equal(
+        f.mailer.messages.length,
+        handed + 1,
+        `${behaviour}: handed on`,
+      );
+      assert.equal(
+        f.mailer.messages.at(-1).to,
+        email,
+        `${behaviour}: own address`,
+      );
+      tokenOf(f.mailer.messages.at(-1));
+      const links = f.inspection
+        .prepare(
+          "SELECT purpose, created_at, expires_at FROM emailed_links WHERE account_id = ?",
+        )
+        .all(stored.id);
+      assert.equal(links.length, 1, `${behaviour}: its link is recorded`);
+      assert.equal(links[0].purpose, "email-confirmation");
+      assert.equal(links[0].expires_at - links[0].created_at, day, "24 hours");
+    }
+
+    f.mailer.outcome = "sent";
+    const handed = f.mailer.messages.length;
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_link BEFORE INSERT ON emailed_links
+      BEGIN SELECT RAISE(ABORT, 'synthetic link refusal'); END;
+    `);
+    const unrecorded = await register(f, "unrecorded@example.test", {
+      address: "198.51.100.110",
+    });
+    assert.equal(outcomeOf(unrecorded, 201, "issue throws"), "failed");
+    issuedSession(unrecorded, "issue throws");
+    assert.doesNotMatch(unrecorded.body, /synthetic|trigger|sqlite/i);
+    assert.equal(f.mailer.messages.length, handed, "no link, no message");
+    f.inspection.exec("DROP TRIGGER refuse_link");
+
+    // D-105: 30 messages within the hour in total.
+    recordMessages(f, f.second.id, 30 - linkCount(f));
+    const limited = await register(f, "limited@example.test", {
+      address: "198.51.100.111",
+    });
+    assert.equal(outcomeOf(limited, 201, "limited"), "limited");
+    issuedSession(limited, "limited");
+    assert.equal(f.mailer.messages.length, handed, "nothing handed on");
+    assert.equal(linkCount(f, storedAccount(f, "limited@example.test").id), 0);
+  },
+);
+
+test(
+  "a refused registration or one whose session is not stored hands no message on and records no link",
+  { timeout: 20000 },
+  async (t) => {
+    // Faults: sending before the registration is accepted or before its
+    // session is stored.
+    const f = await accountFixture(t);
+    assert.equal((await register(f, "no-at-sign")).status, 400);
+    assert.equal((await register(f, "FIRST@example.test")).status, 409);
+    await withFullGate(async () =>
+      assertLimited(await register(f, "gate@example.test"), "full gate"),
+    );
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_session BEFORE INSERT ON sessions
+      BEGIN SELECT RAISE(ABORT, 'synthetic session refusal'); END;
+    `);
+    const unsaved = await register(f, "unsaved@example.test");
+    assert.ok(unsaved.status >= 500, "an unstored session is a failure");
+    assert.ok(!("confirmationMessage" in JSON.parse(unsaved.body)));
+    f.inspection.exec("DROP TRIGGER refuse_session");
+    assert.equal(f.mailer.messages.length, 0, "nothing handed on");
+    assert.equal(linkCount(f), 0, "no link recorded");
+    const control = await register(f, "control@example.test");
+    assert.equal(outcomeOf(control, 201, "control"), "sent");
+    assert.equal(f.mailer.messages.length, 1);
+  },
+);
+
+test(
+  "only a valid session of an unblocked account asks for a message, and it goes only to that account's own address",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-session-authorization
+    // invariant: blocked-account-access
+    // Faults: a resend without the session guard; an address or account taken
+    // from the request; a blocked account's session still sending; a
+    // confirmed account sent another message.
+    const f = await accountFixture(t);
+    const own = seed(f, "resend-first", f.first);
+    for (const [label, cookie] of [
+      ["absent", null],
+      ["unknown", signedCookie("resend-unknown", f.keys[0])],
+      ["foreign key", signedCookie("resend-first", randomBytes(32))],
+    ]) {
+      const refused = await resend(f, cookie);
+      assertRefusal(refused, 401, label);
+      assert.equal(JSON.parse(refused.body).code, "unauthenticated", label);
+    }
+    for (const fields of [
+      { email: "second@example.test" },
+      { accountId: f.second.id },
+      { to: "elsewhere@example.test" },
+    ])
+      assertInvalidRequest(
+        await resend(f, own, fields),
+        JSON.stringify(fields),
+      );
+    assert.equal(f.mailer.messages.length, 0, "nothing handed on");
+    assert.equal(linkCount(f), 0, "no link recorded");
+
+    const query = `accountId=${f.second.id}&email=second%40example.test`;
+    const sent = await f.send(`/api/email-confirmation-message?${query}`, {
+      method: "POST",
+      headers: { ...logoutHeaders, Cookie: own, "X-Account-Id": f.second.id },
+      body: "{}",
+    });
+    assert.equal(outcomeOf(sent, 200, "own session"), "sent");
+    assert.deepEqual(JSON.parse(sent.body), { confirmationMessage: "sent" });
+    assert.deepEqual(
+      f.mailer.messages.map((message) => message.to),
+      ["first@example.test"],
+    );
+    assert.equal(linkCount(f, f.first.id), 1);
+    assert.equal(linkCount(f, f.second.id), 0);
+
+    const blocked = seed(f, "resend-blocked", f.second);
+    assert.equal(
+      f.runtime.database.blockAccount("second@example.test"),
+      "blocked",
+    );
+    assertRefusal(
+      await resend(f, blocked),
+      401,
+      "a session deleted by the block",
+    );
+    // A row of the blocked account past the write guard, as a session read
+    // just before the block committed.
+    f.inspection
+      .prepare("INSERT INTO sessions VALUES (?, ?, ?, ?)")
+      .run(
+        "resend-late",
+        f.second.id,
+        sessionData(f.second, Date.now() + day),
+        Date.now() + day,
+      );
+    const late = signedCookie("resend-late", f.keys[0]);
+    assertRefusal(await resend(f, late), 401, "a row past the guard");
+    f.inspection.prepare("DELETE FROM sessions WHERE id = 'resend-late'").run();
+    assert.equal(
+      f.runtime.database.unblockAccount("second@example.test"),
+      "unblocked",
+    );
+    assertRefusal(await resend(f, blocked), 401, "after unblocking");
+    assert.equal(f.mailer.messages.length, 1, "nothing handed on");
+    assert.equal(linkCount(f, f.second.id), 0);
+
+    assert.equal(
+      (await confirm(f, { token: lastToken(f) })).status,
+      204,
+      "precondition: the first account is confirmed",
+    );
+    const confirmed = await resend(f, own);
+    assert.equal(confirmed.status, 409);
+    assert.equal(confirmed.headers["cache-control"], "no-store");
+    const refusal = JSON.parse(confirmed.body);
+    assert.equal(refusal.code, "email-already-confirmed");
+    assert.equal(typeof refusal.error, "string");
+    assert.equal(f.mailer.messages.length, 1, "nothing handed on");
+    assert.equal(linkCount(f, f.first.id), 1, "no link recorded");
+  },
+);
+
+test(
+  "above three messages an hour for an account or thirty in total a resend answers limited and hands nothing on, until the hour has passed",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-message-limits
+    // Faults: a limit checked after the message is handed on; limits counted
+    // per route or only for sent messages; a limit that never ends.
+    const f = await accountFixture(t);
+    const own = seed(f, "limit-first", f.first);
+    f.mailer.outcome = "failed";
+    assert.equal(outcomeOf(await resend(f, own), 200, "first"), "failed");
+    f.mailer.outcome = "sent";
+    for (const label of ["second", "third"])
+      assert.equal(outcomeOf(await resend(f, own), 200, label), "sent");
+    assert.equal(outcomeOf(await resend(f, own), 200, "fourth"), "limited");
+    assert.equal(f.mailer.messages.length, 3, "the fourth is not handed on");
+    assert.equal(linkCount(f, f.first.id), 3, "the fourth is not recorded");
+
+    const other = seed(f, "limit-second", f.second);
+    const third = f.runtime.database.createAccount(
+      "third@example.test",
+      f.runtime.dummyHash,
+    );
+    const thirdCookie = seed(f, "limit-third", third);
+    recordMessages(f, f.first.id, 26);
+    assert.equal(outcomeOf(await resend(f, other), 200, "thirtieth"), "sent");
+    assert.equal(
+      outcomeOf(await resend(f, thirdCookie), 200, "thirty-first"),
+      "limited",
+    );
+    assert.equal(f.mailer.messages.length, 4);
+
+    f.inspection
+      .prepare("UPDATE emailed_links SET created_at = ?")
+      .run(Date.now() - 60 * minute - 1);
+    assert.equal(
+      outcomeOf(await resend(f, thirdCookie), 200, "after the hour"),
+      "sent",
+    );
+    assert.equal(
+      outcomeOf(await resend(f, own), 200, "the account's own, after the hour"),
+      "sent",
+    );
+    assert.equal(f.mailer.messages.length, 6);
+  },
+);
+
+// One spelling of the same 32 bytes that is not the canonical one: the last of
+// 43 characters carries two unused bits.
+function otherSpelling(token) {
+  const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const last = alphabet.indexOf(token.at(-1));
+  return token.slice(0, -1) + alphabet[last | 1];
+}
+
+test(
+  "a link confirms its own account once, with or without a session, and every malformed, unknown or used token gets the one refusal and changes nothing",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: email-confirmation-link
+    // Faults: a link confirming twice; refusals that tell a malformed, unknown
+    // and used token apart; a token taken in another spelling; confirming the
+    // session's account instead of the link's.
+    const f = await accountFixture(t);
+    const email = "confirm@example.test";
+    const { cookie } = issuedSession(await register(f, email), "registration");
+    const token = lastToken(f);
+    assert.equal(
+      Buffer.from(otherSpelling(token), "base64url").compare(
+        Buffer.from(token, "base64url"),
+      ),
+      0,
+      "precondition: the other spelling decodes to the same bytes",
+    );
+    for (const [label, value] of [
+      ["empty", ""],
+      ["one character short", token.slice(0, 42)],
+      ["one character long", `${token}A`],
+      ["padded", `${token}=`],
+      ["surrounded by spaces", ` ${token} `],
+      ["outside the alphabet", "+".repeat(43)],
+      ["another spelling of the same bytes", otherSpelling(token)],
+      ["the whole link", `${origin}/#confirm-email=${token}`],
+      ["unknown", randomBytes(32).toString("base64url")],
+    ])
+      assertInvalidLink(await confirm(f, { token: value }), label);
+    for (const fields of [
+      {},
+      { token: 7 },
+      { token: null },
+      { token: [token] },
+      { token, extra: true },
+      { token, email },
+    ])
+      assertInvalidRequest(await confirm(f, fields), JSON.stringify(fields));
+    assert.equal(confirmedAt(f, email), null, "nothing confirmed yet");
+
+    const other = seed(f, "confirm-other", f.second);
+    const confirmed = await confirm(f, { token }, { cookie: other });
+    assert.equal(confirmed.status, 204);
+    assert.equal(confirmed.body, "");
+    assert.equal(confirmed.headers["cache-control"], "no-store");
+    assert.equal(
+      JSON.parse((await readAccount(f, cookie)).body).emailConfirmed,
+      true,
+    );
+    assert.equal(
+      JSON.parse((await readAccount(f, other)).body).emailConfirmed,
+      false,
+      "the link's account is confirmed, not the session's",
+    );
+    const at = confirmedAt(f, email);
+    assert.ok(Number.isSafeInteger(at), "the confirmation is stored");
+    assertInvalidLink(await confirm(f, { token }), "used");
+    assert.equal(confirmedAt(f, email), at, "a refused link changes nothing");
+    const signedIn = await login(f, email, password);
+    assert.equal(JSON.parse(signedIn.body).emailConfirmed, true);
+  },
+);
+
+test(
+  "a later message's link stops earlier ones, also when its sending failed, and an expired or other-kind link confirms nothing",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: email-confirmation-link
+    // Faults: earlier links stopped only after a successful sending; a link
+    // checked without its expiry or its kind.
+    const f = await accountFixture(t);
+    const email = "supersede@example.test";
+    const { cookie } = issuedSession(await register(f, email), "registration");
+    const first = lastToken(f);
+    assert.equal(outcomeOf(await resend(f, cookie), 200, "second"), "sent");
+    const second = lastToken(f);
+    f.mailer.outcome = "failed";
+    assert.equal(outcomeOf(await resend(f, cookie), 200, "third"), "failed");
+    const third = lastToken(f);
+    assertInvalidLink(await confirm(f, { token: first }), "first");
+    assertInvalidLink(await confirm(f, { token: second }), "second");
+
+    const account = storedAccount(f, email).id;
+    const live = f.inspection
+      .prepare(
+        "SELECT token_digest AS digest, expires_at AS expiresAt FROM emailed_links WHERE account_id = ? AND spent = 0",
+      )
+      .all(account);
+    assert.equal(live.length, 1, "precondition: one link works");
+    const change = (sql, value) =>
+      f.inspection.prepare(sql).run(value, live[0].digest);
+    change(
+      "UPDATE emailed_links SET purpose = ? WHERE token_digest = ?",
+      "password-reset",
+    );
+    assertInvalidLink(await confirm(f, { token: third }), "another kind");
+    change(
+      "UPDATE emailed_links SET purpose = ? WHERE token_digest = ?",
+      "email-confirmation",
+    );
+    change(
+      "UPDATE emailed_links SET expires_at = ? WHERE token_digest = ?",
+      Date.now() - 1,
+    );
+    assertInvalidLink(await confirm(f, { token: third }), "expired");
+    change(
+      "UPDATE emailed_links SET expires_at = ? WHERE token_digest = ?",
+      live[0].expiresAt,
+    );
+    assert.equal(confirmedAt(f, email), null, "nothing confirmed yet");
+    assert.equal((await confirm(f, { token: third })).status, 204);
+    assert.ok(confirmedAt(f, email) !== null);
+  },
+);
+
+test(
+  "a block committed through another connection while the message is on its way stops its link for good, and a block just before recording sends nothing",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: unblock-restores-no-link
+    // invariant: email-confirmation-link
+    // Faults: a link recorded without reading the block in its transaction; a
+    // block that leaves a link on its way working; an unblock that revives it;
+    // a message handed on for an account already blocked.
+    const f = await accountFixture(t);
+    const email = "on-its-way@example.test";
+    f.mailer.outcome = "hold";
+    const settled = register(f, email).then(
+      (response) => response,
+      (error) => error,
+    );
+    try {
+      await waitFor(() => f.mailer.held.length === 1, "message handed on");
+      assert.equal(
+        asOwner(f, (owner) => owner.blockAccount(email)),
+        "blocked",
+      );
+    } finally {
+      for (const answer of f.mailer.held) answer("sent");
+    }
+    assert.equal(outcomeOf(await settled, 201, "registration"), "sent");
+    const token = lastToken(f);
+    assertInvalidLink(await confirm(f, { token }), "blocked");
+    assert.equal(
+      asOwner(f, (owner) => owner.unblockAccount(email)),
+      "unblocked",
+    );
+    assertInvalidLink(await confirm(f, { token }), "after unblocking");
+    assert.equal(confirmedAt(f, email), null);
+
+    f.mailer.outcome = "sent";
+    const handed = f.mailer.messages.length;
+    let target = "blocked-before@example.test";
+    const blocks = [];
+    f.hooks.beforeIssue = () =>
+      blocks.push(asOwner(f, (owner) => owner.blockAccount(target)));
+    const refused = await register(f, target, { address: "198.51.100.120" });
+    assert.equal(outcomeOf(refused, 201, "registration"), "failed");
+    assert.equal(linkCount(f, storedAccount(f, target).id), 0);
+    target = "first@example.test";
+    const resent = await resend(f, seed(f, "blocked-before", f.first));
+    assertRefusal(resent, 401, "resend");
+    assert.equal(JSON.parse(resent.body).code, "unauthenticated");
+    f.hooks.beforeIssue = null;
+    assert.deepEqual(
+      blocks,
+      ["blocked", "blocked"],
+      "precondition: both blocked",
+    );
+    assert.equal(linkCount(f, f.first.id), 0);
+    assert.equal(f.mailer.messages.length, handed, "nothing handed on");
+  },
+);
+
+test(
+  "no response and no line of the server's log holds a link's token",
+  { timeout: 20000 },
+  async (t) => {
+    // Faults: a token echoed in an answer; the link, the message or an error
+    // holding the token written to the log.
+    const f = await accountFixture(t, { sendingDeadline: 200 });
+    const logged = [];
+    const methods = ["log", "info", "warn", "error", "debug"];
+    const originals = methods.map((name) => console[name]);
+    t.after(() =>
+      methods.forEach((name, index) => {
+        console[name] = originals[index];
+      }),
+    );
+    for (const name of methods)
+      console[name] = (...values) => logged.push(values.map(String).join(" "));
+    const responses = [];
+    const keep = async (pending) => {
+      const response = await pending;
+      responses.push(response);
+      return response;
+    };
+    const { cookie } = issuedSession(
+      await keep(register(f, "secret@example.test")),
+      "registration",
+    );
+    for (const outcome of ["never", "reject", "failed"]) {
+      f.mailer.outcome = outcome;
+      await keep(resend(f, cookie));
+    }
+    f.mailer.outcome = "sent";
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_link BEFORE INSERT ON emailed_links
+      BEGIN SELECT RAISE(ABORT, 'synthetic link refusal'); END;
+    `);
+    await keep(register(f, "unrecorded@example.test"));
+    f.inspection.exec("DROP TRIGGER refuse_link");
+    const tokens = f.mailer.messages.map(tokenOf);
+    for (const token of [...tokens, tokens[0]])
+      await keep(confirm(f, { token }));
+    assert.ok(logged.length > 0, "precondition: the failures were logged");
+    for (const token of tokens) {
+      for (const response of responses)
+        assert.ok(
+          !response.body.includes(token) &&
+            !JSON.stringify(response.headers).includes(token),
+          "no answer holds a token",
+        );
+      assert.ok(
+        !logged.some((line) => line.includes(token)),
+        "no log line holds a token",
+      );
+    }
+    assert.ok(!logged.some((line) => line.includes("confirm-email")));
   },
 );
