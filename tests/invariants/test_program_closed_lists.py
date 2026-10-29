@@ -4,7 +4,10 @@ action of the character whose kind the data files of `src/browser/sim/data/` do 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram` and
-`send`.
+`send`. The program the check reads is the one `setProgram` edits (`heldProgram` in
+`HELD_PROGRAMS_JS` of `program_fixture.py`): the copy of the map run during a map run, in the
+headquarters the program of the player's list the team goes with (D-152; the copy is the program
+the map run carries out).
 The new game of each game with a map run is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
 program stay what the check drives.
@@ -21,7 +24,8 @@ Reading of the sentence:
   no string is no listed kind either;
 - refuses: `setProgram`, the simulation's function that replaces the program, does not take the
   program in — it throws, or the state it returns holds the program the state had before,
-  unchanged (written out below as BASE);
+  unchanged (written out below as BASE); the program the state holds is the copy of the map run
+  during a map run, and in the headquarters the program of the list the team goes with;
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
   with valid fields, including all nine condition kinds on groups, is taken in as offered (the control
   that shows refusal is no blanket refusal).
@@ -49,7 +53,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import KNOWING_GAME_JS, program_from_rules, program_rules
+from program_fixture import HELD_PROGRAMS_JS, KNOWING_GAME_JS, program_from_rules, program_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 BUILT_DATA = "dist/public/sim/data"
@@ -112,7 +116,7 @@ UNLISTED_ACTION_KINDS = ("collect", "gatherAll", "Gather", "rest", "walkToTile",
 # Fields a listed kind takes, given to an unlisted one in the second offer of each kind.
 PLAUSIBLE_FIELDS = {"resource": "stick", "value": 3}
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -129,7 +133,7 @@ for (const { withRun, program } of offers) {
   if (withRun) state = game.send(state, sent, realMs).state;
   try {
     const after = game.setProgram(state, program).state;
-    results.push({ threw: false, program: JSON.parse(JSON.stringify(after.program)) });
+    results.push({ threw: false, program: JSON.parse(JSON.stringify(heldProgram(after))) });
   } catch (error) {
     results.push({ threw: true, error: String(error && error.message || error) });
   }

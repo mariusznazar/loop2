@@ -10,8 +10,12 @@ modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the
 program stay what the check drives.
 
 Reading of the sentence:
-- a program the simulation holds: the program in the game state (`state.program`) after
-  `setProgram` took one in, and as it stands after a send and after 30 game minutes of a map run;
+- a program the simulation holds: every program of the game state (`heldPrograms` in
+  `HELD_PROGRAMS_JS` of `program_fixture.py`) — the programs of the player's list and, during a map
+  run, the copy the map run carries out (D-152) — after `setProgram` took one in, and as they stand
+  after a send and after 30 game minutes of a map run; the program `setProgram` edits (`heldProgram`:
+  the copy during a map run, in the headquarters the list's program the team goes with) must hold the
+  offer as offered;
 - a thing of the world: a tile, or a resource lying on one; its kind: the identifier of a resource
   as the data files give it — `stick`, `berry`, `moss`, `fiber`, written out below;
 - a number or a position of its own: an index, a coordinate or a number given to one tile or one
@@ -60,7 +64,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import KNOWING_GAME_JS, program_from_rules, program_rules
+from program_fixture import HELD_PROGRAMS_JS, KNOWING_GAME_JS, program_from_rules, program_rules
 
 GAME_MODULE = "dist/public/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
@@ -118,7 +122,7 @@ NAMING = (
     ("a program with a position", {**program_from_rules([rule(ALWAYS, walk("stick"))]), "target": {"q": 3, "r": 1}}),
 )
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -139,11 +143,12 @@ for (const program of offers) {
     } catch (error) {
       threw = String(error && error.message || error);
     }
-    held.push(copy(state.program));
+    const record = () => held.push({ program: copy(heldProgram(state)), all: copy(heldPrograms(state)) });
+    record();
     if (!withRun) state = game.send(state, sent, realMs).state;
-    held.push(copy(state.program));
+    record();
     state = game.advanceMinutes(state, advance).state;
-    held.push(copy(state.program));
+    record();
     results.push({ withRun, threw, held });
   }
 }
@@ -240,8 +245,9 @@ def findings(label, pair):
         where = "during a map run" if result["withRun"] else "in the headquarters"
         for moment, held in zip(("taken in", "after a send", f"after {ADVANCE} minutes"),
                                 result["held"]):
-            for item in naming(held):
-                found.append(f"{label} ({where}), {moment}: {item}")
+            for index, program in enumerate(held["all"]):
+                for item in naming(program):
+                    found.append(f"{label} ({where}), {moment}, program {index}: {item}")
     return found
 
 
@@ -253,7 +259,7 @@ class ProgramWorldReference(unittest.TestCase):
         for program, pair in zip(LEGIT, pairs[:len(LEGIT)]):
             for result in pair:
                 self.assertIsNone(result["threw"], f"a valid program was refused: {program}")
-                self.assertEqual(result["held"][0], program,
+                self.assertEqual(result["held"][0]["program"], program,
                                  "a valid program is not held as offered, so the offers do not "
                                  "reach the program the simulation holds")
         found = []
