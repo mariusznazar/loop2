@@ -22,6 +22,7 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 | session-store | `guidelines/coding-session-store.md` | Przed dodaniem lub zmianą magazynu sesji biblioteki. |
 | account-policy | `guidelines/coding-account-policy.md` | Przed dodaniem lub zmianą pliku sprawdzania danych logowania i rejestracji albo dopuszczania prób. |
 | browser-api-client | `guidelines/coding-browser-api-client.md` | Przed dodaniem lub zmianą pliku klienta API serwera w przeglądarce. |
+| mail-sending | `guidelines/coding-mail-sending.md` | Przed dodaniem lub zmianą pliku wysyłki poczty w account-server. |
 
 ## Rules
 
@@ -223,7 +224,8 @@ Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce
 budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone. CSS nie ma własnego wzorca ani własnych wytycznych rodzaju; reguły
 arkuszy stylów, których pilnuje test, stoją w
 `guidelines/styleguide-browser-view.md`.
-Wzorce zapisu gry i poczty powstaną przy pierwszych implementacjach.
+Wzorzec zapisu gry powstanie przy pierwszej implementacji; wzorzec poczty
+wskazuje rodzaj `mail-sending` w tabeli rodzajów.
 Przed wyborem wzorca odłożonego istniejącego rodzaju porównuje się jego pliki.
 Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Dla przyjętych linterów
 obowiązują niezmienniki pełnej zgodności kodu, bez przejściowej kontroli
