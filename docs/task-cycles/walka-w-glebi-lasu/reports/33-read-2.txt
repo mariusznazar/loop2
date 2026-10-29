@@ -1,0 +1,19 @@
+Reading cache: tracked foundation excerpts omitted under WAY-148.
+Source commit: 99b2a271675fc32a8c136f563bad70c300444e1a
+Source files: foundations/decisions.md, foundations/invariants.md
+Original cache SHA256: e59d7c57e7c7b5e863ad183f8cb9bea562239e92af765ae113e8f89e73cabed2
+
+### D-29 — Which rules check TypeScript and JavaScript?
+### D-30 — Which Python rules block a change?
+### D-31 — Which Bash rules block a change?
+### D-32 — How is web code formatted?
+### D-34 — Which file is the exemplar for content data?
+### D-35 — Which file is the exemplar for simulation modules?
+### D-50 — Whose is the chest?
+### D-51 — What team does a new game start with?
+### D-52 — How is a character named?
+### D-54 — In what order do the characters of the team stand?
+### D-55 — How many manual map runs go on at a time?
+### D-56 — How does the game state tell one character from another?
+### D-57 — In what unit does a character's warmth stand?
+### D-58 — What cools a character's body?

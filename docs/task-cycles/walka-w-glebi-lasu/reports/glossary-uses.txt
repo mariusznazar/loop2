@@ -1,0 +1,221 @@
+foundations/decisions.md:414:effect from the next free game minute, once the character's action in progress has ended; the
+foundations/decisions.md:484:A character acts only by its program: in each free game minute it carries out the first program
+foundations/decisions.md:1325:A game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither — and with it the streak of the map run, as D-136 counts it; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and then, where the map run meets its game map's solving condition, the map run ends in a completion in place of the program's pick, and otherwise the program picks a program rule from what that minute has made. Something discovered in a game minute is discovered where that order brings it — a chill with the character's body, an action of the character with its effect — so the rest of the minute takes effect and the program's pick at its end draws on the Understanding and the program as the discovery has left them, a program rule written at the discovery included; in the game minute of death no effect of an ending action takes hold, and so it brings no discovery. A map run in which something is discovered stops once the whole game minute of the discovery has taken effect.
+foundations/decisions.md:1624:    combat turn in which a rule starts a combat action adding one firing
+foundations/decisions.md:1630:the chosen action does not change how often it was chosen. A combat turn has the same meaning
+foundations/decisions.md:2013:The condition „Zawsze” is in the Understanding from the start of a new game; every other action,
+foundations/decisions.md:2014:item and condition enters the Understanding only when discovered in play, each by the need, action,
+foundations/decisions.md:2037:The Understanding belongs to the player and is one for all characters, and what any character
+foundations/decisions.md:2039:Understanding through its archetype's predispositions, and is never saved. That one computation is
+foundations/decisions.md:2047:    repertoire; a character's death, „Restart” and „Zakończ” leaving the Understanding as it was
+foundations/decisions.md:2057:*Rejected:* the Understanding saved with each character; a filter in the editor alone — a program
+foundations/decisions.md:2085:### D-121 — What brings each action, item and condition of Las into the Understanding?
+foundations/decisions.md:2088:Understanding the actions „Eksploruj” and „Wędruj” and the condition „Temperatura poniżej”, and the
+foundations/decisions.md:2102:    and „Temperatura poniżej” into the Understanding; the program editor offering „Idź” and a
+foundations/decisions.md:2110:meets them. Accepted with it: moss and fibre enter the Understanding although nothing uses them
+foundations/decisions.md:2143:Understanding as any discovery does. Accepted with it: a stop at a discovery cannot be told apart in
+foundations/decisions.md:2153:When the first chill brings „Eksploruj” into the Understanding, the game writes the program rule
+foundations/decisions.md:2176:„Dodaj regułę” is disabled while the Understanding holds no action, and once it holds one, it adds
+foundations/decisions.md:2185:  - violates: „Dodaj regułę” adding a program rule whose action the Understanding does not hold
+foundations/decisions.md:2188:*Rationale:* a program rule needs an action, and before the first chill the Understanding holds
+foundations/decisions.md:2193:program editor would offer an action the Understanding does not hold.
+foundations/decisions.md:2198:game state holds, whatever the Understanding holds: the body row shows satiety before the condition
+foundations/decisions.md:2210:*Rationale:* the Understanding decides what a program can name, while the body row, the backpack
+foundations/decisions.md:2270:the first chill or the first gathered piece of an item, and a condition the Understanding holds from
+foundations/glossary.md:73:## free game minute
+foundations/glossary.md:75:A free game minute is a game minute of a map run at which the map run starts, or at which the
+foundations/glossary.md:118:## Understanding
+foundations/glossary.md:120:The Understanding is the record of the game's actions, items and conditions that the player has
+foundations/glossary.md:127:A character's repertoire is the subset of the Understanding that the character can use in a program.
+foundations/invariants.md:250:In each free game minute of a map run, the character starts to carry out the first program rule
+src/browser/sim/data/campfire.ts:6:   * The identifier under which the Understanding records the campfire as a discoverable thing.
+src/browser/sim/game.ts:9:} from "./understanding.js";
+src/browser/sim/game.ts:37:  Understanding,
+src/browser/sim/game.ts:302: * archetype over the game's Understanding. A rule outside it is passed over and stays in
+src/browser/sim/game.ts:312:    repertoireOf(state.understanding, archetype.predispositions),
+src/browser/sim/game.ts:360:    understanding: newUnderstanding(),
+src/browser/sim/game.ts:564: * between the minute's last effect and the pick: what the minute revealed enters the Understanding,
+src/browser/sim/game.ts:566: * minute is made from the program and the Understanding as they then stand. A span that reaches
+src/browser/sim/game.ts:592:  let revealed: Understanding | null = null;
+src/browser/sim/game.ts:598:      current.understanding,
+src/browser/sim/game.ts:607:        understanding: found.understanding,
+src/browser/sim/run.ts:37:  Understanding,
+src/browser/sim/run.ts:56:  | ({ kind: "discovered"; minute: number } & Understanding);
+src/browser/sim/types.ts:59:/** What the Understanding records of the campfire: it is discoverable, yet no item of the backpack. */
+src/browser/sim/types.ts:67:export type Understanding = {
+src/browser/sim/types.ts:195:  understanding: Understanding;
+src/browser/sim/types.ts:220:  discovery: Understanding | null;
+src/browser/sim/understanding.ts:20:  Understanding,
+src/browser/sim/understanding.ts:23:/** The subset of an Understanding that a character can use in a program; computed, never saved. */
+src/browser/sim/understanding.ts:24:export type Repertoire = Understanding;
+src/browser/sim/understanding.ts:26:/** The Understanding of a new game: the condition "Zawsze" alone. */
+src/browser/sim/understanding.ts:27:export function newUnderstanding(): Understanding {
+src/browser/sim/understanding.ts:37: * The repertoire of an Understanding through a list of predispositions. An action of the
+src/browser/sim/understanding.ts:38: * Understanding is in it where a skill among the predispositions grows it, or where no skill grows
+src/browser/sim/understanding.ts:42:  understanding: Understanding,
+src/browser/sim/understanding.ts:50:    actions: understanding.actions.filter(
+src/browser/sim/understanding.ts:53:    conditions: [...understanding.conditions],
+src/browser/sim/understanding.ts:54:    items: [...understanding.items],
+src/browser/sim/understanding.ts:131:  return repertoireOf(state.understanding, archetype.predispositions);
+src/browser/sim/understanding.ts:207:/** What a game minute revealed, and the Understanding with it. */
+src/browser/sim/understanding.ts:209:  /** The Understanding after the minute. */
+src/browser/sim/understanding.ts:210:  understanding: Understanding;
+src/browser/sim/understanding.ts:211:  /** What is new to the Understanding, each list in the order of its data. */
+src/browser/sim/understanding.ts:212:  revealed: Understanding;
+src/browser/sim/understanding.ts:217:/** What the revealing events `happening` reveal that the Understanding does not hold yet. */
+src/browser/sim/understanding.ts:219:  understanding: Understanding,
+src/browser/sim/understanding.ts:221:): Understanding {
+src/browser/sim/understanding.ts:225:  const items: Understanding["items"] = (Object.keys(ITEMS) as ItemId[]).filter(
+src/browser/sim/understanding.ts:227:      !understanding.items.includes(item) && revealing(ITEMS[item].revealedBy),
+src/browser/sim/understanding.ts:230:    !understanding.items.includes(CAMPFIRE.id) &&
+src/browser/sim/understanding.ts:237:        !understanding.actions.includes(kind) &&
+src/browser/sim/understanding.ts:242:        !understanding.conditions.includes(kind) &&
+src/browser/sim/understanding.ts:249:function isEmpty(revealed: Understanding): boolean {
+src/browser/sim/understanding.ts:260: * its events, read against the revealing events of the data. What the Understanding already holds
+src/browser/sim/understanding.ts:264:  understanding: Understanding,
+src/browser/sim/understanding.ts:270:  const revealed = newlyRevealed(understanding, happening);
+src/browser/sim/understanding.ts:273:    understanding: {
+src/browser/sim/understanding.ts:274:      actions: [...understanding.actions, ...revealed.actions],
+src/browser/sim/understanding.ts:275:      conditions: [...understanding.conditions, ...revealed.conditions],
+src/browser/sim/understanding.ts:276:      items: [...understanding.items, ...revealed.items],
+src/browser/sim/understanding.ts:281:        understanding,
+src/browser/view/game-view.ts:67:      // Content updates only on a program/map change or when the Understanding changes (what the
+src/browser/view/game-view.ts:73:        state.understanding !== previous.understanding
+src/browser/view/program-editor.ts:11:import { editorRepertoire } from "../sim/understanding.js";
+src/browser/view/program-editor.ts:547:   * Understanding changes.
+src/browser/view/status-row.ts:14:  Understanding,
+src/browser/view/status-row.ts:66:function discoveredItemName(id: Understanding["items"][number]): string {
+src/browser/view/status-row.ts:72:function discoveredConditionText(kind: Understanding["conditions"][number]) {
+src/browser/view/status-row.ts:89:export function discoveryText(discovery: Understanding): string {
+tests/invariants/program_fixture.py:24:# a new game whose Understanding holds everything the built data modules next to `game.js` list:
+tests/invariants/program_fixture.py:38:    understanding: {
+tests/invariants/test_action_in_progress.py:10:The `newGame` step starts from a game whose Understanding holds everything the built data
+tests/invariants/test_character_team.py:8:The `newGame` step starts from a game whose Understanding holds everything the built data
+tests/invariants/test_exploring_reveal.py:9:The `newGame` step starts from a game whose Understanding holds everything the built data
+tests/invariants/test_map_run_layout.py:10:The `newGame` step starts from a game whose Understanding holds everything the built data
+tests/invariants/test_map_run_repeatability.py:10:The `newGame` step starts from a game whose Understanding holds everything the built data
+tests/invariants/test_map_run_tiles.py:10:The new game of each start has an Understanding that holds everything the built data
+tests/invariants/test_minute_span_split.py:11:The new game of each sent character is one whose Understanding holds everything the built data
+tests/invariants/test_move_reach.py:9:The `newGame` step starts from a game whose Understanding holds everything the built data
+tests/invariants/test_player_map_run_pace.py:16:Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
+tests/invariants/test_program_closed_lists.py:8:The new game of each game with a map run is one whose Understanding holds everything the built data
+tests/invariants/test_program_rule_pick.py:1:"""Invariant program-rule-pick: In each free game minute of a map run, the character starts to
+tests/invariants/test_program_rule_pick.py:10:The new game of each sent character is one whose Understanding holds everything the built data
+tests/invariants/test_program_rule_pick.py:13:Understanding the actions it names.
+tests/invariants/test_program_rule_pick.py:16:- a free game minute: the minute at which the activity before it ends, and minute 0 of the map
+tests/invariants/test_program_rule_pick.py:50:Rule outside the repertoire: in a game whose Understanding lacks the action "explore", the program
+tests/invariants/test_program_rule_pick.py:58:Understanding lacks the item "stick", the program "STOCK -> wander, always -> explore" starts rule 2
+tests/invariants/test_program_rule_pick.py:60:Understanding lacks the condition "itemBelow", a program whose first group stands under STOCK and
+tests/invariants/test_program_rule_pick.py:152:    state = { ...state, understanding: {
+tests/invariants/test_program_rule_pick.py:153:      actions: keep(state.understanding.actions, 'actions'),
+tests/invariants/test_program_rule_pick.py:154:      conditions: keep(state.understanding.conditions, 'conditions'),
+tests/invariants/test_program_rule_pick.py:155:      items: keep(state.understanding.items, 'items') } };
+tests/invariants/test_program_world_reference.py:8:The new game of each game with a map run is one whose Understanding holds everything the built data
+tests/invariants/test_restart_seed.py:8:The new game of each sent character is one whose Understanding holds everything the built data
+tests/invariants/test_simulation_isolation.py:36:  a pause, a restart, an end and a second send. The game it starts from is one whose Understanding
+tests/invariants/test_simulation_randomness.py:22:  Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
+tests/invariants/test_streak_program_change.py:9:whose Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
+tests/invariants/test_terrain_drawing_numbers.py:12:`advanceMinutes`), starting from a game whose Understanding holds everything the built data
+tests/invariants/test_walk_feasibility.py:10:The new game of each sent character is one whose Understanding holds everything the built data
+tests/invariants/test_walk_feasibility.py:15:- can carry out: at a free game minute (one at which the map run starts or at which the
+tests/invariants/test_walk_feasibility.py:214:            continue  # no free game minute
+tests/invariants/test_walk_target.py:10:The new game of each sent character is one whose Understanding holds everything the built data
+tests/sim/acceptance.test.mjs:7:import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/acceptance.test.mjs:86:  const { understanding } = newKnowingGame();
+tests/sim/acceptance.test.mjs:88:    Object.keys(ACTIONS).filter((a) => !understanding.actions.includes(a)),
+tests/sim/acceptance.test.mjs:93:      (c) => !understanding.conditions.includes(c),
+tests/sim/acceptance.test.mjs:97:  assert.deepEqual(understanding, fullUnderstanding());
+tests/sim/body.test.mjs:6:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/completion.test.mjs:21:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/completion.test.mjs:157:    understanding: { actions: [], conditions: ["always"], items: [] },
+tests/sim/completion.test.mjs:178:      assert.ok(result.state.understanding[kind].includes(entry), entry);
+tests/sim/discovery.test.mjs:1:// Discovery in the game minute of a map run: what a minute reveals, the Understanding growing and
+tests/sim/discovery.test.mjs:34:// The Understanding after the first chill, from the first row of the table of To do 2.
+tests/sim/discovery.test.mjs:59:// A sent game whose Understanding is `understanding`, its map run changed by `patch(run)`.
+tests/sim/discovery.test.mjs:60:function prepared(understanding, patch) {
+tests/sim/discovery.test.mjs:61:  const state = { ...sentNew(), understanding };
+tests/sim/discovery.test.mjs:109:  assert.deepEqual(before.state.understanding, NOTHING);
+tests/sim/discovery.test.mjs:131:  assert.deepEqual(state.understanding, CHILLED);
+tests/sim/discovery.test.mjs:237:  assert.deepEqual(later.state.understanding, CHILLED);
+tests/sim/discovery.test.mjs:242:  const knowing = { ...state, understanding: CHILLED };
+tests/sim/discovery.test.mjs:275:  assert.deepEqual(explored.state.understanding, {
+tests/sim/discovery.test.mjs:283:  const understanding = {
+tests/sim/discovery.test.mjs:289:    prepared(understanding, (run) => ({
+tests/sim/discovery.test.mjs:303:  assert.deepEqual(added.state.understanding.items, ["stick", "moss", "fiber"]);
+tests/sim/discovery.test.mjs:306:  assert.deepEqual(known.state.understanding, understanding);
+tests/sim/discovery.test.mjs:388:    assert.deepEqual(result.state.understanding, {
+tests/sim/discovery.test.mjs:410:  assert.deepEqual(result.state.understanding, NOTHING);
+tests/sim/discovery.test.mjs:419:  assert.deepEqual(result.state.understanding, NOTHING);
+tests/sim/discovery.test.mjs:445:  assert.deepEqual(result.state.understanding, known);
+tests/sim/discovery.test.mjs:466:  assert.deepEqual(dead.state.understanding, CHILLED);
+tests/sim/discovery.test.mjs:476:  assert.deepEqual(dead.state.understanding, CHILLED);
+tests/sim/discovery.test.mjs:479:test("the Understanding stands after death, Restart and Zakończ, and stands for the next character sent", () => {
+tests/sim/discovery.test.mjs:497:  assert.deepEqual(dead.understanding, learned);
+tests/sim/discovery.test.mjs:500:  assert.deepEqual(restarted.understanding, learned);
+tests/sim/discovery.test.mjs:507:  assert.deepEqual(ended.understanding, learned);
+tests/sim/discovery.test.mjs:513:  assert.deepEqual(next.understanding, learned);
+tests/sim/discovery.test.mjs:541:test("what the chill reveals is exactly its row, and the condition Zawsze, which nothing reveals, is not added to an Understanding that lacks it", () => {
+tests/sim/discovery.test.mjs:546:  assert.deepEqual(result.state.understanding, {
+tests/sim/flow.test.mjs:19:import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/program-counts.test.mjs:15:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/program.test.mjs:20:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/purity.test.mjs:16:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/repertoire.test.mjs:1:// The Understanding of the game and the repertoire computed from it. Expectations come from the
+tests/sim/repertoire.test.mjs:25:} from "../../dist/public/sim/understanding.js";
+tests/sim/repertoire.test.mjs:75:test("a new game's Understanding holds the condition Zawsze alone", () => {
+tests/sim/repertoire.test.mjs:81:  assert.deepEqual(newGame().understanding, {
+tests/sim/repertoire.test.mjs:94:test("the mage, with all five skills, has the Understanding as its repertoire", () => {
+tests/sim/repertoire.test.mjs:98:test("the repertoire of the mage keeps the order of the Understanding", () => {
+tests/sim/repertoire.test.mjs:99:  const understanding = {
+tests/sim/repertoire.test.mjs:104:  assert.deepEqual(repertoireOf(understanding, ALL_SKILLS), understanding);
+tests/sim/repertoire.test.mjs:127:test("an action is in the repertoire only where the Understanding holds it", () => {
+tests/sim/repertoire.test.mjs:128:  const understanding = {
+tests/sim/repertoire.test.mjs:133:  assert.deepEqual(repertoireOf(understanding, ALL_SKILLS).actions, [
+tests/sim/repertoire.test.mjs:137:  assert.deepEqual(repertoireOf(understanding, ["exploration"]).actions, [
+tests/sim/repertoire.test.mjs:142:test("computing a repertoire changes neither argument and shares no array with the Understanding", () => {
+tests/sim/repertoire.test.mjs:143:  const understanding = {
+tests/sim/repertoire.test.mjs:149:  const repertoire = repertoireOf(understanding, predispositions);
+tests/sim/repertoire.test.mjs:150:  assert.deepEqual(understanding, {
+tests/sim/repertoire.test.mjs:158:  assert.deepEqual(understanding.conditions, ["always"]);
+tests/sim/repertoire.test.mjs:159:  assert.deepEqual(understanding.items, ["stick"]);
+tests/sim/repertoire.test.mjs:230:test("targets follow the items of the Understanding: the same rule moves in as its item enters", () => {
+tests/sim/repertoire.test.mjs:334:test("the editor shows the repertoire of the mage through the Understanding, in the headquarters and in a map run", () => {
+tests/sim/repertoire.test.mjs:335:  const understanding = {
+tests/sim/repertoire.test.mjs:340:  const hq = { ...createCharacter(newGame(), "Ala").state, understanding };
+tests/sim/repertoire.test.mjs:341:  assert.deepEqual(editorRepertoire(hq), understanding);
+tests/sim/repertoire.test.mjs:343:  const running = { ...sent(), understanding };
+tests/sim/repertoire.test.mjs:344:  assert.deepEqual(editorRepertoire(running), understanding);
+tests/sim/repertoire.test.mjs:352:    understanding: FULL,
+tests/sim/repertoire.test.mjs:357:test("creating, sending, restarting, pausing, changing the program and ending leave the Understanding as it is", () => {
+tests/sim/repertoire.test.mjs:358:  const understanding = {
+tests/sim/repertoire.test.mjs:363:  const expected = structuredClone(understanding);
+tests/sim/repertoire.test.mjs:364:  let state = { ...newGame(), understanding };
+tests/sim/repertoire.test.mjs:383:    assert.deepEqual(state.understanding, expected, `after step ${index}`);
+tests/sim/repertoire.test.mjs:387:test("a character's death leaves the Understanding as it is", () => {
+tests/sim/repertoire.test.mjs:388:  // The Understanding already holds what the first chill reveals, so the chill on the way to
+tests/sim/repertoire.test.mjs:390:  const understanding = {
+tests/sim/repertoire.test.mjs:395:  const state = advanceMinutes({ ...sent(), understanding }, 3000).state;
+tests/sim/repertoire.test.mjs:397:  assert.deepEqual(state.understanding, {
+tests/sim/repertoire.test.mjs:404:// A sent mage whose Understanding is `understanding`, running `rules` as the program.
+tests/sim/repertoire.test.mjs:405:function sentWith(understanding, ...rules) {
+tests/sim/repertoire.test.mjs:406:  const state = createCharacter({ ...newGame(), understanding }, "Ala").state;
+tests/sim/repertoire.test.mjs:424:test("a sent mage whose Understanding lacks Eksploruj passes over its rule and carries out the next one, the rule staying in the program with its count", () => {
+tests/sim/repertoire.test.mjs:484:test("an action leaving the Understanding in the middle of a map run is passed over when the character next picks", () => {
+tests/sim/repertoire.test.mjs:490:    understanding: {
+tests/sim/repertoire.test.mjs:522:  const run = (understanding) => {
+tests/sim/repertoire.test.mjs:523:    const created = createCharacter({ ...newGame(), understanding }, "Ala");
+tests/sim/streak.test.mjs:5:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/team.test.mjs:16:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/time.test.mjs:15:import { newKnowingGame } from "./understanding-fixture.mjs";
+tests/sim/understanding-fixture.mjs:8: * An Understanding that holds everything the data lists: every action, every condition, every
+tests/sim/understanding-fixture.mjs:19:/** A new game whose Understanding holds everything: the start of a test of the other rules. */
+tests/sim/understanding-fixture.mjs:21:  return { ...newGame(), understanding: fullUnderstanding() };
+tests/view/program-editor.test.mjs:41:import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+tests/view/program-editor.test.mjs:828:const gameKnowing = (understanding) => ({ ...newGame(), understanding });
+tests/view/program-editor.test.mjs:844:test("target lists follow the Understanding's items: resources of the shown map in the map's order, backpack items in the data's order, the campfire in neither", () => {
+tests/view/program-editor.test.mjs:861:test("an Understanding that holds everything gives lists of every action and condition of the data", () => {
+tests/view/program-editor.test.mjs:975:test("the item list of „Zapas poniżej” offers the backpack items of the Understanding, and a held item outside it still shows", () => {
+tests/view/program-editor.test.mjs:1006:test("kinds that name a resource or an item are not offered while the Understanding holds no target for them", () => {
+tests/view/status-row.test.mjs:22:import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+tests/view/terrain-picture.test.mjs:14:import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+tests/view/tile-list.test.mjs:14:import { newKnowingGame } from "../sim/understanding-fixture.mjs";

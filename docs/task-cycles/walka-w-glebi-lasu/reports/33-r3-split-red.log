@@ -1,0 +1,991 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/encounters.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ an eligible attack interrupts a long exploration before it finishes (3.1543ms)
+✔ start cooldown protects minute 180 and the first draw can attack at 181 (0.4502ms)
+✔ cooldown starts at combat end E and protects E+180, but not E+181 (0.9915ms)
+✔ eligible misses consume one draw even inside an unfinished activity (0.5185ms)
+✔ death, completion and a map without attackers consume no attack draw (0.7274ms)
+✔ an action ending in attack minute lands, while an interrupted move leaves no target or later movement (1.6249ms)
+✔ five combat minutes freeze needs and recovery while fire, renewal and streak advance once each (0.984ms)
+✔ each waiting minute M+1 through M+4 can complete without turns or an invented result (0.5371ms)
+✖ combat death in M+5 wins over completion and keeps the streak (1.3492ms)
+✖ M+5 starts ordinary work immediately, counts every combat action once and still shows combat (0.765ms)
+✔ editing during the wait preserves encounter state and resolves with the newly written program (0.5572ms)
+✔ combat filters unavailable actions and group conditions through the current repertoire (0.726ms)
+✔ a creature-only discovery pauses before turns and does not write a combat rule (0.3629ms)
+✔ the discovered wolf stays known through another attack, restart and end (0.4505ms)
+✖ an ending exploration and first wolf produce one catalog-ordered discovery (0.5933ms)
+✔ first chill and attack in one minute keep the automatic exploration rule but never start it during combat (0.4434ms)
+✔ a departed creature starts cooldown but adds no defeated attack (0.2702ms)
+✔ known attacks do not pause and restart clears combat while reproducing its attack stream (0.2437ms)
+✔ stepMinute and game advancement have the same attack and combat ordering (0.6055ms)
+✔ two different ordinary programs on a shared seed meet their first attack in the same minute (2.0785ms)
+✔ M+5 counts the second defeated attack before checking both map requirements (0.229ms)
+✖ combat time splitting preserves every state and ordered event: first wolf discovery (2.5159ms)
+✖ combat time splitting preserves every state and ordered event: known attack and M+5 (5.3847ms)
+✖ combat time splitting preserves every state and ordered event: combat death (2.104ms)
+✖ combat time splitting preserves every state and ordered event: completion before turns (1.0345ms)
+✖ combat time splitting preserves every state and ordered event: completion after turns (2.4359ms)
+✔ restart replays the actual attack stream and combat minute by minute (44.6868ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 19
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.75
+
+✖ failing tests:
+
+test at tests\sim\encounters.test.mjs:237:1
+✖ combat death in M+5 wins over completion and keeps the streak (1.3492ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   'characterDied',
+  +   'combatEnded',
+      'combatExchange',
+  -   'combatEnded',
+  -   'characterDied'
+    ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:249:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'characterDied', 'combatEnded', 'combatExchange' ],
+    expected: [ 'combatExchange', 'combatEnded', 'characterDied' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:255:1
+✖ M+5 starts ordinary work immediately, counts every combat action once and still shows combat (0.765ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'combatExchange'
+  - 'combatEnded'
+            ^
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:265:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'combatExchange',
+    expected: 'combatEnded',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:403:1
+✖ an ending exploration and first wolf produce one catalog-ordered discovery (0.5933ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   'discovered',
+  +   'attacked',
+  +   'tileRevealed',
+      'activityFinished',
+  -   'tileRevealed',
+  -   'attacked',
+  -   'discovered'
+    ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:417:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'discovered', 'attacked', 'tileRevealed', 'activityFinished' ],
+    expected: [ 'activityFinished', 'tileRevealed', 'attacked', 'discovered' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:629:3
+✖ combat time splitting preserves every state and ordered event: first wolf discovery (2.5159ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      events: [
+        {
+  -       creature: 'wolf',
+  -       kind: 'attacked',
+  -       minute: 181
+  -     },
+  -     {
+          actions: [],
+          conditions: [],
+          creatures: [
+            'wolf'
+          ],
+  ...
+        },
+  +     {
+  +       creature: 'wolf',
+  +       kind: 'attacked',
+  +       minute: 181
+  +     }
+      ],
+      state: {
+        discovery: {
+          actions: [],
+          conditions: [],
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:688:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: true, solvedMaps: [Array], pace: 1, discovery: [Object], realMsCarry: 0 }, events: [ [Object], [Object] ] },
+    expected: { state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: true, solvedMaps: [Array], pace: 1, discovery: [Object], realMsCarry: 0 }, events: [ [Object], [Object] ] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:629:3
+✖ combat time splitting preserves every state and ordered event: known attack and M+5 (5.3847ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      events: [
+        {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityStarted',
+  +       minute: 190,
+  +       stepTo: null
+  -       creature: 'wolf',
+  -       kind: 'attacked',
+  -       minute: 181
+        },
+        {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityFinished',
+  +       minute: 190
+  +     },
+  +     {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityStarted',
+  +       minute: 189,
+  +       stepTo: null
+  +     },
+  +     {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityFinished',
+  +       minute: 189
+  +     },
+  +     {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityStarted',
+  +       minute: 188,
+  +       stepTo: null
+  +     },
+  +     {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityFinished',
+  +       minute: 188
+  +     },
+  +     {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityStarted',
+  +       minute: 187,
+  +       stepTo: null
+  +     },
+  +     {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityFinished',
+  +       minute: 187
+  +     },
+  +     {
+  +       activity: {
+  +         kind: 'wait'
+  +       },
+  +       kind: 'activityStarted',
+  +       minute: 186,
+  +       stepTo: null
+  +     },
+  +     {
+  +       kind: 'combatEnded',
+  +       minute: 186,
+  +       outcome: 'creatureDefeated'
+  +     },
+  +     {
+          exchange: {
+            characterAction: {
+              action: {
+                kind: 'kick'
+              },
+  +           characterHealth: 58,
+  +           creatureHealth: 0,
+  -           characterHealth: 93,
+  -           creatureHealth: 21,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           kind: 'dodge'
+  -           characterHealth: 93,
+  -           damage: 7,
+  -           kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+  ...
+              },
+  +           characterHealth: 58,
+  +           creatureHealth: 3,
+  -           characterHealth: 86,
+  -           creatureHealth: 18,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           kind: 'dodge'
+  -           characterHealth: 86,
+  -           damage: 7,
+  -           kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+  ...
+              },
+  +           characterHealth: 58,
+  +           creatureHealth: 6,
+  -           characterHealth: 79,
+  -           creatureHealth: 15,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 58,
+  -           characterHealth: 79,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 65,
+  +           creatureHealth: 9,
+  -           characterHealth: 72,
+  -           creatureHealth: 12,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 65,
+  -           characterHealth: 72,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 72,
+  +           creatureHealth: 12,
+  -           characterHealth: 65,
+  -           creatureHealth: 9,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 72,
+  -           characterHealth: 65,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 79,
+  +           creatureHealth: 15,
+  -           characterHealth: 58,
+  -           creatureHealth: 6,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 79,
+  -           characterHealth: 58,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 86,
+  +           creatureHealth: 18,
+  -           characterHealth: 58,
+  -           creatureHealth: 3,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 86,
+  +           damage: 7,
+  +           kind: 'strike'
+  -           kind: 'dodge'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+  ...
+              },
+  +           characterHealth: 93,
+  +           creatureHealth: 21,
+  -           characterHealth: 58,
+  -           creatureHealth: 0,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 93,
+  +           damage: 7,
+  +           kind: 'strike'
+  -           kind: 'dodge'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+        {
+  +       creature: 'wolf',
+  +       kind: 'attacked',
+  +       minute: 181
+  -       kind: 'combatEnded',
+  -       minute: 186,
+  -       outcome: 'creatureDefeated'
+        },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityStarted',
+  -       minute: 186,
+  -       stepTo: null
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityFinished',
+  -       minute: 187
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityStarted',
+  -       minute: 187,
+  -       stepTo: null
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityFinished',
+  -       minute: 188
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityStarted',
+  -       minute: 188,
+  -       stepTo: null
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityFinished',
+  -       minute: 189
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityStarted',
+  -       minute: 189,
+  -       stepTo: null
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityFinished',
+  -       minute: 190
+  -     },
+  -     {
+  -       activity: {
+  -         kind: 'wait'
+  -       },
+  -       kind: 'activityStarted',
+  -       minute: 190,
+  -       stepTo: null
+  -     }
+      ],
+      state: {
+        discovery: null,
+        lastSeed: 2244977679,
+        nextCharacterId: 2,
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:688:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: {
+      state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 },
+      events: [
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object]
+      ]
+    },
+    expected: {
+      state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 },
+      events: [
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object]
+      ]
+    },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:629:3
+✖ combat time splitting preserves every state and ordered event: combat death (2.104ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      events: [
+        {
+  +       cause: 'combat',
+  +       kind: 'characterDied',
+  +       minute: 186
+  -       creature: 'wolf',
+  -       kind: 'attacked',
+  -       minute: 181
+        },
+        {
+  +       kind: 'combatEnded',
+  +       minute: 186,
+  +       outcome: 'characterDied'
+  +     },
+  +     {
+          exchange: {
+            characterAction: null,
+            creatureAction: {
+  +           characterHealth: 0,
+  -           characterHealth: 93,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 2,
+  -           characterHealth: 86,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 9,
+  -           characterHealth: 79,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 16,
+  -           characterHealth: 72,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 23,
+  -           characterHealth: 65,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 30,
+  -           characterHealth: 58,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 37,
+  -           characterHealth: 51,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 51,
+  -           characterHealth: 37,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 58,
+  -           characterHealth: 30,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 65,
+  -           characterHealth: 23,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 72,
+  -           characterHealth: 16,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 79,
+  -           characterHealth: 9,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 86,
+  -           characterHealth: 2,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+            creatureAction: {
+  +           characterHealth: 93,
+  -           characterHealth: 0,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+        {
+  +       creature: 'wolf',
+  +       kind: 'attacked',
+  +       minute: 181
+  -       kind: 'combatEnded',
+  -       minute: 186,
+  -       outcome: 'characterDied'
+        },
+  -     {
+  -       cause: 'combat',
+  -       kind: 'characterDied',
+  -       minute: 186
+  -     }
+      ],
+      state: {
+        discovery: null,
+        lastSeed: 2244977679,
+        nextCharacterId: 2,
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:688:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: {
+      state: { program: [Object], understanding: [Object], ruleCounts: {}, team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 },
+      events: [
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object]
+      ]
+    },
+    expected: {
+      state: { program: [Object], understanding: [Object], ruleCounts: {}, team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 },
+      events: [
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object],
+        [Object], [Object], [Object]
+      ]
+    },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:629:3
+✖ combat time splitting preserves every state and ordered event: completion before turns (1.0345ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      events: [
+        {
+  +       kind: 'mapRunCompleted',
+  +       minute: 183
+  +     },
+  +     {
+          creature: 'wolf',
+          kind: 'attacked',
+          minute: 181
+        },
+  -     {
+  -       kind: 'mapRunCompleted',
+  -       minute: 183
+  -     }
+      ],
+      state: {
+        discovery: null,
+        lastSeed: 2244977679,
+        nextCharacterId: 2,
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:688:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 }, events: [ [Object], [Object] ] },
+    expected: { state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 }, events: [ [Object], [Object] ] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:629:3
+✖ combat time splitting preserves every state and ordered event: completion after turns (2.4359ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      events: [
+        {
+  +       kind: 'mapRunCompleted',
+  +       minute: 186
+  -       creature: 'wolf',
+  -       kind: 'attacked',
+  -       minute: 181
+        },
+        {
+  +       kind: 'combatEnded',
+  +       minute: 186,
+  +       outcome: 'creatureDefeated'
+  +     },
+  +     {
+          exchange: {
+            characterAction: {
+              action: {
+                kind: 'kick'
+              },
+  +           characterHealth: 58,
+  +           creatureHealth: 0,
+  -           characterHealth: 93,
+  -           creatureHealth: 21,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           kind: 'dodge'
+  -           characterHealth: 93,
+  -           damage: 7,
+  -           kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+  ...
+              },
+  +           characterHealth: 58,
+  +           creatureHealth: 3,
+  -           characterHealth: 86,
+  -           creatureHealth: 18,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           kind: 'dodge'
+  -           characterHealth: 86,
+  -           damage: 7,
+  -           kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+  ...
+              },
+  +           characterHealth: 58,
+  +           creatureHealth: 6,
+  -           characterHealth: 79,
+  -           creatureHealth: 15,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 58,
+  -           characterHealth: 79,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 65,
+  +           creatureHealth: 9,
+  -           characterHealth: 72,
+  -           creatureHealth: 12,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 65,
+  -           characterHealth: 72,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 72,
+  +           creatureHealth: 12,
+  -           characterHealth: 65,
+  -           creatureHealth: 9,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 72,
+  -           characterHealth: 65,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 79,
+  +           creatureHealth: 15,
+  -           characterHealth: 58,
+  -           creatureHealth: 6,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 79,
+  -           characterHealth: 58,
+              damage: 7,
+              kind: 'strike'
+            }
+          },
+          kind: 'combatExchange',
+  ...
+              },
+  +           characterHealth: 86,
+  +           creatureHealth: 18,
+  -           characterHealth: 58,
+  -           creatureHealth: 3,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 86,
+  +           damage: 7,
+  +           kind: 'strike'
+  -           kind: 'dodge'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+  ...
+              },
+  +           characterHealth: 93,
+  +           creatureHealth: 21,
+  -           characterHealth: 58,
+  -           creatureHealth: 0,
+              damage: 3,
+              ruleId: 1
+            },
+            creatureAction: {
+  +           characterHealth: 93,
+  +           damage: 7,
+  +           kind: 'strike'
+  -           kind: 'dodge'
+            }
+          },
+          kind: 'combatExchange',
+          minute: 186
+        },
+        {
+  +       creature: 'wolf',
+  +       kind: 'attacked',
+  +       minute: 181
+  -       kind: 'combatEnded',
+  -       minute: 186,
+  -       outcome: 'creatureDefeated'
+        },
+  -     {
+  -       kind: 'mapRunCompleted',
+  -       minute: 186
+  -     }
+      ],
+      state: {
+        discovery: null,
+        lastSeed: 2244977679,
+        nextCharacterId: 2,
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:688:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: {
+      state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 },
+      events: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object]
+      ]
+    },
+    expected: {
+      state: { program: [Object], understanding: [Object], ruleCounts: [Object], team: [Object], nextCharacterId: 2, run: [Object], lastSeed: 2244977679, paused: false, solvedMaps: [Array], pace: 1, discovery: null, realMsCarry: 0 },
+      events: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object]
+      ]
+    },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

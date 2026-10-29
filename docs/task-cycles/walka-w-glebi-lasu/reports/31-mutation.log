@@ -1,0 +1,377 @@
+[32m02:30:29 (52184) INFO ProjectReader[39m Found 14 of 279 file(s) to be mutated.
+[32m02:30:29 (52184) INFO Instrumenter[39m Instrumented 14 source file(s) with 391 mutant(s)
+[32m02:30:30 (52184) INFO ConcurrencyTokenProvider[39m Creating 4 test runner process(es).
+[32m02:30:30 (52184) INFO Sandbox[39m Running build command "node ../../node_modules/typescript-compiler/bin/tsc -p tsconfig.browser.json" in "C:\Storage\repos\loop2-wt\walka-w-glebi-lasu\.stryker-tmp\sandbox-2GVT8k".
+[32m02:30:31 (52184) INFO DryRunExecutor[39m Starting initial test run (tap test runner with "perTest" coverage analysis). This may take a while.
+[32m02:30:35 (52184) INFO DryRunExecutor[39m Initial test run succeeded. Ran 24 tests in 3 seconds (net 654.9419 ms, overhead 2838.0581 ms).
+
+All tests
+  acceptance.test.mjs
+    ✓ tests/sim/acceptance.test.mjs (killed 59)
+  actions.test.mjs
+    ✓ tests/sim/actions.test.mjs (killed 8)
+  body.test.mjs
+    ✓ tests/sim/body.test.mjs (killed 6)
+  campfire.test.mjs
+    ~ tests/sim/campfire.test.mjs (covered 84)
+  combat.test.mjs
+    ✓ tests/sim/combat.test.mjs (killed 91)
+  completion.test.mjs
+    ✓ tests/sim/completion.test.mjs (killed 69)
+  conditions.test.mjs
+    ✓ tests/sim/conditions.test.mjs (killed 12)
+  data.test.mjs
+    ~ tests/sim/data.test.mjs (covered 81)
+  discovery.test.mjs
+    ✓ tests/sim/discovery.test.mjs (killed 30)
+  encounters.test.mjs
+    ✓ tests/sim/encounters.test.mjs (killed 83)
+  flow.test.mjs
+    ~ tests/sim/flow.test.mjs (covered 145)
+  gather.test.mjs
+    ~ tests/sim/gather.test.mjs (covered 82)
+  hex.test.mjs
+    ✘ tests/sim/hex.test.mjs (covered 0)
+  layout.test.mjs
+    ✓ tests/sim/layout.test.mjs (killed 1)
+  program-counts.test.mjs
+    ~ tests/sim/program-counts.test.mjs (covered 150)
+  program.test.mjs
+    ~ tests/sim/program.test.mjs (covered 145)
+  purity.test.mjs
+    ~ tests/sim/purity.test.mjs (covered 147)
+  random.test.mjs
+    ✘ tests/sim/random.test.mjs (covered 0)
+  repertoire.test.mjs
+    ~ tests/sim/repertoire.test.mjs (covered 156)
+  streak.test.mjs
+    ~ tests/sim/streak.test.mjs (covered 161)
+  team.test.mjs
+    ~ tests/sim/team.test.mjs (covered 143)
+  time.test.mjs
+    ~ tests/sim/time.test.mjs (covered 143)
+  traits.test.mjs
+    ~ tests/sim/traits.test.mjs (covered 31)
+  world.test.mjs
+    ~ tests/sim/world.test.mjs (covered 49)
+
+[NoCoverage] StringLiteral
+src/browser/sim/combat.ts:29:21
+-       throw new Error(`combat: ${creatureId} has no applicable rule`);
++       throw new Error(``);
+
+[NoCoverage] StringLiteral
+src/browser/sim/combat.ts:89:23
+-         throw new Error("combat: selected action has no combat effect");
++         throw new Error("");
+
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:28:7
+-     if (!selected)
++     if (false)
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:49:35
+-       turn < BALANCE.combatTurns && characterHealth > 0 && creatureHealth > 0;
++       turn < BALANCE.combatTurns && true && creatureHealth > 0;
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] EqualityOperator
+src/browser/sim/combat.ts:49:35
+-       turn < BALANCE.combatTurns && characterHealth > 0 && creatureHealth > 0;
++       turn < BALANCE.combatTurns && characterHealth >= 0 && creatureHealth > 0;
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/combat.ts:64:32
+-         creatureRecord = { kind: "strike", damage, characterHealth };
++         creatureRecord = { kind: "", damage, characterHealth };
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/combat.ts:88:9
+-       if (!effect)
++       if (false)
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/game.ts:311:47
+-           : event.kind === "activityStarted" && event.activity.kind === "rule"
++           : event.kind === "activityStarted" && true
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/campfire.test.mjs
+  and 15 more tests!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/game.ts:315:9
+-       if (!Object.hasOwn(next, id)) continue;
++       if (false) continue;
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/completion.test.mjs
+  and 10 more tests!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/game.ts:314:9
+-       if (id === undefined) continue;
++       if (false) continue;
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/campfire.test.mjs
+  and 15 more tests!
+
+
+[Survived] ArrayDeclaration
+src/browser/sim/game.ts:430:13
+-       events: [],
++       events: ["Stryker was here"],
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/campfire.test.mjs
+  and 14 more tests!
+
+
+[Survived] MethodExpression
+src/browser/sim/game.ts:646:22
+-       const together = finished.events.some((event) => event.kind === "attacked")
++       const together = finished.events.every(event => event.kind === "attacked")
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/completion.test.mjs
+  and 10 more tests!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/game.ts:646:54
+-       const together = finished.events.some((event) => event.kind === "attacked")
++       const together = finished.events.some((event) => true)
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/completion.test.mjs
+  and 10 more tests!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/program.ts:270:9
+-       if (!conditionHolds(run, map, group.condition, context)) continue;
++       if (false) continue;
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/program.ts:272:11
+-         if (!conditionHolds(run, map, rule.condition, context)) continue;
++         if (false) continue;
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/program.ts:276:9
+-           "item" in effect &&
+-           effect.item &&
++           true &&
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] LogicalOperator
+src/browser/sim/program.ts:276:9
+-           "item" in effect &&
+-           effect.item &&
++           "item" in effect || effect.item &&
+Tests ran:
+    tests/sim/combat.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/run.ts:299:37
+-       attackRandom: streamState(seed, "attack"),
++       attackRandom: streamState(seed, ""),
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/actions.test.mjs
+    tests/sim/body.test.mjs
+  and 18 more tests!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/run.ts:495:7
+-     if (mapRunEnded(run)) return { run, events: [] };
++     if (false) return { run, events: [] };
+Tests ran:
+    tests/sim/actions.test.mjs
+    tests/sim/campfire.test.mjs
+    tests/sim/data.test.mjs
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/browser/sim/run.ts:546:16
+-           cause: "combat",
++           cause: "",
+Tests ran:
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/run.ts:557:11
+-         ...(combat && { attackCooldownStart: run.minute }),
++         ...(true),
+Tests ran:
+    tests/sim/completion.test.mjs
+    tests/sim/encounters.test.mjs
+    tests/sim/streak.test.mjs
+
+
+[Survived] LogicalOperator
+src/browser/sim/run.ts:557:11
+-         ...(combat && { attackCooldownStart: run.minute }),
++         ...(combat || {
++     attackCooldownStart: run.minute
++   }),
+Tests ran:
+    tests/sim/completion.test.mjs
+    tests/sim/encounters.test.mjs
+    tests/sim/streak.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/run.ts:557:11
+-         ...(combat && { attackCooldownStart: run.minute }),
++         ...(false),
+Tests ran:
+    tests/sim/completion.test.mjs
+    tests/sim/encounters.test.mjs
+    tests/sim/streak.test.mjs
+
+
+[Survived] ObjectLiteral
+src/browser/sim/run.ts:557:21
+-         ...(combat && { attackCooldownStart: run.minute }),
++         ...(combat && {}),
+Tests ran:
+    tests/sim/encounters.test.mjs
+
+
+[Survived] EqualityOperator
+src/browser/sim/run.ts:571:11
+-         if (draw.value < attacker.chancePerMinute) {
++         if (draw.value <= attacker.chancePerMinute) {
+Tests ran:
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/understanding.ts:145:9
+-         ? "creature" in b && a.creature === b.creature
++         ? true
+Tests ran:
+    tests/sim/encounters.test.mjs
+
+
+[Survived] LogicalOperator
+src/browser/sim/understanding.ts:145:9
+-         ? "creature" in b && a.creature === b.creature
++         ? "creature" in b || a.creature === b.creature
+Tests ran:
+    tests/sim/encounters.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/understanding.ts:143:57
+-       ("item" in a ? "item" in b && a.item === b.item : !("item" in b)) &&
++       ("item" in a ? "item" in b && a.item === b.item : !("" in b)) &&
+Tests ran:
+    tests/sim/completion.test.mjs
+    tests/sim/discovery.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/understanding.ts:145:28
+-         ? "creature" in b && a.creature === b.creature
++         ? "creature" in b && true
+Tests ran:
+    tests/sim/encounters.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/understanding.ts:146:11
+-         : !("creature" in b))
++         : !("" in b))
+Tests ran:
+    tests/sim/completion.test.mjs
+    tests/sim/discovery.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ArrayDeclaration
+src/browser/sim/understanding.ts:297:18
+-         creatures: [...understanding.creatures, ...revealed.creatures],
++         creatures: [],
+Tests ran:
+    tests/sim/completion.test.mjs
+    tests/sim/discovery.test.mjs
+    tests/sim/encounters.test.mjs
+
+
+[Survived] ArithmeticOperator
+src/browser/sim/understanding.ts:270:5
+-       revealed.actions.length +
+-         revealed.conditions.length +
+-         revealed.items.length +
+-         revealed.creatures.length ===
++       revealed.actions.length + revealed.conditions.length + revealed.items.length - revealed.creatures.length ===
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/completion.test.mjs
+  and 10 more tests!
+
+
+Ran 2.09 tests per mutant on average.
+------------------|------------------|----------|-----------|------------|----------|----------|
+                  | % Mutation score |          |           |            |          |          |
+File              |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+------------------|--------|---------|----------|-----------|------------|----------|----------|
+All files         |  91.82 |   92.29 |      359 |         0 |         30 |        2 |        0 |
+ combat.ts        |  90.41 |   92.96 |       66 |         0 |          5 |        2 |        0 |
+ game.ts          |  93.10 |   93.10 |       81 |         0 |          6 |        0 |        0 |
+ layout.ts        | 100.00 |  100.00 |        6 |         0 |          0 |        0 |        0 |
+ program.ts       |  90.48 |   90.48 |       38 |         0 |          4 |        0 |        0 |
+ run.ts           |  93.22 |   93.22 |      110 |         0 |          8 |        0 |        0 |
+ understanding.ts |  89.23 |   89.23 |       58 |         0 |          7 |        0 |        0 |
+------------------|--------|---------|----------|-----------|------------|----------|----------|
+[32m02:31:16 (52184) INFO JsonReporter[39m Your report can be found at: file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/.runs/stryker/mutation.json
+[32m02:31:16 (52184) INFO MutationTestExecutor[39m Done in 48 seconds.

@@ -1,0 +1,15 @@
+Reading cache: tracked foundation excerpts omitted under WAY-148.
+Source commit: 99b2a271675fc32a8c136f563bad70c300444e1a
+Source files: foundations/decisions.md, foundations/invariants.md
+Original cache SHA256: 698895825676dde3c08cc31d093e7e98d77a9304f438b40033ace590d32ea12c
+
+### D-04 — What is the game built with?
+### D-06 — How are the browser and server built together?
+### D-18 — Where does the game's content live?
+### D-20 — What interrupts the character's action in progress?
+### D-21 — How does time pass in a map run the player starts?
+### D-24 — What is a game map made of?
+### D-25 — How does a character move?
+### D-26 — How does a program point at things of the world?
+### D-27 — Where do the game's icons come from?
+### D-28 — Which coding-guideline discipline does loop2 adopt?

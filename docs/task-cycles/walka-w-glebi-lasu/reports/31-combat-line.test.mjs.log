@@ -1,0 +1,19 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/combat-line.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ before the turns, the line reads the creature health and ordered program from creature data (0.882ms)
+✔ a resolved encounter lists both actions and ends with its result (0.2167ms)
+✔ the encounter paragraph stays hidden without a record and updates in place when one appears (0.2425ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.5689

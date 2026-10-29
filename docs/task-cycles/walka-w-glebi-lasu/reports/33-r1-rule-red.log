@@ -1,0 +1,50 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/combat.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ four stick strikes defeat the wolf after three bites, leaving 79 health (2.5786ms)
+✔ eight kicks defeat the wolf after six bites, leaving 58 health (0.3047ms)
+✔ no feasible combat rule loses each action and the fifteenth bite kills (0.2847ms)
+✔ a lethal opening strike ends the exchange before the character can act (0.1654ms)
+✔ forty dodges use one refreshed reduction and leave the wolf at 15 health (0.2353ms)
+✔ a stick strike without a stick is skipped in favor of the next combat rule (0.1743ms)
+✔ ordinary actions cannot be carried out during combat (0.1878ms)
+✔ character health conditions are checked after the creature's strike (0.1842ms)
+✔ combat checks group conditions in order against post-strike health (0.2747ms)
+✔ combat skips a false first group and selects it when its condition holds (0.3666ms)
+✖ combat skips a false first rule and selects it when its condition holds (1.0383ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 10
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.1413
+
+✖ failing tests:
+
+test at tests\sim\combat.test.mjs:221:1
+✖ combat skips a false first rule and selects it when its condition holds (1.0383ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'dodge' !== 'kick'
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/combat.test.mjs:234:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'dodge',
+    expected: 'kick',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

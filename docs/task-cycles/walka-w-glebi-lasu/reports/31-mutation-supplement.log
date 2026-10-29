@@ -1,0 +1,70 @@
+[32m02:41:44 (43440) INFO ProjectReader[39m Found 4 of 279 file(s) to be mutated.
+[32m02:41:44 (43440) INFO Instrumenter[39m Instrumented 4 source file(s) with 40 mutant(s)
+[32m02:41:44 (43440) INFO ConcurrencyTokenProvider[39m Creating 4 test runner process(es).
+[32m02:41:45 (43440) INFO Sandbox[39m Running build command "node ../../node_modules/typescript-compiler/bin/tsc -p tsconfig.browser.json" in "C:\Storage\repos\loop2-wt\walka-w-glebi-lasu\.stryker-tmp\sandbox-hIc0mf".
+[32m02:41:45 (43440) INFO DryRunExecutor[39m Starting initial test run (tap test runner with "perTest" coverage analysis). This may take a while.
+[32m02:41:49 (43440) INFO DryRunExecutor[39m Initial test run succeeded. Ran 24 tests in 3 seconds (net 530.7023 ms, overhead 3046.2977 ms).
+
+All tests
+  acceptance.test.mjs
+    ✓ tests/sim/acceptance.test.mjs (killed 5)
+  actions.test.mjs
+    ✓ tests/sim/actions.test.mjs (killed 10)
+  body.test.mjs
+    ~ tests/sim/body.test.mjs (covered 19)
+  campfire.test.mjs
+    ~ tests/sim/campfire.test.mjs (covered 21)
+  combat.test.mjs
+    ~ tests/sim/combat.test.mjs (covered 5)
+  completion.test.mjs
+    ✓ tests/sim/completion.test.mjs (killed 5)
+  conditions.test.mjs
+    ✓ tests/sim/conditions.test.mjs (killed 2)
+  data.test.mjs
+    ✓ tests/sim/data.test.mjs (killed 12)
+  discovery.test.mjs
+    ✓ tests/sim/discovery.test.mjs (killed 5)
+  encounters.test.mjs
+    ~ tests/sim/encounters.test.mjs (covered 39)
+  flow.test.mjs
+    ~ tests/sim/flow.test.mjs (covered 21)
+  gather.test.mjs
+    ~ tests/sim/gather.test.mjs (covered 21)
+  hex.test.mjs
+    ✘ tests/sim/hex.test.mjs (covered 0)
+  layout.test.mjs
+    ✘ tests/sim/layout.test.mjs (covered 0)
+  program-counts.test.mjs
+    ~ tests/sim/program-counts.test.mjs (covered 23)
+  program.test.mjs
+    ~ tests/sim/program.test.mjs (covered 23)
+  purity.test.mjs
+    ~ tests/sim/purity.test.mjs (covered 21)
+  random.test.mjs
+    ✘ tests/sim/random.test.mjs (covered 0)
+  repertoire.test.mjs
+    ✓ tests/sim/repertoire.test.mjs (killed 1)
+  streak.test.mjs
+    ~ tests/sim/streak.test.mjs (covered 19)
+  team.test.mjs
+    ~ tests/sim/team.test.mjs (covered 19)
+  time.test.mjs
+    ~ tests/sim/time.test.mjs (covered 19)
+  traits.test.mjs
+    ~ tests/sim/traits.test.mjs (covered 7)
+  world.test.mjs
+    ~ tests/sim/world.test.mjs (covered 7)
+
+Ran 2.52 tests per mutant on average.
+------------------|------------------|----------|-----------|------------|----------|----------|
+                  | % Mutation score |          |           |            |          |          |
+File              |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+------------------|--------|---------|----------|-----------|------------|----------|----------|
+All files         | 100.00 |  100.00 |       40 |         0 |          0 |        0 |        0 |
+ game.ts          | 100.00 |  100.00 |       21 |         0 |          0 |        0 |        0 |
+ program.ts       | 100.00 |  100.00 |        5 |         0 |          0 |        0 |        0 |
+ run.ts           | 100.00 |  100.00 |        7 |         0 |          0 |        0 |        0 |
+ understanding.ts | 100.00 |  100.00 |        7 |         0 |          0 |        0 |        0 |
+------------------|--------|---------|----------|-----------|------------|----------|----------|
+[32m02:41:55 (43440) INFO JsonReporter[39m Your report can be found at: file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/.runs/stryker/mutation.json
+[32m02:41:55 (43440) INFO MutationTestExecutor[39m Done in 11 seconds.

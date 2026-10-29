@@ -1,0 +1,242 @@
+foundations/invariants.md:5:## account-server-runtime
+foundations/invariants.md:12:- **Part:** every
+foundations/invariants.md:15:## account-server-typecheck
+foundations/invariants.md:22:- **Part:** every
+foundations/invariants.md:25:## account-server-express-http
+foundations/invariants.md:32:- **Part:** every
+foundations/invariants.md:35:## browser-view-framework
+foundations/invariants.md:42:- **Part:** every
+foundations/invariants.md:45:## loop2-api-error-route
+foundations/invariants.md:52:- **Part:** every
+foundations/invariants.md:55:## loop2-one-serving-process
+foundations/invariants.md:62:- **Part:** every
+foundations/invariants.md:65:## application-build-output
+foundations/invariants.md:72:- **Part:** build-tools · browser-view · simulation · account-server
+foundations/invariants.md:75:## application-package-layout
+foundations/invariants.md:82:- **Part:** build-tools · browser-view · simulation · account-server
+foundations/invariants.md:85:## application-build-layout
+foundations/invariants.md:92:- **Part:** build-tools · browser-view · simulation · account-server
+foundations/invariants.md:95:## account-server-occupied-address
+foundations/invariants.md:105:## loop2-container-isolation
+foundations/invariants.md:112:- **Part:** every
+foundations/invariants.md:115:## loop2-distinct-address
+foundations/invariants.md:122:- **Part:** every
+foundations/invariants.md:125:## loop2-deploy-trigger-input
+foundations/invariants.md:135:## loop2-deploy-keeps-running
+foundations/invariants.md:145:## loop2-application-port
+foundations/invariants.md:155:## loop2-host-sharing
+foundations/invariants.md:165:## map-run-repeatability
+foundations/invariants.md:173:- **Part:** every
+foundations/invariants.md:176:## simulation-randomness
+foundations/invariants.md:184:- **Part:** every
+foundations/invariants.md:187:## action-in-progress
+foundations/invariants.md:195:- **Part:** simulation
+foundations/invariants.md:198:## player-map-run-pace
+foundations/invariants.md:211:- **Part:** simulation
+foundations/invariants.md:214:## simulation-isolation
+foundations/invariants.md:223:- **Part:** simulation
+foundations/invariants.md:226:## simulation-inputs
+foundations/invariants.md:233:- **Part:** simulation
+foundations/invariants.md:236:## content-identifiers
+foundations/invariants.md:245:- **Part:** simulation · browser-view
+foundations/invariants.md:248:## program-rule-pick
+foundations/invariants.md:261:- **Part:** simulation
+foundations/invariants.md:264:## exploring-reveal
+foundations/invariants.md:272:- **Part:** simulation
+foundations/invariants.md:275:## move-reach
+foundations/invariants.md:283:- **Part:** simulation
+foundations/invariants.md:286:## walk-target
+foundations/invariants.md:294:- **Part:** simulation
+foundations/invariants.md:297:## map-run-tiles
+foundations/invariants.md:306:- **Part:** simulation
+foundations/invariants.md:309:## restart-seed
+foundations/invariants.md:316:- **Part:** simulation
+foundations/invariants.md:319:## icon-file-content
+foundations/invariants.md:331:## icon-credits
+foundations/invariants.md:340:- **Part:** browser-view · simulation
+foundations/invariants.md:343:## loop2-container-icons
+foundations/invariants.md:354:## terrain-drawing-numbers
+foundations/invariants.md:364:## program-closed-lists
+foundations/invariants.md:372:- **Part:** simulation
+foundations/invariants.md:375:## walk-feasibility
+foundations/invariants.md:383:- **Part:** simulation
+foundations/invariants.md:386:## program-world-reference
+foundations/invariants.md:394:- **Part:** simulation
+foundations/invariants.md:397:## map-run-layout
+foundations/invariants.md:405:- **Part:** simulation
+foundations/invariants.md:408:## eslint-source-rules
+foundations/invariants.md:415:- **Part:** browser-view · simulation · account-server · build-tools
+foundations/invariants.md:418:## ruff-source-rules
+foundations/invariants.md:425:- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+foundations/invariants.md:428:## shellcheck-source-rules
+foundations/invariants.md:435:- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+foundations/invariants.md:438:## prettier-source-format
+foundations/invariants.md:445:- **Part:** browser-view · simulation · account-server · build-tools · deployment
+foundations/invariants.md:448:## introduced-npm-vulnerabilities
+foundations/invariants.md:458:## browser-view-token-values
+foundations/invariants.md:468:## browser-view-focus-outline
+foundations/invariants.md:478:## design-token-contrast
+foundations/invariants.md:488:## design-token-sources
+foundations/invariants.md:498:## application-build-kitchen-sink
+foundations/invariants.md:508:## account-server-default-address
+foundations/invariants.md:518:## character-team
+foundations/invariants.md:525:- **Part:** every
+foundations/invariants.md:528:## minute-span-split
+foundations/invariants.md:535:- **Part:** simulation
+foundations/invariants.md:538:## public-file-access
+foundations/invariants.md:548:## dependency-audit-refusal
+foundations/invariants.md:558:## font-file-provenance
+foundations/invariants.md:568:## preview-server-access
+foundations/invariants.md:578:## node-test-selection
+foundations/invariants.md:585:- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+foundations/invariants.md:588:## focused-test-execution
+foundations/invariants.md:598:## mutation-test-selection
+foundations/invariants.md:608:## player-self-registration
+foundations/invariants.md:618:## player-password-login
+foundations/invariants.md:628:## email-verification-nonblocking
+foundations/invariants.md:638:## player-argon2-password-hash
+foundations/invariants.md:648:## player-argon2-deployment-check
+foundations/invariants.md:658:## password-operation-gate
+foundations/invariants.md:668:## player-opaque-session-cookie
+foundations/invariants.md:678:## player-express-session-sqlite-store
+foundations/invariants.md:688:## account-save-durable-storage
+foundations/invariants.md:698:## account-save-sqlite-access
+foundations/invariants.md:708:## loop2-shared-public-origin
+foundations/invariants.md:718:## account-session-authorization
+foundations/invariants.md:728:## account-mutation-request-guards
+foundations/invariants.md:738:## account-request-transport
+foundations/invariants.md:748:## account-startup-configuration
+foundations/invariants.md:758:## account-schema-lifecycle
+foundations/invariants.md:768:## account-database-schema
+foundations/invariants.md:778:## account-session-storage
+foundations/invariants.md:788:## account-attempt-limits
+foundations/invariants.md:798:## account-attempt-tracking
+foundations/invariants.md:808:## account-client-requests
+foundations/invariants.md:818:## account-client-outcomes
+foundations/invariants.md:828:## streak-program-change
+foundations/invariants.md:835:- **Part:** every
+foundations/invariants.md:838:## blocked-account-access
+foundations/invariants.md:848:## player-server-session
+foundations/invariants.md:858:## unblock-restores-no-session
+foundations/invariants.md:868:## Withdrawn identifiers
+foundations/decisions.md:43:- **Scope:** browser-view, build-tools
+foundations/decisions.md:66:- **Scope:** browser-view, build-tools, simulation
+foundations/decisions.md:121:- **Scope:** build-tools, browser-view, simulation, account-server
+foundations/decisions.md:362:- **Scope:** simulation, browser-view
+foundations/decisions.md:381:- **Scope:** browser-view
+foundations/decisions.md:405:- **Scope:** simulation
+foundations/decisions.md:423:- **Scope:** simulation, browser-view
+foundations/decisions.md:457:- **Scope:** simulation
+foundations/decisions.md:486:- **Scope:** simulation, browser-view
+foundations/decisions.md:521:- **Scope:** simulation
+foundations/decisions.md:548:- **Scope:** simulation
+foundations/decisions.md:574:- **Scope:** simulation, browser-view
+foundations/decisions.md:607:- **Scope:** browser-view, build-tools, simulation
+foundations/decisions.md:636:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:651:- **Scope:** browser-view, simulation, account-server, build-tools
+foundations/decisions.md:666:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:679:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:694:- **Scope:** browser-view, simulation, account-server, build-tools, deployment
+foundations/decisions.md:722:- **Scope:** simulation
+foundations/decisions.md:737:- **Scope:** simulation
+foundations/decisions.md:752:- **Scope:** browser-view
+foundations/decisions.md:782:- **Scope:** browser-view, agent-workflow
+foundations/decisions.md:797:- **Scope:** browser-view
+foundations/decisions.md:812:- **Scope:** browser-view
+foundations/decisions.md:827:- **Scope:** browser-view
+foundations/decisions.md:842:- **Scope:** browser-view
+foundations/decisions.md:857:- **Scope:** browser-view
+foundations/decisions.md:872:- **Scope:** browser-view
+foundations/decisions.md:887:- **Scope:** browser-view, build-tools
+foundations/decisions.md:902:- **Scope:** browser-view, build-tools, deployment
+foundations/decisions.md:917:- **Scope:** browser-view
+foundations/decisions.md:932:- **Scope:** browser-view
+foundations/decisions.md:963:- **Scope:** simulation, browser-view
+foundations/decisions.md:984:- **Scope:** simulation, browser-view
+foundations/decisions.md:1004:- **Scope:** simulation, browser-view
+foundations/decisions.md:1027:- **Scope:** browser-view
+foundations/decisions.md:1048:- **Scope:** simulation, browser-view
+foundations/decisions.md:1068:- **Scope:** simulation, browser-view
+foundations/decisions.md:1089:- **Scope:** simulation, browser-view
+foundations/decisions.md:1114:- **Scope:** simulation, browser-view
+foundations/decisions.md:1129:- **Scope:** simulation
+foundations/decisions.md:1144:- **Scope:** simulation
+foundations/decisions.md:1159:- **Scope:** simulation
+foundations/decisions.md:1174:- **Scope:** simulation
+foundations/decisions.md:1189:- **Scope:** browser-view, simulation
+foundations/decisions.md:1204:- **Scope:** simulation
+foundations/decisions.md:1219:- **Scope:** simulation, browser-view
+foundations/decisions.md:1234:- **Scope:** simulation
+foundations/decisions.md:1249:- **Scope:** simulation
+foundations/decisions.md:1264:- **Scope:** simulation
+foundations/decisions.md:1279:- **Scope:** simulation
+foundations/decisions.md:1294:- **Scope:** simulation
+foundations/decisions.md:1309:- **Scope:** browser-view
+foundations/decisions.md:1324:- **Scope:** simulation
+foundations/decisions.md:1339:- **Scope:** simulation
+foundations/decisions.md:1354:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1367:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1380:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1393:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1406:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1421:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1434:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1447:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1460:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1473:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1486:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1499:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1512:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1538:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1551:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1564:- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+foundations/decisions.md:1578:- **Scope:** simulation, browser-view
+foundations/decisions.md:1596:- **Scope:** simulation, browser-view
+foundations/decisions.md:1616:- **Scope:** simulation, browser-view
+foundations/decisions.md:1642:- **Scope:** simulation, browser-view
+foundations/decisions.md:1672:- **Scope:** simulation, browser-view, build-tools
+foundations/decisions.md:1687:- **Scope:** simulation, build-tools
+foundations/decisions.md:1702:- **Scope:** browser-view, account-server
+foundations/decisions.md:1715:- **Scope:** browser-view, account-server
+foundations/decisions.md:1730:- **Scope:** account-server, browser-view
+foundations/decisions.md:1745:- **Scope:** account-server, browser-view
+foundations/decisions.md:1760:- **Scope:** account-server, browser-view
+foundations/decisions.md:1775:- **Scope:** account-server, browser-view
+foundations/decisions.md:1788:- **Scope:** account-server, browser-view
+foundations/decisions.md:1818:- **Scope:** account-server, browser-view
+foundations/decisions.md:1872:- **Scope:** browser-view, account-server, deployment
+foundations/decisions.md:1885:- **Scope:** account-server, browser-view
+foundations/decisions.md:1997:- **Scope:** browser-view
+foundations/decisions.md:2014:- **Scope:** simulation, browser-view
+foundations/decisions.md:2039:- **Scope:** simulation, browser-view
+foundations/decisions.md:2065:- **Scope:** simulation
+foundations/decisions.md:2094:- **Scope:** simulation
+foundations/decisions.md:2121:- **Scope:** simulation, browser-view
+foundations/decisions.md:2154:- **Scope:** simulation
+foundations/decisions.md:2176:- **Scope:** browser-view, simulation
+foundations/decisions.md:2198:- **Scope:** browser-view
+foundations/decisions.md:2219:- **Scope:** simulation
+foundations/decisions.md:2244:- **Scope:** simulation
+foundations/decisions.md:2272:- **Scope:** simulation
+foundations/decisions.md:2298:- **Scope:** simulation, browser-view
+foundations/decisions.md:2321:- **Scope:** browser-view
+foundations/decisions.md:2346:- **Scope:** simulation, browser-view
+foundations/decisions.md:2372:- **Scope:** browser-view, simulation
+foundations/decisions.md:2394:- **Scope:** browser-view, simulation
+foundations/decisions.md:2415:- **Scope:** browser-view, simulation
+foundations/decisions.md:2436:- **Scope:** simulation, browser-view
+foundations/decisions.md:2458:- **Scope:** simulation
+foundations/decisions.md:2496:- **Scope:** account-server, browser-view
+foundations/decisions.md:2509:- **Scope:** account-server, browser-view
+foundations/decisions.md:2528:- **Scope:** simulation
+foundations/decisions.md:2549:- **Scope:** simulation · browser-view
+foundations/decisions.md:2564:- **Scope:** simulation
+foundations/decisions.md:2579:- **Scope:** simulation · browser-view
+foundations/decisions.md:2594:- **Scope:** simulation
+foundations/decisions.md:2609:- **Scope:** simulation
+foundations/decisions.md:2624:- **Scope:** simulation
+foundations/decisions.md:2639:- **Scope:** simulation · browser-view
+foundations/decisions.md:2654:- **Scope:** browser-view
+foundations/decisions.md:2669:- **Scope:** simulation · browser-view
+foundations/decisions.md:2684:- **Scope:** simulation
+foundations/decisions.md:2699:- **Scope:** simulation · browser-view

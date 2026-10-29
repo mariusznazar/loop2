@@ -1,0 +1,16 @@
+Reading cache: tracked foundation excerpts omitted under WAY-148.
+Source commit: 99b2a271675fc32a8c136f563bad70c300444e1a
+Source files: foundations/decisions.md, foundations/invariants.md
+Original cache SHA256: 781d05ba82939e221ea46d53f6d958fc320b40131b17f2e0cd155da3ad078310
+
+### D-59 — How far do warming and eating raise a character's warmth and satiety?
+### D-60 — When does a character lose and regain health?
+### D-61 — When does a character die, and of what?
+### D-62 — What does the screen show, and what can the player do, after a character's death?
+### D-63 — How does a character light a campfire or a stick?
+### D-64 — What does the backpack's cap count, and what sets its height?
+### D-65 — What does a full backpack do to gathering?
+### D-66 — What does a missed gathering do?
+### D-67 — How does a tile's stock renew?
+### D-68 — What becomes of a campfire that burns out?
+### D-69 — How much does feeding add to a burning campfire?

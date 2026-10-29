@@ -1,0 +1,95 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/encounters.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ an eligible attack interrupts a long exploration before it finishes (3.1666ms)
+✔ start cooldown protects minute 180 and the first draw can attack at 181 (0.4552ms)
+✔ cooldown starts at combat end E and protects E+180, but not E+181 (0.9813ms)
+✔ eligible misses consume one draw even inside an unfinished activity (0.5327ms)
+✔ death, completion and a map without attackers consume no attack draw (0.7547ms)
+✔ an action ending in attack minute lands, while an interrupted move leaves no target or later movement (1.6477ms)
+✔ five combat minutes freeze needs and recovery while fire, renewal and streak advance once each (1.1438ms)
+✔ each waiting minute M+1 through M+4 can complete without turns or an invented result (0.5666ms)
+✔ combat death in M+5 wins over completion and keeps the streak (0.2967ms)
+✔ M+5 starts ordinary work immediately, counts every combat action once and still shows combat (0.8039ms)
+✔ editing during the wait preserves encounter state and resolves with the newly written program (0.583ms)
+✔ combat filters unavailable actions and group conditions through the current repertoire (0.8319ms)
+✔ a creature-only discovery pauses before turns and does not write a combat rule (0.421ms)
+✖ the discovered wolf stays known through another attack, restart and end (1.3335ms)
+✔ an ending exploration and first wolf produce one catalog-ordered discovery (0.5077ms)
+✔ first chill and attack in one minute keep the automatic exploration rule but never start it during combat (0.452ms)
+✔ a departed creature starts cooldown but adds no defeated attack (0.2785ms)
+✔ known attacks do not pause and restart clears combat while reproducing its attack stream (0.3187ms)
+✔ stepMinute and game advancement have the same attack and combat ordering (0.4981ms)
+✔ two different ordinary programs on a shared seed meet their first attack in the same minute (2.1852ms)
+✔ M+5 counts the second defeated attack before checking both map requirements (0.2746ms)
+✖ combat time splitting preserves every state and ordered event: first wolf discovery (0.764ms)
+✔ combat time splitting preserves every state and ordered event: known attack and M+5 (2.1111ms)
+✔ combat time splitting preserves every state and ordered event: combat death (1.143ms)
+✔ combat time splitting preserves every state and ordered event: completion before turns (0.397ms)
+✔ combat time splitting preserves every state and ordered event: completion after turns (1.0846ms)
+✔ restart replays the actual attack stream and combat minute by minute (38.6458ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 25
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 156.829
+
+✖ failing tests:
+
+test at tests\sim\encounters.test.mjs:371:1
+✖ the discovered wolf stays known through another attack, restart and end (1.3335ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'wolf'
+  - ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:375:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'wolf' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\encounters.test.mjs:629:3
+✖ combat time splitting preserves every state and ordered event: first wolf discovery (0.764ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'wolf'
+  - ]
+  
+      at TestContext.<anonymous> (file:///C:/Storage/repos/loop2-wt/walka-w-glebi-lasu/tests/sim/encounters.test.mjs:653:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'wolf' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

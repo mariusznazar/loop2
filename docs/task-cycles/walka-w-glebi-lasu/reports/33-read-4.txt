@@ -1,0 +1,20 @@
+Reading cache: tracked foundation excerpts omitted under WAY-148.
+Source commit: 99b2a271675fc32a8c136f563bad70c300444e1a
+Source files: foundations/decisions.md, foundations/invariants.md
+Original cache SHA256: 71e11fe75d4dd2b98d1ac06d254c921d5ad426c53b7e0b2fddc43a07e8422a0c
+
+### D-71 — In what order does a game minute of a map run take effect?
+### D-72 — Where does a character craft a campfire and light a stick?
+### D-73 — Which testing discipline does loop2 adopt?
+### D-74 — When are tests on generated inputs considered?
+### D-75 — When are complete player journeys tested in a real browser?
+### D-76 — When do fonts and the preview server gain refusal tests?
+### D-77 — How are tests selected and limited as a whole?
+### D-78 — How is one test case shaped?
+### D-79 — How is the npm registry response contract checked?
+### D-80 — What establishes a game-balance expectation?
+### D-81 — At which levels do loop2 tests stand?
+### D-82 — Which product documents supply test expectations?
+### D-83 — Where are tests written and how do they enter the gate?
+### D-84 — Which real mechanisms do new or changed tests exercise?
+### D-85 — Which cases are the exemplars of the test levels?

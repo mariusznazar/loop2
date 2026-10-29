@@ -1,0 +1,15 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_map_run_tiles.py
+
+node.exe : ......
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (......:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+----------------------------------------------------------------------
+Ran 6 tests in 5.704s
+
+OK

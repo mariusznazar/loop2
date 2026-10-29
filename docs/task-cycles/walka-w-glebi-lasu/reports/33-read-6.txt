@@ -1,0 +1,18 @@
+Reading cache: tracked foundation excerpts omitted under WAY-148.
+Source commit: 99b2a271675fc32a8c136f563bad70c300444e1a
+Source files: foundations/decisions.md, foundations/invariants.md
+Original cache SHA256: 8d0aaf758aab10e8c222a9211269b4676a34c87911a3a1a7d4cd9cdb0a430494
+
+### D-127 — What does the simulation do with a rule group whose condition lies outside the character's repertoire?
+### D-128 — Where does what reveals an action, an item, a condition or a creature stand?
+### D-129 — How long does the pace the player picks stay?
+### D-131 — Which edits of the program reset a map run's solving progress?
+### D-132 — What does the screen show, and what can the player do, after a completion?
+### D-133 — Where does the player see a map run's streak and a map's solving condition?
+### D-134 — Where does the player see that a map is solved?
+### D-135 — Does the game show the longest streak of a map run?
+### D-136 — How is a map solved, and what opens the next one?
+### D-140 — How does combat go?
+### D-149 — When does the headquarters offer a map opened by another map?
+### D-150 — Which character skills open the current combat actions?
+### D-151 — Whose health do combat conditions compare?

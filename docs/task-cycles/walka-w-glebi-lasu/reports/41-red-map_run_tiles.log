@@ -1,0 +1,36 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_map_run_tiles.py
+
+node.exe : .....F
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (.....F:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+======================================================================
+FAIL: test_tripwire_every_map_and_resource_is_written_out (test_map_run_tiles.MapRunTiles.test_tripwire_every_map_and_r
+esource_is_written_out)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Storage\repos\loop2-wt\walka-w-glebi-lasu\tests\invariants\test_map_run_tiles.py", line 260, in test_tripwir
+e_every_map_and_resource_is_written_out
+    self.assertEqual(not_written_out(read, MAP_RESOURCES), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ["the data gives the game map 'forestDeep'[118 chars]cks"] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+"the data gives the game map 'forestDeep', which MAP_RESOURCES in tests/invariants/test_map_run_tiles.py does not hold;
+ add it there with its resources and stocks"
+
++ []
+- ["the data gives the game map 'forestDeep', which MAP_RESOURCES in "
+-  'tests/invariants/test_map_run_tiles.py does not hold; add it there with its '
+-  'resources and stocks']
+
+----------------------------------------------------------------------
+Ran 6 tests in 4.587s
+
+FAILED (failures=1)

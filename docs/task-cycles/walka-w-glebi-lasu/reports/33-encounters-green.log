@@ -1,0 +1,43 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/encounters.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ an eligible attack interrupts a long exploration before it finishes (2.9092ms)
+✔ start cooldown protects minute 180 and the first draw can attack at 181 (0.4766ms)
+✔ cooldown starts at combat end E and protects E+180, but not E+181 (0.8701ms)
+✔ eligible misses consume one draw even inside an unfinished activity (0.4946ms)
+✔ death, completion and a map without attackers consume no attack draw (0.6614ms)
+✔ an action ending in attack minute lands, while an interrupted move leaves no target or later movement (1.551ms)
+✔ five combat minutes freeze needs and recovery while fire, renewal and streak advance once each (0.8982ms)
+✔ each waiting minute M+1 through M+4 can complete without turns or an invented result (0.4657ms)
+✔ combat death in M+5 wins over completion and keeps the streak (0.258ms)
+✔ M+5 starts ordinary work immediately, counts every combat action once and still shows combat (0.7404ms)
+✔ editing during the wait preserves encounter state and resolves with the newly written program (0.4734ms)
+✔ combat filters unavailable actions and group conditions through the current repertoire (0.6457ms)
+✔ a creature-only discovery pauses before turns and does not write a combat rule (0.3451ms)
+✔ the discovered wolf stays known through another attack, restart and end (0.3859ms)
+✔ an ending exploration and first wolf produce one catalog-ordered discovery (0.3275ms)
+✔ first chill and attack in one minute keep the automatic exploration rule but never start it during combat (0.401ms)
+✔ a departed creature starts cooldown but adds no defeated attack (0.2594ms)
+✔ known attacks do not pause and restart clears combat while reproducing its attack stream (0.2225ms)
+✔ stepMinute and game advancement have the same attack and combat ordering (0.498ms)
+✔ two different ordinary programs on a shared seed meet their first attack in the same minute (1.9036ms)
+✔ M+5 counts the second defeated attack before checking both map requirements (0.2347ms)
+✔ combat time splitting preserves every state and ordered event: first wolf discovery (0.9969ms)
+✔ combat time splitting preserves every state and ordered event: known attack and M+5 (2.004ms)
+✔ combat time splitting preserves every state and ordered event: combat death (0.9296ms)
+✔ combat time splitting preserves every state and ordered event: completion before turns (0.5877ms)
+✔ combat time splitting preserves every state and ordered event: completion after turns (0.6726ms)
+✔ restart replays the actual attack stream and combat minute by minute (41.4045ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 162.3035

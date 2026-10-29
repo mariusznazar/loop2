@@ -1,0 +1,185 @@
+### D-129 — How long does the pace the player picks stay?
+
+The pace the player picks stays until the player picks another, through a pause, the pause at a
+discovery included, „Restart”, „Zakończ” and the next send of a character, and a new game starts at
+1×.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-21
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Restart” after a death at 16× going on at 16×; a character sent after „Zakończ” of a
+    map run at 4× moving at 4×; the first map run of a new game passing at 1×
+  - violates: „Restart”, „Zakończ” or a new send bringing the pace back to 1×; a stop at a
+    discovery changing the pace
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co dzieje się z wybranym tempem przy pauzie, „Restart”, „Zakończ” i kolejnym wysłaniu postaci?" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?"
+
+*Rationale:* the pace is the player's setting of how fast a map run passes, kept from one attempt to
+the next until the player changes it, and a stop at a discovery is the same pause as „Pauza”, so
+whatever treats a pause treats both the same. Accepted with it: a player who ended a map run at 16×
+starts the next one at 16× and can miss its start; with the browser tab hidden, a mage sent then
+passes the whole of Las unseen in half a real minute.
+*Rejected:* each map run, a map run restart included, starting again at 1× — the player would pick
+the pace anew for each attempt.
+
+### D-130 — Where does the player pick the pace, and with which control?
+
+The player picks the pace with five buttons „1×”, „2×”, „4×”, „8×” and „16×” beside „Pauza” in the
+status row of the map run, and the button of the pace in force is a button selected in its group.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-21 · derives from D-44
+- **Verification:** an agent compares a change with the decision:
+  - complies: „4×” shown selected among the five buttons beside „Pauza” while the map run passes at
+    4×, each button made with the shared button selected in its group
+  - violates: a select list of paces; a pace button that creates and styles a `<button>` of its
+    own; the pace in force marked in a way no shared control holds
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?"
+
+*Rationale:* the pace stands where the player watches the map run, beside „Pauza”, the other
+control of its time, and the button selected in its group marks the pace in force with a shared
+control the browser view already holds.
+*Rejected:* a pace control standing apart from „Pauza”, or one built from a control of its own —
+the controls of a map run's time would stand in two places, or the browser view would gain a
+control the shared controls do not hold.
+
+### D-131 — Which edits of the program reset a map run's solving progress?
+
+Of the edits of the program, an edit after which the program differs from the program before it sets
+the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule,
+changing its condition or action, and changing a rule group — also while the map run is paused; an
+act of the program editor after which the program is the same as before it leaves the streak as it
+stands, together with the number of beaten attacks. A map run starts with zero beaten attacks, and a game minute with health lost to cold or hunger leaves their count as it stands.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-136
+- **Verification:** invariants: streak-program-change. An agent compares a change with the decision:
+  - complies: „↑” on the first program rule leaving a streak of 120 at 120; a program rule's action
+    changed in a pause setting the streak to 0 while the character's action in progress goes on; a
+    rule group renamed setting the streak to 0
+  - violates: „↑” on the first program rule setting the streak to 0; a program rule deleted in a
+    pause leaving the streak as it stood
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "9. Która zmiana programu zeruje passę — także czynność edytora, po której program jest taki sam jak przed nią?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16
+
+*Rationale:* a map checks whether a program survives on its own, not whether the player keeps
+fixing it, so a program that differs starts the streak again, in a pause as well; an act that leaves
+the program as it was changes nothing the map checks. Accepted with it: a player who presses „↑” on
+the first program rule keeps the streak, though the player touched the program; the same program has to supply the beaten attacks and the streak, which can lengthen the attempt after an edit.
+*Rejected:* every act of the program editor setting the streak to zero, an act that leaves the
+program the same included, as the predecessor game, loop, did — the player would lose the streak for
+an act that changes nothing; keeping beaten attacks through a changed program — different programs would supply the two kinds of progress; clearing beaten attacks after cold or hunger — the streak already accounts for those losses.
+
+### D-132 — What does the screen show, and what can the player do, after a completion?
+
+After a completion the screen stays on the state of the game minute of the completion and time
+stands still, and the status row reads, in Las, „Minuta {game minute} · Las rozwiązany”, such as
+„Minuta 480 · Las rozwiązany”, and in Las — głębiej „Minuta {game minute} · Las — głębiej rozwiązany”, in the role `positive`. „Pauza” and the pace buttons are gone, and the
+player has „Restart” and „Zakończ” as after a character's death.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: after a completion in game minute 480 of Las the status row reads „Minuta 480 · Las
+    rozwiązany” in `positive`, „Pauza” and the pace buttons are gone, the game minute stays at 480,
+    „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the headquarters
+  - violates: the game going back to the headquarters with a message the moment the map run
+    completes; „Pauza” or a pace button standing after a completion; the text of the completion
+    written in a role other than `positive`
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?"
+
+*Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
+which the program met the map's condition, can repeat the same seed with „Restart” and returns with
+„Zakończ”. The role `positive` says that something works, which a completion shows of the program.
+*Rejected:* going back to the headquarters with a message at the completion — the player would lose
+the state of the map run that solved the map.
+
+### D-133 — Where does the player see a map run's streak and a map's solving condition?
+
+During a map run the status row shows progress for the requirements present in the map's solving condition beside the game minute and the character's activity: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present, as „Minuta 312 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2”. The headquarters shows by each available map the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu” or „Las — głębiej — 540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka”.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a paused map run reading „Minuta 312 · Eksploruje · Passa 120/480 (pauza)”; the
+    sentence of Las standing by the map in the row of each character in the headquarters
+  - violates: a progress bar in place of „Passa 120/480”; a streak target shown for a map that asks for beaten attacks alone; the sentence of the condition written in
+    the code of the headquarters
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?"
+
+*Rationale:* the player sees during a map run how far the program has come towards the map's
+condition, and in the headquarters what each map asks before sending a character. Accepted with it:
+a longer status row, and a new text in each map's data.
+*Rejected:* a progress bar, or the streak with no number of the condition beside it — the player
+would not read how many game minutes the condition still asks for.
+
+### D-134 — Where does the player see that a map is solved?
+
+From the first completion of a map by any of the player's characters, the headquarters shows by
+that map „Mapa: {map} · rozwiązana”, such as „Mapa: Las · rozwiązana”, in the role `positive`.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: after the first completion of Las, the row of each character naming Las reading
+    „Mapa: Las · rozwiązana” in `positive`, also after a later map run on Las ends in death
+  - violates: the mark shown on the screen after the completion and missing from the headquarters;
+    the mark gone once a later map run on Las ends in death
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "7. Gdzie gracz widzi, że Las jest rozwiązany?"
+
+*Rationale:* a solved map stays solved, so the player sees in the headquarters, from which
+characters go out, which maps a program has solved. Accepted with it: a reload of the page starts a
+new game, and the mark goes with it.
+*Rejected:* the solving seen at the moment of the completion alone — the player would not see later
+which maps are solved.
+
+### D-135 — Does the game show the longest streak of a map run?
+
+The game does not show today the longest streak that a map run has reached, during the map run or
+after its end.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the screen after a death of cold reading „Minuta 312 · Mag zamarzł”, with no streak
+  - violates: the screen after a death showing the longest streak the map run reached
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?"
+
+*Rationale:* the streak a map's solving condition counts is the one the status row shows. Accepted
+with it: at a death of cold or hunger the streak stands at zero, so the screen after death does not
+tell how near the map run came to its map's condition.
+*Rejected:* the longest streak of a map run kept, as the predecessor game, loop, kept it, and shown
+on the screen after death.
+
+### D-136 — How is a map solved, and what opens the next one?
+
+The condition that solves a map stands in the map's data — a streak, a number of attacks beaten,
+alone or together — and a map opens when the map its data names as its opener is solved. A streak
+counts the successive game minutes in which the character loses no health to cold or hunger: a game
+minute with such a loss sets it to zero, wounds taken in combat do not, and every change of the
+program rules or rule groups the map run carries out sets it to zero, on every map.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: streak-program-change. For the condition in the map's data and the
+  rest of the streak, an agent compares a change with the decision:
+  - complies: Las — głębiej asking for a streak and two beaten attacks, written in its data
+  - violates: a solving condition coded in the engine for one map; a game minute in which the
+    character is chilled growing the streak; a game minute in which the character is starving
+    leaving the streak as it stood; a streak broken by a wolf's bite
+- **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a map solved, and what opens the next one?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 and D17
+
+*Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
+it, so a change of the program starts the streak again. Wounds from combat do not break it: a
+program is to handle an attack, not avoid it. The condition differs from map to map, so it lives in
+the map's data, and so does the map that opens it.
+*Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
+the backpack at completion as a kind of solving condition while no map asks for it — code and tests
+of a kind the game does not use, a kind that can come with a map that needs it.
+

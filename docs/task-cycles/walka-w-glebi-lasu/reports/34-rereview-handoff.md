@@ -1,0 +1,11 @@
+# One re-review of the whole-review fix
+
+Worktree C:/Storage/repos/loop2-wt/walka-w-glebi-lasu; branch task/walka-w-glebi-lasu. Continue as the independent reviewer that issued report31; same inherited class. User's delegation and no trust boundary/irreversible operation remain unchanged. Pinned review-change method applies. Read required method references for the fix review, no product changes and no full gate.
+
+Review range 99b2a271675fc32a8c136f563bad70c300444e1a..ab2e8d3552d6be4c7cd8b387e779de1c0f4d2e88. Task base7a633a7ab44868427c9c824948b99d4400a631ca. Your original findings reports/31-whole-review.md and verbatim reports/32-blocking-findings.md; fix report reports/33-fix-report.md, handoff32 and its read-scope clarification. Frozen task/spec/plan unchanged.
+
+Mechanical check: clean worktree, nonempty commit ab2e8d3, exactly tests/sim/combat.test.mjs (+65) and tests/sim/encounters.test.mjs (+201/-2), no product source change. Report exact focused commands/exit evidence is present. Author reports combat11/encounters27 pass; targeted R1 group/rule bypass, R2 empty permanent creature list, R3 reversed batch events and retained restart generator all fail new tests, then original sources restored. Full gate/mutation/browser/unchanged Python not rerun by author. Formatting used --no-config --no-editorconfig and lint explicit empty suppressions file; report preserves exact command/results for your judgment.
+
+Judge all R1–R3 and the fix for any new Critical/Important finding. You alone grade and scope. The process allows this one fix review; do not downgrade a remaining blocker to advance. Re-run affected focused checks and mutation assessment necessary to judge the previous real survivors and new tests, without a full gate or unnecessary repetitions. Keep exact command/exit and survivor classification evidence. Source behavior and UI are unchanged; earlier measurement/UI limitations remain unless new evidence changes them.
+
+Write reports/35-rereview.md with exact first-line PASS <sha>, FAIL <sha> or questions; addressed/remaining findings, any new findings, checks/exit, own weakest-point check and limits, explicit Minor and out-of-scope lists (or none). Return first-line verdict, short check outcome and report path. No implementation, return step, PR or merge.

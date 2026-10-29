@@ -1,0 +1,5 @@
+# Spec revision after independent review
+
+Continue as original designer in `C:/Storage/repos/loop2-wt/walka-w-glebi-lasu`, same stage and boundaries. Read the full finding in `.runs/task-cycles/walka-w-glebi-lasu/reports/05-spec-review.md` and correct the spec once. Required correction: name D-58 among changed foundation decisions, limiting its ordinary cooling rule to minutes outside combat while preserving ambient data and rate. The orchestrator read pinned foundation_step.md and current D-58: accepted task To do 6/Q1 explicitly requires frozen needs during combat, so this is authorized by the task and creates no human question. Preserve all other accepted requirements and autonomous answers.
+
+Read the applicable spec revision instructions; no product/foundation code edits and no gate. Write revision report to `.runs/task-cycles/walka-w-glebi-lasu/reports/07-spec-revision-report.md`, naming the addressed finding, changes, checks/exit codes and remaining limits. Do not overwrite the original designer or reviewer reports. Return done with report path for the same reviewer's one re-review.
