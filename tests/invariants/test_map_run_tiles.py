@@ -9,7 +9,8 @@ through the public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, 
 `end`, recording the map run's tiles at each start.
 The new game of each start has an Understanding that holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
-program stay what the check drives.
+program stay what the check drives. Its solved maps include Las, the prerequisite for
+Las — głębiej (D-149); this input opens the map without changing its generated tiles.
 
 Reading of the sentence:
 - a map run starts: the state a `send` returns, and the state a `restart` returns;
@@ -64,6 +65,8 @@ BUILT_DIRECTORY = "dist/public/sim"
 MAP_RESOURCES = {
     "forest": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
                {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
+    "forestDeep": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
+                   {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
 }
 # The name of the character sent; the first character a new game creates takes the id 1.
 CHARACTER_NAME = "Ala"
@@ -93,6 +96,7 @@ for (const mapId of config.mapIds) {
   for (const realMs of config.realTimes) {
     let state = game.setProgram(
       await newKnowingGame(game, join(simDirectory, 'game.js')), config.program).state;
+    state = { ...state, solvedMaps: ['forest'] };
     state = game.createCharacter(state, config.characterName).state;
     const record = (how) => out.starts.push({ mapId, how, realMs,
       tiles: JSON.parse(JSON.stringify(state.run.tiles)) });
