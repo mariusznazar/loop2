@@ -16,9 +16,10 @@ import {
   programById,
   reconcileCounts,
   rowProgram,
-  sameData,
   teamProgram,
+  withCopyProgram,
   withProgramContent,
+  zeroCounts,
 } from "./programs.js";
 import { mixSeed } from "./random.js";
 import {
@@ -125,11 +126,6 @@ function startRun(
   traits: Traits,
   copy: ProgramCopy,
 ): GameResult {
-  const zeros = Object.fromEntries(
-    copy.program.groups.flatMap((group) =>
-      group.rules.map((rule) => [rule.id, 0]),
-    ),
-  );
   const started = newMapRun(
     mapOf(mapId),
     seed,
@@ -140,7 +136,7 @@ function startRun(
   return {
     state: {
       ...state,
-      ruleCounts: countStarts(zeros, started.events),
+      ruleCounts: countStarts(zeroCounts(copy.program), started.events),
       countsProgram: null,
       run: { ...started.run, copy },
       paused: false,
@@ -193,22 +189,8 @@ export function newGame(): GameState {
 export function setProgram(state: GameState, program: Program): GameResult {
   const run = state.run;
   if (run) {
-    const checked = checkProgram(program, run);
-    const zeroed = !mapRunEnded(run) && !sameData(run.copy.program, checked);
     return {
-      state: {
-        ...state,
-        ruleCounts: reconcileCounts(
-          state.ruleCounts,
-          run.copy.program,
-          checked,
-        ),
-        run: {
-          ...run,
-          copy: { ...run.copy, program: checked },
-          ...(zeroed && { streak: 0, defeatedAttacks: 0 }),
-        },
-      },
+      state: withCopyProgram(state, run, checkProgram(program, run)),
       events: [],
     };
   }

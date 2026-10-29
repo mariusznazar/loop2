@@ -20,6 +20,7 @@
       "tests/sim/combat.test.mjs",
       "tests/sim/completion.test.mjs",
       "tests/sim/conditions.test.mjs",
+      "tests/sim/copy-actions.test.mjs",
       "tests/sim/copy.test.mjs",
       "tests/sim/data.test.mjs",
       "tests/sim/discovery.test.mjs",

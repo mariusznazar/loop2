@@ -2,10 +2,12 @@ import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import type { GameResult } from "./game.js";
 import { conditionNumber, onStep } from "./program.js";
+import { mapRunEnded } from "./run.js";
 import type {
   Action,
   CharacterId,
   Condition,
+  GameMapRun,
   GameState,
   ItemId,
   MapRun,
@@ -493,6 +495,191 @@ export function pickProgram(
     state: {
       ...state,
       pickedPrograms: { ...state.pickedPrograms, [characterId]: programId },
+    },
+    events: [],
+  };
+}
+
+/** The counts of a copy that has not yet fired: every rule of `program` at zero. */
+export function zeroCounts(program: Program): GameState["ruleCounts"] {
+  return Object.fromEntries(
+    program.groups.flatMap((group) => group.rules.map((rule) => [rule.id, 0])),
+  );
+}
+
+/**
+ * The state with the map run's copy replaced by `program`, already checked: the counts are
+ * reconciled with it and, where it differs from the copy before it — groups and rules in order with
+ * their identities, conditions and actions, and the identity counters — the streak and the beaten
+ * attacks of a map run not ended become 0, paused or not. The copy's program number and base stay.
+ */
+export function withCopyProgram(
+  state: GameState,
+  run: GameMapRun,
+  program: Program,
+): GameState {
+  const zeroed = !mapRunEnded(run) && !sameData(run.copy.program, program);
+  return {
+    ...state,
+    ruleCounts: reconcileCounts(state.ruleCounts, run.copy.program, program),
+    run: {
+      ...run,
+      copy: { ...run.copy, program },
+      ...(zeroed && { streak: 0, defeatedAttacks: 0 }),
+    },
+  };
+}
+
+/**
+ * The measure „the copy has unsaved changes”: the map run's copy differs from its base, compared
+ * as `setProgram` compares programs (the identity counters included), or its program is gone from
+ * the list. False without a map run.
+ */
+export function copyHasUnsavedChanges(state: GameState): boolean {
+  const run = state.run;
+  if (!run) return false;
+  return (
+    !sameData(run.copy.program, run.copy.base) ||
+    programById(state.programs, run.copy.programId) === undefined
+  );
+}
+
+/**
+ * The measure „the copy's program has changes the copy lacks”: the copy's program is on the list
+ * and its content differs from the copy's base, compared as `setProgram` compares programs. False
+ * without a map run and where the program is gone.
+ */
+export function programHasChangesCopyLacks(state: GameState): boolean {
+  const run = state.run;
+  if (!run) return false;
+  const owner = programById(state.programs, run.copy.programId);
+  return owner !== undefined && !sameData(owner.program, run.copy.base);
+}
+
+function requireMapRun(state: GameState, operation: string): GameMapRun {
+  if (!state.run) throw new Error(`${operation}: there is no map run`);
+  return state.run;
+}
+
+/**
+ * Saves the map run's copy into its program: the program's content and the copy's base become the
+ * copy. The copy, the streak, the beaten attacks and the counts stay, and nothing asks for
+ * confirmation where the program has changes the copy lacks. Allowed also in a map run ended in
+ * death or a completion. Throws without a map run, without unsaved changes and with the copy's
+ * program gone.
+ */
+export function saveCopyIntoProgram(state: GameState): GameResult {
+  const run = requireMapRun(state, "saveCopyIntoProgram");
+  const owner = programById(state.programs, run.copy.programId);
+  if (!owner)
+    throw new Error("saveCopyIntoProgram: the copy's program is gone");
+  if (!copyHasUnsavedChanges(state))
+    throw new Error("saveCopyIntoProgram: the copy has no unsaved changes");
+  return {
+    state: {
+      ...state,
+      programs: withProgramContent(state.programs, owner.id, run.copy.program),
+      run: { ...run, copy: { ...run.copy, base: run.copy.program } },
+    },
+    events: [],
+  };
+}
+
+/**
+ * Saves the map run's copy as a new program named by `programName` for `text`, at the end of the
+ * list with the next program number and the copy's content. The copy takes the new program's number
+ * and its base becomes the copy; the character's program used last becomes the new program. The
+ * copy's content, the streak, the beaten attacks and the counts stay, and this is no switch.
+ * Allowed also in a map run ended in death or a completion and with the copy's program gone. Throws
+ * without a map run, without unsaved changes and on a refused name.
+ */
+export function saveCopyAsNewProgram(
+  state: GameState,
+  text: string,
+): GameResult {
+  const run = requireMapRun(state, "saveCopyAsNewProgram");
+  if (!copyHasUnsavedChanges(state))
+    throw new Error("saveCopyAsNewProgram: the copy has no unsaved changes");
+  const checked = programName(state.programs, text);
+  if (!checked.ok)
+    throw new Error(
+      `saveCopyAsNewProgram: the name is refused as ${checked.reason}`,
+    );
+  const id = state.nextProgramId;
+  return {
+    state: {
+      ...state,
+      programs: [
+        ...state.programs,
+        { id, name: checked.name, program: run.copy.program },
+      ],
+      nextProgramId: id + 1,
+      lastUsedPrograms: { ...state.lastUsedPrograms, [run.character.id]: id },
+      run: {
+        ...run,
+        copy: {
+          program: run.copy.program,
+          programId: id,
+          deletedName: null,
+          base: run.copy.program,
+        },
+      },
+    },
+    events: [],
+  };
+}
+
+/**
+ * Discards the changes of the map run's copy: the copy becomes its base, as an edit of the copy
+ * does — the counts are reconciled and the streak and the beaten attacks of a map run not ended
+ * become 0 where the copy changes. Allowed also in a map run ended in death or a completion. Throws
+ * without a map run, without unsaved changes and with the copy's program gone.
+ */
+export function discardCopyChanges(state: GameState): GameResult {
+  const run = requireMapRun(state, "discardCopyChanges");
+  if (programById(state.programs, run.copy.programId) === undefined)
+    throw new Error("discardCopyChanges: the copy's program is gone");
+  if (!copyHasUnsavedChanges(state))
+    throw new Error("discardCopyChanges: the copy has no unsaved changes");
+  return { state: withCopyProgram(state, run, run.copy.base), events: [] };
+}
+
+/**
+ * Switches the character of the map run to the program numbered `programId`: the map run gets a
+ * fresh copy record of that program, the streak and the beaten attacks become 0, every count of
+ * the new copy's rules starts from zero and the character's program used last becomes it. The seed,
+ * the minute, the map, the body, the backpack, the action in progress and the pause, a pause at a
+ * discovery included, stay as they are. Throws without a map run, with a map run ended in death or
+ * a completion, on a program not on the list and on the program the copy belongs to.
+ */
+export function switchProgram(
+  state: GameState,
+  programId: ProgramId,
+): GameResult {
+  const run = requireMapRun(state, "switchProgram");
+  if (mapRunEnded(run)) throw new Error("switchProgram: the map run has ended");
+  const chosen = requireProgram(state, programId, "switchProgram");
+  if (run.copy.programId === programId)
+    throw new Error("switchProgram: the copy already belongs to that program");
+  return {
+    state: {
+      ...state,
+      ruleCounts: zeroCounts(chosen.program),
+      lastUsedPrograms: {
+        ...state.lastUsedPrograms,
+        [run.character.id]: chosen.id,
+      },
+      run: {
+        ...run,
+        copy: {
+          program: chosen.program,
+          programId: chosen.id,
+          deletedName: null,
+          base: chosen.program,
+        },
+        streak: 0,
+        defeatedAttacks: 0,
+      },
     },
     events: [],
   };
