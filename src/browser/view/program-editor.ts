@@ -128,7 +128,11 @@ export function dropRule(
  */
 type ResourceAction = Extract<Action, { resource: ResourceId }>;
 
-const RESOURCE_ACTION_KINDS: readonly ActionKind[] = ["walkTo", "gather"];
+const RESOURCE_ACTION_KINDS: readonly ActionKind[] = [
+  "walkTo",
+  "gather",
+  "patrol",
+];
 
 function takesResource(kind: ActionKind): kind is ResourceAction["kind"] {
   return RESOURCE_ACTION_KINDS.includes(kind);

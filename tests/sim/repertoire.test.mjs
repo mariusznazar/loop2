@@ -62,6 +62,7 @@ const FULL = {
   actions: ALL_ACTIONS,
   conditions: ALL_CONDITIONS,
   items: ALL_ITEMS,
+  trees: [],
   creatures: ALL_CREATURES,
 };
 // Skill -> the actions it grows, as To do 3 gives them.
@@ -79,12 +80,14 @@ test("a new game's Understanding holds the condition Zawsze alone", () => {
     actions: [],
     conditions: ["always"],
     items: [],
+    trees: [],
     creatures: [],
   });
   assert.deepEqual(newGame().understanding, {
     actions: [],
     conditions: ["always"],
     items: [],
+    trees: [],
     creatures: [],
   });
 });
@@ -104,6 +107,7 @@ test("the repertoire keeps discovered creatures in their own list", () => {
     actions: ["kick"],
     conditions: ["always"],
     items: [],
+    trees: [],
     creatures: ["wolf"],
   };
   const repertoire = repertoireOf(understanding, []);
@@ -118,6 +122,7 @@ test("the repertoire of the mage keeps the order of the Understanding", () => {
     actions: ["eat", "walkTo", "explore"],
     conditions: ["satietyBelow", "always"],
     items: ["campfire", "berry"],
+    trees: [],
     creatures: [],
   };
   assert.deepEqual(repertoireOf(understanding, ALL_SKILLS), understanding);
@@ -148,6 +153,7 @@ test("an action is in the repertoire only where the Understanding holds it", () 
     actions: ["wander", "gather"],
     conditions: [],
     items: [],
+    trees: [],
     creatures: [],
   };
   assert.deepEqual(repertoireOf(understanding, ALL_SKILLS).actions, [
@@ -164,6 +170,7 @@ test("computing a repertoire changes neither argument and shares no array with t
     actions: ["explore", "eat"],
     conditions: ["always"],
     items: ["stick"],
+    trees: [],
     creatures: [],
   };
   const predispositions = ["exploration"];
@@ -172,6 +179,7 @@ test("computing a repertoire changes neither argument and shares no array with t
     actions: ["explore", "eat"],
     conditions: ["always"],
     items: ["stick"],
+    trees: [],
     creatures: [],
   });
   assert.deepEqual(predispositions, ["exploration"]);
@@ -185,6 +193,7 @@ const SMALL = {
   actions: ["explore", "walkTo", "gather", "wander", "eat"],
   conditions: ["always", "hereBelow", "itemBelow", "temperatureBelow"],
   items: ["stick", "campfire"],
+  trees: [],
   creatures: [],
 };
 
@@ -269,6 +278,7 @@ test("an action and a condition that name no target need no item", () => {
     actions: ["explore"],
     conditions: ["always"],
     items: [],
+    trees: [],
     creatures: [],
   };
   assert.equal(actionInRepertoire(bare, { kind: "explore" }), true);
@@ -364,6 +374,7 @@ test("the editor shows the repertoire of the mage through the Understanding, in 
     actions: ["explore", "wander", "eat"],
     conditions: ["always"],
     items: ["stick"],
+    trees: [],
     creatures: [],
   };
   const hq = { ...createCharacter(newGame(), "Ala").state, understanding };
@@ -388,6 +399,7 @@ test("creating, sending, restarting, pausing, changing the program and ending le
     actions: ["explore", "walkTo"],
     conditions: ["always", "hereBelow"],
     items: ["stick", "campfire"],
+    trees: [],
     creatures: [],
   };
   const expected = structuredClone(understanding);
@@ -421,6 +433,7 @@ test("a character's death leaves the Understanding as it is", () => {
     actions: ["wander", "explore"],
     conditions: ["always", "temperatureBelow"],
     items: [],
+    trees: [],
     creatures: [],
   };
   const state = advanceMinutes({ ...sent(), understanding }, 3000).state;
@@ -429,6 +442,7 @@ test("a character's death leaves the Understanding as it is", () => {
     actions: ["wander", "explore"],
     conditions: ["always", "temperatureBelow"],
     items: [],
+    trees: [],
     creatures: [],
   });
 });

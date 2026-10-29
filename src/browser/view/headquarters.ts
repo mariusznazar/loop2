@@ -3,6 +3,8 @@ import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import { canSendMap, characterName } from "../sim/game.js";
 import { rowProgram } from "../sim/programs.js";
+import type { BranchId } from "../sim/data/skills.js";
+import { createCharacterSkills } from "./character-skills.js";
 import type {
   CharacterId,
   Chest,
@@ -71,6 +73,7 @@ export function programPositions(
 
 /** What the headquarters asks for; the app turns each into a simulation call. */
 export type HeadquartersControls = {
+  buy(characterId: CharacterId, branch: BranchId): void;
   /** Creates a character of the given name, already trimmed and not empty. */
   create(name: string): void;
   /** Picks the program of a character's row, kept until the character is sent. */
@@ -160,11 +163,12 @@ export function createHeadquarters(
   });
   nameField.input.addEventListener("input", () => nameField.setError(null));
 
-  let shownTeam: Team | null = null;
+  let shownTeam = "";
   let shownSolved: MapId[] | null = null;
   let shownPrograms = "";
   let sendButtons: HTMLButtonElement[] = [];
   let programLists = new Map<CharacterId, HTMLSelectElement>();
+  let skills: ReturnType<typeof createCharacterSkills>[] = [];
 
   function renderTeam(
     shown: Team,
@@ -173,6 +177,7 @@ export function createHeadquarters(
   ): void {
     sendButtons = [];
     programLists = new Map();
+    skills = [];
     const rows = shown.characters.map((character) => {
       const row = document.createElement("li");
       row.className = "team-member";
@@ -211,6 +216,11 @@ export function createHeadquarters(
         sendButtons.push(button);
         row.append(where, condition, button);
       }
+      const trees = createCharacterSkills(character.id, (id) =>
+        controls.buy(character.id, id),
+      );
+      skills.push(trees);
+      row.append(trees.element);
       return row;
     });
     list.replaceChildren(...rows);
@@ -233,12 +243,20 @@ export function createHeadquarters(
       const programsKey = JSON.stringify(
         state.programs.map((saved) => [saved.id, saved.name]),
       );
+      const teamKey = JSON.stringify({
+        characters: state.team.characters.map(({ id, name, archetypeId }) => ({
+          id,
+          name,
+          archetypeId,
+        })),
+        chest: state.team.chest,
+      });
       if (
-        state.team !== shownTeam ||
+        teamKey !== shownTeam ||
         state.solvedMaps !== shownSolved ||
         programsKey !== shownPrograms
       ) {
-        shownTeam = state.team;
+        shownTeam = teamKey;
         shownSolved = state.solvedMaps;
         shownPrograms = programsKey;
         renderTeam(state.team, state.solvedMaps, state.programs);
@@ -251,6 +269,7 @@ export function createHeadquarters(
         ).value;
       // One map run at a time: while one goes on, no other character can be sent.
       for (const button of sendButtons) button.disabled = state.run !== null;
+      for (const panel of skills) panel.update(state);
     },
   };
 }

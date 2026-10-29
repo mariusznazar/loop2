@@ -20,6 +20,8 @@ import {
   switchProgram,
 } from "../sim/programs.js";
 import type { GameState } from "../sim/types.js";
+import { buyBranch } from "../sim/skills.js";
+import { practiceText } from "./character-skills.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createHeadquarters } from "./headquarters.js";
@@ -113,6 +115,9 @@ export function createGameView(): GameView {
   const clock = startClock(store);
 
   const headquarters = createHeadquarters({
+    buy(characterId, branch) {
+      store.apply(buyBranch(state, characterId, branch));
+    },
     create(name) {
       store.apply(createCharacter(state, name));
     },
@@ -144,11 +149,14 @@ export function createGameView(): GameView {
     },
   });
   const bodyRow = createBodyRow();
+  const practice = document.createElement("p");
+  practice.className = "run-practice";
   runPanel.append(
     statusRow.element,
     statusRow.discovery,
     combatLine.element,
     bodyRow.element,
+    practice,
     terrainPanel.element,
   );
   mapColumn.append(headquarters.element, runPanel);
@@ -160,6 +168,8 @@ export function createGameView(): GameView {
     statusRow.update(state);
     combatLine.update(state.run?.lastCombat ?? null);
     bodyRow.update(state);
+    practice.textContent = practiceText(state.run?.practice ?? {});
+    practice.hidden = practice.textContent === "";
     terrainPanel.update(state);
   }
 

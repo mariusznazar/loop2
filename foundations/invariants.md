@@ -945,6 +945,16 @@ At every game minute of a map run, the mage's nature energy lies between 0 and t
 - **Part:** simulation
 - **Violated:** no
 
+## action-duration-minimum
+
+An action shortened by bought branches lasts at least one game minute.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/_zadania/wprawa_i_drzewa_loop2.md § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
+- **Part:** simulation
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

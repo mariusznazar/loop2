@@ -18,6 +18,16 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 const mapId = Object.keys(MAPS)[0];
 const REAL_MS = 1760000000000;
 const LATER_MS = 1760000123456;
+const ZERO_SKILLS = {
+  exploration: { practice: 0, ranks: {} },
+  smallItemGathering: { practice: 0, ranks: {} },
+  campfireCrafting: { practice: 0, ranks: {} },
+  eating: { practice: 0, ranks: {} },
+  flameSpell: { practice: 0, ranks: {} },
+  oneHandedCombat: { practice: 0, ranks: {} },
+  kicking: { practice: 0, ranks: {} },
+  dodging: { practice: 0, ranks: {} },
+};
 const EXPLORING = programFromRules({
   condition: { kind: "always" },
   action: { kind: "explore" },
@@ -48,18 +58,21 @@ test("a created character joins the end of the team's list as an elemental mage,
       name: "Ala",
       archetypeId: "elementalMage",
       traits: { carryingCapacity: 15 },
+      skills: ZERO_SKILLS,
     },
     {
       id: 2,
       name: "Ola",
       archetypeId: "elementalMage",
       traits: { carryingCapacity: 15 },
+      skills: ZERO_SKILLS,
     },
     {
       id: 3,
       name: "Ela",
       archetypeId: "elementalMage",
       traits: { carryingCapacity: 15 },
+      skills: ZERO_SKILLS,
     },
   ]);
   assert.equal(state.nextCharacterId, 4);

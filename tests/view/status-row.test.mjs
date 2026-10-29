@@ -371,6 +371,7 @@ const EXPLORED_REVEALED = {
   actions: ["walkTo", "gather"],
   conditions: ["hereBelow", "itemBelow"],
   items: ["stick", "berry"],
+  trees: [],
   creatures: [],
 };
 
@@ -387,9 +388,10 @@ test("the text for the first chill names its actions and its condition with the 
       actions: ["explore", "wander"],
       conditions: ["temperatureBelow"],
       items: [],
+      trees: ["exploration"],
       creatures: [],
     }),
-    "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+    "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
   );
 });
 
@@ -399,6 +401,7 @@ test("a discovery of an action alone has no second sentence, and the campfire is
       actions: ["lightItem"],
       conditions: [],
       items: ["campfire"],
+      trees: [],
       creatures: [],
     }),
     "Odkryto: Zapal — patyk, Ognisko.",
@@ -411,6 +414,7 @@ test("a discovered creature is named from the creature data", () => {
       actions: [],
       conditions: [],
       items: [],
+      trees: [],
       creatures: ["wolf"],
     }),
     "Odkryto: Wilk.",
@@ -423,6 +427,7 @@ test("a condition that takes no number is named without a unit, and a discovery 
       actions: [],
       conditions: ["awayFromCampfire"],
       items: [],
+      trees: [],
       creatures: [],
     }),
     "W regułach można teraz sprawdzić: Z dala od — ognisko.",
@@ -451,7 +456,7 @@ test("on the screen the line is shown while the game holds a discovery and hidde
     assert.equal(line.hidden, false);
     assert.equal(
       line.textContent,
-      "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+      "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
     );
     assert.equal(
       row.element.children[0].textContent,
@@ -574,6 +579,7 @@ test("a discovery held at a completion stands under the completion's row", async
       actions: ["explore"],
       conditions: [],
       items: [],
+      trees: [],
       creatures: [],
     };
     row.update({ ...completed(running, 480), discovery });

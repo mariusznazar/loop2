@@ -36,12 +36,14 @@ const CHILLED = {
   actions: ["explore", "wander"],
   conditions: ["always", "temperatureBelow"],
   items: [],
+  trees: ["exploration"],
   creatures: [],
 };
 const NOTHING = {
   actions: [],
   conditions: ["always"],
   items: [],
+  trees: [],
   creatures: [],
 };
 const RESOURCES = ["stick", "berry", "moss", "fiber"];
@@ -134,6 +136,7 @@ test("a new game sent with its one empty group waits until the minute of the fir
       actions: ["explore", "wander"],
       conditions: ["temperatureBelow"],
       items: [],
+      trees: ["exploration"],
       creatures: [],
     },
     {
@@ -280,9 +283,10 @@ test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, 
     {
       kind: "discovered",
       minute: 104,
-      actions: ["walkTo", "gather"],
+      actions: ["walkTo", "gather", "patrol"],
       conditions: ["hereBelow", "itemBelow"],
       items: held,
+      trees: ["smallItemGathering"],
       creatures: [],
     },
   ]);
@@ -293,18 +297,20 @@ test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, 
     "activityStarted",
   ]);
   assert.deepEqual(explored.state.understanding, {
-    actions: ["explore", "wander", "walkTo", "gather"],
+    actions: ["explore", "wander", "walkTo", "gather", "patrol"],
     conditions: ["always", "temperatureBelow", "hereBelow", "itemBelow"],
     items: held,
+    trees: ["exploration", "smallItemGathering"],
     creatures: [],
   });
 });
 
 test("a later revealed tile adds its new items only, and a tile of known items reveals nothing", () => {
   const understanding = {
-    actions: ["explore", "wander", "walkTo", "gather"],
+    actions: ["explore", "wander", "walkTo", "gather", "patrol"],
     conditions: ["always", "temperatureBelow", "hereBelow", "itemBelow"],
     items: ["stick"],
+    trees: ["exploration", "smallItemGathering"],
     creatures: [],
   };
   const exploring = (stock) =>
@@ -320,6 +326,7 @@ test("a later revealed tile adds its new items only, and a tile of known items r
       actions: [],
       conditions: [],
       items: ["moss", "fiber"],
+      trees: [],
       creatures: [],
     },
   ]);
@@ -342,6 +349,7 @@ const ROWS = [
     actions: ["craftCampfire", "lightCampfire", "lightItem"],
     conditions: [],
     items: ["campfire"],
+    trees: ["campfireCrafting", "flameSpell"],
     creatures: [],
   },
   {
@@ -354,6 +362,7 @@ const ROWS = [
     actions: ["eat"],
     conditions: ["satietyBelow"],
     items: [],
+    trees: ["eating"],
     creatures: [],
   },
   {
@@ -368,6 +377,7 @@ const ROWS = [
     actions: ["walkToCampfire"],
     conditions: ["campfireLeftBelow", "awayFromCampfire"],
     items: [],
+    trees: [],
     creatures: [],
   },
   {
@@ -384,6 +394,7 @@ const ROWS = [
     // Task plomyk, To do 5 (plomyk_loop2.md:22): with „Zasil — ognisko”, in one discovery line.
     conditions: ["natureEnergyBelow"],
     items: [],
+    trees: ["campfireCrafting"],
     creatures: [],
   },
   {
@@ -398,6 +409,7 @@ const ROWS = [
     actions: ["feedCampfire"],
     conditions: ["natureEnergyBelow"],
     items: [],
+    trees: ["campfireCrafting"],
     creatures: [],
   },
 ];
@@ -412,6 +424,7 @@ for (const row of ROWS) {
         actions: row.actions,
         conditions: row.conditions,
         items: row.items,
+        trees: row.trees,
         creatures: [],
       },
     ]);
@@ -419,6 +432,7 @@ for (const row of ROWS) {
       actions: row.actions,
       conditions: ["always", ...row.conditions],
       items: row.items,
+      trees: row.trees,
       creatures: [],
     });
     assert.deepEqual(kinds(result.events), [
@@ -464,6 +478,7 @@ test("a known item and its actions, revealed again, reveal nothing", () => {
     actions: ["craftCampfire", "lightCampfire", "lightItem"],
     conditions: ["always"],
     items: ["campfire"],
+    trees: ["campfireCrafting", "flameSpell"],
     creatures: [],
   };
   const state = prepared(known, (run) => ({
@@ -522,9 +537,10 @@ test("the Understanding stands after death, Restart and Zakończ, and stands for
     "precondition: the explored tile holds a resource",
   );
   const learned = {
-    actions: ["explore", "wander", "walkTo", "gather"],
+    actions: ["explore", "wander", "walkTo", "gather", "patrol"],
     conditions: ["always", "temperatureBelow", "hereBelow", "itemBelow"],
     items: held,
+    trees: ["exploration", "smallItemGathering"],
     creatures: [],
   };
   assert.deepEqual(dead.understanding, learned);
@@ -573,7 +589,7 @@ test("a body temperature of exactly 35,0 °C after the minute is not a chill, on
 
 test("what the chill reveals is exactly its row, and the condition Zawsze, which nothing reveals, is not added to an Understanding that lacks it", () => {
   const state = prepared(
-    { actions: [], conditions: [], items: [], creatures: [] },
+    { actions: [], conditions: [], items: [], trees: [], creatures: [] },
     () => ({
       body: { temperature: 34.9, satiety: 100, health: 100 },
     }),
@@ -583,6 +599,7 @@ test("what the chill reveals is exactly its row, and the condition Zawsze, which
     actions: ["explore", "wander"],
     conditions: ["temperatureBelow"],
     items: [],
+    trees: ["exploration"],
     creatures: [],
   });
 });
@@ -593,6 +610,7 @@ test("a revealing event reveals what of its row is still new, though its actions
     actions: ["craftCampfire", "lightCampfire"],
     conditions: ["always"],
     items: [],
+    trees: ["campfireCrafting", "flameSpell"],
     creatures: [],
   };
   const state = prepared(known, (run) => ({
@@ -608,6 +626,7 @@ test("a revealing event reveals what of its row is still new, though its actions
       actions: ["lightItem"],
       conditions: [],
       items: ["campfire"],
+      trees: [],
       creatures: [],
     },
   ]);
@@ -631,6 +650,7 @@ const CHILL_REVEALED = {
   actions: ["explore", "wander"],
   conditions: ["temperatureBelow"],
   items: [],
+  trees: ["exploration"],
   creatures: [],
 };
 
@@ -655,6 +675,7 @@ test("a span of minutes of a new game sent, given 100, ends at the minute of the
     actions: discoveries(second.events)[0].actions,
     conditions: discoveries(second.events)[0].conditions,
     items: discoveries(second.events)[0].items,
+    trees: ["smallItemGathering"],
     creatures: [],
   });
   assert.ok(second.state.discovery.actions.includes("walkTo"));

@@ -18,6 +18,14 @@ import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { ITEMS } from "./data/items.js";
 import type { MapDef } from "./data/maps.js";
+import { PATROL_LIMIT } from "./data/skills.js";
+import {
+  actionMinutes,
+  copySkills,
+  practiced,
+  skillBonus,
+  sumPractice,
+} from "./skills.js";
 import { neighbours, sameHex, tileAt } from "./hex.js";
 import { drawLayout } from "./layout.js";
 import {
@@ -34,6 +42,7 @@ import type {
   Activity,
   Backpack,
   CharacterId,
+  CharacterSkills,
   CombatExchange,
   CombatOutcome,
   CreatureId,
@@ -113,6 +122,7 @@ function startActivity(
         break;
       }
       case "gather":
+      case "patrol":
       case "craftCampfire":
       case "lightCampfire":
       case "lightItem":
@@ -121,6 +131,7 @@ function startActivity(
         minutes = ACTIONS[action.kind].minutes;
         break;
     }
+    minutes = actionMinutes(minutes, action.kind, run.character.skills);
   }
 
   const current: CurrentActivity = {
@@ -151,12 +162,21 @@ type Gathering = Pick<MapRun, "tiles" | "character" | "gatherRandom">;
  * more than lies on the tile —; a miss changes neither (D-66). A tile gathered to 0 pieces keeps
  * the key of its resource.
  */
-function finishGathering(state: Gathering, resource: ResourceId): Gathering {
-  const draw = nextRandom(state.gatherRandom);
+function finishGathering(
+  state: Gathering,
+  resource: ResourceId,
+  patrol: boolean,
+): Gathering {
+  const draw = patrol
+    ? { state: state.gatherRandom, value: 0 }
+    : nextRandom(state.gatherRandom);
   const { character } = state;
   const here = tileAt(state.tiles, character.at);
   const pieces = here?.revealed ? (here.stock[resource] ?? 0) : 0;
-  const hit = draw.value < BALANCE.gatherChance;
+  const hit =
+    patrol ||
+    draw.value <
+      BALANCE.gatherChance + skillBonus(character.skills, "gatherChance");
   if (
     !hit ||
     pieces <= 0 ||
@@ -165,15 +185,23 @@ function finishGathering(state: Gathering, resource: ResourceId): Gathering {
     return { ...state, gatherRandom: draw.state };
   // The item of a resource is the item of the same identifier (items.ts).
   const item: ItemId = resource;
+  const amount = Math.min(
+    pieces,
+    backpackCap(character) - backpackCount(character.backpack),
+    patrol ? PATROL_LIMIT : 1 + skillBonus(character.skills, "gatherAmount"),
+  );
   return {
     tiles: state.tiles.map((tile) =>
       tile === here
-        ? { ...tile, stock: { ...tile.stock, [resource]: pieces - 1 } }
+        ? { ...tile, stock: { ...tile.stock, [resource]: pieces - amount } }
         : tile,
     ),
     character: {
       ...character,
-      backpack: { ...character.backpack, [item]: character.backpack[item] + 1 },
+      backpack: {
+        ...character.backpack,
+        [item]: character.backpack[item] + amount,
+      },
     },
     gatherRandom: draw.state,
   };
@@ -219,7 +247,11 @@ function landUse(state: Landing, action: Action): Landing {
       };
     }
     case "lightCampfire": {
-      const { item, count } = CAMPFIRE.light;
+      const { item } = CAMPFIRE.light;
+      const count =
+        skillBonus(character.skills, "cleanFlame") > 0
+          ? 0
+          : CAMPFIRE.light.count;
       if (!here || here.minutesLeft > 0 || backpack[item] < count) return state;
       return {
         ...state,
@@ -255,7 +287,10 @@ function landUse(state: Landing, action: Action): Landing {
           campfire === here
             ? {
                 ...campfire,
-                minutesLeft: campfire.minutesLeft + fuel.burnMinutes,
+                minutesLeft:
+                  campfire.minutesLeft +
+                  fuel.burnMinutes +
+                  skillBonus(character.skills, "fuel"),
               }
             : campfire,
         ),
@@ -302,17 +337,20 @@ export function newMapRun(
   program: Program,
   ids: { mapId: MapId; characterId: CharacterId },
   traits: Traits = newTraits(),
+  skills: CharacterSkills = {},
 ): { run: MapRun; events: GameEvent[] } {
   const { tiles, entrance } = drawLayout(map, seed);
   const base = {
     mapId: ids.mapId,
     seed,
     minute: 0,
+    practice: {},
     tiles,
     character: {
       id: ids.characterId,
       at: entrance,
       traits: { ...traits },
+      skills: copySkills(skills),
       backpack: newBackpack(),
     },
     body: startingBody(),
@@ -439,6 +477,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   let tiles = world.tiles;
   let character = run.character;
   let gatherRandom = run.gatherRandom;
+  let practice = run.practice;
   let landed: Landing = {
     character,
     body,
@@ -449,18 +488,30 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
 
   if (finished.activity.kind === "rule") {
     const action = finished.activity.action;
-    if (action.kind === "gather") {
+    if (action.kind === "gather" || action.kind === "patrol") {
       const gathered = finishGathering(
         { tiles, character, gatherRandom },
         action.resource,
+        action.kind === "patrol",
       );
+      if (gathered.character !== character)
+        practice = practiced(practice, action.kind);
       ({ tiles, character, gatherRandom } = gathered);
     } else if (action.kind === "explore") {
       const at = run.character.at;
-      tiles = world.tiles.map((tile) =>
-        sameHex(tile.at, at) ? { ...tile, revealed: true } : tile,
-      );
-      events.push({ kind: "tileRevealed", minute, at: { ...at } });
+      const here = tileAt(world.tiles, at);
+      if (here && !here.revealed) {
+        const targets =
+          skillBonus(character.skills, "scout") > 0
+            ? [here, ...neighbours(world.tiles, at)]
+            : [here];
+        tiles = world.tiles.map((tile) => {
+          if (tile.revealed || !targets.includes(tile)) return tile;
+          events.push({ kind: "tileRevealed", minute, at: { ...tile.at } });
+          return { ...tile, revealed: true };
+        });
+        practice = practiced(practice, action.kind);
+      }
     } else if (finished.stepTo) {
       const to = finished.stepTo;
       character = { ...run.character, at: { ...to } };
@@ -471,7 +522,9 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
         to: { ...to },
       });
     } else {
-      landed = finishUse(landed, action);
+      const used = finishUse(landed, action);
+      if (used !== landed) practice = practiced(practice, action.kind);
+      landed = used;
       character = landed.character;
     }
   }
@@ -487,6 +540,7 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
       campfires: landed.campfires,
       burningItems: landed.burningItems,
       gatherRandom,
+      practice,
       streak,
     },
     events,
@@ -554,6 +608,7 @@ export function finishMinute(
     run = {
       ...run,
       body: { ...run.body, health: result.characterHealth },
+      practice: sumPractice(run.practice, result.practice),
       activeCombat: null,
       lastCombat: { ...combat, result },
       attackCooldownStart: run.minute,

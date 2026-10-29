@@ -160,6 +160,7 @@ test("the completion in the minute of a discovery leaves the state holding the d
       actions: [],
       conditions: ["always"],
       items: [],
+      trees: [],
       creatures: [],
     },
   };
@@ -178,6 +179,7 @@ test("the completion in the minute of a discovery leaves the state holding the d
     actions: result.events[found].actions,
     conditions: result.events[found].conditions,
     items: result.events[found].items,
+    trees: result.events[found].trees,
     creatures: [],
   });
   const revealed = result.events[found];

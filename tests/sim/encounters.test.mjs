@@ -401,6 +401,7 @@ test("a creature-only discovery pauses before turns and does not write a combat 
     actions: [],
     conditions: [],
     items: [],
+    trees: [],
     creatures: ["wolf"],
   });
   assert.deepEqual(result.state.run.copy.program, state.run.copy.program);
@@ -452,6 +453,7 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
     actions: ["explore", "wander"],
     conditions: ["always", "temperatureBelow"],
     items: [],
+    trees: ["exploration"],
     creatures: [],
   };
   state.run.current.endMinute = 181;
@@ -465,7 +467,7 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
     ["activityFinished", "tileRevealed", "attacked", "discovered"],
   );
   assert.deepEqual(result.state.discovery, {
-    actions: ["walkTo", "gather", "strikeWithStick", "kick", "dodge"],
+    actions: ["walkTo", "gather", "patrol", "strikeWithStick", "kick", "dodge"],
     conditions: [
       "hereBelow",
       "itemBelow",
@@ -473,6 +475,7 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
       "opponentHealthBelow",
     ],
     items: ["stick"],
+    trees: ["smallItemGathering", "oneHandedCombat", "kicking", "dodging"],
     creatures: ["wolf"],
   });
   assert.deepEqual(result.state.run.copy.program, state.run.copy.program);
@@ -486,6 +489,7 @@ test("first chill and attack in one minute keep the automatic exploration rule b
     actions: [],
     conditions: ["always"],
     items: [],
+    trees: [],
     creatures: [],
   };
   state.run.body.temperature = 35;
@@ -500,6 +504,7 @@ test("first chill and attack in one minute keep the automatic exploration rule b
     actions: ["explore", "wander", "strikeWithStick", "kick", "dodge"],
     conditions: ["temperatureBelow", "healthBelow", "opponentHealthBelow"],
     items: [],
+    trees: ["exploration", "oneHandedCombat", "kicking", "dodging"],
     creatures: ["wolf"],
   });
   assert.equal(
