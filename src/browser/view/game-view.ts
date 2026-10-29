@@ -11,8 +11,12 @@ import {
 import {
   createProgram,
   deleteProgram,
+  discardCopyChanges,
   editProgram,
   renameProgram,
+  saveCopyAsNewProgram,
+  saveCopyIntoProgram,
+  switchProgram,
 } from "../sim/programs.js";
 import type { GameState } from "../sim/types.js";
 import { createBodyRow } from "./body-row.js";
@@ -76,6 +80,22 @@ export function createGameView(): GameView {
     deleteProgram(programId) {
       clock.flush();
       store.apply(deleteProgram(state, programId));
+    },
+    saveCopy() {
+      clock.flush();
+      store.apply(saveCopyIntoProgram(state));
+    },
+    saveCopyAsNew(name) {
+      clock.flush();
+      store.apply(saveCopyAsNewProgram(state, name));
+    },
+    discardCopy() {
+      clock.flush();
+      store.apply(discardCopyChanges(state));
+    },
+    switchProgram(programId) {
+      clock.flush();
+      store.apply(switchProgram(state, programId));
     },
   });
   element.append(programPanel.element, mapColumn);

@@ -1,5 +1,12 @@
 import type { GameEvent } from "../sim/game.js";
-import { programById, programName } from "../sim/programs.js";
+import {
+  copyHasUnsavedChanges,
+  programById,
+  programHasChangesCopyLacks,
+  programName,
+  suggestedProgramName,
+} from "../sim/programs.js";
+import { mapRunEnded } from "../sim/run.js";
 import type {
   GameState,
   MapId,
@@ -32,6 +39,14 @@ export type ProgramPanelControls = {
   renameProgram(programId: ProgramId, name: string): void;
   /** „Usuń” of the program shown, called only while the list holds more than one program. */
   deleteProgram(programId: ProgramId): void;
+  /** „Zapisz w programie”, called only while the copy has unsaved changes and its program is on the list. */
+  saveCopy(): void;
+  /** „Zapisz” of „Zapisz jako nowy program”, called only with a name the name rule takes. */
+  saveCopyAsNew(name: string): void;
+  /** „Porzuć zmiany”, called only while the copy has unsaved changes and its program is on the list. */
+  discardCopy(): void;
+  /** „Przełącz postać na ten program”, called only for a saved program the copy does not belong to. */
+  switchProgram(programId: ProgramId): void;
 };
 
 export type ProgramPanel = {
@@ -116,20 +131,51 @@ export function shownContent(
   };
 }
 
+/** Whether „Zapisz w programie” and „Porzuć zmiany” have something to do: unsaved changes, program on the list. */
+function canSaveIntoProgram(state: GameState): boolean {
+  const run = state.run;
+  return (
+    run !== null &&
+    programById(state.programs, run.copy.programId) !== undefined &&
+    copyHasUnsavedChanges(state)
+  );
+}
+
+/**
+ * Whether „Przełącz postać na ten program” stands beside the saved program shown: a map run not
+ * ended, and a program other than the one the copy belongs to (spec decision 7).
+ */
+function canSwitchTo(
+  state: GameState,
+  shown: { kind: "saved"; programId: ProgramId },
+): boolean {
+  const run = state.run;
+  return (
+    run !== null &&
+    !mapRunEnded(run) &&
+    run.copy.programId !== shown.programId &&
+    programById(state.programs, shown.programId) !== undefined
+  );
+}
+
 /** The value of the list's position of what the panel shows. */
 function shownValue(shown: ShownProgram): string {
   return shown.kind === "copy" ? COPY_VALUE : String(shown.programId);
 }
 
-/** What the name field is open for; Slice 7 adds the save of the copy as a new program. */
-type NamePurpose = { kind: "rename"; programId: ProgramId };
+/** What the name field is open for: a rename of a saved program, or the save of the copy as a new one. */
+type NamePurpose =
+  { kind: "rename"; programId: ProgramId } | { kind: "saveNew" };
 
 /**
  * Builds the program panel: the select list „Program:” with the player's programs and, during a
  * map run, „Kopia w przejściu” first; „Nowy program”, „Zmień nazwę” and the destructive „Usuń”,
  * the last two hidden while the copy is shown and „Usuń” disabled while the list holds one program;
- * the name field „Nazwa programu” with its message in `warning` and „Zapisz”, open for „Zmień
- * nazwę”; and the program editor, editing the program shown. Which program it shows is view state,
+ * while the copy is shown its heading, its line of unsaved changes, „Zapisz w programie”, „Zapisz
+ * jako nowy program”, the destructive „Porzuć zmiany” and the line of a changed program; while a
+ * saved program other than the copy's is shown, in a map run not ended, the destructive „Przełącz
+ * postać na ten program”; the name field „Nazwa programu” with its message in `warning` and
+ * „Zapisz”, open for „Zmień nazwę” and for „Zapisz jako nowy program”; and the program editor, editing the program shown. Which program it shows is view state,
  * changed by picking on the list and by the operations of the game, and picking changes no game
  * state. The controls are made once and updated in place, so a field being typed into keeps its
  * value and focus while time passes (D-36).
@@ -156,6 +202,32 @@ export function createProgramPanel(
   const deleteButton = createButton("Usuń", { kind: "destructive" });
   actions.append(createButtonElement, renameButton, deleteButton);
 
+  // „Przełącz postać na ten program” switches the character and drops the copy's changes: a
+  // destructive button (D-44).
+  const switchButton = createButton("Przełącz postać na ten program", {
+    kind: "destructive",
+  });
+  switchButton.hidden = true;
+
+  const copySection = document.createElement("div");
+  copySection.className = "copy-section";
+  copySection.hidden = true;
+  const copyHeading = document.createElement("h2");
+  copyHeading.className = "copy-heading";
+  const unsavedLine = document.createElement("p");
+  unsavedLine.className = "copy-line";
+  unsavedLine.textContent = "Niezapisane zmiany w kopii.";
+  const saveRow = document.createElement("div");
+  saveRow.className = "copy-save";
+  const saveCopyButton = createButton("Zapisz w programie");
+  const saveNewButton = createButton("Zapisz jako nowy program");
+  // „Porzuć zmiany” throws the copy's changes away: a destructive button (D-44).
+  const discardButton = createButton("Porzuć zmiany", { kind: "destructive" });
+  const lacksLine = document.createElement("p");
+  lacksLine.className = "copy-line";
+  saveRow.append(saveCopyButton, saveNewButton, discardButton, lacksLine);
+  copySection.append(copyHeading, unsavedLine, saveRow);
+
   const nameRow = document.createElement("div");
   nameRow.className = "program-name";
   nameRow.hidden = true;
@@ -170,7 +242,14 @@ export function createProgramPanel(
     if (shown.kind === "copy") controls.editCopy(program);
     else controls.editProgram(shown.programId, program);
   });
-  element.append(listRow, actions, nameRow, editor.element);
+  element.append(
+    listRow,
+    switchButton,
+    actions,
+    copySection,
+    nameRow,
+    editor.element,
+  );
 
   let state: GameState | null = null;
   let shown: ShownProgram = { kind: "saved", programId: 1 };
@@ -190,7 +269,7 @@ export function createProgramPanel(
     const checked = programName(
       state.programs,
       nameField.input.value,
-      namePurpose.programId,
+      namePurpose.kind === "rename" ? namePurpose.programId : undefined,
     );
     return checked.ok ? null : checked.reason;
   }
@@ -221,6 +300,11 @@ export function createProgramPanel(
   }
 
   function show(next: ShownProgram): void {
+    // Text typed into an editor field and not yet committed goes to the program it was typed into:
+    // the field commits when it loses focus, before the editor shows another program.
+    const active = document.activeElement;
+    if (active && editor.element.contains(active))
+      (active as HTMLElement).blur();
     setShown(next);
     if (state) render(state);
   }
@@ -259,6 +343,37 @@ export function createProgramPanel(
     if (deleteButton.disabled) list.focus();
   });
 
+  saveCopyButton.addEventListener("click", () => {
+    if (!state || !canSaveIntoProgram(state)) return;
+    controls.saveCopy();
+    // The button is inactive now; focus goes to the list.
+    list.focus();
+  });
+
+  discardButton.addEventListener("click", () => {
+    if (!state || !canSaveIntoProgram(state)) return;
+    controls.discardCopy();
+    list.focus();
+  });
+
+  saveNewButton.addEventListener("click", () => {
+    if (!state?.run || !copyHasUnsavedChanges(state)) return;
+    // The same action again leaves the field without saving.
+    if (namePurpose?.kind === "saveNew") {
+      closeName();
+      return;
+    }
+    openName({ kind: "saveNew" }, suggestedProgramName(state.programs));
+  });
+
+  switchButton.addEventListener("click", () => {
+    if (!state || shown.kind !== "saved" || !canSwitchTo(state, shown)) return;
+    controls.switchProgram(shown.programId);
+    show({ kind: "copy" });
+    // The button is gone now; focus goes to the list.
+    list.focus();
+  });
+
   nameField.input.addEventListener("input", showNameMessage);
 
   saveNameButton.addEventListener("click", () => {
@@ -268,8 +383,14 @@ export function createProgramPanel(
     const purpose = namePurpose;
     const text = nameField.input.value;
     closeName();
-    controls.renameProgram(purpose.programId, text);
-    renameButton.focus();
+    if (purpose.kind === "rename") {
+      controls.renameProgram(purpose.programId, text);
+      renameButton.focus();
+    } else {
+      controls.saveCopyAsNew(text);
+      // „Zapisz jako nowy program” is inactive now; focus goes to the list.
+      list.focus();
+    }
   });
 
   function render(current: GameState): void {
@@ -285,6 +406,33 @@ export function createProgramPanel(
     const copyShown = shown.kind === "copy";
     renameButton.hidden = copyShown;
     deleteButton.hidden = copyShown;
+    const run = current.run;
+    copySection.hidden = !copyShown || !run;
+    if (copyShown && run) {
+      const owner = programById(current.programs, run.copy.programId);
+      const heading = `Kopia: ${owner ? owner.name : (run.copy.deletedName ?? "")}`;
+      if (copyHeading.textContent !== heading)
+        copyHeading.textContent = heading;
+      const unsaved = copyHasUnsavedChanges(current);
+      unsavedLine.hidden = !unsaved;
+      saveCopyButton.hidden = !owner;
+      discardButton.hidden = !owner;
+      saveCopyButton.disabled = !unsaved;
+      discardButton.disabled = !unsaved;
+      saveNewButton.disabled = !unsaved;
+      const lacks = programHasChangesCopyLacks(current);
+      lacksLine.hidden = !lacks;
+      if (lacks && owner)
+        lacksLine.textContent = `Program ${owner.name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.`;
+      // The save of the copy under a name has nothing to save once the copy has no changes.
+      if (namePurpose?.kind === "saveNew" && !unsaved) closeName();
+    }
+    switchButton.hidden = !(
+      run &&
+      shown.kind === "saved" &&
+      canSwitchTo(current, shown)
+    );
+
     const lastProgram = current.programs.length === 1;
     if (deleteButton.disabled !== lastProgram)
       deleteButton.disabled = lastProgram;

@@ -240,6 +240,35 @@ header h1 {
   color: var(--text-label);
 }
 
+/* The copy shown: its heading, the line of unsaved changes and the save buttons with their line. */
+.copy-section {
+  margin-bottom: var(--space-s);
+}
+
+.copy-heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+/* A line about the copy: something that will be lost or replaced, in `warning` (D-39). */
+.copy-line {
+  margin: 0 0 var(--space-xs);
+  color: var(--warning);
+}
+
+.copy-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+}
+
+.copy-save .copy-line {
+  margin: 0;
+}
+
 .rule-group {
   border-top: var(--frame-width) solid var(--divider);
   padding: var(--space-m) 0;
