@@ -228,6 +228,10 @@ export function actionFeasible(
       );
     case "eat":
       return itemFor(run.character.backpack, "food") !== null;
+    case "strikeWithStick":
+    case "kick":
+    case "dodge":
+      return false;
   }
 }
 

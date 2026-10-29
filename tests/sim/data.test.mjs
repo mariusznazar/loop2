@@ -9,6 +9,7 @@ import { BALANCE, INITIAL_SEED } from "../../dist/public/sim/data/balance.js";
 import { ITEMS } from "../../dist/public/sim/data/items.js";
 import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
 import { SKILLS } from "../../dist/public/sim/data/skills.js";
+import { CREATURES } from "../../dist/public/sim/data/creatures.js";
 import { TRAITS } from "../../dist/public/sim/data/traits.js";
 import { programFromRules, programWithRules } from "./program-fixture.mjs";
 
@@ -75,6 +76,45 @@ test("actions carry their labels, status texts and the fixed explore duration", 
   });
 });
 
+test("combat actions carry the accepted damage, item requirement and attack revelation", () => {
+  assert.deepEqual(ACTIONS.strikeWithStick, {
+    label: "Uderz — patyk",
+    status: "Uderza patykiem",
+    minutes: null,
+    revealedBy: { kind: "attacked", creature: "wolf" },
+    combat: { damage: 6, item: "stick" },
+  });
+  assert.deepEqual(ACTIONS.kick, {
+    label: "Kopnij",
+    status: "Kopie",
+    minutes: null,
+    revealedBy: { kind: "attacked", creature: "wolf" },
+    combat: { damage: 3 },
+  });
+  assert.deepEqual(ACTIONS.dodge, {
+    label: "Odskocz",
+    status: "Odskakuje",
+    minutes: null,
+    revealedBy: { kind: "attacked", creature: "wolf" },
+    combat: { reducesNextDamageBy: 5 },
+  });
+});
+
+test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", () => {
+  assert.deepEqual(CREATURES.wolf, {
+    name: "wilk",
+    health: 24,
+    strikeDamage: 7,
+    rules: [
+      {
+        condition: { kind: "healthBelow", value: 8 },
+        action: { kind: "dodge" },
+      },
+      { condition: { kind: "always" }, action: { kind: "strike" } },
+    ],
+  });
+});
+
 test("conditions carry labels and the value range of hereBelow", () => {
   assert.equal(CONDITIONS.always.label, "Zawsze");
   assert.deepEqual(CONDITIONS.hereBelow, {
@@ -91,7 +131,7 @@ test("conditions carry labels and the value range of hereBelow", () => {
 test("health conditions use the approved thresholds and are revealed by an attack", () => {
   assert.deepEqual(CONDITIONS.healthBelow, {
     label: "Zdrowie poniżej",
-    revealedBy: { kind: "attacked" },
+    revealedBy: { kind: "attacked", creature: "wolf" },
     unit: "pkt",
     defaultValue: 50,
     min: 0,
@@ -100,7 +140,7 @@ test("health conditions use the approved thresholds and are revealed by an attac
   });
   assert.deepEqual(CONDITIONS.opponentHealthBelow, {
     label: "Przeciwnik ma poniżej",
-    revealedBy: { kind: "attacked" },
+    revealedBy: { kind: "attacked", creature: "wolf" },
     unit: "pkt",
     defaultValue: 10,
     min: 0,
@@ -205,7 +245,7 @@ test("the archetype and the pace are in data", () => {
 // The expectations below come from the task document odkrywanie_loop2.md of the vault (D-82).
 
 test("the character skills grow the pairs of verb and target of the task, and the walks stand in none", () => {
-  // odkrywanie_loop2.md:29 — To do 3: five skills and what each grows.
+  // Task: the character skills and the action pairs each one grows.
   assert.deepEqual(
     Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
     [
@@ -214,6 +254,9 @@ test("the character skills grow the pairs of verb and target of the task, and th
       ["Wytwarzanie ogniska", ["craftCampfire", "feedCampfire"]],
       ["Jedzenie", ["eat"]],
       ["Rzucanie czaru Płomyk", ["lightCampfire", "lightItem"]],
+      ["Walka bronią jednoręczną", ["strikeWithStick"]],
+      ["Kopanie", ["kick"]],
+      ["Unik przed ciosem", ["dodge"]],
     ],
   );
   const grown = Object.values(SKILLS).flatMap((skill) => skill.actions);
@@ -222,13 +265,13 @@ test("the character skills grow the pairs of verb and target of the task, and th
   assert.deepEqual(free, ["wander", "walkTo", "walkToCampfire"]);
 });
 
-test("the elemental mage has all five skills as predispositions", () => {
-  // odkrywanie_loop2.md:29 — To do 3: "Mag żywiołów ma w predyspozycjach wszystkie pięć umiejętności".
+test("the elemental mage has all listed skills as predispositions", () => {
+  // The created archetype admits every listed character skill.
   assert.deepEqual(
     [...ARCHETYPES.elementalMage.predispositions].sort(),
     Object.keys(SKILLS).sort(),
   );
-  assert.equal(Object.keys(SKILLS).length, 5);
+  assert.equal(Object.keys(SKILLS).length, 8);
 });
 
 /** The rows of the table of To do 2, by the revealing event: what each reveals. */
@@ -278,8 +321,8 @@ const ROWS = [
   },
   {
     // The first creature attack reveals the combat health conditions.
-    event: { kind: "attacked" },
-    actions: [],
+    event: { kind: "attacked", creature: "wolf" },
+    actions: ["strikeWithStick", "kick", "dodge"],
     conditions: ["healthBelow", "opponentHealthBelow"],
     items: [],
   },
@@ -383,6 +426,11 @@ test("setProgram accepts the empty program, both actions without a resource and 
   for (const program of [
     programFromRules(),
     programFromRules(rule(ALWAYS, EXPLORE), rule(ALWAYS, { kind: "wander" })),
+    programFromRules(
+      rule(ALWAYS, { kind: "strikeWithStick" }),
+      rule(ALWAYS, { kind: "kick" }),
+      rule(ALWAYS, { kind: "dodge" }),
+    ),
     programFromRules(
       rule(below(resource, min), EXPLORE),
       rule(below(resource, max), EXPLORE),

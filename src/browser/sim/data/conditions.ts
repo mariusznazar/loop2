@@ -69,7 +69,7 @@ export const CONDITIONS = {
   },
   healthBelow: {
     label: "Zdrowie poniżej",
-    revealedBy: { kind: "attacked" },
+    revealedBy: { kind: "attacked", creature: "wolf" },
     unit: "pkt",
     defaultValue: 50,
     min: 0,
@@ -78,7 +78,7 @@ export const CONDITIONS = {
   },
   opponentHealthBelow: {
     label: "Przeciwnik ma poniżej",
-    revealedBy: { kind: "attacked" },
+    revealedBy: { kind: "attacked", creature: "wolf" },
     unit: "pkt",
     defaultValue: 10,
     min: 0,

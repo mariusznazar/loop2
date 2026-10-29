@@ -185,6 +185,12 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
       return { kind: "feedCampfire" };
     case "eat":
       return { kind: "eat" };
+    case "strikeWithStick":
+      return { kind: "strikeWithStick" };
+    case "kick":
+      return { kind: "kick" };
+    case "dodge":
+      return { kind: "dodge" };
     default:
       throw new Error(
         `program: action kind ${String(value.kind)} is not on the closed list`,

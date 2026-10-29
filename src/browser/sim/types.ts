@@ -1,12 +1,13 @@
 import type { ArchetypeId } from "./data/archetypes.js";
 import type { BALANCE } from "./data/balance.js";
 import type { CAMPFIRE } from "./data/campfire.js";
+import type { CreatureId } from "./data/creatures.js";
 import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
 import type { Traits } from "./data/traits.js";
 
-export type { ArchetypeId, ItemId, MapId, ResourceId, Traits };
+export type { ArchetypeId, CreatureId, ItemId, MapId, ResourceId, Traits };
 
 /** A multiplier of the game minutes per real second that the player picks, from the data. */
 export type Pace = (typeof BALANCE.paces)[number];
@@ -42,7 +43,10 @@ export type Action =
   | { kind: "lightCampfire" }
   | { kind: "lightItem" }
   | { kind: "feedCampfire" }
-  | { kind: "eat" };
+  | { kind: "eat" }
+  | { kind: "strikeWithStick" }
+  | { kind: "kick" }
+  | { kind: "dodge" };
 
 /** Stable within a program, including after a rule moves to another group. */
 export type RuleId = number;

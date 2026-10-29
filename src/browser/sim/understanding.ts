@@ -131,11 +131,14 @@ export function editorRepertoire(state: GameState): Repertoire {
   return repertoireOf(state.understanding, archetype.predispositions);
 }
 
-/** Whether two revealing events are the same event: the same kind, naming the same item. */
+/** Whether two revealing events are the same event, including its named item or creature. */
 function sameRevelation(a: Revelation, b: Revelation): boolean {
   return (
     a.kind === b.kind &&
-    ("item" in a ? "item" in b && a.item === b.item : !("item" in b))
+    ("item" in a ? "item" in b && a.item === b.item : !("item" in b)) &&
+    ("creature" in a
+      ? "creature" in b && a.creature === b.creature
+      : !("creature" in b))
   );
 }
 

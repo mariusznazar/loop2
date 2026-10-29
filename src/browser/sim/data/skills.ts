@@ -26,6 +26,12 @@ export const SKILLS = {
     name: "Rzucanie czaru Płomyk",
     actions: ["lightCampfire", "lightItem"],
   },
+  oneHandedCombat: {
+    name: "Walka bronią jednoręczną",
+    actions: ["strikeWithStick"],
+  },
+  kicking: { name: "Kopanie", actions: ["kick"] },
+  dodging: { name: "Unik przed ciosem", actions: ["dodge"] },
 } as const satisfies Record<string, SkillDef>;
 
 export type SkillId = keyof typeof SKILLS;

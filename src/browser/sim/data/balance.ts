@@ -5,6 +5,8 @@ export const BALANCE = {
   paces: [1, 2, 4, 8, 16],
   /** Minutes the character waits when no rule applies. */
   waitMinutes: 1,
+  /** Maximum exchanges resolved in one encounter. */
+  combatTurns: 40,
   /** Chance that a gathering succeeds. */
   gatherChance: 0.7,
   body: {
