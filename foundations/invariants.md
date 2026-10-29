@@ -186,12 +186,12 @@ from the map run's state.
 
 ## action-in-progress
 
-The character's action in progress lasts its full duration unless its map run ends first, even where
+The character's action in progress lasts its full duration unless its map run ends first or an attack interrupts it, even where
 the program changes or the condition of another program rule comes to hold before it ends.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-20 · D-23
+- **Derives from:** D-20 · D-23 · D-140
 - **Part:** simulation
 - **Violated:** no
 
@@ -247,7 +247,7 @@ resource or an archetype, outside its comments, by the identifier or the name th
 
 ## program-rule-pick
 
-In each free game minute of a map run, the character starts to carry out the first program rule
+In each free game minute of a map run and immediately before the character's action in each combat turn, the character starts to carry out the first program rule
 whose condition and action, with the target of each, lie in the character's repertoire, whose
 condition holds and whose action the character can carry out then, taking rule groups in order and
 the program rules within each in order, passing over a group whose condition or its target lies

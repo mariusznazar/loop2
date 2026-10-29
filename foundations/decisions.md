@@ -400,9 +400,7 @@ holds several resources.
 
 ### D-20 — What interrupts the character's action in progress?
 
-Neither a change of the program nor the condition of another program rule interrupts the
-character's action in progress. The program picks a program rule again only once the character's
-action ends.
+An attack interrupts the character's action still in progress, and that action is lost; a change of the program or the condition of another program rule leaves that action running. The program chooses again at the next free game minute, and before the character's action in each combat turn.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -410,11 +408,7 @@ action ends.
 - **Verification:** invariants: action-in-progress
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Gdzie i kiedy gracz zmienia program i od kiedy zmiana działa?"
 
-*Rationale:* the player changes the program during a map run without ending it, and the change takes
-effect from the next free game minute, once the character's action in progress has ended; the
-program picks a program rule only in such a game minute, so the end of the character's action is
-the one moment at which both a change of the program and a program rule whose condition has come to
-hold take effect.
+*Rationale:* editing a program leaves the work already begun intact, while an attack makes the character respond to the creature instead; the program as it stands at each next choice controls that response. Losing the interrupted work makes an attack matter even when the character survives it.
 *Rejected:* a change of the program allowed only outside a map run — every fix to the program
 would need the map run ended; a change of the program taking effect only from a map run restart —
 two versions of the program in force at once.
@@ -481,7 +475,7 @@ for every kind of draw — a draw of one kind shifts the draws of every other ki
 
 ### D-23 — How does a character act by its program?
 
-A character acts only by its program: in each free game minute it carries out the first program
+A character acts only by its program: in each free game minute and immediately before its action in each combat turn it carries out the first program
 rule whose condition holds and whose action of the character can be carried out then, taking rule
 groups in order, each only while its condition holds, and a rule group whose condition holds but
 which holds nothing that can be carried out passes on. Conditions are chosen from a closed list,
@@ -517,10 +511,12 @@ second mechanism for the same thing; nested rule groups — one level is enough.
 
 ### D-24 — What is a game map made of?
 
-A game map is a grid of hexagonal tiles whose dimensions, entrance, cost of a move and resources
-stand in the game map's data, each resource with its density, stock per tile and time to renew one
-piece. What is not on the game map's list of resources cannot be revealed there. Which tile gets
-what is drawn by the map run from its seed, within the bounds the game map sets.
+A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —,
+cost of a move, attacking creatures with how often they attack, and resources stand in the map's
+data, each resource with its density, stock per tile and time to renew one piece, no time meaning a
+resource that does not renew. What is not on the map's list of resources cannot be gathered or
+revealed there. Which tile gets what is drawn by the map run from its seed, within the bounds the
+map sets.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -528,18 +524,19 @@ what is drawn by the map run from its seed, within the bounds the game map sets.
 - **Verification:** invariants: map-run-tiles. For what stands in the game map's data and for the
   shape of its grid, an agent compares the change with the decision:
   - complies: a new game map added as a row of the game maps' data, with its dimensions and
-    resources; Las with a fixed entrance
+    resources; Las with a fixed entrance, Las — głębiej with a drawn one
   - violates: a game map with a hand-placed layout; a game map of square tiles
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D32, D17 and §5 "Mapa jest siatką sześciokątnych kafelków" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What is a map made of?"
 
-*Rationale:* six neighbours at an equal distance make a move always mean the same. New challenges
-come from the game map's settings alone — dimensions, densities, stocks, renewal, cost of a move.
-The first game map has a fixed entrance because its first map run is a tutorial. Accepted with it: a
-random layout widens the spread between seeds.
+*Rationale:* six neighbours at an equal distance make a move always mean the same. A resource that
+runs out makes wandering matter; without it a program finds one good tile and the rest of the map
+run looks as before. New challenges come from the map's settings alone — dimensions, densities,
+stocks, renewal, cost of a move. The first map has a fixed entrance because its first map run is a
+tutorial. Accepted with it: a random layout widens the spread between seeds.
 *Rejected:* a random layout without a fixed frame — difficulty cannot be steered; a fixed layout per
 game map — exploring loses its sense after the first map run; square tiles — four directions make a
 diagonal two moves, eight give it for free; the presence of a resource without a stock — cheaper,
-but tests nothing in the game.
+but tests nothing.
 
 ### D-25 — How does a character move?
 
@@ -1127,7 +1124,7 @@ A character's warmth is its body temperature in degrees Celsius, counted with te
 
 ### D-58 — What cools a character's body?
 
-A character's body cools in each game minute by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data.
+A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1157,7 +1154,7 @@ Warming raises a character's body temperature up to its starting body temperatur
 
 ### D-60 — When does a character lose and regain health?
 
-A character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health.
+Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health. During the game minutes of combat the character's needs and health stand still until the combat actions change its health.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1172,7 +1169,7 @@ A character loses health in each game minute in which it is chilled — its body
 
 ### D-61 — When does a character die, and of what?
 
-A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise.
+A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise. A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1182,7 +1179,7 @@ A character dies in the game minute in which its health reaches zero, also durin
   - violates: death waiting for the character's action in progress to end; a starving mage that is not chilled dying of cold.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?"
 
-*Rationale:* Health at zero ends the map run in the game minute it happens, whatever the character is doing, so the state the player reads after death is the state of that minute. The character's action in progress lasts its full duration while the map run goes on; death ends the map run, and the character's action with it, as the player ending a map run does. A death names one cause, so the player reads one reason for it, and a death of another kind, such as of wounds, takes a cause of its own.
+*Rationale:* Health at zero ends the map run in the game minute it happens, whatever the character is doing, so the state the player reads after death is the state of that minute. Death ends the map run and any action in progress, as the player ending a map run does; an attack can also cut an action short while the map run goes on. A death names one cause, so the player reads one reason for it, and combat has its own cause rather than borrowing cold or hunger from the body's state.
 *Rejected:* death waiting for the end of the character's action in progress — the character would go on acting with no health left, and the state shown would not be that of the moment of death.
 
 ### D-62 — What does the screen show, and what can the player do, after a character's death?
@@ -1322,18 +1319,18 @@ A campfire shows on the terrain panel's drawing of the game map as an icon on it
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
-A game minute of a map run takes effect in this order: first the character's body — its temperature cools by the game map's ambient temperature and warms by what burns on its tile, its satiety falls, and its health is lost for being chilled or starving in that minute or regained for being neither — and with it the streak of the map run, as D-136 counts it; then, where its health has reached zero, the character dies in that minute and the map run ends there; otherwise what burns loses a minute of burning, tiles renew their stock, the action of the character ending in that minute takes effect, and then, where the map run meets its game map's solving condition, the map run ends in a completion in place of the program's pick, and otherwise the program picks a program rule from what that minute has made. Something discovered in a game minute is discovered where that order brings it — a chill with the character's body, an action of the character with its effect — so the rest of the minute takes effect and the program's pick at its end draws on the Understanding and the program as the discovery has left them, a program rule written at the discovery included; in the game minute of death no effect of an ending action takes hold, and so it brings no discovery. A map run in which something is discovered stops once the whole game minute of the discovery has taken effect.
+Outside combat a game minute takes effect in this order: the character's body cools by the map's ambient temperature and warms by what burns on its tile, satiety falls, health changes for cold and hunger or recovers, and the streak follows D-136; health at zero ends the map run in death at that point, otherwise burning loses a minute, tiles renew, the ending action takes effect, completion is checked, and a continuing run tries an eligible attack before the ordinary program pick, with an attack replacing that pick and interrupting any action still running. In each game minute of combat the body stands still, the streak grows, burning loses a minute and tiles renew, then in the last combat minute all combat turns resolve, their result and cooldown are recorded, a creature defeated in those turns adds a beaten attack and death ends the run before completion is checked; completion is checked in the earlier combat minutes too and ends the encounter with its attack description and no turns or outcome, while a continuing run after the final combat minute picks its next ordinary action in that same minute. Discoveries enter the Understanding where their cause occurs — body, ending action or attack — and the following effects and picks read that updated Understanding and program, a rule written by a discovery included, with discoveries collected once for the whole minute and the pause taken after that minute has finished.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136
+- **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136 · narrows D-140 · narrows D-141 · derives from D-142 · derives from D-146
 - **Verification:** invariants: minute-span-split. An agent compares a change with the decision:
   - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage first chilled in game minute 84 discovering „Eksploruj” and starting „Zawsze → Eksploruj” at the pick of game minute 84, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute;
-  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect.
+  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; a completion checked before combat turns in their final minute; an attack tried again after those turns.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "8. W której chwili minuty gry przejście się domyka i co z akcją postaci kończącą się w tej minucie?"
 
-*Rationale:* The world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so every effect of an action of the character acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; the order of a game minute grows longer by the streak and the completion.
-*Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it; a completion right after the character's body, as death comes — the effect of an action ending in that game minute would be lost.
+*Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Accepted with it: a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
+*Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it; a completion right after the character's body, as death comes — the effect of an action ending in that game minute would be lost; completion before the final combat turns — the encounter's result would be skipped; waiting another game minute for the ordinary pick after combat — an extra idle minute beyond the combat's fixed cost.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
 
@@ -2011,7 +2008,7 @@ The exemplar for kind `browser-api-client` is `src/browser/account-api.ts`, and 
 ### D-118 — When does the player learn what the world holds?
 
 The condition „Zawsze” is in the Understanding from the start of a new game; every other action,
-item and condition enters the Understanding only when discovered in play, each by the need, action,
+item, condition and creature enters the Understanding only when discovered in play, each by the need, action,
 item or encounter that reveals it. When something is discovered, game time stops by itself.
 
 - **Scope:** simulation, browser-view
@@ -2117,7 +2114,7 @@ campfire come with the first crafted campfire, later than in loop.
 When something is discovered in a map run the player starts, the map run stops in the same pause
 as after „Pauza”: the status row adds „ (pauza)”, and the player goes on with „Wznów”. Below the
 status row a line in the role `discovery` names what was discovered, the discoveries of one game
-minute in one line, and it stands until the player goes on. Where the map run ends in a completion
+minute in one line, and it stands until the player goes on; where the last encounter has a line, it stands below the discovery line and above the body and backpack. Where the map run ends in a completion
 in the game minute of a discovery, the screen after the completion takes the place of the pause, and
 the line stands below its status row until „Restart” or „Zakończ”.
 
@@ -2143,7 +2140,7 @@ in place of the pause, and the player still reads what that game minute discover
 Understanding as any discovery does. Accepted with it: a stop at a discovery cannot be told apart in
 the game state from the player's pause, and a player who goes on at once loses the list of
 discoveries, since the game keeps no record of them; the line of discoveries ends in two ways,
-„Wznów” or „Restart” and „Zakończ”, and the screen after a completion holds two lines.
+„Wznów” or „Restart” and „Zakończ”, and the screen after a completion can keep both discovery and encounter text.
 *Rejected:* a stop at a discovery as a game state of its own, with a button of its own; the screen
 after a completion with no line of the discovery made in its game minute — the player would not
 learn what that game minute discovered.
@@ -2263,12 +2260,12 @@ stands in the program with no sign of why.
 steer what it carries out; the simulation refusing the whole program — a program carried to another
 character or another archetype would stop whole.
 
-### D-128 — Where does what reveals an action, an item or a condition stand?
+### D-128 — Where does what reveals an action, an item, a condition or a creature stand?
 
-What reveals each action, item and condition of the game stands in the data files beside that
-action, item or condition, as one of the kinds of revealing event the simulation handles, such as
-the first chill or the first gathered piece of an item, and a condition the Understanding holds from
-the start of a new game has none there. An action, an item or a condition revealed by a kind of
+What reveals each action, item, condition and creature of the game stands in the data files beside that
+action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as
+the first chill, the first gathered piece of an item or an attack naming its creature, and a condition the Understanding holds from
+the start of a new game has none there. An action, an item, a condition or a creature revealed by a kind of
 revealing event the simulation already handles is added, or what reveals it is changed, by a change
 of data alone.
 
@@ -2285,12 +2282,11 @@ of data alone.
     simulation's code to be revealed
 - **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Settlements to record, row O9, column "What the cycle would otherwise guess"
 
-*Rationale:* what reveals a thing stands with the thing, so an action, an item or a condition is
+*Rationale:* what reveals a thing stands with the thing, so an action, an item, a condition or a creature is
 defined and revealed in one place, and a later discovery of a kind already handled adds data, not
 code, as the game's content does. A kind of revealing event the simulation does not handle yet takes
 a change of its code where it reads the event.
-*Rejected:* the whole chain of revelations in a table of its own, apart from the actions, items and
-conditions — a thing would be defined in one place and revealed in another; the chain written into
+*Rejected:* the whole chain of revelations in a table of its own, apart from the actions, items, conditions and creatures — a thing would be defined in one place and revealed in another; the chain written into
 the simulation's code — each later discovery would take a change of code.
 
 ### D-129 — How long does the pace the player picks stay?
@@ -2339,13 +2335,13 @@ control the browser view already holds.
 the controls of a map run's time would stand in two places, or the browser view would gain a
 control the shared controls do not hold.
 
-### D-131 — Which edits of the program set a map run's streak to zero?
+### D-131 — Which edits of the program reset a map run's solving progress?
 
 Of the edits of the program, an edit after which the program differs from the program before it sets
-the streak of the map run in progress to zero — adding, deleting or reordering a program rule,
+the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule,
 changing its condition or action, and changing a rule group — also while the map run is paused; an
 act of the program editor after which the program is the same as before it leaves the streak as it
-stands.
+stands, together with the number of beaten attacks. A map run starts with zero beaten attacks, and a game minute with health lost to cold or hunger leaves their count as it stands.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -2361,16 +2357,16 @@ stands.
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps
 fixing it, so a program that differs starts the streak again, in a pause as well; an act that leaves
 the program as it was changes nothing the map checks. Accepted with it: a player who presses „↑” on
-the first program rule keeps the streak, though the player touched the program.
+the first program rule keeps the streak, though the player touched the program; the same program has to supply the beaten attacks and the streak, which can lengthen the attempt after an edit.
 *Rejected:* every act of the program editor setting the streak to zero, an act that leaves the
 program the same included, as the predecessor game, loop, did — the player would lose the streak for
-an act that changes nothing.
+an act that changes nothing; keeping beaten attacks through a changed program — different programs would supply the two kinds of progress; clearing beaten attacks after cold or hunger — the streak already accounts for those losses.
 
 ### D-132 — What does the screen show, and what can the player do, after a completion?
 
 After a completion the screen stays on the state of the game minute of the completion and time
 stands still, and the status row reads, in Las, „Minuta {game minute} · Las rozwiązany”, such as
-„Minuta 480 · Las rozwiązany”, in the role `positive`. „Pauza” and the pace buttons are gone, and the
+„Minuta 480 · Las rozwiązany”, and in Las — głębiej „Minuta {game minute} · Las — głębiej rozwiązany”, in the role `positive`. „Pauza” and the pace buttons are gone, and the
 player has „Restart” and „Zakończ” as after a character's death.
 
 - **Scope:** browser-view, simulation
@@ -2393,11 +2389,7 @@ the state of the map run that solved the map.
 
 ### D-133 — Where does the player see a map run's streak and a map's solving condition?
 
-During a map run the status row shows its streak beside the game minute and the character's
-activity, as „Minuta 312 · Eksploruje · Passa 120/480”, the second number being the streak the
-map's solving condition asks for, and the headquarters shows by the map the sentence of its solving
-condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany
-programu”.
+During a map run the status row shows progress for the requirements present in the map's solving condition beside the game minute and the character's activity: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present, as „Minuta 312 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2”. The headquarters shows by each available map the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu” or „Las — głębiej — 540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -2405,7 +2397,7 @@ programu”.
 - **Verification:** an agent compares a change with the decision:
   - complies: a paused map run reading „Minuta 312 · Eksploruje · Passa 120/480 (pauza)”; the
     sentence of Las standing by the map in the row of each character in the headquarters
-  - violates: a progress bar in place of „Passa 120/480”; the sentence of the condition written in
+  - violates: a progress bar in place of „Passa 120/480”; a streak target shown for a map that asks for beaten attacks alone; the sentence of the condition written in
     the code of the headquarters
 - **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?"
 
@@ -2455,28 +2447,29 @@ tell how near the map run came to its map's condition.
 *Rejected:* the longest streak of a map run kept, as the predecessor game, loop, kept it, and shown
 on the screen after death.
 
-### D-136 — How is a map solved?
+### D-136 — How is a map solved, and what opens the next one?
 
-The condition that solves a map stands in the map's data, as a streak that the map run reaches. A
-streak counts the successive game minutes in which the character loses no health to cold or hunger:
-a game minute with such a loss sets it to zero, and every change of the program rules or rule groups
-the map run carries out sets it to zero, on every map.
+The condition that solves a map stands in the map's data — a streak, a number of attacks beaten,
+alone or together — and a map opens when the map its data names as its opener is solved. A streak
+counts the successive game minutes in which the character loses no health to cold or hunger: a game
+minute with such a loss sets it to zero, wounds taken in combat do not, and every change of the
+program rules or rule groups the map run carries out sets it to zero, on every map.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: streak-program-change. For the condition in the map's data and the
   rest of the streak, an agent compares a change with the decision:
-  - complies: Las asking for a streak of 480 game minutes, written in its row of the game maps'
-    data
+  - complies: Las — głębiej asking for a streak and two beaten attacks, written in its data
   - violates: a solving condition coded in the engine for one map; a game minute in which the
     character is chilled growing the streak; a game minute in which the character is starving
-    leaving the streak as it stood
+    leaving the streak as it stood; a streak broken by a wolf's bite
 - **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a map solved, and what opens the next one?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 and D17
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
-it, so a change of the program starts the streak again. The condition differs from map to map, so it
-lives in the map's data.
+it, so a change of the program starts the streak again. Wounds from combat do not break it: a
+program is to handle an attack, not avoid it. The condition differs from map to map, so it lives in
+the map's data, and so does the map that opens it.
 *Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
 the backpack at completion as a kind of solving condition while no map asks for it — code and tests
 of a kind the game does not use, a kind that can come with a map that needs it.
@@ -2523,3 +2516,193 @@ A login of a blocked account with the correct password is refused with „To kon
 
 *Rationale:* a player who knows the password learns why the game stays closed, while someone who knows only the address learns nothing more than from any wrong password, so the block is no clue for an address alone. The refusal is no guess of credentials, so it does not count towards a lock, and no sign-in, so it clears nothing; someone who knows a blocked account's password may repeat the attempt unslowed by the limits, each attempt still passing the bounded password gate. A new refusal code changes the server and the browser's client together.
 *Rejected:* the login message of D-100 for a blocked account too — the blocked player does not learn why; the blocked message for the address alone, before the password is checked — tells anyone who knows an address that its account is blocked; counting the refusal as a failed login — after five tries with the correct password the address locks and the player sees the limit's message, and people behind the same client address lose failures of their budget; counting it as a success — clears the address's failures on a refused login, so wrong guesses mixed with the correct password never lock it; status 401 — the status this API gives to missing credentials or session.
+
+### D-140 — How does combat go?
+
+Combat goes in turns, the sides exchanging one action each, and the side that attacked strikes
+first; the needs stand still during combat, and the whole combat costs a fixed number of game
+minutes. Combat verbs can be carried out only in combat, and only they can be carried out in it. A
+creature acts by pairs of condition and action kept in its data, of the same form as program rules,
+and an attack interrupts the action under way, which is lost.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-23
+- **Verification:** invariants: action-in-progress. An agent compares a change with the decision:
+  - complies: a new creature added to data together with its pairs of condition and action
+  - violates: a wolf's behaviour written as a branch of the engine; a turn of combat costing game minutes of its own; eating during combat
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does combat go?" · koncepcja_projektowa.md there, D18 and D53
+
+*Rationale:* a fixed cost keeps a long fight from eating half a day and mixing into hunger and cold.
+A creature's behaviour can be read, so the player writes a counter to it: combat is the reading of
+another's behaviour, not the guessing of rolls. With combat verbs bound to combat, a rule group of
+combat stays silent outside it. The attacker striking first gives a branch that grants the first
+strike something to do.
+*Rejected:* combat in game minutes — a fight would last half a day and spoil the needs; a finer tick
+of the simulation — gives the program nothing new to choose and multiplies the work; the first strike
+always to the character — branches granting it would give nothing.
+
+### D-141 — When do combat turns take effect?
+
+An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards. During M+1 through M+5 the needs and automatic health recovery stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5. Editing the program during the encounter leaves its resolution minute, attack generator and cooldown intact, and resets solving progress as D-131 gives.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-140 · derives from D-131
+- **Verification:** an agent compares a change with the decision:
+  - complies: an attack in minute 200 resolving its turns in minute 205 with the program edited during the pause
+  - violates: an attack resolving before its discovery pause or automatic recovery raising health during its waiting minutes
+- **Origin:** none
+
+*Rationale:* The player has time to write combat rules after the first attack reveals them, while the game minute remains the unit of time; the cost is reading the actions afterwards instead of watching them unfold.
+*Rejected:* turns paced by real time — introduces finer simulation time; resolving in the attack minute — the first encounter resolves before the player can write combat rules.
+
+### D-142 — When can a creature attack a map run?
+
+An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E. Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect. The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-22 · derives from D-24 · derives from D-140
+- **Verification:** an agent compares a change with the decision:
+  - complies: a trial in minute 181 and E+181, after a gathering finishing in that minute gives its item
+  - violates: a trial in minute 180, during combat or in a minute ending in completion
+- **Origin:** none
+
+*Rationale:* Independent trials make a difference of programs a difference of behaviour rather than luck; the full cooldown makes its boundary explicit, at the cost of delaying the next chance until the following minute.
+*Rejected:* trials at action ends — action length changes the first encounter; a stream shared with walking or gathering — those choices shift attacks; a trial on the last protected minute — shortens the protected interval; attack before an ending action — loses its earned effect.
+
+### D-143 — What does the first wolf attack reveal?
+
+The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn. The discovery leaves writing combat rules to the player; the game currently adds no rule at this attack, and later attacks of an already known creature leave time running unless the minute discovers something else.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-118 · derives from D-128 · derives from D-141
+- **Verification:** an agent compares a change with the decision:
+  - complies: the first wolf opening the combat actions and health conditions while the player can edit in the pause
+  - violates: the attack writing „Zawsze → Uderz — patyk” into the program
+- **Origin:** none
+
+*Rationale:* The encounter teaches the player what its counter can use; keeping the program theirs accepts that resuming with no combat rule can kill the character.
+*Rejected:* adding a combat rule automatically — changes the program on the player’s behalf and resets progress; revealing the health conditions at another occasion — separates the counter from the encounter that needs it.
+
+### D-144 — What actions does a character use in combat?
+
+The character currently uses „Uderz — patyk”, which requires a stick in the backpack and deals 6 damage, „Kopnij”, which deals 3 damage and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of 5 damage for the next damaging enemy strike. Another dodge refreshes that reduction, the strike consumes it with damage floored at zero, a creature’s dodge leaves it pending, and the encounter’s end clears it. The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-140
+- **Verification:** an agent compares a change with the decision:
+  - complies: repeated dodges leaving one reduction, and a wolf below 8 health choosing its dodge
+  - violates: a wolf dodge consuming the character’s protection or protecting the wolf from the next strike
+- **Origin:** none
+
+*Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection.
+*Rejected:* stacking dodges — adds a protection resource beyond the next strike; another initial balance — departs from the accepted predecessor numbers, whose different weapon and healing behaviour can make the present balance harsh.
+
+### D-145 — How do weapon wear and wound dressing work today?
+
+A stick currently stays in the backpack after a strike, with its condition unchanged, and the game currently has no action for dressing wounds.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-144
+- **Verification:** an agent compares a change with the decision:
+  - complies: successive strikes keeping the same stick available
+  - violates: a strike consuming or breaking its stick while this decision stands
+- **Origin:** none
+
+*Rationale:* The current combat uses the accepted damage values with a reusable stick and natural recovery outside combat; this costs a different balance from one with breakage and healing.
+*Rejected:* importing weapon breakage or wound dressing together with combat — adds behaviour outside the accepted scope.
+
+### D-146 — What ends an encounter?
+
+The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike. The current data limits an encounter to 40 combat turns, each an exchange with at most one action of each side; if both survive that limit the creature leaves and the attack remains unbeaten. A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-140 · derives from D-61 · derives from D-136
+- **Verification:** an agent compares a change with the decision:
+  - complies: a lethal first strike stopping the exchange before the character acts, or two surviving sides parting after 40 exchanges
+  - violates: a departed creature counted as a beaten attack or a dead character answering its killer
+- **Origin:** none
+
+*Rationale:* Immediate death makes the recorded result reflect the actions actually survived, and a limit ends a duel in which neither side can finish the other; the limit does not save a helpless character from lethal strikes.
+*Rejected:* an unlimited exchange — two dodging sides can hold the encounter forever; counting the sides’ actions together as the limit — halves the accepted number of exchanges.
+
+### D-147 — What record of an encounter does the player read?
+
+From an attack the map run keeps its last encounter’s facts and shows a wrapping paragraph in `text`, below any discovery line and above the body and backpack: before the turns it gives the creature’s starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter’s result. The line stands through „Wznów”, editing and the frozen death or completion screen until another attack replaces it or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. The status activity is „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Minuta {minute} · Mag zginął w walce”.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them
+  - violates: a completion before the turns displaying an invented victory, defeat or departure
+- **Origin:** none
+
+*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph.
+*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; putting it above discovery — moves the explanation of the pause.
+
+### D-148 — Where is an attacking creature pictured today?
+
+An attacking creature currently appears in the encounter’s text, and the terrain drawing currently has no picture of it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-147
+- **Verification:** an agent compares a change with the decision:
+  - complies: the wolf named in the encounter line while the terrain keeps its current tiles and character
+  - violates: a wolf icon added to the character’s tile while this decision stands
+- **Origin:** none
+
+*Rationale:* The text supplies the behaviour and result the player needs to write a counter; the terrain stays a picture of its existing contents.
+*Rejected:* adding the wolf to the terrain drawing — adds a visual feature outside the accepted presentation.
+
+### D-149 — When does the headquarters offer a map opened by another map?
+
+A map whose opening map is still unsolved is currently absent from the headquarters, and from the opening map’s first completion each character has „Mapa: {map}”, „Wyślij” and its solving-condition sentence beside that map. The same availability determined from the game’s solved maps governs sending in the simulation, and a map that requires an unsolved opening map refuses a send.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-136 · derives from D-53
+- **Verification:** an agent compares a change with the decision:
+  - complies: solving Las opening Las — głębiej for every character
+  - violates: the simulation sending to Las — głębiej before Las is solved
+- **Origin:** none
+
+*Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the player learns of the next map on returning to headquarters.
+*Rejected:* showing the locked map with an inactive send — reveals it before opening; a new-map message on completion — adds another announcement; filtering in the view alone — allows sending to an unavailable map through the simulation.
+
+### D-150 — Which character skills open the current combat actions?
+
+„Uderz — patyk” grows „Walka bronią jednoręczną”, „Kopnij” grows „Kopanie”, and „Odskocz” grows „Unik przed ciosem”, all present among the elemental mage’s predispositions.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-120 · derives from D-144
+- **Verification:** an agent compares a change with the decision:
+  - complies: the mage’s repertoire admitting the discovered combat actions through its three combat skills
+  - violates: „Kopnij” treated as an action that grows no skill
+- **Origin:** none
+
+*Rationale:* Combat actions belong to skills like other learned actions, so predispositions already govern their availability even before practice is counted.
+*Rejected:* making the combat actions skill-free — opens them to every archetype rather than through its predispositions.
+
+### D-151 — Whose health do combat conditions compare?
+
+The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively. A side chooses its rule immediately before its action, with the creature using its ordered data pairs and the character using the ordered groups and repertoire of its program. Outside combat the own-health condition still reads the character’s health and the opponent-health condition is false, while ordinary world conditions keep their meaning in combat.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-23 · derives from D-119 · derives from D-140
+- **Verification:** an agent compares a change with the decision:
+  - complies: a wolf at 6/24 satisfying its own threshold 8, with the character choosing after the wolf’s action
+  - violates: the wolf’s own-health condition reading the character’s health or 25 percent
+- **Origin:** none
+
+*Rationale:* One meaning for a shared condition lets each side read its own situation; health points keep the wolf’s threshold tied to its wounds, and the explicit actor context costs careful handling.
+*Rejected:* a separate language of creature conditions — duplicates rule meanings; percentages — changes the accepted wolf threshold; a full player program for a creature — adds groups and player knowledge to its ordered pairs.
