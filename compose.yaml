@@ -13,8 +13,14 @@ services:
       LOOP2_SESSION_SECRET_FILE: /run/secrets/loop2_session_secrets
       LOOP2_PUBLIC_ORIGIN: https://loop2.mariusznazar.com
       LOOP2_PROXY_MODE: cloudflare-tunnel
+      LOOP2_MAIL_FROM: loop2@mariusznazar.com
+      LOOP2_SMTP_HOST: outsider.mikr.us
+      LOOP2_SMTP_PORT: "587"
+      LOOP2_SMTP_USER: loop2@mariusznazar.com
+      LOOP2_SMTP_PASSWORD_FILE: /run/secrets/loop2_smtp_password
     secrets:
       - loop2_session_secrets
+      - loop2_smtp_password
     volumes:
       - accounts:/app/data
     mem_limit: 512m
@@ -53,6 +59,8 @@ secrets:
     file: /etc/loop2/cloudflared-token
   loop2_session_secrets:
     file: /etc/loop2/session-secrets
+  loop2_smtp_password:
+    file: /etc/loop2/smtp-password
 
 volumes:
   accounts:
