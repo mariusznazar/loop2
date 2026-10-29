@@ -381,6 +381,22 @@ test("zero map entry cap still allows gathering, and completion clips that minut
   }
 });
 
+// Catches rejecting the initial count supplied by the editor's Add item operation.
+test("editing a program accepts one piece on each trip list", () => {
+  const state = newGame();
+  const program = {
+    ...state.programs[0].program,
+    tripPlan: { take: [entry("stick", 1)], bring: [entry("stick", 1)] },
+  };
+  assert.doesNotThrow(() => {
+    const edited = editProgram(state, state.programs[0].id, program).state;
+    assert.deepEqual(edited.programs[0].program.tripPlan, {
+      take: [entry("stick", 1)],
+      bring: [entry("stick", 1)],
+    });
+  });
+});
+
 test("program validation rejects duplicate items and bad counts, permits independent lists and large counts", () => {
   const program = emptyProgram();
   assert.deepEqual(program.tripPlan, { take: [], bring: [] });
