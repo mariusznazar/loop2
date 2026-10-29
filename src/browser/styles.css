@@ -269,6 +269,11 @@ header h1 {
   margin: 0;
 }
 
+/* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */
+.program-switch {
+  margin-bottom: var(--space-s);
+}
+
 .rule-group {
   border-top: var(--frame-width) solid var(--divider);
   padding: var(--space-m) 0;

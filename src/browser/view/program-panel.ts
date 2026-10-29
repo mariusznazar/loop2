@@ -207,6 +207,7 @@ export function createProgramPanel(
   const switchButton = createButton("Przełącz postać na ten program", {
     kind: "destructive",
   });
+  switchButton.classList.add("program-switch");
   switchButton.hidden = true;
 
   const copySection = document.createElement("div");
