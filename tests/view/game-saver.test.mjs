@@ -519,6 +519,31 @@ test("a failed save before logout asks to log out again, and the retries go on u
   });
 });
 
+// D-184's exception for the save before a logout that goes on: a moment asked for while that save
+// is in flight is not sent after its answer. Catches a saver that sends that moment anyway, a save
+// request going out beside the logout that ends the session.
+test("a moment during the save before a logout that goes on is not sent after its answer", async () => {
+  for (const outcome of [SAVED(4), { kind: "too-large" }]) {
+    await onPage(async () => {
+      const held = heldClient();
+      const game = gameOf(withCharacter());
+      const { saver } = saverOf(held, game);
+      const report = saver.saveBeforeLogout();
+      assert.equal(held.sent.length, 1, outcome.kind);
+      game.act(setPace(game.state, 4));
+      saver.moment();
+      await held.answer(outcome);
+      assert.deepEqual(await report, { kind: outcome.kind }, outcome.kind);
+      assert.equal(
+        held.sent.length,
+        1,
+        `${outcome.kind}: nothing more is sent`,
+      );
+      saver.dispose();
+    });
+  }
+});
+
 test("before logout a request in flight that fails is followed by the logout's own save, and only that one is reported", async () => {
   await onPage(async () => {
     const held = heldClient();

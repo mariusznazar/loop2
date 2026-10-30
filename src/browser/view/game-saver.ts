@@ -1,7 +1,8 @@
 /**
  * The saver of the game state on the server (D-184, D-185, D-186, D-187, D-188, D-97): one save
  * request at a time, every moment of saving during one coalesced into one more save after its
- * answer, a check every 30 real seconds and at a hidden page that sends only a changed state, and
+ * answer, except during the save before a logout that goes on, after which nothing more is sent
+ * (D-184); a check every 30 real seconds and at a hidden page that sends only a changed state; and
  * the header sentence of what the player sees of saving. It is created with the game and disposed
  * with it; nothing here runs when the module is imported.
  */
@@ -58,7 +59,10 @@ export type LogoutSave = {
 export type GameSaver = {
   /** The header sentence of saving, in the role `warning`; hidden while there is none. */
   readonly element: HTMLElement;
-  /** A moment of saving: sends the current state, at once or after the request in flight. */
+  /**
+   * A moment of saving: sends the current state, at once or after the request in flight, except
+   * when that request is the save before a logout that goes on (D-184).
+   */
   moment(): void;
   /** Sends the current state only where it is not the one last sent; nothing during a request. */
   check(): void;
