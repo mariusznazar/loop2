@@ -503,6 +503,22 @@ header .save-line {
   color: var(--text-secondary);
 }
 
+/* The generation beside the name: `text-secondary`, as the archetype is (D-40). */
+.team-member-generation {
+  color: var(--text-secondary);
+}
+
+/* The resurrection line, on a row of its own: ready in `text-secondary`, not ready in `danger` (D-39, D-40). */
+.team-member-resurrection {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.team-member-resurrection.danger {
+  color: var(--danger);
+}
+
 .team-member-program-label {
   color: var(--text-label);
 }

@@ -4,11 +4,12 @@ import { pieceCount } from "../sim/trip.js";
 import { tripWarning } from "./trip-lines.js";
 import { MAPS } from "../sim/data/maps.js";
 import { ITEMS } from "../sim/data/items.js";
-import { canSendMap, characterName } from "../sim/game.js";
+import { canSendMap, characterName, resurrectionReady } from "../sim/game.js";
 import { rowProgram } from "../sim/programs.js";
 import type { BranchId } from "../sim/data/skills.js";
 import { createCharacterSkills } from "./character-skills.js";
 import type {
+  Character,
   CharacterId,
   Chest,
   GameState,
@@ -74,6 +75,46 @@ export function programPositions(
   };
 }
 
+const MS_PER_MINUTE = 60_000;
+const MINUTES_PER_HOUR = 60;
+
+/** The label of a character's generation number: „pokolenie {n}” from 2 up, nothing at 1. Pure. */
+export function generationLabel(generation: number): string | null {
+  return generation >= 2 ? `pokolenie ${generation}` : null;
+}
+
+/** A character's resurrection line: its text, and whether it stands in `danger`. */
+export type ResurrectionLine = {
+  text: string;
+  danger: boolean;
+};
+
+/**
+ * The resurrection line of a character at the real moment `nowMs`: „Wskrzeszenie gotowe” once
+ * ready, else a warning with the time left. The time left is rounded up to whole minutes first,
+ * then divided into hours and minutes, and below an hour only the minutes stand, so the line never
+ * promises sooner than the real time. A clock set back gives more time left. Pure.
+ */
+export function resurrectionLine(
+  character: Character,
+  nowMs: number,
+): ResurrectionLine {
+  if (resurrectionReady(character, nowMs))
+    return { text: "Wskrzeszenie gotowe", danger: false };
+  const minutes = Math.ceil(
+    (character.resurrectionReadyAtMs - nowMs) / MS_PER_MINUTE,
+  );
+  const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+  const left =
+    hours === 0
+      ? `${minutes} min`
+      : `${hours} godz. ${minutes % MINUTES_PER_HOUR} min`;
+  return {
+    text: `Wskrzeszenie za ${left} — śmierć zabierze wprawę i wykupione stopnie`,
+    danger: true,
+  };
+}
+
 /** What the headquarters asks for; the app turns each into a simulation call. */
 export type HeadquartersControls = {
   buy(characterId: CharacterId, branch: BranchId): void;
@@ -87,8 +128,16 @@ export type HeadquartersControls = {
 
 export type Headquarters = {
   element: HTMLElement;
-  /** Shows the team, its chest and each row's program of the given game state. */
-  update(state: GameState): void;
+  /**
+   * Shows the team, its chest, each row's program and each row's resurrection line of the given
+   * game state, the line read at the real moment `nowMs`.
+   */
+  update(state: GameState, nowMs: number): void;
+  /**
+   * Rewrites the resurrection lines alone at the real moment `nowMs`, for the passing of real time
+   * while the game state stays as it is; an element is written only when its text or role changed.
+   */
+  tick(state: GameState, nowMs: number): void;
 };
 
 /** A heading of a section of the headquarters. */
@@ -108,7 +157,8 @@ function emptyNote(text: string): HTMLElement {
 
 /**
  * Builds the headquarters: the section „Drużyna” with the team's characters in the order they were
- * created, each with its name, the name of its archetype, one list „Program:” and the button
+ * created, each with its name, its generation „pokolenie {n}” from 2 up, the name of its
+ * archetype, the line of its resurrection on a row of its own, one list „Program:” and the button
  * „Wyślij” for each map, and the creation of a character; and the section „Skrzynka” with the team's chest. Every name of the
  * game's content comes from the data. The name field and its button are made once, so they keep
  * focus; the list of characters is rebuilt when the team, the solved maps or the programs' numbers
@@ -173,6 +223,10 @@ export function createHeadquarters(
   let sendButtons: HTMLButtonElement[] = [];
   let programLists = new Map<CharacterId, HTMLSelectElement>();
   let skills: ReturnType<typeof createCharacterSkills>[] = [];
+  let resurrectionLines: {
+    element: HTMLElement;
+    characterId: CharacterId;
+  }[] = [];
   let warnings: {
     element: HTMLElement;
     characterId: CharacterId;
@@ -188,6 +242,7 @@ export function createHeadquarters(
     sendButtons = [];
     programLists = new Map();
     skills = [];
+    resurrectionLines = [];
     warnings = [];
     const rows = shown.characters.map((character) => {
       const row = document.createElement("li");
@@ -195,9 +250,19 @@ export function createHeadquarters(
       const name = document.createElement("span");
       name.className = "team-member-name";
       name.textContent = character.name;
+      const generation = generationLabel(character.generation);
+      const generationElement = document.createElement("span");
+      generationElement.className = "team-member-generation";
+      generationElement.textContent = generation ?? "";
       const archetype = document.createElement("span");
       archetype.className = "team-member-archetype";
       archetype.textContent = ARCHETYPES[character.archetypeId].name;
+      const resurrection = document.createElement("p");
+      resurrection.className = "team-member-resurrection";
+      resurrectionLines.push({
+        element: resurrection,
+        characterId: character.id,
+      });
       const programLabel = document.createElement("span");
       programLabel.className = "team-member-program-label";
       programLabel.textContent = "Program:";
@@ -209,7 +274,9 @@ export function createHeadquarters(
         controls.pick(character.id, Number(programList.value)),
       );
       programLists.set(character.id, programList);
-      row.append(name, archetype, programLabel, programList);
+      row.append(name);
+      if (generation !== null) row.append(generationElement);
+      row.append(archetype, resurrection, programLabel, programList);
       for (const mapId of sendMaps(solved)) {
         const isSolved = solved.includes(mapId);
         const where = document.createElement("span");
@@ -256,19 +323,37 @@ export function createHeadquarters(
     chestList.hidden = lines.length === 0;
   }
 
+  /** Writes each resurrection line at `nowMs`, an element only where its text or role changed. */
+  function drawResurrectionLines(state: GameState, nowMs: number): void {
+    for (const { element: line, characterId } of resurrectionLines) {
+      const character = state.team.characters.find(
+        (candidate) => candidate.id === characterId,
+      );
+      if (character === undefined) continue;
+      const shown = resurrectionLine(character, nowMs);
+      if (line.textContent !== shown.text) line.textContent = shown.text;
+      if (line.classList.contains("danger") !== shown.danger)
+        line.classList.toggle("danger", shown.danger);
+    }
+  }
+
   return {
     element,
-    update(state: GameState): void {
+    tick: drawResurrectionLines,
+    update(state: GameState, nowMs: number): void {
       chestHeading.textContent = `Skrzynka ${pieceCount(state.team.chest.pieces)}/${BALANCE.chestCapacity}`;
       const programsKey = JSON.stringify(
         state.programs.map((saved) => [saved.id, saved.name]),
       );
       const teamKey = JSON.stringify({
-        characters: state.team.characters.map(({ id, name, archetypeId }) => ({
-          id,
-          name,
-          archetypeId,
-        })),
+        characters: state.team.characters.map(
+          ({ id, name, archetypeId, generation }) => ({
+            id,
+            name,
+            archetypeId,
+            generation,
+          }),
+        ),
         chest: state.team.chest,
       });
       if (
@@ -290,6 +375,7 @@ export function createHeadquarters(
       // One map run at a time: while one goes on, no other character can be sent.
       for (const button of sendButtons) button.disabled = state.run !== null;
       for (const panel of skills) panel.update(state);
+      drawResurrectionLines(state, nowMs);
       for (const warning of warnings) {
         const text = tripWarning(
           rowProgram(state, warning.characterId).program.tripPlan,

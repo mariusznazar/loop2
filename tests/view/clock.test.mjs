@@ -315,3 +315,69 @@ test("a flush of an unchanged game hands the store the very state it holds, with
     clock.dispose();
   });
 });
+
+// Spec, decision 7: the moment of the latest reading is the clock's to give, read at the start too.
+test("the clock gives the moment of its latest reading: the start's until the first flush, then each flush's", () => {
+  withBothClocks(({ pass }) => {
+    const clock = startClock(
+      holdingStore(createCharacter(newGame(), "Ala").state),
+    );
+    // The date gives T0 to the start and a second more to each later reading.
+    assert.equal(clock.moment(), T0);
+    pass(200);
+    clock.flush();
+    assert.equal(clock.moment(), T0 + 1000);
+    mock.timers.tick(200);
+    assert.equal(clock.moment(), T0 + 2000);
+    clock.dispose();
+  });
+});
+
+// Spec, decision 7: the send's flush is a reading like any other, and the moment stays that one.
+test("a send makes a reading, so the moment is the one the send took", () => {
+  withBothClocks(() => {
+    const clock = startClock(
+      holdingStore(createCharacter(newGame(), "Ala").state),
+    );
+    clock.send(SENT);
+    assert.equal(clock.moment(), T0 + 1000);
+    clock.dispose();
+  });
+});
+
+// Spec, decision 7: the view is told after each flush, once the store has the result.
+test("a call follows each flush, after the store has the reading's result, and none follows dispose", () => {
+  withBothClocks(() => {
+    const order = [];
+    const store = holdingStore(createCharacter(newGame(), "Ala").state);
+    const apply = store.apply;
+    store.apply = (result) => {
+      order.push("apply");
+      apply(result);
+    };
+    const clock = startClock(store, () => order.push("reading"));
+    assert.deepEqual(order, [], "the start makes no call");
+    clock.flush();
+    assert.deepEqual(order, ["apply", "reading"]);
+    mock.timers.tick(200);
+    assert.deepEqual(order, ["apply", "reading", "apply", "reading"]);
+    clock.dispose();
+    clock.flush();
+    mock.timers.tick(1000);
+    assert.equal(order.length, 4, "a disposed clock calls nothing");
+  });
+});
+
+// An unchanged game still gets the call: the view redraws the passing of real time on it.
+test("a flush that changes nothing in the game is still followed by the call", () => {
+  withBothClocks(() => {
+    let calls = 0;
+    const clock = startClock(
+      holdingStore(createCharacter(newGame(), "Ala").state),
+      () => (calls += 1),
+    );
+    mock.timers.tick(1000);
+    assert.equal(calls, 5);
+    clock.dispose();
+  });
+});

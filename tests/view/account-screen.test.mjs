@@ -1583,6 +1583,76 @@ test("a game minute that ends the map run in a death is saved at once, settled",
   });
 });
 
+/** Ala at generation 2 at the headquarters, her resurrection ready `left` ms after `at`. */
+function renewing(at, left) {
+  const state = withCharacter();
+  const [ala] = state.team.characters;
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      characters: [{ ...ala, generation: 2, resurrectionReadyAtMs: at + left }],
+    },
+  };
+}
+
+// To do 19, 20; spec decisions 7 and 8; D-207. Catches a headquarters that draws the passing of
+// real time only when the game state changes, one that rewrites a line that did not change, and a
+// tick that makes a new state, which the saver would send.
+test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
+  await onPage(async ({ root }) => {
+    const T = 1_760_000_000_000;
+    let current = T;
+    const date = mock.method(Date, "now", () => current);
+    try {
+      const held = heldClient();
+      await startPage(held);
+      await held.answer("currentAccount", ACCOUNT);
+      // 59 min 30 s left at the clock's start: rounded up, one whole hour.
+      await held.answer("loadSavedGame", saveOf(renewing(T, 3_570_000), 4));
+      const [line] = byClass(root, "team-member-resurrection");
+      const warning = " — śmierć zabierze wprawę i wykupione stopnie";
+      assert.equal(line.textContent, `Wskrzeszenie za 1 godz. 0 min${warning}`);
+      assert.ok(line.classList.contains("danger"));
+      const [label] = byClass(root, "team-member-generation");
+      assert.equal(label.textContent, "pokolenie 2");
+
+      let writes = 0;
+      Object.defineProperty(line, "textContent", {
+        configurable: true,
+        get: () => line.ownText,
+        set: (text) => {
+          writes += 1;
+          line.ownText = String(text);
+        },
+      });
+      // 20 s on: 59 min 10 s left is 60 minutes still; the tick writes nothing.
+      current = T + 20_000;
+      mock.timers.tick(200);
+      assert.equal(writes, 0);
+      // 31 s on: 58 min 59 s left rounds up to 59 minutes.
+      current = T + 31_000;
+      mock.timers.tick(200);
+      assert.equal(writes, 1);
+      assert.equal(line.textContent, `Wskrzeszenie za 59 min${warning}`);
+      mock.timers.tick(200);
+      assert.equal(writes, 1, "a tick in the same minute writes nothing");
+      // At the moment of readiness the line turns ready, within one tick, and loses `danger`.
+      current = T + 3_570_000;
+      mock.timers.tick(200);
+      assert.equal(line.textContent, "Wskrzeszenie gotowe");
+      assert.ok(!line.classList.contains("danger"));
+      assert.equal(writes, 2);
+
+      // Nothing was saved: the ticks made no new state, and the saver's own check finds none.
+      mock.timers.tick(60_000);
+      assert.deepEqual(waitingCalls(held), []);
+    } finally {
+      date.mock.restore();
+    }
+  });
+});
+
 // To do 6; D-96. Catches a new game built when the saved game state cannot be had, a retry that
 // asks for the save alone, and a 401 read as a failure.
 test("a failed or uncertain answer for the saved game state shows the warning with retry, which asks both again; no session shows the forms", async () => {
