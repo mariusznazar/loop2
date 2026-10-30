@@ -9,12 +9,27 @@ import { mock, test } from "node:test";
 import {
   advanceMinutes,
   createCharacter,
+  end,
   mapRunEnded,
   newGame,
+  restart,
   send,
+  setPace,
   setPaused,
+  setProgram,
 } from "../../dist/public/sim/game.js";
+import {
+  createProgram,
+  deleteProgram,
+  discardCopyChanges,
+  pickProgram,
+  renameProgram,
+  saveCopyAsNewProgram,
+  saveCopyIntoProgram,
+  switchProgram,
+} from "../../dist/public/sim/programs.js";
 import { registrationProblems } from "../../dist/public/view/account-screen.js";
+import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- a document model with just what the page and the game build ---------------------------
 
@@ -1238,6 +1253,227 @@ test("a save builds the game the load gives: a map run that went on comes back p
       assert.deepEqual(waitingCalls(held), [], `${name}: nothing is sent`);
     });
   }
+});
+
+// The starts of the acts below. Ala in the team and a second program, „Program 2”, on the list.
+const twoPrograms = () => createProgram(withCharacter()).state;
+/** Ala's map run of the forest under program 1, paused, as a loaded map run comes back. */
+const pausedRun = () =>
+  setPaused(
+    send(twoPrograms(), { mapId: "forest", characterId: 1, programId: 1 }, 0)
+      .state,
+    true,
+  ).state;
+/** The same map run with an edited copy: „Zawsze → Eksploruj” the program lacks. */
+const changedCopy = () =>
+  setProgram(
+    pausedRun(),
+    programFromRules({
+      condition: { kind: "always" },
+      action: { kind: "explore" },
+    }),
+  ).state;
+
+/** The input the page names `label` for assistive technology. */
+function inputLabelled(root, label) {
+  const input = all(root).find(
+    (element) =>
+      element.tag === "input" && element.getAttribute("aria-label") === label,
+  );
+  assert.ok(input, `a field „${label}” stands`);
+  return input;
+}
+
+/** The select list the page names `label` for assistive technology. */
+const listLabelled = (root, label) =>
+  all(root).find(
+    (element) =>
+      element.tag === "select" && element.getAttribute("aria-label") === label,
+  );
+
+function pickOn(list, value) {
+  list.value = value;
+  list.fire("change");
+}
+
+/**
+ * Each act of the player D-184 names, made once on a game built from `start`: `act` clicks, types
+ * or picks it on the page, and `expected` is the game state it leaves, from the simulation call the
+ * act stands for, or `check` a trait of the saved state where its exact value is not the page's.
+ */
+const ACTS = [
+  {
+    name: "an edit of a program",
+    start: twoPrograms,
+    act: (root) => buttonNamed(root, "Dodaj grupę").fire("click"),
+    check: (game, start) => {
+      assert.equal(
+        game.programs[0].program.groups.length,
+        start.programs[0].program.groups.length + 1,
+      );
+      assert.deepEqual(game.programs[1], plain(start.programs[1]));
+    },
+  },
+  {
+    name: "an edit of the copy",
+    start: pausedRun,
+    act: (root) => buttonNamed(root, "Dodaj grupę").fire("click"),
+    check: (game, start) => {
+      assert.equal(
+        game.run.copy.program.groups.length,
+        start.run.copy.program.groups.length + 1,
+      );
+      assert.deepEqual(game.programs, plain(start.programs));
+    },
+  },
+  {
+    name: "„Nowy program”",
+    start: twoPrograms,
+    act: (root) => buttonNamed(root, "Nowy program").fire("click"),
+    expected: (start) => createProgram(start).state,
+  },
+  {
+    name: "„Zmień nazwę”",
+    start: twoPrograms,
+    act: (root) => {
+      buttonNamed(root, "Zmień nazwę").fire("click");
+      inputLabelled(root, "Nazwa programu").value = "Zbieranie";
+      buttonNamed(root, "Zapisz").fire("click");
+    },
+    expected: (start) => renameProgram(start, 1, "Zbieranie").state,
+  },
+  {
+    name: "„Usuń”",
+    start: twoPrograms,
+    act: (root) => buttonNamed(root, "Usuń").fire("click"),
+    expected: (start) => deleteProgram(start, 1).state,
+  },
+  {
+    name: "„Zapisz w programie”",
+    start: changedCopy,
+    act: (root) => buttonNamed(root, "Zapisz w programie").fire("click"),
+    expected: (start) => saveCopyIntoProgram(start).state,
+  },
+  {
+    name: "„Zapisz jako nowy program”",
+    start: changedCopy,
+    act: (root) => {
+      buttonNamed(root, "Zapisz jako nowy program").fire("click");
+      inputLabelled(root, "Nazwa programu").value = "Las";
+      buttonNamed(root, "Zapisz").fire("click");
+    },
+    expected: (start) => saveCopyAsNewProgram(start, "Las").state,
+  },
+  {
+    name: "„Porzuć zmiany”",
+    start: changedCopy,
+    act: (root) => buttonNamed(root, "Porzuć zmiany").fire("click"),
+    expected: (start) => discardCopyChanges(start).state,
+  },
+  {
+    name: "„Przełącz postać na ten program”",
+    start: pausedRun,
+    act: (root) => {
+      pickOn(listLabelled(root, "Program:"), "2");
+      buttonNamed(root, "Przełącz postać na ten program").fire("click");
+    },
+    expected: (start) => switchProgram(start, 2).state,
+  },
+  {
+    name: "creating a character",
+    start: twoPrograms,
+    act: (root) => {
+      inputLabelled(root, "Imię nowej postaci").value = "Ola";
+      buttonNamed(root, "Załóż").fire("click");
+    },
+    expected: (start) => createCharacter(start, "Ola").state,
+  },
+  {
+    name: "the pick on a headquarters row",
+    start: twoPrograms,
+    act: (root) => pickOn(listLabelled(root, "Program: Ala"), "2"),
+    expected: (start) => pickProgram(start, 1, 2).state,
+  },
+  {
+    name: "sending",
+    start: twoPrograms,
+    act: (root) => buttonNamed(root, "Wyślij").fire("click"),
+    // The send takes the real date as its time, so its seed is not this case's to write.
+    check: (game) => {
+      assert.equal(game.run.mapId, "forest");
+      assert.equal(game.run.character.id, 1);
+    },
+  },
+  {
+    name: "„Restart”",
+    start: pausedRun,
+    act: (root) => buttonNamed(root, "Restart").fire("click"),
+    expected: (start) => restart(start).state,
+  },
+  {
+    name: "„Zakończ”",
+    start: pausedRun,
+    act: (root) => buttonNamed(root, "Zakończ").fire("click"),
+    expected: (start) => end(start).state,
+  },
+  {
+    name: "„Wznów”",
+    start: pausedRun,
+    act: (root) => buttonNamed(root, "Wznów").fire("click"),
+    expected: (start) => setPaused(start, false).state,
+  },
+  {
+    name: "a pace",
+    start: pausedRun,
+    act: (root) => buttonNamed(root, "2×").fire("click"),
+    expected: (start) => setPace(start, 2).state,
+  },
+];
+
+// To do 7; D-184, decision 6's list. Catches an act of the player whose change is left to the next
+// 30-second check or to the hidden page, and an act that changes nothing sending a save.
+test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
+  const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
+  // The clock reads no real time, so an act that starts the map run again leaves no carried time.
+  Object.defineProperty(globalThis, "performance", {
+    configurable: true,
+    value: { now: () => 0 },
+  });
+  try {
+    for (const { name, start, act, expected, check } of ACTS) {
+      await onPage(async ({ root }) => {
+        const held = heldClient();
+        const begun = start();
+        await startPage(held);
+        await held.answer("currentAccount", ACCOUNT);
+        await held.answer("loadSavedGame", saveOf(begun, 4));
+        assert.deepEqual(waitingCalls(held), [], `${name}: precondition`);
+        act(root);
+        await settle();
+        assert.deepEqual(waitingCalls(held), ["saveGame"], name);
+        const [sent] = argsOf(held, "saveGame");
+        assert.equal(sent.basedOn, 4, name);
+        if (expected) assert.deepEqual(sent.game, plain(expected(begun)), name);
+        else check(sent.game, begun);
+      });
+    }
+  } finally {
+    Object.defineProperty(globalThis, "performance", saved);
+  }
+
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(twoPrograms(), 4));
+    // Without a map run the pause changes nothing (setPaused); its button stands, unlabelled.
+    const pause = all(byClass(root, "status-row")[0]).find(
+      (element) => element.tag === "button" && element.textContent === "",
+    );
+    pause.fire("click");
+    await settle();
+    assert.deepEqual(waitingCalls(held), []);
+  });
 });
 
 /** A game whose map run passes one game minute before Ala dies of cold. */
