@@ -56,7 +56,12 @@ export function clientAddress(
   return canonicalAddress(singleHeader(request, "cf-connecting-ip"));
 }
 
-export function mutationGuards(publicOrigin: string): RequestHandler[] {
+// The guards of every state-changing account route (D-104). They differ only
+// in the body limit, in bytes, that the route allows.
+export function mutationGuards(
+  publicOrigin: string,
+  bodyLimit: number,
+): RequestHandler[] {
   return [
     (request, response, next) => {
       if (singleHeader(request, "origin") !== publicOrigin) {
@@ -79,7 +84,7 @@ export function mutationGuards(publicOrigin: string): RequestHandler[] {
       next();
     },
     express.json({
-      limit: 16 * 1024,
+      limit: bodyLimit,
       inflate: false,
       verify: (_request, _response, buffer) => {
         if (buffer.length === 0) throw new Error("Empty JSON body");

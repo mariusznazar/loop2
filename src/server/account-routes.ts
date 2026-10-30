@@ -38,7 +38,13 @@ const paths = {
   logout: "/api/logout",
   emailConfirmation: "/api/email-confirmation",
   confirmationMessage: "/api/email-confirmation-message",
+  savedGame: "/api/saved-game",
 };
+
+// The body limit of the five small routes and of the save route, and the most
+// the server stores of one player's game, all in bytes (D-104).
+const accountBodyLimit = 16 * 1024;
+const savedGameLimit = 64 * 1024;
 
 // The outcome of one confirmation message, as both sending routes report it.
 type ConfirmationMessage = "sent" | "limited" | "failed";
@@ -76,6 +82,10 @@ function unauthenticated(response: Response): void {
 
 function invalidRequest(response: Response): void {
   refuse(response, 400, "invalid-request", "Nieprawidłowe żądanie.");
+}
+
+function saveTooLarge(response: Response): void {
+  refuse(response, 413, "save-too-large", "Zapis gry jest za duży.");
 }
 
 function limited(response: Response): void {
@@ -137,6 +147,31 @@ function stringFields<Name extends string>(
   )
     return null;
   return record as Record<Name, string>;
+}
+
+// The body holds exactly `version`, `basedOn` and `game`, each of the kind the
+// save route accepts; nothing is coerced and no field can name an account.
+function saveFields(body: unknown): {
+  version: number;
+  basedOn: number;
+  game: object;
+} | null {
+  const record = body as Record<string, unknown>;
+  const { version, basedOn, game } = record;
+  if (
+    Object.keys(record).length !== 3 ||
+    typeof version !== "number" ||
+    !Number.isSafeInteger(version) ||
+    version < 1 ||
+    typeof basedOn !== "number" ||
+    !Number.isSafeInteger(basedOn) ||
+    basedOn < 0 ||
+    typeof game !== "object" ||
+    game === null ||
+    Array.isArray(game)
+  )
+    return null;
+  return { version, basedOn, game };
 }
 
 // Replaces this browser's session and stores it before the caller answers.
@@ -272,7 +307,11 @@ export function accountRoutes(
       paths.emailConfirmation,
       paths.confirmationMessage,
     ],
-    ...mutationGuards(runtime.configuration.publicOrigin),
+    ...mutationGuards(runtime.configuration.publicOrigin, accountBodyLimit),
+  );
+  router.put(
+    paths.savedGame,
+    ...mutationGuards(runtime.configuration.publicOrigin, savedGameLimit),
   );
 
   router.get(paths.account, (request, response) => {
@@ -282,6 +321,83 @@ export function accountRoutes(
       return;
     }
     response.json(accountBody(account));
+  });
+
+  // The stored text is the game's text as the server keeps it, embedded as it
+  // is: the server reads nothing inside it (D-07).
+  router.get(paths.savedGame, (request, response) => {
+    const account = sessionAccount(runtime, request);
+    if (!account) {
+      unauthenticated(response);
+      return;
+    }
+    const saved = runtime.database.readSavedGame(account.id);
+    response
+      .type("json")
+      .send(
+        saved
+          ? `{"save":{"version":${saved.version},"revision":${saved.revision},"game":${saved.game}}}`
+          : '{"save":null}',
+      );
+  });
+
+  // The checks come in this order: the guards, the fields, the session, the
+  // size of the stored text, then one write that checks the block, the version
+  // and the revision (spec decision 1).
+  router.put(paths.savedGame, (request, response) => {
+    const fields = saveFields(request.body);
+    if (!fields) {
+      invalidRequest(response);
+      return;
+    }
+    const account = sessionAccount(runtime, request);
+    if (!account) {
+      unauthenticated(response);
+      return;
+    }
+    // Serializing the parsed game, not the request's text, fixes what is stored
+    // and measured: re-serializing can lengthen numbers (1e21 becomes 1e+21).
+    let game: string;
+    try {
+      game = JSON.stringify(fields.game);
+    } catch {
+      // Nesting too deep to serialize is no game this server can keep.
+      invalidRequest(response);
+      return;
+    }
+    if (Buffer.byteLength(game, "utf8") > savedGameLimit) {
+      saveTooLarge(response);
+      return;
+    }
+    const outcome = runtime.database.writeSavedGame(account.id, {
+      version: fields.version,
+      basedOn: fields.basedOn,
+      game,
+    });
+    switch (outcome.outcome) {
+      case "saved":
+        response.json({ revision: outcome.revision });
+        return;
+      case "blocked":
+        unauthenticated(response);
+        return;
+      case "outdated":
+        refuse(
+          response,
+          409,
+          "save-outdated",
+          "Zapis pochodzi ze starszej wersji gry.",
+        );
+        return;
+      case "conflict":
+        refuse(
+          response,
+          409,
+          "save-conflict",
+          "Zapis na serwerze jest nowszy niż ten, z którego wyszedł zapis.",
+        );
+        return;
+    }
   });
 
   // The link alone authorizes confirming its own account (D-109): no session
