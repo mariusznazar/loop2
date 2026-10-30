@@ -46,6 +46,7 @@ import type {
   Hex,
   ItemId,
   LastCombat,
+  MapId,
   Pace,
   Practice,
   Program,
@@ -66,7 +67,7 @@ import type {
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
  * `GameState` or a type it reaches, and of the items of the data, which `Backpack` enumerates.
  */
-export const SAVED_GAME_VERSION = 1;
+export const SAVED_GAME_VERSION = 2;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -426,6 +427,8 @@ type Records = {
   listed: ReadonlySet<ProgramId>;
   characters: ReadonlyMap<CharacterId, ArchetypeId>;
   trees: readonly SkillId[];
+  /** The maps solved, read before the map run: the mark of a run and its completion rest on them. */
+  solved: readonly MapId[];
 };
 
 /** A program number the game gave, the number of a deleted program included (D-165). */
@@ -729,12 +732,14 @@ function copy(value: unknown, records: Records): ProgramCopy {
 
 /**
  * What completion put in the chest: none before a completion, and at one the frozen bring plan's
- * entries in its order, each at most the count it plans (D-179, D-189).
+ * entries in its order, each at most the count it plans (D-179, D-189); at the completion of a
+ * marked run an empty list, since such a run deposits nothing.
  */
 function deposited(
   value: unknown,
   bringPlan: readonly TripEntry[],
   completed: boolean,
+  marked: boolean,
 ): TripEntry[] | null {
   if (value === null) {
     if (completed) refuse();
@@ -742,6 +747,7 @@ function deposited(
   }
   if (!completed) refuse();
   const put = tripList(value);
+  if (marked && put.length > 0) refuse();
   let from = 0;
   for (const entry of put) {
     const at = bringPlan.findIndex(
@@ -778,13 +784,17 @@ const RUN_KEYS = [
   "copy",
   "bringPlan",
   "deposited",
+  "solvedMapRun",
 ] as const;
 
 /**
  * The map run, with what the simulation follows in it: its character in the team, with skills its
  * archetype allows, every place on its tiles, one campfire a tile, an attack going on only with no
  * activity and before an end, an activity going on until it ends, an end in its own game minute,
- * and a deposit only at a completion, out of the frozen bring plan.
+ * and a deposit only at a completion, out of the frozen bring plan. Its mark says whether the map
+ * was solved when it started: a run that has not completed holds the mark exactly when the solved
+ * maps hold its map, which one manual map run at a time keeps true (D-55); a run that completed
+ * has its map among the solved maps, whatever its mark.
  */
 function mapRun(value: unknown, records: Records): GameMapRun {
   const read = fields(value, RUN_KEYS);
@@ -855,6 +865,9 @@ function mapRun(value: unknown, records: Records): GameMapRun {
   const streak = count(read.streak);
   if (attackCooldownStart > minute || streak > minute) refuse();
   const bringPlan = tripList(read.bringPlan);
+  const solvedMapRun = flag(read.solvedMapRun);
+  const mapSolved = records.solved.includes(mapId);
+  if (ended.completion ? !mapSolved : solvedMapRun !== mapSolved) refuse();
 
   return {
     practice: practice(read.practice),
@@ -880,7 +893,13 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     ...ended,
     copy: copy(read.copy, records),
     bringPlan,
-    deposited: deposited(read.deposited, bringPlan, ended.completion !== null),
+    deposited: deposited(
+      read.deposited,
+      bringPlan,
+      ended.completion !== null,
+      solvedMapRun,
+    ),
+    solvedMapRun,
   };
 }
 
@@ -917,7 +936,9 @@ function game(value: unknown): GameState {
   const programs = programList(read.programs, nextProgramId);
   const nextCharacterId = identity(read.nextCharacterId);
   const theTeam = team(read.team, nextCharacterId, known.trees);
+  const solvedMaps = uniqueOf(read.solvedMaps, MAPS);
   const records: Records = {
+    solved: solvedMaps,
     nextProgramId,
     listed: new Set(programs.map((saved) => saved.id)),
     characters: new Map(
@@ -978,7 +999,7 @@ function game(value: unknown): GameState {
     lastSeed: uint32(read.lastSeed),
     // A map run that goes on comes back paused, and one that ended as it ended (D-212).
     paused: run !== null && !mapRunEnded(run) ? true : paused,
-    solvedMaps: uniqueOf(read.solvedMaps, MAPS),
+    solvedMaps,
     pace: read.pace as Pace,
     discovery,
     realMsCarry,

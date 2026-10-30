@@ -6,6 +6,7 @@ import {
   end,
   newGame,
   passRealTime,
+  restart,
   send,
   setPace,
   setProgram,
@@ -26,16 +27,19 @@ import { buyBranch } from "../../dist/public/sim/skills.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-// The saved document of the current version of the shape, written out by hand (spec, decision 2).
-// It fills every optional branch of the game state the spec lists: a map run with a campfire, a
-// burning item, a combat record, a copy whose program was deleted, a discovery held and counts
-// beside the copy's rules; and those of trip plans and character skills: trip lists in programs,
-// the copy changed from its frozen bring plan, a chest, known trees, practice of the map run and
-// of its combat, and ranks bought. `HEADQUARTERS` below holds the counts beside a program of the
-// list, which a game state holds only outside a map run. Its map run is written paused, so the
-// load's pause changes nothing in it. A change of the game state's shape makes the load refuse
-// this document; it is rewritten only together with a raised version, or while no saved game state
-// of the current version exists anywhere.
+// The saved document of version 1 of the shape stays below as it was, written out by hand; the
+// game refuses it as another version. The document of the current version, version 2, is that one
+// with the mark `solvedMapRun` added to its map run (spec, decisions 1 and 9); its map run is on
+// forestDeep, which `solvedMaps` lacks, so the mark is false. The document fills every optional
+// branch of the game state the spec lists: a map run with a campfire, a burning item, a combat
+// record, a copy whose program was deleted, a discovery held and counts beside the copy's rules;
+// and those of trip plans and character skills: trip lists in programs, the copy changed from its
+// frozen bring plan, a chest, known trees, practice of the map run and of its combat, and ranks
+// bought. `HEADQUARTERS` below holds the counts beside a program of the list, which a game state
+// holds only outside a map run. Its map run is written paused, so the load's pause changes nothing
+// in it. A change of the game state's shape makes the load refuse this document; it is rewritten
+// only together with a raised version, or while no saved game state of the current version exists
+// anywhere.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -190,7 +194,7 @@ const NEW_SKILLS = {
   dodging: { practice: 0, ranks: {} },
 };
 
-const DOCUMENT = {
+const DOCUMENT_V1 = {
   version: 1,
   game: {
     programs: [
@@ -429,9 +433,18 @@ const DOCUMENT = {
   },
 };
 
+/** The document of the current version: version 1 with the mark of its map run (forestDeep, unsolved). */
+const DOCUMENT = {
+  version: 2,
+  game: {
+    ...DOCUMENT_V1.game,
+    run: { ...DOCUMENT_V1.game.run, solvedMapRun: false },
+  },
+};
+
 /** A document of the current version at the headquarters, its counts beside program 1. */
 const HEADQUARTERS = {
-  version: 1,
+  version: 2,
   game: {
     programs: [{ id: 1, name: "Program", program: PROGRAM_1 }],
     nextProgramId: 2,
@@ -488,12 +501,12 @@ test("the current version is the one the document of the current version is writ
 // The `save` the server hands back: exactly `version`, `revision` and `game` (spec, decision 1).
 test("the server's save of the current version loads into the game it holds, its revision left out", () => {
   const save = {
-    version: 1,
+    version: 2,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  assert.deepEqual(loadSavedGame({ ...save, version: 2 }), {
+  assert.deepEqual(loadSavedGame({ ...save, version: 3 }), {
     ok: false,
     reason: "version",
   });
@@ -504,6 +517,11 @@ function changed(change, document = DOCUMENT) {
   const copy = structuredClone(document);
   change(copy);
   return copy;
+}
+
+/** The solved maps a document needs for its map run to have completed: Las and its own map. */
+function solvingItsMap(document) {
+  document.game.solvedMaps = ["forest", "forestDeep"];
 }
 
 /** A value nested `depth` arrays deep. */
@@ -555,6 +573,7 @@ test("a map run that ended comes back as it ended", () => {
   const completed = changed((document) => {
     document.game.paused = false;
     document.game.realMsCarry = 0;
+    solvingItsMap(document);
     document.game.run.completion = { minute: 212 };
     // Out of the frozen bring list, in its order, each at most its count (D-179).
     document.game.run.deposited = [
@@ -566,6 +585,39 @@ test("a map run that ended comes back as it ended", () => {
     ok: true,
     state: completed.game,
   });
+});
+
+// invariant: solved-map-manual-run
+test("a map run of a solved map comes back marked, and its completion with the empty deposit", () => {
+  const marked = changed((document) => {
+    solvingItsMap(document);
+    document.game.run.solvedMapRun = true;
+  });
+  assert.deepEqual(loadSavedGame(marked), {
+    ok: true,
+    state: { ...marked.game, paused: true },
+  });
+  const completed = changed((document) => {
+    solvingItsMap(document);
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.solvedMapRun = true;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [];
+  });
+  assert.deepEqual(loadSavedGame(completed), {
+    ok: true,
+    state: completed.game,
+  });
+  // A run begun before its map was solved and completed after it: unmarked, solved since.
+  const first = changed((document) => {
+    solvingItsMap(document);
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [];
+  });
+  assert.deepEqual(loadSavedGame(first), { ok: true, state: first.game });
 });
 
 test("a map run moving the character to a neighbouring tile loads with the move", () => {
@@ -600,7 +652,7 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
-  for (const version of [0, 2, -1]) {
+  for (const version of [0, 3, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -608,16 +660,26 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 2 of another shape",
-    { version: 2, game: "Las" },
+    "version 3 of another shape",
+    { version: 3, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 2 with an archetype absent from the data",
+    "version 3 with an archetype absent from the data",
     changed((document) => {
-      document.version = 2;
+      document.version = 3;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
+    "version",
+  );
+});
+
+// invariant: save-version
+test("the document of version 1 is refused as version, whatever its game holds", () => {
+  assert.equal(DOCUMENT_V1.version, 1);
+  assertRefused(
+    "the document of version 1",
+    structuredClone(DOCUMENT_V1),
     "version",
   );
 });
@@ -912,23 +974,27 @@ const CRAFTED = {
   "a deposit before a completion": (document) =>
     (document.game.run.deposited = []),
   "a completion without its deposit": (document) => {
+    solvingItsMap(document);
     document.game.paused = false;
     document.game.realMsCarry = 0;
     document.game.run.completion = { minute: 212 };
   },
   "a deposit of an item the frozen bring plan lacks": (document) => {
+    solvingItsMap(document);
     document.game.paused = false;
     document.game.realMsCarry = 0;
     document.game.run.completion = { minute: 212 };
     document.game.run.deposited = [{ item: "moss", count: 1 }];
   },
   "a deposit above its planned count": (document) => {
+    solvingItsMap(document);
     document.game.paused = false;
     document.game.realMsCarry = 0;
     document.game.run.completion = { minute: 212 };
     document.game.run.deposited = [{ item: "stick", count: 21 }];
   },
   "a deposit out of the frozen bring plan's order": (document) => {
+    solvingItsMap(document);
     document.game.paused = false;
     document.game.realMsCarry = 0;
     document.game.run.completion = { minute: 212 };
@@ -938,10 +1004,46 @@ const CRAFTED = {
     ];
   },
   "a deposit of 0 pieces": (document) => {
+    solvingItsMap(document);
     document.game.paused = false;
     document.game.realMsCarry = 0;
     document.game.run.completion = { minute: 212 };
     document.game.run.deposited = [{ item: "berry", count: 0 }];
+  },
+  // The mark of the map run and the solved maps (decision 9; D-55, D-189).
+  "the map run without its mark": (document) =>
+    delete document.game.run.solvedMapRun,
+  "a mark as text": (document) => (document.game.run.solvedMapRun = "false"),
+  "a mark of 0": (document) => (document.game.run.solvedMapRun = 0),
+  "a mark of none": (document) => (document.game.run.solvedMapRun = null),
+  "a mark set on a map run whose map is not solved": (document) =>
+    (document.game.run.solvedMapRun = true),
+  "a mark unset on a map run whose map is solved, no completion": (
+    document,
+  ) => {
+    solvingItsMap(document);
+    document.game.run.solvedMapRun = false;
+  },
+  "a completion of a map absent from the solved maps": (document) => {
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [];
+  },
+  "a deposit at the completion of a marked run": (document) => {
+    solvingItsMap(document);
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.solvedMapRun = true;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [{ item: "berry", count: 2 }];
+  },
+  "a marked completion without its deposit": (document) => {
+    solvingItsMap(document);
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.solvedMapRun = true;
+    document.game.run.completion = { minute: 212 };
   },
   // The chest, by item and within its capacity.
   "a chest above its capacity": (document) =>
@@ -1162,7 +1264,7 @@ const BERRY_3 = { item: "berry", count: 3 };
  * Ala sent to Las after buying „Szybki posiłek”, with a trip plan that takes 3 berries out of a
  * chest of 10 sticks, 10 berries and 2 moss and brings back berries and sticks.
  */
-function equipped() {
+function equipped(solved = false) {
   let state = skilled({ eating: { practice: 15, ranks: {} } });
   state = {
     ...state,
@@ -1179,6 +1281,7 @@ function equipped() {
       bring: [BERRY_3, { item: "stick", count: 2 }],
     },
   }).state;
+  if (solved) state = { ...state, solvedMaps: ["forest"] };
   return send(state, { mapId: "forest", characterId: 1 }, REAL_MS).state;
 }
 
@@ -1187,8 +1290,8 @@ function equipped() {
  * its streak, its activity and its attack cooldown with it, 4 game minutes short of Las's solving
  * streak of 480 — and those 4 minutes passed eating.
  */
-function completed() {
-  const { run, ...started } = equipped();
+function completed(solved = false) {
+  const { run, ...started } = equipped(solved);
   const later = (minute) => minute + 476;
   return advanceMinutes(
     {
@@ -1237,6 +1340,7 @@ function patrolling() {
 test("a game state the simulation made loads back from its saved document", () => {
   const ended = end(played()).state;
   const done = completed();
+  const doneMarked = completed(true);
   const states = {
     "a new game": { state: newGame(), goesOn: false },
     "a wait under the empty „Program”": {
@@ -1285,6 +1389,18 @@ test("a game state the simulation made loads back from its saved document", () =
       goesOn: false,
     },
     "a patrol going on": { state: patrolling(), goesOn: true },
+    "a map run of a solved map, its mark set": {
+      state: equipped(true),
+      goesOn: true,
+    },
+    "the completion of a marked run, its deposit empty": {
+      state: doneMarked,
+      goesOn: false,
+    },
+    "the restart after the completion that solved the map": {
+      state: restart(done).state,
+      goesOn: true,
+    },
   };
   // Preconditions: each state holds what its name says.
   assert.equal(
@@ -1330,6 +1446,22 @@ test("a game state the simulation made loads back from its saved document", () =
     15 + done.run.practice.eating,
   );
   assert.equal(doing(states["a patrol going on"].state.run), "patrol");
+  // Preconditions of the marked states: the mark follows the map's state at the run's start.
+  assert.equal(started.run.solvedMapRun, false);
+  assert.equal(done.run.solvedMapRun, false);
+  assert.deepEqual(done.solvedMaps, ["forest"]);
+  assert.equal(
+    states["a map run of a solved map, its mark set"].state.run.solvedMapRun,
+    true,
+  );
+  assert.notEqual(doneMarked.run.completion, null);
+  assert.equal(doneMarked.run.solvedMapRun, true);
+  assert.deepEqual(doneMarked.run.deposited, []);
+  assert.equal(
+    states["the restart after the completion that solved the map"].state.run
+      .solvedMapRun,
+    true,
+  );
   for (const [name, { state, goesOn }] of Object.entries(states)) {
     assert.deepEqual(
       loadSavedGame(savedGame(state)),

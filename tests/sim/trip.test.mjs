@@ -27,6 +27,7 @@ import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { buyBranch } from "../../dist/public/sim/skills.js";
 import {
   clipTrip,
+  takeFromNowhere,
   takeTrip,
   tripLoot,
   tripEntryCut,
@@ -106,13 +107,15 @@ test("a bought branch acts on entry equipment and completion pays practice and l
   assert.deepEqual(completed.run.deposited, [entry("berry", 2)]);
   assert.equal(completed.team.chest.pieces.berry, 9);
   assert.deepEqual(advanceMinutes(completed, 10).state, completed);
+  // The completion solved the map, so the restart is a manual run of a solved map (To do 3, 5): it
+  // takes its three berries from nowhere and leaves the chest at 9, not 6.
   const restarted = restart(completed).state;
   assert.deepEqual(restarted.run.practice, {});
   assert.equal(restarted.run.character.skills.eating.practice, 15);
   assert.equal(restarted.team.characters[0].skills.eating.practice, 16);
   assert.equal(restarted.run.current.endMinute, 4);
   assert.equal(restarted.run.character.backpack.berry, 3);
-  assert.equal(restarted.team.chest.pieces.berry, 6);
+  assert.equal(restarted.team.chest.pieces.berry, 9);
   assert.deepEqual(restarted.run.bringPlan, [entry("berry", 3)]);
 });
 // Each expected clipping is hand-counted from To do 4–6 of plan_wyprawy_loop2.md.
@@ -340,7 +343,9 @@ test("switching programs retains the entry snapshot, including on solved-map run
     { mapId: "forest", characterId: 1, programId: 1 },
     23,
   ).state;
-  assert.equal(state.team.chest.pieces.stick, 2);
+  // A run of a solved map takes from nowhere (To do 5): the chest keeps its ten sticks.
+  assert.equal(state.team.chest.pieces.stick, 10);
+  assert.equal(state.run.character.backpack.stick, 8);
   const switched = switchProgram(state, 2).state;
   assert.deepEqual(switched.run.copy.program.tripPlan, { take: [], bring: [] });
   assert.deepEqual(switched.run.bringPlan, [
@@ -351,14 +356,13 @@ test("switching programs retains the entry snapshot, including on solved-map run
     { ...switched, run: { ...switched.run, streak: 479 } },
     1,
   ).state;
-  assert.deepEqual(finished.run.deposited, [
-    entry("berry", 7),
-    entry("stick", 8),
-  ]);
+  assert.ok(finished.run.completion);
+  // The marked run deposits nothing (To do 2), so the chest is as it was.
+  assert.deepEqual(finished.run.deposited, []);
   assert.equal(finished.team.chest.pieces.stick, 10);
 });
 
-test("unlisted and clipped contents of a completed backpack cannot fund a subsequent run", () => {
+test("unlisted and clipped contents of a completed backpack cannot fund a subsequent run that takes from the chest", () => {
   // invariant: trip-run-end
   let state = equipped();
   const original = state.programs[0].program;
@@ -372,7 +376,15 @@ test("unlisted and clipped contents of a completed backpack cannot fund a subseq
     1,
   ).state;
   assert.deepEqual(finished.team.chest.pieces, { stick: 4, berry: 3, moss: 2 });
-  const next = restart(finished).state;
+  // The restart follows the completion that solved forest, so it takes from nowhere (To do 3, 5).
+  // A later run that takes from the chest starts on the still unsolved forestDeep: its backpack
+  // holds the chest's four sticks and three berries, none of the leftovers of the completed run.
+  const next = send(
+    end(finished).state,
+    { mapId: "forestDeep", characterId: 1 },
+    23,
+  ).state;
+  assert.equal(next.run.solvedMapRun, false);
   assert.deepEqual(next.run.character.backpack, {
     stick: 4,
     berry: 3,
@@ -523,4 +535,169 @@ test("the first action already sees entry equipment and transfers preserve their
   const result = advanceMinutes(freeze(ready), 1).state;
   assert.deepEqual(ready, readyBefore);
   assert.deepEqual(result.run.deposited, [entry("berry", 10)]);
+});
+
+// Each expected value below is hand-counted from To do 1-5 and 14 of the task rozliczenie-przejsc;
+// the loop test a case follows is named in the case.
+function solvedForest(state = equipped()) {
+  return { ...state, solvedMaps: ["forest"] };
+}
+function aboutToComplete(state) {
+  return { ...state, run: { ...state.run, streak: 479 } };
+}
+
+test("a manual run of a solved map takes its take list from nowhere, cut by capacity, and leaves the chest as it is", () => {
+  // invariant: solved-map-manual-run
+  // loop src/sim/chest.test.ts:316-338: 'wnosi plan i zostawia skrzynkę nietkniętą', 'wnosi także
+  // to, czego w skrzynce nie ma', 'dalej wiąże udźwig'.
+  const capacity = equipped().team.characters[0].traits.carryingCapacity;
+  const started = sent(solvedForest());
+  assert.deepEqual(started.run.character.backpack, {
+    stick: 8,
+    berry: 7,
+    moss: 0,
+    fiber: 0,
+  });
+  assert.deepEqual(started.team.chest.pieces, {
+    stick: 10,
+    berry: 10,
+    moss: 2,
+  });
+  const scarce = solvedForest();
+  const absent = editProgram(
+    { ...scarce, team: { ...scarce.team, chest: { pieces: { berry: 1 } } } },
+    1,
+    { ...emptyProgram(), tripPlan: { take: [entry("stick", 5)], bring: [] } },
+  ).state;
+  const fromNowhere = sent(absent);
+  assert.equal(fromNowhere.run.character.backpack.stick, 5);
+  assert.deepEqual(fromNowhere.team.chest.pieces, { berry: 1 });
+  const greedy = editProgram(solvedForest(), 1, {
+    ...emptyProgram(),
+    tripPlan: { take: [entry("berry", 40)], bring: [] },
+  }).state;
+  assert.equal(sent(greedy).run.character.backpack.berry, capacity);
+});
+
+test("takeFromNowhere clips the take list by capacity and the entry cap of the map and reads nothing else", () => {
+  // invariant: solved-map-manual-run
+  // loop src/sim/chest.test.ts:316-338.
+  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
+  const before = structuredClone(plan);
+  assert.deepEqual(
+    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 4, carryOut: 0 }),
+    { stick: 0, berry: 0, moss: 4, fiber: 0 },
+  );
+  assert.deepEqual(takeFromNowhere(plan, 12, MAPS.forest), {
+    stick: 0,
+    berry: 3,
+    moss: 9,
+    fiber: 0,
+  });
+  assert.equal(
+    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 0 }).moss,
+    0,
+  );
+  assert.deepEqual(plan, before);
+});
+
+test("a run records at its start whether its map was solved, and a restart after the solving completion records it anew", () => {
+  // invariant: solved-map-manual-run
+  // loop src/sim/chest.test.ts:358-367: 'start zapisuje w przejściu, czy jest próbą'.
+  const unsolved = sent();
+  assert.equal(unsolved.run.solvedMapRun, false);
+  assert.equal(sent(solvedForest()).run.solvedMapRun, true);
+  const completed = advanceMinutes(aboutToComplete(unsolved), 1).state;
+  assert.ok(completed.run.completion);
+  assert.deepEqual(completed.solvedMaps, ["forest"]);
+  assert.equal(completed.run.solvedMapRun, false, "the mark holds to the end");
+  const restarted = restart(completed).state;
+  assert.equal(restarted.run.solvedMapRun, true);
+  assert.deepEqual(restarted.team.chest, completed.team.chest);
+});
+
+test("completing a manual run of a solved map pays no practice and deposits nothing, and the practice stays with the run", () => {
+  // invariant: solved-map-manual-run
+  // loop src/sim/chest.test.ts:407-419 and src/sim/skills.test.ts:454-468.
+  const started = sent(solvedForest());
+  const fixture = aboutToComplete({
+    ...started,
+    run: {
+      ...started.run,
+      practice: { smallItemGathering: 7 },
+      character: {
+        ...started.run.character,
+        backpack: { ...started.run.character.backpack, moss: 3 },
+      },
+    },
+  });
+  const before = structuredClone(fixture);
+  const completed = advanceMinutes(fixture, 1).state;
+  assert.ok(completed.run.completion);
+  assert.deepEqual(completed.run.deposited, []);
+  assert.deepEqual(completed.team.chest, fixture.team.chest);
+  assert.deepEqual(completed.team.characters, fixture.team.characters);
+  assert.deepEqual(completed.run.practice, { smallItemGathering: 7 });
+  assert.deepEqual(completed.solvedMaps, ["forest"]);
+  assert.equal(completed.run.solvedMapRun, true);
+  assert.deepEqual(fixture, before);
+  assert.equal(advanceMinutes(completed, 10).state, completed);
+});
+
+test("a run started before another character solved the map still pays practice and deposits at its completion", () => {
+  // invariant: solved-map-manual-run
+  // loop src/sim/skills.test.ts:470-480.
+  const started = sent();
+  const fixture = aboutToComplete({
+    ...started,
+    solvedMaps: ["forest"],
+    run: { ...started.run, practice: { smallItemGathering: 7 } },
+  });
+  const completed = advanceMinutes(fixture, 1).state;
+  assert.ok(completed.run.completion);
+  assert.deepEqual(completed.run.deposited, [
+    entry("berry", 7),
+    entry("stick", 8),
+  ]);
+  assert.deepEqual(completed.team.chest.pieces, {
+    stick: 10,
+    berry: 10,
+    moss: 2,
+  });
+  assert.equal(
+    completed.team.characters[0].skills.smallItemGathering.practice,
+    fixture.team.characters[0].skills.smallItemGathering.practice + 7,
+  );
+});
+
+test("the preview of a marked run is empty whatever its backpack and the chest hold", () => {
+  // invariant: solved-map-manual-run
+  // loop src/sim/chest.test.ts:407-419: the deposit of a trial is the empty list.
+  const run = sent(solvedForest()).run;
+  assert.deepEqual(tripLoot(run, { pieces: {} }, MAPS.forest), []);
+  assert.deepEqual(
+    tripLoot({ ...run, solvedMapRun: false }, { pieces: {} }, MAPS.forest),
+    [entry("berry", 7), entry("stick", 8)],
+  );
+});
+
+test("a death on a manual run of a solved map takes what the character carried and pays nothing", () => {
+  // invariant: trip-run-end
+  // To do 14, D-61, D-190, question Q1: a death costs as on any run and pays nothing.
+  const started = sent(solvedForest());
+  const dying = {
+    ...started,
+    run: {
+      ...started.run,
+      practice: { smallItemGathering: 7 },
+      body: { temperature: 34, satiety: 50, health: 0.1 },
+    },
+  };
+  const dead = advanceMinutes(dying, 1).state;
+  assert.ok(dead.run.death);
+  assert.equal(dead.run.deposited, null);
+  assert.deepEqual(dead.team.chest, started.team.chest);
+  assert.deepEqual(dead.team.characters, started.team.characters);
+  assert.deepEqual(dead.solvedMaps, ["forest"]);
+  assert.deepEqual(dead.run.character.backpack, started.run.character.backpack);
 });

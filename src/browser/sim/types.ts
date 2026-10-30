@@ -287,8 +287,14 @@ export type GameMapRun = MapRun & {
   copy: ProgramCopy;
   /** Bound at entry; editing or switching the copy leaves this snapshot intact. */
   bringPlan: TripEntry[];
-  /** Actual deposit at completion; null until then. Retained with the frozen end screen. */
+  /** Actual deposit at completion; null until then, `[]` for a marked run. Retained with the frozen end screen. */
   deposited: TripEntry[] | null;
+  /**
+   * Whether the map was solved when this map run started (D-189): a marked run takes its equipment
+   * from nowhere, deposits nothing and pays no practice. Bound at the start and carried unchanged to
+   * the run's end, the saved document and back; a restart binds it anew.
+   */
+  solvedMapRun: boolean;
 };
 
 /** Tells the characters of the team apart; two characters may share a name. */

@@ -57,12 +57,36 @@ export function takeTrip(
   return { chest: { pieces }, backpack };
 }
 
-/** The same clipped snapshot drives both the live preview and the eventual deposit. */
+/**
+ * Equipment of a marked run (a manual map run of a solved map): the take list taken from nowhere,
+ * the list's own counts standing in for the stock, clipped only by the carrying capacity and the
+ * map's entry cap. The chest is not an argument, so nothing leaves it.
+ */
+export function takeFromNowhere(
+  plan: TripPlan,
+  capacity: number,
+  map: MapDef,
+): Backpack {
+  const taken = clipTrip(
+    plan.take,
+    Object.fromEntries(plan.take.map(({ item, count }) => [item, count])),
+    Math.min(capacity, map.carryIn ?? Infinity),
+  );
+  const backpack = newBackpack();
+  for (const { item, count } of taken) backpack[item] = count;
+  return backpack;
+}
+
+/**
+ * The same clipped snapshot drives both the live preview and the eventual deposit. A marked run
+ * deposits nothing, so its list is empty.
+ */
 export function tripLoot(
-  run: Pick<GameMapRun, "bringPlan" | "character">,
+  run: Pick<GameMapRun, "bringPlan" | "character" | "solvedMapRun">,
   chest: Chest,
   map: MapDef,
 ): TripEntry[] {
+  if (run.solvedMapRun) return [];
   return clipTrip(
     run.bringPlan,
     run.character.backpack,

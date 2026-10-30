@@ -1,6 +1,6 @@
 import { newTraits } from "./character.js";
 import { newSkills, paidPractice } from "./skills.js";
-import { takeTrip, tripLoot } from "./trip.js";
+import { takeFromNowhere, takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
   discover,
@@ -132,12 +132,23 @@ function startRun(
   traits: Traits,
   copy: ProgramCopy,
 ): GameResult {
-  const equipment = takeTrip(
-    copy.program.tripPlan,
-    state.team.chest,
-    traits.carryingCapacity,
-    mapOf(mapId),
-  );
+  // The state of the map at this start settles whether the run pays and takes (D-189).
+  const solvedMapRun = state.solvedMaps.includes(mapId);
+  const equipment = solvedMapRun
+    ? {
+        chest: state.team.chest,
+        backpack: takeFromNowhere(
+          copy.program.tripPlan,
+          traits.carryingCapacity,
+          mapOf(mapId),
+        ),
+      }
+    : takeTrip(
+        copy.program.tripPlan,
+        state.team.chest,
+        traits.carryingCapacity,
+        mapOf(mapId),
+      );
   const started = newMapRun(
     mapOf(mapId),
     seed,
@@ -160,6 +171,7 @@ function startRun(
         copy,
         bringPlan: copy.program.tripPlan.bring.map((entry) => ({ ...entry })),
         deposited: null,
+        solvedMapRun,
       },
       paused: false,
       discovery: null,
@@ -434,7 +446,9 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * leaves the game paused, holding what the minute revealed. A map run that meets the solving
  * condition of its map in a minute completes there, once the minute's discovery has taken hold: the
  * rest of the minute has taken effect, the event `mapRunCompleted` follows the minute's other
- * events, no program rule is picked and the map is added to the solved maps; where that minute is
+ * events, no program rule is picked and the map is added to the solved maps; the completion pays
+ * practice and deposits the bring list only for a run not marked `solvedMapRun`, and a death pays
+ * nothing; where that minute is
  * also a discovery's, the game holds the discovery and is not paused. A map run that has ended
  * changes nothing.
  */
@@ -529,6 +543,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     copy,
     bringPlan: state.run.bringPlan,
     deposited: null,
+    solvedMapRun: state.run.solvedMapRun,
   };
   const deposited = completed
     ? tripLoot(endedRun, current.team.chest, map)
@@ -547,19 +562,20 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         !current.solvedMaps.includes(run.mapId) && {
           solvedMaps: [...current.solvedMaps, run.mapId],
         }),
-      ...(completed && {
-        team: {
-          ...current.team,
-          characters: current.team.characters.map((character) =>
-            character.id === run.character.id
-              ? {
-                  ...character,
-                  skills: paidPractice(character.skills, run.practice),
-                }
-              : character,
-          ),
-        },
-      }),
+      ...(completed &&
+        !endedRun.solvedMapRun && {
+          team: {
+            ...current.team,
+            characters: current.team.characters.map((character) =>
+              character.id === run.character.id
+                ? {
+                    ...character,
+                    skills: paidPractice(character.skills, run.practice),
+                  }
+                : character,
+            ),
+          },
+        }),
       run: { ...endedRun, deposited },
       ruleCounts: countStarts(current.ruleCounts, events),
     },
