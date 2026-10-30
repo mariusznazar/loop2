@@ -134,11 +134,12 @@ go nie ma, a wczytanie przyjmuje oba.
 ### Plan wyprawy i skrzynia
 
 Plan wyprawy programu (`tripPlan`, listy `take` i `bring`) czyta sprawdzenie
-programów z `programs.ts`, a `program` dodatkowo wymaga, by każda liczność
-była bezpieczną liczbą całkowitą od 1 (D-181). Zamrożony plan wynoszenia
+programów z `programs.ts`, to samo, przez które gra przyjmuje plan od gracza:
+każda liczność jest bezpieczną liczbą całkowitą od 1 (D-181), więc gra nie
+trzyma liczności, której wczytanie by odmówiło. Zamrożony plan wynoszenia
 przebiegu (`bringPlan`) i to, co ukończenie włożyło do skrzyni (`deposited`),
 czyta `tripList`: przedmiot z danych, każdy najwyżej raz na liście, liczność
-od 1. `deposited` jest `null` dokładnie wtedy, gdy przebieg nie ma ukończenia,
+bezpieczna od 1. `deposited` jest `null` dokładnie wtedy, gdy przebieg nie ma ukończenia,
 a przy ukończeniu jego pozycje idą w kolejności `bringPlan`, każda najwyżej
 w zaplanowanej liczności (D-179, D-189). Skrzynię czyta `chest`: sztuki według
 przedmiotu, klucz z liczbą 0 dozwolony, razem nie więcej niż pojemność
