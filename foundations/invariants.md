@@ -945,6 +945,16 @@ At every game minute of a map run, the mage's nature energy lies between 0 and t
 - **Part:** simulation
 - **Violated:** no
 
+## action-duration-minimum
+
+An action shortened by bought branches lasts at least one game minute.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/_zadania/wprawa_i_drzewa_loop2.md § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
+- **Part:** simulation
+- **Violated:** no
+
 ## trip-transfer
 
 At each map-run start equipment is removed from the chest in take-list order up to stock, carrying capacity and entry cap, and at completion items are deposited once from the entry-bound bring snapshot in its order up to backpack stock, carrying capacity, exit cap and free chest room, including on an already solved map.

@@ -856,6 +856,7 @@ const AFTER_FIRST_CHILL = {
   actions: ["explore", "wander"],
   conditions: ["always", "temperatureBelow"],
   items: [],
+  trees: [],
   creatures: [],
 };
 const gameKnowing = (understanding) => ({ ...newGame(), understanding });
@@ -879,6 +880,7 @@ test("target lists follow the Understanding's items: resources of the shown map 
     actions: [],
     conditions: ["always"],
     items: ["moss", "campfire", "stick"],
+    trees: [],
     creatures: [],
   });
   assert.deepEqual(offeredResources(state), ["stick", "moss"]);
@@ -887,6 +889,7 @@ test("target lists follow the Understanding's items: resources of the shown map 
     actions: [],
     conditions: ["always"],
     items: ["campfire"],
+    trees: [],
     creatures: [],
   });
   assert.deepEqual(offeredResources(onlyCampfire), []);
@@ -895,7 +898,10 @@ test("target lists follow the Understanding's items: resources of the shown map 
 
 test("an Understanding that holds everything gives lists of every action and condition of the data", () => {
   const everything = newKnowingGame();
-  assert.deepEqual(offeredActionKinds(everything), Object.keys(ACTIONS));
+  assert.deepEqual(
+    offeredActionKinds(everything),
+    Object.keys(ACTIONS).filter((kind) => kind !== "patrol"),
+  );
   assert.deepEqual(offeredConditionKinds(everything), Object.keys(CONDITIONS));
 });
 
@@ -948,6 +954,7 @@ test("the existing condition picker creates both combat health conditions with t
       actions: ["explore"],
       conditions: ["always", "healthBelow", "opponentHealthBelow"],
       items: [],
+      trees: [],
       creatures: [],
     });
     const editor = createProgramEditor((program) => committed.push(program));
@@ -1012,6 +1019,7 @@ test("a rule holding a kind or a target outside the lists still shows it, after 
         actions: ["explore"],
         conditions: ["always"],
         items: ["stick"],
+        trees: [],
         creatures: [],
       }),
       THREE,
@@ -1048,6 +1056,7 @@ test("the item list of „Zapas poniżej” offers the backpack items of the Und
         actions: ["explore"],
         conditions: ["always", "itemBelow"],
         items: ["fiber", "campfire", "berry"],
+        trees: [],
         creatures: [],
       }),
       program,
@@ -1064,6 +1073,7 @@ const NO_TARGETS = {
   actions: ["explore", "wander", "walkTo", "gather"],
   conditions: ["always", "hereBelow", "itemBelow"],
   items: [],
+  trees: [],
   creatures: [],
 };
 
@@ -1149,6 +1159,7 @@ test("every program the editor builds passes setProgram, before sending and duri
     "walkTo",
     "walkToCampfire",
     "gather",
+    "patrol",
     ...CAMPFIRE_AND_BACKPACK,
     "strikeWithStick",
     "kick",
@@ -1183,7 +1194,11 @@ test("every program the editor builds passes setProgram, before sending and duri
       for (const resource of resources) {
         if (conditionKind === "hereBelow")
           keep(withConditionResource(program, 1, last, resource));
-        if (actionKind === "walkTo" || actionKind === "gather")
+        if (
+          actionKind === "walkTo" ||
+          actionKind === "gather" ||
+          actionKind === "patrol"
+        )
           keep(withActionResource(program, 1, last, resource));
       }
       if (conditionKind === "itemBelow") {

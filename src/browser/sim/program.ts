@@ -5,6 +5,7 @@ import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
 import type { MapDef } from "./data/maps.js";
+import { actionMinutes, branchActionAvailable, skillBonus } from "./skills.js";
 import type {
   Action,
   Activity,
@@ -170,7 +171,7 @@ export function walkTarget(
   resource: ResourceId,
 ): { tile: Tile; minutes: number; next: Hex } | null {
   return nearestTile(
-    run.tiles,
+    walkingTiles(run),
     run.character.at,
     (tile) => tile.revealed && (tile.stock[resource] ?? 0) > 0,
   );
@@ -183,9 +184,20 @@ export function walkTarget(
 export function campfireTarget(
   run: RunView,
 ): { tile: Tile; minutes: number; next: Hex } | null {
-  return nearestTile(run.tiles, run.character.at, (tile) =>
+  return nearestTile(walkingTiles(run), run.character.at, (tile) =>
     run.campfires.some((campfire) => sameHex(campfire.at, tile.at)),
   );
+}
+
+function walkingTiles(run: RunView): Tile[] {
+  return run.tiles.map((tile) => ({
+    ...tile,
+    stepMinutes: actionMinutes(
+      tile.stepMinutes,
+      "walkTo",
+      run.character.skills,
+    ),
+  }));
 }
 
 /**
@@ -198,6 +210,7 @@ export function actionFeasible(
   action: Action,
 ): boolean {
   if (run.natureEnergy < natureEnergyCost(action)) return false;
+  if (!branchActionAvailable(run.character.skills, action.kind)) return false;
   switch (action.kind) {
     case "explore": {
       const here = tileAt(run.tiles, run.character.at);
@@ -214,6 +227,7 @@ export function actionFeasible(
       return target !== null && target.minutes > 0;
     }
     case "gather":
+    case "patrol":
       return (
         stockHere(run, action.resource) > 0 &&
         backpackCount(run.character.backpack) < backpackCap(run.character)
@@ -227,7 +241,8 @@ export function actionFeasible(
     case "lightCampfire":
       return (
         campfireHere(run)?.minutesLeft === 0 &&
-        holds(run.character.backpack, CAMPFIRE.light)
+        (skillBonus(run.character.skills, "cleanFlame") > 0 ||
+          holds(run.character.backpack, CAMPFIRE.light))
       );
     case "lightItem":
       return (

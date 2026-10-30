@@ -1,4 +1,5 @@
 import { newTraits } from "./character.js";
+import { newSkills, paidPractice } from "./skills.js";
 import { takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
@@ -111,7 +112,11 @@ function programOf(
   const archetype = ARCHETYPES[character?.archetypeId ?? CREATED_ARCHETYPE];
   return programInRepertoire(
     program,
-    repertoireOf(state.understanding, archetype.predispositions),
+    repertoireOf(
+      state.understanding,
+      archetype.predispositions,
+      state.run?.character.skills ?? character?.skills,
+    ),
   );
 }
 
@@ -139,6 +144,9 @@ function startRun(
     programOf(state, copy.program, characterId),
     { mapId, characterId },
     traits,
+    state.run?.character.skills ??
+      state.team.characters.find((character) => character.id === characterId)!
+        .skills,
     equipment.backpack,
   );
   return {
@@ -244,6 +252,7 @@ export function createCharacter(state: GameState, name: string): GameResult {
     name: trimmed,
     archetypeId: CREATED_ARCHETYPE,
     traits: newTraits(),
+    skills: newSkills(ARCHETYPES[CREATED_ARCHETYPE].predispositions),
   };
   return {
     state: {
@@ -538,6 +547,19 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         !current.solvedMaps.includes(run.mapId) && {
           solvedMaps: [...current.solvedMaps, run.mapId],
         }),
+      ...(completed && {
+        team: {
+          ...current.team,
+          characters: current.team.characters.map((character) =>
+            character.id === run.character.id
+              ? {
+                  ...character,
+                  skills: paidPractice(character.skills, run.practice),
+                }
+              : character,
+          ),
+        },
+      }),
       run: { ...endedRun, deposited },
       ruleCounts: countStarts(current.ruleCounts, events),
     },

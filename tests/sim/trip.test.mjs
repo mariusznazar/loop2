@@ -24,6 +24,7 @@ import {
 import { programFromRules } from "./program-fixture.mjs";
 import { fullUnderstanding } from "./understanding-fixture.mjs";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { buyBranch } from "../../dist/public/sim/skills.js";
 import {
   clipTrip,
   takeTrip,
@@ -61,6 +62,59 @@ function equipped() {
 function sent(state = equipped()) {
   return send(state, { mapId: "forest", characterId: 1 }, 23).state;
 }
+
+// Catches a merge losing the skill snapshot, equipment, or either completion payment.
+test("a bought branch acts on entry equipment and completion pays practice and loot once", () => {
+  let state = equipped();
+  state = {
+    ...state,
+    understanding: fullUnderstanding(),
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) => ({
+        ...character,
+        skills: {
+          ...character.skills,
+          eating: { practice: 15, ranks: {} },
+        },
+      })),
+    },
+  };
+  state = buyBranch(state, 1, "quickMeal").state;
+  state = editProgram(state, 1, {
+    ...programFromRules({
+      condition: { kind: "always" },
+      action: { kind: "eat" },
+    }),
+    tripPlan: { take: [entry("berry", 3)], bring: [entry("berry", 3)] },
+  }).state;
+  const started = sent(state);
+  assert.equal(started.run.current.endMinute, 4);
+  assert.equal(started.run.character.backpack.berry, 3);
+  assert.equal(started.team.chest.pieces.berry, 7);
+  const completed = advanceMinutes(
+    {
+      ...started,
+      run: { ...started.run, streak: 476 },
+    },
+    4,
+  ).state;
+  assert.ok(completed.run.completion);
+  assert.deepEqual(completed.run.practice, { eating: 1 });
+  assert.equal(completed.team.characters[0].skills.eating.practice, 16);
+  assert.equal(completed.run.character.skills.eating.practice, 15);
+  assert.deepEqual(completed.run.deposited, [entry("berry", 2)]);
+  assert.equal(completed.team.chest.pieces.berry, 9);
+  assert.deepEqual(advanceMinutes(completed, 10).state, completed);
+  const restarted = restart(completed).state;
+  assert.deepEqual(restarted.run.practice, {});
+  assert.equal(restarted.run.character.skills.eating.practice, 15);
+  assert.equal(restarted.team.characters[0].skills.eating.practice, 16);
+  assert.equal(restarted.run.current.endMinute, 4);
+  assert.equal(restarted.run.character.backpack.berry, 3);
+  assert.equal(restarted.team.chest.pieces.berry, 6);
+  assert.deepEqual(restarted.run.bringPlan, [entry("berry", 3)]);
+});
 // Each expected clipping is hand-counted from To do 4–6 of plan_wyprawy_loop2.md.
 test("entry spends one budget in order, shortages leave room and partial rows fit", () => {
   // invariant: trip-transfer

@@ -6,6 +6,7 @@ import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
+import { SKILLS } from "../sim/data/skills.js";
 import type {
   Activity,
   CreatureId,
@@ -126,6 +127,7 @@ export function discoveryText(discovery: Understanding): string {
     ...discovery.actions.map((kind) => ACTIONS[kind].label),
     ...discovery.items.map(discoveredItemName),
     ...discovery.creatures.map(discoveredCreatureName),
+    ...discovery.trees.map((id) => `drzewo umiejętności ${SKILLS[id].name}`),
   ];
   const checkable = discovery.conditions.map(discoveredConditionText);
   const sentences: string[] = [];

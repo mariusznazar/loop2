@@ -140,8 +140,9 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
         resource: checkResource(value.resource, allowed),
       };
     case "gather":
+    case "patrol":
       return {
-        kind: "gather",
+        kind: value.kind,
         resource: checkResource(value.resource, allowed),
       };
     // The actions on the campfire and the backpack name nothing: the simulation picks the

@@ -152,6 +152,7 @@ for (const [name, ...args] of steps) {
     const lacking = args[0] ?? {};
     const keep = (list, name) => list.filter((id) => !(lacking[name] ?? []).includes(id));
     state = { ...state, understanding: {
+      ...state.understanding,
       actions: keep(state.understanding.actions, 'actions'),
       conditions: keep(state.understanding.conditions, 'conditions'),
       items: keep(state.understanding.items, 'items'),

@@ -3,6 +3,7 @@ import { BALANCE } from "./data/balance.js";
 import { CREATURES, type CreatureAction } from "./data/creatures.js";
 import type { MapDef } from "./data/maps.js";
 import { conditionHolds, chooseCombatRule } from "./program.js";
+import { practiced, skillBonus } from "./skills.js";
 import type {
   CombatCharacterAction,
   CombatCreatureAction,
@@ -11,6 +12,7 @@ import type {
   CreatureId,
   MapRun,
   Program,
+  Practice,
 } from "./types.js";
 
 function chooseCreatureAction(
@@ -41,6 +43,7 @@ export function resolveCombat(
   let characterHealth: number = run.body.health;
   let creatureHealth: number = creature.health;
   let pendingReduction = 0;
+  let practice: Practice = {};
   const exchanges: CombatExchange[] = [];
   const ruleStarts: Record<number, number> = {};
 
@@ -59,6 +62,8 @@ export function resolveCombat(
     let creatureRecord: CombatCreatureAction;
     if (enemyAction.kind === "strike") {
       const damage = Math.max(0, creature.strikeDamage - pendingReduction);
+      if (damage < creature.strikeDamage)
+        practice = practiced(practice, "dodge");
       pendingReduction = 0;
       characterHealth = Math.max(0, characterHealth - damage);
       creatureRecord = { kind: "strike", damage, characterHealth };
@@ -90,10 +95,15 @@ export function resolveCombat(
 
     let damage = 0;
     if ("damage" in effect) {
-      damage = effect.damage;
+      damage =
+        effect.damage +
+        skillBonus(run.character.skills, "damage", rule.action.kind);
+      if (damage > 0) practice = practiced(practice, rule.action.kind);
       creatureHealth = Math.max(0, creatureHealth - damage);
     } else {
-      pendingReduction = effect.reducesNextDamageBy;
+      pendingReduction =
+        effect.reducesNextDamageBy +
+        skillBonus(run.character.skills, "reduction");
     }
     const characterAction: CombatCharacterAction = {
       ruleId: rule.id,
@@ -111,5 +121,12 @@ export function resolveCombat(
       : creatureHealth === 0
         ? "creatureDefeated"
         : "creatureDeparted";
-  return { characterHealth, creatureHealth, outcome, exchanges, ruleStarts };
+  return {
+    characterHealth,
+    creatureHealth,
+    outcome,
+    exchanges,
+    ruleStarts,
+    practice,
+  };
 }

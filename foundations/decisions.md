@@ -1202,6 +1202,7 @@ A mage lights a campfire and a stick with the spell Płomyk: the actions „Zapa
 „Zapal — patyk”, ordinary actions of the character carried out outside combat, whose price is the
 sticks they use and nature energy. The sticks and the nature energy leave together when the lighting
 finishes, and a lighting an attack interrupts takes neither.
+With the bought branch „Czysty płomień”, „Zapal — ognisko” requires and consumes no sticks and costs the nature energy of ordinary lighting.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1210,17 +1211,15 @@ finishes, and a lighting an attack interrupts takes neither.
   - complies: „Zapal — ognisko” taking two sticks from the backpack and the nature energy of its
     price in the game minute it finishes; a lighting interrupted by an attack in its third game
     minute leaving the sticks and the nature energy as they were;
-  - violates: „Zapal” using no sticks, or no nature energy; the nature energy taken when the
+  - violates: „Zapal” using no nature energy, or using no sticks without „Czysty płomień”; the nature energy taken when the
     lighting starts; „Zapal — patyk” carried out as a combat action.
-- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Czym mag płaci za Płomyk — patykami jak dziś i do tego energią natury, czy samą energią — i w której chwili energia schodzi?" and "Q7. Czy akcje czaru zostają „Zapal — ognisko” i „Zapal — patyk”, ze statusem „Zapala ognisko” / „Zapala patyk”, czy zmieniają nazwę na Płomyk?" · ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Czym i za co mag zapala ognisko w tym zadaniu, skoro zapalanie ognia jest w koncepcji czarem maga Płomyk, płaconym energią natury, którą wnosi dopiero zadanie 9?"
+- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Czym mag płaci za Płomyk — patykami jak dziś i do tego energią natury, czy samą energią — i w której chwili energia schodzi?" and "Q7. Czy akcje czaru zostają „Zapal — ognisko” i „Zapal — patyk”, ze statusem „Zapala ognisko” / „Zapala patyk”, czy zmieniają nazwę na Płomyk?" · ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6. Czym i za co mag zapala ognisko w tym zadaniu, skoro zapalanie ognia jest w koncepcji czarem maga Płomyk, płaconym energią natury, którą wnosi dopiero zadanie 9?" · wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q9 and accepted settlement 5
 
 *Rationale:* Płomyk keeps the sticks lighting has used and adds nature energy, so a spell that lights
-a campfire with no sticks, by the mage's energy alone, keeps a sense of its own as a later branch of
+a campfire with no sticks, by the mage's energy alone, keeps a sense of its own as a branch of
 the spell. As an ordinary action of the character it keeps its place in the program, its names and
 its statuses. The energy leaves with the sticks once the spell has taken place, so a lighting cut
-short costs nothing. Accepted with it: Las is harder than before as far as nature energy runs out,
-and until the game shows character skills the player learns that lighting is a spell from the
-energy falling.
+short costs nothing. Accepted with it: nature energy running out makes Las harder.
 *Rejected:* nature energy alone, with no sticks — the branch „Czysty płomień”, a campfire lit with
 no sticks by the mage's energy alone, would lose its sense; the energy taken when the lighting
 starts — in loop the energy is taken in the moment the spell has taken place, not at its start;
@@ -1229,7 +1228,7 @@ game's concept and loop name the spell's verb „Zapal”.
 
 ### D-64 — What does the backpack's cap count, and what sets its height?
 
-The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity.
+The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity. Carrying capacity is currently 15 pieces, and the character skill trees currently have no branch that raises it.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -1237,10 +1236,10 @@ The backpack's cap counts the pieces of all items together, and its height is th
 - **Verification:** an agent compares a change with the decision:
   - complies: a backpack holding 5 sticks and 10 berries full at a carrying capacity of 15; „Plecak 7/15” taking its 15 from the character's carrying capacity;
   - violates: a cap for each kind of item; the backpack's cap taken from a game map's data or from a number of the map run in place of the character's carrying capacity.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Czy udźwig plecaka — pułap 15 sztuk — jest cechą postaci, czy liczbą przejścia albo mapy?" · definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § In scope, point 12
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Czy udźwig plecaka — pułap 15 sztuk — jest cechą postaci, czy liczbą przejścia albo mapy?" · definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § In scope, point 12 · wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q10 and accepted settlement 6
 
 *Rationale:* The MVP definition caps the backpack at a count of pieces taken together. Carrying capacity belongs to the character, apart from a stricter cap a game map may add, and it acts beyond one action of the character — on gathering and on packing for a trip — so it describes the character. The team's chest takes the same rule of counting.
-*Rejected:* a cap counted for each kind of item, or by weight — a rule of capacity other than the one the team's chest takes; the cap as a number of the game map or of the map run — the character's capacity would change with the place it goes to.
+*Rejected:* „Mocne plecy” raising carrying capacity — would change the MVP capacity accepted in the definition; a cap counted for each kind of item, or by weight — a rule of capacity other than the one the team's chest takes; the cap as a number of the game map or of the map run — the character's capacity would change with the place it goes to.
 
 ### D-65 — What does a full backpack do to gathering?
 
@@ -2035,7 +2034,7 @@ The exemplar for kind `browser-api-client` is `src/browser/account-api.ts`, and 
 ### D-118 — When does the player learn what the world holds?
 
 The condition „Zawsze” is in the Understanding from the start of a new game; every other action,
-item, condition and creature enters the Understanding only when discovered in play, each by the need, action,
+item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action,
 item or encounter that reveals it. When something is discovered, game time stops by itself.
 
 - **Scope:** simulation, browser-view
@@ -2060,7 +2059,7 @@ overwhelming.
 
 The Understanding belongs to the player and is one for all characters, and what any character
 discovers enters it for every character. A character's repertoire is computed from the
-Understanding through its archetype's predispositions, and is never saved. That one computation is
+Understanding through its archetype's predispositions and the branches the character has bought, and is never saved; an action or item of a bought branch is open only to the character that bought it. That one computation is
 at once what the program editor offers and what the simulation lets the character carry out.
 
 - **Scope:** simulation, browser-view
@@ -2070,23 +2069,23 @@ at once what the program editor offers and what the simulation lets the characte
   - complies: the program editor and the simulation both asking one function for a character's
     repertoire; a character's death, „Restart” and „Zakończ” leaving the Understanding as it was
   - violates: a list of discovered actions saved with each character; an editor that filters by
-    archetype while the simulation does not
+    archetype while the simulation does not; a branch bought by one character usable by another
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D38, D41 and D50 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Whose is the knowledge of the world, and what may a character use of it?"
 
 *Rationale:* a new character sees what others discovered, but only what its archetype lets it
 learn; knowledge kept per character would make the opening chain a tutorial played again with
 every character, and would die with the character. One computation serves both the editor and the
 simulation: a program moved between characters cannot get round it, and the editor never offers
-what the character will not carry out.
+what the character will not carry out. The discovery of a branch is a fact of the world and stays with the player, while the character skill goes with the character that paid for it.
 *Rejected:* the Understanding saved with each character; a filter in the editor alone — a program
 moved between characters gets round it; a filter in the simulation alone — the editor offers what
-never runs.
+never runs; a bought branch open to every character — one character's tree becomes everyone's.
 
 ### D-120 — What does an archetype open to a character?
 
 An archetype opens character skills, not actions: an action is open to a character when the
 character skill that its pair of verb and target grows is among the predispositions of the
-character's archetype. An action that no character skill grows, such as a move onto a neighbouring
+character's archetype and, for an action opened by a branch, the character has bought that branch. An action that no character skill grows, such as a move onto a neighbouring
 tile, is open to every character, and an archetype never filters items.
 
 - **Scope:** simulation
@@ -2097,13 +2096,13 @@ tile, is open to every character, and an archetype never filters items.
     open only to that archetype
   - violates: an archetype defined as a list of allowed verbs; an archetype that forbids eating an
     item
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D40 and D49 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does an archetype open to a character?"
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D40 and D49 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does an archetype open to a character?" · wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3 and the accepted resolution under Settlements to record
 
 *Rationale:* one verb, „Wytwórz”, makes both the common campfire and an archetype's goods, so only
 the pair of verb and target names the character skill the action belongs to. Items are things of
 the world: a character eats, burns and carries what it would not make itself, and without that the
 team's chest would mean nothing.
-*Rejected:* a filter on verbs — cannot express „Wytwórz”; a filter on items — an item is a thing of
+*Rejected:* reading the predisposition condition as only necessary while leaving the sentence unchanged — its plain reading would admit „Obchód” without buying the branch; a filter on verbs — cannot express „Wytwórz”; a filter on items — an item is a thing of
 the world, not a capacity of the character.
 
 ### D-121 — What brings each action, item and condition of Las into the Understanding?
@@ -2639,7 +2638,7 @@ The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „O
 
 ### D-144 — What actions does a character use in combat?
 
-The character currently uses „Uderz — patyk”, which requires a stick in the backpack and deals 6 damage, „Kopnij”, which deals 3 damage and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of 5 damage for the next damaging enemy strike. Another dodge refreshes that reduction, the strike consumes it with damage floored at zero, a creature’s dodge leaves it pending, and the encounter’s end clears it. The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection.
+The character currently uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike. Another dodge refreshes that reduction, the strike consumes it with damage floored at zero, a creature’s dodge leaves it pending, and the encounter’s end clears it. The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -2647,7 +2646,7 @@ The character currently uses „Uderz — patyk”, which requires a stick in th
 - **Verification:** an agent compares a change with the decision:
   - complies: repeated dodges leaving one reduction, and a wolf below 8 health choosing its dodge
   - violates: a wolf dodge consuming the character’s protection or protecting the wolf from the next strike
-- **Origin:** none
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q8 and the accepted branch data
 
 *Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection.
 *Rejected:* stacking dodges — adds a protection resource beyond the next strike; another initial balance — departs from the accepted predecessor numbers, whose different weapon and healing behaviour can make the present balance harsh.
@@ -2739,7 +2738,7 @@ A map whose opening map is still unsolved is currently absent from the headquart
   - violates: „Kopnij” treated as an action that grows no skill
 - **Origin:** none
 
-*Rationale:* Combat actions belong to skills like other learned actions, so predispositions already govern their availability even before practice is counted.
+*Rationale:* Combat actions belong to skills like other learned actions, so predispositions govern their availability.
 *Rejected:* making the combat actions skill-free — opens them to every archetype rather than through its predispositions.
 
 ### D-151 — Whose health do combat conditions compare?
@@ -3333,3 +3332,168 @@ A character's death takes what it carried, including pieces taken from the chest
 
 *Rationale:* Items carried are at risk on the attempt; items left with the team survive it.
 *Rejected:* unknown
+
+### D-191 — How does a character skill grow?
+
+A character skill grows by practice, which counts only its actions that ended in effect, and is never bought. A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two. Each level gives points that buy ranks of branches of its own tree, at prices that differ from branch to branch, and each next level needs more practice than the one before.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: gathering that adds practice only when an item is gained; a level computed from saved practice
+  - violates: a shop selling a level of a character skill; a missed gathering that adds practice; a second counter inside one character skill
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character skill grow?"
+
+*Rationale:* buying is shallow — one easy map run nearly pays for a character skill, which makes learning a coupon. Practice ties growth to what the program actually does, so choosing a program is choosing what grows. Prices differ between branches, or an extra piece gathered would always beat a percentage of chance. Two counters inside one character skill would quietly speed up the whole economy, so a finer split makes a new character skill.
+*Rejected:* buying character skills with experience — shallow; practice counted from attempts instead of effects — rewards program rules that grind an action changing nothing; a separate counter for traits — a second economy to balance where one is enough.
+
+### D-192 — What describes a character?
+
+A character is described by traits, character skills and the predispositions of its archetype. A number that acts in one action only belongs to the tree of that action's character skill, never to a trait.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: carrying capacity as a trait; accuracy with a one-handed weapon as a branch of that weapon's tree
+  - violates: a "strength" trait that raises the damage of one weapon
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What describes a character?"
+
+*Rationale:* numbers and what a character can say in a program are not alternatives: they are three roles. A trait acts always, so it may be a number without becoming a slider, provided it grows only where the challenge grows with it. A predisposition sets characters apart by access rather than size, so two characters with the same numbers and other predispositions need two different programs, neither better.
+*Rejected:* strength as a trait — all it would do is raise carrying capacity, which stands apart; accuracy as a trait of the character — it concerns one class of weapon; speed of learning as a trait — a multiplier on all growth; a trait as a number never raised — safe, but does nothing.
+
+### D-193 — When and how much practice does an action add?
+
+An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles. Eating has its effect when the berry is eaten, even at full satiety; a dodge has its effect when it removes some damage from an enemy strike, counted in the turn of that strike.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-191
+- **Verification:** an agent compares a change with the decision:
+  - complies: a patrol bringing several pieces and adding one practice; eating a berry at full satiety adding one practice
+  - violates: a dodge with no strike adding practice; practice for each tile a scout reveals
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q5 and Q9; accepted settlement 1
+
+*Rationale:* The counter measures successful actions, not their quantity. Accepted with it: eating at full satiety can grow eating, at the cost of berries.
+*Rejected:* eating adding practice only when satiety rises — the accepted effect is the berry eaten
+
+### D-194 — When does a manual map run pay its practice to its character?
+
+A manual map run holds the practice it gathers separately by character skill and currently pays all of it once to the character making the run in the game minute of every completion, including a completion of an already solved map. A death, or a run cut short by „Restart” or „Zakończ” before completion, currently leaves the character’s practice and bought ranks as they were.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-191
+- **Verification:** an agent compares a change with the decision:
+  - complies: a second manual completion paying its practice in the completion minute; restart before completion paying nothing
+  - violates: practice reaching the character during an unfinished run; „Zakończ” paying a completed run a second time
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q1; accepted settlements 2 and 12
+
+*Rationale:* Payment at completion makes the successful run the unit of growth. Accepted with it: manual repeats of solved maps can grow a character.
+*Rejected:* only the first solution paying practice here — before earning loops this would leave at most two payments
+
+### D-195 — When does a character skill tree become known?
+
+A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens. The discovery line names the tree beside the action, as „Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-118 · derives from D-122
+- **Verification:** an agent compares a change with the decision:
+  - complies: the first discovery of gathering also revealing its tree and „Obchód”
+  - violates: a tree becoming known only on its first purchase; an unnamed tree in the discovery line
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3 and Q4; accepted settlements 3 and 4
+
+*Rationale:* Discovery tells the player what the action can grow before the first point is earned. Accepted with it: longer discovery lines and known actions that no character can yet carry out.
+*Rejected:* revealing a branch action on the first purchase — discovery would depend on a character’s purchase; showing the tree only at the first point; leaving the tree unnamed
+
+### D-196 — Which branch actions does the program editor offer outside a map run?
+
+Outside a map run the program editor currently offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches currently contribute no actions to that editor's offer. During a map run, both the copy editor and the saved-program editor use the running character’s repertoire, including its bought branches.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-119 · derives from D-164
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Obchód” offered in both editors during the run of its buyer and absent outside a run
+  - violates: a branch bought by any teammate opening that action in the headquarters editor
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3; accepted settlement 4
+
+*Rationale:* A program is shared, while a branch belongs to its buyer. Accepted with it: the headquarters editor cannot add a branch action; editing the copy's rules or rule groups resets progress, whereas editing a saved program prepares the next send.
+*Rejected:* offering outside a run every branch any teammate bought — the shared editor would imply availability without choosing its character
+
+### D-197 — What does the gathering branch Obchód do?
+
+The gathering tree has the branch „Obchód”, which opens „Obchód — {zasób}”: a guaranteed batch of the chosen resource from the current tile, up to the amount in the data, the tile’s remaining stock and the backpack’s remaining capacity. „Pełna garść” likewise takes no more pieces than remain on the tile or fit in the backpack.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-119 · derives from D-64
+- **Verification:** an agent compares a change with the decision:
+  - complies: a patrol taking the six pieces left on its tile when the batch is twelve; a full-hand gather taking the last single piece
+  - violates: requiring a full batch before patrol can start; taking missing pieces from neighbouring tiles
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q9 and Q13; accepted settlement 5
+
+*Rationale:* A guaranteed batch changes how the program gathers. Accepted with it: the full action time can bring a smaller batch from a depleted tile.
+*Rejected:* requiring at least twelve pieces; filling a batch from neighbours; „Pełna garść” creating two pieces from one
+
+### D-198 — What does the exploration branch Zwiad do?
+
+With the bought branch „Zwiad”, exploration reveals the current tile and its neighbours together, while still requiring the current tile to be unrevealed. Items on all tiles revealed in that game minute enter the Understanding together in its discovery pause.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-118 · derives from D-191
+- **Verification:** an agent compares a change with the decision:
+  - complies: a scout revealing a new neighbour’s item in the same discovery pause
+  - violates: scouting from an already revealed current tile; one practice for every neighbour
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q9; accepted settlement 5
+
+*Rationale:* Scouting changes the exploration program’s reach. Accepted with it: it can reveal much of the small map quickly.
+*Rejected:* only numerical branches, or only a selected subset of the non-numerical branches — omit the accepted changes to how programs work
+
+### D-199 — What does the headquarters show of character skills?
+
+At each character the headquarters currently shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-191
+- **Verification:** an agent compares a change with the decision:
+  - complies: a fully bought numerical branch showing its current value with a disabled „Kup”; the whole section absent before any tree is known
+  - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q11; accepted settlement 8
+
+*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: a longer headquarters and no preview of unknown trees.
+*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note
+
+### D-200 — Where does the player buy a branch rank, and when does it act?
+
+The player currently buys a branch rank with „Kup” in the headquarters outside a map run, and the rank acts from that character’s next map run. The game currently has no purchase in the map-run view and no undo of a purchase.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-191
+- **Verification:** an agent compares a change with the decision:
+  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send
+  - violates: a purchase changing the skills of a retained run, including one ended in death or completion
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9
+
+*Rationale:* Purchases belong beside the character’s skills in the headquarters, and a run keeps the skills with which it starts.
+*Rejected:* none
+
+### D-201 — What does the map-run view show of its practice?
+
+Below the body row the map-run view currently shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. Zero-valued skills and the line at zero are currently absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-194
+- **Verification:** an agent compares a change with the decision:
+  - complies: the same positive practice line retained after death, although the run pays nothing
+  - violates: zero-valued skills in the line; hiding the line immediately on completion
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q12; accepted settlement 10
+
+*Rationale:* The player can see what the run grows and what it gathered before its end. Accepted with it: the line does not itself distinguish paid practice from practice lost on death.
+*Rejected:* no run-practice line; hiding it on death; separate labels for payment and loss

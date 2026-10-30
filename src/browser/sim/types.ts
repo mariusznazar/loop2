@@ -6,6 +6,15 @@ import type { ItemId } from "./data/items.js";
 import type { MapId } from "./data/maps.js";
 import type { ResourceId } from "./data/resources.js";
 import type { Traits } from "./data/traits.js";
+import type { BranchId, SkillId } from "./data/skills.js";
+
+export type CharacterSkills = Partial<
+  Record<
+    SkillId,
+    { practice: number; ranks: Partial<Record<BranchId, number>> }
+  >
+>;
+export type Practice = Partial<Record<SkillId, number>>;
 
 export type { ArchetypeId, CreatureId, ItemId, MapId, ResourceId, Traits };
 
@@ -40,6 +49,7 @@ export type Action =
   | { kind: "walkTo"; resource: ResourceId }
   | { kind: "walkToCampfire" }
   | { kind: "gather"; resource: ResourceId }
+  | { kind: "patrol"; resource: ResourceId }
   | { kind: "craftCampfire" }
   | { kind: "lightCampfire" }
   | { kind: "lightItem" }
@@ -122,6 +132,7 @@ export type CombatExchange = {
 };
 
 export type CombatResult = {
+  practice: Practice;
   characterHealth: number;
   creatureHealth: number;
   outcome: CombatOutcome;
@@ -147,6 +158,7 @@ export type CampfireId = typeof CAMPFIRE.id;
  * character. Also the shape of a repertoire, the subset of it that a character can use.
  */
 export type Understanding = {
+  trees: SkillId[];
   actions: Action["kind"][];
   conditions: Condition["kind"][];
   items: (ItemId | CampfireId)[];
@@ -195,6 +207,7 @@ export type Backpack = Record<ItemId, number>;
  * of the character's traits for the map run and what it carries.
  */
 export type RunCharacter = {
+  skills: CharacterSkills;
   id: CharacterId;
   at: Hex;
   traits: Traits;
@@ -225,6 +238,7 @@ export type Death = { minute: number; cause: DeathCause };
 export type Completion = { minute: number };
 
 export type MapRun = {
+  practice: Practice;
   mapId: MapId;
   /** uint32 */
   seed: number;
@@ -282,6 +296,7 @@ export type CharacterId = number;
 
 /** A character of the player's team; its traits are made when it is created and saved with it. */
 export type Character = {
+  skills: CharacterSkills;
   id: CharacterId;
   name: string;
   archetypeId: ArchetypeId;

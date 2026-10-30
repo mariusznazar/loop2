@@ -1,5 +1,6 @@
 import type { ItemId } from "./items.js";
 import type { CreatureId } from "./creatures.js";
+import type { SkillId } from "./skills.js";
 
 /**
  * An event that reveals actions, conditions, items or creatures to the player. The events name
@@ -18,5 +19,7 @@ export type Revelation =
   | { kind: "campfireCrafted" }
   /** The first finished lighting, of a campfire or of an item. */
   | { kind: "lit" }
+  /** A skill tree revealed with its first discovered action. */
+  | { kind: "treeDiscovered"; skill: SkillId }
   /** A creature attack, which reveals combat conditions and actions. */
   | { kind: "attacked"; creature: CreatureId };

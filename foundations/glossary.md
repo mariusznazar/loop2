@@ -117,7 +117,7 @@ An archetype is the kind of character that sets its predispositions.
 
 ## Understanding
 
-The Understanding is the record of the game's actions, items, conditions and creatures that the player has
+The Understanding is the record of the game's actions, items, conditions, creatures and branches that the player has
 discovered, together with the condition „Zawsze”, which it holds from the start of a new game.
 
 - **Not:** none
@@ -175,6 +175,18 @@ A combat turn is an exchange in which each side has one action, ending early whe
 ## copy
 
 A copy is the program a map run carries out, taken from one of the player's programs at the start of the map run, at a switch of the character to another program or at the start of an earning loop, whose changes reach a program by the player's save and on which a map run restart carries on.
+
+- **Not:** none
+
+## practice
+
+Practice is the accumulated count of a character skill's actions that ended in effect.
+
+- **Not:** none
+
+## trait
+
+A trait is a number describing a character that acts always, not in one action alone.
 
 - **Not:** none
 
