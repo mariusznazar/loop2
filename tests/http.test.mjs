@@ -1586,8 +1586,60 @@ test("a login in progress at a clear keeps its reservation and settles once on t
   assert.equal(
     policy.admitLogin(email, "198.51.100.51"),
     null,
-    "its failure counts after the clear and locks the address",
+    "its failure counts after the clear: five failures lock the address",
   );
+});
+
+// Admits and fails logins of one address from one client until it refuses.
+function failsUntilRefused(policy, email, address) {
+  let admitted = 0;
+  for (;;) {
+    const ticket = policy.admitLogin(email, address);
+    if (!ticket) return admitted;
+    ticket.fail();
+    admitted += 1;
+  }
+}
+
+test("a login in progress at a clear that is released leaves the failures made after the clear counting", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that installs a new entry and copies the reservation, so
+  // that the old ticket's release lands on an entry nobody reads.
+  const { policy } = clockedPolicy();
+  const email = "released@example.test";
+  const running = policy.admitLogin(email, "198.51.100.60");
+  assert.ok(running);
+  policy.clearEmailAttempts(email);
+  failLogin(policy, email, "198.51.100.61");
+  running.release();
+  running.release();
+  assert.equal(policy.inFlight, 0, "settled once");
+  assert.equal(
+    failsUntilRefused(policy, email, "198.51.100.62"),
+    4,
+    "one failure after the clear, then four more admissions up to the limit of five",
+  );
+});
+
+test("a login in progress at a clear leaves no reservation behind once it has failed", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that installs a new entry and copies the reservation, so
+  // that the reservation is never settled and counts for ever.
+  const { clock, policy } = clockedPolicy();
+  const email = "failed@example.test";
+  const running = policy.admitLogin(email, "198.51.100.70");
+  assert.ok(running);
+  policy.clearEmailAttempts(email);
+  running.fail();
+  clock.time += 16 * minute;
+  const held = [];
+  for (let ticket = policy.admitLogin(email, "198.51.100.71"); ticket;) {
+    held.push(ticket);
+    ticket = policy.admitLogin(email, "198.51.100.71");
+  }
+  assert.equal(held.length, 5, "no reservation outlives the settled login");
+  for (const ticket of held) ticket.release();
+  assert.equal(policy.inFlight, 0);
 });
 
 test("clearing an unknown address changes nothing and a clear frees a locked place without touching others", () => {
