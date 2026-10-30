@@ -3642,7 +3642,8 @@ requires separate compatibility handling, which is outside the MVP.
 
 The game saves the game state on the server by itself right after each change of it the player
 makes — an edit of a program or of the copy, an act on the list of programs, creating a character,
-sending one, „Restart”, „Zakończ”, a pause and a pace — right after a map run ends in a completion
+sending one, buying a branch rank, „Restart”, „Zakończ”, a pause and a pace — right after a map run
+ends in a completion
 or in the character's death, every 30 real seconds while a map run passes, and once more when the
 page becomes hidden, closing included, with no guarantee that this last save arrives. The 30-second
 rhythm and the hidden page send the game state only where it changed since the save last sent; the
@@ -3655,7 +3656,8 @@ as refused as too large (D-208).
 - **Based on:** visibilitychange-hidden-last-event · fetch-keepalive-body-quota
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: an edit of a program rule followed at once by a save request; a map run passing at 16×
+  - complies: an edit of a program rule followed at once by a save request; „Kup” of a branch rank
+    in the headquarters followed at once by a save request; a map run passing at 16×
     saved once every 30 real seconds; a tab hidden in the middle of a map run sending its latest
     game state as a `keepalive` request; a tab that has just loaded a saved game state with its map
     run paused sending nothing until the player acts in it
