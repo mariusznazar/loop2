@@ -111,8 +111,9 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   blocked state of each account; version 3 adds to version 2 the confirmation state of each
   account's address and the table of emailed links; version 4 adds to version 3 the table of
   saved game states. The first start on an older database moves it to version 4 in one
-  transaction, keeping every account, session and saved game state; accounts that exist stay
-  with an unconfirmed address, and a failure leaves the database as it was and stops the
+  transaction, keeping every account, session, emailed link and saved game state with their
+  values; only accounts from a database before version 3 come out with an unconfirmed address
+  (the move from 3 to 4 leaves the confirmation state as it is), and a failure leaves the database as it was and stops the
   start (exit 8). **The first deployment of this change, also the human's trial deployment of
   its branch before the merge (H4), moves the persistent database of the test server to
   version 3.** From then on a commit that knows only version 2 or 1, `main` before this change

@@ -331,9 +331,12 @@ back by rollback. The window includes review and corrections; the human who merg
    - Persistence: run step 3 again for the same commit, then reload; the same session still
      reaches the headquarters. Log out, log in with the same address and password; it works.
      This shows that accounts and sessions survive container replacement.
-   - Saved game state: save the game, run step 3 again for the same commit (H2), reload and
-     see the saved state back; this is the check that saved game states survive container
-     replacement.
+   - Saved game state: the game has no save button; it saves itself after each change. A new
+     account starts with an empty team, so first make a change you can recognise (for example
+     create a character, or edit and keep a program) and wait a moment for the automatic save.
+     Then run step 3 again for the same commit (H2), reload, and check that exact change is
+     back, not an empty team; an empty team means the save was lost. This is the check that
+     saved game states survive container replacement.
    - A wrong password shows the single message `Nieprawidłowy adres e-mail lub hasło.`
    - Logout shows the forms again and no game.
    - An unknown `/api/` path still answers JSON 404, not HTML.

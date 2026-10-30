@@ -123,11 +123,13 @@ the old game's state and installed-script mismatches are also logged.
   listens: the deployment ends with exit 8.
 - **Database:** the volume `loop2_accounts` is created by the deployment itself and mounted
   only into `app` at `/app/data`; nothing is prepared on the host by hand. Container
-  replacement keeps it. Never run volume pruning on the host: while no loop2 container
-  references the volume, a prune removes the accounts.
+  replacement keeps it. The database holds the accounts, the sessions and the players' saved game
+  states. Never run volume pruning on the host: while no loop2 container references the
+  volume, a prune removes the accounts and every saved game state with them.
 - **Deploying a request and accepting it:** "Deploying a request head" in
-  `references/setup_and_secrets.md`: deployment, persistence check, password measurement in the
-  deployed image, public browser journey.
+  `references/setup_and_secrets.md`: deployment, persistence check (accounts, sessions and, after redeploying the same commit
+  (H2), a saved game state), password measurement in the deployed image, public browser
+  journey.
 
 ## Account mail
 
