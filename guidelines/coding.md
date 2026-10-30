@@ -15,7 +15,7 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 |---|---|---|
 | content-data | `guidelines/coding-content-data.md` | Przed dodaniem lub zmianą pliku danych treści gry w simulation. |
 | simulation-module | `guidelines/coding-simulation-module.md` | Przed dodaniem lub zmianą modułu simulation poza danymi treści gry i plikiem zapisu gry. |
-| saved-game | `guidelines/coding-saved-game.md` | Przed dodaniem lub zmianą pliku simulation, który zamienia stan gry na dokument zapisu albo dokument pobrany z serwera na stan gry lub odmowę. |
+| saved-game | `guidelines/coding-saved-game.md` | Przed dodaniem lub zmianą pliku simulation, który zamienia stan gry na dokument zapisu albo dokument pobrany z serwera lub zachowany w pamięci strony po zapisie, który nie zastał sesji, na stan gry lub odmowę. |
 | browser-module | `guidelines/coding-browser-module.md` | Przed dodaniem lub zmianą modułu browser-view w katalogu widoku. |
 | http-application | `guidelines/coding-http-application.md` | Przed dodaniem lub zmianą pliku składającego aplikację HTTP w account-server. |
 | password-hashing | `guidelines/coding-password-hashing.md` | Przed dodaniem lub zmianą pliku wykonującego haszowanie albo sprawdzanie haseł. |

@@ -6,7 +6,8 @@
 ## When to read
 
 Przed dodaniem lub zmianą pliku w `src/browser/sim/`, który zamienia stan gry
-na dokument zapisu albo dokument pobrany z serwera na stan gry lub odmowę.
+na dokument zapisu albo dokument pobrany z serwera lub zachowany w pamięci
+strony po zapisie, który nie zastał sesji, na stan gry lub odmowę.
 Taki plik czytaj według tych wytycznych zamiast `guidelines/coding-simulation-module.md`.
 Czytaj również ogólne wytyczne kodowania.
 
@@ -120,7 +121,8 @@ a `finite`, `integer` i `count` liczby o swoim zakresie. Program czyta sprawdzen
 z `programs.ts`. Każda odmowa przerywa czytanie wyjątkiem własnym tego pliku,
 który łapie jedna funkcja eksportowana, `loadSavedGame`, i zamienia na
 `{ ok: false, reason }`. Dokument z serwera ma obok `version` i `game` klucz
-`revision`, którego stan gry nie zawiera.
+`revision`, którego stan gry nie zawiera; dokument zachowany w pamięci strony
+go nie ma, a wczytanie przyjmuje oba.
 
 ### Przebieg mapy po wczytaniu
 
