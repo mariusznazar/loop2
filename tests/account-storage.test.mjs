@@ -1343,7 +1343,7 @@ test("a block committed through another connection between the check and the res
   });
   assert.deepEqual(resetState(raw), unblocked);
 
-  // Signed in again, the player asks for a new link, whose reset works.
+  // A link recorded after the unblock works and ends a session made since.
   await call(store, "set", "one", data(account.id));
   assert.equal(
     database.issueLink(resetLink(account.id, "after"), limits),
