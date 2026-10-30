@@ -6,7 +6,9 @@
 ## When to read
 
 Przed dodaniem lub zmianą modułu symulacji w `src/browser/sim/`, poza danymi
-treści gry. Czytaj również ogólne wytyczne kodowania.
+treści gry i poza plikiem zapisu gry `src/browser/sim/saved-game.ts`, który
+ma własne wytyczne w `guidelines/coding-saved-game.md`. Czytaj również ogólne
+wytyczne kodowania.
 
 ## Files of this kind
 

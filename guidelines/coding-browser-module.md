@@ -96,15 +96,32 @@ po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
 ### Gra na stronie i odpowiedzi serwera
 
 `src/browser/view/app.ts` buduje grę dopiero wtedy, gdy serwer potwierdzi
-konto, i usuwa ją dopiero wtedy, gdy potwierdzi wylogowanie (D-96, D-97).
-`createGameView` z `game-view.ts` zwraca element gry i `dispose()`, które
-zatrzymuje zegar (`dispose()` z `clock.ts`) i zdejmuje element ze strony,
-a z nim jego obsługę zdarzeń; moduł, który tworzy grę, wywołuje `dispose()`,
-zanim ją porzuci. Każde żądanie ekranu dostaje kolejny numer, a odpowiedź
-działa tylko wtedy, gdy jej numer jest ostatni, więc spóźniona odpowiedź nie
-buduje gry ani nie nadpisuje nowszego stanu. Brak sesji ekran rozpoznaje po
-odmowie ze statusem 401 w wyniku klienta z `account-api.ts`, a każdą inną
-porażkę pokazuje jako jedno ostrzeżenie; treści odpowiedzi nie czyta.
+konto, a potem odpowie o zapisanym stanie gry tego konta (D-96). Stan gry daje
+funkcja symulacji `loadSavedGame` z `saved-game.ts`; strona nie składa go sama.
+Gdy zapisu nie ma albo funkcja odmawia, strona buduje nową grę, a w drugim
+przypadku ze zdaniem odmowy nad nią. Grę usuwa, gdy serwer potwierdzi
+wylogowanie (D-97), gdy zapis dostanie 401 i gdy zapis przegra z zapisem z innej
+przeglądarki; po 401 stan gry zostaje w pamięci strony dla tego samego konta
+(D-188), a po konflikcie strona buduje grę od nowa z zapisu wczytanego z serwera
+(D-186).
+
+`createGameView` z `game-view.ts` zwraca element gry, wiersz zapisu (`saveLine`)
+do ustawienia w nagłówku, metody zapisu (`saveNow`, `saveBeforeLogout`, `keep`)
+i `dispose()`, które zatrzymuje zegar (`dispose()` z `clock.ts`) i zapisującego,
+a element gry i wiersz zapisu zdejmuje ze strony, razem z ich obsługą zdarzeń;
+moduł, który tworzy grę, wywołuje `dispose()`, zanim ją porzuci. Wynik zapisu
+dociera do strony wywołaniami `onConflict`, `onOutdated` i `onSignedOut`.
+
+Każde żądanie ekranu dostaje kolejny numer, a odpowiedź działa tylko wtedy, gdy
+jej numer jest ostatni, więc spóźniona odpowiedź nie buduje gry ani nie
+nadpisuje nowszego stanu. Brak sesji ekran rozpoznaje po odmowie ze statusem 401
+w wyniku klienta z `account-api.ts`, przy żądaniu konta i przy żądaniu
+zapisanego stanu gry; 401 na zapis rozpoznaje zapisujący i zgłasza je stronie
+przez `onSignedOut`. Każdą inną porażkę któregoś z dwóch pierwszych żądań strona
+pokazuje jako jedno ostrzeżenie z „Spróbuj ponownie”; treści odpowiedzi nie
+czyta. Zapis ma własne zdania w wierszu zapisu: konflikt, stary kod gry i za
+duży stan gry (D-186, D-187, D-185), a każda inna porażka to ostrzeżenie
+o ponowieniu.
 
 ## Where in code
 
