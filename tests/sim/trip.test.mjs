@@ -458,7 +458,8 @@ test("program validation rejects duplicate items and bad counts, permits indepen
     createProgram(newGame()).state.programs.at(-1).program.tripPlan,
     program.tripPlan,
   );
-  for (const count of [0, -1, 0.5, NaN, Infinity, "2", null]) {
+  // 2 ** 53 and 1e20 are integers beyond the safe integers, which a saved game cannot hold (D-181).
+  for (const count of [0, -1, 0.5, NaN, Infinity, "2", null, 2 ** 53, 1e20]) {
     assert.throws(() =>
       checkProgram(
         { ...program, tripPlan: { take: [entry("stick", count)], bring: [] } },
@@ -481,6 +482,11 @@ test("program validation rejects duplicate items and bad counts, permits indepen
     tripPlan: { take: [entry("stick", 1e12)], bring: [entry("stick", 3)] },
   };
   assert.deepEqual(checkProgram(valid, null), valid);
+  const largest = {
+    ...program,
+    tripPlan: { take: [entry("stick", Number.MAX_SAFE_INTEGER)], bring: [] },
+  };
+  assert.deepEqual(checkProgram(largest, null), largest);
   assert.notEqual(
     checkProgram(valid, null).tripPlan.take[0],
     valid.tripPlan.take[0],

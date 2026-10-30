@@ -343,6 +343,18 @@ A browser sends a `SameSite=Strict` cookie only with requests originating from t
 
 - **Source:** https://raw.githubusercontent.com/mdn/content/13ef67a4ffbdb929415dfa1b3d65ab1aa9ebe5da/files/en-us/web/http/guides/cookies/index.md § Controlling third-party cookies with SameSite — "Strict causes the browser to only send the cookie in response to requests originating from the cookie's origin site. This should be used when you have cookies relating to functionality that will always be behind an initial navigation, such as authentication or storing shopping cart information."; read 2026-10-29
 
+## fetch-keepalive-body-quota
+
+The Fetch Standard's HTTP-network-or-cache fetch returns a network error for a `keepalive` request with a body when the length of that body, added to the body lengths of the `keepalive` requests of the same fetch group still in flight, is greater than 64 kibibytes.
+
+- **Source:** https://raw.githubusercontent.com/whatwg/fetch/e9460d1b22ead1c6a72eeac37fb2ec0dc01aeb1d/fetch.bs § HTTP-network-or-cache fetch — "If contentLength is non-null and httpRequest's keepalive is true, then:" · "Let inflightRecords be the set of fetch records in group whose request's keepalive is true and done flag is unset." · "If the sum of contentLength and inflightKeepaliveBytes is greater than 64 kibibytes, then return a network error."; read 2026-10-30
+
+## visibilitychange-hidden-last-event
+
+A document's `visibilitychange` event fires with the visibility state `hidden` when the user navigates to a new page, switches tabs, closes the tab, minimizes or closes the browser or, on mobile, switches to another app, and that transition is the last event the page reliably observes.
+
+- **Source:** https://raw.githubusercontent.com/mdn/content/9a0e5c1cfa8d5079e22c410de757707706f1cc75/files/en-us/web/api/document/visibilitychange_event/index.md § Usage notes — "This event fires with a visibilityState of hidden when a user navigates to a new page, switches tabs, closes the tab, minimizes or closes the browser, or, on mobile, switches from the browser to a different app. Transitioning to hidden is the last event that's reliably observable by the page, so developers should treat it as the likely end of the user's session (for example, for sending analytics data)."; read 2026-10-30
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

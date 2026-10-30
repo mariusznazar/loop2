@@ -29,8 +29,21 @@ function sent(tripPlan = plan) {
 
 // Catches accepting an invalid draft, or excluding the current row's own item.
 test("trip input rejects invalid counts and offers each list's unused items in supplied order", () => {
-  for (const text of ["", " ", "0", "-1", "2.4", "abc", "Infinity"])
+  // Integers beyond the safe integers, which a saved game cannot hold (D-181).
+  for (const text of [
+    "",
+    " ",
+    "0",
+    "-1",
+    "2.4",
+    "abc",
+    "Infinity",
+    "9007199254740992",
+    "99999999999999999999",
+    "1e20",
+  ])
     assert.equal(tripCount(text), null);
+  assert.equal(tripCount("9007199254740991"), 9007199254740991);
   assert.equal(tripCount("12"), 12);
   assert.equal(tripCount("1000000000"), 1000000000);
   assert.deepEqual(

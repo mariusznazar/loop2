@@ -764,3 +764,246 @@ test(
     );
   },
 );
+
+// The save route is a state-changing route with its own body limit, 64 KiB
+// (D-104); the five others keep 16 KiB.
+const savedGame = "/api/saved-game";
+
+test(
+  "refused requests to the save route change no saved game state, and its body limit is 64 KiB where the others keep 16 KiB",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-mutation-request-guards
+    // Faults: the save route missing from the guarded set; one limit for all
+    // routes; a guard run after the write; field checks that coerce.
+    const f = await fixture(t);
+    const live = "save-guarded-session";
+    seed(f, live);
+    const cookie = signedCookie(live, f.keys[0]);
+    const renewal = cookie;
+    const stored = () =>
+      f.inspection
+        .prepare(
+          "SELECT account_id, version, revision, game FROM saved_games ORDER BY account_id",
+        )
+        .all();
+    const fields = { version: 1, basedOn: 1, game: { turn: 2 } };
+    const first = await f.send(savedGame, {
+      method: "PUT",
+      headers: {
+        ...proxyHeaders,
+        Origin: origin,
+        "Content-Type": "application/json",
+        Cookie: cookie,
+      },
+      body: JSON.stringify({ version: 1, basedOn: 0, game: { turn: 1 } }),
+    });
+    assert.equal(first.status, 200, "precondition: a saved game state exists");
+    const before = stored();
+    assert.equal(before.length, 1);
+
+    const padded = (bytes) =>
+      JSON.stringify({ ...fields, game: { padding: "x".repeat(bytes) } });
+    const variants = [
+      ["missing origin", { Origin: undefined }, null, 403],
+      ["null origin", { Origin: "null" }, null, 403],
+      ["foreign origin", { Origin: "https://evil.example" }, null, 403],
+      ["suffix origin", { Origin: `${origin}.evil` }, null, 403],
+      ["origin with path", { Origin: `${origin}/` }, null, 403],
+      ["duplicate origin", { Origin: [origin, origin] }, null, 403],
+      ["missing media", { "Content-Type": undefined }, null, 415],
+      ["text media", { "Content-Type": "text/plain" }, null, 415],
+      [
+        "form media",
+        { "Content-Type": "application/x-www-form-urlencoded" },
+        null,
+        415,
+      ],
+      [
+        "parameterized media",
+        { "Content-Type": "application/json;other=value" },
+        null,
+        415,
+      ],
+      ["compressed", { "Content-Encoding": "gzip" }, null, 415],
+      [
+        "duplicate encoding",
+        { "Content-Encoding": ["identity", "identity"] },
+        null,
+        415,
+      ],
+      // The padding is the body's size less the frame of the other fields.
+      ["over 64 KiB", {}, padded(64 * 1024), 413],
+      ["empty body", {}, "", 400],
+      ["broken body", {}, "{", 400],
+      ["array body", {}, JSON.stringify([fields]), 400],
+      ["scalar body", {}, "7", 400],
+      ["null body", {}, "null", 400],
+      [
+        "unexpected field",
+        {},
+        JSON.stringify({ ...fields, accountId: f.account.id }),
+        400,
+      ],
+      ...Object.keys(fields).flatMap((name) => [
+        [
+          "missing " + name,
+          {},
+          JSON.stringify({ ...fields, [name]: undefined }),
+          400,
+        ],
+        ["string " + name, {}, JSON.stringify({ ...fields, [name]: "1" }), 400],
+      ]),
+    ];
+    for (const [label, changes, body, expected] of variants) {
+      const headers = {
+        ...proxyHeaders,
+        Origin: origin,
+        "Content-Type": "application/json",
+        Cookie: cookie,
+        ...changes,
+      };
+      for (const name of Object.keys(headers))
+        if (headers[name] === undefined) delete headers[name];
+      const response = await f.send(savedGame, {
+        method: "PUT",
+        headers,
+        body: body ?? JSON.stringify(fields),
+      });
+      assert.equal(response.status, expected, label);
+      assert.match(response.headers["content-type"], /application\/json/);
+      const cookies = response.headers["set-cookie"] ?? [];
+      assert.ok(
+        cookies.every((value) => value.split(";")[0] === renewal),
+        `${label}: no new or cleared session cookie`,
+      );
+      assert.deepEqual(stored(), before, `${label}: saved state unchanged`);
+    }
+
+    // The limits: a body over 16 KiB is within the save route's limit and is
+    // saved; every body over 64 KiB is refused. Each of the five other routes
+    // refuses a body over 16 KiB (also in "refused state-changing requests").
+    const valid = {
+      ...proxyHeaders,
+      Origin: origin,
+      "Content-Type": "application/json",
+      Cookie: cookie,
+    };
+    const large = padded(20 * 1024);
+    assert.ok(Buffer.byteLength(large) > 16 * 1024, "precondition");
+    const accepted = await f.send(savedGame, {
+      method: "PUT",
+      headers: valid,
+      body: large,
+    });
+    assert.equal(accepted.status, 200, "a 20 KiB save is within its limit");
+    assert.deepEqual(JSON.parse(accepted.body), { revision: 2 });
+    for (const path of [
+      "/api/accounts",
+      "/api/session",
+      "/api/logout",
+      "/api/email-confirmation",
+      "/api/email-confirmation-message",
+    ]) {
+      const response = await f.send(path, {
+        method: "POST",
+        headers: valid,
+        body: JSON.stringify({ padding: "x".repeat(20 * 1024) }),
+      });
+      assert.equal(response.status, 413, `${path} keeps its 16 KiB limit`);
+    }
+    const edge = (size) => {
+      const frame = Buffer.byteLength(
+        JSON.stringify({ version: 1, basedOn: 2, game: { p: "" } }),
+      );
+      return JSON.stringify({
+        version: 1,
+        basedOn: 2,
+        game: { p: "x".repeat(size - frame) },
+      });
+    };
+    // The body limit is 65 536 bytes: one byte more is refused, that many pass.
+    for (const [size, expected] of [
+      [64 * 1024 + 1, 413],
+      [64 * 1024, 200],
+    ]) {
+      const body = edge(size);
+      assert.equal(Buffer.byteLength(body), size, "precondition: body size");
+      const response = await f.send(savedGame, {
+        method: "PUT",
+        headers: valid,
+        body,
+      });
+      assert.equal(response.status, expected, `${size} bytes`);
+    }
+    assert.equal(stored()[0].revision, 3);
+  },
+);
+
+test(
+  "transport refuses both save routes before the session, with no saved game state read or changed",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-request-transport
+    // Fault: the save path outside the transport gate, so that a request with
+    // ambiguous proxy metadata reaches the session or the saved game state.
+    const f = await fixture(t);
+    const id = "save-transport-record";
+    seed(f, id);
+    const cookie = signedCookie(id, f.keys[0]);
+    const sessionBefore = f.runtime.database.readSession(id);
+    const guarded = {
+      Origin: origin,
+      "Content-Type": "application/json",
+      Cookie: cookie,
+    };
+    const seeded = await f.send(savedGame, {
+      method: "PUT",
+      headers: { ...proxyHeaders, ...guarded },
+      body: JSON.stringify({ version: 1, basedOn: 0, game: { turn: 1 } }),
+    });
+    assert.equal(seeded.status, 200, "precondition: valid transport saves");
+    const sessionKept = f.runtime.database.readSession(id);
+    const saved = () => f.inspection.prepare("SELECT * FROM saved_games").all();
+    const before = saved();
+    assert.ok(sessionBefore && sessionKept, "precondition: a live session");
+    for (const headers of [
+      {},
+      { "X-Forwarded-Proto": "https" },
+      { ...proxyHeaders, "X-Forwarded-Proto": "http" },
+      { ...proxyHeaders, "X-Forwarded-Proto": "https,http" },
+      { ...proxyHeaders, "CF-Connecting-IP": ["192.0.2.7", "192.0.2.7"] },
+      { ...proxyHeaders, "CF-Connecting-IP": "192.0.2.7,192.0.2.8" },
+    ]) {
+      const name = JSON.stringify(headers);
+      const read = await f.send(savedGame, {
+        headers: { ...headers, Cookie: cookie },
+      });
+      assert.equal(read.status, 403, `read ${name}`);
+      assert.equal(read.headers["set-cookie"], undefined, `read ${name}`);
+      assert.doesNotMatch(read.body, /turn/, `read ${name}: no saved game`);
+      const write = await f.send(savedGame, {
+        method: "PUT",
+        headers: { ...headers, ...guarded },
+        body: JSON.stringify({ version: 1, basedOn: 1, game: { turn: 2 } }),
+      });
+      assert.equal(write.status, 403, `save ${name}`);
+      assert.equal(write.headers["cache-control"], "no-store", name);
+      assert.equal(write.headers["set-cookie"], undefined, `save ${name}`);
+      assert.deepEqual(saved(), before, `save ${name}: unchanged`);
+      assert.deepEqual(
+        f.runtime.database.readSession(id),
+        sessionKept,
+        `${name}: session untouched`,
+      );
+    }
+    // Valid transport reaches the route.
+    const control = await f.send(savedGame, {
+      headers: { ...proxyHeaders, Cookie: cookie },
+    });
+    assert.equal(control.status, 200);
+    assert.deepEqual(JSON.parse(control.body), {
+      save: { version: 1, revision: 1, game: { turn: 1 } },
+    });
+  },
+);

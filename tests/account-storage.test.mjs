@@ -179,12 +179,11 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     "encoded-hash",
   );
   reopened.close();
-  // Version 3 is the email confirmation and the emailed links of task
-  // potwierdzenie-adresu (spec, Decision 3), so 4 is the first version this
-  // code does not know.
-  raw.exec("PRAGMA user_version = 4");
+  // Version 4 is the saved game states of task zapis-stanu-na-serwerze (spec,
+  // decision 4; D-112), so 5 is the first version this code does not know.
+  raw.exec("PRAGMA user_version = 5");
   assert.throws(() => new AccountDatabase(path), /Unsupported.*schema/);
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
   assert.equal(
     raw.prepare("SELECT count(*) AS count FROM accounts").get().count,
     1,
@@ -313,12 +312,12 @@ async function olderDatabaseFixture(t, sql, version) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-// The test server's database may still be at version 1 when version 3 arrives,
-// so it moves through steps 2 and 3 in one opening.
-test("a version-1 database opens as version 3 with every account and session intact, no account blocked and no address confirmed", async (t) => {
+// A database may still be at version 1 when version 4 arrives, so it moves
+// through steps 2, 3 and 4 in one opening.
+test("a version-1 database opens as version 4 with every account and session intact, no account blocked and no address confirmed", async (t) => {
   const { path, raw, track } = await versionOneFixture(t);
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
   assert.deepEqual(storedVersionOneRows(raw), {
     accounts: versionOneAccounts,
     sessions: versionOneSessions,
@@ -342,7 +341,7 @@ test("a version-1 database opens as version 3 with every account and session int
   assert.equal(database.blockAccount("b@example.test"), "blocked");
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
   assert.equal(reopened.findAccountByEmail("b@example.test").blocked, true);
   assert.equal(reopened.findAccountByEmail("a@example.test").blocked, false);
   assert.equal(reopened.readSession("browser-a1").accountId, "account-a");
@@ -439,14 +438,14 @@ function storedLinkCount(raw) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-test("a version-2 database opens as version 3 with every account, blocked state and session intact and no address confirmed", async (t) => {
+test("a version-2 database opens as version 4 with every account, blocked state and session intact and no address confirmed", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
     versionTwoDatabase,
     2,
   );
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
   assert.deepEqual(storedVersionTwoRows(raw), {
     accounts: versionTwoAccounts,
     sessions: versionOneSessions,
@@ -479,7 +478,7 @@ test("a version-2 database opens as version 3 with every account, blocked state 
   assert.equal(database.confirmEmailAddress(digest("moved")), "confirmed");
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
   assert.equal(reopened.findAccountById("account-a").emailConfirmed, true);
   assert.equal(reopened.findAccountById("account-b").emailConfirmed, false);
   assert.equal(reopened.findAccountById("account-c").blocked, true);
@@ -511,6 +510,413 @@ test("a failing step 3 leaves a version-2 database at version 2 with its rows an
       name,
     })),
   );
+});
+
+// A version-3 database as loop2 589f4d7 leaves it: the version-2 database
+// moved by the step of src/server/database.ts:62-75 there, the schema the test
+// server's database holds before this version. Account a has confirmed its
+// address and c is blocked; of the links one still works and one is used, so
+// the move is seen to keep every value of the step's columns.
+const versionThreeDatabase = `${versionTwoDatabase}
+  ALTER TABLE accounts ADD COLUMN email_confirmed_at INTEGER;
+  CREATE TABLE emailed_links (
+    token_digest TEXT PRIMARY KEY NOT NULL,
+    account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    purpose TEXT NOT NULL
+      CHECK (purpose IN ('email-confirmation', 'password-reset')),
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    spent INTEGER NOT NULL DEFAULT 0 CHECK (spent IN (0, 1))
+  ) STRICT;
+  CREATE INDEX emailed_links_account ON emailed_links(account_id);
+  CREATE INDEX emailed_links_created ON emailed_links(created_at);
+  UPDATE accounts SET email_confirmed_at = 150 WHERE id = 'account-a';
+  INSERT INTO emailed_links
+    VALUES ('digest-b', 'account-b', 'email-confirmation', 400, 90000, 0);
+  INSERT INTO emailed_links
+    VALUES ('digest-a', 'account-a', 'password-reset', 500, 4100, 1);
+`;
+
+const versionThreeAccounts = [
+  { ...versionTwoAccounts[0], confirmed: 150 },
+  { ...versionTwoAccounts[1], confirmed: null },
+  { ...versionTwoAccounts[2], confirmed: null },
+];
+
+const versionThreeLinks = [
+  {
+    digest: "digest-a",
+    account: "account-a",
+    purpose: "password-reset",
+    created: 500,
+    expires: 4100,
+    spent: 1,
+  },
+  {
+    digest: "digest-b",
+    account: "account-b",
+    purpose: "email-confirmation",
+    created: 400,
+    expires: 90000,
+    spent: 0,
+  },
+];
+
+function storedVersionThreeRows(raw) {
+  return {
+    accounts: rows(
+      raw,
+      "SELECT id, email, password_hash AS hash, created_at AS created, blocked, email_confirmed_at AS confirmed FROM accounts ORDER BY id",
+    ),
+    sessions: storedVersionOneRows(raw).sessions,
+    links: rows(
+      raw,
+      "SELECT token_digest AS digest, account_id AS account, purpose, created_at AS created, expires_at AS expires, spent FROM emailed_links ORDER BY token_digest",
+    ),
+  };
+}
+
+// invariant: account-database-schema
+// invariant: account-schema-lifecycle
+test("a version-3 database opens as version 4 with every row and value kept and no saved game state", async (t) => {
+  const { path, raw, track } = await olderDatabaseFixture(
+    t,
+    versionThreeDatabase,
+    3,
+  );
+  const database = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+  assert.equal(raw.prepare("SELECT count(*) AS n FROM saved_games").get().n, 0);
+  for (const account of versionThreeAccounts) {
+    assert.deepEqual(database.findAccountByEmail(account.email), {
+      id: account.id,
+      email: account.email,
+      passwordHash: account.hash,
+      createdAt: account.created,
+      blocked: account.blocked === 1,
+      emailConfirmed: account.confirmed !== null,
+    });
+    assert.equal(database.readSavedGame(account.id), null, account.id);
+  }
+  for (const session of versionOneSessions)
+    assert.deepEqual(database.readSession(session.id), {
+      accountId: session.account,
+      data: session.data,
+      expiresAt: session.expires,
+    });
+
+  // A moved account takes a saved game state, a moved block still refuses
+  // one, and both outlast a reopen.
+  assert.deepEqual(
+    database.writeSavedGame("account-a", {
+      version: 1,
+      basedOn: 0,
+      game: '{"moved":true}',
+    }),
+    { outcome: "saved", revision: 1 },
+  );
+  assert.deepEqual(
+    database.writeSavedGame("account-c", {
+      version: 1,
+      basedOn: 0,
+      game: '{"blocked":true}',
+    }),
+    { outcome: "blocked" },
+  );
+  database.close();
+  const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.deepEqual(reopened.readSavedGame("account-a"), {
+    version: 1,
+    revision: 1,
+    game: '{"moved":true}',
+  });
+  assert.equal(reopened.readSavedGame("account-c"), null);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+});
+
+function tableNames(raw) {
+  return rows(
+    raw,
+    "SELECT name FROM sqlite_schema WHERE type = 'table' ORDER BY name",
+  ).map((row) => row.name);
+}
+
+// invariant: account-database-schema
+test("a failing step 4 leaves a version-3 database at version 3 with its rows and tables unchanged", async (t) => {
+  // A table of that name already there makes step 4 fail.
+  const { path, raw } = await olderDatabaseFixture(
+    t,
+    `${versionThreeDatabase}
+      CREATE TABLE saved_games (marker TEXT);
+      INSERT INTO saved_games VALUES ('keep');`,
+    3,
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /already exists/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+  assert.deepEqual(tableNames(raw), [
+    "accounts",
+    "emailed_links",
+    "saved_games",
+    "sessions",
+  ]);
+  assert.deepEqual(rows(raw, "SELECT * FROM saved_games"), [
+    { marker: "keep" },
+  ]);
+});
+
+// invariant: account-schema-lifecycle
+test("a failing step 4 also takes back step 3 on a version-2 database, which stays at version 2 unchanged", async (t) => {
+  // Steps 3 and 4 run in one transaction, so step 3's column and table must
+  // go again when step 4 fails after them.
+  const { path, raw } = await olderDatabaseFixture(
+    t,
+    `${versionTwoDatabase}
+      CREATE TABLE saved_games (marker TEXT);`,
+    2,
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /already exists/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.deepEqual(storedVersionTwoRows(raw), {
+    accounts: versionTwoAccounts,
+    sessions: versionOneSessions,
+  });
+  assert.deepEqual(tableNames(raw), ["accounts", "saved_games", "sessions"]);
+  assert.deepEqual(
+    rows(raw, "SELECT name FROM pragma_table_info('accounts') ORDER BY cid"),
+    ["id", "email", "password_hash", "created_at", "blocked"].map((name) => ({
+      name,
+    })),
+  );
+});
+
+function storedSave(raw, accountId) {
+  const row = raw
+    .prepare(
+      "SELECT version, revision, game FROM saved_games WHERE account_id = ?",
+    )
+    .get(accountId);
+  return row ? { ...row } : undefined;
+}
+
+function savedGameCount(raw) {
+  return raw.prepare("SELECT count(*) AS n FROM saved_games").get().n;
+}
+
+// invariant: account-save-sqlite-store
+test("a save is stored only on the revision it names, one of a lower version is refused before its revision is compared, and every refusal changes nothing", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  const save = (accountId, version, basedOn, game) =>
+    database.writeSavedGame(accountId, { version, basedOn, game });
+  assert.equal(database.readSavedGame(account.id), null);
+
+  // D-209: no saved game state counts as revision 0, and the first save is 1.
+  assert.deepEqual(save(account.id, 2, 1, '{"n":0}'), { outcome: "conflict" });
+  assert.equal(savedGameCount(raw), 0);
+  assert.deepEqual(save(account.id, 2, 0, '{"n":1}'), {
+    outcome: "saved",
+    revision: 1,
+  });
+  assert.deepEqual(database.readSavedGame(account.id), {
+    version: 2,
+    revision: 1,
+    game: '{"n":1}',
+  });
+  assert.deepEqual(save(account.id, 2, 1, '{"n":2}'), {
+    outcome: "saved",
+    revision: 2,
+  });
+
+  // A browser that did not see revision 2, and one that saw none.
+  assert.deepEqual(save(account.id, 2, 1, '{"stale":1}'), {
+    outcome: "conflict",
+  });
+  assert.deepEqual(save(account.id, 2, 0, '{"stale":0}'), {
+    outcome: "conflict",
+  });
+  // D-210: a lower version is outdated on the current basis and on a stale
+  // one alike, since the version is compared first.
+  assert.deepEqual(save(account.id, 1, 2, '{"old":2}'), {
+    outcome: "outdated",
+  });
+  assert.deepEqual(save(account.id, 1, 1, '{"old":1}'), {
+    outcome: "outdated",
+  });
+  assert.deepEqual(storedSave(raw, account.id), {
+    version: 2,
+    revision: 2,
+    game: '{"n":2}',
+  });
+
+  // A higher version on the current basis replaces it.
+  assert.deepEqual(save(account.id, 3, 2, '{"n":3}'), {
+    outcome: "saved",
+    revision: 3,
+  });
+  assert.deepEqual(database.readSavedGame(account.id), {
+    version: 3,
+    revision: 3,
+    game: '{"n":3}',
+  });
+
+  // The other account has its own row and its own revisions.
+  assert.equal(database.readSavedGame(other.id), null);
+  assert.deepEqual(save(other.id, 1, 0, '{"theirs":1}'), {
+    outcome: "saved",
+    revision: 1,
+  });
+  assert.deepEqual(save(other.id, 1, 3, '{"theirs":2}'), {
+    outcome: "conflict",
+  });
+  assert.deepEqual(storedSave(raw, account.id), {
+    version: 3,
+    revision: 3,
+    game: '{"n":3}',
+  });
+  assert.equal(savedGameCount(raw), 2);
+});
+
+// invariant: account-save-sqlite-store
+test("a block committed through another connection before a save makes it store nothing, and blocking and unblocking keep the saved game state", async (t) => {
+  const { path, database, raw, account, track } = await fixture(t);
+  const save = (version, basedOn, game) =>
+    database.writeSavedGame(account.id, { version, basedOn, game });
+  assert.deepEqual(save(1, 0, '{"kept":1}'), { outcome: "saved", revision: 1 });
+
+  // The second connection stands in for the owner's command beside the server.
+  const operator = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(operator.blockAccount("player@example.test"), "blocked");
+  assert.deepEqual(save(1, 1, '{"after":1}'), { outcome: "blocked" });
+  // The block comes before the version and the revision.
+  assert.deepEqual(save(1, 0, '{"stale":1}'), { outcome: "blocked" });
+  assert.deepEqual(storedSave(raw, account.id), {
+    version: 1,
+    revision: 1,
+    game: '{"kept":1}',
+  });
+
+  assert.equal(operator.unblockAccount("player@example.test"), "unblocked");
+  assert.deepEqual(database.readSavedGame(account.id), {
+    version: 1,
+    revision: 1,
+    game: '{"kept":1}',
+  });
+  assert.deepEqual(save(1, 1, '{"after":1}'), {
+    outcome: "saved",
+    revision: 2,
+  });
+
+  // A blocked account without a saved game state gets none either.
+  const fresh = database.createAccount("fresh@example.test", "hash");
+  assert.equal(operator.blockAccount("fresh@example.test"), "blocked");
+  assert.deepEqual(
+    database.writeSavedGame(fresh.id, { version: 1, basedOn: 0, game: "{}" }),
+    { outcome: "blocked" },
+  );
+  assert.equal(storedSave(raw, fresh.id), undefined);
+});
+
+// invariant: account-save-sqlite-store
+test("the stored game text holds at most 65 536 bytes, counted in UTF-8 bytes rather than characters, and a longer one changes nothing", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  // D-104: at most 64 KiB, 65 536 bytes, stored per player. "ż" is two bytes
+  // in UTF-8, so 32 768 of them are 65 536 bytes in half as many characters.
+  const full = "ż".repeat(32_768);
+  assert.deepEqual(
+    database.writeSavedGame(account.id, { version: 1, basedOn: 0, game: full }),
+    { outcome: "saved", revision: 1 },
+  );
+  assert.equal(database.readSavedGame(account.id).game, full);
+  assert.throws(
+    () =>
+      database.writeSavedGame(account.id, {
+        version: 1,
+        basedOn: 1,
+        game: `${full}a`,
+      }),
+    /CHECK constraint/,
+  );
+  assert.deepEqual(storedSave(raw, account.id), {
+    version: 1,
+    revision: 1,
+    game: full,
+  });
+
+  // The table holds the limit itself, also against a write past the operation.
+  const other = database.createAccount("other@example.test", "hash");
+  assert.throws(
+    () =>
+      raw
+        .prepare("INSERT INTO saved_games VALUES (?, 1, 1, ?)")
+        .run(other.id, `${full}a`),
+    /CHECK constraint/,
+  );
+  assert.throws(
+    () =>
+      raw
+        .prepare("UPDATE saved_games SET game = ? WHERE account_id = ?")
+        .run(`${full}a`, account.id),
+    /CHECK constraint/,
+  );
+  assert.equal(storedSave(raw, other.id), undefined);
+  assert.equal(storedSave(raw, account.id).game, full);
+});
+
+// invariant: account-save-sqlite-store
+test("a saved game state goes with its account, and a save for an unknown account or with an unusable field stores nothing", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  for (const owner of [account, other])
+    database.writeSavedGame(owner.id, { version: 1, basedOn: 0, game: "{}" });
+  raw.prepare("DELETE FROM accounts WHERE id = ?").run(other.id);
+  assert.equal(storedSave(raw, other.id), undefined);
+  assert.ok(storedSave(raw, account.id), "another account's row stays");
+
+  assert.throws(
+    () =>
+      database.writeSavedGame("absent", { version: 1, basedOn: 0, game: "{}" }),
+    /Unknown account/,
+  );
+  for (const [label, given] of [
+    ["version 0", { version: 0, basedOn: 1, game: "{}" }],
+    ["a fractional version", { version: 1.5, basedOn: 1, game: "{}" }],
+    ["an unsafe version", { version: 2 ** 53, basedOn: 1, game: "{}" }],
+    ["a negative basis", { version: 1, basedOn: -1, game: "{}" }],
+    ["a fractional basis", { version: 1, basedOn: 0.5, game: "{}" }],
+    ["a game that is not text", { version: 1, basedOn: 1, game: {} }],
+  ])
+    assert.throws(
+      () => database.writeSavedGame(account.id, given),
+      /Invalid saved game/,
+      label,
+    );
+  assert.deepEqual(storedSave(raw, account.id), {
+    version: 1,
+    revision: 1,
+    game: "{}",
+  });
+  assert.equal(savedGameCount(raw), 1);
 });
 
 // invariant: account-message-limits

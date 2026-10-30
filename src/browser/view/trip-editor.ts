@@ -5,10 +5,13 @@ import { createNumberField } from "./controls/number-field.js";
 import { createSelectList, setSelectOptions } from "./controls/select-list.js";
 import type { Field } from "./controls/text-field.js";
 
-/** No gameplay maximum: reality clips the requested count at the map's boundaries. */
+/**
+ * A safe integer from 1 up (D-181); below that bound no gameplay maximum: reality clips the
+ * requested count at the map's boundaries.
+ */
 export function tripCount(text: string): number | null {
   const count = Number(text);
-  return text.trim() !== "" && Number.isInteger(count) && count >= 1
+  return text.trim() !== "" && Number.isSafeInteger(count) && count >= 1
     ? count
     : null;
 }

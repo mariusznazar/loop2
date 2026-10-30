@@ -611,7 +611,7 @@ Anyone can create a player account and begin playing without operator approval.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-96
+- **Derives from:** D-96 · D-202
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -691,9 +691,9 @@ Replacing the application container preserves the SQLite database of player acco
 
 - **Method:** review
 - **Rests on:** docker-volume-lifecycle
-- **Derives from:** D-17 · C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\definicja_mvp_loop2.md § Projected foundation changes, account-save-durable-storage/1 — "Replacing the application container preserves the SQLite database of player accounts and saved game states."; read 2026-10-27
+- **Derives from:** D-17 · D-205
 - **Part:** account-server · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## account-save-sqlite-access
 
@@ -717,7 +717,7 @@ The browser loads the built game and sends account and save requests to relative
 
 ## account-session-authorization
 
-The account API returns JSON 401 for `GET /api/account`, and for `POST /api/email-confirmation-message` and `POST /api/logout` that meet the Origin, media-type and body requirements, without a valid server-side session, and an account identifier or email address supplied by the caller cannot authorize reading or changing another account or session or direct a message to another address.
+The account API returns JSON 401 for `GET /api/account` and `GET /api/saved-game`, and for `PUT /api/saved-game`, `POST /api/email-confirmation-message` and `POST /api/logout` that meet the Origin, media-type and body requirements, without a valid server-side session, and an account identifier or email address supplied by the caller cannot authorize reading or changing another account or session or direct a message to another address.
 
 - **Method:** test
 - **Rests on:** none
@@ -727,7 +727,7 @@ The account API returns JSON 401 for `GET /api/account`, and for `POST /api/emai
 
 ## account-mutation-request-guards
 
-Every state-changing account route refuses a missing, duplicate, malformed or nonmatching Origin and a non-JSON, compressed, oversized or structurally invalid body before password work or mutation.
+Every state-changing account route, the save route `PUT /api/saved-game` included, refuses a missing, duplicate, malformed or nonmatching Origin and a non-JSON, compressed or structurally invalid body or one over that route's body limit of D-104 before password work or mutation.
 
 - **Method:** test
 - **Rests on:** none
@@ -757,7 +757,7 @@ Production startup without all valid account settings and every startup with par
 
 ## account-schema-lifecycle
 
-Opening the account database initializes a new schema transactionally, moves an existing older known schema to the current version in one transaction keeping its accounts and sessions, and refuses a newer unknown schema before readiness.
+Opening the account database initializes a new schema transactionally, moves an existing older known schema to the current version in one transaction keeping its accounts, sessions and saved game states, and refuses a newer unknown schema before readiness.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -767,7 +767,7 @@ Opening the account database initializes a new schema transactionally, moves an 
 
 ## account-database-schema
 
-Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account and session and their values kept, preserves them on reopen, and rejects an unknown newer schema without changing its version or records.
+Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, session and saved game state and their values kept, preserves them on reopen, and rejects an unknown newer schema without changing its version or records.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -861,7 +861,7 @@ A blocked account cannot sign in or use authenticated game endpoints.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-137 · D-139
+- **Derives from:** D-137 · D-139 · D-202
 - **Part:** account-server
 - **Violated:** no
 
@@ -982,6 +982,56 @@ Editing or discarding changes to the copy's trip plan alone leaves the run's str
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-93 · D-131 · D-136
+- **Part:** simulation
+- **Violated:** no
+
+## player-save-isolation
+
+A signed-in player can read and change only the saved game state belonging to their own account.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-109 · D-202
+- **Part:** account-server
+- **Violated:** no
+
+## expired-session-unsaved-progress
+
+An expired session leaves unsaved progress in the browser, and the game retries saving it only after the player signs in again to the same account.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-203 · D-211
+- **Part:** browser-view
+- **Violated:** no
+
+## account-save-sqlite-store
+
+The account and save server persists player accounts and complete saved game states in a SQLite database.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-205
+- **Part:** account-server
+- **Violated:** no
+
+## saved-state-http-exchange
+
+The browser loads and sends saved game states as JSON through `fetch()` requests.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-204
+- **Part:** browser-view
+- **Violated:** no
+
+## save-version
+
+The game loads no data from a saved game state whose version differs from the game's current version of the saved game state's shape.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-206
 - **Part:** simulation
 - **Violated:** no
 

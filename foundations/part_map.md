@@ -55,11 +55,11 @@ The part computes the game: the game state, the map run, the character's program
   tests/invariants/test_saved_program_edit.py
   tests/invariants/test_copy_save.py
 - **Depends on:** none
-- **Trust boundary:** none
+- **Trust boundary:** src/browser/sim/saved-game.ts
 
 ## account-server
 
-The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns account and session persistence, sends account email through the mail service, gives the operator a command that blocks and unblocks a player account, and measures its own password work in the image it runs in.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns the persistence of accounts, sessions and each player's saved game state, sends account email through the mail service, gives the operator a command that blocks and unblocks a player account, and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs

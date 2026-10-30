@@ -521,3 +521,301 @@ test("a connection that fails before or inside the answer is a network failure, 
     ["unreachable", "network"],
   );
 });
+
+// Saved game state routes (spec decisions 1 and 3; task To do 2, 4 and 7).
+const gameJson = '{"program":[1,2],"note":"zażółć"}';
+const saveJson = `{"save":{"version":3,"revision":7,"game":${gameJson}}}`;
+const submission = { version: 3, basedOn: 6, game: { program: [1, 2] } };
+const saveLimit = 65536;
+
+/** A save whose body is exactly `bytes` long in UTF-8, built from two-byte letters so that its
+ * length in characters is lower than its length in bytes. */
+function submissionOfBytes(bytes) {
+  const empty = { version: 1, basedOn: 0, game: { t: "" } };
+  const room = bytes - Buffer.byteLength(JSON.stringify(empty));
+  const t = "x".repeat(room % 2) + "ł".repeat(Math.floor(room / 2));
+  return { version: 1, basedOn: 0, game: { t } };
+}
+
+// invariant: saved-state-http-exchange
+// invariant: account-client-requests
+test("loadSavedGame sends a bodiless GET on the relative saved-game path and the save call a JSON PUT of exactly version, basedOn and game", async () => {
+  respond = (request, response) =>
+    request.method === "GET"
+      ? reply(response, 200, saveJson)
+      : reply(response, 200, '{"revision":7}');
+  const c = client();
+  const loaded = await within(c.loadSavedGame(), "load");
+  const saved = await within(c.saveGame(submission), "save");
+  // Precondition: both answers were successes, so both requests were fully sent.
+  assert.equal(loaded.ok, true);
+  assert.deepEqual(saved, { kind: "saved", revision: 7 });
+  assert.deepEqual(
+    seen.map(({ method, url }) => ({ method, url })),
+    [
+      { method: "GET", url: "/api/saved-game" },
+      { method: "PUT", url: "/api/saved-game" },
+    ],
+  );
+  assert.equal(seen[0].body, "");
+  assert.match(seen[1].contentType, /^application\/json/);
+  assert.deepEqual(JSON.parse(seen[1].body), {
+    version: 3,
+    basedOn: 6,
+    game: { program: [1, 2] },
+  });
+  assert.deepEqual(Object.keys(JSON.parse(seen[1].body)).sort(), [
+    "basedOn",
+    "game",
+    "version",
+  ]);
+});
+
+// invariant: account-client-requests
+test("a redirect of the saved-game routes is not followed, so nothing is sent to its target", async () => {
+  const target = `http://127.0.0.1:${elsewhere.address().port}/api/saved-game`;
+  respond = (_request, response) =>
+    response.writeHead(307, { location: target }).end();
+  const loaded = await within(client().loadSavedGame(), "load");
+  const saved = await within(client().saveGame(submission), "save");
+  assert.equal(loaded.ok, false);
+  assert.equal(saved.kind, "failed");
+  assert.deepEqual(elsewhereSeen, []);
+});
+
+// invariant: saved-state-http-exchange
+// invariant: account-client-outcomes
+test("loadSavedGame gives the save exactly as received, or null for an account with none", async () => {
+  respond = (_request, response) => reply(response, 200, saveJson);
+  assert.deepEqual(await within(client().loadSavedGame(), "save"), {
+    ok: true,
+    value: {
+      version: 3,
+      revision: 7,
+      game: { program: [1, 2], note: "zażółć" },
+    },
+  });
+  respond = (_request, response) => reply(response, 200, '{"save":null}');
+  assert.deepEqual(await within(client().loadSavedGame(), "null"), {
+    ok: true,
+    value: null,
+  });
+});
+
+// invariant: account-client-outcomes
+test("loadSavedGame is no success for another status or for a body that is not exactly save, null or version, revision and game", async () => {
+  const game = '{"a":1}';
+  const bodies = [
+    "",
+    "not json",
+    "null",
+    "[]",
+    "{}",
+    '{"save":1}',
+    '{"save":[]}',
+    '{"save":"x"}',
+    '{"save":{}}',
+    '{"save":null,"extra":1}',
+    `{"save":{"version":1,"revision":1,"game":${game}},"extra":1}`,
+    `{"save":{"version":1,"revision":1,"game":${game},"extra":1}}`,
+    `{"save":{"revision":1,"game":${game}}}`,
+    `{"save":{"version":1,"game":${game}}}`,
+    '{"save":{"version":1,"revision":1}}',
+    `{"save":{"version":0,"revision":1,"game":${game}}}`,
+    `{"save":{"version":1,"revision":0,"game":${game}}}`,
+    `{"save":{"version":-1,"revision":1,"game":${game}}}`,
+    `{"save":{"version":1.5,"revision":1,"game":${game}}}`,
+    `{"save":{"version":"1","revision":1,"game":${game}}}`,
+    `{"save":{"version":1,"revision":"1","game":${game}}}`,
+    `{"save":{"version":1,"revision":9007199254740993,"game":${game}}}`,
+    '{"save":{"version":1,"revision":1,"game":null}}',
+    '{"save":{"version":1,"revision":1,"game":[]}}',
+    '{"save":{"version":1,"revision":1,"game":"x"}}',
+    '{"code":"unauthenticated","error":"A refusal body at a success status"}',
+  ];
+  for (const body of bodies) {
+    respond = (_request, response) => reply(response, 200, body);
+    const result = await within(client().loadSavedGame(), body);
+    assert.equal(result.ok, false, body);
+    assert.equal(result.failure.kind, "unexpected", body);
+  }
+  for (const status of [201, 202, 204]) {
+    respond = (_request, response) => reply(response, status, saveJson);
+    const result = await within(client().loadSavedGame(), `${status}`);
+    assert.equal(result.ok, false, `${status}`);
+    assert.equal(result.failure.kind, "unexpected", `${status}`);
+    assert.equal(result.failure.status, status);
+  }
+});
+
+// invariant: account-client-outcomes
+test("loadSavedGame turns an error status into a refusal, a dead connection and a silent server into unreachable", async () => {
+  respond = (_request, response) =>
+    reply(
+      response,
+      401,
+      '{"code":"unauthenticated","error":"Sesja wygasła albo nie istnieje."}',
+    );
+  assert.deepEqual(await within(client().loadSavedGame(), "401"), {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 401,
+      code: "unauthenticated",
+      message: "Sesja wygasła albo nie istnieje.",
+    },
+  });
+  respond = (_request, response) => reply(response, 500, "<html>words</html>");
+  const server500 = await within(client().loadSavedGame(), "500");
+  assert.equal(server500.ok, false);
+  assert.deepEqual(
+    [server500.failure.kind, server500.failure.status, server500.failure.code],
+    ["refused", 500, null],
+  );
+  respond = (request) => request.socket.destroy();
+  const dead = await within(client().loadSavedGame(), "reset");
+  assert.deepEqual(
+    [dead.failure.kind, dead.failure.reason],
+    ["unreachable", "network"],
+  );
+  respond = () => {};
+  const silent = await within(
+    createAccountClient({ timeoutMs: 150 }).loadSavedGame(),
+    "silent",
+  );
+  assert.deepEqual(
+    [silent.failure.kind, silent.failure.reason],
+    ["unreachable", "timeout"],
+  );
+});
+
+// invariant: saved-state-http-exchange
+// invariant: account-client-outcomes
+test("saveGame answers saved with the new revision for a 200 with exactly a revision", async () => {
+  respond = (_request, response) => reply(response, 200, '{"revision":1}');
+  assert.deepEqual(await within(client().saveGame(submission), "first"), {
+    kind: "saved",
+    revision: 1,
+  });
+  respond = (_request, response) => reply(response, 200, '{"revision":41}');
+  assert.deepEqual(await within(client().saveGame(submission), "later"), {
+    kind: "saved",
+    revision: 41,
+  });
+});
+
+// invariant: account-client-outcomes
+test("saveGame maps each documented refusal to its own outcome", async () => {
+  for (const [status, code, kind] of [
+    [409, "save-conflict", "conflict"],
+    [409, "save-outdated", "outdated"],
+    [413, "save-too-large", "too-large"],
+    [401, "unauthenticated", "signed-out"],
+  ]) {
+    respond = (_request, response) =>
+      reply(response, status, JSON.stringify({ code, error: "Słowa serwera" }));
+    assert.deepEqual(
+      await within(client().saveGame(submission), code),
+      { kind },
+      code,
+    );
+  }
+});
+
+// invariant: account-client-outcomes
+test("saveGame reports every other answer as a failure, also a refusal status under another code", async () => {
+  for (const [status, body] of [
+    [400, '{"code":"invalid-request","error":"x"}'],
+    [403, '{"error":"Forbidden words"}'],
+    [409, '{"code":"account-exists","error":"x"}'],
+    [409, "{}"],
+    [409, ""],
+    [413, "{}"],
+    [413, '{"code":"save-conflict","error":"x"}'],
+    [500, "<html>words</html>"],
+    [503, '{"error":"words"}'],
+    [429, ""],
+  ]) {
+    respond = (_request, response) => reply(response, status, body);
+    const result = await within(client().saveGame(submission), `${status}`);
+    assert.equal(result.kind, "failed", `${status} ${body}`);
+    assert.equal(result.failure.kind, "refused", `${status} ${body}`);
+    assert.equal(result.failure.status, status);
+    assert.doesNotMatch(result.failure.message, /words/);
+  }
+  for (const [status, body] of [
+    [200, ""],
+    [200, "not json"],
+    [200, "{}"],
+    [200, "null"],
+    [200, '{"revision":0}'],
+    [200, '{"revision":-1}'],
+    [200, '{"revision":1.5}'],
+    [200, '{"revision":"1"}'],
+    [200, '{"revision":1,"extra":true}'],
+    [201, '{"revision":1}'],
+    [202, '{"revision":1}'],
+    [204, ""],
+  ]) {
+    respond = (_request, response) => reply(response, status, body);
+    const result = await within(client().saveGame(submission), `${status}`);
+    assert.equal(result.kind, "failed", `${status} ${body}`);
+    assert.equal(result.failure.kind, "unexpected", `${status} ${body}`);
+  }
+});
+
+// invariant: account-client-outcomes
+test("saveGame reports a dead connection as a network failure and silence or a stalled body as a timeout", async () => {
+  respond = (request) => request.socket.destroy();
+  const dead = await within(client().saveGame(submission), "reset");
+  assert.equal(dead.kind, "failed");
+  assert.deepEqual(
+    [dead.failure.kind, dead.failure.reason],
+    ["unreachable", "network"],
+  );
+  const quick = createAccountClient({ timeoutMs: 150 });
+  respond = () => {};
+  const silent = await within(quick.saveGame(submission), "silent");
+  assert.deepEqual(
+    [silent.kind, silent.failure.kind, silent.failure.reason],
+    ["failed", "unreachable", "timeout"],
+  );
+  respond = (_request, response) => {
+    response.writeHead(200, {
+      "content-type": "application/json",
+      "content-length": "100",
+    });
+    response.write('{"revision":');
+  };
+  const stalled = await within(quick.saveGame(submission), "stalled");
+  assert.deepEqual(
+    [stalled.kind, stalled.failure.kind, stalled.failure.reason],
+    ["failed", "unreachable", "timeout"],
+  );
+});
+
+// invariant: saved-state-http-exchange
+test("a save body of exactly 65 536 bytes is sent whole", async () => {
+  respond = (_request, response) => reply(response, 200, '{"revision":2}');
+  const exact = submissionOfBytes(saveLimit);
+  const result = await within(client().saveGame(exact), "exact");
+  // Precondition: the letters are two bytes, so the body has fewer characters than bytes.
+  assert.ok(JSON.stringify(exact).length < saveLimit);
+  assert.deepEqual(result, { kind: "saved", revision: 2 });
+  assert.equal(seen.length, 1);
+  assert.equal(Buffer.byteLength(seen[0].body), saveLimit);
+  assert.deepEqual(JSON.parse(seen[0].body), exact);
+});
+
+// invariant: saved-state-http-exchange
+test("a save body over 65 536 bytes is never sent and comes back too large", async () => {
+  respond = (_request, response) => reply(response, 200, '{"revision":2}');
+  const over = submissionOfBytes(saveLimit + 1);
+  // Precondition: the body is over the limit in bytes though not in characters.
+  assert.equal(Buffer.byteLength(JSON.stringify(over)), saveLimit + 1);
+  assert.ok(JSON.stringify(over).length <= saveLimit);
+  assert.deepEqual(await within(client().saveGame(over), "over"), {
+    kind: "too-large",
+  });
+  assert.deepEqual(seen, []);
+});

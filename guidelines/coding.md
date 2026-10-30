@@ -14,7 +14,8 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 | Kind | File | When to read |
 |---|---|---|
 | content-data | `guidelines/coding-content-data.md` | Przed dodaniem lub zmianą pliku danych treści gry w simulation. |
-| simulation-module | `guidelines/coding-simulation-module.md` | Przed dodaniem lub zmianą modułu simulation poza danymi treści gry. |
+| simulation-module | `guidelines/coding-simulation-module.md` | Przed dodaniem lub zmianą modułu simulation poza danymi treści gry i plikiem zapisu gry. |
+| saved-game | `guidelines/coding-saved-game.md` | Przed dodaniem lub zmianą pliku simulation, który zamienia stan gry na dokument zapisu albo dokument pobrany z serwera lub zachowany w pamięci strony po zapisie, który nie zastał sesji, na stan gry lub odmowę. |
 | browser-module | `guidelines/coding-browser-module.md` | Przed dodaniem lub zmianą modułu browser-view w katalogu widoku. |
 | http-application | `guidelines/coding-http-application.md` | Przed dodaniem lub zmianą pliku składającego aplikację HTTP w account-server. |
 | password-hashing | `guidelines/coding-password-hashing.md` | Przed dodaniem lub zmianą pliku wykonującego haszowanie albo sprawdzanie haseł. |
@@ -224,8 +225,8 @@ Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce
 budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone. CSS nie ma własnego wzorca ani własnych wytycznych rodzaju; reguły
 arkuszy stylów, których pilnuje test, stoją w
 `guidelines/styleguide-browser-view.md`.
-Wzorzec zapisu gry powstanie przy pierwszej implementacji; wzorzec poczty
-wskazuje rodzaj `mail-sending` w tabeli rodzajów.
+Wzorzec zapisu gry wskazuje rodzaj `saved-game`, a wzorzec poczty rodzaj
+`mail-sending` w tabeli rodzajów.
 Przed wyborem wzorca odłożonego istniejącego rodzaju porównuje się jego pliki.
 Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Dla przyjętych linterów
 obowiązują niezmienniki pełnej zgodności kodu, bez przejściowej kontroli

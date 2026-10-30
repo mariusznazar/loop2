@@ -203,6 +203,8 @@ test("unconfigured accounts answer the canonical account routes as unavailable J
     ["POST", "/api/logout"],
     ["POST", "/api/email-confirmation"],
     ["POST", "/api/email-confirmation-message"],
+    ["GET", "/api/saved-game"],
+    ["PUT", "/api/saved-game"],
   ]) {
     const response = await send(path, { method });
     assert.equal(response.status, 503, `${method} ${path}`);
@@ -308,14 +310,17 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
   const mailer = standInMailer();
   // A case may act just before a route records a link, as another connection
   // committing between the route's session check and its write would.
-  const hooks = { beforeIssue: null };
+  const hooks = { beforeIssue: null, beforeSave: null };
   const database = new Proxy(runtime.database, {
     get(target, name) {
       const value = Reflect.get(target, name, target);
       if (typeof value !== "function") return value;
-      if (name !== "issueLink") return value.bind(target);
+      const hook = { issueLink: "beforeIssue", writeSavedGame: "beforeSave" }[
+        name
+      ];
+      if (!hook) return value.bind(target);
       return (...parameters) => {
-        hooks.beforeIssue?.();
+        hooks[hook]?.();
         return value.apply(target, parameters);
       };
     },
@@ -2189,5 +2194,450 @@ test(
       );
     }
     assert.ok(!logged.some((line) => line.includes("confirm-email")));
+  },
+);
+
+// The saved game state routes (task zapis-stanu-na-serwerze, spec decision 1).
+// The server reads nothing inside `game`, so the games below are plain objects.
+const savedGamePath = "/api/saved-game";
+
+function putSave(f, cookie, body, extra = {}, path = savedGamePath) {
+  const headers = { ...logoutHeaders, ...extra };
+  if (cookie) headers.Cookie = cookie;
+  return f.send(path, {
+    method: "PUT",
+    headers,
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+}
+
+function getSave(f, cookie, extra = {}, path = savedGamePath) {
+  return readAccount(f, cookie, path, extra);
+}
+
+function storedSave(f, accountId) {
+  return f.inspection
+    .prepare(
+      "SELECT version, revision, game FROM saved_games WHERE account_id = ?",
+    )
+    .get(accountId);
+}
+
+function assertSaveRefusal(response, status, code, label) {
+  assertRefusal(response, status, label);
+  assert.equal(JSON.parse(response.body).code, code, label);
+}
+
+test(
+  "each account's session reads and replaces only its own saved game state",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: player-save-isolation
+    // Faults: the row chosen by an account named in the body, the query or a
+    // header; one shared row; a save answered to the wrong account.
+    const f = await accountFixture(t);
+    const one = seed(f, "save-one", f.first);
+    const two = seed(f, "save-two", f.second);
+    assert.deepEqual(JSON.parse((await getSave(f, one)).body), { save: null });
+    assert.deepEqual(JSON.parse((await getSave(f, two)).body), { save: null });
+
+    const gameOne = { owner: "first", steps: [1, 2, 3] };
+    const gameTwo = { owner: "second", steps: [] };
+    const savedOne = await putSave(f, one, {
+      version: 1,
+      basedOn: 0,
+      game: gameOne,
+    });
+    assert.equal(savedOne.status, 200);
+    assert.deepEqual(JSON.parse(savedOne.body), { revision: 1 });
+    assert.equal(
+      storedSave(f, f.second.id),
+      undefined,
+      "the other is untouched",
+    );
+    const savedTwo = await putSave(f, two, {
+      version: 1,
+      basedOn: 0,
+      game: gameTwo,
+    });
+    assert.deepEqual(JSON.parse(savedTwo.body), { revision: 1 });
+    assert.deepEqual(JSON.parse((await getSave(f, one)).body), {
+      save: { version: 1, revision: 1, game: gameOne },
+    });
+    assert.deepEqual(JSON.parse((await getSave(f, two)).body), {
+      save: { version: 1, revision: 1, game: gameTwo },
+    });
+
+    // An account named in the body is refused; named in the query or a header
+    // it selects nothing, so the replacement lands on the session's account.
+    for (const named of [
+      { accountId: f.second.id },
+      { id: f.second.id },
+      { email: "second@example.test" },
+    ]) {
+      const refused = await putSave(f, one, {
+        version: 1,
+        basedOn: 1,
+        game: { owner: "intruder" },
+        ...named,
+      });
+      assertSaveRefusal(refused, 400, "invalid-request", JSON.stringify(named));
+    }
+    assert.equal(storedSave(f, f.first.id).game, JSON.stringify(gameOne));
+    assert.equal(storedSave(f, f.second.id).game, JSON.stringify(gameTwo));
+    const replaced = await putSave(
+      f,
+      one,
+      { version: 1, basedOn: 1, game: { owner: "first", steps: [4] } },
+      { "X-Account-Id": f.second.id },
+      `${savedGamePath}?accountId=${f.second.id}&id=${f.second.id}`,
+    );
+    assert.deepEqual(JSON.parse(replaced.body), { revision: 2 });
+    assert.equal(storedSave(f, f.second.id).revision, 1);
+    assert.equal(storedSave(f, f.second.id).game, JSON.stringify(gameTwo));
+    const read = await getSave(
+      f,
+      one,
+      { "X-Account-Id": f.second.id },
+      `${savedGamePath}?accountId=${f.second.id}`,
+    );
+    assert.deepEqual(JSON.parse(read.body), {
+      save: { version: 1, revision: 2, game: { owner: "first", steps: [4] } },
+    });
+    assert.deepEqual(
+      JSON.parse((await getSave(f, two)).body).save.game,
+      gameTwo,
+    );
+  },
+);
+
+test(
+  "no session, a forged or removed session and a session of a blocked account get JSON 401 on both save routes and change no saved game state",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-session-authorization
+    // invariant: blocked-account-access
+    // Faults: a save route without the session guard; a block read only from
+    // the session; a refused save that still writes.
+    const f = await accountFixture(t);
+    const own = seed(f, "save-401-live", f.first);
+    const game = { kept: "as stored" };
+    assert.deepEqual(
+      JSON.parse(
+        (await putSave(f, own, { version: 1, basedOn: 0, game })).body,
+      ),
+      { revision: 1 },
+      "precondition: the account holds a saved game state",
+    );
+    const before = storedSave(f, f.first.id);
+    const attempt = { version: 2, basedOn: 1, game: { replaced: true } };
+    const refusedBy = async (label, cookie) => {
+      assertSaveRefusal(
+        await getSave(f, cookie),
+        401,
+        "unauthenticated",
+        `${label} read`,
+      );
+      assertSaveRefusal(
+        await putSave(f, cookie, attempt),
+        401,
+        "unauthenticated",
+        `${label} save`,
+      );
+      assert.deepEqual(
+        storedSave(f, f.first.id),
+        before,
+        `${label}: unchanged`,
+      );
+    };
+    for (const [label, cookie] of [
+      ["absent", null],
+      ["foreign key", signedCookie("save-401-live", randomBytes(32))],
+      ["unsigned", "__Host-loop2.sid=save-401-live"],
+      ["unknown", signedCookie("save-401-unknown", f.keys[0])],
+    ])
+      await refusedBy(label, cookie);
+
+    // An identifier of the account in place of a session authorizes nothing.
+    await refusedBy("account identifier", signedCookie(f.first.id, f.keys[0]));
+
+    const removed = seed(f, "save-401-removed", f.first);
+    assert.equal((await getSave(f, removed)).status, 200, "precondition");
+    f.runtime.database.destroySession("save-401-removed");
+    await refusedBy("removed", removed);
+
+    // The block deletes the account's sessions and keeps its saved game state.
+    const blocked = seed(f, "save-401-blocked", f.first);
+    assert.equal(
+      f.runtime.database.blockAccount("first@example.test"),
+      "blocked",
+    );
+    await refusedBy("blocked", blocked);
+    f.inspection
+      .prepare("INSERT INTO sessions VALUES (?, ?, ?, ?)")
+      .run(
+        "save-401-late",
+        f.first.id,
+        sessionData(f.first, Date.now() + day),
+        Date.now() + day,
+      );
+    await refusedBy(
+      "a row past the block",
+      signedCookie("save-401-late", f.keys[0]),
+    );
+    assert.equal(
+      f.runtime.database.unblockAccount("first@example.test"),
+      "unblocked",
+    );
+    await refusedBy("blocked, after unblocking", blocked);
+
+    // Control: the account's new session reads and replaces its state.
+    const fresh = seed(f, "save-401-fresh", f.first);
+    assert.deepEqual(JSON.parse((await getSave(f, fresh)).body), {
+      save: { version: 1, revision: 1, game },
+    });
+    assert.deepEqual(JSON.parse((await putSave(f, fresh, attempt)).body), {
+      revision: 2,
+    });
+  },
+);
+
+test(
+  "a block committed between the session check and the write stores nothing and answers 401",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: blocked-account-access
+    // Fault: a write that does not read the block in its own transaction.
+    const f = await accountFixture(t);
+    const cookie = seed(f, "save-race", f.first);
+    f.hooks.beforeSave = () => {
+      f.runtime.database.blockAccount("first@example.test");
+      f.hooks.beforeSave = null;
+    };
+    const raced = await putSave(f, cookie, {
+      version: 1,
+      basedOn: 0,
+      game: { never: "stored" },
+    });
+    assertSaveRefusal(raced, 401, "unauthenticated", "raced save");
+    assert.equal(storedSave(f, f.first.id), undefined);
+  },
+);
+
+test(
+  "the save routes answer null with no save, count revisions from 1, refuse an outdated version before a stale basis and return the game unchanged",
+  { timeout: 20000 },
+  async (t) => {
+    // Spec decision 1; D-209 (revision basis), D-210 (version).
+    // Faults: the revision check before the version check; a revision that does
+    // not advance by one; a game that comes back changed.
+    const f = await accountFixture(t);
+    const cookie = seed(f, "save-contract", f.first);
+    const read = async () => JSON.parse((await getSave(f, cookie)).body);
+    const save = async (version, basedOn, game) =>
+      putSave(f, cookie, { version, basedOn, game });
+    const first = await getSave(f, cookie);
+    assert.equal(first.status, 200);
+    assert.match(first.headers["content-type"], /^application\/json/);
+    assert.equal(first.headers["cache-control"], "no-store");
+    assert.deepEqual(JSON.parse(first.body), { save: null });
+
+    // A game whose text has every kind of value, 1e21 among them.
+    const game = {
+      name: "zażółć gęślą jaźń 🙂",
+      list: [1, 2.5, -3, 1e21, true, null, { nested: [] }],
+      empty: {},
+    };
+    const saved = await save(1, 0, game);
+    assert.equal(saved.status, 200);
+    assert.match(saved.headers["content-type"], /^application\/json/);
+    assert.equal(saved.headers["cache-control"], "no-store");
+    assert.deepEqual(JSON.parse(saved.body), { revision: 1 });
+    assert.deepEqual(await read(), { save: { version: 1, revision: 1, game } });
+
+    // A save of the same version on the basis it saw is revision 2.
+    assert.deepEqual(JSON.parse((await save(1, 1, { turn: 2 })).body), {
+      revision: 2,
+    });
+    // A basis other than the stored revision, lower or higher, conflicts.
+    for (const basedOn of [0, 1, 3, 99]) {
+      assertSaveRefusal(
+        await save(1, basedOn, { turn: "lost" }),
+        409,
+        "save-conflict",
+        `basis ${basedOn}`,
+      );
+    }
+    assert.deepEqual(await read(), {
+      save: { version: 1, revision: 2, game: { turn: 2 } },
+    });
+
+    // A higher version is accepted; the stored version then outranks a stale
+    // basis, so an old tab reads "outdated", not "conflict".
+    assert.deepEqual(JSON.parse((await save(3, 2, { turn: 3 })).body), {
+      revision: 3,
+    });
+    for (const basedOn of [3, 2, 0]) {
+      assertSaveRefusal(
+        await save(2, basedOn, { turn: "old tab" }),
+        409,
+        "save-outdated",
+        `version 2 on basis ${basedOn}`,
+      );
+    }
+    assertSaveRefusal(
+      await save(3, 2, { turn: "stale" }),
+      409,
+      "save-conflict",
+      "same version, stale basis",
+    );
+    assert.deepEqual(await read(), {
+      save: { version: 3, revision: 3, game: { turn: 3 } },
+    });
+  },
+);
+
+test(
+  "each malformed save body is a 400 that stores nothing, and a body that is not an object never reaches the fields",
+  { timeout: 20000 },
+  async (t) => {
+    // Spec decision 1 (exact fields and types); trust boundary of the slice.
+    // Faults: coercing a string to a number; accepting an extra field, a
+    // missing basis, a fraction, an unsafe integer or a game that is not an
+    // object.
+    const f = await accountFixture(t);
+    const cookie = seed(f, "save-malformed", f.first);
+    const kept = { version: 2, basedOn: 0, game: { kept: true } };
+    assert.equal((await putSave(f, cookie, kept)).status, 200, "precondition");
+    const before = storedSave(f, f.first.id);
+    const valid = { version: 2, basedOn: 1, game: { turn: 2 } };
+    const bodies = [
+      ["no version", { basedOn: 1, game: {} }],
+      ["no basedOn", { version: 2, game: {} }],
+      ["no game", { version: 2, basedOn: 1 }],
+      ["extra field", { ...valid, extra: 1 }],
+      ["account field", { ...valid, accountId: f.second.id }],
+      ["version zero", { ...valid, version: 0 }],
+      ["negative version", { ...valid, version: -1 }],
+      ["fractional version", { ...valid, version: 1.5 }],
+      ["string version", { ...valid, version: "2" }],
+      ["null version", { ...valid, version: null }],
+      ["boolean version", { ...valid, version: true }],
+      ["version beyond the safe range", { ...valid, version: 2 ** 53 }],
+      ["huge version", { ...valid, version: 1e300 }],
+      ["negative basedOn", { ...valid, basedOn: -1 }],
+      ["fractional basedOn", { ...valid, basedOn: 0.5 }],
+      ["string basedOn", { ...valid, basedOn: "1" }],
+      ["array basedOn", { ...valid, basedOn: [1] }],
+      ["basedOn beyond the safe range", { ...valid, basedOn: 2 ** 53 }],
+      ["huge basedOn", { ...valid, basedOn: 1e300 }],
+      ["null game", { ...valid, game: null }],
+      ["array game", { ...valid, game: [] }],
+      ["string game", { ...valid, game: '{"turn":2}' }],
+      ["number game", { ...valid, game: 7 }],
+    ];
+    for (const [label, body] of bodies)
+      assertSaveRefusal(
+        await putSave(f, cookie, body),
+        400,
+        "invalid-request",
+        label,
+      );
+    for (const [label, text] of [
+      ["empty", ""],
+      ["broken", "{"],
+      ["array", "[]"],
+      ["null", "null"],
+      ["scalar", "7"],
+    ]) {
+      const response = await putSave(f, cookie, text);
+      assert.equal(response.status, 400, label);
+      assert.match(response.headers["content-type"], /^application\/json/);
+    }
+    assert.deepEqual(storedSave(f, f.first.id), before, "nothing changed");
+    // Control: the valid body is accepted.
+    assert.deepEqual(JSON.parse((await putSave(f, cookie, valid)).body), {
+      revision: 2,
+    });
+
+    // A game nested too deep to serialize is refused, not a server failure.
+    const depth = 30_000;
+    const deep = `{"version":2,"basedOn":2,"game":{"a":${"[".repeat(depth)}${"]".repeat(depth)}}}`;
+    assert.ok(
+      Buffer.byteLength(deep) < 64 * 1024,
+      "precondition: under the body limit",
+    );
+    const refused = await putSave(f, cookie, deep);
+    assertSaveRefusal(refused, 400, "invalid-request", "deep nesting");
+    assert.equal(storedSave(f, f.first.id).revision, 2, "nothing changed");
+  },
+);
+
+test(
+  "the stored text of a game is measured in bytes after re-serializing, at most 65 536, and a larger one is a 413 that stores nothing",
+  { timeout: 20000 },
+  async (t) => {
+    // Spec decision 3: the body limit alone does not bound the stored text.
+    // Faults: measuring the request's text, or characters, not the stored
+    // bytes; a limit off by one.
+    const f = await accountFixture(t);
+    const cookie = seed(f, "save-large", f.first);
+    // `1e21` takes 4 bytes in the request and 5 in the stored text; "ą" takes
+    // 2 bytes in both and 1 character. The stored text is
+    // {"s":"<ą x 30000><x x pad>","n":[1e+21 x count]}: 6 + 60 000 + pad bytes,
+    // then 7 for `","n":[`, 6 per number less the last comma, and 2 for `]}`.
+    // count 920, pad 2: 6 + 60 000 + 2 + 7 + 5 519 + 2 = 65 536 bytes exactly.
+    const gameOf = (pad, count) => ({
+      s: "ą".repeat(30_000) + "x".repeat(pad),
+      n: Array.from({ length: count }, () => 1e21),
+    });
+    const bodyOf = (pad, count, basedOn = 0) =>
+      `{"version":1,"basedOn":${basedOn},"game":{"s":"${"ą".repeat(30_000)}${"x".repeat(pad)}","n":[${Array(count).fill("1e21").join(",")}]}}`;
+    const exactly = { pad: 2, count: 920, bytes: 65_536 };
+    const over = { pad: 3, count: 920, bytes: 65_537 };
+    // count 1097, pad 0: 6 + 60 000 + 7 + 6 581 + 2 = 66 596 stored bytes,
+    // 36 602 characters, and a request of 65 532 bytes.
+    const lengthened = { pad: 0, count: 1_097, bytes: 66_596 };
+    for (const { pad, count, bytes } of [exactly, over, lengthened]) {
+      assert.equal(
+        Buffer.byteLength(JSON.stringify(gameOf(pad, count))),
+        bytes,
+        "precondition: stored bytes",
+      );
+      assert.ok(
+        Buffer.byteLength(bodyOf(pad, count)) <= 64 * 1024,
+        "precondition: the request is within the body limit",
+      );
+    }
+    assert.ok(
+      JSON.stringify(gameOf(0, 1_097)).length <= 65_536,
+      "precondition: counted in characters it would fit",
+    );
+    for (const { pad, count } of [over, lengthened]) {
+      const response = await putSave(f, cookie, bodyOf(pad, count));
+      assertSaveRefusal(response, 413, "save-too-large", `${pad} ${count}`);
+      assert.equal(storedSave(f, f.first.id), undefined, "nothing stored");
+    }
+    const accepted = await putSave(
+      f,
+      cookie,
+      bodyOf(exactly.pad, exactly.count),
+    );
+    assert.deepEqual(JSON.parse(accepted.body), { revision: 1 });
+    assert.equal(
+      Buffer.byteLength(storedSave(f, f.first.id).game),
+      65_536,
+      "a stored text of exactly 65 536 bytes",
+    );
+    // An oversized refusal leaves the earlier state in place.
+    assertSaveRefusal(
+      await putSave(f, cookie, bodyOf(over.pad, over.count, 1)),
+      413,
+      "save-too-large",
+      "over, with a revision to replace",
+    );
+    assert.equal(storedSave(f, f.first.id).revision, 1);
+    const read = JSON.parse((await getSave(f, cookie)).body);
+    assert.deepEqual(read.save.game, gameOf(exactly.pad, exactly.count));
   },
 );

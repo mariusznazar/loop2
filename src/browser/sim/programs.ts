@@ -194,6 +194,7 @@ function uniqueIdentity(
   return id;
 }
 
+/** A trip list: items of the data, each once, each count a safe integer from 1 up (D-181). */
 function checkTripList(value: unknown): TripEntry[] {
   if (!Array.isArray(value)) throw new Error("program: no trip list");
   const seen = new Set<ItemId>();
@@ -204,7 +205,7 @@ function checkTripList(value: unknown): TripEntry[] {
     if (
       seen.has(item) ||
       typeof count !== "number" ||
-      !Number.isInteger(count) ||
+      !Number.isSafeInteger(count) ||
       count < 1
     )
       throw new Error("program: duplicate trip item or invalid count");

@@ -20,7 +20,7 @@ Czytaj również ogólne wytyczne kodowania.
 
 - **Decision:** D-112
 - **Invariant:** account-database-schema
-- **Good:** Ponowne otwarcie zachowuje konta i sesje, baza w starszej znanej wersji przechodzi na bieżącą w jednej transakcji, a błąd inicjalizacji albo kroku przejścia wycofuje całą transakcję.
+- **Good:** Ponowne otwarcie zachowuje konta, sesje i zapisane stany gry, baza w starszej znanej wersji przechodzi na bieżącą w jednej transakcji, a błąd inicjalizacji albo kroku przejścia wycofuje całą transakcję.
 - **Bad:** Start resetuje istniejącą bazę, pozostawia część utworzonych tabel po błędzie albo zmienia krok przejścia, który trafił już na serwer testowy.
 
 Sprawdź wersję w transakcji inicjalizacji; odmów otwarcia nieobsługiwanej wersji.
@@ -28,7 +28,8 @@ Schemat to uporządkowana lista kroków, po jednym na wersję: nowa baza przecho
 wszystkie, istniejąca — kroki po swojej wersji, w tej samej transakcji, która na
 końcu zapisuje bieżącą wersję. Nowa wersja schematu dokłada jeden krok na końcu
 listy; kroku, który trafił już na serwer testowy, nie zmieniaj, bo istnieją bazy
-w jego wersji. Krok zachowuje każdy wiersz kont i sesji i każdą jego wartość.
+w jego wersji. Krok zachowuje każdy wiersz kont, sesji i zapisanych stanów gry i każdą jego
+wartość.
 Sprawdzaj przejście na bazie poprzedniej wersji zapisanej w teście jej własnym
 schematem, nie kodem produktu, a odmowę i wycofanie — na rzeczywistych plikach
 SQLite. Kontrola tej warstwy nie dowodzi startu aplikacji ani trwałości wolumenu
