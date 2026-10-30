@@ -176,14 +176,15 @@ function saveFields(body: unknown): {
 
 // Replaces this browser's session and stores it before the caller answers.
 // On failure no session remains attached, so no cookie is issued. The session
-// stands on the account's password hash named here (the one a login checked
-// the password against, the one a registration made), and the store keeps it
+// stands on the password hash named by the caller (the one a login checked the
+// password against, the one a registration made), and the store keeps it
 // for every write of that session object, so a password reset committed at any
 // point leaves no session behind (D-112).
 function establishSession(
   runtime: AccountRuntime,
   request: Request,
-  account: Account,
+  accountId: string,
+  passwordHash: string,
 ): Promise<boolean> {
   return new Promise((resolve) => {
     const abandon = () => request.session.destroy(() => resolve(false));
@@ -192,8 +193,8 @@ function establishSession(
         abandon();
         return;
       }
-      request.session.accountId = account.id;
-      runtime.store.expectPasswordHash(request.session, account.passwordHash);
+      request.session.accountId = accountId;
+      runtime.store.expectPasswordHash(request.session, passwordHash);
       request.session.save((saved: unknown) => {
         if (saved) abandon();
         else resolve(true);
@@ -208,8 +209,10 @@ async function signIn(
   request: Request,
   response: Response,
   account: Account,
+  passwordHash: string,
 ): Promise<boolean> {
-  if (await establishSession(runtime, request, account)) return true;
+  if (await establishSession(runtime, request, account.id, passwordHash))
+    return true;
   refuse(
     response,
     503,
@@ -535,7 +538,10 @@ export function accountRoutes(
       return;
     }
     ticket.created();
-    if (!(await signIn(runtime, request, response, account))) return;
+    if (
+      !(await signIn(runtime, request, response, account, account.passwordHash))
+    )
+      return;
     // The account exists and the player is signed in whatever the sending
     // does, so every outcome is a 201; a block committed meanwhile sent
     // nothing.
@@ -606,7 +612,7 @@ export function accountRoutes(
       return;
     }
     ticket.succeed();
-    if (await signIn(runtime, request, response, account))
+    if (await signIn(runtime, request, response, account, checkedHash))
       response.status(200).json(accountBody(account));
   });
 
