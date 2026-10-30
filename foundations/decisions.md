@@ -48,9 +48,9 @@ The browser view is built in TypeScript with the browser's DOM APIs, without an 
 
 *Rationale:* the MVP's view mostly reads the game state and needs no added UI framework to start.
 This keeps one dependency out of the browser view; the project accepts writing the updates of the
-program editor and its counters itself. The browser view draws the game only from the game state
-and the game's content data and changes the game state only through functions of the simulation
-(D-04); the browser's DOM APIs serve that without a framework.
+program editor and its counters itself. The browser view draws the game only from the game state,
+the game's content data and the moment of the browser's clock and changes the game state only
+through functions of the simulation (D-04); the browser's DOM APIs serve that without a framework.
 *Rejected:* React, Vue and Svelte — each adds UI tooling and a dependency before this MVP has shown
 a benefit from one.
 
@@ -59,10 +59,11 @@ a benefit from one.
 The game is written in TypeScript and runs in the browser. Its simulation is a set of pure
 functions, of which those that pass game time take a game state and a span of game minutes and
 return the next game state together with the events it produced, and real time enters the
-simulation only as an argument. The browser view draws the game only from the game state and the
-game's content data, and changes the game state only through functions of the simulation, to which
-it passes the player's choices, the passing of real time and a saved game state the browser
-downloaded from the server or kept in the page's memory after a save found no session (D-211).
+simulation only as an argument. The browser view draws the game only from the game state, the
+game's content data and the moment of the browser's clock, which it reads and passes to the
+simulation, and changes the game state only through functions of the simulation, to which it passes
+the player's choices, the passing of real time and a saved game state the browser downloaded from
+the server or kept in the page's memory after a save found no session (D-211).
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
@@ -76,13 +77,16 @@ downloaded from the server or kept in the page's memory after a save found no se
     browser view passing the edited program to a function of the simulation; the page building the
     game from the game state that a function of the simulation returns for the saved game state the
     browser downloaded, or from the refusal it returns; after a sign-in to the same account, the
-    page building the game from what that function returns for the state it kept
+    page building the game from what that function returns for the state it kept; the headquarters
+    line drawn from a stored moment of readiness and the clock's reading; a game state storing the
+    moment of an event, such as the moment a resurrection is ready or the moment of a save
   - violates: a screen of the game written as a Godot scene, or a script of the game's own code that
     the browser loads, written directly in JavaScript instead of compiled from TypeScript; a
     simulation function that reads the system time or the page; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
-    browser view that writes a program rule straight into the game state
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10
+    browser view that writes a program rule straight into the game state; the clock's current
+    reading written into the game state on each reading
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle
 
 *Rationale:* text code and tests give the most leverage in work with AI agents. A simulation of
 pure functions makes progress while away plain arithmetic and the save a JSON document, and runs on
@@ -96,14 +100,21 @@ state the page keeps after a save found no session goes back into the game the s
 map run comes back as a loaded one does. Such a function, like the one that starts a new game,
 passes no game time. The browser view also reads the
 game's content data, which stands apart from the game state, to name and picture what the game
-state holds.
+state holds. The moment of the browser's clock stands apart from it too: the game state stores a
+moment of an event, written once at the event, and the view compares it with its latest reading, so
+real time passing at the headquarters makes no new game state to save.
 *Rejected:* Godot — slower to work on with AI agents; a browser view that draws from the game state
 and changes nothing in it — the player changes the game state from the browser view; loading
 counted as a choice of the player, signing in, with this decision left as it stood — a strained
 reading, by which the next reader may take loading for a breach of this decision; the browser view
 replacing the game state with the loaded saved game state itself, with an exception written into
 this decision — the game state would change in two places, against this decision's example of a
-breach.
+breach; the clock's current reading stored in the game state on each reading, which keeps the
+browser view drawing from the game state alone — each reading makes a new game state, so the game
+sends a save at each of its checks at an idle headquarters and after a load, against D-207, and a
+stale moment enters the saved document; a function of the simulation that takes the moment and
+returns the text to draw — the view would still draw from the moment, with content in the
+simulation.
 
 ### D-05 — What serves the built game and account requests in the container?
 
@@ -3207,7 +3218,7 @@ The trip plan is a field of the program, both its lists are bound at the start o
 - **Relations:** derives from D-50 · derives from D-64 · derives from D-164
 - **Verification:** invariants: trip-transfer. An agent compares a change with the decision:
   - complies: an item added to the trip plan during a map run that comes out only from the next map run; a trip plan over the map's cap entering cut, with a notice shown before the start; a character switched to another program in the middle of a map run bringing out at completion what the trip plan of the program it entered with names
-  - violates: a backpack filled beyond what the chest held; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
+  - violates: a backpack filled beyond what the chest held on a map run that is not a manual map run of a map already solved; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
 - **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How do items go into a map run and out of it?"
 
 *Rationale:* The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it.
@@ -3332,29 +3343,33 @@ In the headquarters, at a character's map, „Plan wyprawy wejdzie przycięty: m
 
 ### D-189 — Which current runs take equipment and pay loot?
 
-Earned loot reaches the chest on completion. The game currently takes equipment from the chest at each map run's start and deposits according to its frozen bring list at each completion, including a manual map run of an already solved map.
+A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing. Earned loot reaches the chest on completion. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179
-- **Verification:** invariants: trip-transfer · trip-run-end.
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What pays, and what takes from the chest?" · plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5", "Q6" and § Settlements to record, row 11
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. An agent compares a change with the decision:
+  - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was
+  - violates: a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What pays, and what takes from the chest?" · plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5", "Q6" and § Settlements to record, row 11 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 5 and 22, and Questions to settle, questions 1 and 2
 
-*Rationale:* The current run lifecycle spends equipment and deposits completed loot alike for solved and unsolved maps; repeated manual completions therefore pay too.
-*Rejected:* unknown
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out.
+*Rejected:* a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet.
 
 ### D-190 — What does a character's death take?
 
-A character's death takes what it carried, including pieces taken from the chest, and leaves the chest as it stood.
+A character's death takes what it carried and pays nothing of its map run; when the character has no resurrection ready, it also takes all its practice and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged. The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it. Each character has one resurrection, used up by a death and renewed after a span of real time set in the balance data, eight hours to start.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179
-- **Verification:** invariants: trip-run-end.
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a character's death take?"
+- **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once. An agent compares a change with the decision:
+  - complies: a character dying without a resurrection coming back with empty trees, its archetype and its place in the team unchanged
+  - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a character's death take?" · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 10, 11, 14, 15, 17 and 22, and Questions to settle, questions 1 and 3
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it.
-*Rejected:* unknown
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. The resurrection is a valve, paid in real time, a currency the game already knows.
+*Rejected:* death without a cost; a stake in the earning loop only — everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection as an item in the chest — no chain of making produces it; partial pay for a map run ending in death — a leaky program would earn as much as a tight one.
 
 ### D-191 — How does a character skill grow?
 
@@ -3403,18 +3418,18 @@ An action ending in effect adds one practice to the character skill its pair of 
 
 ### D-194 — When does a manual map run pay its practice to its character?
 
-A manual map run holds the practice it gathers separately by character skill and currently pays all of it once to the character making the run in the game minute of every completion, including a completion of an already solved map. A death, or a run cut short by „Restart” or „Zakończ” before completion, currently leaves the character’s practice and bought ranks as they were.
+A manual map run holds the practice it gathers separately by character skill and currently pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run. A run cut short by „Restart” or „Zakończ” before completion currently leaves the character’s practice and bought ranks as they were.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-191
+- **Relations:** derives from D-189 · derives from D-191
 - **Verification:** an agent compares a change with the decision:
-  - complies: a second manual completion paying its practice in the completion minute; restart before completion paying nothing
-  - violates: practice reaching the character during an unfinished run; „Zakończ” paying a completed run a second time
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q1; accepted settlements 2 and 12
+  - complies: the first manual completion of a map paying its practice in the completion minute; a second manual completion leaving its practice with the run; restart before completion paying nothing
+  - violates: practice reaching the character during an unfinished run; a second character's manual completion of a solved map paying practice; „Zakończ” paying a completed run a second time
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q1; accepted settlements 2 and 12 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
 
-*Rationale:* Payment at completion makes the successful run the unit of growth. Accepted with it: manual repeats of solved maps can grow a character.
-*Rejected:* only the first solution paying practice here — before earning loops this would leave at most two payments
+*Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189). Accepted with it: today practice and loot come from the first completion of each map, so while the game currently has no earning loop the whole team has at most two payments of practice and two of loot, and a new character has nowhere to take practice from.
+*Rejected:* practice for a repeat of a solved map paid on until the earning loop comes — a change of the goal of the work and of its plan, `solved-map-manual-run` broken on practice for that time, and this decision changed twice; the payment of the first completion and the earning loop entering the game in one push — a finished change waits for the next, and a longer branch brings more conflicts.
 
 ### D-195 — When does a character skill tree become known?
 
@@ -3836,7 +3851,7 @@ save and the load advances it, the computing of time away included.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
   - complies: a map run of Las saved at game minute 212 at 8× loading an hour later at game minute
     212, paused, at 8×; a map run saved on the screen after a death loading on that screen with
     „Restart” and „Zakończ”
@@ -3888,3 +3903,132 @@ shape, apart from the functions that pass game time.
 *Rejected:* the load in the browser view, which then replaces the game state itself — the breach of
 D-04; a lenient load that fills missing keys — a migration by another name, against discarding
 another version whole.
+
+### D-214 — When is a map run a manual run of a solved map?
+
+A manual map run is a manual run of a solved map by the state of its map when that map run starts,
+and it stays one to its end, on the screen after its end and after a load. A map run restart after
+the completion that solved the map is such a run: it takes its equipment from nowhere and pays
+nothing.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-189
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end.
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2, and § Settlements to record, row 1
+
+*Rationale:* a map run restart is a map run the player starts, and once a completion has solved the
+map that start falls on a solved map, so the state at the start decides for a restart as for any
+other manual map run.
+*Rejected:* unknown
+
+### D-215 — Where does the player read that a manual run of a solved map pays and takes nothing?
+
+On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”,
+below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest
+już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.” stands in `text-secondary`.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-189 · derives from D-214
+- **Verification:** none
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, part a, and § Settlements to record, row 3
+
+*Rationale:* the player tuning a program on a solved map reads from the start of the map run that
+the attempt earns nothing. Accepted with it: one more line on the screen.
+*Rejected:* no such line — the player may tune a program believing that it earns.
+
+### D-216 — Where does the player read what a character's death took?
+
+After a character's death, at the place of the line „Do skrzynki: …” below the discovery line and
+last-encounter paragraph when present and above the body row, until „Restart” or „Zakończ” and after
+a load too, a line stands: „Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.” in
+`text-secondary` when the death used up a resurrection, and „Wskrzeszenie nie było gotowe: postać
+straciła całą wprawę i wykupione stopnie. Teraz to pokolenie {n}.” in `danger` when no resurrection
+was ready.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-39 · derives from D-62 · derives from D-185 · derives from D-190 · derives from D-212
+- **Verification:** none
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 4
+
+*Rationale:* the player learns what the death took before pressing „Restart”. The first text gives
+no hours, since after a load such a number could already be false, and the second stands in `danger`
+because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
+game state remembers how each death was settled.
+*Rejected:* the same in the status row — a very long row and a change of its accepted wording;
+nothing on this screen, the telling left to the headquarters — the player may press „Restart”
+unaware of the lost progress.
+
+### D-217 — What does the headquarters show of a character's resurrection?
+
+The headquarters shows at each character, from its creation, „Wskrzeszenie gotowe” in
+`text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min —
+śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min” below one
+hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-39 · derives from D-190 · derives from D-219
+- **Verification:** none
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5
+
+*Rationale:* the player sees the stake before paying it and how long a renewal has left, and the
+minutes go up so that the game gives no time shorter than the real one. Accepted with it: the
+headquarters has to refresh as time passes, the text speaks of a full hour with some tens of seconds
+missing, and it can read „0 min”.
+*Rejected:* the line appearing after the first death — the player learns the stake once it has paid
+it; a bare ready or not ready — the player does not know how long to wait, and hardly any code goes;
+the split first and the rounding of the minutes after it, giving „za 7 godz. 60 min” and „za 60 min”
+— for one minute of each hour the text shows 60 minutes, which looks like a fault of the game.
+
+### D-218 — How does the headquarters show a character's generation number?
+
+The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in
+`text-secondary`.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-40 · derives from D-190
+- **Verification:** none
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part b, and § Settlements to record, row 6
+
+*Rationale:* the label stands once the number has something to say, and `text-secondary` is the role
+D-40 gives a note, as the archetype beside it has. Accepted with it: the number grows during the
+tuning of a program on Las too.
+*Rejected:* the same from number 1 — a fixed label that says nothing before the character dies;
+„postać nr {n}”, as the tests of loop have it — it is mistaken for the character's number of D-56.
+
+### D-219 — Whose clock counts the renewal of a resurrection?
+
+The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every
+pace of a map run and while the game is closed.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-190
+- **Verification:** invariants: resurrection-renewal.
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Settlements to record, row 7
+
+*Rationale:* the moment of a save is to go by the same clock, so the game holds one. Accepted with
+it: a wrong clock on the device shortens or lengthens the renewal, and a player can cheat by changing
+the clock, which D-07 accepts for the player's own progress.
+*Rejected:* the server's clock — a new version of the account database with a human action on the
+server, a change of two decisions, and the open tab goes by the browser's clock all the same, so the
+game would hold two clocks.
+
+### D-220 — What generation number and resurrection does a new character have?
+
+A new character has generation number 1 and a ready resurrection.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-190
+- **Verification:** none
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question W1, and § Settlements to record, row 8
+
+*Rationale:* the tests of loop settle what they cover, and there a new character starts at number 1
+with its resurrection ready.
+*Rejected:* the tests of loop taken as material — about ten points get a question of their own, and
+the definition treats a significant departure from loop as disproving its goal.

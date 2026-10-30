@@ -957,21 +957,21 @@ An action shortened by bought branches lasts at least one game minute.
 
 ## trip-transfer
 
-At each map-run start equipment is removed from the chest in take-list order up to stock, carrying capacity and entry cap, and at completion items are deposited once from the entry-bound bring snapshot in its order up to backpack stock, carrying capacity, exit cap and free chest room, including on an already solved map.
+Outside a manual run of a solved map, at each map-run start equipment is removed from the chest in take-list order up to stock, carrying capacity and entry cap, and at completion items are deposited once from the entry-bound bring snapshot in its order up to backpack stock, carrying capacity, exit cap and free chest room, while a manual run of a solved map leaves the chest as it was at its start and at its completion.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-50 · D-179 · D-187 · D-189
+- **Derives from:** D-50 · D-179 · D-187 · D-189 · D-214
 - **Part:** simulation
 - **Violated:** no
 
 ## trip-run-end
 
-Death, ending or restarting an unfinished map run returns none of its carried items to the chest, while completion deposits the frozen bring list's clipped contents and leaves the remaining items unavailable to subsequent runs.
+Death, ending or restarting an unfinished map run returns none of its carried items to the chest, while completion deposits the frozen bring list's clipped contents, on a manual run of a solved map nothing, and leaves the remaining items unavailable to subsequent runs.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-179 · D-183 · D-189 · D-190
+- **Derives from:** D-179 · D-183 · D-189 · D-190 · D-214
 - **Part:** simulation
 - **Violated:** no
 
@@ -1032,6 +1032,36 @@ The game loads no data from a saved game state whose version differs from the ga
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-206
+- **Part:** simulation
+- **Violated:** no
+
+## solved-map-manual-run
+
+A manual map run of a map already solved when the map run starts leaves the chest as it was and adds no practice to any character skill.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-189 · D-214
+- **Part:** every
+- **Violated:** no
+
+## resurrection-renewal
+
+A resurrection used up by a death is ready again at the real moment of that death plus the renewal time in the balance data, a death with no resurrection ready leaves that moment as it stood, and a moment equal to the moment of readiness counts as ready.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-190 · D-219
+- **Part:** simulation · browser-view
+- **Violated:** no
+
+## death-settled-once
+
+One death of a character is settled once: a further settling of that death and a load of a saved game state on the screen after it leave the character and the map run as they stood.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-190 · D-212
 - **Part:** simulation
 - **Violated:** no
 
