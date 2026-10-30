@@ -101,10 +101,17 @@ stan gry, i że stała jest równa wersji zapisanej obok. Zmiana kształtu każe
 w teście przepisz tylko razem z podniesieniem wersji; poprzednie dokumenty
 zostają w teście i każdy jest odrzucany jako inna wersja. Przegląd sprawdza
 tę parę. Test nie podnosi wersji sam: podniesienie jest decyzją autora zmiany.
+Dokument w teście wolno przepisać bez podniesienia wersji tylko wtedy, gdy
+żaden zapis stanu gry bieżącej wersji nie istnieje nigdzie, bo zmiana jeszcze
+nie trafiła na żaden serwer; komentarz nad dokumentem w teście mówi o tym
+wyjątku.
 
 Wczytanie sprawdza też wobec danych: dopuszczalne tempa, szerokość i wysokość
-planszy każdej mapy (liczbę pól), identyfikatory map, zasobów, stworzeń,
-rodzajów działań i warunków oraz górną granicę energii natury. Zmiana którejś
+planszy każdej mapy (liczbę pól), identyfikatory map, zasobów, przedmiotów,
+stworzeń, rodzajów działań i warunków, umiejętności postaci i gałęzi ich
+drzew, górną granicę energii natury, pojemność skrzyni, predyspozycje
+archetypu postaci, liczbę cen każdej gałęzi (najwyższą rangę) oraz progi
+wprawy, od których zależą punkty do wydania na rangi. Zmiana którejś
 z tych rzeczy nie podnosi wersji sama, ale dokumenty bieżącej wersji, które
 jej już nie spełniają, są odrzucane jako uszkodzone (powód `shape`, zdanie
 „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.”), nie jako
@@ -124,11 +131,39 @@ który łapie jedna funkcja eksportowana, `loadSavedGame`, i zamienia na
 `revision`, którego stan gry nie zawiera; dokument zachowany w pamięci strony
 go nie ma, a wczytanie przyjmuje oba.
 
+### Plan wyprawy i skrzynia
+
+Plan wyprawy programu (`tripPlan`, listy `take` i `bring`) czyta sprawdzenie
+programów z `programs.ts`, a `program` dodatkowo wymaga, by każda liczność
+była bezpieczną liczbą całkowitą od 1 (D-181). Zamrożony plan wynoszenia
+przebiegu (`bringPlan`) i to, co ukończenie włożyło do skrzyni (`deposited`),
+czyta `tripList`: przedmiot z danych, każdy najwyżej raz na liście, liczność
+od 1. `deposited` jest `null` dokładnie wtedy, gdy przebieg nie ma ukończenia,
+a przy ukończeniu jego pozycje idą w kolejności `bringPlan`, każda najwyżej
+w zaplanowanej liczności (D-179, D-189). Skrzynię czyta `chest`: sztuki według
+przedmiotu, klucz z liczbą 0 dozwolony, razem nie więcej niż pojemność
+skrzyni z danych.
+
+### Umiejętności postaci i wprawa
+
+Umiejętności postaci drużyny i postaci przebiegu czyta `characterSkills`:
+tylko umiejętności z predyspozycji archetypu postaci (dla postaci przebiegu
+archetyp jej postaci z drużyny), każda z wprawą od 0 i rangami gałęzi
+własnego drzewa, ranga od 1 do liczby cen gałęzi, kupiona tylko w drzewie,
+które zawiera Zrozumienie, i nie więcej wydanych punktów, niż dały osiągnięte
+progi wprawy (D-191, D-200). Drzewa Zrozumienia i odkrycia (`trees`) są listą
+umiejętności z danych, każda raz (D-195). Wprawę przebiegu i walki czyta
+`practice`: klucz umiejętności z danych, wartość od 1, bo działanie dodaje
+wprawę po jednej (D-193). Działanie `patrol` (Obchód) przechodzi przez
+sprawdzenie programów jak każde działanie reguły i nie jest ruchem na sąsiednie
+pole (D-197).
+
 ### Przebieg mapy po wczytaniu
 
 Przebieg mapy, który trwał, wraca zatrzymany, w minucie gry, z tempem i resztą
 czasu rzeczywistego dokumentu; zakończony wraca zakończony, z ekranem po końcu
-(D-212). Wczytanie niczego nie posuwa naprzód.
+(D-212), z tym, co ukończenie włożyło do skrzyni, i z wprawą przebiegu.
+Wczytanie niczego nie posuwa naprzód.
 
 ## Where in code
 
