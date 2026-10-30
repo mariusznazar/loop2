@@ -1,0 +1,35 @@
+$ python -B .the-way/gate/run_tests.py
+== tests/agent_workflow
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.011s
+
+OK
+== tests/deploy
+Production image sha256:efc90c60085f610e0c38d339569be69bbb2cd5ff64ad69db73f3c1416e7dc18f; container loop2-account-storage-first-f5c0b62ccd20; data volume loop2-account-data-check-bb39915c97644300acfc6b295a979769; secret volume loop2-account-secret-check-bb39915c97644300acfc6b295a979769; uid/gid 1000; memory 536870912; resources verified
+Production image sha256:efc90c60085f610e0c38d339569be69bbb2cd5ff64ad69db73f3c1416e7dc18f; container loop2-account-storage-second-f5c0b62ccd20; data volume loop2-account-data-check-bb39915c97644300acfc6b295a979769; secret volume loop2-account-secret-check-bb39915c97644300acfc6b295a979769; uid/gid 1000; memory 536870912; resources verified
+................................................................Production image sha256:1c048e05d76c04dcde5e52ffdb1fcddd555fa294f1aa702e13491b70a371acdf; container loop2-image-icons-check-8d4530a2767d; data volume loop2-account-data-check-65f6d95804694fe98d313a0dcb8fe73c; secret volume loop2-account-secret-check-65f6d95804694fe98d313a0dcb8fe73c; uid/gid 1000; memory 536870912; resources verified
+..
+----------------------------------------------------------------------
+Ran 66 tests in 234.474s
+
+OK
+== tests/invariants
+........................................................................Production image sha256:c02d9fa3202388d417eecfbccdfd800bb43f33afb71d140064786e7cf9cf5897; container loop2-invariant-check-3cfe6cd6d03d; data volume loop2-account-data-check-c63dd8d8fe734615b44c2a4f117435e4; secret volume loop2-account-secret-check-c63dd8d8fe734615b44c2a4f117435e4; uid/gid 1000; memory 536870912; resources verified
+......................................................Production image sha256:d3fb579e0146c7e71279d2ee9d47eaa4711a9dd7e9e9985afe0311d4d0b57f72; container loop2-invariant-check-b8f9ba0d75ca; data volume loop2-account-data-check-6f1d79605a1a4b8086024be84b77d2eb; secret volume loop2-account-secret-check-6f1d79605a1a4b8086024be84b77d2eb; uid/gid 1000; memory 536870912; resources verified
+..............................................................................
+----------------------------------------------------------------------
+Ran 204 tests in 479.520s
+
+OK
+== tests/quality
+........................................
+----------------------------------------------------------------------
+Ran 40 tests in 38.489s
+
+OK
+315 tests in 4 directories; every directory passed
+exit 0
+$ python -B .the-way/elements/common/foundation_check.py
+0 errors
+exit 0
