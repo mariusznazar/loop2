@@ -28,6 +28,7 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../../dist/public/sim/programs.js";
+import { buyBranch } from "../../dist/public/sim/skills.js";
 import { registrationProblems } from "../../dist/public/view/account-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
@@ -1284,6 +1285,41 @@ function inputLabelled(root, label) {
   return input;
 }
 
+/** The button the page names `label` for assistive technology. */
+function buttonLabelled(root, label) {
+  const button = all(root).find(
+    (element) =>
+      element.tag === "button" && element.getAttribute("aria-label") === label,
+  );
+  assert.ok(button, `a button „${label}” stands`);
+  return button;
+}
+
+/** The two programs with sticks discovered, so a trip list can take an item. */
+const knowingSticks = () => {
+  const state = twoPrograms();
+  return {
+    ...state,
+    understanding: { ...state.understanding, items: ["stick"] },
+  };
+};
+
+/** The two programs with Ala's eating tree known and its first threshold, 15, reached. */
+const eatingPoint = () => {
+  const state = twoPrograms();
+  return {
+    ...state,
+    understanding: { ...state.understanding, trees: ["eating"] },
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) => ({
+        ...character,
+        skills: { ...character.skills, eating: { practice: 15, ranks: {} } },
+      })),
+    },
+  };
+};
+
 /** The select list the page names `label` for assistive technology. */
 const listLabelled = (root, label) =>
   all(root).find(
@@ -1325,6 +1361,25 @@ const ACTS = [
       );
       assert.deepEqual(game.programs, plain(start.programs));
     },
+  },
+  {
+    name: "an edit of a program's trip plan",
+    start: knowingSticks,
+    act: (root) =>
+      buttonLabelled(root, "Zabierz: dodaj przedmiot").fire("click"),
+    check: (game, start) => {
+      assert.deepEqual(game.programs[0].program, {
+        ...plain(start.programs[0].program),
+        tripPlan: { take: [{ item: "stick", count: 1 }], bring: [] },
+      });
+      assert.deepEqual(game.programs[1], plain(start.programs[1]));
+    },
+  },
+  {
+    name: "buying a branch rank",
+    start: eatingPoint,
+    act: (root) => buttonLabelled(root, "Kup: Szybki posiłek").fire("click"),
+    expected: (start) => buyBranch(start, 1, "quickMeal").state,
   },
   {
     name: "„Nowy program”",

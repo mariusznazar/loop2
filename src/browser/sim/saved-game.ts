@@ -1,5 +1,5 @@
 import { ACTIONS } from "./data/actions.js";
-import { ARCHETYPES } from "./data/archetypes.js";
+import { ARCHETYPES, type ArchetypeId } from "./data/archetypes.js";
 import { BALANCE } from "./data/balance.js";
 import { CAMPFIRE } from "./data/campfire.js";
 import { CONDITIONS } from "./data/conditions.js";
@@ -7,10 +7,18 @@ import { CREATURES } from "./data/creatures.js";
 import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import { RESOURCES } from "./data/resources.js";
+import {
+  BRANCHES,
+  SKILLS,
+  type BranchId,
+  type SkillId,
+} from "./data/skills.js";
 import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
 import { checkProgram } from "./programs.js";
 import { mapRunEnded } from "./run.js";
+import { skillProgress } from "./skills.js";
+import { pieceCount } from "./trip.js";
 import type {
   Action,
   Activity,
@@ -22,6 +30,8 @@ import type {
   CampfireId,
   Character,
   CharacterId,
+  CharacterSkills,
+  Chest,
   CombatCharacterAction,
   CombatCreatureAction,
   CombatExchange,
@@ -37,6 +47,7 @@ import type {
   ItemId,
   LastCombat,
   Pace,
+  Practice,
   Program,
   ProgramCopy,
   ProgramId,
@@ -47,6 +58,7 @@ import type {
   Team,
   Tile,
   Traits,
+  TripEntry,
   Understanding,
 } from "./types.js";
 
@@ -225,11 +237,14 @@ function matches(value: unknown, canonical: unknown): void {
 
 /**
  * A program the existing program check admits as it stands: its closed lists, its numbers on their
- * steps and its identities, with no key besides those the check builds.
+ * steps and its identities, with no key besides those the check builds, and each count of its trip
+ * plan a safe integer from 1 up (D-181).
  */
 function program(value: unknown): Program {
   const checked = checkProgram(value, null);
   matches(value, checked);
+  for (const entry of [...checked.tripPlan.take, ...checked.tripPlan.bring])
+    identity(entry.count);
   return checked;
 }
 
@@ -247,8 +262,21 @@ function action(value: unknown): Action {
     ],
     nextGroupId: 2,
     nextRuleId: 2,
+    tripPlan: { take: [], bring: [] },
   }).groups;
   return group.rules[0].action;
+}
+
+/** A trip list: items of the data, each at most once, each count a safe integer from 1 up (D-181). */
+function tripList(value: unknown): TripEntry[] {
+  const seen = new Set<ItemId>();
+  return list(value).map((entry): TripEntry => {
+    const read = fields(entry, ["item", "count"]);
+    const item = oneOf(read.item, ITEMS);
+    if (seen.has(item)) refuse();
+    seen.add(item);
+    return { item, count: identity(read.count) };
+  });
 }
 
 const PACES: readonly number[] = BALANCE.paces;
@@ -295,8 +323,15 @@ const DISCOVERABLE_ITEMS: Record<ItemId | CampfireId, unknown> = {
 const ITEM_IDS = Object.keys(ITEMS) as ItemId[];
 
 function understanding(value: unknown): Understanding {
-  const read = fields(value, ["actions", "conditions", "items", "creatures"]);
+  const read = fields(value, [
+    "trees",
+    "actions",
+    "conditions",
+    "items",
+    "creatures",
+  ]);
   return {
+    trees: uniqueOf(read.trees, SKILLS),
     actions: uniqueOf(read.actions, ACTIONS),
     conditions: uniqueOf(read.conditions, CONDITIONS),
     items: uniqueOf(read.items, DISCOVERABLE_ITEMS),
@@ -312,9 +347,63 @@ function traits(value: unknown): Traits {
 /** Pieces by resource, a key absent holding none. */
 function pieces(value: unknown): Partial<Record<ResourceId, number>> {
   const held: Partial<Record<ResourceId, number>> = {};
-  for (const [key, pieceCount] of entries(value))
-    held[oneOf(key, RESOURCES)] = count(pieceCount);
+  for (const [key, amount] of entries(value))
+    held[oneOf(key, RESOURCES)] = count(amount);
   return held;
+}
+
+/** The chest: pieces by item, a key absent holding none, all together within its capacity. */
+function chest(value: unknown): Chest {
+  const read = fields(value, ["pieces"]);
+  const held: Partial<Record<ItemId, number>> = {};
+  for (const [key, amount] of entries(read.pieces))
+    held[oneOf(key, ITEMS)] = count(amount);
+  if (pieceCount(held) > BALANCE.chestCapacity) refuse();
+  return { pieces: held };
+}
+
+/** Practice by character skill, each skill named holding some, as the effects add it (D-193). */
+function practice(value: unknown): Practice {
+  const held: Practice = {};
+  for (const [key, amount] of entries(value))
+    held[oneOf(key, SKILLS)] = identity(amount);
+  return held;
+}
+
+/**
+ * A character's skills (D-191): only skills its archetype predisposes it to, each its practice and
+ * the ranks bought of branches of its own tree, each rank from 1 up to the branch's prices, bought
+ * only in a tree the Understanding holds, and no more points spent than the practice's levels gave.
+ */
+function characterSkills(
+  value: unknown,
+  archetypeId: ArchetypeId,
+  trees: readonly SkillId[],
+): CharacterSkills {
+  const predispositions: readonly SkillId[] =
+    ARCHETYPES[archetypeId].predispositions;
+  const skills: CharacterSkills = {};
+  for (const [key, entry] of entries(value)) {
+    const id = oneOf(key, SKILLS);
+    if (!predispositions.includes(id)) refuse();
+    const read = fields(entry, ["practice", "ranks"]);
+    const ranks: Partial<Record<BranchId, number>> = {};
+    for (const [branchKey, rank] of entries(read.ranks)) {
+      const branch = oneOf(branchKey, BRANCHES);
+      const bought = identity(rank);
+      if (
+        BRANCHES[branch].skill !== id ||
+        bought > BRANCHES[branch].costs.length ||
+        !trees.includes(id)
+      )
+        refuse();
+      ranks[branch] = bought;
+    }
+    skills[id] = { practice: count(read.practice), ranks };
+  }
+  for (const id of Object.keys(skills) as SkillId[])
+    if (skillProgress(skills, id).points < 0) refuse();
+  return skills;
 }
 
 /** Counts by rule identity. */
@@ -330,11 +419,15 @@ function hex(value: unknown): Hex {
   return { q: integer(read.q), r: integer(read.r) };
 }
 
-/** What the game state names a program or a character by, and what it holds of them. */
+/**
+ * What the game state names a program or a character by, and what it holds of them: the
+ * characters of the team by their archetypes, and the skill trees the Understanding holds.
+ */
 type Records = {
   nextProgramId: ProgramId;
   listed: ReadonlySet<ProgramId>;
-  characters: ReadonlySet<CharacterId>;
+  characters: ReadonlyMap<CharacterId, ArchetypeId>;
+  trees: readonly SkillId[];
 };
 
 /** A program number the game gave, the number of a deleted program included (D-165). */
@@ -383,23 +476,34 @@ function programList(value: unknown, nextProgramId: ProgramId): SavedProgram[] {
 }
 
 /** The team: its characters, numbers each once and below the next one, and its chest. */
-function team(value: unknown, nextCharacterId: CharacterId): Team {
+function team(
+  value: unknown,
+  nextCharacterId: CharacterId,
+  trees: readonly SkillId[],
+): Team {
   const read = fields(value, ["characters", "chest"]);
   const ids = new Set<CharacterId>();
   const characters = list(read.characters).map((item): Character => {
-    const character = fields(item, ["id", "name", "archetypeId", "traits"]);
+    const character = fields(item, [
+      "id",
+      "name",
+      "archetypeId",
+      "traits",
+      "skills",
+    ]);
     const id = identity(character.id);
     if (id >= nextCharacterId || ids.has(id)) refuse();
     ids.add(id);
+    const archetypeId = oneOf(character.archetypeId, ARCHETYPES);
     return {
       id,
       name: givenName(character.name),
-      archetypeId: oneOf(character.archetypeId, ARCHETYPES),
+      archetypeId,
       traits: traits(character.traits),
+      skills: characterSkills(character.skills, archetypeId, trees),
     };
   });
-  const chest = fields(read.chest, ["pieces"]);
-  return { characters, chest: { pieces: pieces(chest.pieces) } };
+  return { characters, chest: chest(read.chest) };
 }
 
 /** The tiles of a map run: row-major, as many as the map's layout has, each at its place. */
@@ -566,6 +670,7 @@ function exchange(value: unknown): CombatExchange {
 
 function combatResult(value: unknown): CombatResult {
   const read = fields(value, [
+    "practice",
     "characterHealth",
     "creatureHealth",
     "outcome",
@@ -573,6 +678,7 @@ function combatResult(value: unknown): CombatResult {
     "ruleStarts",
   ]);
   return {
+    practice: practice(read.practice),
     characterHealth: finite(read.characterHealth, 0),
     creatureHealth: finite(read.creatureHealth, 0),
     outcome: oneOf(read.outcome, COMBAT_OUTCOMES),
@@ -623,7 +729,34 @@ function copy(value: unknown, records: Records): ProgramCopy {
   };
 }
 
+/**
+ * What completion put in the chest: none before a completion, and at one the frozen bring plan's
+ * entries in its order, each at most the count it plans (D-179, D-189).
+ */
+function deposited(
+  value: unknown,
+  bringPlan: readonly TripEntry[],
+  completed: boolean,
+): TripEntry[] | null {
+  if (value === null) {
+    if (completed) refuse();
+    return null;
+  }
+  if (!completed) refuse();
+  const put = tripList(value);
+  let from = 0;
+  for (const entry of put) {
+    const at = bringPlan.findIndex(
+      (planned, index) => index >= from && planned.item === entry.item,
+    );
+    if (at < 0 || entry.count > bringPlan[at].count) refuse();
+    from = at + 1;
+  }
+  return put;
+}
+
 const RUN_KEYS = [
+  "practice",
   "mapId",
   "seed",
   "minute",
@@ -645,12 +778,15 @@ const RUN_KEYS = [
   "death",
   "completion",
   "copy",
+  "bringPlan",
+  "deposited",
 ] as const;
 
 /**
- * The map run, with what the simulation follows in it: its character in the team, every place on
- * its tiles, one campfire a tile, an attack going on only with no activity and before an end, an
- * activity going on until it ends, and an end in its own game minute.
+ * The map run, with what the simulation follows in it: its character in the team, with skills its
+ * archetype allows, every place on its tiles, one campfire a tile, an attack going on only with no
+ * activity and before an end, an activity going on until it ends, an end in its own game minute,
+ * and a deposit only at a completion, out of the frozen bring plan.
  */
 function mapRun(value: unknown, records: Records): GameMapRun {
   const read = fields(value, RUN_KEYS);
@@ -663,14 +799,23 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     return place;
   };
 
-  const carried = fields(read.character, ["id", "at", "traits", "backpack"]);
+  const carried = fields(read.character, [
+    "skills",
+    "id",
+    "at",
+    "traits",
+    "backpack",
+  ]);
+  const id = identity(carried.id);
+  const archetypeId = records.characters.get(id);
+  if (archetypeId === undefined) refuse();
   const character: RunCharacter = {
-    id: identity(carried.id),
+    skills: characterSkills(carried.skills, archetypeId, records.trees),
+    id,
     at: onMap(carried.at),
     traits: traits(carried.traits),
     backpack: backpack(carried.backpack),
   };
-  if (!records.characters.has(character.id)) refuse();
 
   const campfires = list(read.campfires).map((item): Campfire => {
     const fire = fields(item, ["at", "minutesLeft"]);
@@ -711,8 +856,10 @@ function mapRun(value: unknown, records: Records): GameMapRun {
   const attackCooldownStart = count(read.attackCooldownStart);
   const streak = count(read.streak);
   if (attackCooldownStart > minute || streak > minute) refuse();
+  const bringPlan = tripList(read.bringPlan);
 
   return {
+    practice: practice(read.practice),
     mapId,
     seed: uint32(read.seed),
     minute,
@@ -734,6 +881,8 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     defeatedAttacks: count(read.defeatedAttacks),
     ...ended,
     copy: copy(read.copy, records),
+    bringPlan,
+    deposited: deposited(read.deposited, bringPlan, ended.completion !== null),
   };
 }
 
@@ -764,14 +913,22 @@ const GAME_KEYS = [
  */
 function game(value: unknown): GameState {
   const read = fields(value, GAME_KEYS);
+  const known = understanding(read.understanding);
+  if (!known.conditions.includes("always")) refuse();
   const nextProgramId = identity(read.nextProgramId);
   const programs = programList(read.programs, nextProgramId);
   const nextCharacterId = identity(read.nextCharacterId);
-  const theTeam = team(read.team, nextCharacterId);
+  const theTeam = team(read.team, nextCharacterId, known.trees);
   const records: Records = {
     nextProgramId,
     listed: new Set(programs.map((saved) => saved.id)),
-    characters: new Set(theTeam.characters.map((character) => character.id)),
+    characters: new Map(
+      theTeam.characters.map((character) => [
+        character.id,
+        character.archetypeId,
+      ]),
+    ),
+    trees: known.trees,
   };
   const run = read.run === null ? null : mapRun(read.run, records);
 
@@ -797,8 +954,6 @@ function game(value: unknown): GameState {
       refuse();
   }
 
-  const known = understanding(read.understanding);
-  if (!known.conditions.includes("always")) refuse();
   const discovery =
     read.discovery === null ? null : understanding(read.discovery);
   const paused = flag(read.paused);

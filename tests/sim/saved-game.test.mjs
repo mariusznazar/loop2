@@ -20,16 +20,20 @@ import {
   SAVED_GAME_VERSION,
   savedGame,
 } from "../../dist/public/sim/saved-game.js";
+import { buyBranch } from "../../dist/public/sim/skills.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
 // The saved document of the current version of the shape, written out by hand (spec, decision 2).
 // It fills every optional branch of the game state the spec lists: a map run with a campfire, a
 // burning item, a combat record, a copy whose program was deleted, a discovery held and counts
-// beside the copy's rules; `HEADQUARTERS` below holds the counts beside a program of the list,
-// which a game state holds only outside a map run. Its map run is written paused, so the load's
-// pause changes nothing in it. A change of the game state's shape makes the load refuse this
-// document; it is rewritten only together with a raised version.
+// beside the copy's rules; and those of trip plans and character skills: trip lists in programs,
+// the copy changed from its frozen bring plan, a chest, known trees, practice of the map run and
+// of its combat, and ranks bought. `HEADQUARTERS` below holds the counts beside a program of the
+// list, which a game state holds only outside a map run. Its map run is written paused, so the
+// load's pause changes nothing in it. A change of the game state's shape makes the load refuse
+// this document; it is rewritten only together with a raised version, or while no saved game state
+// of the current version exists anywhere.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -49,6 +53,7 @@ const PROGRAM_1 = {
   ],
   nextGroupId: 2,
   nextRuleId: 2,
+  tripPlan: { take: [], bring: [] },
 };
 
 const PROGRAM_3 = {
@@ -62,6 +67,11 @@ const PROGRAM_3 = {
           id: 1,
           condition: { kind: "hereBelow", resource: "berry", value: 1 },
           action: { kind: "walkTo", resource: "berry" },
+        },
+        {
+          id: 3,
+          condition: { kind: "itemBelow", item: "berry", value: 12 },
+          action: { kind: "patrol", resource: "berry" },
         },
       ],
     },
@@ -79,7 +89,11 @@ const PROGRAM_3 = {
     },
   ],
   nextGroupId: 3,
-  nextRuleId: 3,
+  nextRuleId: 4,
+  tripPlan: {
+    take: [{ item: "berry", count: 2 }],
+    bring: [{ item: "stick", count: 12 }],
+  },
 };
 
 /** The content of program 2 as the copy was taken from it; program 2 is deleted since. */
@@ -106,9 +120,19 @@ const COPY_BASE = {
   ],
   nextGroupId: 2,
   nextRuleId: 4,
+  tripPlan: {
+    take: [{ item: "stick", count: 4 }],
+    bring: [
+      { item: "berry", count: 5 },
+      { item: "stick", count: 20 },
+    ],
+  },
 };
 
-/** The copy: its base with one rule the player added during the map run. */
+/**
+ * The copy: its base with one rule the player added during the map run, and moss added to its bring
+ * list, which comes out only from the next map run (D-179).
+ */
 const COPY_PROGRAM = {
   groups: [
     {
@@ -125,6 +149,43 @@ const COPY_PROGRAM = {
   ],
   nextGroupId: 2,
   nextRuleId: 5,
+  tripPlan: {
+    take: [{ item: "stick", count: 4 }],
+    bring: [
+      { item: "berry", count: 5 },
+      { item: "stick", count: 20 },
+      { item: "moss", count: 3 },
+    ],
+  },
+};
+
+/**
+ * Ala's character skills: a skill of each predisposition of her archetype, practice gathered and
+ * ranks bought within the points the reached thresholds give — Eksploracja 50 reaches 15 and 45,
+ * two points, both spent on Wprawny krok; Zbieranie 85 reaches 30 and 80, one of two spent on
+ * Wprawne oko; Płomyk 6 reaches 2 and 6, one of two spent on Szybka ręka.
+ */
+const ALA_SKILLS = {
+  exploration: { practice: 50, ranks: { practicedStep: 2 } },
+  smallItemGathering: { practice: 85, ranks: { keenEye: 1 } },
+  campfireCrafting: { practice: 12, ranks: {} },
+  eating: { practice: 0, ranks: {} },
+  flameSpell: { practice: 6, ranks: { quickHand: 1 } },
+  oneHandedCombat: { practice: 31, ranks: {} },
+  kicking: { practice: 0, ranks: {} },
+  dodging: { practice: 0, ranks: {} },
+};
+
+/** The character skills of a new character: each predisposition, no practice and no rank. */
+const NEW_SKILLS = {
+  exploration: { practice: 0, ranks: {} },
+  smallItemGathering: { practice: 0, ranks: {} },
+  campfireCrafting: { practice: 0, ranks: {} },
+  eating: { practice: 0, ranks: {} },
+  flameSpell: { practice: 0, ranks: {} },
+  oneHandedCombat: { practice: 0, ranks: {} },
+  kicking: { practice: 0, ranks: {} },
+  dodging: { practice: 0, ranks: {} },
 };
 
 const DOCUMENT = {
@@ -140,11 +201,21 @@ const DOCUMENT = {
     lastUsedPrograms: { 1: 2 },
     lastEnteredProgram: 2,
     understanding: {
+      trees: [
+        "exploration",
+        "smallItemGathering",
+        "campfireCrafting",
+        "flameSpell",
+        "oneHandedCombat",
+        "kicking",
+        "dodging",
+      ],
       actions: [
         "explore",
         "wander",
         "walkTo",
         "gather",
+        "patrol",
         "craftCampfire",
         "lightCampfire",
         "lightItem",
@@ -175,18 +246,23 @@ const DOCUMENT = {
           name: "Ala",
           archetypeId: "elementalMage",
           traits: { carryingCapacity: 15 },
+          skills: ALA_SKILLS,
         },
         {
           id: 2,
           name: "Ola",
           archetypeId: "elementalMage",
           traits: { carryingCapacity: 15 },
+          skills: NEW_SKILLS,
         },
       ],
-      chest: { pieces: { stick: 2 } },
+      // The chest held 6 sticks before the map run took 4; a key at 0 stays (D-179).
+      chest: { pieces: { stick: 2, berry: 0 } },
     },
     nextCharacterId: 3,
     run: {
+      // Exploration, gathering and the four strikes of the combat below that hit.
+      practice: { exploration: 3, smallItemGathering: 5, oneHandedCombat: 4 },
       mapId: "forestDeep",
       seed: 204219582,
       minute: 212,
@@ -218,6 +294,8 @@ const DOCUMENT = {
         tile(4, 4, 2, false, { stick: 12, moss: 6 }),
       ],
       character: {
+        // The snapshot of Ala's skills at the map run's start (D-200).
+        skills: ALA_SKILLS,
         id: 1,
         at: { q: 1, r: 1 },
         traits: { carryingCapacity: 15 },
@@ -243,6 +321,7 @@ const DOCUMENT = {
         attackMinute: 190,
         resolveMinute: 195,
         result: {
+          practice: { oneHandedCombat: 4 },
           characterHealth: 65,
           creatureHealth: 0,
           outcome: "creatureDefeated",
@@ -326,12 +405,19 @@ const DOCUMENT = {
         deletedName: "Program 2",
         base: COPY_BASE,
       },
+      // The bring list of the copy's base, frozen at the map run's start (D-179).
+      bringPlan: [
+        { item: "berry", count: 5 },
+        { item: "stick", count: 20 },
+      ],
+      deposited: null,
     },
     lastSeed: 204219582,
     paused: true,
     solvedMaps: ["forest"],
     pace: 8,
     discovery: {
+      trees: [],
       actions: ["feedCampfire"],
       conditions: ["natureEnergyBelow"],
       items: [],
@@ -351,6 +437,7 @@ const HEADQUARTERS = {
     lastUsedPrograms: { 1: 1 },
     lastEnteredProgram: 1,
     understanding: {
+      trees: [],
       actions: ["explore", "wander"],
       conditions: ["always", "temperatureBelow"],
       items: [],
@@ -365,6 +452,7 @@ const HEADQUARTERS = {
           name: "Ala",
           archetypeId: "elementalMage",
           traits: { carryingCapacity: 15 },
+          skills: NEW_SKILLS,
         },
       ],
       chest: { pieces: {} },
@@ -466,6 +554,11 @@ test("a map run that ended comes back as it ended", () => {
     document.game.paused = false;
     document.game.realMsCarry = 0;
     document.game.run.completion = { minute: 212 };
+    // Out of the frozen bring list, in its order, each at most its count (D-179).
+    document.game.run.deposited = [
+      { item: "berry", count: 2 },
+      { item: "stick", count: 4 },
+    ];
   });
   assert.deepEqual(loadSavedGame(completed), {
     ok: true,
@@ -784,6 +877,158 @@ const CRAFTED = {
     document.game.realMsCarry = 0;
     document.game.ruleCounts = null;
   },
+  // Trip plans and the transfers of a map run (D-179, D-181).
+  "a program without its trip plan": (document) =>
+    delete document.game.programs[0].program.tripPlan,
+  "a trip plan without its bring list": (document) =>
+    delete document.game.run.copy.base.tripPlan.bring,
+  "a key added to a trip plan's entry": (document) =>
+    (document.game.programs[1].program.tripPlan.take[0].note = "x"),
+  "an item twice on a trip list": (document) =>
+    document.game.run.copy.program.tripPlan.bring.push({
+      item: "berry",
+      count: 1,
+    }),
+  "an item absent from the data on a trip list": (document) =>
+    (document.game.programs[1].program.tripPlan.bring[0].item = "sword"),
+  "a trip count of 0": (document) =>
+    (document.game.programs[1].program.tripPlan.take[0].count = 0),
+  "a fractional trip count": (document) =>
+    (document.game.programs[1].program.tripPlan.take[0].count = 2.5),
+  "a trip count beyond the safe integers": (document) =>
+    (document.game.run.copy.program.tripPlan.take[0].count = 2 ** 53),
+  "a trip count as text": (document) =>
+    (document.game.programs[1].program.tripPlan.take[0].count = "2"),
+  "the map run without its frozen bring plan": (document) =>
+    delete document.game.run.bringPlan,
+  "the map run without its deposit": (document) =>
+    delete document.game.run.deposited,
+  "an item twice on the frozen bring plan": (document) =>
+    document.game.run.bringPlan.push({ item: "stick", count: 1 }),
+  "a frozen bring count beyond the safe integers": (document) =>
+    (document.game.run.bringPlan[0].count = 2 ** 53),
+  "a deposit before a completion": (document) =>
+    (document.game.run.deposited = []),
+  "a completion without its deposit": (document) => {
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+  },
+  "a deposit of an item the frozen bring plan lacks": (document) => {
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [{ item: "moss", count: 1 }];
+  },
+  "a deposit above its planned count": (document) => {
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [{ item: "stick", count: 21 }];
+  },
+  "a deposit out of the frozen bring plan's order": (document) => {
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [
+      { item: "stick", count: 4 },
+      { item: "berry", count: 2 },
+    ];
+  },
+  "a deposit of 0 pieces": (document) => {
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [{ item: "berry", count: 0 }];
+  },
+  // The chest, by item and within its capacity.
+  "a chest above its capacity": (document) =>
+    (document.game.team.chest.pieces = { stick: 40, berry: 21 }),
+  "an item absent from the data in the chest": (document) =>
+    (document.game.team.chest.pieces.sword = 1),
+  "a count of the chest below 0": (document) =>
+    (document.game.team.chest.pieces.berry = -1),
+  "a chest with an own __proto__": (document) =>
+    (document.game.team.chest.pieces = JSON.parse(
+      '{"stick":2,"__proto__":{"berry":8}}',
+    )),
+  // Skill trees, character skills and practice (D-191, D-193, D-195, D-200).
+  "the Understanding without its trees": (document) =>
+    delete document.game.understanding.trees,
+  "a tree absent from the data": (document) =>
+    document.game.understanding.trees.push("swimming"),
+  "a tree named twice": (document) =>
+    document.game.understanding.trees.push("exploration"),
+  "a tree absent from the data in the discovery": (document) =>
+    document.game.discovery.trees.push("swimming"),
+  "a character without its skills": (document) =>
+    delete document.game.team.characters[0].skills,
+  "a skill absent from the data": (document) =>
+    (document.game.team.characters[1].skills.swimming = {
+      practice: 0,
+      ranks: {},
+    }),
+  "a key added to a character's skill": (document) =>
+    (document.game.team.characters[0].skills.exploration.level = 3),
+  "a skill without its ranks": (document) =>
+    delete document.game.team.characters[1].skills.kicking.ranks,
+  "practice below 0": (document) =>
+    (document.game.team.characters[1].skills.kicking.practice = -1),
+  "fractional practice": (document) =>
+    (document.game.team.characters[1].skills.kicking.practice = 1.5),
+  "practice beyond the safe integers": (document) =>
+    (document.game.team.characters[1].skills.kicking.practice = 2 ** 53),
+  "a branch absent from the data": (document) =>
+    (document.game.team.characters[0].skills.exploration.ranks.flight = 1),
+  "a rank of a branch of another tree": (document) =>
+    (document.game.team.characters[0].skills.exploration.ranks.keenEye = 1),
+  "a rank of 0": (document) =>
+    (document.game.team.characters[0].skills.exploration.ranks.longStep = 0),
+  "a fractional rank": (document) =>
+    (document.game.team.characters[0].skills.exploration.ranks.practicedStep = 1.5),
+  // 450 practice reaches all five thresholds, five points; „Pełna garść” has one price of 3.
+  "a rank above the branch's prices": (document) =>
+    (document.game.team.characters[1].skills.smallItemGathering = {
+      practice: 450,
+      ranks: { fullHand: 2 },
+    }),
+  // Eksploracja 50 gives two points; a third rank of Wprawny krok costs a third.
+  "ranks bought beyond the points": (document) =>
+    (document.game.team.characters[0].skills.exploration.ranks.practicedStep = 3),
+  // Jedzenie 15 gives one point, enough for Szybki posiłek, yet its tree is not known.
+  "a rank bought in a tree the Understanding lacks": (document) =>
+    (document.game.team.characters[1].skills.eating = {
+      practice: 15,
+      ranks: { quickMeal: 1 },
+    }),
+  "ranks with an own __proto__": (document) =>
+    (document.game.team.characters[0].skills.exploration.ranks = JSON.parse(
+      '{"practicedStep":2,"__proto__":{"scout":1}}',
+    )),
+  "the map run's character without its skills": (document) =>
+    delete document.game.run.character.skills,
+  "the map run's character with ranks beyond its points": (document) =>
+    (document.game.run.character.skills = {
+      ...document.game.run.character.skills,
+      flameSpell: { practice: 6, ranks: { quickHand: 1, cleanFlame: 1 } },
+    }),
+  "the map run without its practice": (document) =>
+    delete document.game.run.practice,
+  "the map run's practice of a skill absent from the data": (document) =>
+    (document.game.run.practice.swimming = 1),
+  "the map run's practice at 0": (document) =>
+    (document.game.run.practice.kicking = 0),
+  "the map run's practice fractional": (document) =>
+    (document.game.run.practice.exploration = 2.5),
+  "the map run's practice by the key __proto__": (document) =>
+    (document.game.run.practice = JSON.parse('{"__proto__":1}')),
+  "a combat record without its practice": (document) =>
+    delete document.game.run.lastCombat.result.practice,
+  "a combat record's practice of a skill absent from the data": (document) =>
+    (document.game.run.lastCombat.result.practice = { swimming: 1 }),
+  "a patrol of a resource absent from the data": (document) =>
+    (document.game.programs[1].program.groups[0].rules[1].action.resource =
+      "gold"),
   // The tile count of the map's layout.
   "a tile fewer than the map's layout": (document) =>
     document.game.run.tiles.pop(),
@@ -894,8 +1139,102 @@ function sentDoing(kind, program) {
   return state;
 }
 
+/** Ala, created in a game whose Understanding holds everything, with `skills` set among hers. */
+function skilled(skills) {
+  const state = createCharacter(newKnowingGame(), "Ala").state;
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) => ({
+        ...character,
+        skills: { ...character.skills, ...skills },
+      })),
+    },
+  };
+}
+
+const BERRY_3 = { item: "berry", count: 3 };
+
+/**
+ * Ala sent to Las after buying „Szybki posiłek”, with a trip plan that takes 3 berries out of a
+ * chest of 10 sticks, 10 berries and 2 moss and brings back berries and sticks.
+ */
+function equipped() {
+  let state = skilled({ eating: { practice: 15, ranks: {} } });
+  state = {
+    ...state,
+    team: {
+      ...state.team,
+      chest: { pieces: { stick: 10, berry: 10, moss: 2 } },
+    },
+  };
+  state = buyBranch(state, 1, "quickMeal").state;
+  state = setProgram(state, {
+    ...programFromRules({ condition: ALWAYS, action: { kind: "eat" } }),
+    tripPlan: {
+      take: [BERRY_3],
+      bring: [BERRY_3, { item: "stick", count: 2 }],
+    },
+  }).state;
+  return send(state, { mapId: "forest", characterId: 1 }, REAL_MS).state;
+}
+
+/**
+ * The equipped map run completed: moved on to game minute 476 as if it had passed with no loss —
+ * its streak, its activity and its attack cooldown with it, 4 game minutes short of Las's solving
+ * streak of 480 — and those 4 minutes passed eating.
+ */
+function completed() {
+  const { run, ...started } = equipped();
+  const later = (minute) => minute + 476;
+  return advanceMinutes(
+    {
+      ...started,
+      run: {
+        ...run,
+        minute: later(run.minute),
+        streak: 476,
+        attackCooldownStart: later(run.attackCooldownStart),
+        current: {
+          ...run.current,
+          startMinute: later(run.current.startMinute),
+          endMinute: later(run.current.endMinute),
+        },
+      },
+    },
+    4,
+  ).state;
+}
+
+/** Ala, with „Obchód” bought, sent to Las and moved on until she patrols for sticks. */
+function patrolling() {
+  let state = buyBranch(
+    skilled({ smallItemGathering: { practice: 160, ranks: {} } }),
+    1,
+    "patrol",
+  ).state;
+  state = setProgram(
+    state,
+    programFromRules(
+      { condition: ALWAYS, action: { kind: "explore" } },
+      { condition: ALWAYS, action: { kind: "patrol", resource: "stick" } },
+      { condition: ALWAYS, action: { kind: "wander" } },
+    ),
+  ).state;
+  state = send(state, { mapId: "forest", characterId: 1 }, REAL_MS).state;
+  for (
+    let minute = 0;
+    minute < 400 && doing(state.run) !== "patrol";
+    minute += 1
+  )
+    state = advanceMinutes(state, 1).state;
+  return state;
+}
+
 test("a game state the simulation made loads back from its saved document", () => {
   const ended = end(played()).state;
+  const done = completed();
   const states = {
     "a new game": { state: newGame(), goesOn: false },
     "a wait under the empty „Program”": {
@@ -931,6 +1270,19 @@ test("a game state the simulation made loads back from its saved document", () =
       state: deeper((run) => run.death !== null),
       goesOn: false,
     },
+    "a map run with its equipment and a bought rank": {
+      state: equipped(),
+      goesOn: true,
+    },
+    "a completion that deposited and paid its practice": {
+      state: done,
+      goesOn: false,
+    },
+    "the headquarters after that completion and „Zakończ”": {
+      state: end(done).state,
+      goesOn: false,
+    },
+    "a patrol going on": { state: patrolling(), goesOn: true },
   };
   // Preconditions: each state holds what its name says.
   assert.equal(
@@ -959,6 +1311,23 @@ test("a game state the simulation made loads back from its saved document", () =
   );
   assert.notEqual(states["an attack going on"].state.run.activeCombat, null);
   assert.equal(states["a death in combat"].state.run.death.cause, "combat");
+  const started =
+    states["a map run with its equipment and a bought rank"].state;
+  assert.equal(started.run.character.backpack.berry, 3);
+  assert.equal(started.team.chest.pieces.berry, 7);
+  assert.equal(started.run.character.skills.eating.ranks.quickMeal, 1);
+  assert.deepEqual(started.run.bringPlan, [
+    BERRY_3,
+    { item: "stick", count: 2 },
+  ]);
+  assert.notEqual(done.run.completion, null);
+  assert.notEqual(done.run.deposited.length, 0);
+  assert.notEqual(done.run.practice.eating ?? 0, 0);
+  assert.equal(
+    done.team.characters[0].skills.eating.practice,
+    15 + done.run.practice.eating,
+  );
+  assert.equal(doing(states["a patrol going on"].state.run), "patrol");
   for (const [name, { state, goesOn }] of Object.entries(states)) {
     assert.deepEqual(
       loadSavedGame(savedGame(state)),
