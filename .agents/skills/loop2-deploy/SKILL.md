@@ -6,8 +6,8 @@ description: How loop2's test-server deployment works - seeing which commit runs
 # loop2-deploy
 
 Loop2 runs in a Docker Compose project with an application and a Cloudflare Tunnel connector.
-The application keeps player accounts and sessions in a SQLite database in the named Docker
-volume `loop2_accounts`, signs session cookies with keys read from a root-provisioned file
+The application keeps player accounts, sessions and saved game states in a SQLite database in
+the named Docker volume `loop2_accounts`, signs session cookies with keys read from a root-provisioned file
 on the host and sends account mail through Outsider's SMTP server with a password read from
 another root-provisioned file.
 A push to `main` starts `.github/workflows/deploy.yml`, whose SSH call passes the commit to the
@@ -174,7 +174,8 @@ private note. The agent reads the file's metadata only and never its content.
   The merge of the change deploys it, so the file must exist on the server before the merge.
 - **The first delivery (H4):** the human deploys the branch commit, creates an account with an
   address on an external mailbox, receives the message and opens its link. That deployment
-  also moves the database to schema version 3 (see Rollback).
+  also moves the database to schema version 3 (see Rollback). The first deployment of the commit
+  with saved game states moves it on to version 4.
 
 ## Blocking a player account
 
@@ -215,8 +216,8 @@ human runs `loop2-deploy <earlier sha>`. A fast rollback lasts until the next pu
 a revert keeps the branch and server aligned. No earlier product image is retained for recovery.
 
 **A rollback changes code, never data.** The accounts, sessions and session-key file stay as
-they are; accounts made after the target commit are not undone and nothing is restored from
-an earlier time. Rolling back to a commit without accounts leaves the volume and the key file
+they are, and so are the saved game states the same database holds; accounts and saved game
+states made after the target commit are not undone and nothing is restored from an earlier time. Rolling back to a commit without accounts leaves the volume and the key file
 unused but intact; deploying forward again brings the accounts back. An application refuses a
 database whose schema version is newer than it knows, so an old commit may fail health with
 exit 8 on a newer database. The first deployment of a commit with account blocking moves the
@@ -224,7 +225,14 @@ database to schema version 2, so from then on a rollback to a commit from before
 blocking fails health with exit 8. The first deployment of the commit with address
 confirmation, including the human's trial deployment of its branch (H4) before the merge,
 moves the database to schema version 3: an earlier commit, `main` included, then refuses it
-and fails health with exit 8, and only the human repairs the database. Details and recovery: "Rollback and the accounts" in
+and fails health with exit 8, and only the human repairs the database.
+
+**The first deployment of the commit with saved game states, including the human's deployment
+of its branch (H1) before the merge, moves the database to schema version 4,** which adds the
+table of saved game states. From then on a commit that knows only version 3 or older, `main`
+before this change included, refuses the database and fails health with exit 8: a rollback to it
+cannot start, and only the human repairs the database. Until the branch is merged, a merge of
+anything else to `main` deploys that older code and takes the test server down. Details and recovery: "Rollback and the accounts" in
 `references/troubleshooting.md`.
 
 **Crossing the tunnel transition also requires the matching installed script and Cloudflare

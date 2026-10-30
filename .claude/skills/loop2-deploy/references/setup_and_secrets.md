@@ -304,6 +304,12 @@ log), so copying the one file while the application runs does not copy the datab
 The request stays a blocked draft until the password measurement and the public journey have
 been done on its head commit. The human does everything here (D-12).
 
+**When the request brings saved game states, from the first deployment of its branch (H1) until
+its merge, merge nothing else to `main`.** That deployment moves the database of the test server
+to schema version 4, and `main` before this change knows only version 3: every merge deploys
+automatically, so the older code refuses the database and fails health (exit 8) with no way
+back by rollback. The window includes review and corrections; the human who merges keeps it.
+
 1. **Script.** The installed script is reinstalled only when the head changes
    `deploy/loop2-deploy`: compare it with the installed copy as `troubleshooting.md` describes
    and, if they differ in behaviour, install from the exact head as above before deploying.
@@ -320,11 +326,14 @@ been done on its head commit. The human does everything here (D-12).
    - Signed out, the page shows the two forms and no game or Program panel.
    - Create the account: the headquarters appears at once and the header shows the logout
      button.
-   - Reload: the headquarters appears straight away.
+   - Reload: the headquarters appears straight away; when the saved game holds a manual map run,
+     the page lands on it, paused while the run goes on and on its screen after the run has ended.
    - Persistence: run step 3 again for the same commit, then reload; the same session still
      reaches the headquarters. Log out, log in with the same address and password; it works.
-     This shows that accounts and sessions survive container replacement; saved game states
-     are not checked here.
+     This shows that accounts and sessions survive container replacement.
+   - Saved game state: save the game, run step 3 again for the same commit (H2), reload and
+     see the saved state back; this is the check that saved game states survive container
+     replacement.
    - A wrong password shows the single message `Nieprawidłowy adres e-mail lub hasło.`
    - Logout shows the forms again and no game.
    - An unknown `/api/` path still answers JSON 404, not HTML.
