@@ -6,10 +6,19 @@ import {
   send,
   setProgram,
   advanceMinutes,
+  mapRunEnded,
+  setPaused,
+  settleDeath,
 } from "../../dist/public/sim/game.js";
 import { emptyProgram } from "../../dist/public/sim/programs.js";
 import { tripCount, tripChoices } from "../../dist/public/view/trip-editor.js";
-import { tripTexts, tripWarning } from "../../dist/public/view/trip-lines.js";
+import {
+  deathSettlementLine,
+  solvedRunText,
+  tripTexts,
+  tripWarning,
+} from "../../dist/public/view/trip-lines.js";
+import { loadSavedGame, savedGame } from "../../dist/public/sim/saved-game.js";
 import { MAPS } from "../../dist/public/sim/data/maps.js";
 
 const entry = (item, count) => ({ item, count });
@@ -116,4 +125,126 @@ test("map warning appears below desired load and backpack capacity, including a 
     tripWarning(plan, 15, { ...MAPS.forest, carryIn: 0 }),
     "Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej 0 sztuk.",
   );
+});
+
+const SOLVED_LINE =
+  "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.";
+const USED_LINE = "Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.";
+
+/** A run on a map solved before it started, the bring list set so the preview has text. */
+function solvedSent() {
+  const unmarked = sent();
+  return send(
+    { ...unmarked, run: null, solvedMaps: ["forest"] },
+    { mapId: "forest", characterId: 1 },
+    23,
+  ).state;
+}
+// The minute is set with the streak, as the load admits a streak no longer than the run.
+const completed = (state) =>
+  advanceMinutes(
+    { ...state, run: { ...state.run, minute: 479, streak: 479 } },
+    1,
+  ).state;
+/**
+ * The state's run played on to the character's death and settled at a real moment; `readyAtMs`
+ * sets when the character's resurrection is ready.
+ */
+function died(state, readyAtMs) {
+  const characters = state.team.characters.map((character) => ({
+    ...character,
+    resurrectionReadyAtMs: readyAtMs,
+  }));
+  let dying = { ...state, team: { ...state.team, characters } };
+  for (let round = 0; round < 50 && !mapRunEnded(dying.run); round += 1)
+    dying = advanceMinutes(setPaused(dying, false).state, 5000).state;
+  assert.ok(dying.run.death, "precondition: the run ended in a death");
+  return settleDeath(dying, 1_000).state;
+}
+
+// Catches a map-run screen that leaves the player thinking a solved-map run pays, or that
+// shows the solved-map line on a run that does pay; decision 8's table, the six rows.
+test("the six screens of a map run give the solved-map line, the deposit, the settlement and the preview in decision 8's order of lines", () => {
+  const lines = (state) => ({
+    solved: solvedRunText(state),
+    settlement: deathSettlementLine(state),
+    ...tripTexts(state),
+  });
+  const none = { solved: null, settlement: null };
+
+  // going on, unmarked run: the preview alone
+  assert.deepEqual(lines(sent()), {
+    ...none,
+    deposited: null,
+    preview: "Wyniesie: patyk 3",
+  });
+  // going on, marked run: the solved line, and the preview reading nothing
+  assert.deepEqual(lines(solvedSent()), {
+    ...none,
+    solved: SOLVED_LINE,
+    deposited: null,
+    preview: "Wyniesie: nic",
+  });
+  // completion, unmarked: the deposit
+  assert.deepEqual(lines(completed(sent())), {
+    ...none,
+    deposited: "Do skrzynki: patyk 3.",
+    preview: null,
+  });
+  // completion, marked: the solved line, and a deposit reading nothing
+  assert.deepEqual(lines(completed(solvedSent())), {
+    ...none,
+    solved: SOLVED_LINE,
+    deposited: "Do skrzynki nic nie trafiło.",
+    preview: null,
+  });
+  // death, unmarked: the settlement, in the role of each kind of death
+  assert.deepEqual(lines(died(sent(), 0)), {
+    ...none,
+    settlement: { text: USED_LINE, danger: false },
+    deposited: null,
+    preview: null,
+  });
+  assert.deepEqual(lines(died(sent(), 9_000_000)), {
+    ...none,
+    settlement: {
+      text: "Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 2.",
+      danger: true,
+    },
+    deposited: null,
+    preview: null,
+  });
+  // death, marked: the same settlement with the solved line
+  assert.deepEqual(lines(died(solvedSent(), 0)), {
+    ...none,
+    solved: SOLVED_LINE,
+    settlement: { text: USED_LINE, danger: false },
+    deposited: null,
+    preview: null,
+  });
+});
+
+// Catches a screen that reads the settlement from anything but the state's own record: a death
+// not yet settled draws nothing, and a loaded screen is the same screen.
+test("a death not yet settled draws no settlement, and a loaded screen reads the same lines", () => {
+  const unsettled = sent();
+  const dying = { ...unsettled, run: { ...unsettled.run, death: "cold" } };
+  assert.equal(deathSettlementLine(dying), null);
+  assert.equal(deathSettlementLine(newGame()), null);
+  assert.equal(solvedRunText(newGame()), null);
+  for (const state of [
+    died(solvedSent(), 0),
+    died(sent(), 9_000_000),
+    completed(solvedSent()),
+    solvedSent(),
+  ]) {
+    const loaded = loadSavedGame(savedGame(state));
+    assert.equal(loaded.ok, true, String(state.run.completion?.minute));
+    assert.deepEqual(solvedRunText(loaded.state), solvedRunText(state));
+    assert.deepEqual(
+      deathSettlementLine(loaded.state),
+      deathSettlementLine(state),
+    );
+    assert.deepEqual(tripTexts(loaded.state), tripTexts(state));
+  }
 });
