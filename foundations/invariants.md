@@ -611,7 +611,7 @@ Anyone can create a player account and begin playing without operator approval.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-96 · D-179
+- **Derives from:** D-96 · D-202
 - **Part:** account-server · browser-view
 - **Violated:** no
 
@@ -691,7 +691,7 @@ Replacing the application container preserves the SQLite database of player acco
 
 - **Method:** review
 - **Rests on:** docker-volume-lifecycle
-- **Derives from:** D-17 · D-182
+- **Derives from:** D-17 · D-205
 - **Part:** account-server · deployment
 - **Violated:** yes
 
@@ -861,7 +861,7 @@ A blocked account cannot sign in or use authenticated game endpoints.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-137 · D-139 · D-179
+- **Derives from:** D-137 · D-139 · D-202
 - **Part:** account-server
 - **Violated:** no
 
@@ -951,7 +951,7 @@ A signed-in player can read and change only the saved game state belonging to th
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-109 · D-179
+- **Derives from:** D-109 · D-202
 - **Part:** account-server
 - **Violated:** no
 
@@ -961,7 +961,7 @@ An expired session leaves unsaved progress in the browser, and the game retries 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-180 · D-188
+- **Derives from:** D-203 · D-211
 - **Part:** browser-view
 - **Violated:** no
 
@@ -971,7 +971,7 @@ The account and save server persists player accounts and complete saved game sta
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-182
+- **Derives from:** D-205
 - **Part:** account-server
 - **Violated:** no
 
@@ -981,7 +981,7 @@ The browser loads and sends saved game states as JSON through `fetch()` requests
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-181
+- **Derives from:** D-204
 - **Part:** browser-view
 - **Violated:** no
 
@@ -991,7 +991,7 @@ The game loads no data from a saved game state whose version differs from the ga
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-183
+- **Derives from:** D-206
 - **Part:** simulation
 - **Violated:** no
 

@@ -38,7 +38,7 @@ export type GameViewOptions = {
   readonly state: GameState;
   /** The revision of the saved game state `state` came from; 0 when the server held none. */
   readonly revision: number;
-  /** The game was built from the server's save after a conflict (D-186). */
+  /** The game was built from the server's save after a conflict (D-209). */
   readonly afterConflict?: boolean;
   /** Another browser saved first: the page drops this game and loads the server's save. */
   onConflict(): void;
@@ -57,13 +57,13 @@ export type KeptGame = {
 export type GameView = {
   /** The program panel and the map column, for the page to place. */
   element: HTMLElement;
-  /** The header line of saving, for the page to place under the title and „Wyloguj” (D-185). */
+  /** The header line of saving, for the page to place under the title and „Wyloguj” (D-208). */
   saveLine: HTMLElement;
   /** A moment of saving the page calls itself: the current state goes at once. */
   saveNow(): void;
   /** The save before logout and its outcome (D-97). */
   saveBeforeLogout(): Promise<LogoutSave>;
-  /** The current game state, real time passed first, as a document to keep in the page (D-188). */
+  /** The current game state, real time passed first, as a document to keep in the page (D-211). */
   keep(): KeptGame;
   /**
    * Ends this game in the page: its clock and its saver stop and its elements leave the page,
@@ -78,7 +78,7 @@ export type GameView = {
  * and draws only from it. It lands where the state says: the headquarters, a map run (a loaded one
  * that goes on comes back paused by the load) or the screen after a map run's end. Every act of the
  * player whose result changed the state, and every game minute that ends the map run in a death or
- * a completion, is a moment of saving (D-184). Nothing here runs when the module is imported.
+ * a completion, is a moment of saving (D-207). Nothing here runs when the module is imported.
  */
 export function createGameView(options: GameViewOptions): GameView {
   let state: GameState = options.state;

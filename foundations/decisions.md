@@ -62,7 +62,7 @@ return the next game state together with the events it produced, and real time e
 simulation only as an argument. The browser view draws the game only from the game state and the
 game's content data, and changes the game state only through functions of the simulation, to which
 it passes the player's choices, the passing of real time and a saved game state the browser
-downloaded from the server or kept in the page's memory after a save found no session (D-188).
+downloaded from the server or kept in the page's memory after a save found no session (D-211).
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
@@ -1762,18 +1762,18 @@ A signed-out visitor sees the „Zaloguj się” form with email and password an
 
 ### D-97 — What does the player's logout do?
 
-The shared „Wyloguj” button stands in the header beside the title, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-187 ends it without saving. When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-186) or as too large (D-185), logout goes on; when it refuses it as of a lower version (D-187), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-188 gives. A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it.
+The shared „Wyloguj” button stands in the header beside the title, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving. When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives. A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: logout saves the game state, then destroys the current session and removes its game view, while another browser remains signed in; a logout whose save gets no answer keeping the game with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.”; a tab that stopped saving after the refusal of D-187 logging out with no save request and showing „Gra została zaktualizowana. Odśwież stronę.” above the forms
-  - violates: a tab that stopped saving after the refusal of D-187 logging out to the forms with no sentence above them; a header action that revokes every session of the account or leaves the hidden game's timer running; a logout that ends the session before its save has an outcome; a logout that ends the session after its save failed for want of a connection
+  - complies: logout saves the game state, then destroys the current session and removes its game view, while another browser remains signed in; a logout whose save gets no answer keeping the game with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.”; a tab that stopped saving after the refusal of D-210 logging out with no save request and showing „Gra została zaktualizowana. Odśwież stronę.” above the forms
+  - violates: a tab that stopped saving after the refusal of D-210 logging out to the forms with no sentence above them; a header action that revokes every session of the account or leaves the hidden game's timer running; a logout that ends the session before its save has an outcome; a logout that ends the session after its save failed for want of a connection
 - **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 6, 17, 18 and 19, and § Settlements to record, row 6
 
 *Rationale:* Independent browser sessions let a player leave one device without interrupting another; a visible failure avoids claiming the server revoked a session when its outcome is uncertain. Saving first keeps the progress made since the last save, at the cost of one more request at logout; where the server refuses the save for good — another browser's later save, a game state too large, a newer game on the server — the progress cannot be saved anyway, so logout goes on, and the progress of the tab since its last successful save is lost. The tab with older code tells the player at the forms to reload, so a sign-in in that tab does not meet its old code's refusal of a saved game state that is whole. A player who wanted to leave and whose session is gone is asked to sign in again, the unsaved state staying in the tab, unseen, until a reload or a sign-in to another account; for a blocked player „Sesja wygasła…” is untrue, the sign-in then reads „To konto jest zablokowane.” (D-139), and the state goes with the tab.
-*Rejected:* Ending all browser sessions on ordinary logout — interrupts other devices; the unsaved progress kept in the page's memory and saved after signing in again to the same account, as when a session expires — a player who logged out leaves the state in the tab for the next person at that computer; the progress since the last save lost at logout — up to the last 30 real seconds of a map run, 30 game minutes at 1× and up to 480 at 16×; after the refusal for older code, logout going on without a word of the update — the player easily signs in in the same tab and meets the false alarm „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” while the saved game state on the server is whole; after that refusal, no logout until the page is reloaded — „Wyloguj” does not work in the old tab, and a player at a shared computer who does not reload stays signed in; the too-large refusal counted as a failed save — endless retries, a promise „Gra spróbuje ponownie.” that is not kept and a „Wyloguj” that does not work, leaving the player signed in at a shared computer; at a missing session, logout ending with the forms, no sentence and the unsaved state lost — against keeping unsaved progress when a session expires (D-180), and the progress since the last save lost; that ending for a blocked account only — the server would have to tell a session deleted by a block from an expired one, which it cannot since blocking deletes sessions (D-137), so it would keep or mark deleted sessions, which D-137 rejects, and a new state in the database and two behaviours instead of one.
+*Rejected:* Ending all browser sessions on ordinary logout — interrupts other devices; the unsaved progress kept in the page's memory and saved after signing in again to the same account, as when a session expires — a player who logged out leaves the state in the tab for the next person at that computer; the progress since the last save lost at logout — up to the last 30 real seconds of a map run, 30 game minutes at 1× and up to 480 at 16×; after the refusal for older code, logout going on without a word of the update — the player easily signs in in the same tab and meets the false alarm „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” while the saved game state on the server is whole; after that refusal, no logout until the page is reloaded — „Wyloguj” does not work in the old tab, and a player at a shared computer who does not reload stays signed in; the too-large refusal counted as a failed save — endless retries, a promise „Gra spróbuje ponownie.” that is not kept and a „Wyloguj” that does not work, leaving the player signed in at a shared computer; at a missing session, logout ending with the forms, no sentence and the unsaved state lost — against keeping unsaved progress when a session expires (D-203), and the progress since the last save lost; that ending for a blocked account only — the server would have to tell a session deleted by a block from an expired one, which it cannot since blocking deletes sessions (D-137), so it would keep or mark deleted sessions, which D-137 rejects, and a new state in the database and two behaviours instead of one.
 
 ### D-98 — Which player passwords are accepted?
 
@@ -1936,7 +1936,7 @@ A visitor may create an account or attempt credential login subject to the trans
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
-- **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-156 · derives from D-157 · derives from D-179 · derives from D-181
+- **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-156 · derives from D-157 · derives from D-202 · derives from D-204
 - **Verification:** invariants: account-session-authorization · player-save-isolation.
 - **Origin:** none
 
@@ -1986,11 +1986,11 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 
 ### D-112 — How does the account database open and preserve its schema?
 
-The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137 opens one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 4 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account, session, emailed link and saved game state and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state and the time their email address was confirmed, unset until it is; sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; emailed links have the SHA-256 digest of their token as key, an account foreign key that removes them with their account, a purpose of email confirmation or password reset, creation and expiry times and a mark that they no longer work, with account and creation-time indexes; saved game states have their account's identifier as key and as a foreign key that removes them with their account, the version of their shape, their revision and the game's text of at most 65 536 bytes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing, mail sending or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, together with emailed links both expired and older than one hour, pruned in bounded batches, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state, deletes its sessions and marks all its emailed links as no longer working in one transaction, a session write for a blocked account stores nothing, and recording an emailed link reads its account's blocked state in the transaction that writes it, writes nothing for a blocked account, and in the same transaction marks every earlier link of the same account and purpose as no longer working; writing a saved game state reads its account's blocked state, its stored version and its stored revision in the transaction that writes it and writes nothing when the account is blocked or D-186 or D-187 refuses the save, and blocking keeps the account's saved game state.
+The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137 opens one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 4 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account, session, emailed link and saved game state and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state and the time their email address was confirmed, unset until it is; sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; emailed links have the SHA-256 digest of their token as key, an account foreign key that removes them with their account, a purpose of email confirmation or password reset, creation and expiry times and a mark that they no longer work, with account and creation-time indexes; saved game states have their account's identifier as key and as a foreign key that removes them with their account, the version of their shape, their revision and the game's text of at most 65 536 bytes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing, mail sending or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, together with emailed links both expired and older than one hour, pruned in bounded batches, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state, deletes its sessions and marks all its emailed links as no longer working in one transaction, a session write for a blocked account stores nothing, and recording an emailed link reads its account's blocked state in the transaction that writes it, writes nothing for a blocked account, and in the same transaction marks every earlier link of the same account and purpose as no longer working; writing a saved game state reads its account's blocked state, its stored version and its stored revision in the transaction that writes it and writes nothing when the account is blocked or D-209 or D-210 refuses the save, and blocking keeps the account's saved game state.
 
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · sqlite-wal-concurrency
-- **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-156 · derives from D-161 · derives from D-182
+- **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-156 · derives from D-161 · derives from D-205
 - **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage.
 - **Origin:** none
 
@@ -3200,7 +3200,7 @@ threatens no loss of the character and stands in `text` (D-39). Accepted with it
 row, and a player who sees the energy before discovering the condition on it.
 *Rejected:* the body row as it stood, with no nature energy.
 
-### D-179 — Who can create and use a player account?
+### D-202 — Who can create and use a player account?
 
 Anyone can create a player account and start playing without approval. A signed-in player can read
 and change only their own saved game state. The operator can block an account from signing in and
@@ -3220,7 +3220,7 @@ exclude a person across accounts. Registration and recovery add work to the acco
 requires the operator to handle every request; operator-created accounts — avoids a public
 registration flow but requires manual work and secure delivery for every new player.
 
-### D-180 — What happens to unsaved progress when a session expires?
+### D-203 — What happens to unsaved progress when a session expires?
 
 If a player's session expires while the game runs, the browser keeps the unsaved game state. After
 the player signs in again to the same account, the game retries saving that state.
@@ -3237,7 +3237,7 @@ retry preserves each player's saved-state ownership.
 *Rejected:* dropping unsaved progress when the session expires — loses play time for an unrelated
 login timeout; saving it under a different account — crosses the account ownership boundary.
 
-### D-181 — How does the browser exchange saved game states with the server?
+### D-204 — How does the browser exchange saved game states with the server?
 
 The browser loads and sends whole saved game states through HTTPS request-response endpoints,
 using JSON and the browser's `fetch()` API. It loads its account's saved game state with
@@ -3259,7 +3259,7 @@ whose body holds the version of the shape, the revision the browser last saw and
 *Rationale:* the browser computes the game and only needs to load and submit a whole save.
 Request-response exchange covers this without an operation schema or a lasting connection. A later
 need for live server messages can be met by reviewing this choice; resolving two browsers'
-conflicting saves still requires a separate game rule whichever transport is used, which D-186
+conflicting saves still requires a separate game rule whichever transport is used, which D-209
 gives. An account without a saved game state gets a success of its own, so the browser never takes
 a missing route for a missing saved game state.
 *Rejected:* GraphQL over HTTPS — adds an operation schema without a current need to select
@@ -3270,7 +3270,7 @@ server without the route would read as no saved game state and the first save of
 overwrite a real one; `POST` for the save — a replacement of the whole saved game state reads as
 `PUT`.
 
-### D-182 — Where are player accounts and saved game states stored?
+### D-205 — Where are player accounts and saved game states stored?
 
 The account and save server stores player accounts and each player's complete saved game state in a
 SQLite database file on persistent local storage outside the replaceable application container
@@ -3291,7 +3291,7 @@ show a need for it; MongoDB — also adds a server process, while its document m
 demonstrated benefit for storing whole saves and has a 16 MiB limit per document; ad hoc JSON
 files — lack the database engine's transactions and documented schema constraints.
 
-### D-183 — What happens to a saved game state of another version?
+### D-206 — What happens to a saved game state of another version?
 
 A saved game state carries the version number of its shape, and the game loads whole only a saved
 game state whose version is the game's current one. The game discards a saved game state of any
@@ -3317,7 +3317,7 @@ missing from the game data leaves its character with nothing to act on.
 faults; keeping programs from a saved game state of another version — protects the player's work but
 requires separate compatibility handling, which is outside the MVP.
 
-### D-184 — When does the game save the game state on the server?
+### D-207 — When does the game save the game state on the server?
 
 The game saves the game state on the server by itself right after each change of it the player
 makes — an edit of a program or of the copy, an act on the list of programs, creating a character,
@@ -3328,7 +3328,7 @@ rhythm and the hidden page send the game state only where it changed since the s
 browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving
 during one is sent after its answer, unless that request is the save before a logout that goes on
 (D-97). A save whose body is larger than 64 KiB is not sent and counts
-as refused as too large (D-185).
+as refused as too large (D-208).
 
 - **Scope:** browser-view
 - **Based on:** visibilitychange-hidden-last-event · fetch-keepalive-body-quota
@@ -3349,7 +3349,7 @@ run passes. The page becoming hidden is the last moment a page reliably observes
 request outlives the closing page, but the browser refuses one whose body brings the page's
 `keepalive` bodies in flight over 64 KiB, so one save request at a time keeps each within that
 quota, and a body over it is never sent; one request at a time also lets each save name the
-revision the one before was given (D-186).
+revision the one before was given (D-209).
 *Rejected:* saving only at the player's acts, a completion and a death, with no save while a map run
 passes — fewer requests, but closing the tab in the middle of a map run takes it back to the sending
 of the character: up to 8 real minutes at 1× (the whole 480 game minutes of Las), up to half a real
@@ -3359,14 +3359,14 @@ map run passes instead of every 30 real seconds — the same as every 30 real se
 16× a request every less than 2 real seconds, 16 saves of about 80 KB together in the half minute of
 Las, while closing the tab takes at most 30 game minutes at every pace.
 
-### D-185 — What does the player see of saving the game state?
+### D-208 — What does the player see of saving the game state?
 
 A save of the game state that succeeds shows nothing. When one fails, the header shows on a line
 under the title and „Wyloguj”, above the line of D-157, „Nie udało się zapisać postępu. Gra spróbuje
 ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for
 that failure, and the game retries the save after 5, 10 and 20 real seconds and then every
 30 real seconds, each time with the game state of that moment and at once at a moment of saving of
-D-184, until a save succeeds and the sentence goes. When the server refuses a save as larger than
+D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than
 its limit of D-104, the game does not retry that save but tries again at its next moment of saving,
 and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Usuń niepotrzebne
 programy.” in `warning` until a save succeeds.
@@ -3398,15 +3398,15 @@ it when the tab closes; the too-large refusal counted as a failed save — endle
 „Gra spróbuje ponownie.” that is not kept and a „Wyloguj” that does not work, leaving the player
 signed in at a shared computer.
 
-### D-186 — Which browser's save of the game state does the server accept?
+### D-209 — Which browser's save of the game state does the server accept?
 
 The server gives each save of the game state it accepts a revision one higher than the one before,
 starting at 1, and accepts a save only when it names as its basis the revision of the saved game
 state the server holds, or 0 where the account has none, refusing every other. The browser whose
 save it refuses so drops its unsaved game state, loads the server's saved game state — a manual map
-run that went on coming back paused (D-189) — shows „Gra została zapisana w innej przeglądarce.
-Wczytano ten zapis.” in `warning` on the header line of D-185 until its first successful save, and
-plays on from the loaded state, saving as D-184 gives.
+run that went on coming back paused (D-212) — shows „Gra została zapisana w innej przeglądarce.
+Wczytano ten zapis.” in `warning` on the header line of D-208 until its first successful save, and
+plays on from the loaded state, saving as D-207 gives.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
@@ -3442,16 +3442,16 @@ it when the tab closes, and the sentence answered for the conflict changes; a ra
 leave the body; the refusal carrying the server's saved game state — saves a request, but gives the
 save route a second shape of answer that logout does not want.
 
-### D-187 — What does the server do with a save of the game state of a lower version than the one it holds?
+### D-210 — What does the server do with a save of the game state of a lower version than the one it holds?
 
 The server refuses a save of the game state whose version of the shape is lower than the version of
-the saved game state it holds, comparing that number before the basis of D-186 and reading nothing of
+the saved game state it holds, comparing that number before the basis of D-209 and reading nothing of
 the game. The tab whose save it refuses so shows „Gra została zaktualizowana. Odśwież stronę.” in
-`warning` on the header line of D-185 and saves nothing more, while the game stays on its screen.
+`warning` on the header line of D-208 and saves nothing more, while the game stays on its screen.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
-- **Relations:** derives from D-183
+- **Relations:** derives from D-206
 - **Verification:** an agent compares a change with the decision:
   - complies: a tab opened before a deployment that raised the version, its save refused with the
     sentence standing and its later acts sending nothing; an old tab whose basis is also stale told
@@ -3464,25 +3464,25 @@ the game. The tab whose save it refuses so shows „Gra została zaktualizowana.
 knowing the version of the save it takes and of one state of the screen more. The version is
 compared first, so an old tab whose basis is also stale is told to reload instead of loading a saved
 game state its code cannot read.
-*Rejected:* no protection, as D-183 alone gives — an old tab after a deployment can erase a game
-begun in a new tab, by saving its state of the old version or, after the refusal of D-186, by
+*Rejected:* no protection, as D-206 alone gives — an old tab after a deployment can erase a game
+begun in a new tab, by saving its state of the old version or, after the refusal of D-209, by
 loading the new saved game state, discarding it as another version, starting anew and saving an
 empty game, which with frequent deployments while the game is tested is real for its owner.
 
-### D-188 — What does the player see when a save of the game state finds no session?
+### D-211 — What does the player see when a save of the game state finds no session?
 
 When the server answers a save of the game state that there is no session, whatever ended it — an
 expiry or a block of the account (D-137) — the game leaves the screen and its time stops, the account
 forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” in `warning` above them,
 and the unsaved game state stays in the page's memory only, never in the browser's lasting storage,
 so a reload or a closing of the page before signing in loses it. After a sign-in to the same account
-the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-189
+the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212
 give; after a sign-in to another account the state is dropped and the game loads that account's
 saved game state.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-180
+- **Relations:** derives from D-203
 - **Verification:** invariants: expired-session-unsaved-progress. An agent compares a change with the
   decision:
   - complies: a save answered with 401 removing the game and showing the forms with „Sesja wygasła.
@@ -3494,7 +3494,7 @@ saved game state.
 
 *Rationale:* the progress the browser holds waits in the open tab for the same account, and nothing
 of it stays in the browser for the next person at a shared computer; unsaved progress lives only as
-long as the open tab, and its retry may lose to another browser's save (D-186). A game that left the
+long as the open tab, and its retry may lose to another browser's save (D-209). A game that left the
 screen spends no time the player cannot save.
 *Rejected:* the unsaved state also kept in the browser's lasting storage (`localStorage`) for that
 account, surviving a reload — on a shared computer the state stays for the next person, and a new
@@ -3502,7 +3502,7 @@ path of code and a new decision about the browser's storage; the game staying on
 going on, with a sentence in `warning` and a button „Zaloguj się ponownie” that opens the form —
 further progress is unsaved too, and a new layout of the screen with the form beside the game.
 
-### D-189 — How does a manual map run come back from a loaded saved game state?
+### D-212 — How does a manual map run come back from a loaded saved game state?
 
 A manual map run of a loaded saved game state that goes on comes back at the game minute of the
 save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a
@@ -3540,17 +3540,17 @@ and after each reload following a death or a completion the loss of the copy's u
 without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the
 same seed.
 
-### D-190 — Which file is the exemplar for saved-game code?
+### D-213 — Which file is the exemplar for saved-game code?
 
 The exemplar for kind `saved-game` is `src/browser/sim/saved-game.ts`, and its kind guidelines are
 read before adding or changing a file of that kind. Saved-game code turns a game state into the
 saved document of the current version of its shape, and an unknown value — a saved game state
-downloaded from the server or kept in the page's memory (D-188) — into a game state or a refusal
+downloaded from the server or kept in the page's memory (D-211) — into a game state or a refusal
 naming why, inside the simulation, never throwing and changing nothing passed to it.
 
 - **Scope:** simulation, agent-workflow
 - **Based on:** none
-- **Relations:** derives from D-28 · derives from D-04 · derives from D-183
+- **Relations:** derives from D-28 · derives from D-04 · derives from D-206
 - **Verification:** an agent compares a change with the decision:
   - complies: saved-game guidelines identify the first implementation as exemplar and draw the
     kind's boundary with simulation modules as the content-data guidelines draw theirs; a crafted

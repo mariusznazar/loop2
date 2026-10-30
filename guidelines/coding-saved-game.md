@@ -15,13 +15,13 @@ Czytaj również ogólne wytyczne kodowania.
 
 | File | Status | Decision |
 |---|---|---|
-| `src/browser/sim/saved-game.ts` | exemplar | D-190 |
+| `src/browser/sim/saved-game.ts` | exemplar | D-213 |
 
 ## Rules
 
 ### Izolacja symulacji
 
-- **Decision:** D-04 · D-190
+- **Decision:** D-04 · D-213
 - **Invariant:** simulation-isolation
 - **Good:** Wczytanie dostaje dokument jako argument i oddaje wynik, nie sięgając poza symulację.
 - **Bad:** Wczytanie odczytuje czas systemowy albo importuje plik widoku.
@@ -45,7 +45,7 @@ export function loadedMinute(document: { minute: number }): number {
 
 ### Niezmienione argumenty
 
-- **Decision:** D-04 · D-190
+- **Decision:** D-04 · D-213
 - **Invariant:** simulation-inputs
 - **Good:** Wczytanie i zapis tworzą wynik, który nie dzieli z argumentem żadnej wartości do późniejszej zmiany.
 - **Bad:** Wczytanie zapisuje do przekazanego dokumentu albo oddaje jego wewnętrzny obiekt.
@@ -69,7 +69,7 @@ export function copyDocument(document: { items: number[] }): { items: number[] }
 
 ### Odmowa zamiast wyjątku
 
-- **Decision:** D-190 · D-183
+- **Decision:** D-213 · D-206
 - **Invariant:** save-version
 - **Good:** Spreparowany dokument bieżącej wersji dostaje odmowę z powodem `shape`, a dokument innej wersji powód `version`.
 - **Bad:** Wczytanie rzuca wyjątek na nieoczekiwanym kształcie albo uzupełnia brakujący klucz, zamiast odmówić.
@@ -86,7 +86,7 @@ więcej, niewolno mniej. Przy błędzie nie zwracaj części stanu.
 
 ### Wersja podnoszona razem z kształtem
 
-- **Decision:** D-183 · D-190
+- **Decision:** D-206 · D-213
 - **Invariant:** save-version
 - **Good:** Zmiana `GameState` albo typu, do którego prowadzi, podnosi stałą wersji, a dokument zapisany w teście ma nową wersję i nowy kształt.
 - **Bad:** Zmiana kształtu stanu gry zostawia wersję bez zmian albo przepisuje dokument w teście bez podniesienia wersji.
@@ -128,7 +128,7 @@ go nie ma, a wczytanie przyjmuje oba.
 
 Przebieg mapy, który trwał, wraca zatrzymany, w minucie gry, z tempem i resztą
 czasu rzeczywistego dokumentu; zakończony wraca zakończony, z ekranem po końcu
-(D-189). Wczytanie niczego nie posuwa naprzód.
+(D-212). Wczytanie niczego nie posuwa naprzód.
 
 ## Where in code
 

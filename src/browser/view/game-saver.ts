@@ -1,8 +1,8 @@
 /**
- * The saver of the game state on the server (D-184, D-185, D-186, D-187, D-188, D-97): one save
+ * The saver of the game state on the server (D-207, D-208, D-209, D-210, D-211, D-97): one save
  * request at a time, every moment of saving during one coalesced into one more save after its
  * answer, except during the save before a logout that goes on, after which nothing more is sent
- * (D-184); a check every 30 real seconds and at a hidden page that sends only a changed state; and
+ * (D-207); a check every 30 real seconds and at a hidden page that sends only a changed state; and
  * the header sentence of what the player sees of saving. It is created with the game and disposed
  * with it; nothing here runs when the module is imported.
  */
@@ -20,9 +20,9 @@ const OUTDATED = "Gra została zaktualizowana. Odśwież stronę.";
 const LOGOUT_FAILED =
   "Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.";
 
-/** The rhythm of the check for changes, in real milliseconds (D-184). */
+/** The rhythm of the check for changes, in real milliseconds (D-207). */
 const CHECK_MS = 30_000;
-/** The waits before each retry after a failed save; the last one repeats (D-185). */
+/** The waits before each retry after a failed save; the last one repeats (D-208). */
 const RETRY_MS = [5_000, 10_000, 20_000, 30_000] as const;
 
 export type GameSaverOptions = {
@@ -36,7 +36,7 @@ export type GameSaverOptions = {
   readonly revision: number;
   /**
    * The game was built from the server's save after a conflict, so „Gra została zapisana w innej
-   * przeglądarce. Wczytano ten zapis.” stands from the start until a save succeeds (D-186).
+   * przeglądarce. Wczytano ten zapis.” stands from the start until a save succeeds (D-209).
    */
   readonly afterConflict?: boolean;
   /** Another browser saved first: the page drops this game and loads the server's save. */
@@ -61,7 +61,7 @@ export type GameSaver = {
   readonly element: HTMLElement;
   /**
    * A moment of saving: sends the current state, at once or after the request in flight, except
-   * when that request is the save before a logout that goes on (D-184).
+   * when that request is the save before a logout that goes on (D-207).
    */
   moment(): void;
   /** Sends the current state only where it is not the one last sent; nothing during a request. */

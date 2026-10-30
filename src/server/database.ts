@@ -43,8 +43,8 @@ export interface SavedGame {
   game: string;
 }
 
-// A save names the version of its shape (D-187) and the revision it is based
-// on, 0 when its browser saw no saved game state (D-186).
+// A save names the version of its shape (D-210) and the revision it is based
+// on, 0 when its browser saw no saved game state (D-209).
 export interface SaveRequest {
   version: number;
   basedOn: number;
@@ -522,8 +522,8 @@ export class AccountDatabase {
   // block or another browser's save committed through another connection
   // either comes first and is seen here or waits until this save is
   // committed. A blocked account comes first, then a stored version greater
-  // than the save's (D-187), then a stored revision other than its basis, no
-  // saved game state counting as revision 0 (D-186); each writes nothing.
+  // than the save's (D-210), then a stored revision other than its basis, no
+  // saved game state counting as revision 0 (D-209); each writes nothing.
   // Blocking leaves the saved game state where it is.
   writeSavedGame(accountId: string, save: SaveRequest): SaveOutcome {
     if (

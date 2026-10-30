@@ -86,7 +86,7 @@ export function programListOptions(state: GameState): SelectOption[] {
 /**
  * Which program the panel shows after the simulation call that took `previous` to `state` and
  * produced `events` (spec decision 7): at a map run started, by a send or „Restart”, the copy, and
- * the same for the first state shown when it holds a map run, as a loaded game state may (D-189);
+ * the same for the first state shown when it holds a map run, as a loaded game state may (D-212);
  * at a map run's end, the copy's program, or the first of the list where it is gone; a copy shown
  * without a map run or a saved program gone from the list gives way to the first of the list;
  * otherwise what was shown. Pure.

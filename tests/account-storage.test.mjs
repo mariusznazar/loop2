@@ -731,7 +731,7 @@ test("a save is stored only on the revision it names, one of a lower version is 
     database.writeSavedGame(accountId, { version, basedOn, game });
   assert.equal(database.readSavedGame(account.id), null);
 
-  // D-186: no saved game state counts as revision 0, and the first save is 1.
+  // D-209: no saved game state counts as revision 0, and the first save is 1.
   assert.deepEqual(save(account.id, 2, 1, '{"n":0}'), { outcome: "conflict" });
   assert.equal(savedGameCount(raw), 0);
   assert.deepEqual(save(account.id, 2, 0, '{"n":1}'), {
@@ -755,7 +755,7 @@ test("a save is stored only on the revision it names, one of a lower version is 
   assert.deepEqual(save(account.id, 2, 0, '{"stale":0}'), {
     outcome: "conflict",
   });
-  // D-187: a lower version is outdated on the current basis and on a stale
+  // D-210: a lower version is outdated on the current basis and on a stale
   // one alike, since the version is compared first.
   assert.deepEqual(save(account.id, 1, 2, '{"old":2}'), {
     outcome: "outdated",

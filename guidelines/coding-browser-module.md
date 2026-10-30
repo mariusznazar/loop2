@@ -102,8 +102,8 @@ Gdy zapisu nie ma albo funkcja odmawia, strona buduje nową grę, a w drugim
 przypadku ze zdaniem odmowy nad nią. Grę usuwa, gdy serwer potwierdzi
 wylogowanie (D-97), gdy zapis dostanie 401 i gdy zapis przegra z zapisem z innej
 przeglądarki; po 401 stan gry zostaje w pamięci strony dla tego samego konta
-(D-188), a po konflikcie strona buduje grę od nowa z zapisu wczytanego z serwera
-(D-186).
+(D-211), a po konflikcie strona buduje grę od nowa z zapisu wczytanego z serwera
+(D-209).
 
 `createGameView` z `game-view.ts` zwraca element gry, wiersz zapisu (`saveLine`)
 do ustawienia w nagłówku, metody zapisu (`saveNow`, `saveBeforeLogout`, `keep`)
@@ -120,7 +120,7 @@ zapisanego stanu gry; 401 na zapis rozpoznaje zapisujący i zgłasza je stronie
 przez `onSignedOut`. Każdą inną porażkę któregoś z dwóch pierwszych żądań strona
 pokazuje jako jedno ostrzeżenie z „Spróbuj ponownie”; treści odpowiedzi nie
 czyta. Zapis ma własne zdania w wierszu zapisu: konflikt, stary kod gry i za
-duży stan gry (D-186, D-187, D-185), a każda inna porażka to ostrzeżenie
+duży stan gry (D-209, D-210, D-208), a każda inna porażka to ostrzeżenie
 o ponowieniu.
 
 ## Where in code

@@ -823,7 +823,7 @@ function game(value: unknown): GameState {
     nextCharacterId,
     run,
     lastSeed: uint32(read.lastSeed),
-    // A map run that goes on comes back paused, and one that ended as it ended (D-189).
+    // A map run that goes on comes back paused, and one that ended as it ended (D-212).
     paused: run !== null && !mapRunEnded(run) ? true : paused,
     solvedMaps: uniqueOf(read.solvedMaps, MAPS),
     pace: read.pace as Pace,

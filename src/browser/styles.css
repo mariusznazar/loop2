@@ -49,7 +49,7 @@ header h1 {
 
 /*
  * The line of saving the game state, on a line of its own after the title and „Wyloguj” and above
- * the row of an unconfirmed address, in `warning` (D-185, D-39); hidden while it says nothing.
+ * the row of an unconfirmed address, in `warning` (D-208, D-39); hidden while it says nothing.
  */
 header .save-line {
   flex-basis: 100%;

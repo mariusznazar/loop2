@@ -1,6 +1,6 @@
 // The page before and after signing in (task konta-graczy-i-logowanie, To do 1, 3, 4, 5 and 15;
 // spec section 7; D-96, D-97) and with its saved game state (task zapis-stanu-na-serwerze, To do
-// 5–10; spec sections 7 and 8; D-96, D-97, D-185, D-186, D-187, D-188, D-189). These tests run the
+// 5–10; spec sections 7 and 8; D-96, D-97, D-208, D-209, D-210, D-211, D-212). These tests run the
 // page's logic on a hand-made document model: they prove which elements it builds and what it does
 // with the client's answers, never real events, focus or rendering, which the browser check covers
 // (D-88).
@@ -197,7 +197,7 @@ const fakeDocument = {
 
 /**
  * The intervals a game in the page keeps running: its clock and its saver's check every 30 real
- * seconds (D-184).
+ * seconds (D-207).
  */
 const GAME_INTERVALS = 2;
 
@@ -1054,7 +1054,7 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-183). */
+/** The version of the shape of the saved game state this game writes and loads (D-206). */
 const VERSION = 1;
 const withCharacter = () => createCharacter(newGame(), "Ala").state;
 /** A game whose map run passes: Ala sent to the forest at the real date 0, unpaused. */
@@ -1103,7 +1103,7 @@ async function expiredPage(held) {
   await held.answer("loadSavedGame", saveOf(passing(), 4));
   buttonNamed(fakeDocument.body, "4×").fire("click");
   await settle();
-  // The map run came back paused (D-189), and the pace is the player's change.
+  // The map run came back paused (D-212), and the pace is the player's change.
   const kept = { ...passing(), paused: true, pace: 4 };
   assert.deepEqual(argsOf(held, "saveGame"), [submission(kept, 4)]);
   await held.answer("saveGame", { kind: "signed-out" });
@@ -1111,7 +1111,7 @@ async function expiredPage(held) {
 }
 
 // invariant: expired-session-unsaved-progress
-// Task zapis-stanu-na-serwerze, To do 9; D-180, D-188. Catches the state lost at the 401, the game
+// Task zapis-stanu-na-serwerze, To do 9; D-203, D-211. Catches the state lost at the 401, the game
 // left running beside the forms, the save asked for again instead of the kept state sent, and the
 // kept state sent on another basis than the revision last seen.
 test("a 401 on a save keeps the state, and a sign-in to the same account sends it and returns to the game from it", async () => {
@@ -1140,7 +1140,7 @@ test("a 401 on a save keeps the state, and a sign-in to the same account sends i
 });
 
 // invariant: expired-session-unsaved-progress
-// D-180, D-188. Catches the kept state saved under another account, and a kept state that waits on
+// D-203, D-211. Catches the kept state saved under another account, and a kept state that waits on
 // for a later sign-in after another account's.
 test("a sign-in to another account after a 401 on a save drops the kept state and loads that account's save", async () => {
   await onPage(async ({ root }) => {
@@ -1220,7 +1220,7 @@ test("after the session check the page keeps „Sprawdzanie logowania…” unti
   });
 });
 
-// To do 6; D-189. Catches a loaded map run left running, at another pace, or moved to the
+// To do 6; D-212. Catches a loaded map run left running, at another pace, or moved to the
 // headquarters, an ended one closed, and a loaded game saved again by itself.
 test("a save builds the game the load gives: a map run that went on comes back paused at its pace, an ended one on its screen after the end", async () => {
   const passingAt8 = { ...passing(), pace: 8 };
@@ -1297,7 +1297,7 @@ function pickOn(list, value) {
 }
 
 /**
- * Each act of the player D-184 names, made once on a game built from `start`: `act` clicks, types
+ * Each act of the player D-207 names, made once on a game built from `start`: `act` clicks, types
  * or picks it on the page, and `expected` is the game state it leaves, from the simulation call the
  * act stands for, or `check` a trait of the saved state where its exact value is not the page's.
  */
@@ -1430,7 +1430,7 @@ const ACTS = [
   },
 ];
 
-// To do 7; D-184, decision 6's list. Catches an act of the player whose change is left to the next
+// To do 7; D-207, decision 6's list. Catches an act of the player whose change is left to the next
 // 30-second check or to the hidden page, and an act that changes nothing sending a save.
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
   const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
@@ -1487,7 +1487,7 @@ function lastMinute() {
   return state;
 }
 
-// To do 7; D-184. Catches a death left unsaved until the next 30-second check.
+// To do 7; D-207. Catches a death left unsaved until the next 30-second check.
 test("a game minute that ends the map run in a death is saved at once", async () => {
   await onPage(async ({ root }) => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
@@ -1572,7 +1572,7 @@ test("a failed or uncertain answer for the saved game state shows the warning wi
   });
 });
 
-// To do 5; D-96, D-183. Catches a refused save loaded in part, the sentence of another version
+// To do 5; D-96, D-206. Catches a refused save loaded in part, the sentence of another version
 // for a damaged save, the sentence missing or under the confirmation notice, and the refused save
 // left on the server to come back at the next sign-in.
 test("a refused save starts a new game with its one-time sentence above it, after a confirmation notice, and saves the new game at once on the server's revision", async () => {
@@ -1620,7 +1620,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   }
 });
 
-// To do 7; D-185. Catches the failure shown nowhere or below the row of an unconfirmed address, no
+// To do 7; D-208. Catches the failure shown nowhere or below the row of an unconfirmed address, no
 // retry, and the sentence left after a save succeeds.
 test("a failed save shows its line under the title and „Wyloguj”, above the address row, and a retry that succeeds clears it", async () => {
   await onPage(async ({ root }) => {
@@ -1659,7 +1659,7 @@ test("a failed save shows its line under the title and „Wyloguj”, above the 
   });
 });
 
-// To do 8; D-186. Catches the lost game kept on screen or running, the server's save not asked
+// To do 8; D-209. Catches the lost game kept on screen or running, the server's save not asked
 // for, the sentence missing or not leaving at the first successful save, and a refused save on that
 // path read as a conflict.
 test("a conflict drops the game, asks for the server's save and builds from it with its sentence in the header until a save succeeds; a refused one there starts anew", async () => {
@@ -1791,7 +1791,7 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
   });
 });
 
-// D-97, D-187. Catches a stopped tab trying to save before logout, and the forms without the
+// D-97, D-210. Catches a stopped tab trying to save before logout, and the forms without the
 // sentence of the update.
 test("a tab that stopped saving as outdated logs out without a save and shows the update sentence above the forms", async () => {
   await onPage(async ({ root }) => {
@@ -1814,7 +1814,7 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
   });
 });
 
-// D-97, D-188; the concern of slice 5. Catches the expiry path started while the logout's request
+// D-97, D-211; the concern of slice 5. Catches the expiry path started while the logout's request
 // is under way, and a logout that does not happen leaving the save's 401 unanswered.
 test("a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, an uncertain one then takes the expiry path", async () => {
   for (const [name, answer] of [

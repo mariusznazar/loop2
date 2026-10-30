@@ -1,5 +1,5 @@
-// The game saver (task zapis-stanu-na-serwerze, To do 7, 8 and 10; spec sections 6 and 8; D-184,
-// D-185, D-186, D-187, D-188, D-97). These tests run the saver with a client the test answers,
+// The game saver (task zapis-stanu-na-serwerze, To do 7, 8 and 10; spec sections 6 and 8; D-207,
+// D-208, D-209, D-210, D-211, D-97). These tests run the saver with a client the test answers,
 // Node's mocked timers and a hand-made document model: they prove when it sends, what it sends and
 // what it shows and reports for each outcome, never real events or rendering (D-88).
 import assert from "node:assert/strict";
@@ -262,7 +262,7 @@ test("a failed save shows that the game retries, and the retries follow after 5,
     await held.answer(FAILED);
     assert.equal(sentenceOf(saver), RETRYING);
 
-    // Real milliseconds after each failure, written out from D-185: 5, 10, 20, 30 and 30 s. The
+    // Real milliseconds after each failure, written out from D-208: 5, 10, 20, 30 and 30 s. The
     // state changes only in the last millisecond, so the 30-second check finds nothing to send.
     const waits = [5_000, 10_000, 20_000, 30_000, 30_000];
     for (const [index, wait] of waits.entries()) {
@@ -519,7 +519,7 @@ test("a failed save before logout asks to log out again, and the retries go on u
   });
 });
 
-// D-184's exception for the save before a logout that goes on: a moment asked for while that save
+// D-207's exception for the save before a logout that goes on: a moment asked for while that save
 // is in flight is not sent after its answer. Catches a saver that sends that moment anyway, a save
 // request going out beside the logout that ends the session.
 test("a moment during the save before a logout that goes on is not sent after its answer", async () => {

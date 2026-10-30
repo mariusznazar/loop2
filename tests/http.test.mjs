@@ -2428,7 +2428,7 @@ test(
   "the save routes answer null with no save, count revisions from 1, refuse an outdated version before a stale basis and return the game unchanged",
   { timeout: 20000 },
   async (t) => {
-    // Spec decision 1; D-186 (revision basis), D-187 (version).
+    // Spec decision 1; D-209 (revision basis), D-210 (version).
     // Faults: the revision check before the version check; a revision that does
     // not advance by one; a game that comes back changed.
     const f = await accountFixture(t);

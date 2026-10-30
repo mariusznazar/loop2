@@ -74,13 +74,13 @@ function createPageNotice(sentence: string): HTMLElement {
  * when the server confirms it, and stays with a warning when the outcome is uncertain (D-97). One
  * transition runs at a time, and an answer that comes after the page moved on is ignored.
  *
- * Under the title and „Wyloguj”, on lines of their own, stand the line of saving (D-185) and, for
+ * Under the title and „Wyloguj”, on lines of their own, stand the line of saving (D-208) and, for
  * a signed-in player with an unconfirmed address, the row of `email-status.ts`. When the page's
  * address carries a confirmation token, the page first sends it — showing „Potwierdzanie adresu…”
  * where it shows the session check — and only then checks the session; the result stands as one
  * sentence above the first screen that check leads to, and leaves at the next change between forms
  * and game. A save answered with no session keeps the game state in this page only, for a sign-in
- * to the same account (D-188).
+ * to the same account (D-211).
  */
 export function startApp(
   root: HTMLElement,
@@ -121,9 +121,9 @@ export function startApp(
   let pendingNotice: ConfirmationNotice | null = null;
   // The outcome of a registration's first message, until the game it leads to is built.
   let pendingMessage: ConfirmationMessage | null = null;
-  // The game about to be built replaces one that lost a conflict to another browser (D-186).
+  // The game about to be built replaces one that lost a conflict to another browser (D-209).
   let afterConflict = false;
-  // The game state a save answered with no session left, kept in this page only (D-188).
+  // The game state a save answered with no session left, kept in this page only (D-211).
   let kept: (KeptGame & { readonly accountId: string }) | null = null;
   // While „Wyloguj” waits for the server to end the session, the logout's answer decides what the
   // page does, so an outcome the saver reports meanwhile waits for it.
@@ -230,14 +230,14 @@ export function startApp(
     main.replaceChildren(...notices, accountScreen.element);
   }
 
-  /** No session for a save: the current state stays in this page for the same account (D-188). */
+  /** No session for a save: the current state stays in this page for the same account (D-211). */
   function expire(): void {
     if (game === null || account === null) return;
     kept = { ...game.keep(), accountId: account.id };
     showForms(EXPIRED);
   }
 
-  /** Another browser saved first: this game goes and the server's save is loaded (D-186). */
+  /** Another browser saved first: this game goes and the server's save is loaded (D-209). */
   function reloadAfterConflict(): void {
     const owner = account;
     if (owner === null) return;
@@ -339,7 +339,7 @@ export function startApp(
       // The server may or may not have ended the session: the game stays, and so does „Wyloguj”.
       logoutWarning.set(result.failure.message);
       logoutButton.focus();
-      // A save that lost to another browser leaves this game behind the server's save (D-186).
+      // A save that lost to another browser leaves this game behind the server's save (D-209).
       if (save.kind === "conflict") reloadAfterConflict();
       else later?.();
     })();

@@ -419,7 +419,7 @@ test("during a map run the copy stands first and is shown with counts; a saved p
   });
 });
 
-// Task zapis-stanu-na-serwerze, To do 6; D-189, a loaded map run's copy open to editing. Catches a
+// Task zapis-stanu-na-serwerze, To do 6; D-212, a loaded map run's copy open to editing. Catches a
 // game built on a state with a map run showing a saved program instead of the copy.
 test("a panel whose first state holds a map run shows the copy, as after a load", () => {
   withPanelDocument(() => {
