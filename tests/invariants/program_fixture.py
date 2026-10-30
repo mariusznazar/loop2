@@ -10,6 +10,7 @@ def program_from_rules(rules):
     return {
         "groups": [{"id": 1, "name": "Program", "condition": {"kind": "always"},
                     "rules": identified}],
+        "tripPlan": {"take": [], "bring": []},
         "nextGroupId": 2,
         "nextRuleId": len(rules) + 1 if isinstance(rules, list) else 1,
     }

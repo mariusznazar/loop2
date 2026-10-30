@@ -329,7 +329,7 @@ function finishUse(state: Landing, action: Action): Landing {
 
 /**
  * A new map run at minute 0: the layout drawn from the seed, the first activity chosen. The
- * character carries the given traits, or those of a new character, and an empty backpack.
+ * character carries the given traits, or those of a new character, and the entry equipment.
  */
 export function newMapRun(
   map: MapDef,
@@ -338,6 +338,7 @@ export function newMapRun(
   ids: { mapId: MapId; characterId: CharacterId },
   traits: Traits = newTraits(),
   skills: CharacterSkills = {},
+  backpack: Backpack = newBackpack(),
 ): { run: MapRun; events: GameEvent[] } {
   const { tiles, entrance } = drawLayout(map, seed);
   const base = {
@@ -351,7 +352,7 @@ export function newMapRun(
       at: entrance,
       traits: { ...traits },
       skills: copySkills(skills),
-      backpack: newBackpack(),
+      backpack: { ...backpack },
     },
     body: startingBody(),
     natureEnergy: startingNatureEnergy(),

@@ -30,6 +30,7 @@ const WANDER_FIRST = programFromRules(
 // (D-91; To do 1).
 const EMPTY = {
   groups: [{ id: 1, name: "Program", condition: ALWAYS, rules: [] }],
+  tripPlan: { take: [], bring: [] },
   nextGroupId: 2,
   nextRuleId: 1,
 };

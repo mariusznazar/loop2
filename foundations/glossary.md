@@ -196,3 +196,9 @@ A mage is well fed in a game minute in which its satiety, after that game minute
 threshold the data files give.
 
 - **Not:** none
+
+## trip plan
+
+A trip plan is two ordered lists with counts: what a character takes into a map run and what it brings out of it.
+
+- **Not:** none

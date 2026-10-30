@@ -70,6 +70,7 @@ const THREE = {
       rules: [ALWAYS_EXPLORE, BELOW_WANDER, ALWAYS_WALK],
     },
   ],
+  tripPlan: { take: [], bring: [] },
   nextGroupId: 2,
   nextRuleId: 4,
 };
@@ -228,6 +229,7 @@ test("native drop targets place a rule before the target after removal, or appen
       ...THREE.groups,
       { id: 8, name: "Empty", condition: { kind: "always" }, rules: [] },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 9,
   };
   const snapshot = copy(input);
@@ -1259,7 +1261,12 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
     condition: { kind: "hereBelow", resource: "stick", value: 2 },
     rules: [BELOW_WANDER, ALWAYS_WALK],
   };
-  const input = { groups: [first, second], nextGroupId: 9, nextRuleId: 11 };
+  const input = {
+    tripPlan: { take: [], bring: [] },
+    groups: [first, second],
+    nextGroupId: 9,
+    nextRuleId: 11,
+  };
   const before = copy(input);
   const added = addRule(input, 3);
   assert.deepEqual(added.groups[0], first);

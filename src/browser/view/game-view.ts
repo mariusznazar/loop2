@@ -29,6 +29,7 @@ import { createCombatLine } from "./combat-line.js";
 import { createProgramPanel } from "./program-panel.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
+import { createTripLines } from "./trip-lines.js";
 
 export type GameView = {
   /** The program panel and the map column, for the page to place. */
@@ -151,12 +152,15 @@ export function createGameView(): GameView {
   const bodyRow = createBodyRow();
   const practice = document.createElement("p");
   practice.className = "run-practice";
+  const tripLines = createTripLines();
   runPanel.append(
     statusRow.element,
     statusRow.discovery,
     combatLine.element,
+    tripLines.deposited,
     bodyRow.element,
     practice,
+    tripLines.preview,
     terrainPanel.element,
   );
   mapColumn.append(headquarters.element, runPanel);
@@ -170,6 +174,7 @@ export function createGameView(): GameView {
     bodyRow.update(state);
     practice.textContent = practiceText(state.run?.practice ?? {});
     practice.hidden = practice.textContent === "";
+    tripLines.update(state);
     terrainPanel.update(state);
   }
 

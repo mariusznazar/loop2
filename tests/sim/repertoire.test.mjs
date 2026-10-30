@@ -317,6 +317,7 @@ test("the reduced program keeps identities and order and drops exactly the rules
         rules: [],
       },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 10,
     nextRuleId: 22,
   };
@@ -343,6 +344,7 @@ test("the reduced program keeps identities and order and drops exactly the rules
         rules: [],
       },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 10,
     nextRuleId: 22,
   });
@@ -568,6 +570,7 @@ test("a group whose condition lies outside the repertoire is passed over with it
         rules: [{ id: 2, ...EXPLORE_RULE }],
       },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 3,
     nextRuleId: 3,
   };

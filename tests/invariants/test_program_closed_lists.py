@@ -242,6 +242,7 @@ class ProgramClosedLists(unittest.TestCase):
     def test_group_conditions_accept_listed_values_and_refuse_unlisted_kinds(self):
         # invariant: program-closed-lists
         valid = {
+            "tripPlan": {"take": [], "bring": []},
             "nextGroupId": 11, "nextRuleId": 1,
             "groups": [
                 {"id": index + 1, "name": "Group", "condition": condition, "rules": []}

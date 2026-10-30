@@ -19,6 +19,7 @@ export function programWithRules(rules) {
         rules: identified,
       },
     ],
+    tripPlan: { take: [], bring: [] },
     nextGroupId: 2,
     nextRuleId: Array.isArray(rules) ? rules.length + 1 : 1,
   };

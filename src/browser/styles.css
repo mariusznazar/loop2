@@ -316,6 +316,52 @@ header h1 {
   padding: var(--space-m) 0;
 }
 
+.trip-editor {
+  border-top: var(--frame-width) solid var(--divider);
+  margin-top: var(--space-m);
+  padding-top: var(--space-m);
+}
+
+.trip-editor h3,
+.trip-editor h4 {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.trip-editor section {
+  margin-bottom: var(--space-m);
+}
+
+.trip-list {
+  margin: 0 0 var(--space-s);
+  padding-left: var(--space-xl);
+}
+
+.trip-entry {
+  margin-bottom: var(--space-s);
+}
+
+.trip-entry > * {
+  margin: 0 var(--space-xs) var(--space-xs) 0;
+  vertical-align: top;
+}
+
+.trip-entry input {
+  width: 6em;
+}
+
+.trip-warning {
+  color: var(--warning);
+  margin: 0;
+}
+
+.trip-result {
+  color: var(--text-secondary);
+  margin: var(--space-xs) 0 0;
+}
+
 .rule-group-header,
 .group-condition {
   display: flex;
