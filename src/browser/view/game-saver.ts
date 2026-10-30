@@ -1,10 +1,10 @@
 /**
  * The saver of the game state on the server (D-207, D-208, D-209, D-210, D-211, D-97): one save
  * request at a time, every moment of saving during one coalesced into one more save after its
- * answer, except during the save before a logout that goes on, after which nothing more is sent
- * (D-207); a check every 30 real seconds and at a hidden page that sends only a changed state; and
- * the header sentence of what the player sees of saving. It is created with the game and disposed
- * with it; nothing here runs when the module is imported.
+ * answer, except a moment asked for during the save before a logout that goes on, which is
+ * dropped (D-207); a check every 30 real seconds and at a hidden page that sends only a changed
+ * state; and the header sentence of what the player sees of saving. It is created with the game
+ * and disposed with it; nothing here runs when the module is imported.
  */
 import type { AccountClient, SaveOutcome } from "../account-api.js";
 import { savedGame } from "../sim/saved-game.js";
@@ -183,7 +183,9 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     }
     if (forLogout) {
       finishLogout({ kind: outcome.kind });
-      // A logout that goes on takes the game away; only a failed one keeps saving.
+      // The logout goes on, and its session's end takes the game away, so the moment asked for
+      // during this save is dropped (D-207). The saver goes on: when the logout's request
+      // fails, the game stays and later moments and checks still send.
       if (outcome.kind !== "failed") {
         pending = false;
         return;
