@@ -34,6 +34,27 @@ export interface MessageLimits {
   perAccount: number;
 }
 
+// A player's saved game state as the server holds it: the version of its
+// shape and its revision, both from 1, and the game's text, which the server
+// stores and returns without reading inside it (D-07).
+export interface SavedGame {
+  version: number;
+  revision: number;
+  game: string;
+}
+
+// A save names the version of its shape (D-187) and the revision it is based
+// on, 0 when its browser saw no saved game state (D-186).
+export interface SaveRequest {
+  version: number;
+  basedOn: number;
+  game: string;
+}
+
+export type SaveOutcome =
+  | { outcome: "saved"; revision: number }
+  | { outcome: "blocked" | "outdated" | "conflict" };
+
 // The schema's history, one step per version: step N turns version N - 1 into
 // version N. A new database runs every step, an existing one the steps after
 // its version. A step that has reached the test server is never edited, since
@@ -72,6 +93,18 @@ const schemaSteps = [
     ) STRICT;
     CREATE INDEX emailed_links_account ON emailed_links(account_id);
     CREATE INDEX emailed_links_created ON emailed_links(created_at);
+  `,
+  // A text cast to a blob is its bytes in the database's encoding, UTF-8 for
+  // every database this code creates, so the check counts bytes, not
+  // characters (D-104: at most 64 KiB stored per player).
+  `
+    CREATE TABLE saved_games (
+      account_id TEXT PRIMARY KEY NOT NULL
+        REFERENCES accounts(id) ON DELETE CASCADE,
+      version INTEGER NOT NULL CHECK (version >= 1),
+      revision INTEGER NOT NULL CHECK (revision >= 1),
+      game TEXT NOT NULL CHECK (length(CAST(game AS BLOB)) <= 65536)
+    ) STRICT;
   `,
 ];
 
@@ -462,6 +495,69 @@ export class AccountDatabase {
         )
         .run(link.account_id);
       return "confirmed";
+    });
+  }
+
+  readSavedGame(accountId: string): SavedGame | null {
+    const row = this.connection
+      .prepare(
+        "SELECT version, revision, game FROM saved_games WHERE account_id = ?",
+      )
+      .get(accountId);
+    if (!row) return null;
+    if (
+      typeof row.version !== "number" ||
+      !Number.isSafeInteger(row.version) ||
+      typeof row.revision !== "number" ||
+      !Number.isSafeInteger(row.revision) ||
+      typeof row.game !== "string"
+    ) {
+      throw new Error("Invalid stored saved game");
+    }
+    return { version: row.version, revision: row.revision, game: row.game };
+  }
+
+  // The block, the stored version and the stored revision are read in the
+  // transaction that writes, which holds the write lock from its start, so a
+  // block or another browser's save committed through another connection
+  // either comes first and is seen here or waits until this save is
+  // committed. A blocked account comes first, then a stored version greater
+  // than the save's (D-187), then a stored revision other than its basis, no
+  // saved game state counting as revision 0 (D-186); each writes nothing.
+  // Blocking leaves the saved game state where it is.
+  writeSavedGame(accountId: string, save: SaveRequest): SaveOutcome {
+    if (
+      !Number.isSafeInteger(save.version) ||
+      save.version < 1 ||
+      !Number.isSafeInteger(save.basedOn) ||
+      save.basedOn < 0 ||
+      typeof save.game !== "string"
+    ) {
+      throw new Error("Invalid saved game");
+    }
+    return this.transaction((): SaveOutcome => {
+      const account = this.connection
+        .prepare("SELECT blocked FROM accounts WHERE id = ?")
+        .get(accountId);
+      if (!account) throw new Error("Unknown account");
+      if (account.blocked !== 0) return { outcome: "blocked" };
+      const stored = this.readSavedGame(accountId);
+      if (stored && stored.version > save.version)
+        return { outcome: "outdated" };
+      const storedRevision = stored?.revision ?? 0;
+      if (storedRevision !== save.basedOn) return { outcome: "conflict" };
+      const revision = storedRevision + 1;
+      this.connection
+        .prepare(
+          `
+      INSERT INTO saved_games (account_id, version, revision, game)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(account_id) DO UPDATE SET version = excluded.version,
+        revision = excluded.revision, game = excluded.game
+    `,
+        )
+        .run(accountId, save.version, revision, save.game);
+      return { outcome: "saved", revision };
     });
   }
 
