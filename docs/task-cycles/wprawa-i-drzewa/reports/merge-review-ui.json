@@ -1,0 +1,50 @@
+{
+  "plans": {
+    "copy": [
+      {
+        "item": "berry",
+        "count": 2
+      }
+    ],
+    "saved": [
+      {
+        "item": "berry",
+        "count": 5
+      }
+    ],
+    "frozen": [
+      {
+        "item": "berry",
+        "count": 3
+      }
+    ]
+  },
+  "completed": [
+    {
+      "className": "status-row",
+      "text": "Minuta 1 · Las rozwiązanyPauza1×2×4×8×16×RestartZakończ",
+      "y": 67.390625
+    },
+    {
+      "className": "trip-result",
+      "text": "Do skrzynki: jagoda 1.",
+      "y": 94.1875
+    },
+    {
+      "className": "body-row",
+      "text": "Temperatura 36,9 °C · Sytość 100 % · Zdrowie 100 · Energia natury 100Plecak 1/15: jagoda 1",
+      "y": 116.375
+    },
+    {
+      "className": "run-practice",
+      "text": "Wprawa w tym przejściu: Zbieranie małych przedmiotów +5 · Jedzenie +1",
+      "y": 138.5625
+    },
+    {
+      "className": "terrain-panel",
+      "text": " patyk jagoda mech włókno",
+      "y": 168.75
+    }
+  ],
+  "errors": []
+}

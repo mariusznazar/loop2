@@ -1,0 +1,50 @@
+{
+  "hqPatrol": 0,
+  "copy": {
+    "plan": {
+      "take": [
+        {
+          "item": "berry",
+          "count": 3
+        }
+      ],
+      "bring": [
+        {
+          "item": "berry",
+          "count": 2
+        }
+      ]
+    },
+    "snapshot": [
+      {
+        "item": "berry",
+        "count": 3
+      }
+    ]
+  },
+  "saved": {
+    "take": [
+      {
+        "item": "berry",
+        "count": 3
+      }
+    ],
+    "bring": [
+      {
+        "item": "berry",
+        "count": 4
+      }
+    ]
+  },
+  "completed": "Minuta 1 · Las rozwiązany\n\nRestart\nZakończ\n\nDo skrzynki: jagoda 1.\n\nTemperatura 36,9 °C · Sytość 100 % · Zdrowie 100 · Energia natury 100\n\nPlecak 1/15: jagoda 1\n\nWprawa w tym przejściu: Zbieranie małych przedmiotów +5 · Jedzenie +1\n\n\t patyk\t jagoda\t mech\t włókno\t",
+  "order": [
+    "status-row",
+    "discovery-text",
+    "trip-result",
+    "body-row",
+    "run-practice",
+    "trip-result",
+    "terrain-panel"
+  ],
+  "errors": []
+}

@@ -1,0 +1,454 @@
+{
+  "initial": [
+    {
+      "name": "Ala",
+      "skills": [
+        "Eksploracja — poziom 5 (najwyższy) · wprawa 1000 · punkty 4",
+        "Zbieranie małych przedmiotów — poziom 6 (najwyższy) · wprawa 1000 · punkty 5",
+        "Wytwarzanie ogniska — poziom 5 (najwyższy) · wprawa 1000 · punkty 4",
+        "Jedzenie — poziom 4 (najwyższy) · wprawa 1000 · punkty 3",
+        "Rzucanie czaru Płomyk — poziom 4 (najwyższy) · wprawa 1000 · punkty 3",
+        "Walka bronią jednoręczną — poziom 4 (najwyższy) · wprawa 1000 · punkty 3",
+        "Kopanie — poziom 2 (najwyższy) · wprawa 1000 · punkty 1",
+        "Unik przed ciosem — poziom 3 (najwyższy) · wprawa 1000 · punkty 2"
+      ],
+      "enabled": 14
+    },
+    {
+      "name": "Ola",
+      "skills": [
+        "Eksploracja — poziom 1 · wprawa 0/15 · punkty 0",
+        "Zbieranie małych przedmiotów — poziom 1 · wprawa 0/30 · punkty 0",
+        "Wytwarzanie ogniska — poziom 1 · wprawa 0/20 · punkty 0",
+        "Jedzenie — poziom 1 · wprawa 0/15 · punkty 0",
+        "Rzucanie czaru Płomyk — poziom 1 · wprawa 0/2 · punkty 0",
+        "Walka bronią jednoręczną — poziom 1 · wprawa 0/30 · punkty 0",
+        "Kopanie — poziom 1 · wprawa 0/20 · punkty 0",
+        "Unik przed ciosem — poziom 1 · wprawa 0/10 · punkty 0"
+      ],
+      "enabled": 0
+    }
+  ],
+  "purchase": {
+    "focused": true,
+    "outline": "solid",
+    "row": "Wprawny krok 1/3 — Krótsza eksploracja · teraz 17 min → po kupnie 14 min · cena 1Kup"
+  },
+  "max": {
+    "disabled": true,
+    "text": "Obchód 1/1 — Zbiera do 12 sztuk bez losowania przez 40 minutKup"
+  },
+  "numericMax": {
+    "disabled": true,
+    "text": "Szybki posiłek 3/3 — Krótsze jedzenie · teraz 2 minKup"
+  },
+  "hqActions": [
+    "explore",
+    "wander",
+    "walkTo",
+    "walkToCampfire",
+    "gather",
+    "craftCampfire",
+    "lightCampfire",
+    "lightItem",
+    "feedCampfire",
+    "eat",
+    "strikeWithStick",
+    "kick",
+    "dodge"
+  ],
+  "ownerCopyActions": [
+    "explore",
+    "wander",
+    "walkTo",
+    "walkToCampfire",
+    "gather",
+    "patrol",
+    "craftCampfire",
+    "lightCampfire",
+    "lightItem",
+    "feedCampfire",
+    "eat",
+    "strikeWithStick",
+    "kick",
+    "dodge"
+  ],
+  "ownerSavedActions": [
+    "explore",
+    "wander",
+    "walkTo",
+    "walkToCampfire",
+    "gather",
+    "patrol",
+    "craftCampfire",
+    "lightCampfire",
+    "lightItem",
+    "feedCampfire",
+    "eat",
+    "strikeWithStick",
+    "kick",
+    "dodge"
+  ],
+  "runSelects": [
+    {
+      "label": "Program:",
+      "options": [
+        {
+          "value": "copy",
+          "text": "Kopia w przejściu"
+        },
+        {
+          "value": "1",
+          "text": "Program"
+        }
+      ]
+    },
+    {
+      "label": "Warunek grupy",
+      "options": [
+        {
+          "value": "always",
+          "text": "Zawsze"
+        },
+        {
+          "value": "hereBelow",
+          "text": "Tu leży mniej niż"
+        },
+        {
+          "value": "temperatureBelow",
+          "text": "Temperatura poniżej"
+        },
+        {
+          "value": "satietyBelow",
+          "text": "Sytość poniżej"
+        },
+        {
+          "value": "natureEnergyBelow",
+          "text": "Energia natury poniżej"
+        },
+        {
+          "value": "itemBelow",
+          "text": "Zapas poniżej"
+        },
+        {
+          "value": "campfireLeftBelow",
+          "text": "Zostało mniej niż — ognisko"
+        },
+        {
+          "value": "healthBelow",
+          "text": "Zdrowie poniżej"
+        },
+        {
+          "value": "opponentHealthBelow",
+          "text": "Przeciwnik ma poniżej"
+        },
+        {
+          "value": "awayFromCampfire",
+          "text": "Z dala od — ognisko"
+        }
+      ]
+    },
+    {
+      "label": "Zasób warunku grupy",
+      "options": [
+        {
+          "value": "stick",
+          "text": "patyk"
+        },
+        {
+          "value": "berry",
+          "text": "jagoda"
+        },
+        {
+          "value": "moss",
+          "text": "mech"
+        },
+        {
+          "value": "fiber",
+          "text": "włókno"
+        }
+      ]
+    },
+    {
+      "label": "Przedmiot warunku grupy",
+      "options": [
+        {
+          "value": "stick",
+          "text": "patyk"
+        },
+        {
+          "value": "berry",
+          "text": "jagoda"
+        },
+        {
+          "value": "moss",
+          "text": "mech"
+        },
+        {
+          "value": "fiber",
+          "text": "włókno"
+        }
+      ]
+    },
+    {
+      "label": "Warunek",
+      "options": [
+        {
+          "value": "always",
+          "text": "Zawsze"
+        },
+        {
+          "value": "hereBelow",
+          "text": "Tu leży mniej niż"
+        },
+        {
+          "value": "temperatureBelow",
+          "text": "Temperatura poniżej"
+        },
+        {
+          "value": "satietyBelow",
+          "text": "Sytość poniżej"
+        },
+        {
+          "value": "natureEnergyBelow",
+          "text": "Energia natury poniżej"
+        },
+        {
+          "value": "itemBelow",
+          "text": "Zapas poniżej"
+        },
+        {
+          "value": "campfireLeftBelow",
+          "text": "Zostało mniej niż — ognisko"
+        },
+        {
+          "value": "healthBelow",
+          "text": "Zdrowie poniżej"
+        },
+        {
+          "value": "opponentHealthBelow",
+          "text": "Przeciwnik ma poniżej"
+        },
+        {
+          "value": "awayFromCampfire",
+          "text": "Z dala od — ognisko"
+        }
+      ]
+    },
+    {
+      "label": "Zasób warunku",
+      "options": [
+        {
+          "value": "stick",
+          "text": "patyk"
+        },
+        {
+          "value": "berry",
+          "text": "jagoda"
+        },
+        {
+          "value": "moss",
+          "text": "mech"
+        },
+        {
+          "value": "fiber",
+          "text": "włókno"
+        }
+      ]
+    },
+    {
+      "label": "Przedmiot warunku",
+      "options": [
+        {
+          "value": "stick",
+          "text": "patyk"
+        },
+        {
+          "value": "berry",
+          "text": "jagoda"
+        },
+        {
+          "value": "moss",
+          "text": "mech"
+        },
+        {
+          "value": "fiber",
+          "text": "włókno"
+        }
+      ]
+    },
+    {
+      "label": "Akcja",
+      "options": [
+        {
+          "value": "explore",
+          "text": "Eksploruj"
+        },
+        {
+          "value": "wander",
+          "text": "Wędruj"
+        },
+        {
+          "value": "walkTo",
+          "text": "Idź"
+        },
+        {
+          "value": "walkToCampfire",
+          "text": "Idź — ognisko"
+        },
+        {
+          "value": "gather",
+          "text": "Zbierz"
+        },
+        {
+          "value": "patrol",
+          "text": "Obchód"
+        },
+        {
+          "value": "craftCampfire",
+          "text": "Wytwórz — ognisko"
+        },
+        {
+          "value": "lightCampfire",
+          "text": "Zapal — ognisko"
+        },
+        {
+          "value": "lightItem",
+          "text": "Zapal — patyk"
+        },
+        {
+          "value": "feedCampfire",
+          "text": "Zasil — ognisko"
+        },
+        {
+          "value": "eat",
+          "text": "Zjedz — jagoda"
+        },
+        {
+          "value": "strikeWithStick",
+          "text": "Uderz — patyk"
+        },
+        {
+          "value": "kick",
+          "text": "Kopnij"
+        },
+        {
+          "value": "dodge",
+          "text": "Odskocz"
+        }
+      ]
+    },
+    {
+      "label": "Zasób akcji",
+      "options": [
+        {
+          "value": "stick",
+          "text": "patyk"
+        },
+        {
+          "value": "berry",
+          "text": "jagoda"
+        },
+        {
+          "value": "moss",
+          "text": "mech"
+        },
+        {
+          "value": "fiber",
+          "text": "włókno"
+        }
+      ]
+    },
+    {
+      "label": "Program: Ala",
+      "options": [
+        {
+          "value": "1",
+          "text": "Program"
+        }
+      ]
+    },
+    {
+      "label": "Program: Ola",
+      "options": [
+        {
+          "value": "1",
+          "text": "Program"
+        }
+      ]
+    }
+  ],
+  "nonowner": {
+    "practice": {},
+    "action": {
+      "kind": "wait"
+    },
+    "held": {
+      "kind": "patrol",
+      "resource": "stick"
+    }
+  },
+  "nonownerOptions": [
+    {
+      "value": "explore",
+      "disabled": false
+    },
+    {
+      "value": "wander",
+      "disabled": false
+    },
+    {
+      "value": "walkTo",
+      "disabled": false
+    },
+    {
+      "value": "walkToCampfire",
+      "disabled": false
+    },
+    {
+      "value": "gather",
+      "disabled": false
+    },
+    {
+      "value": "craftCampfire",
+      "disabled": false
+    },
+    {
+      "value": "lightCampfire",
+      "disabled": false
+    },
+    {
+      "value": "lightItem",
+      "disabled": false
+    },
+    {
+      "value": "feedCampfire",
+      "disabled": false
+    },
+    {
+      "value": "eat",
+      "disabled": false
+    },
+    {
+      "value": "strikeWithStick",
+      "disabled": false
+    },
+    {
+      "value": "kick",
+      "disabled": false
+    },
+    {
+      "value": "dodge",
+      "disabled": false
+    },
+    {
+      "value": "patrol",
+      "disabled": false
+    }
+  ],
+  "completed": "Wprawa w tym przejściu: Zbieranie małych przedmiotów +5 · Jedzenie +1",
+  "dead": "Wprawa w tym przejściu: Zbieranie małych przedmiotów +5",
+  "discovery": "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+  "freshSections": 0,
+  "errors": []
+}

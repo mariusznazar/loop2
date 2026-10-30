@@ -1,0 +1,32 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/skills.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ new characters own independent zero practice and empty ranks, with level one and no points (2.9871ms)
+✔ all accepted cumulative thresholds grant exactly one point and level each, then stop (0.8503ms)
+✔ purchases charge successive costs in one skill, cannot overspend or exceed rank, and never affect another character (1.4579ms)
+✔ unknown trees, unknown characters, no skill and every retained run refuse purchase (2.8864ms)
+✔ every walking action with Długi krok rank three lasts at least one minute (3.6937ms)
+✔ numeric branches shorten exploration, crafting, both spells and eating at action start (1.2269ms)
+✔ send and restart take independent rank snapshots and a restart discards run practice (0.8112ms)
+✔ practice appears at the effect minute, once for all tiles of Zwiad, and never on an already revealed tile (1.5943ms)
+✔ gather miss grants none, an improved chance hits, and full hand respects stock and backpack limits (1.0535ms)
+✔ Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock and free space, and leaves random stream alone (1.0258ms)
+✔ clean flame needs no stick but still costs ten energy; item lighting still needs its piece (0.7187ms)
+✔ crafting, feeding, item lighting and eating grant one only when their effect lands, even eating at full satiety (0.5698ms)
+✔ combat practice counts damaging effects and effective dodges, not last or unused dodge requests (1.4287ms)
+✔ completion pays this minute's practice once to the runner, also on a previously solved map; death and early exits pay nothing (2.7614ms)
+✔ Obchód is known with its tree but offered only in its owner's run; an unavailable rule stays and is skipped (1.2266ms)
+✔ scout discovers neighboring resources and the gathering tree with Obchód in the same paused minute (1.0488ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.7021

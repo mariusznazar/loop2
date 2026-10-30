@@ -1,0 +1,35 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/program.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ always holds (1.8059ms)
+✔ hereBelow reads 0 on an unrevealed tile, whatever lies there (1.0509ms)
+✔ hereBelow compares the true stock of a revealed tile (0.2179ms)
+✔ hereBelow with N = 0 never holds (0.1677ms)
+✔ the first rule whose condition holds and whose action is feasible wins (1.2425ms)
+✔ a rule whose condition does not hold is skipped (0.266ms)
+✔ a rule whose action is not feasible is skipped (0.324ms)
+✔ with no applicable rule the character waits (0.8656ms)
+✔ a wait lasts waitMinutes, one game minute (0.2527ms)
+✔ feasibility and choice do not draw from the wander generator (0.3644ms)
+✔ the chosen action is a copy, not the program rule itself (0.2033ms)
+✔ a new game starts with one empty Program group under always (0.279ms)
+✔ group order skips false, empty and infeasible groups and then takes the first qualifying rule (1.0104ms)
+✔ all empty groups and an empty list of groups leave the character waiting (0.4466ms)
+✔ identical rule contents keep distinct identities when groups and rules move (0.4104ms)
+✔ group conditions use the same legal number, resource and item values as rules (0.6431ms)
+✔ group conditions refuse unknown kinds and invalid fields while accepting a legal control (0.4783ms)
+✔ program identities are unique positive integers below the next identity counters (0.6933ms)
+✔ editing, deleting or transferring a started rule leaves its action running to completion (4.8157ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 114.4313

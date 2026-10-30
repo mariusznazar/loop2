@@ -1,0 +1,25 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/headquarters.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ importing the headquarters touches no DOM: Node has no document and the import succeeded (0.6238ms)
+✔ an empty chest shows no line, so the headquarters marks it empty (0.519ms)
+✔ a chest holding pieces shows a line per resource held, in the order of the resources' data (0.2149ms)
+✔ a map's label is „Mapa: {name}”, with „ · rozwiązana” once solved, the name from the data (0.1257ms)
+✔ the condition sentence is the map's name, a dash and the solving text of its data (0.0914ms)
+✔ the headquarters hides maps until their prerequisites are solved; the editor keeps its full map list (0.1361ms)
+✔ the row of a character that has not gone shows the first program of the list (0.3027ms)
+✔ the positions of a row's list are the programs' names in list order, valued by their numbers (0.1394ms)
+✔ the list shows the program given, whichever place it has on the list (0.1118ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.0004

@@ -1,0 +1,42 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/program-list.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a second created program is named „Program 2” and takes the number 2 (1.3685ms)
+✔ a created program holds the empty group „Program” under „Zawsze”, at the end, and takes the next number (0.3851ms)
+✔ a number is not given again after a deletion (0.2362ms)
+✔ the suggested name is „Program n” for the smallest n from 2 that no name takes, letter case ignored (0.149ms)
+✔ a typed name is trimmed, and refused as empty or as taken regardless of letter case (0.1965ms)
+✔ a program's own name in another letter case does not block its rename; the name has no length limit (0.1096ms)
+✔ a rename keeps the place, the number and the content, and stores the trimmed name (0.2116ms)
+✔ a rename throws on an empty name, a taken name and a program not on the list (0.4453ms)
+✔ a deletion removes the program, and is refused for the last one and for a program not on the list (0.2753ms)
+✔ deleting the copy's program leaves the copy on its content, its number none and its name kept (1.6109ms)
+✔ deleting another program leaves the copy record as it is (0.3044ms)
+✔ deleting the program the counts stand beside clears the counts; deleting another leaves them (0.4226ms)
+✔ a deletion during a map run leaves the counts of the copy (0.2724ms)
+✔ Zakończ after the deletion of the copy's program clears the counts (2.1267ms)
+✔ an edit replaces the content of the program numbered, the others stay (0.4356ms)
+✔ an edit is checked against the resources of the maps and throws on a program not on the list (0.2305ms)
+✔ an edit reconciles the counts only where they stand beside the program edited (0.1947ms)
+✔ an edit of a saved program leaves the map run, its copy, its streak, its beaten attacks and its counts (0.5357ms)
+✔ the list operations run in a map run and outside one alike (0.3804ms)
+✔ the operations change nothing passed to them (0.9094ms)
+✔ a pick names a character of the team and a program of the list (0.1654ms)
+✔ a row's program is the pick, then the program used last, then the one entered with last, then the first (0.5466ms)
+✔ a row's program passes over each record once its program is deleted (0.393ms)
+✔ a pick is kept through the creation of another character and cleared by the send (0.1378ms)
+✔ a pick on one row leaves the other rows' programs (1.0504ms)
+✔ an edit of the copy reaches only the copy while the list holds more programs (0.5908ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104.129

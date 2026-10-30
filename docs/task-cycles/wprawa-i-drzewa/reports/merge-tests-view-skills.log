@@ -1,0 +1,11 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/skills.test.mjs
+
+node.exe : The selected test file does not exist.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (The selected test file does not exist.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

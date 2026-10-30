@@ -1,0 +1,28 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/copy.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a new game holds program 1, „Program”, with the empty rule group „Program” under „Zawsze”, the next program number 2 and no record of a program (1.3146ms)
+✔ an edit during a map run leaves program 1 as it was while the map run carries out the edited copy (3.8242ms)
+✔ a send with a program number carries out a copy of that program, whose base is its content, makes it the character's program used last and the one entered with last, and clears the character's pick (0.4081ms)
+✔ a send refuses a program number not on the list, a deleted program's included, and changes nothing (0.6628ms)
+✔ a send without a program number takes the first still on the list of the row's pick, the character's program used last, the program entered with last and the first program (1.7675ms)
+✔ Restart carries on the copy of the map run it replaces, its unsaved change included, with every count from zero and the programs as they were (0.4675ms)
+✔ Zakończ keeps a count beside a rule of the copy's program whose condition and action are the copy's, and 0 beside one whose content differs (0.3758ms)
+✔ Zakończ clears the counts where the copy's program is gone (0.2516ms)
+✔ the first chill writes „Zawsze → Eksploruj” into the copy, its base and the copy's program, and into no other program (1.6963ms)
+✔ the first chill writes the rule into the copy and its base alone where the copy's program is gone (1.4983ms)
+✔ setProgram outside a map run edits the program entered with last, or else the first of the list, and reconciles counts only where they stand beside it (0.3442ms)
+✔ a copy rule outside the character's repertoire is passed over and stays in the copy (0.1687ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107.9458

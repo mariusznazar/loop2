@@ -1,0 +1,15 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/quality/test_quality_invariants.py
+
+node.exe : .....
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (.....:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+----------------------------------------------------------------------
+Ran 5 tests in 6.996s
+
+OK

@@ -1,0 +1,45 @@
+<!doctype html><html lang="pl"><meta charset="utf-8"><title>Loop — local skill preview</title>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="/dist/public/tokens.css"><link rel="stylesheet" href="/dist/public/styles.css">
+<header><h1>Loop</h1><p>Podgląd lokalny — przygotowany stan testowy</p></header><main id="app" class="columns"></main>
+<script type="module">
+import * as game from '/dist/public/sim/game.js';
+import * as programs from '/dist/public/sim/programs.js';
+import { buyBranch } from '/dist/public/sim/skills.js';
+import { SKILLS } from '/dist/public/sim/data/skills.js';
+import { createHeadquarters } from '/dist/public/view/headquarters.js';
+import { createProgramPanel } from '/dist/public/view/program-panel.js';
+import { createStatusRow } from '/dist/public/view/status-row.js';
+import { createBodyRow } from '/dist/public/view/body-row.js';
+import { createTerrainPanel } from '/dist/public/view/terrain-panel.js';
+import { practiceText } from '/dist/public/view/character-skills.js';
+import { fullUnderstanding } from '/tests/sim/understanding-fixture.mjs';
+import { programFromRules } from '/tests/sim/program-fixture.mjs';
+let state = game.createCharacter(game.createCharacter(game.newGame(),'Ala').state,'Ola').state;
+const fresh = state;
+// Fixture inputs describe a funded character one minute before completion. Displayed state is
+// always the output of a simulation transition, including the completion that pays this practice.
+let seeded = game.send({...state, understanding: fullUnderstanding()}, {mapId:'forest', characterId:1},1).state;
+seeded = {...seeded, run:{...seeded.run,streak:479, practice:Object.fromEntries(Object.keys(SKILLS).map(id=>[id,1000]))}};
+state = game.end(game.advanceMinutes(seeded,1).state).state;
+const funded = state;
+function apply(result) { state=result.state; render(result.events); }
+const panel=createProgramPanel({
+ editCopy:p=>apply(game.setProgram(state,p)), editProgram:(id,p)=>apply(programs.editProgram(state,id,p)),
+ createProgram:()=>apply(programs.createProgram(state)),renameProgram:(id,name)=>apply(programs.renameProgram(state,id,name)),deleteProgram:id=>apply(programs.deleteProgram(state,id)),
+ saveCopy:()=>apply(programs.saveCopyIntoProgram(state)),saveCopyAsNew:name=>apply(programs.saveCopyAsNewProgram(state,name)),discardCopy:()=>apply(programs.discardCopyChanges(state)),switchProgram:id=>apply(programs.switchProgram(state,id))
+});
+const hq=createHeadquarters({buy:(id,b)=>apply(buyBranch(state,id,b)),create:name=>apply(game.createCharacter(state,name)),pick:(id,p)=>apply(programs.pickProgram(state,id,p)),send:(id,mapId,programId)=>apply(game.send(state,{characterId:id,mapId,programId},1))});
+const status=createStatusRow({togglePause:()=>apply(game.setPaused(state,!state.paused)),setPace:p=>apply(game.setPace(state,p)),restart:()=>apply(game.restart(state)),end:()=>apply(game.end(state))});
+const body=createBodyRow(), terrain=createTerrainPanel();
+const right=document.createElement('section');right.className='map-column';
+const run=document.createElement('div');run.className='run-panel';
+const practice=document.createElement('p');practice.className='run-practice';
+run.append(status.element,status.discovery,body.element,practice,terrain.element);right.append(hq.element,run);document.querySelector('#app').append(panel.element,right);
+function render(events=[]) { hq.element.hidden=!!state.run;run.hidden=!state.run;hq.update(state);panel.update(state,events);status.update(state);body.update(state);terrain.update(state);practice.textContent=practiceText(state.run?.practice??{});practice.hidden=!practice.textContent; }
+render();
+window.preview={get:()=>state, fresh:()=>apply({state:fresh,events:[]}),funded:()=>apply({state:funded,events:[]}),
+ advance:n=>apply(game.advanceMinutes(state,n)),
+ runPractice:(death=false)=>{const sent=game.send(funded,{mapId:'forest',characterId:1},1).state;apply(game.advanceMinutes({...sent,run:{...sent.run,...(death?{body:{temperature:34,satiety:100,health:0.1}}:{}),practice:{smallItemGathering:5},current:{activity:{kind:'rule',ruleId:1,action:{kind:'eat'}},startMinute:0,endMinute:1,stepTo:null},character:{...sent.run.character,backpack:{berry:1}},streak:479}},1));},
+ discovery:()=>{let s=game.setProgram(fresh,programFromRules({condition:{kind:'always'},action:{kind:'explore'}})).state;s=game.send(s,{mapId:'forest',characterId:1},1).state;apply(game.advanceMinutes(s,100));}
+};
+</script></html>

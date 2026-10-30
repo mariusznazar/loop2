@@ -1,0 +1,34 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/skills.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ new characters own independent zero practice and empty ranks, with level one and no points (1.8173ms)
+✔ all accepted cumulative thresholds grant exactly one point and level each, then stop (0.5549ms)
+✔ purchases charge successive costs in one skill, cannot overspend or exceed rank, and never affect another character (0.8776ms)
+✔ unknown trees, unknown characters, no skill and every retained run refuse purchase (1.8037ms)
+✔ every walking action with Długi krok rank three lasts at least one minute (1.7814ms)
+✔ numeric branches shorten exploration, crafting, both spells and eating at action start (0.8302ms)
+✔ meal and walking bonuses apply to their own actions when both are bought (0.5432ms)
+✔ send and restart take independent rank snapshots and a restart discards run practice (0.5455ms)
+✔ practice appears at the effect minute, once for all tiles of Zwiad, and never on an already revealed tile (1.0695ms)
+✔ gather miss grants none, an improved chance hits, and full hand respects stock and backpack limits (0.8251ms)
+✔ Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock and free space, and leaves random stream alone (0.4572ms)
+✔ clean flame needs no stick but still costs ten energy; item lighting still needs its piece (0.4193ms)
+✔ crafting, feeding, item lighting and eating grant one only when their effect lands, even eating at full satiety (0.4478ms)
+✔ combat practice counts damaging effects and effective dodges, not last or unused dodge requests (1.3581ms)
+✔ the combat resolution minute adds its successful strikes to the run's earlier practice (0.477ms)
+✔ completion pays this minute's practice once to the runner, also on a previously solved map; death and early exits pay nothing (1.5665ms)
+✔ Obchód is known with its tree but offered only in its owner's run; an unavailable rule stays and is skipped (0.8577ms)
+✔ scout discovers neighboring resources and the gathering tree with Obchód in the same paused minute (0.5612ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.1471

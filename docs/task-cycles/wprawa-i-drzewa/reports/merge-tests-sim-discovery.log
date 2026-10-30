@@ -1,0 +1,47 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/discovery.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a new game sent with its one empty group waits until the minute of the first chill, which learns Eksploruj, Wędruj and Temperatura poniżej, writes Zawsze → Eksploruj into the group Program and starts exploring in that minute (6.3496ms)
+✔ the same span of minutes, however split, reaches the same game state with the same events through the first chill (4.8221ms)
+✔ a program with no group gets the group Program with the condition Zawsze at the first chill, holding the rule (1.2846ms)
+✔ the rule is appended to the first group only, after its rules, with an identity no rule or group had (1.6129ms)
+✔ a second chill and the minutes after reveal nothing and write no second rule (1.3644ms)
+✔ a chill that reveals nothing new writes no rule (1.3408ms)
+✔ the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, Zapas poniżej and the items of the tile, read from the tile (1.4967ms)
+✔ a later revealed tile adds its new items only, and a tile of known items reveals nothing (0.8336ms)
+✔ the first gathered stick reveals exactly its row of the table, between the finish and the pick (0.8817ms)
+✔ the first gathered berry reveals exactly its row of the table, between the finish and the pick (0.4377ms)
+✔ the first crafted campfire reveals exactly its row of the table, between the finish and the pick (0.5632ms)
+✔ the first finished Zapal of a campfire reveals exactly its row of the table, between the finish and the pick (0.4254ms)
+✔ the first finished Zapal of a stick reveals exactly its row of the table, between the finish and the pick (0.2938ms)
+✔ a gathering that misses reveals nothing (0.2708ms)
+✔ a lighting that takes no hold, for want of sticks, reveals nothing (0.2027ms)
+✔ a crafting that puts no campfire on the tile, for want of sticks, reveals nothing (0.176ms)
+✔ a known item and its actions, revealed again, reveal nothing (0.5189ms)
+✔ a gathering ending in the minute of the character's death reveals nothing, and the same gathering without death does (0.4765ms)
+✔ the first chill in the minute of death still reveals what the body step reveals (0.2374ms)
+✔ the Understanding stands after death, Restart and Zakończ, and stands for the next character sent (3.0704ms)
+✔ advancing minutes through the first chill changes neither the game state given nor its program (1.0851ms)
+✔ a body temperature of exactly 35,0 °C after the minute is not a chill, one thousandth below it is (0.3097ms)
+✔ what the chill reveals is exactly its row, and the condition Zawsze, which nothing reveals, is not added to an Understanding that lacks it (0.2129ms)
+✔ a revealing event reveals what of its row is still new, though its actions outnumber or equal the new items and conditions (0.2534ms)
+✔ a map run ended in death passes no further minute at the level of the run (1.938ms)
+✔ a span of minutes of a new game sent, given 100, ends at the minute of the first chill, paused, holding what the chill revealed, and called again goes on (1.1853ms)
+✔ a span that meets no discovery leaves the game unpaused and holding no discovery (0.4611ms)
+✔ real time passed across the first chill ends at minute 84 paused with no carry, moves nothing more until the player goes on, and going on clears the discovery (1.7037ms)
+✔ a pause the player sets keeps what the last minute revealed, and going on clears it (0.6536ms)
+✔ restart, end and send clear what the last minute revealed, and a new game holds none (0.6782ms)
+✔ real time passed over a minute that gave events but no discovery keeps its carry and does not pause (0.2432ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.8425
