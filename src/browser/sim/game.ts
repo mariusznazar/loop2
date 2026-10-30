@@ -1,4 +1,6 @@
 import { newTraits } from "./character.js";
+import { newSkills, paidPractice } from "./skills.js";
+import { takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
   discover,
@@ -110,7 +112,11 @@ function programOf(
   const archetype = ARCHETYPES[character?.archetypeId ?? CREATED_ARCHETYPE];
   return programInRepertoire(
     program,
-    repertoireOf(state.understanding, archetype.predispositions),
+    repertoireOf(
+      state.understanding,
+      archetype.predispositions,
+      state.run?.character.skills ?? character?.skills,
+    ),
   );
 }
 
@@ -126,19 +132,35 @@ function startRun(
   traits: Traits,
   copy: ProgramCopy,
 ): GameResult {
+  const equipment = takeTrip(
+    copy.program.tripPlan,
+    state.team.chest,
+    traits.carryingCapacity,
+    mapOf(mapId),
+  );
   const started = newMapRun(
     mapOf(mapId),
     seed,
     programOf(state, copy.program, characterId),
     { mapId, characterId },
     traits,
+    state.run?.character.skills ??
+      state.team.characters.find((character) => character.id === characterId)!
+        .skills,
+    equipment.backpack,
   );
   return {
     state: {
       ...state,
       ruleCounts: countStarts(zeroCounts(copy.program), started.events),
       countsProgram: null,
-      run: { ...started.run, copy },
+      team: { ...state.team, chest: equipment.chest },
+      run: {
+        ...started.run,
+        copy,
+        bringPlan: copy.program.tripPlan.bring.map((entry) => ({ ...entry })),
+        deposited: null,
+      },
       paused: false,
       discovery: null,
       realMsCarry: 0,
@@ -230,6 +252,7 @@ export function createCharacter(state: GameState, name: string): GameResult {
     name: trimmed,
     archetypeId: CREATED_ARCHETYPE,
     traits: newTraits(),
+    skills: newSkills(ARCHETYPES[CREATED_ARCHETYPE].predispositions),
   };
   return {
     state: {
@@ -501,6 +524,21 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     completed = run.completion !== null;
     if (mapRunEnded(run) || revealed) break;
   }
+  const endedRun = {
+    ...run,
+    copy,
+    bringPlan: state.run.bringPlan,
+    deposited: null,
+  };
+  const deposited = completed
+    ? tripLoot(endedRun, current.team.chest, map)
+    : null;
+  if (deposited) {
+    const pieces = { ...current.team.chest.pieces };
+    for (const { item, count } of deposited)
+      pieces[item] = (pieces[item] ?? 0) + count;
+    current = { ...current, team: { ...current.team, chest: { pieces } } };
+  }
   return {
     state: {
       ...current,
@@ -509,7 +547,20 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         !current.solvedMaps.includes(run.mapId) && {
           solvedMaps: [...current.solvedMaps, run.mapId],
         }),
-      run: { ...run, copy },
+      ...(completed && {
+        team: {
+          ...current.team,
+          characters: current.team.characters.map((character) =>
+            character.id === run.character.id
+              ? {
+                  ...character,
+                  skills: paidPractice(character.skills, run.practice),
+                }
+              : character,
+          ),
+        },
+      }),
+      run: { ...endedRun, deposited },
       ruleCounts: countStarts(current.ruleCounts, events),
     },
     events,

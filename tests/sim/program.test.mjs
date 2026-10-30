@@ -171,7 +171,12 @@ const group = (id, condition, rules) => ({
   condition,
   rules,
 });
-const grouped = (...groups) => ({ nextGroupId: 100, nextRuleId: 1000, groups });
+const grouped = (...groups) => ({
+  tripPlan: { take: [], bring: [] },
+  nextGroupId: 100,
+  nextRuleId: 1000,
+  groups,
+});
 const identified = (id, condition, action) => ({ id, condition, action });
 
 test("a new game starts with one empty Program group under always", () => {

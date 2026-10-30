@@ -6,6 +6,7 @@ import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
+import { SKILLS } from "../sim/data/skills.js";
 import type {
   Activity,
   CreatureId,
@@ -17,6 +18,7 @@ import type {
 } from "../sim/types.js";
 import { mapRunEnded } from "../sim/game.js";
 import { createButton, setButtonSelected } from "./controls/button.js";
+import { tripWarning } from "./trip-lines.js";
 
 const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
 const PAUSED_SUFFIX = " (pauza)";
@@ -125,6 +127,7 @@ export function discoveryText(discovery: Understanding): string {
     ...discovery.actions.map((kind) => ACTIONS[kind].label),
     ...discovery.items.map(discoveredItemName),
     ...discovery.creatures.map(discoveredCreatureName),
+    ...discovery.trees.map((id) => `drzewo umiejętności ${SKILLS[id].name}`),
   ];
   const checkable = discovery.conditions.map(discoveredConditionText);
   const sentences: string[] = [];
@@ -182,7 +185,16 @@ export function createStatusRow(controls: StatusRowControls): StatusRow {
   // „Restart” and „Zakończ” end the map run as it stands: destructive buttons (D-44).
   const restartButton = createButton("Restart", { kind: "destructive" });
   const endButton = createButton("Zakończ", { kind: "destructive" });
-  element.append(text, pauseButton, ...paceButtons, restartButton, endButton);
+  const warning = document.createElement("p");
+  warning.className = "trip-warning";
+  element.append(
+    text,
+    pauseButton,
+    ...paceButtons,
+    restartButton,
+    warning,
+    endButton,
+  );
 
   pauseButton.addEventListener("click", () => controls.togglePause());
   restartButton.addEventListener("click", () => controls.restart());
@@ -196,6 +208,13 @@ export function createStatusRow(controls: StatusRowControls): StatusRow {
       discovery.hidden = revealed === "";
       if (discovery.textContent !== revealed) discovery.textContent = revealed;
       if (!state.run) return;
+      const cut = tripWarning(
+        state.run.copy.program.tripPlan,
+        state.run.character.traits.carryingCapacity,
+        MAPS[state.run.mapId],
+      );
+      warning.hidden = cut === null;
+      warning.textContent = cut ?? "";
       const shown = statusText(state.run, state.paused);
       if (text.textContent !== shown) text.textContent = shown;
       text.classList.toggle("positive", state.run.completion !== null);

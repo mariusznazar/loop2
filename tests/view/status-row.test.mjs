@@ -347,8 +347,13 @@ test("on the screen the pause button is hidden after death; „Restart” and �
       restart() {},
       end() {},
     });
-    const [text, pause, , , , , , restartButton, endButton] =
-      row.element.children;
+    const [text, pause] = row.element.children;
+    const restartButton = row.element.children.find(
+      (child) => child.textContent === "Restart",
+    );
+    const endButton = row.element.children.find(
+      (child) => child.textContent === "Zakończ",
+    );
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
     row.update(running);
     assert.equal(pause.hidden, false);
@@ -371,6 +376,7 @@ const EXPLORED_REVEALED = {
   actions: ["walkTo", "gather"],
   conditions: ["hereBelow", "itemBelow"],
   items: ["stick", "berry"],
+  trees: [],
   creatures: [],
 };
 
@@ -387,9 +393,10 @@ test("the text for the first chill names its actions and its condition with the 
       actions: ["explore", "wander"],
       conditions: ["temperatureBelow"],
       items: [],
+      trees: ["exploration"],
       creatures: [],
     }),
-    "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+    "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
   );
 });
 
@@ -399,6 +406,7 @@ test("a discovery of an action alone has no second sentence, and the campfire is
       actions: ["lightItem"],
       conditions: [],
       items: ["campfire"],
+      trees: [],
       creatures: [],
     }),
     "Odkryto: Zapal — patyk, Ognisko.",
@@ -411,6 +419,7 @@ test("a discovered creature is named from the creature data", () => {
       actions: [],
       conditions: [],
       items: [],
+      trees: [],
       creatures: ["wolf"],
     }),
     "Odkryto: Wilk.",
@@ -423,6 +432,7 @@ test("a condition that takes no number is named without a unit, and a discovery 
       actions: [],
       conditions: ["awayFromCampfire"],
       items: [],
+      trees: [],
       creatures: [],
     }),
     "W regułach można teraz sprawdzić: Z dala od — ognisko.",
@@ -451,7 +461,7 @@ test("on the screen the line is shown while the game holds a discovery and hidde
     assert.equal(line.hidden, false);
     assert.equal(
       line.textContent,
-      "Odkryto: Eksploruj, Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+      "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
     );
     assert.equal(
       row.element.children[0].textContent,
@@ -542,8 +552,13 @@ test("on the screen the text is positive after a completion and only then; the p
   globalThis.document = fakeDocument();
   try {
     const { row, paceButtons } = await rowAskingPaces();
-    const [text, pause, , , , , , restartButton, endButton] =
-      row.element.children;
+    const [text, pause] = row.element.children;
+    const restartButton = row.element.children.find(
+      (child) => child.textContent === "Restart",
+    );
+    const endButton = row.element.children.find(
+      (child) => child.textContent === "Zakończ",
+    );
     const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
     row.update(running);
     assert.equal(text.classes.has("positive"), false);
@@ -574,6 +589,7 @@ test("a discovery held at a completion stands under the completion's row", async
       actions: ["explore"],
       conditions: [],
       items: [],
+      trees: [],
       creatures: [],
     };
     row.update({ ...completed(running, 480), discovery });
@@ -585,5 +601,33 @@ test("a discovery held at a completion stands under the completion's row", async
     );
   } finally {
     globalThis.document = saved;
+  }
+});
+
+test("the restart warning follows the current copy's take list", async () => {
+  const saved = globalThis.document;
+  const map = MAPS.forest;
+  globalThis.document = fakeDocument();
+  MAPS.forest = { ...map, carryIn: 2 };
+  try {
+    const { row } = await rowAskingPaces();
+    const warning = row.element.children.find(
+      (child) => child.className === "trip-warning",
+    );
+    const state = sent([]);
+    row.update(state);
+    assert.equal(warning.hidden, true);
+    const changed = setProgram(state, {
+      ...state.run.copy.program,
+      tripPlan: { take: [{ item: "berry", count: 3 }], bring: [] },
+    }).state;
+    row.update(changed);
+    assert.equal(warning.hidden, false);
+    assert.ok(warning.textContent.includes("2 sztuk"));
+    row.update(state);
+    assert.equal(warning.hidden, true);
+  } finally {
+    globalThis.document = saved;
+    MAPS.forest = map;
   }
 });

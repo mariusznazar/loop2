@@ -269,7 +269,7 @@ test("the character skills grow the pairs of verb and target of the task, and th
     Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
     [
       ["Eksploracja", ["explore"]],
-      ["Zbieranie małych przedmiotów", ["gather"]],
+      ["Zbieranie małych przedmiotów", ["gather", "patrol"]],
       ["Wytwarzanie ogniska", ["craftCampfire", "feedCampfire"]],
       ["Jedzenie", ["eat"]],
       ["Rzucanie czaru Płomyk", ["lightCampfire", "lightItem"]],
@@ -343,6 +343,13 @@ const ROWS = [
     event: { kind: "attacked", creature: "wolf" },
     actions: ["strikeWithStick", "kick", "dodge"],
     conditions: ["healthBelow", "opponentHealthBelow"],
+    items: [],
+  },
+  {
+    // wprawa_i_drzewa_loop2.md: accepted Q3, the action is discovered with its tree.
+    event: { kind: "treeDiscovered", skill: "smallItemGathering" },
+    actions: ["patrol"],
+    conditions: [],
     items: [],
   },
   ...["stick", "berry", "moss", "fiber"].map((item) => ({
@@ -583,7 +590,7 @@ test("an activity of 0 minutes from faulty data still finishes in the next minut
   const map = { ...firstMap, stepMinutes: 0 };
   const program = programFromRules(rule(ALWAYS, { kind: "wander" }));
   const started = newMapRun(map, 1, program, SENT).run;
-  assert.equal(started.current.endMinute, started.minute);
+  assert.equal(started.current.endMinute, started.minute + 1);
   const step = stepMinute(started, map, program);
   assert.equal(step.run.minute, 1);
   assert.ok(

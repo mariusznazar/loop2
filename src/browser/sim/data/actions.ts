@@ -57,6 +57,12 @@ export const ACTIONS = {
     minutes: 10,
     revealedBy: { kind: "explored" },
   },
+  patrol: {
+    label: "Obchód",
+    status: "Robi obchód po",
+    minutes: 40,
+    revealedBy: { kind: "treeDiscovered", skill: "smallItemGathering" },
+  },
   craftCampfire: {
     label: "Wytwórz — ognisko",
     status: "Wytwarza ognisko",

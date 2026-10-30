@@ -1,8 +1,13 @@
 import { ARCHETYPES, CREATED_ARCHETYPE } from "../sim/data/archetypes.js";
+import { BALANCE } from "../sim/data/balance.js";
+import { pieceCount } from "../sim/trip.js";
+import { tripWarning } from "./trip-lines.js";
 import { MAPS } from "../sim/data/maps.js";
-import { RESOURCES } from "../sim/data/resources.js";
+import { ITEMS } from "../sim/data/items.js";
 import { canSendMap, characterName } from "../sim/game.js";
 import { rowProgram } from "../sim/programs.js";
+import type { BranchId } from "../sim/data/skills.js";
+import { createCharacterSkills } from "./character-skills.js";
 import type {
   CharacterId,
   Chest,
@@ -10,7 +15,7 @@ import type {
   MapId,
   ProgramId,
   SavedProgram,
-  ResourceId,
+  ItemId,
   Team,
 } from "../sim/types.js";
 import { createButton } from "./controls/button.js";
@@ -39,13 +44,13 @@ export function solvingSentence(mapId: MapId): string {
 }
 
 /**
- * What the chest shows: one line „{name}: {count}” for each resource it holds some of, in the
- * order of the resources' data; no line for an empty chest. Pure.
+ * What the chest shows: one line „{name}: {count}” for each item it holds some of, in the
+ * order of the items' data; no line for an empty chest. Pure.
  */
 export function chestLines(chest: Chest): string[] {
-  return (Object.keys(RESOURCES) as ResourceId[]).flatMap((id) => {
+  return (Object.keys(ITEMS) as ItemId[]).flatMap((id) => {
     const count = chest.pieces[id] ?? 0;
-    return count > 0 ? [`${RESOURCES[id].name}: ${count}`] : [];
+    return count > 0 ? [`${ITEMS[id].name}: ${count}`] : [];
   });
 }
 
@@ -71,6 +76,7 @@ export function programPositions(
 
 /** What the headquarters asks for; the app turns each into a simulation call. */
 export type HeadquartersControls = {
+  buy(characterId: CharacterId, branch: BranchId): void;
   /** Creates a character of the given name, already trimmed and not empty. */
   create(name: string): void;
   /** Picks the program of a character's row, kept until the character is sent. */
@@ -140,7 +146,8 @@ export function createHeadquarters(
   const emptyChest = emptyNote("Skrzynka jest pusta.");
   const chestList = document.createElement("ul");
   chestList.className = "chest-list";
-  chest.append(sectionHeading("Skrzynka"), emptyChest, chestList);
+  const chestHeading = sectionHeading("");
+  chest.append(chestHeading, emptyChest, chestList);
 
   element.append(title, team, chest);
 
@@ -160,11 +167,18 @@ export function createHeadquarters(
   });
   nameField.input.addEventListener("input", () => nameField.setError(null));
 
-  let shownTeam: Team | null = null;
+  let shownTeam = "";
   let shownSolved: MapId[] | null = null;
   let shownPrograms = "";
   let sendButtons: HTMLButtonElement[] = [];
   let programLists = new Map<CharacterId, HTMLSelectElement>();
+  let skills: ReturnType<typeof createCharacterSkills>[] = [];
+  let warnings: {
+    element: HTMLElement;
+    characterId: CharacterId;
+    capacity: number;
+    mapId: MapId;
+  }[] = [];
 
   function renderTeam(
     shown: Team,
@@ -173,6 +187,8 @@ export function createHeadquarters(
   ): void {
     sendButtons = [];
     programLists = new Map();
+    skills = [];
+    warnings = [];
     const rows = shown.characters.map((character) => {
       const row = document.createElement("li");
       row.className = "team-member";
@@ -209,8 +225,21 @@ export function createHeadquarters(
           controls.send(character.id, mapId, Number(programList.value)),
         );
         sendButtons.push(button);
-        row.append(where, condition, button);
+        const warning = document.createElement("p");
+        warning.className = "trip-warning";
+        warnings.push({
+          element: warning,
+          characterId: character.id,
+          capacity: character.traits.carryingCapacity,
+          mapId,
+        });
+        row.append(where, condition, button, warning);
       }
+      const trees = createCharacterSkills(character.id, (id) =>
+        controls.buy(character.id, id),
+      );
+      skills.push(trees);
+      row.append(trees.element);
       return row;
     });
     list.replaceChildren(...rows);
@@ -230,15 +259,24 @@ export function createHeadquarters(
   return {
     element,
     update(state: GameState): void {
+      chestHeading.textContent = `Skrzynka ${pieceCount(state.team.chest.pieces)}/${BALANCE.chestCapacity}`;
       const programsKey = JSON.stringify(
         state.programs.map((saved) => [saved.id, saved.name]),
       );
+      const teamKey = JSON.stringify({
+        characters: state.team.characters.map(({ id, name, archetypeId }) => ({
+          id,
+          name,
+          archetypeId,
+        })),
+        chest: state.team.chest,
+      });
       if (
-        state.team !== shownTeam ||
+        teamKey !== shownTeam ||
         state.solvedMaps !== shownSolved ||
         programsKey !== shownPrograms
       ) {
-        shownTeam = state.team;
+        shownTeam = teamKey;
         shownSolved = state.solvedMaps;
         shownPrograms = programsKey;
         renderTeam(state.team, state.solvedMaps, state.programs);
@@ -251,6 +289,16 @@ export function createHeadquarters(
         ).value;
       // One map run at a time: while one goes on, no other character can be sent.
       for (const button of sendButtons) button.disabled = state.run !== null;
+      for (const panel of skills) panel.update(state);
+      for (const warning of warnings) {
+        const text = tripWarning(
+          rowProgram(state, warning.characterId).program.tripPlan,
+          warning.capacity,
+          MAPS[warning.mapId],
+        );
+        warning.element.hidden = text === null;
+        warning.element.textContent = text ?? "";
+      }
     },
   };
 }

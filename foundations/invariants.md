@@ -945,6 +945,46 @@ At every game minute of a map run, the mage's nature energy lies between 0 and t
 - **Part:** simulation
 - **Violated:** no
 
+## action-duration-minimum
+
+An action shortened by bought branches lasts at least one game minute.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/_zadania/wprawa_i_drzewa_loop2.md § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
+- **Part:** simulation
+- **Violated:** no
+
+## trip-transfer
+
+At each map-run start equipment is removed from the chest in take-list order up to stock, carrying capacity and entry cap, and at completion items are deposited once from the entry-bound bring snapshot in its order up to backpack stock, carrying capacity, exit cap and free chest room, including on an already solved map.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-50 · D-179 · D-187 · D-189
+- **Part:** simulation
+- **Violated:** no
+
+## trip-run-end
+
+Death, ending or restarting an unfinished map run returns none of its carried items to the chest, while completion deposits the frozen bring list's clipped contents and leaves the remaining items unavailable to subsequent runs.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-179 · D-183 · D-189 · D-190
+- **Part:** simulation
+- **Violated:** no
+
+## trip-plan-progress
+
+Editing or discarding changes to the copy's trip plan alone leaves the run's streak, defeated-attack count and program-rule firing counts as they stood.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-93 · D-131 · D-136
+- **Part:** simulation
+- **Violated:** no
+
 ## player-save-isolation
 
 A signed-in player can read and change only the saved game state belonging to their own account.

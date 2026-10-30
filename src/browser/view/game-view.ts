@@ -22,6 +22,8 @@ import {
 } from "../sim/programs.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
+import { buyBranch } from "../sim/skills.js";
+import { practiceText } from "./character-skills.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
 import { createGameSaver, type LogoutSave } from "./game-saver.js";
@@ -30,6 +32,7 @@ import { createCombatLine } from "./combat-line.js";
 import { createProgramPanel } from "./program-panel.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
+import { createTripLines } from "./trip-lines.js";
 
 export type GameViewOptions = {
   /** The account client the game's saver saves through. */
@@ -177,6 +180,9 @@ export function createGameView(options: GameViewOptions): GameView {
   });
 
   const headquarters = createHeadquarters({
+    buy(characterId, branch) {
+      store.apply(buyBranch(state, characterId, branch));
+    },
     create(name) {
       act(createCharacter(state, name));
     },
@@ -211,11 +217,17 @@ export function createGameView(options: GameViewOptions): GameView {
     },
   });
   const bodyRow = createBodyRow();
+  const practice = document.createElement("p");
+  practice.className = "run-practice";
+  const tripLines = createTripLines();
   runPanel.append(
     statusRow.element,
     statusRow.discovery,
     combatLine.element,
+    tripLines.deposited,
     bodyRow.element,
+    practice,
+    tripLines.preview,
     terrainPanel.element,
   );
   mapColumn.append(headquarters.element, runPanel);
@@ -227,6 +239,9 @@ export function createGameView(options: GameViewOptions): GameView {
     statusRow.update(state);
     combatLine.update(state.run?.lastCombat ?? null);
     bodyRow.update(state);
+    practice.textContent = practiceText(state.run?.practice ?? {});
+    practice.hidden = practice.textContent === "";
+    tripLines.update(state);
     terrainPanel.update(state);
   }
 

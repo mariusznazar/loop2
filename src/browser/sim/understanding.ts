@@ -1,4 +1,3 @@
-import { backpackCount } from "./character.js";
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import { BALANCE } from "./data/balance.js";
@@ -8,10 +7,12 @@ import { CREATURES } from "./data/creatures.js";
 import { ITEMS } from "./data/items.js";
 import type { Revelation } from "./data/revelations.js";
 import { SKILLS, type SkillId } from "./data/skills.js";
+import { branchActionAvailable } from "./skills.js";
 import { tileAt } from "./hex.js";
 import type { GameEvent } from "./run.js";
 import type {
   Action,
+  CharacterSkills,
   Condition,
   GameState,
   ItemId,
@@ -26,7 +27,13 @@ export type Repertoire = Understanding;
 
 /** The Understanding of a new game: the condition "Zawsze" alone. */
 export function newUnderstanding(): Understanding {
-  return { actions: [], conditions: ["always"], items: [], creatures: [] };
+  return {
+    actions: [],
+    conditions: ["always"],
+    items: [],
+    creatures: [],
+    trees: [],
+  };
 }
 
 /** Every action that some character skill grows. */
@@ -42,6 +49,7 @@ function grownBySomeSkill(): Set<Action["kind"]> {
 export function repertoireOf(
   understanding: Understanding,
   predispositions: readonly SkillId[],
+  skills: CharacterSkills = {},
 ): Repertoire {
   const grown = grownBySomeSkill();
   const opened = new Set<Action["kind"]>(
@@ -49,11 +57,14 @@ export function repertoireOf(
   );
   return {
     actions: understanding.actions.filter(
-      (kind) => opened.has(kind) || !grown.has(kind),
+      (kind) =>
+        (opened.has(kind) || !grown.has(kind)) &&
+        branchActionAvailable(skills, kind),
     ),
     conditions: [...understanding.conditions],
     items: [...understanding.items],
     creatures: [...understanding.creatures],
+    trees: understanding.trees.filter((id) => predispositions.includes(id)),
   };
 }
 
@@ -82,6 +93,7 @@ export function actionInRepertoire(
   switch (action.kind) {
     case "walkTo":
     case "gather":
+    case "patrol":
       return repertoire.items.includes(action.resource);
     default:
       return true;
@@ -130,20 +142,25 @@ export function editorRepertoire(state: GameState): Repertoire {
       )
     : undefined;
   const archetype = ARCHETYPES[runner?.archetypeId ?? CREATED_ARCHETYPE];
-  return repertoireOf(state.understanding, archetype.predispositions);
+  return repertoireOf(
+    state.understanding,
+    archetype.predispositions,
+    state.run?.character.skills,
+  );
 }
 
 /** Whether two revealing events are the same event, including its named item or creature. */
 function sameRevelation(
   a: Revelation,
-  b: { kind: string; item?: string; creature?: string },
+  b: { kind: string; item?: string; creature?: string; skill?: string },
 ): boolean {
   return (
     a.kind === b.kind &&
     ("item" in a ? "item" in b && a.item === b.item : !("item" in b)) &&
     ("creature" in a
       ? "creature" in b && a.creature === b.creature
-      : !("creature" in b))
+      : !("creature" in b)) &&
+    ("skill" in a ? a.skill === b.skill : !("skill" in b))
   );
 }
 
@@ -162,7 +179,7 @@ function eventOf<K extends GameEvent["kind"]>(
  * after it up to the pick, and from the events of that minute: the chill from the body after its
  * step; a finished exploration from its revealed tile and the items that tile holds; a gathering
  * from the pieces that entered the backpack; a crafting from the campfire put on the tile; a
- * lighting from the pieces it used. The effect of an action takes hold only where the character
+ * lighting from its successful effect. The effect of an action takes hold only where the character
  * lives, so in the minute of death only the body's event happens.
  */
 function happened(
@@ -183,15 +200,19 @@ function happened(
   switch (finished.activity.action.kind) {
     case "explore": {
       found.push({ kind: "explored" });
-      const revealed = eventOf(events, "tileRevealed");
-      const tile = revealed && tileAt(after.tiles, revealed.at);
+      const revealed = events.filter((event) => event.kind === "tileRevealed");
       for (const item of Object.keys(ITEMS) as ItemId[]) {
-        if (tile && Object.hasOwn(tile.stock, item))
+        if (
+          revealed.some((event) =>
+            Object.hasOwn(tileAt(after.tiles, event.at)!.stock, item),
+          )
+        )
           found.push({ kind: "tileHolds", item });
       }
       break;
     }
     case "gather":
+    case "patrol":
       for (const item of Object.keys(ITEMS) as ItemId[]) {
         if (after.character.backpack[item] > before.character.backpack[item])
           found.push({ kind: "gathered", item });
@@ -203,10 +224,7 @@ function happened(
       break;
     case "lightCampfire":
     case "lightItem":
-      if (
-        backpackCount(after.character.backpack) <
-        backpackCount(before.character.backpack)
-      )
+      if ((after.practice.flameSpell ?? 0) > (before.practice.flameSpell ?? 0))
         found.push({ kind: "lit" });
       break;
     default:
@@ -249,12 +267,29 @@ function newlyRevealed(
       !understanding.creatures.includes(id) &&
       revealing(CREATURES[id].revealedBy),
   );
+  const actions = (Object.keys(ACTIONS) as Action["kind"][]).filter(
+    (kind) =>
+      !understanding.actions.includes(kind) &&
+      revealing((ACTIONS[kind] as ActionDef).revealedBy),
+  );
+  const trees = (Object.keys(SKILLS) as SkillId[]).filter(
+    (id) =>
+      !understanding.trees.includes(id) &&
+      SKILLS[id].actions.some((action) => actions.includes(action)),
+  );
+  const unlocked = (Object.keys(ACTIONS) as Action["kind"][]).filter((kind) => {
+    const revelation = ACTIONS[kind].revealedBy;
+    return (
+      revelation.kind === "treeDiscovered" &&
+      trees.includes(revelation.skill) &&
+      !understanding.actions.includes(kind)
+    );
+  });
   return {
     actions: (Object.keys(ACTIONS) as Action["kind"][]).filter(
-      (kind) =>
-        !understanding.actions.includes(kind) &&
-        revealing((ACTIONS[kind] as ActionDef).revealedBy),
+      (kind) => actions.includes(kind) || unlocked.includes(kind),
     ),
+    trees,
     conditions: (Object.keys(CONDITIONS) as Condition["kind"][]).filter(
       (kind) =>
         !understanding.conditions.includes(kind) &&
@@ -271,7 +306,7 @@ function isEmpty(revealed: Understanding): boolean {
       revealed.conditions.length +
       revealed.items.length +
       revealed.creatures.length ===
-    0
+      0 && revealed.trees.length === 0
   );
 }
 
@@ -295,6 +330,7 @@ export function discover(
       conditions: [...understanding.conditions, ...revealed.conditions],
       items: [...understanding.items, ...revealed.items],
       creatures: [...understanding.creatures, ...revealed.creatures],
+      trees: [...understanding.trees, ...revealed.trees],
     },
     revealed,
     chill: !isEmpty(
@@ -325,6 +361,7 @@ export function withFirstChillRule(program: Program): Program {
       nextRuleId: program.nextRuleId + 1,
     };
   return {
+    ...program,
     groups: [
       {
         id: program.nextGroupId,

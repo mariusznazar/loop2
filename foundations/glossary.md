@@ -117,7 +117,7 @@ An archetype is the kind of character that sets its predispositions.
 
 ## Understanding
 
-The Understanding is the record of the game's actions, items, conditions and creatures that the player has
+The Understanding is the record of the game's actions, items, conditions, creatures and branches that the player has
 discovered, together with the condition „Zawsze”, which it holds from the start of a new game.
 
 - **Not:** none
@@ -178,9 +178,27 @@ A copy is the program a map run carries out, taken from one of the player's prog
 
 - **Not:** none
 
+## practice
+
+Practice is the accumulated count of a character skill's actions that ended in effect.
+
+- **Not:** none
+
+## trait
+
+A trait is a number describing a character that acts always, not in one action alone.
+
+- **Not:** none
+
 ## well fed
 
 A mage is well fed in a game minute in which its satiety, after that game minute's fall, reaches the
 threshold the data files give.
+
+- **Not:** none
+
+## trip plan
+
+A trip plan is two ordered lists with counts: what a character takes into a map run and what it brings out of it.
 
 - **Not:** none

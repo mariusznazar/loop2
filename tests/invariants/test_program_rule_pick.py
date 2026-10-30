@@ -152,6 +152,7 @@ for (const [name, ...args] of steps) {
     const lacking = args[0] ?? {};
     const keep = (list, name) => list.filter((id) => !(lacking[name] ?? []).includes(id));
     state = { ...state, understanding: {
+      ...state.understanding,
       actions: keep(state.understanding.actions, 'actions'),
       conditions: keep(state.understanding.conditions, 'conditions'),
       items: keep(state.understanding.items, 'items'),
@@ -252,6 +253,7 @@ class ProgramRulePick(unittest.TestCase):
     def test_groups_skip_false_empty_and_infeasible_before_first_feasible_rule(self):
         # invariant: program-rule-pick
         program = {
+            "tripPlan": {"take": [], "bring": []},
             "nextGroupId": 6, "nextRuleId": 90,
             "groups": [
                 {"id": 1, "name": "False", "condition": NEVER,
@@ -319,6 +321,7 @@ class ProgramRulePick(unittest.TestCase):
     def test_a_group_whose_condition_lies_outside_the_repertoire_is_passed_over(self):
         # invariant: program-rule-pick
         program = {
+            "tripPlan": {"take": [], "bring": []},
             "nextGroupId": 3, "nextRuleId": 30,
             "groups": [
                 {"id": 1, "name": "Stock", "condition": STOCK,
