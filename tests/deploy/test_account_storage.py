@@ -17,9 +17,11 @@ through the probe's standard input and are never printed.
 
 Where no Docker daemon answers, the test is skipped and says what stays unchecked.
 
-Does NOT cover: saved game states, which the product does not store yet, so the replacement
-check of account-save-durable-storage stays open; the Compose stack and the deployment command
-(the test runs the image with equivalent settings); a rollback to older code; the server's image.
+Does NOT cover: saved game states, which the product stores in the same database but this test
+neither writes nor reads; account-save-durable-storage (method review) was cleared by the human's
+redeployment check on the test server, in which a saved game state came back after the
+application container was replaced; the Compose stack and the deployment command (the test runs
+the image with equivalent settings); a rollback to older code; the server's image.
 """
 
 import json
