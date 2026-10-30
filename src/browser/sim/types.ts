@@ -282,6 +282,14 @@ export type MapRun = {
   completion: Completion | null;
 };
 
+/**
+ * How a death was settled: the resurrection it used up, or everything it took, with the generation
+ * number the death gave the character, which stays the number of that death however the character
+ * goes on.
+ */
+export type DeathSettlement =
+  { kind: "resurrectionUsed" } | { kind: "progressLost"; generation: number };
+
 /** The map run of the game state: the map run of the minute with the record of its copy. */
 export type GameMapRun = MapRun & {
   copy: ProgramCopy;
@@ -295,6 +303,11 @@ export type GameMapRun = MapRun & {
    * the run's end, the saved document and back; a restart binds it anew.
    */
   solvedMapRun: boolean;
+  /**
+   * How the run's death was settled; null until `settleDeath` settles it, and null on a run with no
+   * death. A settlement held is what keeps a death from being settled twice.
+   */
+  deathSettlement: DeathSettlement | null;
 };
 
 /** Tells the characters of the team apart; two characters may share a name. */

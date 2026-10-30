@@ -10,6 +10,7 @@ import {
   send,
   setPace,
   setProgram,
+  settleDeath,
 } from "../../dist/public/sim/game.js";
 import {
   createProgram,
@@ -40,9 +41,10 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // in it. A change of the game state's shape makes the load refuse this document; it is rewritten
 // only together with a raised version, or while no saved game state of the current version exists
 // anywhere. The characters of the current version's documents also hold `generation` and
-// `resurrectionReadyAtMs` (spec, decision 9), written into version 2 under that exception: version 2
-// is on no server yet, so no saved game state of it exists. The document of version 1 keeps its
-// characters without them.
+// `resurrectionReadyAtMs` (spec, decision 9), and their map runs `deathSettlement`, null on the map
+// run below, which goes on (spec, decisions 5 and 9); both are written into version 2 under that
+// exception: version 2 is on no server yet, so no saved game state of it exists. The document of
+// version 1 keeps its characters and its map run without them.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -460,7 +462,11 @@ const DOCUMENT = {
         },
       ],
     },
-    run: { ...DOCUMENT_V1.game.run, solvedMapRun: false },
+    run: {
+      ...DOCUMENT_V1.game.run,
+      solvedMapRun: false,
+      deathSettlement: null,
+    },
   },
 };
 
@@ -548,6 +554,18 @@ function solvingItsMap(document) {
   document.game.solvedMaps = ["forest", "forestDeep"];
 }
 
+/**
+ * The document's map run ended in a death in its game minute, settled as `settlement` gives; the
+ * game no longer holds what only a map run going on holds.
+ */
+function dead(document, settlement = { kind: "resurrectionUsed" }) {
+  document.game.paused = false;
+  document.game.discovery = null;
+  document.game.realMsCarry = 0;
+  document.game.run.death = { minute: 212, cause: "cold" };
+  document.game.run.deathSettlement = settlement;
+}
+
 /** A value nested `depth` arrays deep. */
 function nested(depth) {
   let value = 1;
@@ -587,13 +605,19 @@ test("a map run that goes on comes back paused, at its game minute, pace and car
 });
 
 test("a map run that ended comes back as it ended", () => {
-  const died = changed((document) => {
-    document.game.paused = false;
-    document.game.discovery = null;
-    document.game.realMsCarry = 0;
-    document.game.run.death = { minute: 212, cause: "cold" };
-  });
+  // Each kind of settlement of decision 5; Ala's generation is 2 in the document.
+  const died = changed((document) => dead(document));
   assert.deepEqual(loadSavedGame(died), { ok: true, state: died.game });
+  const lost = changed((document) =>
+    dead(document, { kind: "progressLost", generation: 2 }),
+  );
+  assert.deepEqual(loadSavedGame(lost), { ok: true, state: lost.game });
+  // Decision 5: the number of that death stays, however far the character has gone on since.
+  const earlier = changed((document) => {
+    dead(document, { kind: "progressLost", generation: 2 });
+    document.game.team.characters[0].generation = 5;
+  });
+  assert.deepEqual(loadSavedGame(earlier), { ok: true, state: earlier.game });
   const completed = changed((document) => {
     document.game.paused = false;
     document.game.realMsCarry = 0;
@@ -891,9 +915,8 @@ const CRAFTED = {
   // Values on their closed lists.
   "a pace off the data's paces": (document) => (document.game.pace = 3),
   "a cause of death off its list": (document) => {
-    document.game.paused = false;
-    document.game.discovery = null;
-    document.game.run.death = { minute: 212, cause: "drowned" };
+    dead(document);
+    document.game.run.death.cause = "drowned";
   },
   "an outcome of combat off its list": (document) =>
     (document.game.run.lastCombat.result.outcome = "fled"),
@@ -990,9 +1013,8 @@ const CRAFTED = {
   "a tile at other coordinates than its place": (document) =>
     (document.game.run.tiles[6].at = { q: 2, r: 1 }),
   "a death in another game minute than the map run's": (document) => {
-    document.game.paused = false;
-    document.game.discovery = null;
-    document.game.run.death = { minute: 100, cause: "cold" };
+    dead(document);
+    document.game.run.death.minute = 100;
   },
   "a combat going on without the activity cleared": (document) =>
     (document.game.run.activeCombat = {
@@ -1109,6 +1131,85 @@ const CRAFTED = {
     document.game.realMsCarry = 0;
     document.game.run.solvedMapRun = true;
     document.game.run.completion = { minute: 212 };
+  },
+  // The settlement of a death (decision 9): null exactly when the map run has no death, a closed
+  // list of kinds, each with exactly its keys, and a generation from 2 up to the current one of the
+  // map run's character. Ala's is 2 in the document.
+  "the map run without its death settlement": (document) =>
+    delete document.game.run.deathSettlement,
+  "a death unsettled": (document) => dead(document, null),
+  "a settlement on a map run going on": (document) =>
+    (document.game.run.deathSettlement = { kind: "resurrectionUsed" }),
+  "a settlement of everything lost on a map run going on": (document) =>
+    (document.game.run.deathSettlement = {
+      kind: "progressLost",
+      generation: 2,
+    }),
+  "a settlement at a completion": (document) => {
+    solvingItsMap(document);
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [];
+    document.game.run.deathSettlement = { kind: "resurrectionUsed" };
+  },
+  "a settlement of a kind off its list": (document) =>
+    dead(document, { kind: "revived" }),
+  "a settlement of a kind every object inherits": (document) =>
+    dead(document, { kind: "toString" }),
+  "a settlement of the kind __proto__": (document) =>
+    dead(document, { kind: "__proto__" }),
+  "a settlement of a kind in other letter case": (document) =>
+    dead(document, { kind: "ResurrectionUsed" }),
+  "a settlement without its kind": (document) => dead(document, {}),
+  "a settlement holding the kind as a number": (document) =>
+    dead(document, { kind: 1 }),
+  "a settlement as text": (document) => dead(document, "resurrectionUsed"),
+  "a settlement as a number": (document) => dead(document, 1),
+  "a settlement of false": (document) => dead(document, false),
+  "a settlement as a list": (document) => dead(document, ["resurrectionUsed"]),
+  "a settlement with its kind inherited": (document) =>
+    dead(document, Object.create({ kind: "resurrectionUsed" })),
+  "a settlement with an own __proto__": (document) =>
+    dead(
+      document,
+      JSON.parse('{"kind":"resurrectionUsed","__proto__":{"generation":2}}'),
+    ),
+  "a resurrection used holding a generation": (document) =>
+    dead(document, { kind: "resurrectionUsed", generation: 2 }),
+  "a resurrection used with a key added": (document) =>
+    dead(document, { kind: "resurrectionUsed", note: "x" }),
+  "everything lost without its generation": (document) =>
+    dead(document, { kind: "progressLost" }),
+  "everything lost with a key added": (document) =>
+    dead(document, { kind: "progressLost", generation: 2, note: "x" }),
+  "everything lost at generation 1": (document) =>
+    dead(document, { kind: "progressLost", generation: 1 }),
+  "everything lost at generation 0": (document) =>
+    dead(document, { kind: "progressLost", generation: 0 }),
+  "everything lost at a generation below 0": (document) =>
+    dead(document, { kind: "progressLost", generation: -2 }),
+  "everything lost at a fractional generation": (document) => {
+    dead(document, { kind: "progressLost", generation: 2.5 });
+    document.game.team.characters[0].generation = 3;
+  },
+  "everything lost at a generation as text": (document) =>
+    dead(document, { kind: "progressLost", generation: "2" }),
+  "everything lost at a generation of none": (document) =>
+    dead(document, { kind: "progressLost", generation: null }),
+  "everything lost at a generation not a number": (document) =>
+    dead(document, { kind: "progressLost", generation: NaN }),
+  "everything lost at a generation beyond the safe integers": (document) => {
+    dead(document, { kind: "progressLost", generation: 2 ** 53 });
+    document.game.team.characters[0].generation = Number.MAX_SAFE_INTEGER;
+  },
+  "everything lost above the character's current generation": (document) =>
+    dead(document, { kind: "progressLost", generation: 3 }),
+  "everything lost at a generation only another character reached": (
+    document,
+  ) => {
+    dead(document, { kind: "progressLost", generation: 3 });
+    document.game.team.characters[1].generation = 5;
   },
   // The chest, by item and within its capacity.
   "a chest above its capacity": (document) =>
@@ -1266,6 +1367,21 @@ function deeper(until) {
   return state;
 }
 
+/** The death in combat of `deeper`, its character's resurrection not ready at `REAL_MS`. */
+function deathUnready() {
+  const state = deeper((run) => run.death !== null);
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) => ({
+        ...character,
+        resurrectionReadyAtMs: REAL_MS + 1,
+      })),
+    },
+  };
+}
+
 /** A program that explores, walks to berries where none lie here and wanders. */
 const WALKING = programFromRules(
   { condition: ALWAYS, action: { kind: "explore" } },
@@ -1406,6 +1522,7 @@ test("a game state the simulation made loads back from its saved document", () =
   const ended = end(played()).state;
   const done = completed();
   const doneMarked = completed(true);
+  const lost = settleDeath(deathUnready(), REAL_MS).state;
   const states = {
     "a new game": { state: newGame(), goesOn: false },
     "a wait under the empty „Program”": {
@@ -1438,8 +1555,23 @@ test("a game state the simulation made loads back from its saved document", () =
       goesOn: true,
     },
     "a death in combat": {
-      state: deeper((run) => run.death !== null),
+      state: settleDeath(
+        deeper((run) => run.death !== null),
+        REAL_MS,
+      ).state,
       goesOn: false,
+    },
+    "a death that took everything": {
+      state: lost,
+      goesOn: false,
+    },
+    "the headquarters after that death and „Zakończ”": {
+      state: end(lost).state,
+      goesOn: false,
+    },
+    "the restart after that death": {
+      state: restart(lost).state,
+      goesOn: true,
     },
     "a map run with its equipment and a bought rank": {
       state: equipped(),
@@ -1494,6 +1626,13 @@ test("a game state the simulation made loads back from its saved document", () =
   );
   assert.notEqual(states["an attack going on"].state.run.activeCombat, null);
   assert.equal(states["a death in combat"].state.run.death.cause, "combat");
+  assert.deepEqual(states["a death in combat"].state.run.deathSettlement, {
+    kind: "resurrectionUsed",
+  });
+  assert.deepEqual(lost.run.deathSettlement, {
+    kind: "progressLost",
+    generation: 2,
+  });
   const started =
     states["a map run with its equipment and a bought rank"].state;
   assert.equal(started.run.character.backpack.berry, 3);

@@ -17,6 +17,7 @@ import {
   setPace,
   setPaused,
   setProgram,
+  settleDeath,
 } from "../../dist/public/sim/game.js";
 import {
   createProgram,
@@ -1175,13 +1176,16 @@ test("a sign-in to another account after a 401 on a save drops the kept state an
   });
 });
 
-/** A game whose map run ended in Ala's death, the pause of each discovery lifted by the player. */
+/**
+ * A game whose map run ended in Ala's death, the pause of each discovery lifted by the player, the
+ * death settled as the game's clock settles it; the load refuses a death unsettled (spec, decision 9).
+ */
 function ended() {
   let state = passing();
   for (let round = 0; round < 50 && !mapRunEnded(state.run); round += 1)
     state = advanceMinutes(setPaused(state, false).state, 5000).state;
   assert.ok(state.run.death, "precondition: the map run ended in a death");
-  return state;
+  return settleDeath(state, 1_760_000_000_000).state;
 }
 
 /** The header's line of saving, or null while it says nothing. */
@@ -1542,8 +1546,9 @@ function lastMinute() {
   return state;
 }
 
-// To do 7; D-207. Catches a death left unsaved until the next 30-second check.
-test("a game minute that ends the map run in a death is saved at once", async () => {
+// To do 7; D-207; To do 16. Catches a death left unsaved until the next 30-second check, and a death
+// saved unsettled, which the next load would refuse.
+test("a game minute that ends the map run in a death is saved at once, settled", async () => {
   await onPage(async ({ root }) => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
     let now = 0;
@@ -1569,6 +1574,9 @@ test("a game minute that ends the map run in a death is saved at once", async ()
       const [sent] = argsOf(held, "saveGame");
       assert.equal(sent.basedOn, 5);
       assert.equal(sent.game.run.death.cause, "cold");
+      assert.deepEqual(sent.game.run.deathSettlement, {
+        kind: "resurrectionUsed",
+      });
     } finally {
       Object.defineProperty(globalThis, "performance", saved);
     }

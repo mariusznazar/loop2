@@ -41,6 +41,7 @@ import type {
   CurrentActivity,
   Death,
   DeathCause,
+  DeathSettlement,
   GameMapRun,
   GameState,
   Hex,
@@ -420,12 +421,13 @@ function hex(value: unknown): Hex {
 
 /**
  * What the game state names a program or a character by, and what it holds of them: the
- * characters of the team by their archetypes, and the skill trees the Understanding holds.
+ * characters of the team, already read, by their numbers, and the skill trees the Understanding
+ * holds.
  */
 type Records = {
   nextProgramId: ProgramId;
   listed: ReadonlySet<ProgramId>;
-  characters: ReadonlyMap<CharacterId, ArchetypeId>;
+  characters: ReadonlyMap<CharacterId, Character>;
   trees: readonly SkillId[];
   /** The maps solved, read before the map run: the mark of a run and its completion rest on them. */
   solved: readonly MapId[];
@@ -764,6 +766,46 @@ function deposited(
   return put;
 }
 
+const SETTLEMENTS: {
+  [K in DeathSettlement["kind"]]: (
+    value: unknown,
+    currentGeneration: number,
+  ) => DeathSettlement;
+} = {
+  resurrectionUsed: (value) => {
+    fields(value, ["kind"]);
+    return { kind: "resurrectionUsed" };
+  },
+  progressLost: (value, currentGeneration) => {
+    const read = fields(value, ["kind", "generation"]);
+    // A death that takes everything leaves a number from 2 up, and later deaths only raise it.
+    const generation = integer(read.generation, 2);
+    if (generation > currentGeneration) refuse();
+    return { kind: "progressLost", generation };
+  },
+};
+
+/**
+ * How a death was settled: none without a death, and at a death one of the closed list, so a death
+ * unsettled does not load; a number of a death that took everything up to the current generation of
+ * the map run's character.
+ */
+function deathSettlement(
+  value: unknown,
+  died: boolean,
+  currentGeneration: number,
+): DeathSettlement | null {
+  if (value === null) {
+    if (died) refuse();
+    return null;
+  }
+  if (!died) refuse();
+  return SETTLEMENTS[oneOf(own(plainObject(value), "kind"), SETTLEMENTS)](
+    value,
+    currentGeneration,
+  );
+}
+
 const RUN_KEYS = [
   "practice",
   "mapId",
@@ -790,6 +832,7 @@ const RUN_KEYS = [
   "bringPlan",
   "deposited",
   "solvedMapRun",
+  "deathSettlement",
 ] as const;
 
 /**
@@ -799,7 +842,7 @@ const RUN_KEYS = [
  * and a deposit only at a completion, out of the frozen bring plan. Its mark says whether the map
  * was solved when it started: a run that has not completed holds the mark exactly when the solved
  * maps hold its map, which one manual map run at a time keeps true (D-55); a run that completed
- * has its map among the solved maps, whatever its mark.
+ * has its map among the solved maps, whatever its mark. A death is settled, so no load settles one.
  */
 function mapRun(value: unknown, records: Records): GameMapRun {
   const read = fields(value, RUN_KEYS);
@@ -820,10 +863,10 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     "backpack",
   ]);
   const id = identity(carried.id);
-  const archetypeId = records.characters.get(id);
-  if (archetypeId === undefined) refuse();
+  const owner = records.characters.get(id);
+  if (owner === undefined) refuse();
   const character: RunCharacter = {
-    skills: characterSkills(carried.skills, archetypeId, records.trees),
+    skills: characterSkills(carried.skills, owner.archetypeId, records.trees),
     id,
     at: onMap(carried.at),
     traits: traits(carried.traits),
@@ -905,6 +948,11 @@ function mapRun(value: unknown, records: Records): GameMapRun {
       solvedMapRun,
     ),
     solvedMapRun,
+    deathSettlement: deathSettlement(
+      read.deathSettlement,
+      ended.death !== null,
+      owner.generation,
+    ),
   };
 }
 
@@ -947,10 +995,7 @@ function game(value: unknown): GameState {
     nextProgramId,
     listed: new Set(programs.map((saved) => saved.id)),
     characters: new Map(
-      theTeam.characters.map((character) => [
-        character.id,
-        character.archetypeId,
-      ]),
+      theTeam.characters.map((character) => [character.id, character]),
     ),
     trees: known.trees,
   };
