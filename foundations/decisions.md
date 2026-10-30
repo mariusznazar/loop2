@@ -3228,7 +3228,7 @@ The program panel shows a section „Plan wyprawy” below the rule groups, with
 
 ### D-181 — Which entries does a trip list accept?
 
-The game currently accepts an item once on each trip list, and the same item can stand on both lists. A position's count is an integer from 1 up, with its upper range currently left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
+The game currently accepts an item once on each trip list, and the same item can stand on both lists. A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is currently left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3236,8 +3236,8 @@ The game currently accepts an item once on each trip list, and the same item can
 - **Verification:** none
 - **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3" and "Q11", part a
 
-*Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds.
-*Rejected:* all game items offered from the start — contradicts discovery; restoring the previous count in the field at once — hides the invalid draft the player entered.
+*Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds. A count beyond the safe integers would make the load of the saved game state refuse it whole, so the game never takes one.
+*Rejected:* all game items offered from the start — contradicts discovery; restoring the previous count in the field at once — hides the invalid draft the player entered; any integer from 1 up, with the load admitting it — numbers that integer arithmetic cannot hold exactly would stand in the game state.
 
 ### D-182 — What trip plan does a new program hold?
 
