@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { SMTPServer } from "smtp-server";
 import {
   composeConfirmationMessage,
+  composePasswordResetMessage,
   SmtpMailer,
 } from "../dist/server/account-mail.js";
 
@@ -15,6 +16,8 @@ const password = "synthetic-smtp-password-7Qx";
 const recipient = "player@example.test";
 const token = "Zm9yLXRlc3RzLW9ubHktbm90LWEtcmVhbC10b2tlbi0";
 const link = `https://loop2.mariusznazar.com/#confirm-email=${token}`;
+const resetToken = "b25seS1mb3ItdGVzdHMtYS1yZXNldC10b2tlbi14eHh4";
+const resetLink = `https://loop2.mariusznazar.com/#reset-password=${resetToken}`;
 
 // A self-signed certificate made in the test, so no file or network is needed.
 // Only the subjectAltName differs between the two: the address the mailer
@@ -442,21 +445,77 @@ test("the submitted message has one recipient, the fixed sender and subject and 
       "",
       "Odnośnik jest ważny przez 24 godziny i działa raz.",
       "",
+      "Potwierdzony adres pozwala samodzielnie zresetować zapomniane hasło.",
+      "",
       "Jeśli to nie Ty, zignoruj tę wiadomość.",
     ].join("\n"),
   );
 });
 
-test("nothing the mailer writes to the console holds the password, the login, the token or the link", async (t) => {
+test("the submitted reset message has one recipient, the fixed sender and subject and a text body with the link on its own line", async (t) => {
+  const smtp = await smtpServer(t);
+  const mailer = new SmtpMailer(settings(smtp.port), trusting());
+
+  assert.equal(
+    await mailer.send(composePasswordResetMessage(recipient, resetLink)),
+    "sent",
+  );
+
+  const { headers, text } = parse(smtp.record.messages[0].raw);
+  // Sender, subject and body: D-219 (foundations/decisions.md).
+  assert.match(
+    decodeWords(headers.get("from")[0]),
+    /^(?:loop2|"loop2") <sender@example\.test>$/,
+  );
+  assert.deepEqual(headers.get("to"), [recipient]);
+  assert.equal(headers.has("cc"), false);
+  assert.equal(headers.has("bcc"), false);
+  assert.deepEqual(headers.get("subject").map(decodeWords), [
+    "Ustaw nowe hasło w loop2",
+  ]);
+  assert.match(headers.get("content-type")[0], /^text\/plain;/i);
+  assert.equal(
+    text.replace(/\n$/, ""),
+    [
+      "Ktoś — zapewne Ty — poprosił o ustawienie nowego hasła do konta w loop2 na tym adresie e-mail. Aby je ustawić, otwórz odnośnik:",
+      resetLink,
+      "",
+      "Odnośnik jest ważny przez godzinę i działa raz.",
+      "",
+      "Jeśli to nie Ty, zignoruj tę wiadomość. Hasło się nie zmieni.",
+    ].join("\n"),
+  );
+});
+
+test("a crafted recipient of a reset message fails without connecting", async (t) => {
+  const smtp = await smtpServer(t);
+  const mailer = new SmtpMailer(settings(smtp.port), trusting());
+
+  for (const address of [
+    "player@example.test\r\nBcc: other@example.test",
+    "player@example.test,other@example.test",
+    "Player<other@example.test>",
+  ]) {
+    assert.equal(
+      await mailer.send(composePasswordResetMessage(address, resetLink)),
+      "failed",
+      address,
+    );
+  }
+  assert.equal(smtp.record.connections, 0);
+});
+
+test("nothing the mailer writes to the console holds the password, the login, the token or the link of either message", async (t) => {
   const smtp = await smtpServer(t);
   const wrongPassword = "another-synthetic-password-3Zr";
   const source = String.raw`
-    import { composeConfirmationMessage, SmtpMailer } from "./dist/server/account-mail.js";
-    const { settings, wrongPassword, certificate, recipient, link } = JSON.parse(process.env.LOOP2_MAIL_CASE);
+    import { composeConfirmationMessage, composePasswordResetMessage, SmtpMailer } from "./dist/server/account-mail.js";
+    const { settings, wrongPassword, certificate, recipient, link, resetLink } = JSON.parse(process.env.LOOP2_MAIL_CASE);
     const message = composeConfirmationMessage(recipient, link);
     const sent = await new SmtpMailer(settings, { trustedCertificate: certificate }).send(message);
     const refused = await new SmtpMailer({ ...settings, password: wrongPassword }, { trustedCertificate: certificate }).send(message);
-    process.send([sent, refused], () => process.disconnect());
+    const reset = await new SmtpMailer(settings, { trustedCertificate: certificate }).send(composePasswordResetMessage(recipient, resetLink));
+    process.send([sent, refused, reset], () => process.disconnect());
   `;
   const child = spawn(process.execPath, ["--input-type=module", "-e", source], {
     cwd: process.cwd(),
@@ -468,6 +527,7 @@ test("nothing the mailer writes to the console holds the password, the login, th
         certificate: localCertificate.cert,
         recipient,
         link,
+        resetLink,
       }),
     },
     // Outcomes come back over IPC, so stdout and stderr hold only what the
@@ -492,20 +552,28 @@ test("nothing the mailer writes to the console holds the password, the login, th
   );
 
   assert.equal(status, 0, stderr);
-  assert.deepEqual(outcomes, [["sent", "failed"]]);
+  assert.deepEqual(outcomes, [["sent", "failed", "sent"]]);
   assert.equal(
     smtp.record.authentications.length,
-    2,
-    "precondition: both logins reached the server",
+    3,
+    "precondition: all three logins reached the server",
   );
   // The library's own log would write the link quoted-printable and the login
   // in base64, so only the absence of other output proves that none of them
-  // is written: nothing for the sent message, one line for the refused one.
+  // is written: nothing for the sent messages, one line for the refused one.
   assert.equal(stdout, "");
   const lines = stderr.split(/\r?\n/).filter((line) => line !== "");
   assert.equal(lines.length, 1, stderr);
   // The server's refusal repeats the login, so a line that quoted it would show.
-  for (const secret of [password, wrongPassword, login, token, link]) {
+  for (const secret of [
+    password,
+    wrongPassword,
+    login,
+    token,
+    link,
+    resetToken,
+    resetLink,
+  ]) {
     assert.equal(lines[0].includes(secret), false, `the line holds ${secret}`);
   }
   // The line names the library's code, which tells a refused login apart from
