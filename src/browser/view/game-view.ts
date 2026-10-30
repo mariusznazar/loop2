@@ -1,7 +1,8 @@
+import type { AccountClient } from "../account-api.js";
 import {
   createCharacter,
   end,
-  newGame,
+  mapRunEnded,
   restart,
   setPace,
   setPaused,
@@ -19,32 +20,68 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../sim/programs.js";
+import { savedGame, type SavedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
 import { createBodyRow } from "./body-row.js";
 import { startClock, type GameStore } from "./clock.js";
+import { createGameSaver, type LogoutSave } from "./game-saver.js";
 import { createHeadquarters } from "./headquarters.js";
 import { createCombatLine } from "./combat-line.js";
 import { createProgramPanel } from "./program-panel.js";
 import { createStatusRow } from "./status-row.js";
 import { createTerrainPanel } from "./terrain-panel.js";
 
+export type GameViewOptions = {
+  /** The account client the game's saver saves through. */
+  readonly client: Pick<AccountClient, "saveGame">;
+  /** The game state the game starts from: a new game, or the state a load returned. */
+  readonly state: GameState;
+  /** The revision of the saved game state `state` came from; 0 when the server held none. */
+  readonly revision: number;
+  /** The game was built from the server's save after a conflict (D-186). */
+  readonly afterConflict?: boolean;
+  /** Another browser saved first: the page drops this game and loads the server's save. */
+  onConflict(): void;
+  /** The server holds a newer version: the saver has stopped for good; the game stays. */
+  onOutdated(): void;
+  /** No session: the page keeps the current state for the same account and removes the game. */
+  onSignedOut(): void;
+};
+
+/** The current game state as a saved document, with the revision the saver last saw. */
+export type KeptGame = {
+  readonly document: SavedGame;
+  readonly revision: number;
+};
+
 export type GameView = {
   /** The program panel and the map column, for the page to place. */
   element: HTMLElement;
+  /** The header line of saving, for the page to place under the title and „Wyloguj” (D-185). */
+  saveLine: HTMLElement;
+  /** A moment of saving the page calls itself: the current state goes at once. */
+  saveNow(): void;
+  /** The save before logout and its outcome (D-97). */
+  saveBeforeLogout(): Promise<LogoutSave>;
+  /** The current game state, real time passed first, as a document to keep in the page (D-188). */
+  keep(): KeptGame;
   /**
-   * Ends this game in the page: its clock stops and its elements leave the page, taking their
-   * event handlers with them. Calling it again does nothing.
+   * Ends this game in the page: its clock and its saver stop and its elements leave the page,
+   * taking their event handlers with them. Calling it again does nothing.
    */
   dispose(): void;
 };
 
 /**
- * Builds a new game and starts its clock. The view holds the one current game state; it replaces
- * it only with the state a simulation function returned and draws only from it. Nothing here runs
- * when the module is imported.
+ * Builds the game from the state it starts from and starts its clock and its saver. The view holds
+ * the one current game state; it replaces it only with the state a simulation function returned
+ * and draws only from it. It lands where the state says: the headquarters, a map run (a loaded one
+ * that goes on comes back paused by the load) or the screen after a map run's end. Every act of the
+ * player whose result changed the state, and every game minute that ends the map run in a death or
+ * a completion, is a moment of saving (D-184). Nothing here runs when the module is imported.
  */
-export function createGameView(): GameView {
-  let state: GameState = newGame();
+export function createGameView(options: GameViewOptions): GameView {
+  let state: GameState = options.state;
 
   const element = document.createElement("div");
   element.className = "columns";
@@ -58,45 +95,52 @@ export function createGameView(): GameView {
   const terrainPanel = createTerrainPanel();
   const combatLine = createCombatLine();
 
+  /** An act of the player: its result replaces the state, and a changed state is saved. */
+  function act(result: GameResult): void {
+    const before = state;
+    store.apply(result);
+    if (state !== before) saver.moment();
+  }
+
   // Left column: the program panel, always visible. Each of its acts goes to the simulation, which
   // checks it; real time elapsed before the act is passed first, so it runs under the program it
   // ran under.
   const programPanel = createProgramPanel({
     editCopy(program) {
       clock.flush();
-      if (state.run) store.apply(setProgram(state, program));
+      if (state.run) act(setProgram(state, program));
     },
     editProgram(programId, program) {
       clock.flush();
-      store.apply(editProgram(state, programId, program));
+      act(editProgram(state, programId, program));
     },
     createProgram() {
       clock.flush();
-      store.apply(createProgram(state));
+      act(createProgram(state));
     },
     renameProgram(programId, name) {
       clock.flush();
-      store.apply(renameProgram(state, programId, name));
+      act(renameProgram(state, programId, name));
     },
     deleteProgram(programId) {
       clock.flush();
-      store.apply(deleteProgram(state, programId));
+      act(deleteProgram(state, programId));
     },
     saveCopy() {
       clock.flush();
-      store.apply(saveCopyIntoProgram(state));
+      act(saveCopyIntoProgram(state));
     },
     saveCopyAsNew(name) {
       clock.flush();
-      store.apply(saveCopyAsNewProgram(state, name));
+      act(saveCopyAsNewProgram(state, name));
     },
     discardCopy() {
       clock.flush();
-      store.apply(discardCopyChanges(state));
+      act(discardCopyChanges(state));
     },
     switchProgram(programId) {
       clock.flush();
-      store.apply(switchProgram(state, programId));
+      act(switchProgram(state, programId));
     },
   });
   element.append(programPanel.element, mapColumn);
@@ -105,42 +149,65 @@ export function createGameView(): GameView {
     get: () => state,
     apply(result: GameResult): void {
       if (result.state === state) return;
+      const ended =
+        state.run !== null &&
+        !mapRunEnded(state.run) &&
+        result.state.run !== null &&
+        mapRunEnded(result.state.run);
       state = result.state;
       renderMapColumn();
       programPanel.update(state, result.events);
+      // A game minute that ends the map run in a death or a completion is a moment of saving.
+      if (ended) saver.moment();
     },
   };
   const clock = startClock(store);
+  const saver = createGameSaver({
+    client: options.client,
+    read() {
+      clock.flush();
+      return state;
+    },
+    state,
+    revision: options.revision,
+    afterConflict: options.afterConflict ?? false,
+    onConflict: () => options.onConflict(),
+    onOutdated: () => options.onOutdated(),
+    onSignedOut: () => options.onSignedOut(),
+  });
 
   const headquarters = createHeadquarters({
     create(name) {
-      store.apply(createCharacter(state, name));
+      act(createCharacter(state, name));
     },
     pick(characterId, programId) {
       clock.flush();
-      store.apply(pickProgram(state, characterId, programId));
+      act(pickProgram(state, characterId, programId));
     },
     send(characterId, mapId, programId) {
-      if (!state.run) clock.send({ mapId, characterId, programId });
+      if (state.run) return;
+      const before = state;
+      clock.send({ mapId, characterId, programId });
+      if (state !== before) saver.moment();
     },
   });
   const statusRow = createStatusRow({
     togglePause() {
       clock.flush();
-      store.apply(setPaused(state, !state.paused));
+      act(setPaused(state, !state.paused));
     },
     // Real time elapsed before the click is passed at the old pace.
     setPace(pace) {
       clock.flush();
-      store.apply(setPace(state, pace));
+      act(setPace(state, pace));
     },
     restart() {
       clock.flush();
-      if (state.run) store.apply(restart(state));
+      if (state.run) act(restart(state));
     },
     end() {
       clock.flush();
-      if (state.run) store.apply(end(state));
+      if (state.run) act(end(state));
     },
   });
   const bodyRow = createBodyRow();
@@ -166,11 +233,23 @@ export function createGameView(): GameView {
   renderMapColumn();
   programPanel.update(state, []);
 
+  let disposed = false;
   return {
     element,
+    saveLine: saver.element,
+    saveNow: () => saver.moment(),
+    saveBeforeLogout: () => saver.saveBeforeLogout(),
+    keep(): KeptGame {
+      clock.flush();
+      return { document: savedGame(state), revision: saver.revision() };
+    },
     dispose(): void {
+      if (disposed) return;
+      disposed = true;
       clock.dispose();
+      saver.dispose();
       element.remove();
+      saver.element.remove();
     },
   };
 }

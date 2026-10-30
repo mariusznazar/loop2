@@ -48,6 +48,15 @@ header h1 {
 }
 
 /*
+ * The line of saving the game state, on a line of its own after the title and „Wyloguj” and above
+ * the row of an unconfirmed address, in `warning` (D-185, D-39); hidden while it says nothing.
+ */
+header .save-line {
+  flex-basis: 100%;
+  margin-bottom: var(--space-s);
+}
+
+/*
  * The row of a signed-in player with an unconfirmed address, on a line of its own after the title
  * and „Wyloguj”: its sentence in `text-secondary`, in `warning` when the sentence tells of
  * something not carried out (D-39), and the shared button beside it.
@@ -80,6 +89,15 @@ header h1 {
 }
 
 .confirmation-notice.warning {
+  color: var(--warning);
+}
+
+/*
+ * A sentence of the page above the screen it opens, in `warning` (D-39): a saved game state that
+ * did not load above the new game, an expired session or an update above the account forms.
+ */
+.page-notice {
+  margin: 0 0 var(--space-m);
   color: var(--warning);
 }
 
