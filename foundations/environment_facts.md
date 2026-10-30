@@ -355,6 +355,18 @@ A document's `visibilitychange` event fires with the visibility state `hidden` w
 
 - **Source:** https://raw.githubusercontent.com/mdn/content/9a0e5c1cfa8d5079e22c410de757707706f1cc75/files/en-us/web/api/document/visibilitychange_event/index.md § Usage notes — "This event fires with a visibilityState of hidden when a user navigates to a new page, switches tabs, closes the tab, minimizes or closes the browser, or, on mobile, switches from the browser to a different app. Transitioning to hidden is the last event that's reliably observable by the page, so developers should treat it as the likely end of the user's session (for example, for sending analytics data)."; read 2026-10-30
 
+## express-session-end-of-request
+
+Express-session 1.19.0 with `resave` false, at the end of a request, calls the Store's `touch` for a session it loaded from the request's cookie and whose data, the cookie apart, did not change, and does not call the Store's `set` for that session.
+
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/index.js § inflate — "if (!resaveSession) {" · "savedHash = originalHash" · § isSaved — "return originalId === sess.id && savedHash === hash(sess);" · § shouldSave — ": !isSaved(req.session)" · § shouldTouch — "return cookieId === req.sessionID && !shouldSave(req);" · § res.end — "store.touch(req.sessionID, req.session, function ontouch(err) {" · § hash — "if (this === sess && key === 'cookie') {"; read 2026-10-30
+
+## express-session-regenerated-session-saved-again
+
+Express-session 1.19.0 saves a session made by `regenerate` again at the end of the request, even when the route has already saved it, and each save hands the Store's `set` the same session object.
+
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/session/store.js § Store.prototype.regenerate — "self.generate(req);"; read 2026-10-30 · https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/index.js § store.generate — "req.session = new Session(req);" · § generate — "store.generate(req);" · "wrapmethods(req.session);" · § wrapmethods, save — "savedHash = hash(this);" · § isSaved — "return originalId === sess.id && savedHash === hash(sess);" · § isModified — "return originalId !== sess.id || originalHash !== hash(sess);" · § shouldSave — "return !saveUninitializedSession && !savedHash && cookieId !== req.sessionID" · § res.end — "req.session.save(function onsave(err) {"; read 2026-10-30 · https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/session/session.js § save — "this.req.sessionStore.set(this.id, this, fn || function(){});"; read 2026-10-30
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
