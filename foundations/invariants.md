@@ -693,7 +693,7 @@ Replacing the application container preserves the SQLite database of player acco
 - **Rests on:** docker-volume-lifecycle
 - **Derives from:** D-17 · D-205
 - **Part:** account-server · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## account-save-sqlite-access
 
