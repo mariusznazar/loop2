@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { request } from "node:http";
-import { createHmac, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes } from "node:crypto";
 import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -1601,6 +1601,91 @@ test(
     assert.equal(sessionCount(f), 0, "no session is stored");
     assertLoginRefused(await login(f, email, `${password}!`), "fifth failure");
     assertLimited(await login(f, email, password), "the four still counted");
+  },
+);
+
+// A reset committed directly on the database, as a reset request does in one
+// transaction: the link is recorded, then the password hash replaced and every
+// session of the account deleted.
+function resetDirectly(f, email, passwordHash) {
+  const tokenDigest = createHash("sha256")
+    .update(randomBytes(16))
+    .digest("base64url");
+  const issued = f.runtime.database.issueLink(
+    {
+      accountId: storedAccount(f, email).id,
+      purpose: "password-reset",
+      tokenDigest,
+      lifetimeMs: 60 * minute,
+    },
+    { windowMs: 60 * minute, total: 30, perAccount: 3 },
+  );
+  assert.equal(issued, "issued", "precondition: a reset link is recorded");
+  assert.equal(
+    f.runtime.database.resetPassword(tokenDigest, passwordHash).outcome,
+    "reset",
+  );
+}
+
+test(
+  "a password replaced while the old password is checked refuses that login, stores no session and clears no failure",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-ends-sessions
+    // Faults: a login deciding on the account it read before the password
+    // check, so that it answers 503 or stores a session of the old password;
+    // a refusal counted as a failure or as a success.
+    const f = await accountFixture(t);
+    const email = "replaced-during@example.test";
+    assert.equal(
+      (await register(f, email, { address: "198.51.100.95" })).status,
+      201,
+    );
+    const replacement = await hashPassword("a password set by the reset");
+    for (let attempt = 1; attempt <= 4; attempt += 1)
+      assertLoginRefused(
+        await login(f, email, `${password}!`),
+        `failure ${attempt}`,
+      );
+    assert.equal(sessionCount(f), 1, "precondition: the registration's own");
+    const pending = login(f, email, password);
+    await waitFor(() => f.policy.inFlight === 1, "login admitted");
+    resetDirectly(f, email, replacement);
+    assertLoginRefused(await pending, "replaced meanwhile");
+    assert.equal(sessionCount(f), 0, "no session is stored");
+    assertLoginRefused(await login(f, email, `${password}!`), "fifth failure");
+    assertLimited(await login(f, email, password), "the four still counted");
+  },
+);
+
+test(
+  "a password replaced while a registration waits on its message leaves no session, and the cookie it got is refused",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-ends-sessions
+    // Fault: a second store, made when the response ends, that writes without
+    // the guard; the login case commits before either store and cannot see it.
+    const f = await accountFixture(t);
+    const email = "replaced-waiting@example.test";
+    f.mailer.outcome = "hold";
+    const settled = register(f, email, { address: "198.51.100.96" }).then(
+      (response) => response,
+      (error) => error,
+    );
+    const replacement = await hashPassword("a password set by the reset");
+    try {
+      await waitFor(() => f.mailer.held.length === 1, "message handed on");
+      assert.equal(sessionCount(f), 1, "precondition: the first store");
+      resetDirectly(f, email, replacement);
+      assert.equal(sessionCount(f), 0, "the reset deleted it");
+    } finally {
+      for (const answer of f.mailer.held) answer("sent");
+    }
+    const response = await settled;
+    assert.equal(response.status, 201, "the registration still answers");
+    assert.equal(sessionCount(f), 0, "the second store put nothing back");
+    const { cookie } = issuedSession(response, "registration");
+    assertRefusal(await readAccount(f, cookie), 401, "its cookie");
   },
 );
 

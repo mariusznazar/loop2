@@ -175,10 +175,15 @@ function saveFields(body: unknown): {
 }
 
 // Replaces this browser's session and stores it before the caller answers.
-// On failure no session remains attached, so no cookie is issued.
+// On failure no session remains attached, so no cookie is issued. The session
+// stands on the account's password hash named here (the one a login checked
+// the password against, the one a registration made), and the store keeps it
+// for every write of that session object, so a password reset committed at any
+// point leaves no session behind (D-112).
 function establishSession(
+  runtime: AccountRuntime,
   request: Request,
-  accountId: string,
+  account: Account,
 ): Promise<boolean> {
   return new Promise((resolve) => {
     const abandon = () => request.session.destroy(() => resolve(false));
@@ -187,7 +192,8 @@ function establishSession(
         abandon();
         return;
       }
-      request.session.accountId = accountId;
+      request.session.accountId = account.id;
+      runtime.store.expectPasswordHash(request.session, account.passwordHash);
       request.session.save((saved: unknown) => {
         if (saved) abandon();
         else resolve(true);
@@ -198,11 +204,12 @@ function establishSession(
 
 // Answers the refusal itself when the session cannot be stored.
 async function signIn(
+  runtime: AccountRuntime,
   request: Request,
   response: Response,
   account: Account,
 ): Promise<boolean> {
-  if (await establishSession(request, account.id)) return true;
+  if (await establishSession(runtime, request, account)) return true;
   refuse(
     response,
     503,
@@ -528,7 +535,7 @@ export function accountRoutes(
       return;
     }
     ticket.created();
-    if (!(await signIn(request, response, account))) return;
+    if (!(await signIn(runtime, request, response, account))) return;
     // The account exists and the player is signed in whatever the sending
     // does, so every outcome is a 201; a block committed meanwhile sent
     // nothing.
@@ -558,8 +565,10 @@ export function accountRoutes(
     }
     let account: Account | null;
     let verified: boolean;
+    let checkedHash: string | undefined;
     try {
       account = runtime.database.findAccountByEmail(checked.email);
+      checkedHash = account?.passwordHash;
       // An unknown address is checked against the startup hash through the same gate.
       verified = await verifyPassword(
         account?.passwordHash ?? runtime.dummyHash,
@@ -581,6 +590,14 @@ export function accountRoutes(
       invalidCredentials(response);
       return;
     }
+    // The password was replaced while it was checked: the old one proves
+    // nothing now and the block is none of its business. It was right when
+    // checked, so no wrong guess is counted, and it is no sign-in either.
+    if (account.passwordHash !== checkedHash) {
+      ticket.release();
+      invalidCredentials(response);
+      return;
+    }
     // Neither a guess of credentials nor a sign-in: it adds no failure and
     // clears none.
     if (account.blocked) {
@@ -589,7 +606,7 @@ export function accountRoutes(
       return;
     }
     ticket.succeed();
-    if (await signIn(request, response, account))
+    if (await signIn(runtime, request, response, account))
       response.status(200).json(accountBody(account));
   });
 

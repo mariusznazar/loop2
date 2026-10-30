@@ -1508,6 +1508,103 @@ test("a session write for a blocked account stores nothing, also under an identi
 });
 
 // invariant: account-session-storage
+// invariant: password-reset-ends-sessions
+test("a session write whose expected password hash still holds stores, also a second time with the same session object, and the payload stays as it was", async (t) => {
+  const { store, raw, account } = await fixture(t);
+  const stored = (id) =>
+    raw.prepare("SELECT data, expires_at FROM sessions WHERE id = ?").get(id);
+  const value = data(account.id);
+  store.expectPasswordHash(value, "encoded-hash");
+
+  await call(store, "set", "browser", value);
+  assert.equal(stored("browser").expires_at, 2000);
+  value.cookie = data(account.id, 3000).cookie;
+  await call(store, "set", "browser", value);
+  assert.equal(stored("browser").expires_at, 3000, "the second store lands");
+  assert.equal(
+    stored("browser").data,
+    JSON.stringify({ accountId: account.id, cookie: value.cookie }),
+    "the expectation is no part of the stored payload",
+  );
+  assert.ok(!stored("browser").data.includes("encoded-hash"));
+  assert.deepEqual(
+    Object.keys(await call(store, "get", "browser")).sort(),
+    ["accountId", "cookie"],
+    "a session read back carries no expectation",
+  );
+});
+
+// invariant: account-session-storage
+// invariant: password-reset-ends-sessions
+test("a session write whose expected password hash no longer holds stores nothing under a held or a new identifier, also when the reset came through the store's own connection", async (t) => {
+  const { store, database, raw, account } = await fixture(t);
+  database.issueLink(resetLink(account.id, "reset"), limits);
+  const value = data(account.id);
+  store.expectPasswordHash(value, "encoded-hash");
+  await call(store, "set", "browser", value);
+
+  // The first store is deleted by the reset, as a login's first store is;
+  // the library then stores the same object a second time.
+  assert.deepEqual(database.resetPassword(digest("reset"), "new-hash"), {
+    outcome: "reset",
+    email: "player@example.test",
+  });
+  assert.equal(raw.prepare("SELECT count(*) AS n FROM sessions").get().n, 0);
+  value.cookie = data(account.id, 3000).cookie;
+  for (const id of ["browser", "other-identifier"]) {
+    await assert.rejects(call(store, "set", id, value), id);
+    assert.equal(
+      raw.prepare("SELECT id FROM sessions WHERE id = ?").get(id),
+      undefined,
+      id,
+    );
+  }
+
+  // Another session object of the account, given the new hash, stores.
+  const fresh = data(account.id);
+  store.expectPasswordHash(fresh, "new-hash");
+  await call(store, "set", "after", fresh);
+  assert.equal((await call(store, "get", "after")).accountId, account.id);
+});
+
+// invariant: account-session-storage
+// invariant: password-reset-ends-sessions
+test("a session write whose expected password hash was changed through a second connection stores nothing and leaves a held row as it was; one with no expectation behaves as before", async (t) => {
+  const { store, raw, account } = await fixture(t);
+  const value = data(account.id);
+  store.expectPasswordHash(value, "encoded-hash");
+  await call(store, "set", "held", value);
+  raw
+    .prepare("UPDATE accounts SET password_hash = ? WHERE id = ?")
+    .run("changed-elsewhere", account.id);
+
+  value.cookie = data(account.id, 3000).cookie;
+  await assert.rejects(call(store, "set", "held", value));
+  await assert.rejects(call(store, "set", "new", value));
+  assert.equal(
+    raw.prepare("SELECT expires_at FROM sessions WHERE id = ?").get("held")
+      .expires_at,
+    2000,
+    "the held row is not rewritten",
+  );
+  assert.equal(
+    raw.prepare("SELECT id FROM sessions WHERE id = ?").get("new"),
+    undefined,
+  );
+
+  // No expectation: the write is the base's, whatever the hash is.
+  await call(store, "set", "bare", data(account.id));
+  assert.equal((await call(store, "get", "bare")).accountId, account.id);
+  // An expectation names one session object and no other.
+  const other = data(account.id);
+  await call(store, "set", "other-object", other);
+  assert.equal(
+    (await call(store, "get", "other-object")).accountId,
+    account.id,
+  );
+});
+
+// invariant: account-session-storage
 test("missing and expired records authorize nothing, including equality to expiry", async (t) => {
   const { store, account, advance } = await fixture(t);
   assert.ok(store instanceof session.Store);

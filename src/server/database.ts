@@ -121,6 +121,9 @@ export interface StoredSession {
   accountId: string;
   data: string;
   expiresAt: number;
+  // The password hash the session stands on. Where given, nothing is stored
+  // once the account holds another hash (D-112); a session read has none.
+  expectedPasswordHash?: string;
 }
 
 interface DatabaseOptions {
@@ -302,16 +305,21 @@ export class AccountDatabase {
     ) {
       throw new Error("Invalid session expiry");
     }
-    // The account's state is read by the statement that writes, so a block
-    // committed by another connection either precedes it and stores nothing or
-    // follows it and deletes what it stored. An unknown account still fails on
-    // the foreign key; the WHERE clause also keeps the upsert unambiguous.
+    // The account's state is read by the statement that writes, so a block or
+    // a password reset committed by another connection either precedes it and
+    // stores nothing or follows it and deletes what it stored. An unknown
+    // account still fails on the foreign key; the WHERE clause also keeps the
+    // upsert unambiguous. Without an expected hash the password is not looked
+    // at.
     const result = this.connection
       .prepare(
         `
       INSERT INTO sessions (id, account_id, data, expires_at)
       SELECT ?, ?, ?, ?
-      WHERE NOT EXISTS (SELECT 1 FROM accounts WHERE id = ? AND blocked = 1)
+      WHERE NOT EXISTS (
+        SELECT 1 FROM accounts WHERE id = ?
+          AND (blocked = 1 OR (? IS NOT NULL AND password_hash <> ?))
+      )
       ON CONFLICT(id) DO UPDATE SET data = excluded.data,
         expires_at = MAX(sessions.expires_at, excluded.expires_at)
       WHERE sessions.account_id = excluded.account_id AND sessions.expires_at > ?
@@ -323,6 +331,8 @@ export class AccountDatabase {
         session.data,
         session.expiresAt,
         session.accountId,
+        session.expectedPasswordHash ?? null,
+        session.expectedPasswordHash ?? null,
         this.now(),
       );
     if (result.changes === 0) throw new Error("Session cannot be replaced");
