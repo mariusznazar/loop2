@@ -1,7 +1,0 @@
-node : error: unknown option '--jsonReporter.fileName'
-At line:2 char:1
-+ node node_modules/@stryker-mutator/core/bin/stryker.js run --mutate ' ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (error: unknown ...orter.fileName':String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
