@@ -58,6 +58,17 @@ function mapOf(mapId: MapId): MapDef {
   return MAPS[mapId];
 }
 
+/**
+ * Whether the character's resurrection is ready at the real moment `nowMs`: from the moment of
+ * readiness on, that moment included.
+ */
+export function resurrectionReady(
+  character: Character,
+  nowMs: number,
+): boolean {
+  return character.resurrectionReadyAtMs <= nowMs;
+}
+
 /** Whether a map's prerequisite maps are all in this game's solved-map record. */
 export function canSendMap(
   solvedMaps: readonly MapId[],
@@ -265,6 +276,8 @@ export function createCharacter(state: GameState, name: string): GameResult {
     archetypeId: CREATED_ARCHETYPE,
     traits: newTraits(),
     skills: newSkills(ARCHETYPES[CREATED_ARCHETYPE].predispositions),
+    generation: 1,
+    resurrectionReadyAtMs: 0,
   };
   return {
     state: {

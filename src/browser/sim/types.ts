@@ -300,13 +300,19 @@ export type GameMapRun = MapRun & {
 /** Tells the characters of the team apart; two characters may share a name. */
 export type CharacterId = number;
 
-/** A character of the player's team; its traits are made when it is created and saved with it. */
+/**
+ * A character of the player's team; its traits are made when it is created and saved with it. The
+ * generation number is 1 at creation and grows at a death with no resurrection ready; the
+ * resurrection is ready from the real moment `resurrectionReadyAtMs` on, and from the start at 0.
+ */
 export type Character = {
   skills: CharacterSkills;
   id: CharacterId;
   name: string;
   archetypeId: ArchetypeId;
   traits: Traits;
+  generation: number;
+  resurrectionReadyAtMs: number;
 };
 
 /** The team's chest: pieces held, by item; a key absent holds none. */

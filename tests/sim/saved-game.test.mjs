@@ -39,7 +39,10 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // holds only outside a map run. Its map run is written paused, so the load's pause changes nothing
 // in it. A change of the game state's shape makes the load refuse this document; it is rewritten
 // only together with a raised version, or while no saved game state of the current version exists
-// anywhere.
+// anywhere. The characters of the current version's documents also hold `generation` and
+// `resurrectionReadyAtMs` (spec, decision 9), written into version 2 under that exception: version 2
+// is on no server yet, so no saved game state of it exists. The document of version 1 keeps its
+// characters without them.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -433,11 +436,30 @@ const DOCUMENT_V1 = {
   },
 };
 
-/** The document of the current version: version 1 with the mark of its map run (forestDeep, unsolved). */
+/**
+ * The document of the current version: version 1 with the mark of its map run (forestDeep,
+ * unsolved) and its characters' generation and moment of resurrection (Ala has lived a death with
+ * no resurrection ready, so generation 2, and used her resurrection at a real moment of 2025).
+ */
 const DOCUMENT = {
   version: 2,
   game: {
     ...DOCUMENT_V1.game,
+    team: {
+      ...DOCUMENT_V1.game.team,
+      characters: [
+        {
+          ...DOCUMENT_V1.game.team.characters[0],
+          generation: 2,
+          resurrectionReadyAtMs: 1760000028800000,
+        },
+        {
+          ...DOCUMENT_V1.game.team.characters[1],
+          generation: 1,
+          resurrectionReadyAtMs: 0,
+        },
+      ],
+    },
     run: { ...DOCUMENT_V1.game.run, solvedMapRun: false },
   },
 };
@@ -468,6 +490,8 @@ const HEADQUARTERS = {
           archetypeId: "elementalMage",
           traits: { carryingCapacity: 15 },
           skills: NEW_SKILLS,
+          generation: 1,
+          resurrectionReadyAtMs: 0,
         },
       ],
       chest: { pieces: {} },
@@ -651,6 +675,16 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
 });
 
 // invariant: save-version
+test("a moment of resurrection below zero loads, as it is a safe integer of any sign", () => {
+  const before = changed((document) => {
+    document.game.team.characters[0].resurrectionReadyAtMs = -1500;
+  });
+  const loaded = loadSavedGame(before);
+  assert.equal(loaded.ok, true);
+  assert.equal(loaded.state.team.characters[0].resurrectionReadyAtMs, -1500);
+});
+
+// invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
   for (const version of [0, 3, -1]) {
     assertRefused(
@@ -764,6 +798,37 @@ const CRAFTED = {
   "a key added to the map run": (document) => (document.game.run.speed = 2),
   "a key added to a character": (document) =>
     (document.game.team.characters[0].level = 9),
+  // Decision 9: the generation is an identity from 1 up, the moment a safe integer of any sign.
+  "a character without its generation": (document) =>
+    delete document.game.team.characters[0].generation,
+  "a character without its moment of resurrection": (document) =>
+    delete document.game.team.characters[1].resurrectionReadyAtMs,
+  "a generation of 0": (document) =>
+    (document.game.team.characters[0].generation = 0),
+  "a generation below 0": (document) =>
+    (document.game.team.characters[0].generation = -1),
+  "a fractional generation": (document) =>
+    (document.game.team.characters[0].generation = 1.5),
+  "a generation as text": (document) =>
+    (document.game.team.characters[0].generation = "2"),
+  "a generation of none": (document) =>
+    (document.game.team.characters[0].generation = null),
+  "a generation beyond the safe integers": (document) =>
+    (document.game.team.characters[0].generation = 2 ** 53),
+  "a moment of resurrection fractional": (document) =>
+    (document.game.team.characters[0].resurrectionReadyAtMs = 1.5),
+  "a moment of resurrection as text": (document) =>
+    (document.game.team.characters[0].resurrectionReadyAtMs = "0"),
+  "a moment of resurrection of none": (document) =>
+    (document.game.team.characters[0].resurrectionReadyAtMs = null),
+  "a moment of resurrection not a number": (document) =>
+    (document.game.team.characters[0].resurrectionReadyAtMs = NaN),
+  "a moment of resurrection infinite": (document) =>
+    (document.game.team.characters[0].resurrectionReadyAtMs = Infinity),
+  "a moment of resurrection beyond the safe integers": (document) =>
+    (document.game.team.characters[0].resurrectionReadyAtMs = 2 ** 53),
+  "a moment of resurrection below the safe integers": (document) =>
+    (document.game.team.characters[0].resurrectionReadyAtMs = -(2 ** 53)),
   "a key added to a rule of a program": (document) =>
     (document.game.programs[0].program.groups[0].rules[0].note = "x"),
   "a key added to a condition of the copy": (document) =>

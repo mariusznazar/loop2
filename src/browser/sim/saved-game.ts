@@ -491,6 +491,8 @@ function team(
       "archetypeId",
       "traits",
       "skills",
+      "generation",
+      "resurrectionReadyAtMs",
     ]);
     const id = identity(character.id);
     if (id >= nextCharacterId || ids.has(id)) refuse();
@@ -502,6 +504,9 @@ function team(
       archetypeId,
       traits: traits(character.traits),
       skills: characterSkills(character.skills, archetypeId, trees),
+      generation: identity(character.generation),
+      // Any safe integer: the moment is real time of a past death, and no clock is read here.
+      resurrectionReadyAtMs: integer(character.resurrectionReadyAtMs),
     };
   });
   return { characters, chest: chest(read.chest) };
