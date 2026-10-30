@@ -61,8 +61,8 @@ functions, of which those that pass game time take a game state and a span of ga
 return the next game state together with the events it produced, and real time enters the
 simulation only as an argument. The browser view draws the game only from the game state and the
 game's content data, and changes the game state only through functions of the simulation, to which
-it passes the player's choices, the passing of real time and the saved game state the browser
-downloaded from the server.
+it passes the player's choices, the passing of real time and a saved game state the browser
+downloaded from the server or kept in the page's memory after a save found no session (D-188).
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
@@ -75,7 +75,8 @@ downloaded from the server.
     argument, which the browser view measures and passes in; the program editor of the
     browser view passing the edited program to a function of the simulation; the page building the
     game from the game state that a function of the simulation returns for the saved game state the
-    browser downloaded, or from the refusal it returns
+    browser downloaded, or from the refusal it returns; after a sign-in to the same account, the
+    page building the game from what that function returns for the state it kept
   - violates: a screen of the game written as a Godot scene, or a script of the game's own code that
     the browser loads, written directly in JavaScript instead of compiled from TypeScript; a
     simulation function that reads the system time or the page; a screen of the browser view that
@@ -90,8 +91,10 @@ renewal of a resurrection on one footing. The player changes the game state from
 the program editor, sending a character, a map run restart — and the passing of real time changes it
 too; each goes through the simulation, so the game state changes in one place. A saved game state
 downloaded from the server is data from outside the game, and a function of the simulation turns it
-into a game state or refuses it, so loading also changes the game state in that one place; such a
-function, like the one that starts a new game, passes no game time. The browser view also reads the
+into a game state or refuses it, so loading also changes the game state in that one place; the
+state the page keeps after a save found no session goes back into the game the same way, so its
+map run comes back as a loaded one does. Such a function, like the one that starts a new game,
+passes no game time. The browser view also reads the
 game's content data, which stands apart from the game state, to name and picture what the game
 state holds.
 *Rejected:* Godot — slower to work on with AI agents; a browser view that draws from the game state
@@ -3323,7 +3326,8 @@ or in the character's death, every 30 real seconds while a map run passes, and o
 page becomes hidden, closing included, with no guarantee that this last save arrives. The 30-second
 rhythm and the hidden page send the game state only where it changed since the save last sent; the
 browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving
-during one is sent after its answer. A save whose body is larger than 64 KiB is not sent and counts
+during one is sent after its answer, unless that request is the save before a logout that goes on
+(D-97). A save whose body is larger than 64 KiB is not sent and counts
 as refused as too large (D-185).
 
 - **Scope:** browser-view
@@ -3359,7 +3363,8 @@ Las, while closing the tab takes at most 30 game minutes at every pace.
 
 A save of the game state that succeeds shows nothing. When one fails, the header shows on a line
 under the title and „Wyloguj”, above the line of D-157, „Nie udało się zapisać postępu. Gra spróbuje
-ponownie.” in `warning`, and the game retries the save after 5, 10 and 20 real seconds and then every
+ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for
+that failure, and the game retries the save after 5, 10 and 20 real seconds and then every
 30 real seconds, each time with the game state of that moment and at once at a moment of saving of
 D-184, until a save succeeds and the sentence goes. When the server refuses a save as larger than
 its limit of D-104, the game does not retry that save but tries again at its next moment of saving,
@@ -3539,9 +3544,9 @@ same seed.
 
 The exemplar for kind `saved-game` is `src/browser/sim/saved-game.ts`, and its kind guidelines are
 read before adding or changing a file of that kind. Saved-game code turns a game state into the
-saved document of the current version of its shape, and an unknown value downloaded from the server
-into a game state or a refusal naming why, inside the simulation, never throwing and changing
-nothing passed to it.
+saved document of the current version of its shape, and an unknown value — a saved game state
+downloaded from the server or kept in the page's memory (D-188) — into a game state or a refusal
+naming why, inside the simulation, never throwing and changing nothing passed to it.
 
 - **Scope:** simulation, agent-workflow
 - **Based on:** none
