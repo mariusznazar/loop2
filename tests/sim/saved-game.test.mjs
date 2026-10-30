@@ -13,6 +13,8 @@ import {
 import {
   createProgram,
   deleteProgram,
+  editProgram,
+  emptyProgram,
   pickProgram,
 } from "../../dist/public/sim/programs.js";
 import {
@@ -1335,4 +1337,20 @@ test("a game state the simulation made loads back from its saved document", () =
       name,
     );
   }
+});
+
+// Catches a trip count the game takes from the player that makes the load refuse the whole save.
+test("the largest trip count the game accepts loads back, and one beyond the safe integers the game refuses", () => {
+  const withCount = (count) =>
+    editProgram(newGame(), 1, {
+      ...emptyProgram(),
+      tripPlan: { take: [{ item: "stick", count }], bring: [] },
+    }).state;
+  const largest = withCount(Number.MAX_SAFE_INTEGER);
+  assert.deepEqual(
+    loadSavedGame(JSON.parse(JSON.stringify(savedGame(largest)))),
+    { ok: true, state: largest },
+  );
+  for (const count of [2 ** 53, Number("99999999999999999999")])
+    assert.throws(() => withCount(count), `${count}`);
 });

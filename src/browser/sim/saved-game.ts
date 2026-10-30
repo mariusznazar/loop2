@@ -237,14 +237,12 @@ function matches(value: unknown, canonical: unknown): void {
 
 /**
  * A program the existing program check admits as it stands: its closed lists, its numbers on their
- * steps and its identities, with no key besides those the check builds, and each count of its trip
- * plan a safe integer from 1 up (D-181).
+ * steps, its identities and its trip counts, safe integers from 1 up (D-181), with no key besides
+ * those the check builds.
  */
 function program(value: unknown): Program {
   const checked = checkProgram(value, null);
   matches(value, checked);
-  for (const entry of [...checked.tripPlan.take, ...checked.tripPlan.bring])
-    identity(entry.count);
   return checked;
 }
 
