@@ -19,8 +19,10 @@ export const accountMessageLimits = {
   perAccount: 3,
 } as const;
 
-// D-155: a confirmation link works for 24 hours from the moment it is recorded.
+// D-155: a confirmation link works for 24 hours and a password-reset link for
+// one hour, each from the moment it is recorded.
 export const confirmationLinkLifetime = 24 * 60 * minute;
+export const passwordResetLinkLifetime = 60 * minute;
 
 const linkTokenBytes = 32;
 const linkTokenText = /^[A-Za-z0-9_-]{43}$/;
@@ -45,11 +47,13 @@ export function linkTokenDigest(token: string): string {
   return createHash("sha256").update(token).digest("base64url");
 }
 
+export type PasswordProblem = "invalid-password" | "password-mismatch";
+
 export type RegistrationCheck =
   | { ok: true; email: string; password: string }
   | {
       ok: false;
-      problem: "invalid-email" | "invalid-password" | "password-mismatch";
+      problem: "invalid-email" | PasswordProblem;
     };
 
 // ECMAScript trim and lowercase; the shape is exactly one "@" with text on both sides.
@@ -66,6 +70,19 @@ export function acceptablePassword(password: string): boolean {
   return length >= 12 && length <= 128;
 }
 
+// The password rules alone (D-98), shared by registration and a password
+// reset; the new password is never compared with an old one.
+export function checkNewPassword(input: {
+  password: string;
+  passwordConfirmation: string;
+}): { ok: true; password: string } | { ok: false; problem: PasswordProblem } {
+  if (!acceptablePassword(input.password))
+    return { ok: false, problem: "invalid-password" };
+  if (input.password !== input.passwordConfirmation)
+    return { ok: false, problem: "password-mismatch" };
+  return { ok: true, password: input.password };
+}
+
 export function checkRegistration(input: {
   email: string;
   password: string;
@@ -73,11 +90,9 @@ export function checkRegistration(input: {
 }): RegistrationCheck {
   const email = normalizeEmail(input.email);
   if (!email) return { ok: false, problem: "invalid-email" };
-  if (!acceptablePassword(input.password))
-    return { ok: false, problem: "invalid-password" };
-  if (input.password !== input.passwordConfirmation)
-    return { ok: false, problem: "password-mismatch" };
-  return { ok: true, email, password: input.password };
+  const password = checkNewPassword(input);
+  if (!password.ok) return password;
+  return { ok: true, email, password: password.password };
 }
 
 export function checkLogin(input: {
@@ -133,7 +148,7 @@ export class AccountPolicy {
   private readonly addresses = new Map<string, AddressHistory>();
   private reservations = 0;
   // After this long a sending whose mailer has not answered counts as failed,
-  // so a registration or a resend never waits on the mail service unbounded.
+  // so an account message never waits on the mail service unbounded.
   readonly sendingDeadline: number;
 
   constructor(options: PolicyOptions = {}) {
@@ -219,6 +234,19 @@ export class AccountPolicy {
       }),
       release: once(() => {}),
     };
+  }
+
+  // After a successful password reset (D-102): empties the failures and the
+  // lock of a normalized address, keeps its reservations and changes no
+  // client-address entry. The entry object stays, because the ticket of a
+  // login in progress settles on it; an address with no entry gets none.
+  clearEmailAttempts(email: string): void {
+    const emailKey = createHash("sha256").update(email).digest("base64url");
+    const entry = this.emails.get(emailKey);
+    if (!entry) return;
+    entry.failures = [];
+    entry.lockedUntil = 0;
+    this.forget(this.emails, emailKey, entry);
   }
 
   admitRegistration(address: string): RegistrationTicket | null {

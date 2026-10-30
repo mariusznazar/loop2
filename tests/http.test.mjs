@@ -8,7 +8,11 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import argon2 from "argon2";
 import session from "express-session";
-import { AccountPolicy } from "../dist/server/account-policy.js";
+import {
+  AccountPolicy,
+  checkNewPassword,
+  checkRegistration,
+} from "../dist/server/account-policy.js";
 import { createApp } from "../dist/server/app.js";
 import { openAccountRuntime } from "../dist/server/configuration.js";
 import { AccountDatabase } from "../dist/server/database.js";
@@ -1438,6 +1442,180 @@ test(
     );
   },
 );
+
+// Clearing an address's attempts after a password reset (D-102, task
+// reset-hasla). These cases drive the policy with an explicit clock.
+function clockedPolicy(options = {}) {
+  const clock = { time: 1_000_000 };
+  return {
+    clock,
+    policy: new AccountPolicy({ now: () => clock.time, ...options }),
+  };
+}
+
+function failLogin(policy, email, address) {
+  const ticket = policy.admitLogin(email, address);
+  assert.ok(ticket, `${email} from ${address} is admitted`);
+  ticket.fail();
+}
+
+test("the password rules of a new password are those of registration, with the same problems", () => {
+  const long = "p".repeat(12);
+  assert.deepEqual(
+    checkNewPassword({ password: long, passwordConfirmation: long }),
+    {
+      ok: true,
+      password: long,
+    },
+  );
+  assert.deepEqual(
+    checkNewPassword({
+      password: "p".repeat(11),
+      passwordConfirmation: "p".repeat(11),
+    }),
+    { ok: false, problem: "invalid-password" },
+  );
+  assert.deepEqual(
+    checkNewPassword({ password: long, passwordConfirmation: `${long}x` }),
+    { ok: false, problem: "password-mismatch" },
+  );
+  assert.deepEqual(
+    checkRegistration({
+      email: " A@B ",
+      password: long,
+      passwordConfirmation: `${long}x`,
+    }),
+    { ok: false, problem: "password-mismatch" },
+  );
+  assert.deepEqual(
+    checkRegistration({
+      email: "nobody",
+      password: "short",
+      passwordConfirmation: "short",
+    }),
+    { ok: false, problem: "invalid-email" },
+  );
+  assert.deepEqual(
+    checkRegistration({
+      email: " A@B ",
+      password: long,
+      passwordConfirmation: long,
+    }),
+    { ok: true, email: "a@b", password: long },
+  );
+});
+
+test("a locked address admits a login after its attempts are cleared, and failures before the lock are forgotten", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that leaves the lock or the failures; a lock lifted for
+  // every address.
+  const { clock, policy } = clockedPolicy();
+  for (let attempt = 0; attempt < 5; attempt += 1)
+    failLogin(policy, "locked@example.test", `198.51.100.${attempt}`);
+  failLogin(policy, "other@example.test", "198.51.100.9");
+  clock.time += minute;
+  assert.equal(policy.admitLogin("locked@example.test", "198.51.100.77"), null);
+  policy.clearEmailAttempts("locked@example.test");
+  const ticket = policy.admitLogin("locked@example.test", "198.51.100.77");
+  assert.ok(ticket, "the cleared address is admitted inside the old lock");
+  ticket.release();
+  for (let attempt = 0; attempt < 4; attempt += 1)
+    failLogin(policy, "locked@example.test", "198.51.100.78");
+  const last = policy.admitLogin("locked@example.test", "198.51.100.78");
+  assert.ok(last, "four failures after the clear do not lock");
+  last.fail();
+  assert.equal(
+    policy.admitLogin("locked@example.test", "198.51.100.79"),
+    null,
+    "five new failures lock again",
+  );
+  failLogin(policy, "other@example.test", "198.51.100.9");
+  assert.equal(policy.inFlight, 0);
+});
+
+test("clearing an address's attempts leaves its client address's failures counting", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that empties the client-address entries too.
+  const { policy } = clockedPolicy();
+  const address = "198.51.100.20";
+  for (let attempt = 0; attempt < 5; attempt += 1)
+    failLogin(policy, "locked@example.test", address);
+  for (let other = 0; other < 3; other += 1)
+    for (let attempt = 0; attempt < 4; attempt += 1)
+      failLogin(policy, `other-${other}@example.test`, address);
+  // 5 + 4 + 4 + 4 = 17 so far; three more reach twenty.
+  for (let attempt = 0; attempt < 3; attempt += 1)
+    failLogin(policy, `more-${attempt}@example.test`, address);
+  assert.equal(policy.admitLogin("fresh@example.test", address), null);
+  policy.clearEmailAttempts("locked@example.test");
+  assert.equal(
+    policy.admitLogin("locked@example.test", address),
+    null,
+    "the client address is still at its limit",
+  );
+  const elsewhere = policy.admitLogin("locked@example.test", "198.51.100.21");
+  assert.ok(elsewhere, "the cleared address is admitted from another client");
+  elsewhere.release();
+});
+
+test("a login in progress at a clear keeps its reservation and settles once on the same entry", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that drops the entry, resets the reservation or lets a
+  // settlement count twice.
+  const { policy } = clockedPolicy();
+  const email = "busy@example.test";
+  const address = "198.51.100.30";
+  for (let attempt = 0; attempt < 3; attempt += 1)
+    failLogin(policy, email, `198.51.100.${35 + attempt}`);
+  const running = policy.admitLogin(email, address);
+  assert.ok(running);
+  assert.equal(policy.inFlight, 1);
+  policy.clearEmailAttempts(email);
+  assert.equal(policy.inFlight, 1, "the clear does not settle the login");
+  for (let attempt = 0; attempt < 4; attempt += 1)
+    failLogin(policy, email, `198.51.100.${40 + attempt}`);
+  assert.equal(
+    policy.admitLogin(email, "198.51.100.50"),
+    null,
+    "four failures and the reservation of the login in progress are five",
+  );
+  running.fail();
+  running.fail();
+  running.succeed();
+  assert.equal(policy.inFlight, 0, "settled once");
+  assert.equal(
+    policy.admitLogin(email, "198.51.100.51"),
+    null,
+    "its failure counts after the clear and locks the address",
+  );
+});
+
+test("clearing an unknown address changes nothing and a clear frees a locked place without touching others", () => {
+  // invariant: account-attempt-tracking
+  // Faults: a clear that fills a place for an address with no entry, or that
+  // disturbs another live entry of a full table.
+  const { policy } = clockedPolicy({ keyCapacity: 2 });
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    failLogin(policy, "one@example.test", "198.51.100.60");
+    failLogin(policy, "two@example.test", "198.51.100.70");
+  }
+  policy.clearEmailAttempts("nobody@example.test");
+  assert.equal(
+    policy.admitLogin("three@example.test", "198.51.100.60"),
+    null,
+    "a full table of live entries still refuses a newcomer",
+  );
+  assert.equal(policy.admitLogin("two@example.test", "198.51.100.60"), null);
+  policy.clearEmailAttempts("one@example.test");
+  const ticket = policy.admitLogin("three@example.test", "198.51.100.60");
+  assert.ok(ticket, "the cleared address no longer holds its place");
+  ticket.release();
+  assert.equal(
+    policy.admitLogin("two@example.test", "198.51.100.70"),
+    null,
+    "another address keeps its lock",
+  );
+});
 
 // Blocking by the owner (task blokada-konta, To do 3 and 4). The message is the
 // one the owner settled (task, question 4; Mariusz, 2026-10-28).
