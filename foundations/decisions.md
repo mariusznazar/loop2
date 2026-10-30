@@ -888,17 +888,17 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany” and „Przełącz postać na ten program” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…” or „Zakładanie konta…” for the corresponding form, and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, and the kitchen-sink page shows the waiting and refusal states.
+The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany” and „Przełącz postać na ten program” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-214) appears in that place in `text-secondary`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** an agent compares a change with the decision:
-  - complies: the button „Wyślij” of a new screen made with the shared button;
-  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany” or „Przełącz postać na ten program” made as a plain button.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4
+  - complies: the button „Wyślij” of a new screen made with the shared button; the answer to a request for a password-reset link standing under its form in `text-secondary`;
+  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany” or „Przełącz postać na ten program” made as a plain button; that answer written in `warning`, as if it refused something.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 4 and 13, and § Settlements to record, rows 1, 3 and 8
 
-*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes.
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, and a calm sentence in that place is new on the screen. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes.
 *Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
@@ -1745,18 +1745,18 @@ If the dependency audit reports an advisory in a package introduced by StrykerJS
 
 ### D-96 — What does a player see before and after signing in?
 
-A signed-out visitor sees the „Zaloguj się” form with email and password and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
+A signed-out visitor sees the „Zaloguj się” form with email and password and under it the button „Nie pamiętam hasła”, and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible; that button puts in place of both forms the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings the two forms back, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-217) in place of game and forms, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-51 · derives from D-53
 - **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. An agent compares a change with the decision:
-  - complies: the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back
-  - violates: a new game built when the request for the saved game state fails or times out; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7
+  - complies: the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built
+  - violates: a new game built when the request for the saved game state fails or times out; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6
 
-*Rationale:* An account provides the entry to the game and the headquarters provides its starting place; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
-*Rejected:* Anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; the headquarters after signing in with a way back to a waiting manual map run — a new state of the screen, with its own question of what the player may do in the headquarters while the map run waits; a new game when the saved game state cannot be downloaded — the first save of that new game overwrites the saved game state on the server, so the player loses progress through a passing outage, against what this decision does at the session check; discarding a saved game state without a word — the player sees an empty team with no explanation and may take it for a fault; the sentence of another version for a damaged saved game state too — the player is given an untrue reason and, reporting the problem, speaks of a version where a fault is at stake; closing an ended map run at loading as „Zakończ” does, so the player lands in the headquarters — changes of D-62, D-132 and D-173, code closing the map run at loading, and after each reload following a death or a completion the loss of the copy's unsaved changes without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the same seed.
+*Rationale:* An account provides the entry to the game and the headquarters provides its starting place; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on a third state of the screen, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
+*Rejected:* Anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; a third form standing for good beside the other two — the entry screen of every visitor holds three forms, and a mistake between them is easier; the headquarters after signing in with a way back to a waiting manual map run — a new state of the screen, with its own question of what the player may do in the headquarters while the map run waits; a new game when the saved game state cannot be downloaded — the first save of that new game overwrites the saved game state on the server, so the player loses progress through a passing outage, against what this decision does at the session check; discarding a saved game state without a word — the player sees an empty team with no explanation and may take it for a fault; the sentence of another version for a damaged saved game state too — the player is given an untrue reason and, reporting the problem, speaks of a version where a fault is at stake; closing an ended map run at loading as „Zakończ” does, so the player lands in the headquarters — changes of D-62, D-132 and D-173, code closing the map run at loading, and after each reload following a death or a completion the loss of the copy's unsaved changes without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the same seed.
 
 ### D-97 — What does the player's logout do?
 
@@ -1775,17 +1775,17 @@ The shared „Wyloguj” button stands in the header beside the title, first sav
 
 ### D-98 — Which player passwords are accepted?
 
-A player password has from 12 through 128 Unicode code points of any kind, without a digit or uppercase-letter requirement, and its content is preserved without trimming or normalization. Registration's repeated password equals the password exactly, and browser validation uses the same code-point interpretation without making UTF-16 field limits authoritative.
+A player password has from 12 through 128 Unicode code points of any kind, without a digit or uppercase-letter requirement, and its content is preserved without trimming or normalization. Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences and is never compared with the account's old password, and browser validation uses the same code-point interpretation without making UTF-16 field limits authoritative.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: accepting an unchanged password containing spaces and supplementary characters at the code-point boundary
-  - violates: trimming the password, rejecting pasted characters or applying a byte limit as the character limit
-- **Origin:** none
+  - complies: accepting an unchanged password containing spaces and supplementary characters at the code-point boundary; a password reset refusing a short new password with registration's sentence
+  - violates: trimming the password, rejecting pasted characters or applying a byte limit as the character limit; a password reset refused because the new password equals the old one
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 7
 
-*Rationale:* Length supplies a clear boundary without restricting the player's choice of characters; code points give the same explicit interpretation to server and browser, while a visible grapheme can contain several code points.
+*Rationale:* Length supplies a clear boundary without restricting the player's choice of characters; code points give the same explicit interpretation to server and browser, while a visible grapheme can contain several code points. A new password is a player password like any other, so the player meets one rule and one set of sentences.
 *Rejected:* Composition requirements — add arbitrary character rules; UTF-16 code units — count supplementary characters twice; grapheme counting — adds a different, more elaborate boundary.
 
 ### D-99 — How are player email addresses compared and checked?
@@ -1805,18 +1805,18 @@ The account server normalizes email with ECMAScript trim and lowercase, stores t
 
 ### D-100 — What do duplicate registration and failed login tell the player?
 
-Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two; a blocked account's correct password is refused as D-139 gives.
+Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two, and so does a login whose account's password was replaced by a password reset while it was being checked, whatever the account's block, which is neither a failed nor a successful login for the attempt limits of D-102; a blocked account's correct password is refused as D-139 gives.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: the same login response shape and message for unknown address and wrong password
-  - violates: an unknown-address response exposing account existence through a distinct login message
+  - complies: the same login response shape and message for unknown address and wrong password; a login during whose password work a reset commits answering that message, releasing its admission and storing no session
+  - violates: an unknown-address response exposing account existence through a distinct login message; a login answering by the account it read before its password work, or counting as a failure a password that was right when checked
 - **Origin:** none
 
-*Rationale:* A duplicate message explains why registration cannot proceed, while the common login message reveals no further distinction; registration consequently allows an observer to discover whether an address has an account.
-*Rejected:* Hiding duplicate registration — obscures the accepted registration feedback; separate unknown-address and wrong-password login messages — reveal the cause the chosen message conceals.
+*Rationale:* A duplicate message explains why registration cannot proceed, while the common login message reveals no further distinction; registration consequently allows an observer to discover whether an address has an account. A password replaced during its check no longer proves anything, so the login earns no other answer, D-139's included; it was right when checked, so it is no wrong guess, and it is no sign-in, so it clears nothing. A password hash is salted, so any reset changes it, even to the same password.
+*Rejected:* Hiding duplicate registration — obscures the accepted registration feedback; separate unknown-address and wrong-password login messages — reveal the cause the chosen message conceals; no comparison of the password hash after the check — the guard of D-112 still leaves no session, but the login answers with a server error after settling as a success.
 
 ### D-101 — How long do independent browser sessions last?
 
@@ -1833,18 +1833,18 @@ Each browser holds its own random, opaque session identifier in a loop2 host-sco
 
 ### D-102 — How are account attempts limited?
 
-Five failed logins for one normalized email address within a rolling 15-minute window lock that address for 15 minutes from the fifth failure; success clears pre-lock email history but not IP failures, and a locked address remains locked even for correct credentials. One client IP admits at most 20 failed logins per rolling 15 minutes and five successfully created accounts per rolling hour, with in-flight reservations counted before asynchronous password work so concurrency cannot overshoot those limits. A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots, and a capacity refusal is not a credential failure.
+Five failed logins for one normalized email address within a rolling 15-minute window lock that address for 15 minutes from the fifth failure; success clears pre-lock email history but not IP failures, a locked address remains locked even for correct credentials, and a successful password reset clears that address's failures and lock and leaves the client address's failures as they are. One client IP admits at most 20 failed logins per rolling 15 minutes and five successfully created accounts per rolling hour, with in-flight reservations counted before asynchronous password work so concurrency cannot overshoot those limits. A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots, and a capacity refusal is not a credential failure.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: account-attempt-limits. An agent compares a change with the decision:
-  - complies: parallel requests reserve their admission before hashing and release unused capacity after actual completion
-  - violates: simultaneous successful registrations exceeding the IP limit or correct credentials bypassing an active email lock
-- **Origin:** none
+  - complies: parallel requests reserve their admission before hashing and release unused capacity after actual completion; a reset that commits clearing its address's failures and lock in the same turn, the reservations of logins in progress kept
+  - violates: simultaneous successful registrations exceeding the IP limit or correct credentials bypassing an active email lock; a refused or failed reset lifting a lock; a reset dropping the address's history entry that a login in progress still settles on
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 15
 
-*Rationale:* Per-address and per-network limits slow repeated attempts but allow an attacker to lock another address and make users behind a shared address share a limit. Rolling histories release stale partial failures; attempts spread below the threshold remain possible, and changing client addresses can evade an address limit.
-*Rejected:* Lifetime accumulation of email failures — stale partial histories retain capacity indefinitely; counting only after asynchronous work without reservations — concurrent requests exceed admission limits.
+*Rationale:* Per-address and per-network limits slow repeated attempts but allow an attacker to lock another address and make users behind a shared address share a limit. Rolling histories release stale partial failures; attempts spread below the threshold remain possible, and changing client addresses can evade an address limit. A lock stands in the way of guesses at a password, and a password reset shows control of the mailbox, so only someone with access to it can lift a lock.
+*Rejected:* Lifetime accumulation of email failures — stale partial histories retain capacity indefinitely; counting only after asynchronous work without reservations — concurrent requests exceed admission limits; a lock that stays after a password reset — the player who has just set a password is refused at the first login and may take the reset for a failure, the gain being that nothing changes.
 
 ### D-103 — Where are attempt counters kept and how is password work bounded?
 
@@ -1876,18 +1876,18 @@ The session cookie uses SameSite=Strict, and every state-changing route requires
 
 ### D-105 — How is sending account email limited?
 
-The account server sends at most 30 account messages per hour in total and at most three per email address per hour. Above either limit no message is sent and the player is told to try later; no monthly sending cap applies.
+The account server sends at most 30 account messages per hour in total and at most three per email address per hour. Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-214, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”; no monthly sending cap applies.
 
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: account-message-limits. An agent compares a change with the decision:
-  - complies: confirmation and password-recovery send paths share both limits and refuse an excess message
+  - complies: confirmation and password-recovery send paths share both limits and refuse an excess message; a request for a password-reset link above a limit getting the answer every other request gets, with no message sent
   - violates: either mail path sends after a limit is reached or adds an unapproved monthly cap
-- **Origin:** none
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 3, and § Settlements to record, rows 3 and 4
 
-*Rationale:* Hourly limits bound a burst while retaining a simple sending rule; they can exhaust the provider's monthly allowance and prevent recovery messages until delivery becomes available again. The chosen policy accepts that risk rather than reserving a monthly balance.
-*Rejected:* A persistent monthly cap below the provider allowance — adds a shared balance and restricts sends earlier; unrestricted sending — lets a burst consume delivery capacity.
+*Rationale:* Hourly limits bound a burst while retaining a simple sending rule; they can exhaust the provider's monthly allowance and prevent recovery messages until delivery becomes available again. The chosen policy accepts that risk rather than reserving a monthly balance, and accepts through D-215 that the hourly limit too can be exhausted by requests for password-reset links. A player above a limit reads in the one answer only its condition and its ending, because a sentence of its own would tell anyone that the address has a confirmed account.
+*Rejected:* A persistent monthly cap below the provider allowance — adds a shared balance and restricts sends earlier; unrestricted sending — lets a burst consume delivery capacity; a sentence of its own for a request above a limit, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” — a fourth request in an hour shows anyone that the address has an account with a confirmed address, the gain being that this decision stays as it was and the player knows not to wait.
 
 ### D-106 — How are player passwords hashed and checked?
 
@@ -1930,16 +1930,16 @@ The built game and the account and save server use one public HTTPS origin at lo
 
 ### D-109 — What identity authorizes an account request?
 
-A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards; an emailed confirmation link alone, under the transport, origin and input guards, authorizes confirming the address of its own account; and a valid server-side session alone authorizes reading its own account, reading and replacing its own account's saved game state, asking for a confirmation message to its own account's address or destroying that browser's session. `GET /api/account`, `GET /api/saved-game`, `PUT /api/saved-game`, `POST /api/email-confirmation-message` and `POST /api/logout` without a valid session return JSON 401, while an account identifier or email address supplied in a request grants no authority and no field of a request for the saved game state names an account. Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack.
+A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards, and may ask for a password-reset link subject to the transport, origin and input guards; an emailed confirmation link alone, under the transport, origin and input guards, authorizes confirming the address of its own account; a password-reset link alone, under the same guards and with or without a session, authorizes setting a new password of its own account and nothing else; and a valid server-side session alone authorizes reading its own account, reading and replacing its own account's saved game state, asking for a confirmation message to its own account's address or destroying that browser's session. `GET /api/account`, `GET /api/saved-game`, `PUT /api/saved-game`, `POST /api/email-confirmation-message` and `POST /api/logout` without a valid session return JSON 401, while an account identifier or email address supplied in a request grants no authority, the address in a request for a password-reset link naming only the account to whose own confirmed address a link may go, and no field of a request for the saved game state names an account. Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
-- **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-156 · derives from D-157 · derives from D-202 · derives from D-204
+- **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-152 · derives from D-156 · derives from D-157 · derives from D-202 · derives from D-204
 - **Verification:** invariants: account-session-authorization · player-save-isolation.
-- **Origin:** none
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, row 2
 
-*Rationale:* Server-held identity keeps browser input from selecting another account, so the stored session alone selects the saved game state a request reads or replaces, and waiting for persistence prevents a success response with no usable session. Errors can leave a newly created account usable for later login even when its first session could not be stored. A link shows control of its own address without a session and opens no other operation of the account, and a session that asks for a message gets it sent only to its account's own address.
-*Rejected:* Request-supplied identity — lets a caller select another account; responding before session persistence or destruction — reports success without the promised state; deleting an account after its session fails — races with a later valid login; a confirmation that needs a session — a player who opens the link in another browser or signed out could not confirm.
+*Rationale:* Server-held identity keeps browser input from selecting another account, so the stored session alone selects the saved game state a request reads or replaces, and waiting for persistence prevents a success response with no usable session. Errors can leave a newly created account usable for later login even when its first session could not be stored. A link shows control of its own address without a session and opens no other operation of the account, and a session that asks for a message gets it sent only to its account's own address. A request for a password-reset link proves nothing of who sends it, so all it can do is have a link sent to an address whose control was already shown; a player who forgot the password has no session, and the link stands in for the password because only that mailbox receives it.
+*Rejected:* Request-supplied identity — lets a caller select another account; responding before session persistence or destruction — reports success without the promised state; deleting an account after its session fails — races with a later valid login; a confirmation that needs a session — a player who opens the link in another browser or signed out could not confirm; a request of its own that checks a password-reset link before its form is shown, with „Sprawdzanie odnośnika…” — a second new route without a session, answering anyone whether a token works, one more state of the page with its tests, and one more sentence here; a third form standing for good beside the other two, in place of a state of the screen — the entry screen of every visitor holds three forms, and a mistake between them is easier.
 
 ### D-110 — Which proxy information identifies an account request?
 
@@ -1984,16 +1984,18 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 
 ### D-112 — How does the account database open and preserve its schema?
 
-The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137 opens one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 4 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account, session, emailed link and saved game state and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state and the time their email address was confirmed, unset until it is; sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; emailed links have the SHA-256 digest of their token as key, an account foreign key that removes them with their account, a purpose of email confirmation or password reset, creation and expiry times and a mark that they no longer work, with account and creation-time indexes; saved game states have their account's identifier as key and as a foreign key that removes them with their account, the version of their shape, their revision and the game's text of at most 65 536 bytes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing, mail sending or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, together with emailed links both expired and older than one hour, pruned in bounded batches, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state, deletes its sessions and marks all its emailed links as no longer working in one transaction, a session write for a blocked account stores nothing, and recording an emailed link reads its account's blocked state in the transaction that writes it, writes nothing for a blocked account, and in the same transaction marks every earlier link of the same account and purpose as no longer working; writing a saved game state reads its account's blocked state, its stored version and its stored revision in the transaction that writes it and writes nothing when the account is blocked or D-209 or D-210 refuses the save, and blocking keeps the account's saved game state.
+The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137 opens one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 4 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account, session, emailed link and saved game state and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state and the time their email address was confirmed, unset until it is; sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; emailed links have the SHA-256 digest of their token as key, an account foreign key that removes them with their account, a purpose of email confirmation or password reset, creation and expiry times and a mark that they no longer work, with account and creation-time indexes; saved game states have their account's identifier as key and as a foreign key that removes them with their account, the version of their shape, their revision and the game's text of at most 65 536 bytes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing, mail sending or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, together with emailed links both expired and older than one hour, pruned in bounded batches, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state, deletes its sessions and marks all its emailed links as no longer working in one transaction, a session write for a blocked account stores nothing, and recording an emailed link reads its account's blocked state in the transaction that writes it, writes nothing for a blocked account, and in the same transaction marks every earlier link of the same account and purpose as no longer working; setting a password by a password-reset link is one transaction that reads whether the link still works, its account's blocked state included, and either changes nothing or replaces the account's password hash, deletes its sessions and marks all its password-reset links as no longer working, and a session write that names a password hash stores nothing once the account holds another; writing a saved game state reads its account's blocked state, its stored version and its stored revision in the transaction that writes it and writes nothing when the account is blocked or D-209 or D-210 refuses the save, and blocking keeps the account's saved game state.
 
 - **Scope:** account-server, deployment
-- **Based on:** node-sqlite-database · sqlite-wal-concurrency
-- **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-156 · derives from D-161 · derives from D-205
-- **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage.
-- **Origin:** none
+- **Based on:** node-sqlite-database · sqlite-wal-concurrency · express-session-regenerated-session-saved-again
+- **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-138 · derives from D-155 · derives from D-156 · derives from D-161 · derives from D-205
+- **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage · password-reset-link · password-reset-ends-sessions. An agent compares a change with the decision:
+  - complies: every route that makes a session naming, in the write of that session, the password hash its password was checked against or the hash it just made
+  - violates: a new way of making a session that stores it without naming a password hash; a reset that deletes the sessions and replaces the hash in two transactions
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 4 and 5, and § Settlements to record, rows 12, 14 and 19
 
-*Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. One ordered list of steps builds a new database and moves an existing one by the same statements, so the two cannot drift apart, at the cost of a new database running through the history of steps. A second connection from the operator's command waits out the server's short transactions within the busy timeout, and a block committed while a login is in progress either deletes the session that login stored or makes its write store nothing. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema: once a database is moved forward, code that knows only an older version refuses it. Emailed links stay after their use until they have expired and are an hour old, because they also count account messages against D-105 (D-161), and their purpose admits password reset already, because a constraint of a table cannot be widened without rebuilding it. Reading the block in the transaction that records a link means a block either comes first, so nothing is recorded or sent, or comes after and marks the recorded link as no longer working, so a message already on its way carries a link that does not work. A saved game state in a table of its own stays out of the rows every login reads, and reading the block, the version and the revision in the transaction that writes it means no save lands between the check and the write; a blocked player's saved game state waits for the unblock.
-*Rejected:* A destructive startup reset — loses accounts; the saved game state in a column of the accounts table — a text of up to 64 KiB in the row every login reads; a column for the moment of saving before anything reads it — a schema step no one needs; deleting an emailed link on use or block — loses the count of messages D-105 limits, so a blocked account's later messages escape the hourly count; a purpose admitting email confirmation alone — password reset would rebuild the table; a boolean confirmed column — the time costs no more and tells when; unversioned schema assumptions — let old code misread newer data; creating the latest schema directly on a new database beside separate upgrade steps — two definitions of one schema that have to agree, the first difference showing only on a moved database; rebuilding the tables at every version — moves every row and lengthens the write lock where adding a column suffices; a step back from a newer version, or a copy of the database before a move — not provided, so a rollback across a schema change fails until code that knows the newer version is deployed; transactions held across password work — prolong locks; session touch implemented as an upsert — revives logout; deleting a blocked account's sessions without guarding the session write — a login in progress at the block stores its session afterwards.
+*Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. One ordered list of steps builds a new database and moves an existing one by the same statements, so the two cannot drift apart, at the cost of a new database running through the history of steps. A second connection from the operator's command waits out the server's short transactions within the busy timeout, and a block committed while a login is in progress either deletes the session that login stored or makes its write store nothing. A login or a registration stores its session twice, once in its route and once as the library ends the request, and a registration waits on its message between the two, so a reset committed there would see the second store put back what it deleted; the comparison of password hashes in the statement that writes holds for every store, as the block's does, however far apart they stand and whichever connection commits. The hash travels beside the session and never in its stored data; a session written without naming one is unguarded, and the guard rests on the library handing both stores the same session object. Reading the link in the transaction that sets the password means a block, a later link or an expiry during the hashing either comes first, so the finished hash is dropped, or comes after and finds the password changed. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema: once a database is moved forward, code that knows only an older version refuses it. Emailed links stay after their use until they have expired and are an hour old, because they also count account messages against D-105 (D-161), and their purpose admits password reset already, because a constraint of a table cannot be widened without rebuilding it. Reading the block in the transaction that records a link means a block either comes first, so nothing is recorded or sent, or comes after and marks the recorded link as no longer working, so a message already on its way carries a link that does not work. A saved game state in a table of its own stays out of the rows every login reads, and reading the block, the version and the revision in the transaction that writes it means no save lands between the check and the write; a blocked player's saved game state waits for the unblock.
+*Rejected:* A destructive startup reset — loses accounts; the saved game state in a column of the accounts table — a text of up to 64 KiB in the row every login reads; a column for the moment of saving before anything reads it — a schema step no one needs; deleting an emailed link on use or block — loses the count of messages D-105 limits, so a blocked account's later messages escape the hourly count; a purpose admitting email confirmation alone — password reset would rebuild the table; a boolean confirmed column — the time costs no more and tells when; unversioned schema assumptions — let old code misread newer data; creating the latest schema directly on a new database beside separate upgrade steps — two definitions of one schema that have to agree, the first difference showing only on a moved database; rebuilding the tables at every version — moves every row and lengthens the write lock where adding a column suffices; a step back from a newer version, or a copy of the database before a move — not provided, so a rollback across a schema change fails until code that knows the newer version is deployed; transactions held across password work — prolong locks; session touch implemented as an upsert — revives logout; deleting a blocked account's sessions without guarding the session write — a login in progress at the block stores its session afterwards; resting on the order of turns of the event loop instead of guarding the session write at a reset — a condition on a stretch of route and library code no test can see, which a later wait reopens without a sign and a registration already breaks for as long as its message takes; a credential stamp in the session's stored data — changes the narrow payload and puts a value derived from the password in every session row; a generation column on accounts compared in the statement — a schema step for nothing the password hash does not already do; a second store unable to insert, by an update-only write or by remembering stored session objects — closes only the second store, keeps a premise about turns for the first, and departs from the library's upsert; overriding `save` on the session object so that the library's second store does nothing — a route patching an object the library owns; marking admitted attempts at a reset — a second memory of what the database already holds, which does not reach a registration; an outcome for each reason a password-reset link does not work — one refusal is all the route may give, so reasons have nowhere to go.
 
 ### D-114 — Which file is the exemplar for database access?
 
@@ -2563,16 +2565,16 @@ The operator blocks and unblocks a player account, named by its email address no
 
 ### D-138 — How is a player's login kept between requests?
 
-The browser holds an opaque, random session identifier in a host-scoped, Secure and HttpOnly cookie. The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout or account blocking.
+The browser holds an opaque, random session identifier in a host-scoped, Secure and HttpOnly cookie. The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout, on account blocking or at a password reset, which deletes every session of the account in the same operation as the change of password and signs nobody in, so the player signs in with the new password on the form.
 
 - **Scope:** account-server, browser-view
-- **Based on:** OWASP Session Management Cheat Sheet, session identifiers, server-side expiry and invalidation (https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html, read 2026-10-04) · MDN Set-Cookie, Secure and HttpOnly attributes and host scope (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie, read 2026-10-04) · OWASP JSON Web Token Cheat Sheet, token revocation trade-off (https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html, read 2026-10-04)
+- **Based on:** OWASP Session Management Cheat Sheet, session identifiers, server-side expiry and invalidation (https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html, read 2026-10-04) · MDN Set-Cookie, Secure and HttpOnly attributes and host scope (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie, read 2026-10-04) · OWASP JSON Web Token Cheat Sheet, token revocation trade-off (https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html, read 2026-10-04) · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "Once they have set their new password, the user should then login through the usual mechanism. Don't automatically log the user in" · "Ask the user if they want to invalidate all of their existing sessions, or invalidate the sessions automatically."; read 2026-10-30
 - **Relations:** none
-- **Verification:** invariants: player-opaque-session-cookie · player-server-session
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a player's login kept between requests?"
+- **Verification:** invariants: player-opaque-session-cookie · player-server-session · password-reset-ends-sessions
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a player's login kept between requests?" · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, row 14
 
-*Rationale:* the existing account database can hold a small server-side session record. The server can end access immediately after logout or account blocking, without maintaining a token denylist. This adds database lookups and cleanup of expired records. A signed token would avoid session records, but immediate account blocking would still require checking server state or a denylist.
-*Rejected:* self-contained signed session tokens — their revocation adds state or a delay before a blocked account loses access; session secrets in browser storage or URLs — expose them to client code or URL leakage.
+*Rationale:* the existing account database can hold a small server-side session record. The server can end access immediately after logout, account blocking or a password reset, without maintaining a token denylist. This adds database lookups and cleanup of expired records. A signed token would avoid session records, but immediate account blocking would still require checking server state or a denylist. A password reset ends every browser's session so that whoever took over the password does not play on after it changes; a player playing in a second browser meets „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” at the next save, the unsaved state waiting in that tab for the sign-in (D-211).
+*Rejected:* self-contained signed session tokens — their revocation adds state or a delay before a blocked account loses access; session secrets in browser storage or URLs — expose them to client code or URL leakage; signing the player in at once after a password reset — against OWASP and one more way of making a session, also from a link opened on someone else's computer; keeping the sessions at a password reset — someone who took over the password plays on after it changes, and the player has no way of removing them.
 
 ### D-139 — What does the login of a blocked account tell the player?
 
@@ -2781,56 +2783,58 @@ The condition „Zdrowie poniżej” compares the acting side’s current health
 
 ### D-152 — How does a player sign in and reset a forgotten password?
 
-Players register and sign in with an email address and password. They can start playing before confirming the email address; a confirmation message establishes that address.
+Players register and sign in with an email address and password. They can start playing before confirming the email address; a confirmation message establishes that address for account recovery. A player resets a forgotten password by a single-use link sent to the previously confirmed email address, without operator assistance.
 
 - **Scope:** account-server, browser-view
-- **Based on:** OWASP Authentication Cheat Sheet, password authentication (https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html, read 2026-10-04) · OWASP Email Validation and Verification Cheat Sheet, establishing control of an address (https://cheatsheetseries.owasp.org/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.html, read 2026-10-04) · W3C Web Authentication Level 3 (https://www.w3.org/TR/webauthn-3/, read 2026-10-04) · OpenID Connect Core 1.0 (https://openid.net/specs/openid-connect-core-1_0.html, read 2026-10-04)
-- **Relations:** none
-- **Verification:** invariants: player-password-login · email-verification-nonblocking.
-- **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a player sign in and reset a forgotten password?"; this entry holds what that entry says of email confirmation, and what it says of password reset — the confirmed address serving account recovery and the single-use reset link sent to it — enters with password reset
+- **Based on:** OWASP Authentication Cheat Sheet, password authentication (https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html, read 2026-10-04) · OWASP Email Validation and Verification Cheat Sheet, establishing control of an address (https://cheatsheetseries.owasp.org/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.html, read 2026-10-04) · OWASP Forgot Password Cheat Sheet, single-use expiring reset links (https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html, read 2026-10-04) · W3C Web Authentication Level 3 (https://www.w3.org/TR/webauthn-3/, read 2026-10-04) · OpenID Connect Core 1.0 (https://openid.net/specs/openid-connect-core-1_0.html, read 2026-10-04)
+- **Relations:** derives from D-202
+- **Verification:** invariants: player-password-login · email-verification-nonblocking · password-reset-verified-email.
+- **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a player sign in and reset a forgotten password?"
 
-*Rationale:* a player can enter without waiting for a message, and a confirmed address is one whose control the player has shown. The account server must store password hashes, protect registration and login from abuse, and send email for confirmation.
-*Rejected:* email code at every login — depends on message delivery every time; WebAuthn passkeys — add key enrolment and loss recovery while the game's final domain is unsettled; external OpenID Connect — adds a login provider and account linking to its identity.
+*Rationale:* a player can enter without waiting for a message, yet can later recover the account without asking the operator. The recovery link goes only to an address whose control was confirmed earlier. The account server must store password hashes, protect registration and login from abuse, and send email for confirmation and reset; a player who loses the password before confirming the address cannot use this recovery route.
+*Rejected:* password with operator-assisted recovery — requires human identity checks for public accounts; password with no recovery — loses access and saved progress after a forgotten password; email code at every login — depends on message delivery every time; WebAuthn passkeys — add key enrolment and loss recovery while the game's final domain is unsettled; external OpenID Connect — adds a login provider and account linking to its identity.
 
 ### D-153 — Which service delivers account emails?
 
-The account server sends email confirmation messages from an address under `mariusznazar.com` through the authenticated SMTP service of Mikrus Outsider available to the existing Mikrus account.
+The account server sends email confirmation and password-reset messages from an address under `mariusznazar.com` through the authenticated SMTP service of Mikrus Outsider available to the existing Mikrus account. Public self-service account recovery is enabled only after confirmation and password-reset messages sent from the intended container reach external inboxes in a real delivery test.
 
 - **Scope:** account-server, deployment
 - **Based on:** mikrus-outsider-mail · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
 - **Relations:** derives from D-152
-- **Verification:** invariants: account-email-via-outsider.
-- **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Which service delivers account emails?"; this entry holds its first sentence for email confirmation messages, and password-reset messages and the real delivery test before public self-service account recovery is enabled enter with password reset
+- **Verification:** invariants: account-email-via-outsider. An agent compares the launch with the decision:
+  - complies: both message types from the intended container reach external inboxes before public self-service account recovery is enabled
+  - violates: recovery is enabled after only SMTP connection or relay acceptance succeeds
+- **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Which service delivers account emails?"
 
 *Rationale:* Mariusz can use Outsider with his existing Mikrus account and owns `mariusznazar.com`; this keeps the game with the domain and provider he already has. Outsider still requires a mailbox, mail DNS records, credentials and monitoring. The website's DNS records do not need to be moved for mail-only use. Acceptance by an SMTP relay does not establish that an account holder can receive the link needed to recover access.
 *Rejected:* Resend or Brevo with the same domain — each adds a separate provider account to maintain, and Brevo Free brands the messages; Cloudflare Email Sending — adds a paid sending service for arbitrary recipients; no email delivery — would leave self-service password reset unusable.
 
 ### D-154 — How does the account server send email through Outsider?
 
-The account server composes and sends email confirmation messages through Mikrus Outsider SMTP with Nodemailer 10. The SMTP connection must upgrade to TLS; sending fails when STARTTLS cannot be established.
+The account server composes and sends email confirmation and password-reset messages through Mikrus Outsider SMTP with Nodemailer 10. The SMTP connection must upgrade to TLS; sending fails when STARTTLS cannot be established.
 
 - **Scope:** account-server, build-tools
 - **Based on:** nodemailer-require-tls · Nodemailer documentation for the current 10 line, SMTP transport, `requireTLS` and `verify()` (https://nodemailer.com/, read 2026-10-04; https://nodemailer.com/smtp, read 2026-10-04) · published Nodemailer 10.0.14 manifest, built-in TypeScript types, Node support and no runtime dependencies (https://registry.npmjs.org/nodemailer/10.0.14, read 2026-10-04) · public npm download record for Nodemailer (https://api.npmjs.org/downloads/point/last-week/nodemailer, read 2026-10-04) · emailjs 5.0.3 documented client API and STARTTLS configuration (https://github.com/eleith/emailjs/blob/v5.0.3/README.md, read 2026-10-04) · emailjs 5.0.3 STARTTLS error-handling source (https://github.com/eleith/emailjs/blob/v5.0.3/src/connection.ts, read 2026-10-04) · Mikrus Outsider SMTP port 587 (https://wiki.mikr.us/outsider/, read 2026-10-04)
 - **Relations:** derives from D-153 · derives from D-01
 - **Verification:** invariants: account-email-nodemailer-starttls.
-- **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does the account server send email through Outsider?"; this entry holds what that entry says of email confirmation messages, and password-reset messages enter with password reset
+- **Origin:** the projected entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does the account server send email through Outsider?"
 
 *Rationale:* Nodemailer supplies a typed SMTP client and message composition in the same Node.js process, without another service. Its documented `requireTLS` setting refuses to send when a STARTTLS upgrade is unavailable. The package and its configuration must be maintained; SMTP credentials stay outside the definition. `verify()` can check connectivity and authentication, but only a real message test can establish that the sender is accepted and mail reaches an inbox.
 *Rejected:* `emailjs` 5 — also a typed SMTP client, but its documentation does not state an equally clear failure rule for a refused STARTTLS upgrade; its implementation suggests a possible error-handling gap that would need separate testing, not a proven Outsider failure; own SMTP code on Node sockets — adds protocol, message-format and TLS handling to this project; `smtp-connection` 4.0.2 — lacks explicit types and current versioned documentation.
 
 ### D-155 — How long and how often does an emailed link work?
 
-A link of an email confirmation message works for 24 hours and a link of a password-reset message for one hour from the moment it is recorded, and each works once. Recording a new link for an account, which comes before its message is handed to the mail service, stops in the same transaction every earlier link of the same kind for that account, so a message whose sending then fails leaves no earlier link working.
+A link of an email confirmation message works for 24 hours and a link of a password-reset message for one hour from the moment it is recorded, each works once, and a password-reset link is spent only together with the new password. Recording a new link for an account, which comes before its message is handed to the mail service, stops in the same transaction every earlier link of the same kind for that account, so a message whose sending then fails leaves no earlier link working.
 
 - **Scope:** account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Email Ownership Verification, Recommendations — "Single-use" · "Time-limited"; read 2026-10-29 · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Introduction — "Single use and expire after an appropriate period."; read 2026-10-29
 - **Relations:** derives from D-152
-- **Verification:** invariants: email-confirmation-link. An agent compares a change with the decision:
-  - complies: a resend leaves only its own link of the account working, whether its sending succeeds or fails
-  - violates: a confirmation link that confirms twice, or still confirms 24 hours after it was recorded; a password-reset link that works longer than one hour; earlier links stopped only after the mail service has accepted the new message
-- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row K1
+- **Verification:** invariants: email-confirmation-link · password-reset-link · password-reset-verified-email. An agent compares a change with the decision:
+  - complies: a resend leaves only its own link of the account working, whether its sending succeeds or fails; a password-reset link still working after a password the server refused
+  - violates: a confirmation link that confirms twice, or still confirms 24 hours after it was recorded; a password-reset link that works longer than one hour; earlier links stopped only after the mail service has accepted the new message; a password-reset link spent when its page opens or when its form is sent, before the new password is written
+- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row K1 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 12
 
-*Rationale:* a link that works once and for a bounded time limits what an intercepted or forgotten message can do, and only the newest message's link works, so the player knows which one to open. Stopping the earlier links in the transaction that records the new one leaves no moment, a database fault included, in which an earlier link outlives a newer one; a sending that fails leaves no working link, and the player asks for the message again. Whoever opens an older message after a newer one was sent sees that its link no longer works and opens the newest, and whoever does not read the mail within a day asks for the message again.
+*Rationale:* a link that works once and for a bounded time limits what an intercepted or forgotten message can do, and only the newest message's link works, so the player knows which one to open. A player who forgot the password holds nothing but the link, so the link lasts until the new password stands. Stopping the earlier links in the transaction that records the new one leaves no moment, a database fault included, in which an earlier link outlives a newer one; a sending that fails leaves no working link, and the player asks for the message again. Whoever opens an older message after a newer one was sent sees that its link no longer works and opens the newest, and whoever does not read the mail within a day asks for the message again.
 *Rejected:* stopping the earlier links only once the mail service has accepted the new message — a database fault after the acceptance leaves the earlier links working beside the new one, and a failed sending is the only case it spares; earlier links working beside the newest one — several live links per account and kind.
 
 ### D-156 — How does an emailed link confirm a player's email address?
@@ -2865,7 +2869,7 @@ A signed-in player whose email address is unconfirmed sees on every screen, in t
 
 ### D-158 — From whom does the email confirmation message come, and what does it say?
 
-The email confirmation message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Potwierdź adres e-mail w loop2” and a body of three paragraphs separated by an empty line: „Ktoś — zapewne Ty — założył konto w loop2 na ten adres e-mail. Aby go potwierdzić, otwórz odnośnik:” with the link alone on the next line, „Odnośnik jest ważny przez 24 godziny i działa raz.” and „Jeśli to nie Ty, zignoruj tę wiadomość.”.
+The email confirmation message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Potwierdź adres e-mail w loop2” and a body of four paragraphs separated by an empty line: „Ktoś — zapewne Ty — założył konto w loop2 na ten adres e-mail. Aby go potwierdzić, otwórz odnośnik:” with the link alone on the next line, „Odnośnik jest ważny przez 24 godziny i działa raz.”, „Potwierdzony adres pozwala samodzielnie zresetować zapomniane hasło.” and „Jeśli to nie Ty, zignoruj tę wiadomość.”.
 
 - **Scope:** account-server, deployment
 - **Based on:** none
@@ -2873,10 +2877,10 @@ The email confirmation message comes from `loop2@mariusznazar.com` with the disp
 - **Verification:** an agent compares a change with the decision:
   - complies: a message composed for one recipient with the fixed sender, display name and subject and a text body with the link on a line of its own
   - violates: an HTML body beside the text; the recipient's address written into a header other than the recipient's
-- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row K5
+- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row K5 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, and § Settlements to record, row 17
 
-*Rationale:* the message says who sent it, why it came and what to do if it was not asked for, and the replies of players reach the sender's mailbox, which is worth looking through now and then.
-*Rejected:* the sentence „Potwierdzony adres pozwala samodzielnie zresetować zapomniane hasło.” — promises a password reset the game does not yet offer.
+*Rationale:* the message says who sent it, why it came, what confirming the address gives the player and what to do if it was not asked for, and the replies of players reach the sender's mailbox, which is worth looking through now and then.
+*Rejected:* no sentence about the password reset — the player does not learn from the message that without a confirmed address the account cannot be recovered.
 
 ### D-159 — Can an account's email address change?
 
@@ -2895,13 +2899,13 @@ An account's email address is the address given at its registration, and no oper
 
 ### D-160 — What does an emailed link of a blocked account do?
 
-An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link sees „Odnośnik jest nieważny albo wygasł.” in `warning`. A link that a block stopped stays stopped after the account is unblocked, and the player, signed in again, asks for a new confirmation message with „Wyślij ponownie”.
+An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game, as D-156 and D-217 give. A link that a block stopped stays stopped after the account is unblocked, and the player, signed in again, asks for a new confirmation message with „Wyślij ponownie”, or asks for a new password-reset link with „Wyślij odnośnik”.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** derives from D-137
-- **Verification:** invariants: email-confirmation-link · unblock-restores-no-link.
-- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row K10
+- **Verification:** invariants: email-confirmation-link · unblock-restores-no-link · password-reset-link.
+- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row K10 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 4 and 14, and § Settlements to record, row 10
 
 *Rationale:* a block stops what the account can do through its links as it stops its sessions, and unblocking brings back neither. A blocked player learns from a link only that it does not work, and learns why at the next sign-in.
 *Rejected:* a link that works whatever the block — a blocked account changes state despite the block, and a password-reset link would set a new password; a link that does not work during the block but works again after unblocking while unexpired — unlike the sessions, and a reset link intercepted before the block works right after the unblock.
@@ -3795,8 +3799,8 @@ empty game, which with frequent deployments while the game is tested is real for
 ### D-211 — What does the player see when a save of the game state finds no session?
 
 When the server answers a save of the game state that there is no session, whatever ended it — an
-expiry or a block of the account (D-137) — the game leaves the screen and its time stops, the account
-forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” in `warning` above them,
+expiry, a block of the account (D-137) or a password reset (D-138) — the game leaves the screen and
+its time stops, the account forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” in `warning` above them,
 and the unsaved game state stays in the page's memory only, never in the browser's lasting storage,
 so a reload or a closing of the page before signing in loses it. After a sign-in to the same account
 the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212
@@ -3813,7 +3817,7 @@ saved game state.
     state and showing its map run paused
   - violates: the unsaved game state written to `localStorage`; the kept state saved after a sign-in
     to another account; the game left running beside the forms
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, row 5
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, row 5 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, row 14
 
 *Rationale:* the progress the browser holds waits in the open tab for the same account, and nothing
 of it stays in the browser for the next person at a shared computer; unsaved progress lives only as
@@ -3888,3 +3892,206 @@ shape, apart from the functions that pass game time.
 *Rejected:* the load in the browser view, which then replaces the game state itself — the breach of
 D-04; a lenient load that fills missing keys — a migration by another name, against discarding
 another version whole.
+
+### D-214 — What does a request for a password-reset link answer?
+
+Every request for a password-reset link whose address is well formed under D-99 gets one and the
+same answer, which leaves before any work on an account and without waiting for the mail server, so
+neither its content nor its time tells what became of the request; the page then shows „Jeśli to
+konto ma potwierdzony adres, wysłaliśmy na niego odnośnik. Gdy wiadomość nie przyjdzie, spróbuj
+ponownie później.” in `text-secondary` under the form „Nie pamiętam hasła”, which stays with its
+address field empty and with „Wróć do logowania”. An address not so written gets „Podaj adres e-mail
+w postaci nazwa@domena.” under the field, from the form and from the server alike, and nothing is
+sent. Only after the answer does the server record and send a link, and only for an account with a
+confirmed address that is not blocked and within the limits of D-105, and a failure of that work
+shows only in the server's log.
+
+- **Scope:** account-server, browser-view
+- **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Return a consistent message for both existent and non-existent accounts." · "Ensure that responses return in a consistent amount of time to prevent an attacker enumerating which accounts exist."; read 2026-10-30
+- **Relations:** derives from D-99 · derives from D-104 · derives from D-105 · derives from D-152 · derives from D-161
+- **Verification:** an agent compares a change with the decision:
+  - complies: a request whose mailer never answers getting its answer at once; the same answer and no
+    body for an unknown address, an unconfirmed one, a blocked one and one above a limit
+  - violates: a lookup of the account or the recording of a link before the response has ended; an
+    answer that waits for the mail service; a failure of the work after the answer that ends the
+    process
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 13 and 15, and § Settlements to record, row 3
+
+*Rationale:* one sentence for every well-formed address says nothing about any account, and the only
+other sentence depends on what the player typed, so it says nothing about an account either. The
+answer leaves before the work because recording a link writes to the disk only for a confirmed
+account that is neither blocked nor above a limit, so an answer that waited for it would tell by its
+time what its sentence hides. Accepted with it: a player with an unconfirmed address, above a limit
+or during a failure of the mail service waits for a message that does not come, and only the
+sentence's condition explains why, the failure showing in the log alone; a process stopped between
+the answer and the recording sends nothing, which the sentence's ending also covers; a player who
+asks again types the address anew, and the second request stops the link of the first message; a
+calm sentence stands where only refusals stood; and the commit that records a link stops the server
+for its few milliseconds, so a client timing a request sent right after could in principle see it,
+which D-105 bounds to three samples an hour for one account and 30 in all, each mailing the
+account's owner.
+*Rejected:* the truth about each outcome, as at „Wyślij ponownie” (D-157), with a sentence of its own
+for a sent message, a limit, a failed sending and an unconfirmed address — anyone who knows an
+address learns whether it is confirmed, at a blocked account either learns of the block, against
+D-139, or sees an untrue sentence, and the answer waits up to 10 seconds for the mail server; the
+same sentence with one of its own above a limit, „Za dużo wiadomości. Spróbuj ponownie za godzinę.”
+— a fourth request in an hour shows anyone that the address has an account with a confirmed address,
+the gain being that D-105 stays as it was and the player knows not to wait; the form gone after
+sending, with only the sentence and „Wróć do logowania” left — one more state of the screen with its
+tests, and asking again takes going back to the login, the gain being that a second click does not
+stop a fresh link by mistake; the same sentence for any text typed — the player waits for a message
+that cannot come; recording in the handler and sending in the background — the commit costs a sync
+to the disk only when it writes, so the answer's time tells exactly what this decision hides; a
+fixed or random floor on the answer's time — hides the usual commit and not a slow one, and slows
+every request; a durable queue of messages — a schema step for a message the player can ask for
+again.
+
+### D-215 — Does a request for a password-reset link have a limit of its own per client address?
+
+A request for a password-reset link has no limit of its own per client address, and only the limits
+of D-105 bound it. This holds while only the owner has accounts, and the decision is reviewed before
+the game's address is given to other players, if abuse has become real.
+
+- **Scope:** account-server
+- **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Implement protections against excessive automated submissions such as rate-limiting on a per-account basis"; read 2026-10-30
+- **Relations:** derives from D-105 · derives from D-214
+- **Verification:** an agent compares a change with the decision:
+  - complies: a request for a link going through the two limits of D-105 and no other count
+  - violates: a counter of requests per client address added beside those limits while this decision
+    stands
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 4
+
+*Rationale:* accounts belong to the owner alone for now, so a limit of its own would guard against
+nobody yet. Accepted with it, as no other entry accepts it: whoever knows ten confirmed addresses
+exhausts the 30 messages within an hour, and for that hour nobody gets a message, a new player's
+confirmation included; and the same person can stop another player's waiting link three times an hour
+(D-155).
+*Rejected:* a limit of its own, for example five requests from a client address per hour, counted in
+memory as D-102 and D-103 count — a new counter, changes of D-102, D-103 and `account-attempt-limits`,
+a limit to show without spoiling the one answer of D-214, and an attack from many client addresses
+gets through anyway.
+
+### D-216 — What form does a password-reset link take?
+
+The link of a password-reset message is the configured public origin followed by
+`/#reset-password=<token>`, its token 32 random bytes written in base64url, of which the account
+database keeps only the SHA-256 digest. The game page reads the token from the fragment of its
+address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104.
+
+- **Scope:** account-server, browser-view
+- **Based on:** uri-fragment-in-requests · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-30
+- **Relations:** derives from D-104 · derives from D-152 · derives from D-156
+- **Verification:** an agent compares a change with the decision:
+  - complies: the page reading the token from the fragment and sending it in the JSON body of a
+    `POST` only when the form is sent
+  - violates: a link carrying its token in its path or query; a token kept in clear in the database
+    or written to a log
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 5
+
+*Rationale:* the link is built as a confirmation link is (D-156), for the same reasons: a fragment
+reaches no server, no request log and no `Referer`, a digest in the database yields no working link
+to whoever reads it, and a mail client or a spam filter that opens the link uses up nothing.
+*Rejected:* unknown
+
+### D-217 — What does the form „Ustaw nowe hasło” hold, and how does it end?
+
+The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw
+hasło” and „Anuluj”, which removes the fragment of the address and opens the page as usual, and the
+page shows it without asking the server about the link, so a player learns that a link does not work
+only after sending the form. After the password is set, „Hasło zmienione. Zaloguj się nowym hasłem.”
+stands in `positive` above the account forms and the fragment is gone; after a refusal of the link,
+whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest
+nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game. No
+connection or a full password gate leaves the form, one sentence under it and the link working.
+
+- **Scope:** browser-view, account-server
+- **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "The user should confirm the password they set by writing it twice."; read 2026-10-30
+- **Relations:** derives from D-96 · derives from D-98 · derives from D-156 · derives from D-216
+- **Verification:** an agent compares a change with the decision:
+  - complies: the fragment removed before the page goes on, with `history.replaceState`, so neither a
+    reload nor the back button returns to the token; the sentence of a refused link above the game for
+    a signed-in player; „Anuluj” disabled while the form waits
+  - violates: a request sent when the page opens; the fragment kept after a refusal of the link; the
+    form closed by a 429 or by a lost connection
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 4 and 14, and § Settlements to record, rows 8, 9, 10, 11 and 13
+
+*Rationale:* a form shown without a question to the server gives nobody a way of asking whether a
+token works. Accepted with it: a player with an expired link types the password twice in vain; a
+refusal costs one request more, so that a player with a valid session returns to the game at once;
+and an answer lost after the server committed leaves the form standing, a second sending then being
+refused although the password did change, which the new password on the form or a new link puts
+right.
+*Rejected:* a page that checks the link by a request of its own and shows „Sprawdzanie odnośnika…”,
+with the sentence of a refusal at once — a second new route without a session, answering anyone
+whether a token works, one more state of the page with its tests, and one more sentence in D-109;
+the account forms with that sentence after every refusal — a player with a valid session sees the
+login as if signed out, though a reload returns to the game and nothing is lost.
+
+### D-218 — How does the route that sets a password by a link check its request and bound its password work?
+
+`POST /api/password-reset` checks the fields of its request, then the rules of D-98, then the form of
+the token and whether its link works, all before any password work, so a link that does not work
+never reaches the password gate of D-103 and a bad password never tells whether a token works; it
+then hashes through that gate, with no attempt admission of D-102, and checks the link again in the
+transaction of D-112 that sets the password. Every token that is malformed, unknown, spent, expired,
+stopped, of another kind or of a blocked account gets one and the same refusal `invalid-link`, before
+the hashing or after it, a full password gate answers 429 `too-many-attempts`, and any other failure
+writes nothing, so the last two leave the link working. The route neither uses nor changes the
+session a request brings with it, which ends with the account's others or stays as it was.
+
+- **Scope:** account-server
+- **Based on:** express-session-end-of-request
+- **Relations:** derives from D-98 · derives from D-103 · derives from D-104 · derives from D-109 · derives from D-112 · derives from D-155
+- **Verification:** invariants: password-reset-link. An agent compares a change with the decision:
+  - complies: a bad link with a good password refused with a full password gate as with a free one; a
+    good link with a bad password still working afterwards
+  - violates: password work for a token whose link does not work; the link spent or reserved before
+    the hashing; a transaction held across the hashing; the route writing to, regenerating or
+    destroying the session of its request
+- **Origin:** none
+
+*Rationale:* the password comes before the link because with the link first a short password would
+turn the route into an answer to anyone about whether a token works, without spending it and without
+changing anything; the page checks the same rules before it sends, so only a crafted request meets
+this order. The route takes no attempt admission because an admission limits guesses and a 256-bit
+token is not guessed: a bad token reaches no password work, the first commit spends the link, and D-105 bounds
+links to 30 an hour, so someone holding several working links occupies the password gate for a few
+seconds at most, and that person holds the mailbox anyway. A session loaded from a cookie and left
+unchanged is only touched as the request ends, which changes nothing once its row is gone, so nothing
+brings it back; this rests on the library, and an upgrade that changed that end of a request could
+revive a session.
+*Rejected:* no check before hashing — a bad token would occupy a slot of the password gate; spending
+or reserving the link before hashing — a full password gate or a failed hash would use it up; one
+transaction around the hashing — against D-112; a new admission per client address — a new limit
+nobody asked for; the login's admission keyed by the account's address — a request that is no login
+would take the place of logins and could lock them; destroying a session of the same account in the route — an await and a
+branch on whose session it is, for a row the transaction already removed; clearing the cookie — two
+`Set-Cookie` headers for a cookie that is already harmless.
+
+### D-219 — Which messages does a password reset send, and what do they say?
+
+The password-reset message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain
+text without HTML, with the subject „Ustaw nowe hasło w loop2” and a body of three paragraphs
+separated by an empty line: „Ktoś — zapewne Ty — poprosił o ustawienie nowego hasła do konta w loop2
+na tym adresie e-mail. Aby je ustawić, otwórz odnośnik:” with the link alone on the next line,
+„Odnośnik jest ważny przez godzinę i działa raz.” and „Jeśli to nie Ty, zignoruj tę wiadomość. Hasło
+się nie zmieni.”. After a change of password the player gets no message about the change.
+
+- **Scope:** account-server, deployment
+- **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "Send the user an email informing them that their password has been reset (do not send the password in the email!)."; read 2026-10-30
+- **Relations:** derives from D-153 · derives from D-155 · derives from D-158
+- **Verification:** an agent compares a change with the decision:
+  - complies: a message composed for one recipient with the fixed sender, display name and subject
+    and a text body with the link on a line of its own
+  - violates: an HTML body beside the text; a message handed to the mail service after a password is
+    set
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7 and 9, and § Settlements to record, rows 16 and 18
+
+*Rationale:* the message has the sender and form of the confirmation message, so it reads as coming
+from the same place, and says what to do if it was not asked for. Accepted with it, as a departure
+from the OWASP advice this entry cites: a player whose password someone else changed learns of it
+only at a failed login, though that someone needed access to the same mailbox such a message would
+go to.
+*Rejected:* a short message after every change — a third kind of message, while the limits count
+messages by the rows of their links (D-161), which it does not have, so the way of counting, D-161
+and probably the schema change, and every change takes one message from Outsider's limit.
