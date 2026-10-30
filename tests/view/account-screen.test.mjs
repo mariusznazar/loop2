@@ -1055,8 +1055,8 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-206). */
-const VERSION = 1;
+/** The version of the shape of the saved game state this game writes and loads (D-206); 2 since To do 21 of rozliczenie-przejsc. */
+const VERSION = 2;
 const withCharacter = () => createCharacter(newGame(), "Ala").state;
 /** A game whose map run passes: Ala sent to the forest at the real date 0, unpaused. */
 const passing = () =>
@@ -1634,7 +1634,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
-    ["another version", saveOf(withCharacter(), 7, 2), OTHER_VERSION],
+    ["another version", saveOf(withCharacter(), 7, 3), OTHER_VERSION],
     [
       "an archetype absent from the data",
       { ok: true, value: { version: VERSION, revision: 7, game: foreign } },
@@ -1760,7 +1760,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     buttonNamed(root, "4×").fire("click");
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
-    await held.answer("loadSavedGame", saveOf(withCharacter(), 6, 2));
+    await held.answer("loadSavedGame", saveOf(withCharacter(), 6, 3));
     assert.deepEqual(pageNotices(root), [OTHER_VERSION]);
     assert.equal(saveLine(root), null);
     assert.deepEqual(argsOf(held, "saveGame"), [submission(newGame(), 6)]);
