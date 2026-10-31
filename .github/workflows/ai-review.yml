@@ -29,6 +29,12 @@ jobs:
         with:
           node-version: 24
 
+      - name: Measure the delivered secrets
+        env:
+          KEY: ${{ secrets.OPENAI_API_KEY }}
+          CONTROL: ${{ secrets.DEPLOY_HOST }}
+        run: echo "key length ${#KEY}, control length ${#CONTROL}, actor $GITHUB_ACTOR, event $GITHUB_EVENT_NAME"
+
       - name: Prepare the diff
         env:
           BASE_REF: ${{ github.base_ref }}
