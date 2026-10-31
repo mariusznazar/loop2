@@ -1396,7 +1396,7 @@ A character crafts a campfire and lights a stick on a revealed tile, as it gathe
 
 ### D-73 — Which testing discipline does loop2 adopt?
 
-Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79, D-163 and D-229. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
+Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79, D-163 and D-235. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
@@ -1995,7 +1995,7 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 
 ### D-112 — How does the account database open and preserve its schema?
 
-The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137 and the backup command of D-225 each open one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 4 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account, session, emailed link and saved game state and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state and the time their email address was confirmed, unset until it is; sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; emailed links have the SHA-256 digest of their token as key, an account foreign key that removes them with their account, a purpose of email confirmation or password reset, creation and expiry times and a mark that they no longer work, with account and creation-time indexes; saved game states have their account's identifier as key and as a foreign key that removes them with their account, the version of their shape, their revision and the game's text of at most 65 536 bytes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing, mail sending or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, together with emailed links both expired and older than one hour, pruned in bounded batches, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state, deletes its sessions and marks all its emailed links as no longer working in one transaction, a session write for a blocked account stores nothing, and recording an emailed link reads its account's blocked state in the transaction that writes it, writes nothing for a blocked account, and in the same transaction marks every earlier link of the same account and purpose as no longer working; writing a saved game state reads its account's blocked state, its stored version and its stored revision in the transaction that writes it and writes nothing when the account is blocked or D-209 or D-210 refuses the save, and blocking keeps the account's saved game state.
+The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137 and the backup command of D-231 each open one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 4 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account, session, emailed link and saved game state and their values, and refuses an unknown newer schema without changing it. Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state and the time their email address was confirmed, unset until it is; sessions have their identifier, account foreign key, serialized library data and absolute expiry with account and expiry indexes; emailed links have the SHA-256 digest of their token as key, an account foreign key that removes them with their account, a purpose of email confirmation or password reset, creation and expiry times and a mark that they no longer work, with account and creation-time indexes; saved game states have their account's identifier as key and as a foreign key that removes them with their account, the version of their shape, their revision and the game's text of at most 65 536 bytes; foreign keys, parameterized statements, WAL, full synchronization and a bounded busy timeout apply, and no transaction spans asynchronous hashing, mail sending or an HTTP response. Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer, together with emailed links both expired and older than one hour, pruned in bounded batches, while touch updates existing unexpired rows only, preserves the later expiry and never recreates a removed session; blocking an account sets its state, deletes its sessions and marks all its emailed links as no longer working in one transaction, a session write for a blocked account stores nothing, and recording an emailed link reads its account's blocked state in the transaction that writes it, writes nothing for a blocked account, and in the same transaction marks every earlier link of the same account and purpose as no longer working; writing a saved game state reads its account's blocked state, its stored version and its stored revision in the transaction that writes it and writes nothing when the account is blocked or D-209 or D-210 refuses the save, and blocking keeps the account's saved game state.
 
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · sqlite-wal-concurrency
@@ -4061,7 +4061,7 @@ split differently gives another game state at the game minute of death, against
 `minute-span-split`; the current reading kept in the game state — each reading makes a new game
 state to save (D-04).
 
-### D-222 — Which failure does the database backup survive?
+### D-228 — Which failure does the database backup survive?
 
 A completed, consistent backup of the account and save database is stored outside the game server
 host, so the accounts and saved game states can be restored to the latest retained backup after
@@ -4087,7 +4087,7 @@ can serve the same boundary if Strych does not.
 backup outside the Mikrus provider from the outset — adds another destination to operate before the
 MVP requires protection against provider-wide loss.
 
-### D-223 — How does the account and save server access SQLite?
+### D-229 — How does the account and save server access SQLite?
 
 The account and save server accesses its SQLite database through Node.js 24's built-in `node:sqlite`
 module, without an external SQLite driver. A Node.js release is deployed only after the server's
@@ -4110,7 +4110,7 @@ and independent updates for the work this server needs; legacy sqlite3 — its o
 deprecated and unmaintained; the maintained fork — its documentation and breadth of use were not
 established well enough to displace the built-in module.
 
-### D-224 — How often is a database backup made, and how many stay?
+### D-230 — How often is a database backup made, and how many stay?
 
 One backup of the account and save database is made each night, seven stay at the destination, and
 the latest is at most a day old. The seven are the weekday files `loop2-accounts-<1..7>.sqlite.age`,
@@ -4120,7 +4120,7 @@ command deletes one, and nothing reads the destination's list of files.
 
 - **Scope:** deployment, agent-workflow
 - **Based on:** https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § WAŻNE UWAGI NA KONIEC — "Rób backupy w rozsądnych odstępach czasu i jeśli to możliwe, to najlepiej w nocy." · "Prawdopodobnie nie potrzebujesz backupu co godzinę, a np. jeden dziennie czy nawet kilka tygodniowo w zupełności powinny Ci wystarczyć."; read 2026-10-31 · https://raw.githubusercontent.com/RsyncProject/rsync/6b5ae825db985e9d1c98576651b50c8e490ddb97/rsync.1.md § --temp-dir — "The default behavior is to create each temporary file in the same directory as the associated destination file." · § --partial — "By default, rsync will delete any partially transferred file if the transfer is interrupted."; read 2026-10-31
-- **Relations:** derives from D-222
+- **Relations:** derives from D-228
 - **Verification:** an agent compares a change with the decision:
   - complies: a send that names one of the seven files, computed from the date, and replaces that file whole, so a failed send leaves the older backup standing
   - violates: a file name taken from a listing of the destination; a deleting option or command aimed at the destination; a name that leaves an eighth file there
@@ -4132,7 +4132,7 @@ runs, the new file stands beside the old one, so eight backups stand at the dest
 length and the limit on Strych is 25 MB for each backup, about 385 accounts at the full limit of
 D-104; a night whose eighth backup does not fit fails and leaves the old file in place. A failed
 night keeps the older backup in its weekday file, so seven still stand, one of them then fourteen
-days old, and the failure reaches the owner by D-227. Fixed names mean a shared server supplies no
+days old, and the failure reaches the owner by D-233. Fixed names mean a shared server supplies no
 name that any command acts on, and replacing a file needs no deletion, which Strych's documentation
 does not describe. Which backup is the newest shows in the file's time.
 *Rejected:* a backup each night with 14 kept — the same loss and two weeks of history, at about 220
@@ -4147,7 +4147,7 @@ files; dated names, deleting the one name computed as seven days old — no list
 still untried, and one missed night strands a file for good; writing over the file in place — no
 eighth backup, but a failed send destroys that backup and leaves a broken file with the newest date.
 
-### D-225 — Where does the database backup run?
+### D-231 — Where does the database backup run?
 
 At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup
 script, installed by hand outside the game container and outside the checkout, which runs a short
@@ -4164,7 +4164,7 @@ installing or reinstalling them being a human's change.
 
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** mikrus-host-swap · cron-d-file-rules
-- **Relations:** derives from D-222 · derives from D-12
+- **Relations:** derives from D-228 · derives from D-12
 - **Verification:** an agent compares a change with the decision:
   - complies: a script that calls `docker exec` without a terminal and holds the lock only for the stream and its encryption; a difference in the installed schedule that warns while the deployment goes on; a run of the command without its fixed word that ends with the usage exit code, an empty standard output and the database never opened
   - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a schedule installed under a file name with a dot; a plain backup left in the database's volume for fetching; a command that opens the database or writes to standard output without its fixed word; a skill instruction in which an agent runs the command through the `mikrus` MCP server
@@ -4172,7 +4172,7 @@ installing or reinstalling them being a human's change.
 
 *Rationale:* the key to Strych stays away from the process that serves players, a failed send
 happens outside it, and the game goes on running during a backup. When the container is not running
-there is no backup, and the script, standing outside it, reports that by D-227. The script's version
+there is no backup, and the script, standing outside it, reports that by D-233. The script's version
 sits outside the product's deployment, the reason D-10 gave for rejecting a manually installed host
 connector: for a script that has to act from outside the container and hold a key the container
 must not hold, that reasoning is reversed in this case, D-10 stays as it is, and the human reinstalls
@@ -4194,7 +4194,7 @@ runs it also keeps that output out of an agent's session.
 *Rejected:* a third Compose service, a container of its own beside the game — a change of D-17 and
 of its host-sharing rule, a second container on one database file, a third memory limit on a host
 without swap, an image with maintenance tools, the key to Strych as another Compose secret, and,
-with another Node.js release or tool in that image, a question which release the check of D-223
+with another Node.js release or tool in that image, a question which release the check of D-229
 covers, though the deployment would deliver everything and nothing would drift from the repository;
 the game server making and sending the backup by a timer in its own process — the process serving
 players gets the key to Strych and a sending tool, a failed send happens inside it and the server's
@@ -4206,7 +4206,7 @@ comparison — the drift stays invisible; a refusal for a terminal — inside th
 sees one only under `docker exec -t`, so it would stop only a person who typed both `-t` and the
 word, who has already asked for the output.
 
-### D-226 — How is the database backup encrypted?
+### D-232 — How is the database backup encrypted?
 
 A backup of the account and save database is encrypted on the game server's host before it leaves
 it, by `age` in the backup script's pipe, with the identity file `/etc/loop2/backup-encryption-key`
@@ -4215,7 +4215,7 @@ backup is not compressed.
 
 - **Scope:** deployment, agent-workflow
 - **Based on:** age-file-encryption
-- **Relations:** derives from D-222 · derives from D-13
+- **Relations:** derives from D-228 · derives from D-13
 - **Verification:** invariants: account-save-backup-encrypted. An agent compares a change with the decision:
   - complies: a script that sends only after every stage of its pipe exited 0 and the file is not empty
   - violates: a plain database file on the host's disk on its way to the encryption; the key handed into the game container
@@ -4243,7 +4243,7 @@ and no plain bytes leave the container, but a file format of the product's own, 
 game container; `gzip` in the pipe — cheap and worth doing the day a backup nears the limit, not
 before; `zstd` — one more package.
 
-### D-227 — How does the owner learn that a database backup failed?
+### D-233 — How does the owner learn that a database backup failed?
 
 At any failed end of a night's backup the backup script, outside the game container, calls `pusher`
 once, and the owner receives a message whose fixed subject and text say only that the backup failed,
@@ -4257,7 +4257,7 @@ reaches no file.
 
 - **Scope:** deployment, agent-workflow
 - **Based on:** mikrus-pusher-mail
-- **Relations:** derives from D-222 · derives from D-225 · derives from D-13
+- **Relations:** derives from D-228 · derives from D-231 · derives from D-13
 - **Verification:** invariants: account-save-backup-failure-notice. An agent compares a change with the decision:
   - complies: one handler at the script's exit that sends the fixed text whatever caused a non-zero end
   - violates: a tool's output piped into `pusher`, as its documentation shows; the error text of `rsync` written to the log, since a refused login prints the login
@@ -4280,7 +4280,7 @@ old backup, or at a failure; a weekly message about a successful backup as well 
 as a missing message, which is easily missed, and it costs a condition in the script while the limits
 of `pusher` are unknown; keeping the text of `rsync` in the log — breaks D-13.
 
-### D-228 — What does a checked restore of the database mean?
+### D-234 — What does a checked restore of the database mean?
 
 A checked restore is one trial on the owner's computer before the change that brings the backups
 merges: a backup fetched from its destination and decrypted, the same commit run on it, a login with
@@ -4290,7 +4290,7 @@ procedure.
 
 - **Scope:** deployment, build-tools, agent-workflow
 - **Based on:** none
-- **Relations:** derives from D-222
+- **Relations:** derives from D-228
 - **Verification:** an agent compares a change with the decision:
   - complies: the owner runs the trial on an image built from the same commit and sees a name given in the game before the backup was made come back
   - violates: a backup taken as checked because its file opens; an agent that fetches, decrypts or opens a backup
@@ -4308,7 +4308,7 @@ commands in the skill alone — about ten Docker commands, an inline client and 
 of arguments, never run before the trial; a browser on the owner's computer — a login cannot work on
 a locally run production image.
 
-### D-229 — How is the code that talks to Mikrus Strych and `pusher` tested?
+### D-235 — How is the code that talks to Mikrus Strych and `pusher` tested?
 
 Mikrus Strych and the `pusher` service have no contract test, and no test reaches them: the backup
 script's reactions are tested with stand-ins for its tools, which prove reactions and not delivery.
@@ -4330,15 +4330,15 @@ the services accept the script's way of talking to them.
 else's service — takes the key to Strych outside the server against D-13 and gives a result that
 depends on the service.
 
-### D-230 — How is the consistent database backup made?
+### D-236 — How is the consistent database backup made?
 
-The backup command of D-225 makes a database backup through `backup()` of `node:sqlite`, on the
+The backup command of D-231 makes a database backup through `backup()` of `node:sqlite`, on the
 connection it opens, whole in one step, by a `rate` that is a positive whole number above any page
 count the database can reach.
 
 - **Scope:** account-server
 - **Based on:** sqlite-online-backup · node-sqlite-database · sqlite-wal-concurrency
-- **Relations:** derives from D-222 · derives from D-223 · derives from D-225
+- **Relations:** derives from D-228 · derives from D-229 · derives from D-231
 - **Verification:** an agent compares a change with the decision:
   - complies: a `rate` above any page count the database can reach, so that the backup takes one step
   - violates: `backup()` without a `rate`, or with a `rate` a database of this server can exceed; `VACUUM INTO` in place of `backup()`
@@ -4352,10 +4352,10 @@ result is one file, whole on its own: a row held only in the write-ahead log and
 were present after that file alone was moved and opened. In write-ahead log mode readers and a
 writer run together, so the game's writes go on through the step: beside a separate process
 committing with full synchronization, the longest commit stayed under the busy timeout of D-112 and
-no commit met a busy error. If a Node.js release refuses that `rate`, the release check of D-231
+no commit met a busy error. If a Node.js release refuses that `rate`, the release check of D-237
 fails the build and the running game stays in service.
 *Rejected:* `VACUUM INTO` — would also finish beside a writer, but it is a second operation beside
-the Online Backup API D-222 rests on, and it rewrites the database rather than backing up its pages;
+the Online Backup API D-228 rests on, and it rewrites the database rather than backing up its pages;
 it is the fallback if a one-step backup ever fails; the default `rate` of 100 pages — a backup of
 many steps, each open to a restart: beside a writer it finished in 1.5 s on a Docker volume and had
 not finished after 20 s on a bind mount of a Windows disk; `rate: -1` — the documentation says a
@@ -4363,17 +4363,17 @@ positive number, Node.js 24.17.0 accepted it and 24.22.1 refuses it with `ERR_OU
 the database's three files — not consistent; a `sqlite3` tool — not in the image and not
 `node:sqlite`.
 
-### D-231 — How is a Node.js release checked before it is deployed?
+### D-237 — How is a Node.js release checked before it is deployed?
 
 A build step of the server image's final stage, run as the server's own user on the image's own
 Node.js release, makes a temporary database through the server's database code, writes and reads back
-an account and a saved game state, makes a backup by the method of D-230 and in its one backup step,
+an account and a saved game state, makes a backup by the method of D-236 and in its one backup step,
 opens that backup, reads the same values and prints the release it checked, and any difference or
 error fails the image's build. The Node.js image stays unpinned.
 
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · docker-build-cache-invalidation
-- **Relations:** derives from D-223 · derives from D-230
+- **Relations:** derives from D-229 · derives from D-236
 - **Verification:** an agent compares a change with the decision:
   - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build that takes the step from its cache on an unchanged base image and unchanged code
   - violates: a release check moved out of the image's build into the deploy script; a base image pinned by version and digest while this entry stands; a release check that reads the server's database
@@ -4393,9 +4393,9 @@ has to run a release check by hand at each move of it, and fixes of the base ima
 moves it; a release check in the deploy script before the containers are replaced — one more
 container on a host without swap, a new allowed `docker run` that the reading of loop2-host-sharing
 forbids, and a reinstall of the script at every change of it; both a pin and a release check —
-reproducible builds, which D-223 does not need, at the price of a pin to maintain.
+reproducible builds, which D-229 does not need, at the price of a pin to maintain.
 
-### D-232 — How does the backup script reach Mikrus Strych?
+### D-238 — How does the backup script reach Mikrus Strych?
 
 The backup script sends the encrypted backup by `rsync` over `ssh` into the home directory on Mikrus
 Strych, giving on the command line batch mode, strict host-key checking and
@@ -4408,7 +4408,7 @@ human repeats that comparison.
 
 - **Scope:** deployment, agent-workflow
 - **Based on:** openssh-strict-host-key-checking · openssh-option-order · openssh-extra-host-key-sources · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § JAK TO ZROBIĆ? — "IdentityFile /backup_key"; read 2026-10-31
-- **Relations:** derives from D-222 · derives from D-224 · derives from D-13
+- **Relations:** derives from D-228 · derives from D-230 · derives from D-13
 - **Verification:** an agent compares a change with the decision:
   - complies: a send whose `ssh` options, on the command line, name that file and turn off every other known-hosts file; root's SSH entry for Strych holding only the login and the path of the key
   - violates: `StrictHostKeyChecking` set to `accept-new` or `no`; a send that reads root's default known-hosts file; a line taken into the file without its fingerprint compared; a script that writes to the file; an installation procedure that sets `KnownHostsCommand` or `VerifyHostKeyDNS` in root's SSH configuration or the system-wide one

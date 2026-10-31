@@ -19,7 +19,7 @@ so an empty finding above is the script's, not the stand-in's.
 
 Does NOT cover: that the real `age` encrypts, which rests on age-file-encryption; a key that reads
 well but is a wrong one; `age` run on the owner's computer at a restore. The stand-ins prove the
-script's reaction to each answer, not what a real tool does (D-229). A real run of the script with
+script's reaction to each answer, not what a real tool does (D-235). A real run of the script with
 the real `age` is the human's H2.
 
 A machine without Git or Git's own bash skips these tests, so the invariant reports unchecked,

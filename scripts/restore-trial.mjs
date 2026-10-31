@@ -1,4 +1,4 @@
-// The restore trial (D-228): the owner runs a decrypted backup of the account
+// The restore trial (D-234): the owner runs a decrypted backup of the account
 // database in the built image of the same commit, logs in as the test account
 // and checks that the saved game state came back.
 //
