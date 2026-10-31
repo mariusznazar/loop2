@@ -152,13 +152,14 @@ function signedCookie(id, key) {
   return `__Host-loop2.sid=${encodeURIComponent(`s:${id}.${signature}`)}`;
 }
 
-// A confirmation link recorded for the account, with the token it was made of.
-function issueLink(f, accountId) {
+// A link of the given kind recorded for the account, with the token it was
+// made of.
+function issueLink(f, accountId, purpose = "email-confirmation") {
   const token = randomBytes(32).toString("base64url");
   const outcome = f.runtime.database.issueLink(
     {
       accountId,
-      purpose: "email-confirmation",
+      purpose,
       tokenDigest: createHash("sha256").update(token).digest("base64url"),
       lifetimeMs: 86_400_000,
     },
@@ -241,7 +242,7 @@ test(
 );
 
 test(
-  "transport refuses all three link routes before the session, the link or the mail service",
+  "transport refuses all four link routes before the session, the link or the mail service",
   { timeout: 20000 },
   async (t) => {
     // invariant: account-request-transport
@@ -252,10 +253,12 @@ test(
     const cookie = signedCookie(id, f.keys[0]);
     const before = f.runtime.database.readSession(id);
     const token = issueLink(f, f.account.id);
+    const resetToken = issueLink(f, f.account.id, "password-reset");
+    const newSecret = "a password set through the transport";
     const state = () =>
       f.inspection
         .prepare(
-          "SELECT email_confirmed_at AS at, (SELECT count(*) FROM emailed_links) AS links FROM accounts WHERE id = ?",
+          "SELECT email_confirmed_at AS at, password_hash AS hash, (SELECT count(*) FROM emailed_links WHERE spent = 0) AS links FROM accounts WHERE id = ?",
         )
         .get(f.account.id);
     const unchanged = state();
@@ -263,6 +266,14 @@ test(
       ["/api/email-confirmation", { token }],
       ["/api/email-confirmation-message", {}],
       ["/api/password-reset-message", { email: f.account.email }],
+      [
+        "/api/password-reset",
+        {
+          token: resetToken,
+          password: newSecret,
+          passwordConfirmation: newSecret,
+        },
+      ],
     ];
     for (const headers of [
       {},
@@ -293,7 +304,7 @@ test(
       }
     }
     // Valid transport reaches the routes. The account is still unconfirmed
-    // when the reset request comes, so nothing follows its answer.
+    // when the request for a reset link comes, so nothing follows its answer.
     const valid = {
       ...proxyHeaders,
       Origin: origin,
@@ -311,6 +322,17 @@ test(
       body: JSON.stringify({ token }),
     });
     assert.equal(confirmed.status, 204);
+    const reset = await f.send("/api/password-reset", {
+      method: "POST",
+      headers: valid,
+      body: JSON.stringify({
+        token: resetToken,
+        password: newSecret,
+        passwordConfirmation: newSecret,
+      }),
+    });
+    assert.equal(reset.status, 204);
+    assert.notEqual(state().hash, unchanged.hash, "the password was set");
     const resent = await f.send("/api/email-confirmation-message", {
       method: "POST",
       headers: valid,
@@ -501,12 +523,26 @@ test(
         .get().n;
     // An account with a confirmed address, so that a request for a reset
     // link to it would record a link and hand a message on if it were admitted.
-    f.runtime.database.createAccount("reset@example.test", f.runtime.dummyHash);
+    const resetting = f.runtime.database.createAccount(
+      "reset@example.test",
+      f.runtime.dummyHash,
+    );
     f.inspection
       .prepare(
         "UPDATE accounts SET email_confirmed_at = ? WHERE email = 'reset@example.test'",
       )
       .run(Date.now());
+    // Its working reset link, so that setting a password by it would change
+    // the hash and spend the link if its request were admitted.
+    const resetToken = issueLink(f, resetting.id, "password-reset");
+    const newSecret = "a password the guards must not let through";
+    const resetState = () =>
+      f.inspection
+        .prepare(
+          "SELECT password_hash AS hash, (SELECT spent FROM emailed_links WHERE account_id = accounts.id AND purpose = 'password-reset') AS spent FROM accounts WHERE id = ?",
+        )
+        .get(resetting.id);
+    const resetBefore = resetState();
     const confirmedBefore = confirmed();
     const accounts = count("accounts");
     // Each body would succeed if its request were admitted.
@@ -524,6 +560,14 @@ test(
       ["/api/email-confirmation", { token }],
       ["/api/email-confirmation-message", {}],
       ["/api/password-reset-message", { email: "reset@example.test" }],
+      [
+        "/api/password-reset",
+        {
+          token: resetToken,
+          password: newSecret,
+          passwordConfirmation: newSecret,
+        },
+      ],
     ];
     const json = (value) => () => JSON.stringify(value);
     const variants = (fields) => [
@@ -616,7 +660,12 @@ test(
         );
         assert.equal(count("accounts"), accounts, `${name}: no account`);
         assert.equal(count("sessions"), 1, `${name}: no session`);
-        assert.equal(count("emailed_links"), 1, `${name}: no link recorded`);
+        assert.equal(count("emailed_links"), 2, `${name}: no link recorded`);
+        assert.deepEqual(
+          resetState(),
+          resetBefore,
+          `${name}: no password set and no reset link spent`,
+        );
         assert.equal(
           confirmed(),
           confirmedBefore,
@@ -643,6 +692,7 @@ test(
       ["/api/logout", {}, 204],
       ["/api/session", routes[1][1], 200],
       ["/api/accounts", routes[0][1], 201],
+      ["/api/password-reset", routes[6][1], 204],
     ]) {
       const response = await f.send(path, {
         method: "POST",
@@ -654,6 +704,9 @@ test(
     assert.equal(f.runtime.database.readSession(live), null);
     assert.equal(count("accounts"), accounts + 1);
     assert.equal(confirmed(), confirmedBefore + 1);
+    const resetAfter = resetState();
+    assert.notEqual(resetAfter.hash, resetBefore.hash, "the password was set");
+    assert.equal(resetAfter.spent, 1, "the reset link was spent");
     assert.deepEqual(
       f.mailer.messages.slice(0, 1).map((message) => message.to),
       ["synthetic@example.test"],
@@ -806,7 +859,7 @@ test(
 );
 
 // The save route is a state-changing route with its own body limit, 64 KiB
-// (D-104); the six others keep 16 KiB.
+// (D-104); the seven others keep 16 KiB.
 const savedGame = "/api/saved-game";
 
 test(
@@ -921,7 +974,7 @@ test(
     }
 
     // The limits: a body over 16 KiB is within the save route's limit and is
-    // saved; every body over 64 KiB is refused. Each of the six other routes
+    // saved; every body over 64 KiB is refused. Each of the seven other routes
     // refuses a body over 16 KiB (also in "refused state-changing requests").
     const valid = {
       ...proxyHeaders,
@@ -945,6 +998,7 @@ test(
       "/api/email-confirmation",
       "/api/email-confirmation-message",
       "/api/password-reset-message",
+      "/api/password-reset",
     ]) {
       const response = await f.send(path, {
         method: "POST",
