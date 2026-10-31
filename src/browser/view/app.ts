@@ -22,8 +22,15 @@ import {
 import { createEmailStatus, type EmailStatus } from "./email-status.js";
 import { createFooter } from "./footer.js";
 import { createGameView, type GameView, type KeptGame } from "./game-view.js";
+import {
+  createResetScreen,
+  readResetToken,
+  type ResetEnding,
+} from "./password-reset.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
+const PASSWORD_CHANGED = "Hasło zmienione. Zaloguj się nowym hasłem.";
+const LINK_INVALID = "Odnośnik jest nieważny albo wygasł.";
 const OUTDATED = "Gra została zaktualizowana. Odśwież stronę.";
 const OTHER_VERSION =
   "Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.";
@@ -79,8 +86,10 @@ function createPageNotice(sentence: string): HTMLElement {
  * address carries a confirmation token, the page first sends it — showing „Potwierdzanie adresu…”
  * where it shows the session check — and only then checks the session; the result stands as one
  * sentence above the first screen that check leads to, and leaves at the next change between forms
- * and game. A save answered with no session keeps the game state in this page only, for a sign-in
- * to the same account (D-211).
+ * and game. When the address carries a password-reset token instead, the page places the form
+ * „Ustaw nowe hasło” and stops: it asks nothing, builds no game and saves nothing, whoever is
+ * signed in, until the form ends (D-217). A save answered with no session keeps the game state in
+ * this page only, for a sign-in to the same account (D-211).
  */
 export function startApp(
   root: HTMLElement,
@@ -345,8 +354,40 @@ export function startApp(
     })();
   });
 
-  /** The confirmation from the address, where there is one, then the session check. */
+  /**
+   * The form „Ustaw nowe hasło” in the place of the screen. Its ending says how the page goes on:
+   * after a change the forms with the sentence of success, without a session check; after a
+   * refused link the usual session check with the sentence of refusal; after „Anuluj” the usual
+   * session check alone.
+   */
+  function showReset(token: string): void {
+    main.replaceChildren(
+      createResetScreen({
+        client,
+        token,
+        address,
+        finished(ending: ResetEnding): void {
+          if (ending === "changed") {
+            pendingNotice = { text: PASSWORD_CHANGED, role: "positive" };
+            showForms(null);
+            accountScreen.focus();
+            return;
+          }
+          if (ending === "refused")
+            pendingNotice = { text: LINK_INVALID, role: "warning" };
+          void checkSession();
+        },
+      }),
+    );
+  }
+
+  /** The reset form or the confirmation from the address, where there is one, then the session check. */
   async function start(): Promise<void> {
+    const resetToken = readResetToken(address.hash());
+    if (resetToken !== null) {
+      showReset(resetToken);
+      return;
+    }
     if (readConfirmationToken(address.hash()) !== null) {
       checking.textContent = "Potwierdzanie adresu…";
       main.replaceChildren(check);

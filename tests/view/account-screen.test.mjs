@@ -335,6 +335,7 @@ function heldClient() {
       logout: call("logout"),
       confirmEmail: call("confirmEmail"),
       sendConfirmationMessage: call("sendConfirmationMessage"),
+      setPassword: call("setPassword"),
       loadSavedGame: call("loadSavedGame"),
       saveGame: call("saveGame"),
     },
@@ -1333,6 +1334,380 @@ test("the sentence of a confirmation waits through a failed session check and sh
       false,
     );
   });
+});
+
+// --- the form for a password-reset link ---------------------------------------------------------
+
+const RESET_TOKEN = "cmVzZXRyZXNldHJlc2V0cmVzZXRyZXNldHJlc2V0cmVzZXQ";
+const RESET_LINK = `#reset-password=${RESET_TOKEN}`;
+const NEW_PASSWORD = "nowe hasło 123";
+const CHANGED = { ok: true, value: null };
+
+/** The failures that keep the form: the client's one sentence under it and the link as it was. */
+const KEEPING_FAILURES = {
+  "no connection": NO_CONNECTION,
+  "a timeout": {
+    ok: false,
+    failure: { kind: "unreachable", reason: "timeout", message: "Za długo." },
+  },
+  "the gate full": {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 429,
+      code: "too-many-attempts",
+      message: "Za dużo prób. Spróbuj ponownie za kilka minut.",
+    },
+  },
+  "a server error": {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 500,
+      code: null,
+      message: "Serwer nie mógł.",
+    },
+  },
+  "a password the server refuses": {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 400,
+      code: "invalid-password",
+      message: "Hasło musi mieć od 12 do 128 znaków.",
+    },
+  },
+};
+
+/**
+ * An address that, at the moment its fragment is cleared, notes whether the reset form still
+ * stands alone in the page: the fragment must go before the page moves on.
+ */
+function resetAddress(root) {
+  const address = fakeAddress(RESET_LINK);
+  const clear = address.clearFragment;
+  address.formAtClear = [];
+  address.clearFragment = () => {
+    const standing = Object.keys(forms(root));
+    address.formAtClear.push(
+      standing.length === 1 && standing[0] === "Ustaw nowe hasło",
+    );
+    clear();
+  };
+  return address;
+}
+
+const resetFormOf = (root) => forms(root)["Ustaw nowe hasło"];
+
+/** Types the new password twice into the form. */
+function fillReset(form, password = NEW_PASSWORD, repeated = password) {
+  form.inputs[0].value = password;
+  form.inputs[1].value = repeated;
+}
+
+/** The sentences the page puts above its screen, in order, with their roles. */
+function pageSentences(root) {
+  return all(root)
+    .filter(
+      (element) =>
+        shown(element) &&
+        (element.classList.contains("confirmation-notice") ||
+          element.classList.contains("page-notice")),
+    )
+    .map((element) => [
+      element.textContent,
+      element.classList.contains("positive") ? "positive" : "warning",
+    ]);
+}
+
+/** The message standing under a field of the form, or null while it shows none. */
+function fieldMessage(input) {
+  const message = all(input.parent).find(
+    (element) =>
+      element.classList.contains("input-field-message") && shown(element),
+  );
+  return message ? message.textContent : null;
+}
+
+test("with a reset token in the address the page shows the form at once, asking nothing, building no game and saving nothing", async () => {
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    // Whoever is signed in in this browser, the page has asked nothing to know it.
+    assert.deepEqual(held.calls, []);
+    assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"]);
+    const form = resetFormOf(root);
+    assert.deepEqual(
+      form.labels.map((label) => label.textContent),
+      ["Nowe hasło", "Powtórz hasło"],
+    );
+    assert.deepEqual(
+      form.inputs.map((input) => [
+        input.type,
+        input.getAttribute("autocomplete"),
+      ]),
+      [
+        ["password", "new-password"],
+        ["password", "new-password"],
+      ],
+    );
+    assert.equal(form.button.textContent, "Ustaw hasło");
+    assert.equal(form.button.type, "submit");
+    assert.ok(buttonNamed(root, "Anuluj"), "the button „Anuluj” stands");
+    assert.equal(shown(form.warning), false);
+    assert.equal(gameShown(root), false);
+    assert.equal(intervals.size, 0);
+    assert.equal(
+      byClass(root, "session-check").some(shown),
+      false,
+      "no session check is shown",
+    );
+    assert.ok(!shown(buttonNamed(root, "Wyloguj")));
+    assert.equal(address.cleared, 0);
+    assert.equal(address.hash(), RESET_LINK);
+    // Time passing sends nothing either: no timer of a game or a saver exists.
+    mock.timers.tick(10 * 60_000);
+    await settle();
+    assert.deepEqual(held.calls, []);
+  });
+});
+
+test("a sent form waits with its fields and „Anuluj” locked, sends the token and both passwords once and keeps the fragment", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    const form = resetFormOf(root);
+    fillReset(form);
+    form.inputs[0].focus();
+    form.form.fire("submit");
+    await settle();
+
+    assert.deepEqual(
+      held.calls.map(({ name, args }) => [name, ...args]),
+      [["setPassword", RESET_TOKEN, NEW_PASSWORD, NEW_PASSWORD]],
+    );
+    assert.equal(form.button.textContent, "Ustawianie…");
+    assert.equal(form.button.disabled, true);
+    assert.deepEqual(
+      form.inputs.map((input) => input.disabled),
+      [true, true],
+    );
+    const cancel = buttonNamed(root, "Anuluj");
+    assert.equal(cancel.disabled, true);
+    // A second send and a click on the locked „Anuluj” do nothing.
+    form.form.fire("submit");
+    cancel.fire("click");
+    await settle();
+    assert.equal(held.calls.length, 1);
+    assert.equal(address.cleared, 0);
+    assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"]);
+  });
+});
+
+test("a password the server would refuse sends nothing, marks the field at fault, takes focus there and keeps the link", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    const form = resetFormOf(root);
+
+    fillReset(form, "krótkie", "krótkie");
+    form.form.fire("submit");
+    await settle();
+    assert.equal(
+      fieldMessage(form.inputs[0]),
+      "Hasło musi mieć od 12 do 128 znaków.",
+    );
+    assert.equal(fieldMessage(form.inputs[1]), null);
+    assert.equal(fakeDocument.activeElement, form.inputs[0]);
+
+    fillReset(form, NEW_PASSWORD, "inne hasło 123");
+    form.form.fire("submit");
+    await settle();
+    assert.equal(fieldMessage(form.inputs[0]), null);
+    assert.equal(
+      fieldMessage(form.inputs[1]),
+      "Powtórzone hasło różni się od hasła.",
+    );
+    assert.equal(fakeDocument.activeElement, form.inputs[1]);
+
+    assert.deepEqual(held.calls, []);
+    assert.equal(address.cleared, 0);
+    assert.equal(address.hash(), RESET_LINK);
+    assert.equal(form.button.disabled, false);
+    assert.equal(buttonNamed(root, "Anuluj").disabled, false);
+  });
+});
+
+test("a change clears the fragment first, then shows the forms with the sentence in positive above them, asks about no session and focuses the address field", async () => {
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    const address = resetAddress(root);
+    await startPage(held, address);
+    const form = resetFormOf(root);
+    fillReset(form);
+    form.form.fire("submit");
+    await settle();
+    await held.answer("setPassword", CHANGED);
+
+    assert.deepEqual(address.formAtClear, [true]);
+    assert.equal(address.cleared, 1);
+    assert.equal(address.hash(), "");
+    assert.deepEqual(held.calls, []);
+    const shownForms = forms(root);
+    assert.deepEqual(Object.keys(shownForms), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(pageSentences(root), [
+      ["Hasło zmienione. Zaloguj się nowym hasłem.", "positive"],
+    ]);
+    const [notice] = noticeOf(root);
+    assert.equal(notice.parent.children.indexOf(notice), 0);
+    assert.equal(
+      fakeDocument.activeElement,
+      shownForms["Zaloguj się"].inputs[0],
+    );
+    assert.equal(gameShown(root), false);
+    assert.equal(intervals.size, 0);
+  });
+});
+
+test("a refused link, whatever its reason, clears the fragment first and then checks the session: the forms or the game with the sentence in warning above them", async () => {
+  const reasons = {
+    "an unknown or spent link": "Odnośnik jest nieważny albo wygasł.",
+    "a link of a blocked account": "Konto jest zablokowane.",
+  };
+  for (const [name, message] of Object.entries(reasons)) {
+    const refused = {
+      ok: false,
+      failure: { kind: "refused", status: 400, code: "invalid-link", message },
+    };
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = resetAddress(root);
+      await startPage(held, address);
+      const form = resetFormOf(root);
+      fillReset(form);
+      form.form.fire("submit");
+      await settle();
+      await held.answer("setPassword", refused);
+      assert.deepEqual(address.formAtClear, [true], name);
+      assert.equal(address.hash(), "", name);
+      assert.deepEqual(
+        held.calls.map((entry) => entry.name),
+        ["currentAccount"],
+        name,
+      );
+      await held.answer("currentAccount", NO_SESSION);
+      assert.deepEqual(Object.keys(forms(root)), [
+        "Zaloguj się",
+        "Załóż konto",
+      ]);
+      assert.deepEqual(
+        pageSentences(root),
+        [["Odnośnik jest nieważny albo wygasł.", "warning"]],
+        name,
+      );
+      const [notice] = noticeOf(root);
+      assert.equal(notice.parent.children.indexOf(notice), 0, name);
+    });
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      await startPage(held, fakeAddress(RESET_LINK));
+      const form = resetFormOf(root);
+      fillReset(form);
+      form.form.fire("submit");
+      await settle();
+      await held.answer("setPassword", refused);
+      await held.answer("currentAccount", ACCOUNT);
+      await held.answer("loadSavedGame", NO_SAVE);
+      assert.equal(gameShown(root), true, name);
+      assert.deepEqual(
+        pageSentences(root),
+        [["Odnośnik jest nieważny albo wygasł.", "warning"]],
+        name,
+      );
+      const [notice] = noticeOf(root);
+      assert.equal(notice.parent.children.indexOf(notice), 0, name);
+    });
+  }
+});
+
+test("„Anuluj” clears the fragment first and opens the page as usual with the session check and no sentence", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = resetAddress(root);
+    await startPage(held, address);
+    buttonNamed(root, "Anuluj").fire("click");
+    await settle();
+    assert.deepEqual(address.formAtClear, [true]);
+    assert.equal(address.hash(), "");
+    assert.deepEqual(
+      held.calls.map((entry) => entry.name),
+      ["currentAccount"],
+    );
+    await held.answer("currentAccount", NO_SESSION);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(pageSentences(root), []);
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(RESET_LINK));
+    buttonNamed(root, "Anuluj").fire("click");
+    await settle();
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", NO_SAVE);
+    assert.equal(gameShown(root), true);
+    assert.deepEqual(pageSentences(root), []);
+  });
+});
+
+test("a failure that is no change and no refused link keeps the form, the fragment and the link, with the client's sentence under the form and focus back where the player sent it from", async () => {
+  for (const [name, failure] of Object.entries(KEEPING_FAILURES)) {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = fakeAddress(RESET_LINK);
+      await startPage(held, address);
+      const form = resetFormOf(root);
+      fillReset(form);
+      form.inputs[1].focus();
+      form.form.fire("submit");
+      await settle();
+      await held.answer("setPassword", failure);
+
+      assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"], name);
+      assert.equal(shown(form.warning), true, name);
+      assert.equal(form.warning.textContent, failure.failure.message, name);
+      assert.equal(address.cleared, 0, name);
+      assert.equal(address.hash(), RESET_LINK, name);
+      assert.equal(fakeDocument.activeElement, form.inputs[1], name);
+      assert.equal(form.button.textContent, "Ustaw hasło", name);
+      assert.equal(form.button.disabled, false, name);
+      assert.deepEqual(
+        form.inputs.map((input) => [input.disabled, input.value]),
+        [
+          [false, NEW_PASSWORD],
+          [false, NEW_PASSWORD],
+        ],
+        name,
+      );
+      assert.equal(buttonNamed(root, "Anuluj").disabled, false, name);
+      assert.deepEqual(held.calls, [], name);
+
+      // The link still works: the same token goes out again, from the button this time.
+      form.button.focus();
+      form.form.fire("submit");
+      await settle();
+      assert.deepEqual(
+        held.calls.map(({ name: call, args }) => [call, ...args]),
+        [["setPassword", RESET_TOKEN, NEW_PASSWORD, NEW_PASSWORD]],
+        name,
+      );
+      assert.equal(shown(form.warning), false, name);
+      await held.answer("setPassword", failure);
+      assert.equal(fakeDocument.activeElement, form.button, name);
+    });
+  }
 });
 
 // --- the saved game state -------------------------------------------------------------------
