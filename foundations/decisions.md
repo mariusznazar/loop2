@@ -110,9 +110,9 @@ reading, by which the next reader may take loading for a breach of this decision
 replacing the game state with the loaded saved game state itself, with an exception written into
 this decision — the game state would change in two places, against this decision's example of a
 breach; the clock's current reading stored in the game state on each reading, which keeps the
-browser view drawing from the game state alone — each reading makes a new game state, so the game
-sends a save at each of its checks at an idle headquarters and after a load, against D-207, and a
-stale moment enters the saved document; a function of the simulation that takes the moment and
+browser view drawing from the game state alone — each reading makes a new game state, so the
+30-second rhythm of saving sends a save at an idle headquarters and after a load, against D-207, and
+a stale moment enters the saved document; a function of the simulation that takes the moment and
 returns the text to draw — the view would still draw from the moment, with content in the
 simulation.
 
@@ -4032,3 +4032,31 @@ A new character has generation number 1 and a ready resurrection.
 with its resurrection ready.
 *Rejected:* the tests of loop taken as material — about ten points get a question of their own, and
 the definition treats a significant departure from loop as disproving its goal.
+
+### D-221 — When is a character's death settled?
+
+A character's death is settled by a function of the simulation apart from the functions that pass
+game time, which leave the death unsettled and take no real moment. Whoever passes game time gives
+the result to that function at once, with a moment of the browser's clock, so the game state the
+browser view holds, draws and saves holds a settled death. A load refuses a saved game state that
+holds a death unsettled.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-190 · derives from D-219
+- **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
+  - complies: the reading of the clock in which a character dies reaching the game as one result, the events of the game time passed with the death settled at that reading
+  - violates: a caller of the functions that pass game time drawing or saving what they return with the death unsettled; a load that settles a death
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 16, and § Questions carried to cycle, first question
+
+*Rationale:* the functions that pass game time stay as D-04 gives them and know no real moment, so
+`minute-span-split` compares what it compared, and a death settled at once keeps the screen, the
+game state and the save from showing a death apart from what it took. Accepted with it: every caller
+of those functions, the computing of time away included, settles a death itself, and a game state
+saved with a death unsettled is refused at the next load and so discarded.
+*Rejected:* the moment as a further argument of every function that passes game time — each call
+takes a value that means nothing to it, or a default moment that hides a caller that forgot it; the
+moment as a further argument of the function that passes real time alone, settling there — a span
+split differently gives another game state at the game minute of death, against
+`minute-span-split`; the current reading kept in the game state — each reading makes a new game
+state to save (D-04).

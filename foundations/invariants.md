@@ -1061,7 +1061,7 @@ One death of a character is settled once: a further settling of that death and a
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-190 · D-212
+- **Derives from:** D-190 · D-212 · D-221
 - **Part:** simulation
 - **Violated:** no
 
