@@ -14,7 +14,7 @@ for the other read commands.
 | Schedule / its source | `/etc/cron.d/loop2-backup` (root, 0644; the installed name has no dot, because cron skips a file with a dot) / `deploy/loop2-backup.cron`. 03:17 daily by the server's clock, as root |
 | Log | `/var/log/loop2-backup.log` |
 | Encryption key | `/etc/loop2/backup-encryption-key`, root:root, mode 0400, made by `age-keygen`, a copy in the owner's private note. Outside the checkout, in no Compose secret and in no container |
-| Host-key file for Strych | `/etc/loop2/strych-known-hosts` (root, 0644): one line, the host key of Strych whose fingerprint the human compared with the one seen at the first access |
+| Host-key file for Strych | `/etc/loop2/strych-known-hosts` (root, 0644): one line, the host key of Strych with the fingerprint given in step 6 of "Installing and reinstalling" |
 | Strych key | `/backup_key` on the game server, a copy in the owner's private note |
 | Strych login | in root's SSH configuration on the server (`~/.ssh/config`, an entry for Strych's host naming the login and `IdentityFile /backup_key`), a copy in the private note. Never in the repository |
 | Strych's host | the constants block of `deploy/loop2-backup` (`STRYCH_HOST`). This skill names no Mikrus host or address; Mikrus's pages are the Strych page of its wiki and the Strych option in its panel |
@@ -112,9 +112,10 @@ script with `bash -n`, then `install` (see "Installing a script from an exact co
 5. Write root's SSH configuration entry for Strych's host (host from the constants block, login
    and `IdentityFile /backup_key` from the private note).
 6. Fill `/etc/loop2/strych-known-hosts` (root, 0644) from `ssh-keyscan` for that host, keeping
-   the one line whose fingerprint equals the one compared at the first access to Strych.
-   `ssh-keygen -lf /etc/loop2/strych-known-hosts` shows the fingerprint. This skill does not
-   hold the fingerprint.
+   the one line whose fingerprint is `SHA256:3WieS14O9NRnaiL5imCQfMugcVExGOoPqZEMhUD/LZk` (not a
+   secret; compared at the first access to Strych). `ssh-keygen -lf /etc/loop2/strych-known-hosts`
+   shows the fingerprint. A key showing another fingerprint is not used until the owner has found
+   out why.
 7. Install `/usr/local/bin/loop2-backup` from `deploy/loop2-backup` at the commit, root 0755.
    Check with `cmp`.
 8. In the test account on the public game, give a character or a program a name to recognise,
