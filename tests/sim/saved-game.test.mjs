@@ -440,7 +440,7 @@ const DOCUMENT_V1 = {
 
 /**
  * The document of the current version: version 1 with the mark of its map run (forestDeep,
- * unsolved) and its characters' generation and moment of resurrection (Ala has lived a death with
+ * unsolved) and its characters' generation and moment of readiness (Ala has lived a death with
  * no resurrection ready, so generation 2, and used her resurrection at a real moment of 2025).
  */
 const DOCUMENT = {
@@ -699,7 +699,7 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
 });
 
 // invariant: save-version
-test("a moment of resurrection below zero loads, as it is a safe integer of any sign", () => {
+test("a moment of readiness below zero loads, as it is a safe integer of any sign", () => {
   const before = changed((document) => {
     document.game.team.characters[0].resurrectionReadyAtMs = -1500;
   });
@@ -825,7 +825,7 @@ const CRAFTED = {
   // Decision 9: the generation is an identity from 1 up, the moment a safe integer of any sign.
   "a character without its generation": (document) =>
     delete document.game.team.characters[0].generation,
-  "a character without its moment of resurrection": (document) =>
+  "a character without its moment of readiness": (document) =>
     delete document.game.team.characters[1].resurrectionReadyAtMs,
   "a generation of 0": (document) =>
     (document.game.team.characters[0].generation = 0),
@@ -839,19 +839,19 @@ const CRAFTED = {
     (document.game.team.characters[0].generation = null),
   "a generation beyond the safe integers": (document) =>
     (document.game.team.characters[0].generation = 2 ** 53),
-  "a moment of resurrection fractional": (document) =>
+  "a moment of readiness fractional": (document) =>
     (document.game.team.characters[0].resurrectionReadyAtMs = 1.5),
-  "a moment of resurrection as text": (document) =>
+  "a moment of readiness as text": (document) =>
     (document.game.team.characters[0].resurrectionReadyAtMs = "0"),
-  "a moment of resurrection of none": (document) =>
+  "a moment of readiness of none": (document) =>
     (document.game.team.characters[0].resurrectionReadyAtMs = null),
-  "a moment of resurrection not a number": (document) =>
+  "a moment of readiness not a number": (document) =>
     (document.game.team.characters[0].resurrectionReadyAtMs = NaN),
-  "a moment of resurrection infinite": (document) =>
+  "a moment of readiness infinite": (document) =>
     (document.game.team.characters[0].resurrectionReadyAtMs = Infinity),
-  "a moment of resurrection beyond the safe integers": (document) =>
+  "a moment of readiness beyond the safe integers": (document) =>
     (document.game.team.characters[0].resurrectionReadyAtMs = 2 ** 53),
-  "a moment of resurrection below the safe integers": (document) =>
+  "a moment of readiness below the safe integers": (document) =>
     (document.game.team.characters[0].resurrectionReadyAtMs = -(2 ** 53)),
   "a key added to a rule of a program": (document) =>
     (document.game.programs[0].program.groups[0].rules[0].note = "x"),
