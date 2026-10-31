@@ -12,7 +12,7 @@ human's. Use `SKILL.md` for allowed read commands and limits.
 | 4 | Lock inaccessible or held for 900 seconds; check run-account setup before retry. |
 | 5 | Resource gate below its limit or unreadable; see below. |
 | 6 | Fetch/checkout failure; read Git's error for repository key, alias, reachability or disk. |
-| 7 | Application type check/build or connector pull/build failed; both old containers remain. Fix the request or `main` as appropriate. |
+| 7 | Application type check/build or connector pull/build failed; both old containers remain. A failure of the image's Node.js release check ends here too: the build output in the server log holds the line `Node.js <release>: the account database check failed.` and the error, so the base image's release no longer reads, writes or backs up the database as the code expects. Retrying does not help; only the human pins the last good release in the `Dockerfile`, by a request. Otherwise fix the request or `main` as appropriate. |
 | 8 | Either service failed readiness or internal HTTP failed; partial availability is possible. Read both bounded service logs, then recover with the correct procedure below. |
 
 A failing application whose log names a setting is read as follows (the log names the
@@ -51,8 +51,11 @@ loop2's ownership label; it leaves upstream bases and shared cache alone.
 
 ## Installed-script warning
 
-The installed command is outside the checkout and never updates itself. A mismatch warning
-does not stop deployment. After a source change, review and install from the **exact intended
+The installed command is outside the checkout and never updates itself. Three installed copies
+are compared with their sources at the deployed commit: `/usr/local/bin/loop2-deploy`,
+`/usr/local/bin/loop2-backup` and `/etc/cron.d/loop2-backup`. A warning for the two backup
+copies is expected before they are installed and after a rollback to a commit older than their
+last change. A mismatch warning does not stop deployment. After a source change, review and install from the **exact intended
 commit** using `setup_and_secrets.md`, then deploy that commit. The checkout may hold a failed
 commit, so copying `/srv/loop2/deploy/loop2-deploy` without selecting its commit is unsafe.
 A missing or unreadable installed copy needs its existence, owner and mode checked by the human.
@@ -98,8 +101,10 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   image and the checkout. A rollback, a revert, a redeployment of the same commit and
   `--remove-orphans` leave them as they are.
 - **Accounts and sessions made after the target commit stay;** nothing is restored from an
-  earlier time. There is no earlier image to run and no copy of the database anywhere but the
-  server, so a lost volume cannot be brought back.
+  earlier time. There is no earlier image to run. A lost volume is brought back only to the
+  latest nightly backup on Strych, by the human's restore (`backup_and_restore.md`), which is not
+  a rollback. After a rollback to a commit from before the backup command the nightly backup
+  fails and a notice comes each night: a true alarm, until a commit with the command is deployed.
 - **Rolling back to a commit with accounts:** players stay signed in as long as the key file
   still holds the key their cookie was signed with. The file is not rolled back with the code.
 - **Rolling back to a commit without accounts:** that commit's Compose file does not mention
@@ -126,7 +131,8 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   server down. A target commit that knows only an older schema fails health (exit 8) on a
   newer database; the recovery is deploying a commit that knows the schema, since the data has
   no way back: there is no step from version 4 to version 3 and no copy of the database from
-  before the move. Only the human repairs the database.
+  before the move, except a nightly backup made earlier, which the human's restore may bring
+  back with everything after it lost. Only the human repairs the database.
 - **Saved game states in a rollback:** the saved game states lie in the same volume
   `loop2_accounts`. A rollback leaves them as they are, like the accounts: nothing is restored
   from an earlier time and a state saved after the target commit stays. Rolling back to a commit

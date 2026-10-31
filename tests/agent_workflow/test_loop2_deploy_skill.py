@@ -8,7 +8,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 CLAUDE_COPY = os.path.join(ROOT, ".claude", "skills", "loop2-deploy")
 AGENTS_COPY = os.path.join(ROOT, ".agents", "skills", "loop2-deploy")
 
-FILES = ["SKILL.md", "references/setup_and_secrets.md", "references/troubleshooting.md"]
+FILES = [
+    "SKILL.md",
+    "references/backup_and_restore.md",
+    "references/setup_and_secrets.md",
+    "references/troubleshooting.md",
+]
 
 IPV6_LITERAL = re.compile(r"(?<![0-9A-Za-z:])(?:[0-9A-Fa-f]{1,4}:){2,7}[0-9A-Fa-f]{0,4}(?![0-9A-Za-z])|::")
 MIKRUS_NAME = re.compile(r"\b[a-z]+\d+\.mikrus\.(?:cloud|xyz|pl)\b|\bmikr\.us\b", re.IGNORECASE)

@@ -1,6 +1,6 @@
 ---
 name: loop2-deploy
-description: How loop2's test-server deployment works - seeing which commit runs, reading the deploy log and its exit codes 2-8, rolling back, blocking or unblocking a player account, what an agent may read on the server versus what only the human changes, secrets, setup and failed deployments. Use for any question about deploying or the test server.
+description: How loop2's test-server deployment works - seeing which commit runs, reading the deploy log and its exit codes 2-8, database backups and restores, rolling back, blocking or unblocking a player account, what an agent may read on the server versus what only the human changes, secrets, setup and failed deployments. Use for any question about deploying or the test server.
 ---
 
 # loop2-deploy
@@ -31,6 +31,8 @@ host port. The connector uses HTTP/2 over IPv4, encrypted to Cloudflare, with me
 | Host session-key file / container secret | `/etc/loop2/session-secrets` / `/run/secrets/loop2_session_secrets` |
 | Host SMTP-password file / container secret | `/etc/loop2/smtp-password` / `/run/secrets/loop2_smtp_password` |
 | Account database volume / file in the container | `loop2_accounts` / `/app/data/accounts.sqlite` |
+| Backup script / schedule / log | `/usr/local/bin/loop2-backup` / `/etc/cron.d/loop2-backup` / `/var/log/loop2-backup.log` |
+| Backup encryption key / Strych host-key file | `/etc/loop2/backup-encryption-key` / `/etc/loop2/strych-known-hosts` |
 
 The old game (`loop`) and `foundryvtt` share the host and stay untouched. Deployment never
 prunes host-wide, runs `down`, or changes another Compose project. Replaced dangling images
@@ -50,14 +52,20 @@ files or requests. The MCP has full rights, so the following limits are an agree
   `docker volume ls --filter name=loop2_accounts`; the metadata of the session-key file only,
   `stat -c '%U %g %a' /etc/loop2/session-secrets` (expects `root 1000 440`), and likewise the
   metadata of the SMTP-password file only, `stat -c '%U %g %a' /etc/loop2/smtp-password`
-  (expects `root 1000 440`).
+  (expects `root 1000 440`); a bounded tail of the backup log `/var/log/loop2-backup.log`;
+  the metadata of the two backup files only, `stat -c '%U %g %a'` of
+  `/etc/loop2/backup-encryption-key` (expects `root 0 400`) and of `/etc/loop2/strych-known-hosts`
+  (expects `root 0 644`); `cmp` of the installed backup script and schedule with their sources
+  in `/srv/loop2/deploy`.
 - Allowed: the fixed internal application probe and bounded connector readiness command below;
   `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844`
   (also the same check for `region2.v2.argotunnel.com`). A **Connected** line is success evidence,
   often followed by timeout exit 124; it proves host TCP/IPv4 reachability only, not UDP or
   container connectivity. See `references/troubleshooting.md`.
 - No token-file, session-key-file or SMTP-password-file reads, no triggering of mail (below), no reading or copying of the account database or
-  its volume (it holds e-mail addresses and password hashes), full `docker inspect`, Compose
+  its volume (it holds e-mail addresses and password hashes), no reading of the backup
+  encryption key or the known-hosts file, no running of the backup script or of the backup
+  command, no hand run of the send, no fetching, opening or listing of backups on Strych, full `docker inspect`, Compose
   configuration dumps, arbitrary container execution, restarts, deployments, key changes or
   secret rotation. The MCP's changing tools
   (`upload`, `porty`, `domains`) are the human's too.
@@ -65,7 +73,8 @@ files or requests. The MCP has full rights, so the following limits are an agree
 Every server or Cloudflare change is the human's, except deployment started by the existing
 automation. The agent prepares the commands. Read `references/setup_and_secrets.md` for setup,
 the five transition actions and rotations; read `references/troubleshooting.md` for failure,
-script installation and rollback through the route change.
+script installation and rollback through the route change; read `references/backup_and_restore.md`
+for the backups, their log, keys, installation, key change and restore.
 
 ## Seeing deployments
 
@@ -105,8 +114,12 @@ internal HTTP only; the human checks the public page/API and outside-host IPv6 p
 | 4 | lock | cannot open lock or it is held for 900 seconds | untouched |
 | 5 | resources | less than 1024 MiB available memory, 4 GiB free Docker disk, or unreadable | untouched |
 | 6 | fetch, checkout | Git fetch, checkout or clean failed | untouched |
-| 7 | build | app type check/build, connector preparation, or missing Compose file | untouched |
+| 7 | build | app type check/build, the image's Node.js release check of the database (read, write, backup), connector preparation, or missing Compose file | untouched |
 | 8 | switch, probe | either service fails health within 120 seconds or internal HTTP fails | may be partly running or broken |
+
+The release check runs in the image build: a Node.js release that fails it ends the deployment
+at exit 7, and the log's build output names the release and the failure (see
+`references/troubleshooting.md`).
 
 After exit 8 the log gives the previous application commit and restoration guidance. The
 switch is not atomic. Failed health waits put the last 50 lines of both service logs in the
@@ -130,6 +143,21 @@ the old game's state and installed-script mismatches are also logged.
   `references/setup_and_secrets.md`: deployment, persistence check (accounts, sessions and, after redeploying the same commit
   (H2), a saved game state), password measurement in the deployed image, public browser
   journey.
+
+## Database backups
+
+Every night at 03:17 (server clock) the installed `loop2-backup` makes a consistent backup of the
+database, encrypts it with `age` and sends it to Mikrus Strych, which keeps seven files, one per
+weekday, each replaced a week later. A failed night calls `pusher` with the subject
+`kopia bazy loop2 nieudana`. A cron that did not start writes nothing. Where backups, keys and
+the log lie, how to read the log, install, change the encryption key and restore:
+`references/backup_and_restore.md`.
+
+- **Only the human** installs the script and schedule, runs the backup, changes a key, makes the
+  hand run of the send, restores. An agent never runs the backup command: its fixed word sends
+  every address and password hash to standard output.
+- **Unknown:** no source says whether the Strych key can be replaced.
+- A restore is a separate path, not a rollback (D-15), and undoes everything after the backup.
 
 ## Account mail
 
