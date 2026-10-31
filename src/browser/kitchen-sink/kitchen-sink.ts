@@ -225,7 +225,9 @@ function controlsSection(): HTMLElement {
 
 /** The sentences of the task and of the client in `account-api.ts`, as a form shows them (D-44). */
 const REFUSAL = "Nieprawidłowy adres e-mail lub hasło.";
+const ACCOUNT_EXISTS = "Konto z tym adresem już istnieje.";
 const NO_CONNECTION = "Brak połączenia z serwerem. Spróbuj ponownie.";
+const SERVER_ERROR = "Serwer nie mógł obsłużyć żądania. Spróbuj ponownie.";
 const TOO_MANY_ATTEMPTS = "Za dużo prób. Spróbuj ponownie za kilka minut.";
 
 /** The kinds of form the page shows, each with its button, its waiting text and its fields. */
@@ -312,6 +314,10 @@ function formsSection(): HTMLElement {
     ],
     ["Zaloguj się: odmowa serwera", formSample("login", "warning", REFUSAL)],
     [
+      "Załóż konto: odmowa serwera",
+      formSample("register", "warning", ACCOUNT_EXISTS),
+    ],
+    [
       "Załóż konto: brak połączenia",
       formSample("register", "warning", NO_CONNECTION),
     ],
@@ -321,7 +327,7 @@ function formsSection(): HTMLElement {
     ],
     [
       "Nie pamiętam hasła: odmowa serwera",
-      formSample("request", "warning", TOO_MANY_ATTEMPTS),
+      formSample("request", "warning", SERVER_ERROR),
     ],
     [
       "Nie pamiętam hasła: odpowiedź na prośbę",
@@ -332,8 +338,8 @@ function formsSection(): HTMLElement {
       formSample("reset", "waiting", null),
     ],
     [
-      "Ustaw nowe hasło: brak połączenia",
-      formSample("reset", "warning", NO_CONNECTION),
+      "Ustaw nowe hasło: odmowa serwera",
+      formSample("reset", "warning", TOO_MANY_ATTEMPTS),
     ],
   ];
   const list = document.createElement("div");
