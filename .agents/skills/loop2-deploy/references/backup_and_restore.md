@@ -20,8 +20,8 @@ for the other read commands.
 | Strych's host | the constants block of `deploy/loop2-backup` (`STRYCH_HOST`). This skill names no Mikrus host or address; Mikrus's pages are the Strych page of its wiki and the Strych option in its panel |
 | Lock | `/run/loop2-deploy.lock`, shared with the deployment |
 
-The key and the known-hosts file are secrets or access values (D-13). Strych holds 200 MB per
-user. The backup of a day is the database file plus `age`'s small overhead, not compressed.
+The key is a secret (D-13); the known-hosts file holds none. Strych holds 200 MB per user. The
+backup of a day is the database file plus `age`'s small overhead, not compressed.
 
 ## What the script does
 
@@ -29,10 +29,11 @@ At 03:17 the script, in order: checks that the key can be read; takes the deploy
 up to 900 seconds, so a backup and a deployment never overlap); runs
 `node dist/server/account-backup.js --to-standard-output` in the `loop2` container and pipes its
 output through `age` into one file in a private temporary directory of the host, so the plain
-database exists only inside the pipe; releases the lock; logs the weekday file and the size; sends
-the file with `rsync` over `ssh` (batch mode, host key checked against
-`/etc/loop2/strych-known-hosts`); removes the temporary directory. Any non-zero end calls
-`pusher` once, with the subject `kopia bazy loop2 nieudana` and the text
+database exists on this host only inside the pipe (in the container it lies in `/tmp` for the
+seconds of the run, and a killed run can leave it there until the container is replaced); releases
+the lock; logs the weekday file and the size; sends the file with `rsync` over `ssh` (batch mode,
+host key checked against `/etc/loop2/strych-known-hosts`); removes the temporary directory. Any
+non-zero end calls `pusher` once, with the subject `kopia bazy loop2 nieudana` and the text
 `Kopia bazy loop2 nie udała się.` and nothing of what failed.
 
 The command's fixed word `--to-standard-output` sends every address and password hash to wherever
@@ -209,7 +210,10 @@ owner's computer in PowerShell, with the Docker engine on and `age` installed (`
    7 x size, within 200 000 000, and the limit above is 25 MB.
 3. Decrypt it with the key from the note, saved to a temporary file:
    `age --decrypt -i <key file> -o accounts.sqlite loop2-accounts-<day>.sqlite.age`.
-4. Build the image from a clean checkout of the same commit: `docker build -t <image> .`
+4. Build the image from a clean checkout of the commit step 2 of "Installing and reinstalling"
+   deployed, with that commit's sha: `docker build --build-arg LOOP2_COMMIT=<sha> -t <image> .`
+   The launcher's report must read `image revision: <sha>`. `unknown` or another value shows no
+   same commit, and the trial does not count until a build gives that sha.
 5. Read the test account's password without placing it in the shell history. Keep that
    password ASCII: the console code page may alter another character on its way to the launcher.
    This form needs no special console: the launcher drops a byte-order mark that a UTF-8 console
@@ -223,9 +227,11 @@ owner's computer in PowerShell, with the Docker engine on and `age` installed (`
 6. Read the result. Exit 0 is PASS; 1 the trial ran and judged the backup (FAIL), for example the
    test account could not log in; 2 refused,
    nothing was started (arguments, or a terminal as standard input); 3 could not run to a verdict;
-   4 a container or volume could not be removed and is named; 130 interrupted. The launcher
-   prints the Node.js release, the login status, the save's revision and whether the marker
-   stands in the saved game state. A trial that stopped with exit 3 is not a PASS.
+   4 a container or volume could not be removed or shown to be gone, and is named; 130
+   interrupted. The launcher prints the image revision, the Node.js release, the login status, the
+   save's revision and whether the marker stands in the saved game state. A trial that stopped
+   with exit 3 is not a PASS. After exit 4 the named volume may still hold the plain database, so
+   check it and remove it by hand.
 7. Write the capacity sum and the launcher's report into the request's record.
 8. Remove the fetched files, the decrypted file and both temporary keys.
 
