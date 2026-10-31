@@ -3766,8 +3766,8 @@ last successful save is lost at logout or when the tab closes; the earning loops
 are what the player can make smaller, with „Zatrzymaj” and with „Usuń” on the list of programs
 (D-167), the last program staying, so a player whose game state grows beyond them stays without a
 save until the limit changes. One state of the header more. Accepted with it: with several earning
-loops saving stops until the player stops one of them, the limit holding at most about 10 earning
-loops on Las or 8 on Las — głębiej, and in practice fewer.
+loops saving stops until the player stops one of them, the limit holding at most about 12 earning
+loops on Las or 10 on Las — głębiej, and in practice fewer.
 *Rejected:* a lasting line „Zapisano o 12:31” in `text-secondary` beside the warning — a line that
 changes every 30 seconds during a map run, and more text in the header beside the line of D-157;
 nothing shown, a failed save included — the player plays on believing the progress saved and loses
@@ -4274,7 +4274,7 @@ were.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
-- **Relations:** derives from D-222 · narrows D-133 · narrows D-171 · narrows D-186 · narrows D-196 · narrows D-201
+- **Relations:** derives from D-222 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
 - **Verification:** an agent compares a change with the decision:
   - complies: a row reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2”, moving with each
     game minute of the earning loop; the counts of the last manual map run staying as they were
@@ -4323,17 +4323,18 @@ wprawa: nic” — the line speaks of practice that was not there.
 
 After being away the player currently reads a report in the section „Gdy cię nie było” of the
 headquarters, above „Drużyna”, one line for each character that had an earning loop, a later earning
-loop of a character whose earning loop stopped opening a line of its own, and one button „Zamknij”
-closes the whole section: first the earning loops that stopped, in `danger`, „{imię}: pętla stanęła
-po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie
-{n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} ·
-wprawa: {umiejętność} +{n}”, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection
-covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both
-lines being the game minutes the catch-up passed. The report lies in the game state, so it survives a
-reload; a further return before „Zamknij” adds to it; the section shows from one whole game minute of
-the catch-up, and an earning loop that stopped opens it at any number of game minutes. An earning
-loop that stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez
-wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie {n}.”, the title reading
+loop of a character whose earning loop a death stopped opening a line of its own, and one button
+„Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}:
+pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz
+to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n},
+{przedmiot} −{n} · wprawa: {umiejętność} +{n}”, with what is empty left out, with „ · wskrzeszenie
+zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the
+chest is full, {m} in both lines being the game minutes the catch-up passed. The report lies in the
+game state, so it survives a reload; a further return before „Zamknij” adds to it; the section shows
+from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number
+of game minutes. An earning loop a death stops in the open game enters the same section as „{imię}:
+pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to
+pokolenie {n}.”, the title reading
 „Pętle, które stanęły” where the section holds no line of a return, and a player returning to a
 manual map run reads the report in the headquarters after „Zakończ”.
 
@@ -4341,23 +4342,26 @@ manual map run reads the report in the headquarters after „Zakończ”.
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-223
 - **Verification:** an agent compares a change with the decision:
-  - complies: an earning loop that stopped standing above one that went on; a line of an earning loop
-    that stopped naming no practice, since the death took it; a character's own change in the chest
-    on its line, with the practice its earning loop gathered from completions in this catch-up; a
-    resurrection used in the catch-up adding „ · wskrzeszenie zużyte”, and one used in the open game
+  - complies: an earning loop a death stopped standing above one that went on; a line of an earning
+    loop a death stopped naming no practice, since the death took it; a character's own change in the
+    chest on its line, with the practice its earning loop gathered from completions in this catch-up;
+    a resurrection used in the catch-up adding „ · wskrzeszenie zużyte”, and one used in the open game
     adding no line; a stop in the open game on a line that holds minutes of an earlier return reading
-    with no minutes; „Skrzynka jest pełna.” following the chest as the section is drawn
+    with no minutes; „Skrzynka jest pełna.” following the chest as the section is drawn; „Zatrzymaj”
+    leaving the character's line open, so the next return of a later earning loop of that character
+    adds to it
   - violates: a second return replacing the report; a report held outside the game state; a button
     „Zamknij” at each character; a stop in the first game minute of the catch-up left out of the
     section; „Gdy cię nie było” over a section that holds stops in the open game and no return; the report drawn on the
     screen of a manual map run
 - **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 16, Questions to settle, Q6, Q19 and Q21, and § Settlements to record, rows 10, 11, 22, 23, 24 and 26 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
 
-*Rationale:* earning loops that stopped come first, since they are what asks for the player's hand; a
+*Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
 line for each character says which of them it was, and one button closes the section in one click.
 In the game state the report outlives a reload between the return and the reading. Each character
 counts its own change, which the catch-up taking characters one at a time gives. A line that closes
-at its stop keeps both a right {m} and the return of a later earning loop. Accepted with it: a new
+at the death that stops its earning loop keeps both a right {m} and the return of a later earning
+loop. Accepted with it: a new
 section and a new piece of the game state, a section that shows after a short reload too, one line
 closed along with the others, a stop in the open game that does not say how long the earning loop
 went, and the chest and practice of an earlier return leaving the screen when that line stops in the
@@ -4441,7 +4445,7 @@ discovers what the character met in a manual map run.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** narrows D-118 · derives from D-222
+- **Relations:** narrows D-118 · narrows D-121 · narrows D-143 · narrows D-198 · derives from D-222
 - **Verification:** invariants: loop-run-knowledge. An agent compares a change with the decision:
   - complies: a first chill in an earning loop's map run adding nothing to the Understanding and no
     rule to the content the earning loop holds, its game minutes taking effect in the order of D-71;

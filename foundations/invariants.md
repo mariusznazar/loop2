@@ -1077,7 +1077,7 @@ For the same starting game state and real-time inputs, a character whose team's 
 
 ## catch-up-minutes
 
-The catch-up passes an earning loop, until it stops, by one game minute for each whole real minute from the save time to the reading of the browser's clock, the rest shorter than a real minute waiting for the earning loop's next game minute, and a reading before the save time passes zero game minutes, takes nothing and starts the clock of the earning loops from that reading.
+The catch-up passes an earning loop, until it stops, by one game minute for each whole real minute from the save time to the reading of the browser's clock, the rest shorter than a real minute waiting for the earning loop's next game minute, and a reading before the save time passes zero game minutes, takes nothing and starts the loop clock from that reading.
 
 - **Method:** test
 - **Rests on:** none

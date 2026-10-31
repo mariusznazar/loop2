@@ -232,3 +232,9 @@ The catch-up is the computing of the game minutes that passed while the game was
 The save time is the moment of the browser's clock at which a saved game state was saved, which the game state holds and from which time away counts.
 
 - **Not:** an occasion on which the game sends a save (D-207) — "moment of saving"
+
+## loop clock
+
+The loop clock is the date, kept by the browser view apart from the game state, up to which the whole game minutes of the earning loops have been counted.
+
+- **Not:** none
