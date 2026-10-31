@@ -15,6 +15,7 @@ import { emptyProgram } from "../../dist/public/sim/programs.js";
 import { tripCount, tripChoices } from "../../dist/public/view/trip-editor.js";
 import {
   deathSettlementLine,
+  rehearsalMark,
   solvedRunText,
   tripTexts,
   tripWarning,
@@ -126,6 +127,109 @@ test("map warning appears below desired load and backpack capacity, including a 
     tripWarning(plan, 15, { ...MAPS.forest, carryIn: 0 }),
     "Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej 0 sztuk.",
   );
+});
+
+const MARK =
+  "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
+
+// D-234, To do 18. Catches a mark measured against the take list before its cut, one shown at a map
+// not yet solved, and one that stays where the chest holds exactly what the run takes.
+test("the mark shows at a solved map when a take entry cut by capacity and the entry cap exceeds the chest, and only then", () => {
+  const take = (...entries) => ({ take: entries, bring: [] });
+  const chest = (pieces) => ({ pieces });
+  // Three pieces asked, two in the chest: the mark; the same at a map not yet solved: none.
+  assert.equal(
+    rehearsalMark(
+      true,
+      take(entry("stick", 3)),
+      15,
+      MAPS.forest,
+      chest({ stick: 2 }),
+    ),
+    MARK,
+  );
+  assert.equal(
+    rehearsalMark(
+      false,
+      take(entry("stick", 3)),
+      15,
+      MAPS.forest,
+      chest({ stick: 2 }),
+    ),
+    null,
+  );
+  // Stock equal to the count, and above it: none. An item the chest lacks altogether: the mark.
+  assert.equal(
+    rehearsalMark(
+      true,
+      take(entry("stick", 3)),
+      15,
+      MAPS.forest,
+      chest({ stick: 3 }),
+    ),
+    null,
+  );
+  assert.equal(
+    rehearsalMark(
+      true,
+      take(entry("stick", 3)),
+      15,
+      MAPS.forest,
+      chest({ stick: 9 }),
+    ),
+    null,
+  );
+  assert.equal(
+    rehearsalMark(true, take(entry("stick", 3)), 15, MAPS.forest, chest({})),
+    MARK,
+  );
+  // The cut by the carrying capacity: 5 asked, 3 carried, 3 in the chest: none.
+  assert.equal(
+    rehearsalMark(
+      true,
+      take(entry("stick", 5)),
+      3,
+      MAPS.forest,
+      chest({ stick: 3 }),
+    ),
+    null,
+  );
+  // The cut by the entry cap: 5 asked, 2 let in, 2 in the chest: none.
+  assert.equal(
+    rehearsalMark(
+      true,
+      take(entry("stick", 5)),
+      15,
+      { ...MAPS.forest, carryIn: 2 },
+      chest({ stick: 2 }),
+    ),
+    null,
+  );
+  // The budget runs in list order: capacity 4 gives the stick 3 and the berry the one left, and
+  // the chest holds no berry.
+  assert.equal(
+    rehearsalMark(
+      true,
+      take(entry("stick", 3), entry("berry", 4)),
+      4,
+      MAPS.forest,
+      chest({ stick: 3 }),
+    ),
+    MARK,
+  );
+  // An entry cut to nothing asks for nothing: berry 4 after a capacity spent on stick.
+  assert.equal(
+    rehearsalMark(
+      true,
+      take(entry("stick", 3), entry("berry", 4)),
+      3,
+      MAPS.forest,
+      chest({ stick: 3 }),
+    ),
+    null,
+  );
+  // An empty list asks for nothing.
+  assert.equal(rehearsalMark(true, take(), 15, MAPS.forest, chest({})), null);
 });
 
 const SOLVED_LINE =

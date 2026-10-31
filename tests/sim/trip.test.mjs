@@ -27,6 +27,7 @@ import { MAPS } from "../../dist/public/sim/data/maps.js";
 import { buyBranch } from "../../dist/public/sim/skills.js";
 import {
   clipTrip,
+  clippedTake,
   takeFromNowhere,
   takeTrip,
   tripLoot,
@@ -598,6 +599,25 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
     takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 0 }).moss,
     0,
   );
+  assert.deepEqual(plan, before);
+});
+
+// D-234: the mark of the list of maps and the run read one cut. Catches a cut that spends the budget
+// out of list order, drops a partial row, or ignores the entry cap of the map.
+test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
+  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
+  const before = structuredClone(plan);
+  // Capacity 12 is spent on moss first, the rest, 3, goes to berry.
+  assert.deepEqual(clippedTake(plan, 12, MAPS.forest), [
+    entry("moss", 9),
+    entry("berry", 3),
+  ]);
+  // The entry cap 4 is below the capacity: moss takes all of it and berry gets nothing.
+  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 4 }), [
+    entry("moss", 4),
+  ]);
+  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 0 }), []);
+  assert.deepEqual(clippedTake({ take: [], bring: [] }, 15, MAPS.forest), []);
   assert.deepEqual(plan, before);
 });
 

@@ -7,11 +7,13 @@ import { rowProgram } from "../../dist/public/sim/programs.js";
 import {
   chestLines,
   generationLabel,
+  loopLine,
   mapLabel,
   programPositions,
   resurrectionLine,
   sendMaps,
   solvingSentence,
+  stoppedLoopLine,
 } from "../../dist/public/view/headquarters.js";
 
 test("importing the headquarters touches no DOM: Node has no document and the import succeeded", () => {
@@ -164,4 +166,40 @@ test("the label of a generation is „pokolenie {n}” from 2 up and nothing at 
   assert.equal(generationLabel(1), null);
   assert.equal(generationLabel(2), "pokolenie 2");
   assert.equal(generationLabel(13), "pokolenie 13");
+});
+
+// D-227, To do 9. Catches a number of the line read from the wrong place (the run's number for the
+// minute, the completed runs for the run's number) and a map name written into the view.
+test("the line of a character in a loop names the map, the run, its minute and the runs completed", () => {
+  assert.equal(
+    loopLine({
+      runNumber: 3,
+      completed: 2,
+      run: { mapId: "forest", minute: 212 },
+    }),
+    "Pętla: Las · przejście 3 · minuta 212 · domknięte 2",
+  );
+  assert.equal(
+    loopLine({
+      runNumber: 1,
+      completed: 0,
+      run: { mapId: "forestDeep", minute: 0 },
+    }),
+    "Pętla: Las — głębiej · przejście 1 · minuta 0 · domknięte 0",
+  );
+});
+
+// D-228, To do 8, Q18. Catches a stop that gathered nothing reading „wprawa: nic”, a skill with
+// zero practice listed, and an order other than the skills' data.
+test("the line after a stop lists the practice gathered in the skills' order, and is the bare words where none was", () => {
+  assert.equal(stoppedLoopLine({}), "Pętla zatrzymana");
+  assert.equal(stoppedLoopLine({ eating: 0 }), "Pętla zatrzymana");
+  assert.equal(
+    stoppedLoopLine({ eating: 4 }),
+    "Pętla zatrzymana · wprawa: Jedzenie +4",
+  );
+  assert.equal(
+    stoppedLoopLine({ eating: 4, exploration: 12, kicking: 0 }),
+    "Pętla zatrzymana · wprawa: Eksploracja +12, Jedzenie +4",
+  );
 });

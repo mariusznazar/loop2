@@ -24,6 +24,7 @@ import {
   createProgram,
   deleteProgram,
   discardCopyChanges,
+  editProgram,
   pickProgram,
   renameProgram,
   saveCopyAsNewProgram,
@@ -1412,6 +1413,10 @@ function pickOn(list, value) {
   list.fire("change");
 }
 
+/** Ala with the forest solved and the second program picked on her row (D-170). */
+const solvedAla = () =>
+  pickProgram({ ...twoPrograms(), solvedMaps: ["forest"] }, 1, 2).state;
+
 /**
  * Each act of the player D-207 names, made once on a game built from `start`: `act` clicks, types
  * or picks it on the page, and `expected` is the game state it leaves, from the simulation call the
@@ -1528,6 +1533,28 @@ const ACTS = [
     start: twoPrograms,
     act: (root) => pickOn(listLabelled(root, "Program: Ala"), "2"),
     expected: (start) => pickProgram(start, 1, 2).state,
+  },
+  {
+    name: "„Puść w pętlę”",
+    start: solvedAla,
+    act: (root) =>
+      buttonLabelled(root, "Puść w pętlę: Ala, mapa Las").fire("click"),
+    // The start takes the real date as its time, and the row's list shows program 2.
+    expected: (start) =>
+      startLoop(
+        start,
+        { mapId: "forest", characterId: 1, programId: 2 },
+        CLOCK_MS,
+      ).state,
+  },
+  {
+    name: "„Zatrzymaj”",
+    start: () => loopingAla(false),
+    act: (root) => buttonNamed(root, "Zatrzymaj").fire("click"),
+    check: (game) => {
+      assert.equal(game.loops[1], undefined);
+      assert.notEqual(game.stoppedLoops[1], undefined);
+    },
   },
   {
     name: "sending",
@@ -1652,6 +1679,264 @@ test("each act of the player that changes the game state is saved at once, and o
     pause.fire("click");
     await settle();
     assert.deepEqual(waitingCalls(held), []);
+  });
+});
+
+// --- the character's row: starting, watching and stopping an earning loop --------------------
+// Task petla-zarobkowa, To do 1, 8, 9 and 18; D-226, D-227, D-228, D-234; spec section 12.
+
+/** The row of the character named `name` in the headquarters under `root`. */
+function rowOf(root, name) {
+  const row = byClass(root, "team-member").find(
+    (candidate) =>
+      byClass(candidate, "team-member-name")[0].textContent === name,
+  );
+  assert.ok(row, `a row of ${name} stands`);
+  return row;
+}
+
+/** The game of `state` built in the page without the account page around it; its element stands in the body. */
+async function viewOf(state) {
+  const { createGameView } =
+    await import("../../dist/public/view/game-view.js");
+  const held = heldClient();
+  const view = createGameView({
+    client: held.client,
+    state,
+    revision: 1,
+    onConflict: () => {},
+    onOutdated: () => {},
+    onSignedOut: () => {},
+  });
+  fakeDocument.body.append(view.element);
+  return { view, held };
+}
+
+/** Ala, the first character, and Ola, the second, with the forest solved and Ala in a loop in it. */
+function alaLoopingOlaFree() {
+  const solved = { ...eatingPoint(), solvedMaps: ["forest"] };
+  const team = createCharacter(solved, "Ola").state;
+  return startLoop(team, { mapId: "forest", characterId: 1 }, 5).state;
+}
+
+// Catches a row that draws the loop line and „Zatrzymaj” for every character or for none, and
+// buttons disabled for the whole team (or by the one map run, as before) when only the character in
+// the loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
+test("a character in a loop shows its line and „Zatrzymaj”; its „Wyślij” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(alaLoopingOlaFree());
+    const ala = rowOf(root, "Ala");
+    const ola = rowOf(root, "Ola");
+    const [line] = byClass(ala, "team-member-loop");
+    assert.ok(shown(line));
+    assert.equal(
+      line.textContent,
+      "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
+    );
+    assert.ok(shown(buttonNamed(ala, "Zatrzymaj")));
+    assert.ok(buttonNamed(ala, "Zatrzymaj").classList.contains("destructive"));
+    assert.ok(!shown(byClass(ola, "team-member-loop")[0]));
+    assert.ok(!shown(buttonNamed(ola, "Zatrzymaj")));
+
+    for (const map of ["Las", "Las — głębiej"]) {
+      assert.equal(
+        buttonLabelled(ala, `Wyślij: Ala, mapa ${map}`).disabled,
+        true,
+        map,
+      );
+      assert.equal(
+        buttonLabelled(ola, `Wyślij: Ola, mapa ${map}`).disabled,
+        false,
+        map,
+      );
+    }
+    assert.equal(
+      buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").disabled,
+      true,
+    );
+    assert.equal(
+      buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las").disabled,
+      false,
+    );
+    // The map not yet solved has no loop button at all.
+    assert.equal(
+      all(ola).filter((element) =>
+        element.getAttribute("aria-label")?.startsWith("Puść w pętlę"),
+      ).length,
+      1,
+    );
+    assert.equal(buttonLabelled(ala, "Kup: Szybki posiłek").disabled, false);
+    assert.equal(listLabelled(ala, "Program: Ala").disabled, false);
+    view.dispose();
+  });
+});
+
+// Catches a click on „Puść w pętlę” that leaves the row as it was, that opens a map run, or that is
+// not saved; the loop line must stand at once with the buttons of the row shut.
+test("„Puść w pętlę” puts the character into a loop at once and the row shows it, with no map run opened", async () => {
+  await onPage(async ({ root }) => {
+    const { view, held } = await viewOf(solvedAla());
+    const ala = rowOf(root, "Ala");
+    assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
+    buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").fire("click");
+    assert.equal(
+      byClass(ala, "team-member-loop")[0].textContent,
+      "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
+    );
+    assert.ok(
+      shown(byClass(root, "headquarters")[0]),
+      "the headquarters stays",
+    );
+    assert.equal(buttonLabelled(ala, "Wyślij: Ala, mapa Las").disabled, true);
+    assert.equal(
+      buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").disabled,
+      true,
+    );
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    view.dispose();
+  });
+});
+
+// Catches a stop that asks first, one that leaves the line of the loop or none of the stop, and one
+// that shows practice the loop did not gather (D-228, Q18).
+test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” with the practice paid, or the bare words, until the next start", async () => {
+  await onPage(async ({ root }) => {
+    const base = alaLoopingOlaFree();
+    const gathering = {
+      ...base,
+      loops: {
+        1: { ...base.loops[1], practice: { eating: 4, exploration: 12 } },
+      },
+    };
+    const { view } = await viewOf(gathering);
+    const ala = rowOf(root, "Ala");
+    buttonNamed(ala, "Zatrzymaj").fire("click");
+    assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
+    assert.ok(!shown(buttonNamed(ala, "Zatrzymaj")));
+    const [stopped] = byClass(ala, "team-member-stopped");
+    assert.ok(shown(stopped));
+    assert.equal(
+      stopped.textContent,
+      "Pętla zatrzymana · wprawa: Eksploracja +12, Jedzenie +4",
+    );
+    assert.equal(buttonLabelled(ala, "Wyślij: Ala, mapa Las").disabled, false);
+    assert.ok(!shown(byClass(rowOf(root, "Ola"), "team-member-stopped")[0]));
+
+    // The next start clears the line.
+    buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").fire("click");
+    assert.ok(!shown(stopped));
+    view.dispose();
+  });
+
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(alaLoopingOlaFree());
+    const ala = rowOf(root, "Ala");
+    buttonNamed(ala, "Zatrzymaj").fire("click");
+    assert.equal(
+      byClass(ala, "team-member-stopped")[0].textContent,
+      "Pętla zatrzymana",
+    );
+    view.dispose();
+  });
+});
+
+// Catches a line lost on a load: the entry lives in the game state, so a game built from a state
+// holding it shows the line, in that character's row alone (D-228).
+test("a game built from a state with a stopped loop shows the line of the stop in that character's row", async () => {
+  await onPage(async ({ root }) => {
+    const base = alaLoopingOlaFree();
+    const { view } = await viewOf({
+      ...base,
+      loops: {},
+      stoppedLoops: { 1: { eating: 7 } },
+    });
+    assert.equal(
+      byClass(rowOf(root, "Ala"), "team-member-stopped")[0].textContent,
+      "Pętla zatrzymana · wprawa: Jedzenie +7",
+    );
+    assert.ok(!shown(byClass(rowOf(root, "Ola"), "team-member-stopped")[0]));
+    view.dispose();
+  });
+});
+
+// Catches the chest inside the key of the rows (spec section 12): a deposit, or a take at another
+// character's start, rebuilt every row, so a list open in a row and the focus on „Zatrzymaj” went.
+test("a change of the chest redraws the chest alone: the rows, their lists and the focus on „Zatrzymaj” stay", async () => {
+  await onPage(async ({ root }) => {
+    const solved = { ...eatingPoint(), solvedMaps: ["forest"] };
+    const stocked = {
+      ...solved,
+      team: { ...solved.team, chest: { pieces: { stick: 10 } } },
+    };
+    const taking = editProgram(stocked, 1, {
+      ...stocked.programs[0].program,
+      tripPlan: { take: [{ item: "stick", count: 3 }], bring: [] },
+    }).state;
+    const team = createCharacter(taking, "Ola").state;
+    const begun = startLoop(team, { mapId: "forest", characterId: 1 }, 5).state;
+    const { view } = await viewOf(begun);
+    const ala = rowOf(root, "Ala");
+    const ola = rowOf(root, "Ola");
+    const stop = buttonNamed(ala, "Zatrzymaj");
+    const list = listLabelled(ala, "Program: Ala");
+    stop.focus();
+    assert.equal(fakeDocument.activeElement, stop);
+    const chestText = () =>
+      byClass(root, "chest-list")[0].children.map((item) => item.textContent);
+    const heading = () =>
+      byClass(root, "headquarters-section")[1].children[0].textContent;
+    assert.deepEqual(chestText(), ["patyk: 7"]);
+    assert.ok(heading().startsWith("Skrzynka 7/"));
+
+    // Ola's start takes three sticks out of the chest.
+    buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las").fire("click");
+    assert.deepEqual(chestText(), ["patyk: 4"]);
+    assert.ok(heading().startsWith("Skrzynka 4/"));
+    assert.equal(rowOf(root, "Ala"), ala, "the row is the same element");
+    assert.equal(buttonNamed(ala, "Zatrzymaj"), stop);
+    assert.equal(listLabelled(ala, "Program: Ala"), list);
+    assert.equal(fakeDocument.activeElement, stop, "the focus stays");
+    view.dispose();
+  });
+});
+
+// D-234, To do 18. Catches a mark in the wrong place or role, a mark at a map not yet solved, and a
+// mark that ignores the chest.
+test("the mark of a rehearsal the loop cannot repeat stands under „Wyślij” of a solved map, and only where the chest lacks what the list takes", async () => {
+  const MARK =
+    "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
+  /** Ala with the forest solved, a take list of three sticks and `held` sticks in the chest. */
+  const holding = (held) => {
+    const solved = { ...twoPrograms(), solvedMaps: ["forest"] };
+    const stocked = {
+      ...solved,
+      team: { ...solved.team, chest: { pieces: { stick: held } } },
+    };
+    return editProgram(stocked, 1, {
+      ...stocked.programs[0].program,
+      tripPlan: { take: [{ item: "stick", count: 3 }], bring: [] },
+    }).state;
+  };
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(holding(2));
+    const row = rowOf(root, "Ala");
+    const marks = byClass(row, "rehearsal-mark");
+    assert.equal(marks.length, 2, "one under each map's „Wyślij”");
+    const [forest, deep] = marks;
+    assert.ok(shown(forest));
+    assert.equal(forest.textContent, MARK);
+    assert.ok(!shown(deep), "the map not yet solved has no mark");
+    assert.ok(
+      row.children.indexOf(forest) >
+        row.children.indexOf(buttonLabelled(row, "Wyślij: Ala, mapa Las")),
+      "under „Wyślij”",
+    );
+    view.dispose();
+  });
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(holding(3));
+    assert.ok(!shown(byClass(rowOf(root, "Ala"), "rehearsal-mark")[0]));
+    view.dispose();
   });
 });
 

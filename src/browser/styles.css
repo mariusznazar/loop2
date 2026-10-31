@@ -157,7 +157,7 @@ header .save-line {
 }
 
 /* The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
-   program” (D-44). */
+   program”, „Zatrzymaj” (D-44). */
 .button.destructive {
   color: var(--danger);
 }
@@ -517,6 +517,26 @@ header .save-line {
 
 .team-member-resurrection.danger {
   color: var(--danger);
+}
+
+/* The line of a character in an earning loop, in `text`, with „Zatrzymaj” beside it (D-227). */
+.team-member-loop {
+  margin: 0;
+  color: var(--text);
+}
+
+/* The line after a loop's stop, on a row of its own in `text-secondary` (D-228). */
+.team-member-stopped {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* The mark of a rehearsal the loop cannot repeat, under „Wyślij”, in `warning` as the line of D-188 (D-234). */
+.rehearsal-mark {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--warning);
 }
 
 .team-member-program-label {

@@ -21,6 +21,7 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../sim/programs.js";
+import { stopLoop } from "../sim/loop.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
 import { buyBranch } from "../sim/skills.js";
@@ -212,6 +213,16 @@ export function createGameView(options: GameViewOptions): GameView {
       const before = state;
       clock.send({ mapId, characterId, programId });
       if (state !== before) saver.moment();
+    },
+    // An act of the player like a send: the reading is made first, and a changed state is saved (D-207).
+    startLoop(characterId, mapId, programId) {
+      const before = state;
+      clock.startLoop({ mapId, characterId, programId });
+      if (state !== before) saver.moment();
+    },
+    stop(characterId) {
+      clock.flush();
+      act(stopLoop(state, characterId));
     },
   });
   const statusRow = createStatusRow({
