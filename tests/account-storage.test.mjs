@@ -1176,6 +1176,210 @@ test("a block committed through another connection stops every link issued befor
   assert.equal(database.confirmEmailAddress(digest("after")), "confirmed");
 });
 
+// Everything a password reset may change, read straight from the file so a
+// refusal can be compared with the state before it.
+function resetState(raw) {
+  const all = (sql) =>
+    raw
+      .prepare(sql)
+      .all()
+      .map((row) => ({ ...row }));
+  return {
+    accounts: all("SELECT * FROM accounts ORDER BY id"),
+    sessions: all("SELECT * FROM sessions ORDER BY id"),
+    links: all("SELECT * FROM emailed_links ORDER BY token_digest"),
+  };
+}
+
+// invariant: password-reset-link
+// invariant: password-reset-verified-email
+// invariant: password-reset-ends-sessions
+// invariant: player-server-session
+test("a working reset link replaces the password, deletes every session of its account, stops its reset links and nothing else, and works once", async (t) => {
+  const { database, store, raw, account, advance } = await fixture(t);
+  const other = database.createAccount("other@example.test", "other-hash");
+  database.issueLink(confirmationLink(account.id, "confirm"), limits);
+  database.issueLink(resetLink(account.id, "reset"), limits);
+  database.issueLink(resetLink(other.id, "theirs"), limits);
+  // Issuing never leaves two working reset links of one account, so a second
+  // one is written directly to reach the reset's own rule.
+  raw
+    .prepare(
+      "INSERT INTO emailed_links VALUES (?, ?, 'password-reset', 1000, ?, 0)",
+    )
+    .run(digest("stray"), account.id, 1000 + HOUR);
+  for (const id of ["one", "two"])
+    await call(store, "set", id, data(account.id, 100_000));
+  await call(store, "set", "other", data(other.id, 100_000));
+  assert.equal(database.resetLinkWorks(digest("reset")), true);
+
+  advance(5000);
+  assert.deepEqual(database.resetPassword(digest("reset"), "new-hash"), {
+    outcome: "reset",
+    email: "player@example.test",
+  });
+
+  assert.equal(database.findAccountById(account.id).passwordHash, "new-hash");
+  assert.equal(await call(store, "get", "one"), null);
+  assert.equal(await call(store, "get", "two"), null);
+  assert.equal((await call(store, "get", "other")).accountId, other.id);
+  assert.equal(storedLink(raw, "reset").spent, 1);
+  assert.equal(storedLink(raw, "stray").spent, 1);
+  assert.equal(storedLink(raw, "confirm").spent, 0, "confirmation untouched");
+  assert.equal(storedLink(raw, "theirs").spent, 0, "other account untouched");
+  assert.equal(database.findAccountById(account.id).emailConfirmed, false);
+  assert.equal(database.findAccountById(other.id).passwordHash, "other-hash");
+  assert.equal(
+    raw.prepare("PRAGMA user_version").get().user_version,
+    4,
+    "no schema step is added",
+  );
+
+  // The link is spent with the password: neither it nor the link left over
+  // from before works a second time, and the new hash stays.
+  assert.equal(database.resetLinkWorks(digest("reset")), false);
+  const after = resetState(raw);
+  for (const token of ["reset", "stray"])
+    assert.deepEqual(
+      database.resetPassword(digest(token), "again"),
+      { outcome: "invalid" },
+      token,
+    );
+  assert.deepEqual(resetState(raw), after);
+  assert.deepEqual(database.resetPassword(digest("theirs"), "theirs-hash"), {
+    outcome: "reset",
+    email: "other@example.test",
+  });
+});
+
+// invariant: password-reset-link
+test("a reset link that is unknown, of another kind, spent or of a blocked account sets no password and changes nothing", async (t) => {
+  const { database, store, raw, account } = await fixture(t);
+  const spentOwner = database.createAccount("spent@example.test", "hash");
+  const blockedOwner = database.createAccount("blocked@example.test", "hash");
+  database.issueLink(confirmationLink(account.id, "confirm"), limits);
+  database.issueLink(resetLink(spentOwner.id, "spent"), limits);
+  database.issueLink(resetLink(blockedOwner.id, "blocked"), limits);
+  raw
+    .prepare("UPDATE emailed_links SET spent = 1 WHERE token_digest = ?")
+    .run(digest("spent"));
+  await call(store, "set", "one", data(account.id));
+  await call(store, "set", "blocked-one", data(blockedOwner.id));
+  // Blocked without blockAccount, so the link and the session stay and only
+  // the reset's own reading of the block can refuse it.
+  raw
+    .prepare("UPDATE accounts SET blocked = 1 WHERE id = ?")
+    .run(blockedOwner.id);
+  const before = resetState(raw);
+
+  for (const token of ["confirm", "spent", "blocked", "unknown"]) {
+    assert.equal(database.resetLinkWorks(digest(token)), false, token);
+    assert.deepEqual(
+      database.resetPassword(digest(token), "new-hash"),
+      { outcome: "invalid" },
+      token,
+    );
+  }
+  for (const nonDigest of ["", "not a digest", "%", "'; DROP TABLE accounts"]) {
+    assert.equal(database.resetLinkWorks(nonDigest), false, nonDigest);
+    assert.deepEqual(database.resetPassword(nonDigest, "new-hash"), {
+      outcome: "invalid",
+    });
+  }
+  assert.deepEqual(resetState(raw), before);
+});
+
+// invariant: password-reset-link
+test("a reset link works until the millisecond before its expiry and not at it, also when the hour passes between the check and the reset", async (t) => {
+  const { database, raw, account, advance } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  database.issueLink(resetLink(account.id, "in-time"), limits);
+  database.issueLink(resetLink(other.id, "too-late"), limits);
+
+  advance(1000 + HOUR - 1);
+  assert.equal(database.resetLinkWorks(digest("in-time")), true);
+  assert.equal(database.resetLinkWorks(digest("too-late")), true);
+  assert.deepEqual(database.resetPassword(digest("in-time"), "new-hash"), {
+    outcome: "reset",
+    email: "player@example.test",
+  });
+
+  // The hour ends while the password is being hashed.
+  advance(1000 + HOUR);
+  const before = resetState(raw);
+  assert.equal(database.resetLinkWorks(digest("too-late")), false);
+  assert.deepEqual(database.resetPassword(digest("too-late"), "late-hash"), {
+    outcome: "invalid",
+  });
+  assert.deepEqual(resetState(raw), before);
+  assert.equal(database.findAccountById(other.id).passwordHash, "hash");
+});
+
+// invariant: password-reset-link
+// invariant: unblock-restores-no-link
+test("a block committed through another connection between the check and the reset leaves the password, and an unblock brings the link back to no one", async (t) => {
+  const { path, database, store, raw, account, track } = await fixture(t);
+  database.issueLink(resetLink(account.id, "link"), limits);
+  // The second connection stands in for the owner's command beside the server.
+  const operator = track(new AccountDatabase(path, { now: () => 1000 }));
+
+  assert.equal(database.resetLinkWorks(digest("link")), true);
+  assert.equal(operator.blockAccount("player@example.test"), "blocked");
+  const blocked = resetState(raw);
+  assert.deepEqual(database.resetPassword(digest("link"), "new-hash"), {
+    outcome: "invalid",
+  });
+  assert.deepEqual(resetState(raw), blocked);
+  assert.equal(
+    database.findAccountById(account.id).passwordHash,
+    "encoded-hash",
+  );
+
+  assert.equal(operator.unblockAccount("player@example.test"), "unblocked");
+  assert.equal(database.resetLinkWorks(digest("link")), false);
+  const unblocked = resetState(raw);
+  assert.deepEqual(database.resetPassword(digest("link"), "new-hash"), {
+    outcome: "invalid",
+  });
+  assert.deepEqual(resetState(raw), unblocked);
+
+  // A link recorded after the unblock works and ends a session made since.
+  await call(store, "set", "one", data(account.id));
+  assert.equal(
+    database.issueLink(resetLink(account.id, "after"), limits),
+    "issued",
+  );
+  assert.deepEqual(database.resetPassword(digest("after"), "new-hash"), {
+    outcome: "reset",
+    email: "player@example.test",
+  });
+  assert.equal(await call(store, "get", "one"), null);
+});
+
+// invariant: password-reset-link
+test("a later reset link recorded between the check and the reset stops the earlier one, which sets no password", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  database.issueLink(resetLink(account.id, "first"), limits);
+  assert.equal(database.resetLinkWorks(digest("first")), true);
+  assert.equal(
+    database.issueLink(resetLink(account.id, "second"), limits),
+    "issued",
+  );
+  const before = resetState(raw);
+  assert.deepEqual(database.resetPassword(digest("first"), "new-hash"), {
+    outcome: "invalid",
+  });
+  assert.deepEqual(resetState(raw), before);
+  assert.equal(
+    database.findAccountById(account.id).passwordHash,
+    "encoded-hash",
+  );
+  assert.deepEqual(database.resetPassword(digest("second"), "new-hash"), {
+    outcome: "reset",
+    email: "player@example.test",
+  });
+});
+
 // invariant: account-message-limits
 test("cleanup removes, in bounded batches, only links both expired and an hour old, so pruning never readmits a message", async (t) => {
   const { path, database, raw, account, advance, track } = await fixture(t);
@@ -1301,6 +1505,103 @@ test("a session write for a blocked account stores nothing, also under an identi
   await call(store, "set", "after", data(account.id));
   assert.equal((await call(store, "get", "after")).accountId, account.id);
   assert.equal(await call(store, "get", "held"), null);
+});
+
+// invariant: account-session-storage
+// invariant: password-reset-ends-sessions
+test("a session write whose expected password hash still holds stores, also a second time with the same session object, and the payload stays as it was", async (t) => {
+  const { store, raw, account } = await fixture(t);
+  const stored = (id) =>
+    raw.prepare("SELECT data, expires_at FROM sessions WHERE id = ?").get(id);
+  const value = data(account.id);
+  store.expectPasswordHash(value, "encoded-hash");
+
+  await call(store, "set", "browser", value);
+  assert.equal(stored("browser").expires_at, 2000);
+  value.cookie = data(account.id, 3000).cookie;
+  await call(store, "set", "browser", value);
+  assert.equal(stored("browser").expires_at, 3000, "the second store lands");
+  assert.equal(
+    stored("browser").data,
+    JSON.stringify({ accountId: account.id, cookie: value.cookie }),
+    "the expectation is no part of the stored payload",
+  );
+  assert.ok(!stored("browser").data.includes("encoded-hash"));
+  assert.deepEqual(
+    Object.keys(await call(store, "get", "browser")).sort(),
+    ["accountId", "cookie"],
+    "a session read back carries no expectation",
+  );
+});
+
+// invariant: account-session-storage
+// invariant: password-reset-ends-sessions
+test("a session write whose expected password hash no longer holds stores nothing under a held or a new identifier, also when the reset came through the store's own connection", async (t) => {
+  const { store, database, raw, account } = await fixture(t);
+  database.issueLink(resetLink(account.id, "reset"), limits);
+  const value = data(account.id);
+  store.expectPasswordHash(value, "encoded-hash");
+  await call(store, "set", "browser", value);
+
+  // The first store is deleted by the reset, as a login's first store is;
+  // the library then stores the same object a second time.
+  assert.deepEqual(database.resetPassword(digest("reset"), "new-hash"), {
+    outcome: "reset",
+    email: "player@example.test",
+  });
+  assert.equal(raw.prepare("SELECT count(*) AS n FROM sessions").get().n, 0);
+  value.cookie = data(account.id, 3000).cookie;
+  for (const id of ["browser", "other-identifier"]) {
+    await assert.rejects(call(store, "set", id, value), id);
+    assert.equal(
+      raw.prepare("SELECT id FROM sessions WHERE id = ?").get(id),
+      undefined,
+      id,
+    );
+  }
+
+  // Another session object of the account, given the new hash, stores.
+  const fresh = data(account.id);
+  store.expectPasswordHash(fresh, "new-hash");
+  await call(store, "set", "after", fresh);
+  assert.equal((await call(store, "get", "after")).accountId, account.id);
+});
+
+// invariant: account-session-storage
+// invariant: password-reset-ends-sessions
+test("a session write whose expected password hash was changed through a second connection stores nothing and leaves a held row as it was; one with no expectation behaves as before", async (t) => {
+  const { store, raw, account } = await fixture(t);
+  const value = data(account.id);
+  store.expectPasswordHash(value, "encoded-hash");
+  await call(store, "set", "held", value);
+  raw
+    .prepare("UPDATE accounts SET password_hash = ? WHERE id = ?")
+    .run("changed-elsewhere", account.id);
+
+  value.cookie = data(account.id, 3000).cookie;
+  await assert.rejects(call(store, "set", "held", value));
+  await assert.rejects(call(store, "set", "new", value));
+  assert.equal(
+    raw.prepare("SELECT expires_at FROM sessions WHERE id = ?").get("held")
+      .expires_at,
+    2000,
+    "the held row is not rewritten",
+  );
+  assert.equal(
+    raw.prepare("SELECT id FROM sessions WHERE id = ?").get("new"),
+    undefined,
+  );
+
+  // No expectation: the write is the base's, whatever the hash is.
+  await call(store, "set", "bare", data(account.id));
+  assert.equal((await call(store, "get", "bare")).accountId, account.id);
+  // An expectation names one session object and no other.
+  const other = data(account.id);
+  await call(store, "set", "other-object", other);
+  assert.equal(
+    (await call(store, "get", "other-object")).accountId,
+    account.id,
+  );
 });
 
 // invariant: account-session-storage

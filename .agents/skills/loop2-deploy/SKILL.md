@@ -161,7 +161,8 @@ the log lie, how to read the log, install, change the encryption key and restore
 
 ## Account mail
 
-The application sends the address-confirmation message through Outsider's SMTP server on port
+The application sends both account messages, the address-confirmation message and the
+password-reset message, through Outsider's SMTP server on port
 587, from `loop2@mariusznazar.com`, over TLS only. The sender address, the server, the port
 and the login are plain values of the `app` service in `compose.yaml`; the password is not an
 environment value: it lies in `/etc/loop2/smtp-password` (owner root, group 1000, mode 0440,
@@ -179,7 +180,7 @@ private note. The agent reads the file's metadata only and never its content.
   itself were not touched.
 - **Never by an agent:** an agent never reads or changes the password or its file, and never
   sends mail through Outsider: it does not log in to the SMTP server and does not create an
-  account or press "Wyślij ponownie" on the test server, since each of these sends a real
+  account or press "Wyślij ponownie" or "Wyślij odnośnik" on the test server, since each of these sends a real
   message from a monthly allowance of 1000.
 - **What an agent may read:** the mailer's failure line in the bounded service logs,
   `Account mail failed: <code>`, with the error code only (never an address, link or

@@ -38,7 +38,9 @@ Testy adaptera nie zastępują dowodu konfiguracji ciasteczka i wdrożonego serw
 callbacku leży poza blokiem przechwytującym błąd operacji, więc wyjątek jego
 odbiorcy nie powoduje drugiego wywołania. Brak callbacku kieruje błąd do zdarzenia
 `error` magazynu. Zapis nowej uwierzytelnionej sesji używa `set`; zwykłe żądanie
-używa `touch` i nie przepisuje tożsamości. Zasady HTTP i atrybuty ciasteczka
+używa `touch` i nie przepisuje tożsamości. Trasa, która tworzy sesję, podaje
+magazynowi skrót hasła, na którym sesja stoi (`expectPasswordHash`); magazyn
+trzyma go obok obiektu sesji, nie w nim, i przekazuje do zapisu (D-112). Zasady HTTP i atrybuty ciasteczka
 ustala aplikacja używająca magazynu.
 
 ### Wartości przyjmowane przez bibliotekę

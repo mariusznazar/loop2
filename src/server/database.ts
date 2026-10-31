@@ -20,6 +20,8 @@ export type UnblockOutcome = "unblocked" | "not-blocked" | "unknown";
 export type LinkPurpose = "email-confirmation" | "password-reset";
 export type IssueOutcome = "issued" | "limited" | "blocked";
 export type ConfirmOutcome = "confirmed" | "invalid";
+export type ResetOutcome =
+  { outcome: "reset"; email: string } | { outcome: "invalid" };
 
 export interface LinkRequest {
   accountId: string;
@@ -119,6 +121,9 @@ export interface StoredSession {
   accountId: string;
   data: string;
   expiresAt: number;
+  // The password hash the session stands on. Where given, nothing is stored
+  // once the account holds another hash (D-112); a session read has none.
+  expectedPasswordHash?: string;
 }
 
 interface DatabaseOptions {
@@ -307,16 +312,21 @@ export class AccountDatabase {
     ) {
       throw new Error("Invalid session expiry");
     }
-    // The account's state is read by the statement that writes, so a block
-    // committed by another connection either precedes it and stores nothing or
-    // follows it and deletes what it stored. An unknown account still fails on
-    // the foreign key; the WHERE clause also keeps the upsert unambiguous.
+    // The account's state is read by the statement that writes, so a block or
+    // a password reset committed by another connection either precedes it and
+    // stores nothing or follows it and deletes what it stored. An unknown
+    // account still fails on the foreign key; the WHERE clause also keeps the
+    // upsert unambiguous. Without an expected hash the password is not looked
+    // at.
     const result = this.connection
       .prepare(
         `
       INSERT INTO sessions (id, account_id, data, expires_at)
       SELECT ?, ?, ?, ?
-      WHERE NOT EXISTS (SELECT 1 FROM accounts WHERE id = ? AND blocked = 1)
+      WHERE NOT EXISTS (
+        SELECT 1 FROM accounts WHERE id = ?
+          AND (blocked = 1 OR (? IS NOT NULL AND password_hash <> ?))
+      )
       ON CONFLICT(id) DO UPDATE SET data = excluded.data,
         expires_at = MAX(sessions.expires_at, excluded.expires_at)
       WHERE sessions.account_id = excluded.account_id AND sessions.expires_at > ?
@@ -328,6 +338,8 @@ export class AccountDatabase {
         session.data,
         session.expiresAt,
         session.accountId,
+        session.expectedPasswordHash ?? null,
+        session.expectedPasswordHash ?? null,
         this.now(),
       );
     if (result.changes === 0) throw new Error("Session cannot be replaced");
@@ -502,6 +514,67 @@ export class AccountDatabase {
         )
         .run(link.account_id);
       return "confirmed";
+    });
+  }
+
+  // The one reading of a reset link, shared by the check before the password
+  // is hashed and the check in the transaction that sets it, so the two cannot
+  // drift apart: the account of a link of the purpose password-reset that is
+  // unspent, before its expiry (equal to now is expired, as for sessions) and
+  // whose account is not blocked. Later links and blocks show as a spent link.
+  private workingResetLinkAccount(tokenDigest: string): string | null {
+    const link = this.connection
+      .prepare(
+        `
+      SELECT emailed_links.account_id AS account_id FROM emailed_links
+      JOIN accounts ON accounts.id = emailed_links.account_id
+      WHERE token_digest = ? AND purpose = 'password-reset'
+        AND spent = 0 AND expires_at > ? AND accounts.blocked = 0
+    `,
+      )
+      .get(tokenDigest, this.now());
+    if (!link) return null;
+    if (typeof link.account_id !== "string") {
+      throw new Error("Invalid stored link");
+    }
+    return link.account_id;
+  }
+
+  // Whether a reset link works now, for the check before password work; it
+  // reads and changes nothing else.
+  resetLinkWorks(tokenDigest: string): boolean {
+    return this.workingResetLinkAccount(tokenDigest) !== null;
+  }
+
+  // Sets a password by a reset link in one transaction, which holds the write
+  // lock from its start: the link is read again there, so a block through
+  // another connection, a later link or an expiry during the hashing either
+  // comes first and is seen, or waits and finds the password changed. Without
+  // a working link nothing changes. Otherwise the password hash is replaced,
+  // every session of the account is deleted, every unspent reset link of the
+  // account is stopped, the one used included, and the account's address is
+  // returned. Confirmation links are left as they are.
+  resetPassword(tokenDigest: string, passwordHash: string): ResetOutcome {
+    return this.transaction((): ResetOutcome => {
+      const accountId = this.workingResetLinkAccount(tokenDigest);
+      if (accountId === null) return { outcome: "invalid" };
+      const account = this.findAccountById(accountId);
+      if (!account) throw new Error("Unknown account");
+      this.connection
+        .prepare("UPDATE accounts SET password_hash = ? WHERE id = ?")
+        .run(passwordHash, accountId);
+      this.connection
+        .prepare("DELETE FROM sessions WHERE account_id = ?")
+        .run(accountId);
+      this.connection
+        .prepare(
+          `
+      UPDATE emailed_links SET spent = 1
+      WHERE account_id = ? AND purpose = 'password-reset' AND spent = 0
+    `,
+        )
+        .run(accountId);
+      return { outcome: "reset", email: account.email };
     });
   }
 

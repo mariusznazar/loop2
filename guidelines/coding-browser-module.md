@@ -89,7 +89,8 @@ czeka na serwer, zmienia się w miejscu. `setButtonWaiting` z `button.ts` wyłą
 istniejący przycisk i podmienia jego tekst na napis oczekiwania, a wywołana
 z `null` przywraca tekst; pola formularza blokuje się przez `input.disabled`,
 a zdanie odmowy albo braku połączenia pokazuje `createFormWarning` z
-`text-field.ts`. Pole hasła to `createPasswordField`, a przycisk, który wysyła
+`text-field.ts`, a zdanie spokojne, które nie jest odmową, `createFormNote` z
+tego samego pliku. Pole hasła to `createPasswordField`, a przycisk, który wysyła
 formularz, dostaje `submit: true`. Wyłączony przycisk traci fokus, więc ekran
 po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
 
