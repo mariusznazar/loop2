@@ -59,11 +59,15 @@ test("there are six criteria and each describes both ends of the scale", () => {
 });
 
 test("the verdict passes only at the threshold score or above, with no critical or important finding", () => {
-  assert.equal(verdictOf(reviewWith({ tests: 6 })), "pass");
-  assert.equal(verdictOf(reviewWith({ tests: 5 })), "fail");
-  assert.equal(verdictOf(reviewWith({}, [minor])), "pass");
-  assert.equal(verdictOf(reviewWith({}, [important])), "fail");
-  assert.equal(verdictOf(reviewWith({}, [critical])), "fail");
+  assert.equal(verdictOf(reviewWith({ tests: 6 }), false), "pass");
+  assert.equal(verdictOf(reviewWith({ tests: 5 }), false), "fail");
+  assert.equal(verdictOf(reviewWith({}, [minor]), false), "pass");
+  assert.equal(verdictOf(reviewWith({}, [important]), false), "fail");
+  assert.equal(verdictOf(reviewWith({}, [critical]), false), "fail");
+});
+
+test("a review of a cut diff never passes, however good its scores are", () => {
+  assert.equal(verdictOf(reviewWith({}), true), "fail");
 });
 
 test("the coding guideline is always loaded and the testing one only for a change that touches tests", () => {

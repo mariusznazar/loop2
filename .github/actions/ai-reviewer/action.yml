@@ -18,10 +18,13 @@ inputs:
   diff-file:
     description: Path of the file with the diff
     required: true
+  base-ref:
+    description: Base branch, the source of the guidelines
+    required: true
 
 outputs:
   verdict:
-    description: pass or fail
+    description: pass, fail or skipped
     value: ${{ steps.agent.outputs.verdict }}
   comment-file:
     description: Path of the file with the pull request comment
@@ -36,6 +39,11 @@ runs:
         ACTION_PATH: ${{ github.action_path }}
       run: npm ci --ignore-scripts --no-audit --no-fund --prefix "$ACTION_PATH"
 
+    - name: Test the agent
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm test
+
     - name: Run code review
       id: agent
       shell: bash
@@ -46,6 +54,7 @@ runs:
         PR_TITLE: ${{ inputs.pr-title }}
         PR_BODY: ${{ inputs.pr-body }}
         DIFF_FILE: ${{ inputs.diff-file }}
+        BASE_REF: ${{ inputs.base-ref }}
         COMMENT_FILE: ${{ runner.temp }}/review-comment.md
       run: |
         if [ -z "$OPENAI_API_KEY" ]; then

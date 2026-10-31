@@ -91,10 +91,11 @@ export async function runReview({ model, rules, guidelines, title, body, diff, t
   return { review: result.output, usage: result.usage };
 }
 
-export function verdictOf(review) {
+// A review of a cut diff never passes: the part nobody read could hold the defect.
+export function verdictOf(review, truncated) {
   const scoresPass = CRITERIA.every(({ id }) => review.scores[id].score >= PASS_SCORE);
   const noBlocker = review.findings.every(({ severity }) => !BLOCKING.has(severity));
-  return scoresPass && noBlocker ? "pass" : "fail";
+  return scoresPass && noBlocker && !truncated ? "pass" : "fail";
 }
 
 export function costOf({ inputTokens = 0, outputTokens = 0 }, { input, output }) {
@@ -130,7 +131,7 @@ export function renderComment({ review, verdict, truncated, model, usage, cost }
     ...rows,
     "",
     ...(findings.length ? ["### Uwagi", "", ...findings, ""] : []),
-    ...(truncated ? ["> Diff był za duży i został ucięty, więc ocena dotyczy tylko jego części.", ""] : []),
+    ...(truncated ? ["> Diff był za duży i został ucięty, więc takie review nie może zaliczyć zmiany.", ""] : []),
     `<sub>Model \`${model}\`, tokeny ${usage.inputTokens} + ${usage.outputTokens}, koszt około ${cost.toFixed(4)} $. ` +
       `Próg zaliczenia: ${PASS_SCORE}/10 w każdym kryterium i brak uwag krytycznych oraz ważnych.</sub>`,
     "",

@@ -49,6 +49,7 @@ jobs:
           pr-title: ${{ github.event.pull_request.title }}
           pr-body: ${{ github.event.pull_request.body }}
           diff-file: ${{ runner.temp }}/pull-request.diff
+          base-ref: ${{ github.base_ref }}
 
       - name: Comment on the pull request
         env:
