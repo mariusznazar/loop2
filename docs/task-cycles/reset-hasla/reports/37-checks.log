@@ -1,0 +1,227 @@
+=== foundation
+0 errors
+=== exit 0 : foundation
+=== typecheck
+
+> loop2@0.0.0 typecheck
+> node scripts/build.mjs --check
+
+=== exit 0 : typecheck
+=== account-screen
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/account-screen.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ until the server names an account the page has neither the game nor a running clock (48.8582ms)
+✔ an answer of no session shows the two forms with visible labels, and no game (3.6265ms)
+✔ an answer that names no account and is not a refusal of the session shows one warning with retry, neither forms nor game (9.5105ms)
+✔ a sent login waits with both forms locked, and a refusal leaves one warning under it and focus where the player sent it from (1.7312ms)
+✔ a lost connection on registration leaves one warning under that form and focus on its button (1.0971ms)
+✔ a created account enters the game at once, and the forms keep no password (2.8918ms)
+✔ a registration the server would refuse sends nothing and marks the field at fault (0.7962ms)
+✔ registration problems follow the server's rules, counting a password in code points (0.4468ms)
+✔ the button under „Zaloguj się” puts one form with an empty address, „Wyślij odnośnik” and „Wróć do logowania” in place of both forms (1.0605ms)
+✔ a request waits with its field and every button of the screen locked, and sends nothing twice (1.0437ms)
+✔ while a login waits, the button „Nie pamiętam hasła” is locked with the two forms and opens nothing (0.9236ms)
+✔ an address not written as name@domain gets its sentence under the field, nothing is sent and the field takes focus (1.0524ms)
+✔ a well-formed address gets the one sentence of the reset under the form in a status, with the field empty and the form and „Wróć do logowania” staying (2.5177ms)
+✔ a refusal or a lost connection on a request stands as the form's warning, keeps the address and returns focus to where it was sent from (0.9197ms)
+✔ „Wróć do logowania” brings back both forms, and nothing typed, no sentence and no warning survives a second visit (1.167ms)
+✔ reset from outside empties the request form, removes its sentence and shows the two forms, and a request answered afterwards is ignored (0.718ms)
+✔ the address rule and the password rules each give registration's result alone (0.1964ms)
+✔ a confirmed logout or an expired session removes the game and its clock and brings back the forms (3.1894ms)
+✔ a logout whose outcome is uncertain keeps the game with one warning, and „Wyloguj” stays usable (2.4516ms)
+✔ signing in and out again and again keeps at most one clock running (2.6807ms)
+✔ an answer that comes after the screen was left is ignored (0.6354ms)
+✔ a reload or sign-in with an unconfirmed address shows the row after the title and Wyloguj, and leaves it at logout (1.6547ms)
+✔ a confirmed address shows no row (0.7814ms)
+✔ a created account starts the row with the outcome of its first message (2.8852ms)
+✔ Wyślij ponownie sends one request for the signed-in account and shows its outcome in the row (0.8843ms)
+✔ with a token in the address the page confirms first, saying so, and checks the session only after the answer (0.5522ms)
+✔ the result stands as one sentence above the game for a signed-in player and leaves at the next change between forms and game (1.2039ms)
+✔ a refused link stands in warning above the forms for a player who is not signed in, and the fragment goes (0.5695ms)
+✔ a lost connection on the confirmation keeps the fragment and shows the client message in warning above the screen (0.4038ms)
+✔ an address without a token asks only for the session and shows no notice (0.3645ms)
+✔ the sentence of a confirmation waits through a failed session check and shows once it passes (2.1857ms)
+✔ with a reset token in the address the page shows the form at once, asking nothing, building no game and saving nothing (0.9472ms)
+✔ a sent form waits with its fields and „Anuluj” locked, sends the token and both passwords once and keeps the fragment (0.7486ms)
+✔ a password the server would refuse sends nothing, marks the field at fault, takes focus there and keeps the link (0.5435ms)
+✔ a change clears the fragment first, then shows the forms with the sentence in positive above them, asks about no session and focuses the address field (1.0236ms)
+✔ a refused link, whatever its reason, clears the fragment first and then checks the session: the forms or the game with the sentence in warning above them (3.7831ms)
+✔ „Anuluj” clears the fragment first and opens the page as usual with the session check and no sentence (1.7661ms)
+✔ a failure that is no change and no refused link keeps the form, the fragment and the link, with the client's sentence under the form and focus back where the player sent it from (2.4887ms)
+✔ a 401 on a save keeps the state, and a sign-in to the same account sends it and returns to the game from it (15.8608ms)
+✔ a sign-in to another account after a 401 on a save drops the kept state and loads that account's save (4.1425ms)
+✔ after the session check the page keeps „Sprawdzanie logowania…” until the saved game state answers, and none gives a new game that saves nothing by itself (1.3959ms)
+✔ a save builds the game the load gives: a map run that went on comes back paused at its pace, an ended one on its screen after the end (14.4195ms)
+✔ each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing (38.0222ms)
+✔ a game minute that ends the map run in a death is saved at once, settled (11.5896ms)
+✔ a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing (7.6307ms)
+✔ a failed or uncertain answer for the saved game state shows the warning with retry, which asks both again; no session shows the forms (2.9522ms)
+✔ a refused save starts a new game with its one-time sentence above it, after a confirmation notice, and saves the new game at once on the server's revision (3.0419ms)
+✔ a failed save shows its line under the title and „Wyloguj”, above the address row, and a retry that succeeds clears it (2.4494ms)
+✔ a conflict drops the game, asks for the server's save and builds from it with its sentence in the header until a save succeeds; a refused one there starts anew (5.5109ms)
+✔ „Wyloguj” saves first and goes on, stays or ends each way its save's outcome gives (15.6012ms)
+✔ a tab that stopped saving as outdated logs out without a save and shows the update sentence above the forms (2.762ms)
+✔ a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, an uncertain one then takes the expiry path (9.2121ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 386.717
+=== exit 0 : account-screen
+=== password-reset
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/password-reset.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the fragment's token is read as it stands, and any other fragment yields none (1.8681ms)
+✔ only a success is a change and only the code invalid-link is a refused link, whatever its reason or status (1.1433ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.9375
+=== exit 0 : password-reset
+=== http
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/http.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ serves the built HTML and JavaScript from another working directory (40.716ms)
+✔ API keeps its JSON error across paths, methods, queries and HTML negotiation (53.7675ms)
+✔ ordinary missing routes and files do not become the home page or API (8.6379ms)
+✔ raw and encoded traversal cannot expose files outside dist/public (18.6534ms)
+✔ unconfigured accounts answer the canonical account routes as unavailable JSON (21.611ms)
+✔ a stored session alone selects the account, whatever identifier the request supplies (553.1098ms)
+✔ absent, tampered, unknown, expired and deleted sessions authorize neither lookup nor logout (277.0031ms)
+✔ logout destroys only this browser's session and clears the same host cookie (236.3995ms)
+✔ a failed session destruction is not reported as logout and leaves the browser signed in (262.4548ms)
+✔ a read that loaded its session before logout cannot revive it afterwards (237.5707ms)
+✔ registration stores an Argon2id hash of the exact password and signs this browser in at once (1173.7868ms)
+✔ a credential success replaces only this browser's session with a fresh identity (673.7695ms)
+✔ one normalized address holds one account and a duplicate gets the required message, also in a race (723.7874ms)
+✔ passwords count 12 to 128 Unicode code points and keep their exact content (1567.8957ms)
+✔ malformed fields and out-of-shape credentials are refused before password work or writes (1276.9601ms)
+✔ a known address with a wrong password and an unknown address fail login identically (694.8819ms)
+✔ a failed session save keeps the new account usable and issues no success cookie (816.6428ms)
+✔ five failed logins lock an address for 15 minutes from the fifth, also for its correct password (3766.3556ms)
+✔ one client address is admitted twenty failed logins per rolling 15 minutes and success does not clear them (2754.6714ms)
+✔ one client address creates five accounts per rolling hour, and refused registrations take no slot (1681.654ms)
+✔ a disconnected login keeps its reservation until its password work completes and still counts (1343.2231ms)
+✔ full limiter tables refuse newcomers without evicting a live restriction (1804.2782ms)
+✔ the password rules of a new password are those of registration, with the same problems (0.407ms)
+✔ a locked address admits a login after its attempts are cleared, and failures before the lock are forgotten (0.4945ms)
+✔ clearing an address's attempts leaves its client address's failures counting (0.2959ms)
+✔ a login in progress at a clear keeps its reservation and settles once on the same entry (0.1672ms)
+✔ a login in progress at a clear that is released leaves the failures made after the clear counting (0.1234ms)
+✔ a login in progress at a clear leaves no reservation behind once it has failed (0.1356ms)
+✔ clearing an unknown address changes nothing and a clear frees a locked place without touching others (0.145ms)
+✔ no session of a blocked account authorizes lookup or logout, in any browser, also after unblocking (857.0246ms)
+✔ a blocked account's correct password gets its own refusal and no session, a wrong one the common message, and only the wrong one counts (2352.7309ms)
+✔ a block committed while the password is checked refuses that login as blocked and clears no failure (1542.5426ms)
+✔ a password replaced while the old password is checked refuses that login, stores no session and clears no failure (1641.8292ms)
+Error: Session cannot be replaced
+    at AccountDatabase.saveSession (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/database.js:236:19)
+    at file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:120:27
+    at SqliteSessionStore.complete (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:143:13)
+    at SqliteSessionStore.set (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:117:14)
+    at Session.save (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express-session\session\session.js:72:25)
+    at ServerResponse.end (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express-session\index.js:350:21)
+    at ServerResponse.send (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express\lib\response.js:221:10)
+    at ServerResponse.json (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express\lib\response.js:252:15)
+    at file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/account-routes.js:505:30
+✔ a password replaced while a registration waits on its message leaves no session, and the cookie it got is refused (403.887ms)
+Account mail failed: unknown
+Account mail missed its deadline
+Account email-confirmation link could not be recorded
+✔ registration answers 201 with its message's outcome in every case and the player stays signed in (1573.3741ms)
+✔ a refused registration or one whose session is not stored hands no message on and records no link (750.0375ms)
+✔ only a valid session of an unblocked account asks for a message, and it goes only to that account's own address (289.5405ms)
+✔ above three messages an hour for an account or thirty in total a resend answers limited and hands nothing on, until the hour has passed (401.4977ms)
+✔ a link confirms its own account once, with or without a session, and every malformed, unknown or used token gets the one refusal and changes nothing (605.1752ms)
+✔ a later message's link stops earlier ones, also when its sending failed, and an expired or other-kind link confirms nothing (420.4513ms)
+Error: Session cannot be replaced
+    at AccountDatabase.saveSession (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/database.js:236:19)
+    at file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:120:27
+    at SqliteSessionStore.complete (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:143:13)
+    at SqliteSessionStore.set (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:117:14)
+    at Session.save (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express-session\session\session.js:72:25)
+    at ServerResponse.end (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express-session\index.js:350:21)
+    at ServerResponse.send (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express\lib\response.js:221:10)
+    at ServerResponse.json (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express\lib\response.js:252:15)
+    at file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/account-routes.js:505:30
+Error: Session cannot be replaced
+    at AccountDatabase.saveSession (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/database.js:236:19)
+    at file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:120:27
+    at SqliteSessionStore.complete (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:143:13)
+    at SqliteSessionStore.set (file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/session-store.js:117:14)
+    at Session.save (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express-session\session\session.js:72:25)
+    at ServerResponse.end (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express-session\index.js:350:21)
+    at ServerResponse.send (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express\lib\response.js:221:10)
+    at ServerResponse.json (C:\Storage\repos\loop2-wt\reset-hasla\node_modules\express\lib\response.js:252:15)
+    at file:///C:/Storage/repos/loop2-wt/reset-hasla/dist/server/account-routes.js:505:30
+✔ a block committed through another connection while the message is on its way stops its link for good, and a block just before recording sends nothing (635.2936ms)
+✔ no response and no line of the server's log holds a link's token (860.528ms)
+✔ a request for a reset link is answered before the mail service is asked, whatever it does (295.4697ms)
+✔ the answer to a request for a reset link ends before the account is looked up and before the link is recorded (315.5954ms)
+✔ a well-formed address gets the same answer whether its account is confirmed, unknown, unconfirmed, blocked, above a limit or fails to record, and the last five hand nothing on (364.701ms)
+✔ a failed lookup after the answer leaves the process alive and one fixed line in the log without the address (244.078ms)
+✔ an address not written as name@domain is refused with invalid-email and a body of other fields with invalid-request, and nothing is handed on (297.3816ms)
+✔ a request needs no session, names only the account whose confirmed address gets the link, and nothing else in the request changes where it goes (251.0609ms)
+✔ a recorded reset link lives one hour, a later request stops the earlier link, and each message is of the password-reset kind (228.6772ms)
+✔ a reset message counts against the limits shared with the confirmation message: three an hour for an account, thirty in all (384.4454ms)
+✔ no answer and no line of the server's log holds a reset link's token or the address asked for (460.6856ms)
+✔ a working link sets the exact password once, the new password signs in and the old one does not, and the reset signs nobody in (1390.4534ms)
+✔ the password rules come before the link and the link before any password work, and a good link survives every refusal (1301.4304ms)
+✔ every token that does not work gets the one refusal after no password work, and changes nothing (4942.3985ms)
+✔ a block, a later link or an expiry committed during the hashing change nothing and the old link gets the one refusal (1638.9189ms)
+✔ a reset ends every session of its account, even the one sent along, and leaves the sessions of another account (1042.4275ms)
+✔ a locked address logs in with the new password straight after a reset, the client address keeps its failures, and a refused set-password clears nothing (4387.0724ms)
+✔ the route clears the address's failed logins once, with the address the reset returned, after the commit and in the same turn, and a refusal clears none (510.4897ms)
+✔ a hash that fails answers 500 with no detail and spends nothing, and the failure clears no lock (1262.8498ms)
+✔ no answer and no line of the server's log holds a set-password request's token or password (690.3605ms)
+✔ each account's session reads and replaces only its own saved game state (335.1159ms)
+✔ no session, a forged or removed session and a session of a blocked account get JSON 401 on both save routes and change no saved game state (352.5313ms)
+✔ a block committed between the session check and the write stores nothing and answers 401 (253.2182ms)
+✔ the save routes answer null with no save, count revisions from 1, refuse an outdated version before a stale basis and return the game unchanged (296.3411ms)
+✔ each malformed save body is a 400 that stores nothing, and a body that is not an object never reaches the fields (381.0389ms)
+✔ the stored text of a game is measured in bytes after re-serializing, at most 65 536, and a larger one is a 413 that stores nothing (229.2168ms)
+ℹ tests 66
+ℹ suites 0
+ℹ pass 66
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 59548.7515
+=== exit 0 : http
+=== quality
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/quality/test_quality_invariants.py
+
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 51.864s
+
+OK
+=== exit 0 : quality
