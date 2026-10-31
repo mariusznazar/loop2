@@ -1805,13 +1805,13 @@ The account server normalizes email with ECMAScript trim and lowercase, stores t
 
 ### D-100 — What do duplicate registration and failed login tell the player?
 
-Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two, and so does a login whose account's password was replaced by a password reset while it was being checked, whatever the account's block, which is neither a failed nor a successful login for the attempt limits of D-102; a blocked account's correct password is refused as D-139 gives.
+Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”. A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two, and so does, whatever the account's block, a login with the password that was right when it was checked and that a password reset replaced meanwhile, which is neither a failed nor a successful login for the attempt limits of D-102; a blocked account's correct password is refused as D-139 gives.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: the same login response shape and message for unknown address and wrong password; a login during whose password work a reset commits answering that message, releasing its admission and storing no session
+  - complies: the same login response shape and message for unknown address and wrong password; a login with the password that was right when it was checked, during whose password work a reset commits, answering that message, releasing its admission and storing no session
   - violates: an unknown-address response exposing account existence through a distinct login message; a login answering by the account it read before its password work, or counting as a failure a password that was right when checked
 - **Origin:** none
 
