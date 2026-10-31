@@ -10,7 +10,7 @@ What a run gets:
 - stand-ins for `docker`, `age`, `rsync`, `flock`, `pusher` and `date`, written at run time with LF
   endings; each records its arguments in one ordered file and answers as the test sets
   (`BackupFixture.answer`). They prove the script's reaction to an answer, never a delivery
-  (D-221): nothing here reaches Mikrus Strych or the `pusher` service;
+  (D-229): nothing here reaches Mikrus Strych or the `pusher` service;
 - stand-ins for `ssh`, `scp`, `sftp` and `curl`, which the script itself never calls, so a call of
   one shows in `Result.tools()` and a real one is never reached;
 - a guard, before every run, that stops the test when any of these tools resolves outside the

@@ -701,7 +701,7 @@ The account and save server accesses its SQLite database through Node.js's built
 
 - **Method:** review
 - **Rests on:** node-sqlite-database
-- **Derives from:** D-215
+- **Derives from:** D-223
 - **Part:** account-server · build-tools · deployment
 - **Violated:** no
 
@@ -1041,7 +1041,7 @@ The account and save server's database has a completed, consistent backup stored
 
 - **Method:** review
 - **Rests on:** sqlite-online-backup
-- **Derives from:** D-214
+- **Derives from:** D-222
 - **Part:** account-server · deployment
 - **Violated:** yes
 
@@ -1051,7 +1051,7 @@ A deployed Node.js release has passed a check of the account and save server's d
 
 - **Method:** test
 - **Rests on:** node-sqlite-database · docker-build-cache-invalidation
-- **Derives from:** D-215
+- **Derives from:** D-223
 - **Part:** account-server · deployment
 - **Violated:** no
 
@@ -1061,7 +1061,7 @@ A backup of the account and save server's database does not leave the game serve
 
 - **Method:** test
 - **Rests on:** age-file-encryption
-- **Derives from:** D-218
+- **Derives from:** D-226
 - **Part:** deployment
 - **Violated:** no
 
@@ -1071,7 +1071,7 @@ Every failed step of the backup script — the command in the container, a conta
 
 - **Method:** test
 - **Rests on:** mikrus-pusher-mail
-- **Derives from:** D-219
+- **Derives from:** D-227
 - **Part:** deployment
 - **Violated:** no
 

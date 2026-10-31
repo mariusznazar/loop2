@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-// The release check of the image build (D-215, account-save-sqlite-upgrade),
+// The release check of the image build (D-223, account-save-sqlite-upgrade),
 // run as the Dockerfile's RUN step runs it: its own process, on the Node.js
 // that starts it, on real SQLite files in its temporary directory.
 

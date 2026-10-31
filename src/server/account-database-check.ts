@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { AccountDatabase } from "./database.js";
 
-// The image build checks the Node.js release it is built on (D-215,
+// The image build checks the Node.js release it is built on (D-223,
 // account-save-sqlite-upgrade): a RUN step of the Dockerfile's final stage
 // runs
 //
@@ -64,7 +64,7 @@ async function run(): Promise<void> {
     } finally {
       original.close();
     }
-    // D-222: the command relies on a backup taken in one step.
+    // D-230: the command relies on a backup taken in one step.
     expect(steps === 1, `the backup took ${steps} steps, not one`);
     const copy = new AccountDatabase(join(directory, "backup.sqlite"));
     try {

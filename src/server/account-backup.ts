@@ -12,7 +12,7 @@ import { AccountDatabase } from "./database.js";
 //
 // The output holds every address and password hash, so the command does
 // nothing without that one fixed word and prints nothing to standard output
-// then (D-217). It opens the existing database of LOOP2_DATABASE_PATH beside
+// then (D-225). It opens the existing database of LOOP2_DATABASE_PATH beside
 // the running server, as account-block.ts does (D-112), backs it up into a
 // private temporary directory, closes it, streams the finished file out and
 // removes the directory, also after a failure and after a reader that goes

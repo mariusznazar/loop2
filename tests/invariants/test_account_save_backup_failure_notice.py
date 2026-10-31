@@ -10,7 +10,7 @@ Reading of the sentence:
 - every failed step: the steps the sentence names, and each other way the script can end non-zero,
   made to happen in turn: the key absent, the log unwritable, the lock's file unopenable, the lock
   not free, no temporary directory, the encrypted file empty or missing, the lock not released, the
-  date failing or giving no weekday. D-219 asks for the same notice at any failed end;
+  date failing or giving no weekday. D-227 asks for the same notice at any failed end;
 - a signal, from any cause: during the stream HUP, INT, USR1, USR2, ALRM and TERM, each of which
   the script traps, and which its log and its exit code name by their own number; VTALRM, which it
   does not trap, during the stream and during the send, so its bash ends it through the handler
@@ -18,7 +18,7 @@ Reading of the sentence:
   standard output leaves at once or after the first line, and the next line the script prints
   raises it, with its own number too;
 - ends in a call of `pusher`: exactly one call, also where `pusher` itself fails, with one fixed
-  subject and text that hold no tool's output and no step's name (D-219), and the log never says a
+  subject and text that hold no tool's output and no step's name (D-227), and the log never says a
   backup was sent that was not: its last line, where it has one, says the run failed, with a
   non-zero exit.
 
@@ -26,9 +26,9 @@ A positive control runs a whole night and asserts no call of `pusher`, so a call
 failure, not the run. A second one has the reader leave after the line with the size, so the send
 goes on and the file really goes: that run ends in success, with no notice, and says so.
 
-Does NOT cover: delivery, which a stand-in cannot prove (D-221): the published `pusher` exits 0 on an
+Does NOT cover: delivery, which a stand-in cannot prove (D-229): the published `pusher` exits 0 on an
 HTTP error, so its exit status says little; a schedule that did not start and a host that is down,
-which D-219 leaves without a message; a script killed by SIGKILL, which no handler can see; SIGQUIT,
+which D-227 leaves without a message; a script killed by SIGKILL, which no handler can see; SIGQUIT,
 which bash itself ignores in a script, so it ends no run; the other signals no trap names, which
 take the path VTALRM shows.
 

@@ -16,7 +16,7 @@ import { backup as sqliteBackup, DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 import { AccountDatabase } from "../dist/server/database.js";
 
-// The backup command (D-217) and the method behind it (D-112, D-215, D-222),
+// The backup command (D-225) and the method behind it (D-112, D-223, D-230),
 // run as
 // `docker exec loop2 node dist/server/account-backup.js --to-standard-output`
 // runs them: their own process, the database path its only setting, on real

@@ -228,7 +228,7 @@ send_file() {
   # Into the home directory on Strych, whole, by rsync's default temporary file. The host-key
   # options stand on the command line, so they win over any SSH configuration for those options;
   # the check also rests on root's configuration and the system-wide one setting neither
-  # KnownHostsCommand nor VerifyHostKeyDNS (D-224).
+  # KnownHostsCommand nor VerifyHostKeyDNS (D-232).
   local status
   timeout --kill-after="$KILL_WAIT_SECONDS" "$SEND_WAIT_SECONDS" \
     rsync --whole-file --times --timeout="$SEND_INPUT_WAIT_SECONDS" \

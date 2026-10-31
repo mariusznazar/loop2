@@ -1,4 +1,4 @@
-"""The launcher of the restore trial, `scripts/restore-trial.mjs` (D-220).
+"""The launcher of the restore trial, `scripts/restore-trial.mjs` (D-228).
 
 The owner runs the launcher once on his computer, on a decrypted backup of the database and an
 image built from the same commit. It starts one container from the image on fresh volumes holding

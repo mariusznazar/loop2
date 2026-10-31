@@ -1,10 +1,10 @@
-"""The nightly backup script `deploy/loop2-backup` and its schedule (D-216, D-217, D-218, D-219).
+"""The nightly backup script `deploy/loop2-backup` and its schedule (D-224, D-225, D-226, D-227).
 
 The script runs as a black box through the seam of `backup_script_support.py`. Its refusals to
 send and its notice have their own tests, those of the invariants account-save-backup-encrypted and
 account-save-backup-failure-notice; here stand the order of its steps, what it hands each tool,
 what its log holds and leaves out, and the schedule read as cron reads it. The stand-ins prove the
-script's reactions, not that Strych or `pusher` accept them (D-221).
+script's reactions, not that Strych or `pusher` accept them (D-229).
 """
 
 import os
@@ -17,7 +17,7 @@ SENTINEL_LOGIN = "sentinel-login-3f9a"
 # The notice as the owner settled it, on 2026-10-31 through the cycle's orchestrator.
 NOTICE_BYTES = b"Kopia bazy loop2 nie uda\xc5\x82a si\xc4\x99.\n"
 # Options of rsync that delete on the receiving side, or leave a broken file in place of the older
-# backup (rsync manual, options summary, the commit D-216 cites).
+# backup (rsync manual, options summary, the commit D-224 cites).
 DELETING = re.compile(r"^--(del|delete.*|remove-source-files|max-delete.*|force|prune-empty-dirs)$")
 IN_PLACE = {"--inplace", "--partial", "--append", "--append-verify"}
 LISTING = {"--list-only"}
