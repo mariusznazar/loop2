@@ -385,6 +385,18 @@ Docker's builder checks the base image and then each instruction against the cac
 
 - **Source:** https://raw.githubusercontent.com/docker/docs/62f6d26c183faf98fc8567f0b675f660f4e91ae6/content/manuals/build/cache/invalidation.md § General rules — "The builder begins by checking if the base image is already cached. Each subsequent instruction is compared against the cached layers. If no cached layer matches the instruction exactly, the cache is invalidated." · "For the ADD and COPY instructions, and for RUN instructions with bind mounts (RUN --mount=type=bind), the builder calculates a cache checksum from file metadata to determine whether cache is valid." · "In that case just the command string itself is used to find a match." · "Once the cache is invalidated, all subsequent Dockerfile commands generate new images and the cache isn't used."; read 2026-10-31
 
+## openssh-strict-host-key-checking
+
+In OpenSSH portable 8.9p1, `ssh` with `StrictHostKeyChecking` set to `yes` never adds host keys to the known-hosts file, refuses hosts whose host key has changed and leaves every new host to be added by hand, with `accept-new` adds new host keys by itself, with `no` also lets connections to changed host keys proceed, and with `BatchMode` set to `yes` asks for no host key confirmation.
+
+- **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § StrictHostKeyChecking — "If this flag is set to yes, ssh(1) will never automatically add host keys to the ~/.ssh/known_hosts file, and refuses to connect to hosts whose host key has changed." · "This option forces the user to manually add all new hosts." · "If this flag is set to accept-new then ssh will automatically add new host keys to the user's known_hosts file, but will not permit connections to hosts with changed host keys." · "If this flag is set to no or off, ssh will automatically add new host keys to the user known hosts files and allow connections to hosts with changed hostkeys to proceed, subject to some restrictions." · § BatchMode — "If set to yes, user interaction such as password prompts and host key confirmation requests will be disabled."; read 2026-10-31
+
+## openssh-option-order
+
+In OpenSSH portable 8.9p1, `ssh` uses the first value it obtains for each parameter and obtains command-line options before the user's configuration file and the system-wide configuration file.
+
+- **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § DESCRIPTION — "ssh(1) obtains configuration data from the following sources in the following order:" · "command-line options" · "For each parameter, the first obtained value will be used."; read 2026-10-31
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
