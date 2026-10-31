@@ -4217,11 +4217,11 @@ stand on another Node.js 24 release than the server's, and the launcher reports 
 on. If a new release fails, deployments stop until a human pins the last good release, which takes
 one change of this decision.
 *Rejected:* a pin of the Node.js image alone, by version and digest — a pin checks nothing: someone
-has to run a check by hand at each move of it, and fixes of the base image stop until someone moves
-it; a check in the deploy script before the containers are replaced — one more container on a host
-without swap, a new allowed `docker run` that the reading of loop2-host-sharing forbids, and a
-reinstall of the script at every change of it; both a pin and a check — reproducible builds, which
-D-215 does not need, at the price of a pin to maintain.
+has to run a release check by hand at each move of it, and fixes of the base image stop until someone
+moves it; a release check in the deploy script before the containers are replaced — one more
+container on a host without swap, a new allowed `docker run` that the reading of loop2-host-sharing
+forbids, and a reinstall of the script at every change of it; both a pin and a release check —
+reproducible builds, which D-215 does not need, at the price of a pin to maintain.
 
 ### D-224 — How does the backup script reach Mikrus Strych?
 
@@ -4242,12 +4242,12 @@ holds no secret, and after a changed host key the send fails until a human repea
 *Rationale:* a script started by a schedule has nobody to answer the question about an unknown host,
 and the name it connects to belongs to a shared server, so what it trusts is a line a human compared,
 not whatever answers first. Options on the command line come before every SSH configuration, so
-nothing in root's configuration loosens the check, while the login and the key to Strych stay there
-by D-13. A legitimate change of the key at Mikrus stops the backups, with a message each night, until
-a human repeats the comparison. `rsync` over `ssh` into the home directory is the way a trial from
-the game server has shown to work.
+nothing in root's configuration loosens the host-key check, while the login stays there by D-13. A
+legitimate change of the host key at Mikrus stops the backups, with a message each night, until a
+human repeats the comparison. `rsync` over `ssh` into the home directory is the way a trial from the
+game server has shown to work.
 *Rejected:* `rsnappush`, the tool of Strych's documentation — not installed on the server, deletes
 nothing, and its saving does not apply to a file that changes daily; `accept-new` — trusts whatever
-answers first on a shared server's name; a disabled check — sends past any impostor; root's default
-known-hosts file — what stands there is what the first connection happened to answer, while the
-script's own file holds only the line compared with the fingerprint.
+answers first on a shared server's name; a disabled host-key check — sends past any impostor; root's
+default known-hosts file — what stands there is what the first connection happened to answer, while
+the script's own file holds only the line compared with the fingerprint.
