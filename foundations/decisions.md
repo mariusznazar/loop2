@@ -4187,4 +4187,6 @@ the Online Backup API D-214 rests on, and it rewrites the database rather than b
 it is the fallback if a one-step backup ever fails; the default `rate` of 100 pages — a backup of
 many steps, each open to a restart: beside a writer it finished in 1.5 s on a Docker volume and had
 not finished after 20 s on a bind mount of a Windows disk; `rate: -1` — the documentation says a
-positive number, Node.js 24.17.0 accepted it and 24.22.1 refuses it with `ERR_OUT_OF_RANGE`.
+positive number, Node.js 24.17.0 accepted it and 24.22.1 refuses it with `ERR_OUT_OF_RANGE`; copying
+the database's three files — not consistent; a `sqlite3` tool — not in the image and not
+`node:sqlite`.
