@@ -1,7 +1,10 @@
 import express from "express";
 import type { Request, Response, Router } from "express";
-import { composeConfirmationMessage } from "./account-mail.js";
-import type { SendOutcome } from "./account-mail.js";
+import {
+  composeConfirmationMessage,
+  composePasswordResetMessage,
+} from "./account-mail.js";
+import type { AccountMessage, SendOutcome } from "./account-mail.js";
 import {
   AccountPolicy,
   accountMessageLimits,
@@ -11,9 +14,11 @@ import {
   createLinkToken,
   isLinkToken,
   linkTokenDigest,
+  normalizeEmail,
+  passwordResetLinkLifetime,
 } from "./account-policy.js";
 import type { AccountRuntime } from "./configuration.js";
-import type { Account, IssueOutcome } from "./database.js";
+import type { Account, IssueOutcome, LinkPurpose } from "./database.js";
 import {
   hashPassword,
   PasswordCapacityError,
@@ -38,15 +43,16 @@ const paths = {
   logout: "/api/logout",
   emailConfirmation: "/api/email-confirmation",
   confirmationMessage: "/api/email-confirmation-message",
+  passwordResetMessage: "/api/password-reset-message",
   savedGame: "/api/saved-game",
 };
 
-// The body limit of the five small routes and of the save route, and the most
+// The body limit of the six small routes and of the save route, and the most
 // the server stores of one player's game, all in bytes (D-104).
 const accountBodyLimit = 16 * 1024;
 const savedGameLimit = 64 * 1024;
 
-// The outcome of one confirmation message, as both sending routes report it.
+// The outcome of one confirmation message, as both confirmation routes report it.
 type ConfirmationMessage = "sent" | "limited" | "failed";
 
 function refuse(
@@ -248,45 +254,91 @@ function boundedSending(
   });
 }
 
-// The send step of both sending routes. It records the link before the
-// message is handed on, so the message counts against D-105 whatever its
-// sending does (D-161), and recording stops the account's earlier links
-// (D-155). It never throws: "blocked" is a block committed after the route
-// read the account, which the route answers itself.
-async function sendConfirmation(
+// What differs between the messages one link can come in: the purpose of the
+// link, its lifetime, the fragment of its address and the function that
+// composes the message (D-156, D-216, D-155, D-158, D-219).
+interface LinkKind {
+  readonly purpose: LinkPurpose;
+  readonly lifetimeMs: number;
+  readonly fragment: string;
+  readonly compose: (address: string, link: string) => AccountMessage;
+}
+
+const linkKinds = {
+  confirmation: {
+    purpose: "email-confirmation",
+    lifetimeMs: confirmationLinkLifetime,
+    fragment: "confirm-email",
+    compose: composeConfirmationMessage,
+  },
+  reset: {
+    purpose: "password-reset",
+    lifetimeMs: passwordResetLinkLifetime,
+    fragment: "reset-password",
+    compose: composePasswordResetMessage,
+  },
+} as const satisfies Record<string, LinkKind>;
+
+// The send step of every route that sends a message. It records the link
+// before the message is handed on, so the message counts against D-105
+// whatever its sending does (D-161), and recording stops the account's earlier
+// links of the kind (D-155). It never throws: "blocked" is a block committed
+// after the caller read the account, which a route that answers on it answers
+// itself.
+async function sendLinkMessage(
   runtime: AccountRuntime,
   policy: AccountPolicy,
   account: Account,
+  kind: keyof typeof linkKinds,
 ): Promise<ConfirmationMessage | "blocked"> {
+  const { purpose, lifetimeMs, fragment, compose }: LinkKind = linkKinds[kind];
   const token = createLinkToken();
   let issued: IssueOutcome;
   try {
     issued = runtime.database.issueLink(
       {
         accountId: account.id,
-        purpose: "email-confirmation",
+        purpose,
         tokenDigest: linkTokenDigest(token),
-        lifetimeMs: confirmationLinkLifetime,
+        lifetimeMs,
       },
       accountMessageLimits,
     );
   } catch {
-    // A message whose link has no row could never confirm, so none is sent.
-    console.error("Account confirmation link could not be recorded");
+    // A message whose link has no row could never work, so none is sent.
+    console.error(`Account ${purpose} link could not be recorded`);
     return "failed";
   }
   if (issued !== "issued") return issued;
-  const link = `${runtime.configuration.publicOrigin}/#confirm-email=${token}`;
+  const link = `${runtime.configuration.publicOrigin}/#${fragment}=${token}`;
   let sending: Promise<SendOutcome>;
   try {
-    sending = runtime.mailer.send(
-      composeConfirmationMessage(account.email, link),
-    );
+    sending = runtime.mailer.send(compose(account.email, link));
   } catch {
     console.error("Account mail failed: unknown");
     return "failed";
   }
   return boundedSending(sending, policy.sendingDeadline);
+}
+
+// Runs after the request for a link was answered (spec decision 2), with no
+// request to fall back on: a throw here would end the process, so it never
+// rejects. A message goes only to a confirmed address; whether it goes at all
+// is shown to nobody, so the outcome is ignored. A blocked account reaches
+// the recording, which answers "blocked" and records nothing, and a limit
+// leaves no trace beyond the count (D-214).
+async function sendResetMessage(
+  runtime: AccountRuntime,
+  policy: AccountPolicy,
+  email: string,
+): Promise<void> {
+  try {
+    const account = runtime.database.findAccountByEmail(email);
+    if (!account?.emailConfirmed) return;
+    await sendLinkMessage(runtime, policy, account, "reset");
+  } catch {
+    console.error("Password-reset request could not be served");
+  }
 }
 
 export function accountRoutes(
@@ -316,6 +368,7 @@ export function accountRoutes(
       paths.logout,
       paths.emailConfirmation,
       paths.confirmationMessage,
+      paths.passwordResetMessage,
     ],
     ...mutationGuards(runtime.configuration.publicOrigin, accountBodyLimit),
   );
@@ -450,7 +503,12 @@ export function accountRoutes(
       );
       return;
     }
-    const outcome = await sendConfirmation(runtime, policy, account);
+    const outcome = await sendLinkMessage(
+      runtime,
+      policy,
+      account,
+      "confirmation",
+    );
     // A block committed after the session was read: answered as every request
     // of a blocked account's deleted session is (D-137).
     if (outcome === "blocked") {
@@ -458,6 +516,32 @@ export function accountRoutes(
       return;
     }
     response.json({ confirmationMessage: outcome });
+  });
+
+  // No session is needed, and the address names only the account whose own
+  // confirmed address a link may go to (D-109). The handler reads the request's
+  // own text and answers, so the answer holds nothing of any account; the work
+  // on an account starts in a later turn of the event loop (D-214).
+  router.post(paths.passwordResetMessage, (request, response) => {
+    const input = stringFields(request.body, ["email"] as const);
+    if (!input) {
+      invalidRequest(response);
+      return;
+    }
+    const email = normalizeEmail(input.email);
+    if (!email) {
+      refuse(
+        response,
+        400,
+        "invalid-email",
+        registrationProblems["invalid-email"],
+      );
+      return;
+    }
+    response.status(204).end();
+    setImmediate(() => {
+      void sendResetMessage(runtime, policy, email);
+    });
   });
 
   router.post(paths.logout, (request, response) => {
@@ -545,7 +629,12 @@ export function accountRoutes(
     // The account exists and the player is signed in whatever the sending
     // does, so every outcome is a 201; a block committed meanwhile sent
     // nothing.
-    const outcome = await sendConfirmation(runtime, policy, account);
+    const outcome = await sendLinkMessage(
+      runtime,
+      policy,
+      account,
+      "confirmation",
+    );
     response.status(201).json({
       ...accountBody(account),
       confirmationMessage: outcome === "blocked" ? "failed" : outcome,
