@@ -93,7 +93,7 @@ function entryOf<Value extends Account>(
 }
 
 /** The answer to a request for a password-reset link, the same for every well-formed address. */
-const RESET_REQUESTED_SENTENCE =
+export const RESET_REQUESTED_SENTENCE =
   "Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik. Gdy wiadomość nie przyjdzie, spróbuj ponownie później.";
 
 export type AccountScreen = {
