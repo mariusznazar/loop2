@@ -17,10 +17,20 @@ const check = fileURLToPath(
 // test instead of hanging the gate (D-84).
 const limitMs = 60_000;
 
-function runCheck(temporary) {
+const standin = new URL("./account-database-check-standin.mjs", import.meta.url)
+  .href;
+
+// `mode` runs the built check under the stand-in for `backup` of
+// `node:sqlite`, which spoils the backup as the mode says.
+function runCheck(temporary, mode) {
   const env = { ...process.env, TMPDIR: temporary, TMP: temporary };
   env.TEMP = temporary;
-  const child = spawn(process.execPath, [check], {
+  const args = [check];
+  if (mode !== undefined) {
+    env.LOOP2_CHECK_STANDIN = mode;
+    args.unshift("--import", standin);
+  }
+  const child = spawn(process.execPath, args, {
     env,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -74,3 +84,37 @@ test("the check fails when its temporary directory cannot be written", async (t)
     "a failed check does not claim a release passed",
   );
 });
+
+// The stand-in must have been reached, or a variant that "fails" proves
+// nothing: the control passes the real backup through and still succeeds.
+test("the check passes under the pass-through stand-in, which it reached", async (t) => {
+  // invariant: account-save-sqlite-upgrade
+  const directory = await sandbox(t);
+  const result = await runCheck(directory, "pass-through");
+  assert.equal(result.code, 0, result.stderr);
+  assert.ok(result.stderr.includes("standin-reached"), "stand-in reached");
+  assert.ok(result.stdout.includes(process.version));
+  assert.deepEqual(await readdir(directory), []);
+});
+
+const differences = {
+  "an empty backup": "empty",
+  "another password hash in the backup": "other-hash",
+  "another saved game state in the backup": "other-game",
+  "a backup taken in two steps": "two-steps",
+  "a release that refuses the backup's rate": "refused-rate",
+};
+for (const [name, mode] of Object.entries(differences)) {
+  test(`the check fails on ${name}`, async (t) => {
+    // invariant: account-save-sqlite-upgrade
+    const directory = await sandbox(t);
+    const result = await runCheck(directory, mode);
+    assert.ok(result.stderr.includes("standin-reached"), "stand-in reached");
+    assert.notEqual(result.code, 0, result.stdout);
+    assert.ok(
+      !result.stdout.includes("checked"),
+      `no success line: ${result.stdout}`,
+    );
+    assert.deepEqual(await readdir(directory), []);
+  });
+}

@@ -13,8 +13,8 @@ Covers: in the last stage of `Dockerfile`, a `RUN` whose command is exactly
 by `;`, `||`, `|` or `&` that would let the step succeed after a failed check, and standing after
 the `COPY --from` that takes `dist/` and after the last `USER` instruction.
 
-Does NOT cover: that the check fails when a release breaks one of the operations (the check's own
-test runs it on this computer's release only); that the deployment really replaces its containers
+Does NOT cover: that a real release breaks one of the operations (the check's own test spoils the
+backup of the release it runs on with a stand-in, and so shows only the check's reaction); that the deployment really replaces its containers
 only after the build (account-server-typecheck reads that route); a base image that is
 unpinned by decision, so the release the server builds on is the one its host pulls.
 """
