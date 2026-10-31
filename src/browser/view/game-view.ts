@@ -21,7 +21,7 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../sim/programs.js";
-import { stopLoop } from "../sim/loop.js";
+import { closeAwayReport, stopLoop } from "../sim/loop.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
 import { buyBranch } from "../sim/skills.js";
@@ -223,6 +223,10 @@ export function createGameView(options: GameViewOptions): GameView {
     stop(characterId) {
       clock.flush();
       act(stopLoop(state, characterId));
+    },
+    closeReport() {
+      clock.flush();
+      act(closeAwayReport(state));
     },
   });
   const statusRow = createStatusRow({

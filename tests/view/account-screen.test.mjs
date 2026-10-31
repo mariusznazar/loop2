@@ -1884,7 +1884,7 @@ test("a change of the chest redraws the chest alone: the rows, their lists and t
     const chestText = () =>
       byClass(root, "chest-list")[0].children.map((item) => item.textContent);
     const heading = () =>
-      byClass(root, "headquarters-section")[1].children[0].textContent;
+      byClass(root, "chest-list")[0].parent.children[0].textContent;
     assert.deepEqual(chestText(), ["patyk: 7"]);
     assert.ok(heading().startsWith("Skrzynka 7/"));
 
@@ -2400,4 +2400,193 @@ test("a save that finds no session while the logout's request is under way waits
       }
     });
   }
+});
+
+// --- the report on earning loops in the headquarters ------------------------------------------
+// Task petla-zarobkowa, To do 16 and rows 10, 11, 22-24 and 26 of Settlements to record; spec
+// section 11; D-229, D-42.
+
+/** The section of the report in the headquarters under `root`, or undefined. */
+const reportSection = (root) => {
+  const section = byClass(root, "away-report")[0];
+  assert.ok(section, "the section of the report is built");
+  return section;
+};
+
+/** Ala and Ola with a report: Ala's loop went on for 5 minutes, Ola's stopped in the catch-up. */
+function reported(rest = {}) {
+  const made = createCharacter(withCharacter(), "Ola").state;
+  // Ola's loop stopped in a death that gave her generation 2, as the report's stop says.
+  const base = {
+    ...made,
+    team: {
+      ...made.team,
+      characters: made.team.characters.map((character) =>
+        character.id === 2 ? { ...character, generation: 2 } : character,
+      ),
+    },
+  };
+  return {
+    ...base,
+    awayReport: [
+      {
+        characterId: 1,
+        minutes: 5,
+        chest: { stick: 3 },
+        practice: {},
+        resurrectionUsed: false,
+        stop: null,
+      },
+      {
+        characterId: 2,
+        minutes: 2,
+        chest: {},
+        practice: {},
+        resurrectionUsed: false,
+        stop: { generation: 2, away: true },
+      },
+    ],
+    ...rest,
+  };
+}
+
+// Catches a section missing, placed under „Drużyna”, or with the lines in the order of the data.
+test("a game built from a state with a report shows the section above „Drużyna”, the stopped line first", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(reported());
+    const section = reportSection(root);
+    assert.ok(shown(section));
+    assert.equal(
+      section.children[0].textContent,
+      "Gdy cię nie było",
+      "the title",
+    );
+    assert.deepEqual(
+      byClass(section, "away-report-line").map((line) => line.textContent),
+      [
+        "Ola: pętla stanęła po 2 min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 2.",
+        "Ala: 5 min · skrzynka: patyk +3",
+      ],
+    );
+    assert.ok(
+      byClass(section, "away-report-line")[0].classList.contains("danger"),
+    );
+    assert.ok(
+      !byClass(section, "away-report-line")[1].classList.contains("danger"),
+    );
+    const [headquarters] = byClass(root, "headquarters");
+    const sections = headquarters.children.filter((child) =>
+      child.classList.contains("headquarters-section"),
+    );
+    assert.equal(sections[0], section, "above the team's section");
+    assert.equal(sections[1].children[0].textContent, "Drużyna");
+    view.dispose();
+  });
+});
+
+// Catches the title of a section that holds only stops in the open game (Q19) and a full chest
+// that is not said, or said for a chest that is not full.
+test("only stops in the open game give „Pętle, które stanęły”, and a full chest adds its sentence", async () => {
+  await onPage(async ({ root }) => {
+    const base = reported();
+    const { view } = await viewOf({
+      ...base,
+      awayReport: [
+        {
+          characterId: 2,
+          minutes: 0,
+          chest: {},
+          practice: {},
+          resurrectionUsed: false,
+          stop: { generation: 3, away: false },
+        },
+      ],
+      team: { ...base.team, chest: { pieces: { stick: 60 } } },
+    });
+    const section = reportSection(root);
+    assert.equal(section.children[0].textContent, "Pętle, które stanęły");
+    assert.equal(
+      byClass(section, "away-report-line")[0].textContent,
+      "Ola: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 3.",
+    );
+    const [full] = byClass(section, "away-report-full");
+    assert.ok(shown(full));
+    assert.equal(full.textContent, "Skrzynka jest pełna.");
+    view.dispose();
+  });
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(reported());
+    assert.ok(!shown(byClass(reportSection(root), "away-report-full")[0]));
+    view.dispose();
+  });
+});
+
+test("a state with an empty report shows no section", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(withCharacter());
+    assert.ok(!shown(reportSection(root)));
+    view.dispose();
+  });
+});
+
+// Catches a „Zamknij” that closes one line, one that is not saved, and one that leaves focus on the
+// page body once the button is gone (D-42; spec, Left to the maker).
+test("„Zamknij” closes the whole section at once, saves, and focus stays on the screen", async () => {
+  await onPage(async ({ root }) => {
+    const { view, held } = await viewOf(reported());
+    const close = buttonNamed(reportSection(root), "Zamknij");
+    close.focus();
+    assert.equal(fakeDocument.activeElement, close);
+    close.fire("click");
+    assert.ok(!shown(reportSection(root)));
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    assert.deepEqual(argsOf(held, "saveGame")[0].game.awayReport, []);
+    const focused = fakeDocument.activeElement;
+    assert.notEqual(
+      focused,
+      fakeDocument.body,
+      "focus did not fall to the body",
+    );
+    assert.ok(shown(focused), "focus is on something on the screen");
+    assert.ok(byClass(root, "headquarters")[0].contains(focused));
+    view.dispose();
+  });
+});
+
+// Catches a report that is not in the game state: it must come back from a reload, and what the
+// reload of a closed report returns must not show it again.
+test("the report survives a reload, and a closed report stays closed after one", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(reported(), 3));
+    assert.ok(shown(reportSection(root)));
+    buttonNamed(reportSection(root), "Zamknij").fire("click");
+    const [sent] = argsOf(held, "saveGame");
+    assert.deepEqual(sent.game.awayReport, []);
+    const stored = { ok: true, value: { ...sent, revision: 4 } };
+    await held.answer("saveGame", { kind: "saved", revision: 4 });
+
+    // A second page loads what the first one saved.
+    fakeDocument.body.replaceChildren();
+    const again = heldClient();
+    await startPage(again);
+    await again.answer("currentAccount", ACCOUNT);
+    await again.answer("loadSavedGame", stored);
+    assert.ok(gameShown(root));
+    assert.ok(!shown(reportSection(root)));
+  });
+});
+
+// Catches the report drawn on the screen of a manual map run (D-229, row 26): it hides with the
+// headquarters and shows when „Zakończ” brings the headquarters back.
+test("a manual map run hides the report with the headquarters, and „Zakończ” shows it", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf({ ...reported(), run: passing().run });
+    assert.ok(!shown(reportSection(root)));
+    buttonNamed(root, "Zakończ").fire("click");
+    assert.ok(shown(reportSection(root)));
+    view.dispose();
+  });
 });

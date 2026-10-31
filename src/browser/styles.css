@@ -439,6 +439,27 @@ header .save-line {
   color: var(--text-label);
 }
 
+/* The report on earning loops (D-229): the lines in `text`, a loop that stopped in `danger`, a full chest in `warning` (D-39). */
+.away-report-list {
+  list-style: none;
+  margin: 0 0 var(--space-s);
+  padding: 0;
+  color: var(--text);
+}
+
+.away-report-line {
+  margin-bottom: var(--space-xs);
+}
+
+.away-report-line.danger {
+  color: var(--danger);
+}
+
+.away-report-full {
+  margin: 0 0 var(--space-s);
+  color: var(--warning);
+}
+
 /* An empty team or chest: a note in `text-secondary` (D-40). */
 .headquarters-empty {
   margin: 0 0 var(--space-s);

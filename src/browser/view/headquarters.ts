@@ -21,6 +21,7 @@ import type {
   ItemId,
   Team,
 } from "../sim/types.js";
+import { createAwayReport } from "./away-report.js";
 import { createButton } from "./controls/button.js";
 import { createSelectList, type SelectOption } from "./controls/select-list.js";
 import { createTextField } from "./controls/text-field.js";
@@ -148,6 +149,8 @@ export type HeadquartersControls = {
   startLoop(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
   /** Stops a character's earning loop at once. */
   stop(characterId: CharacterId): void;
+  /** Closes the whole report on earning loops (D-229). */
+  closeReport(): void;
 };
 
 export type Headquarters = {
@@ -180,7 +183,8 @@ function emptyNote(text: string): HTMLElement {
 }
 
 /**
- * Builds the headquarters: the section „Drużyna” with the team's characters in the order they were
+ * Builds the headquarters: the section of the report on earning loops above it while the report
+ * holds a line (D-229); the section „Drużyna” with the team's characters in the order they were
  * created, each with its name, its generation „pokolenie {n}” from 2 up, the name of its
  * archetype, the line of its resurrection on a row of its own, one list „Program:” and the button
  * „Wyślij” for each map, and the creation of a character; and the section „Skrzynka” with the team's chest. Every name of the
@@ -195,6 +199,15 @@ export function createHeadquarters(
   element.className = "headquarters";
   const title = document.createElement("h2");
   title.textContent = "Siedziba";
+
+  // Where focus goes when „Zamknij” of the report leaves the screen: the heading of the section
+  // that takes its place, so the next key press reaches the team's first control.
+  const teamHeading = sectionHeading("Drużyna");
+  teamHeading.setAttribute("tabindex", "-1");
+  const report = createAwayReport(() => {
+    controls.closeReport();
+    if (!report.shown()) teamHeading.focus();
+  });
 
   const team = document.createElement("section");
   team.className = "headquarters-section";
@@ -213,7 +226,7 @@ export function createHeadquarters(
   });
   const createButtonElement = createButton("Załóż");
   creation.append(creationLabel, nameField.element, createButtonElement);
-  team.append(sectionHeading("Drużyna"), noCharacter, list, creation);
+  team.append(teamHeading, noCharacter, list, creation);
 
   const chest = document.createElement("section");
   chest.className = "headquarters-section";
@@ -223,7 +236,7 @@ export function createHeadquarters(
   const chestHeading = sectionHeading("");
   chest.append(chestHeading, emptyChest, chestList);
 
-  element.append(title, team, chest);
+  element.append(title, report.element, team, chest);
 
   const submit = (): void => {
     const name = characterName(nameField.input.value);
@@ -470,6 +483,7 @@ export function createHeadquarters(
     element,
     tick: drawResurrectionLines,
     update(state: GameState, nowMs: number): void {
+      report.update(state);
       drawChest(state.team.chest);
       const programsKey = JSON.stringify(
         state.programs.map((saved) => [saved.id, saved.name]),
