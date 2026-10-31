@@ -29,6 +29,7 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../../dist/public/sim/programs.js";
+import { loadSavedGame } from "../../dist/public/sim/saved-game.js";
 import { buyBranch } from "../../dist/public/sim/skills.js";
 import { registrationProblems } from "../../dist/public/view/account-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
@@ -203,7 +204,13 @@ const fakeDocument = {
  */
 const GAME_INTERVALS = 2;
 
-/** Runs `body` with the document model as the page's document and Node's mocked intervals. */
+/** The real date the page's clock reads, unless a case moves it on; every document it saves holds it. */
+const CLOCK_MS = 1_760_000_000_000;
+
+/**
+ * Runs `body` with the document model as the page's document, Node's mocked intervals and the real
+ * date at `CLOCK_MS`.
+ */
 async function onPage(body) {
   const saved = {
     document: globalThis.document,
@@ -225,6 +232,7 @@ async function onPage(body) {
   };
   // The saver's retries wait on setTimeout; mocked, they run only when a case moves time on.
   mock.timers.enable({ apis: ["setInterval", "setTimeout"] });
+  const date = mock.method(Date, "now", () => CLOCK_MS);
   const mockedSet = globalThis.setInterval;
   const mockedClear = globalThis.clearInterval;
   const live = new Set();
@@ -243,6 +251,7 @@ async function onPage(body) {
     globalThis.setInterval = mockedSet;
     globalThis.clearInterval = mockedClear;
     mock.timers.reset();
+    date.mock.restore();
     Object.assign(globalThis, saved);
   }
 }
@@ -1056,24 +1065,28 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-206); 2 since To do 21 of rozliczenie-przejsc. */
-const VERSION = 2;
+/** The version of the shape of the saved game state this game writes and loads (D-206); 3 since To do 10 of petla-zarobkowa. */
+const VERSION = 3;
+/** The version before the raise, which To do 10 and D-206 make another version. */
+const OLDER_VERSION = 2;
+/** The moment the saves the server hands back were saved at; the load refuses a document without one. */
+const SAVED_MS = CLOCK_MS - 60_000;
 const withCharacter = () => createCharacter(newGame(), "Ala").state;
 /** A game whose map run passes: Ala sent to the forest at the real date 0, unpaused. */
 const passing = () =>
   send(withCharacter(), { mapId: "forest", characterId: 1 }, 0).state;
 /** A game state as plain JSON, as it travels in a save. */
 const plain = (state) => JSON.parse(JSON.stringify(state));
-/** The server's answer holding a save of `game` at `revision`. */
+/** The server's answer holding a save of `game` at `revision`, stamped at its save (To do 10, row 13). */
 const saveOf = (game, revision, version = VERSION) => ({
   ok: true,
-  value: { version, revision, game: plain(game) },
+  value: { version, revision, game: plain({ ...game, saveTimeMs: SAVED_MS }) },
 });
-/** What the page sends to save `game` on the basis of `basedOn`. */
+/** What the page sends to save `game` on the basis of `basedOn`, stamped by the clock (To do 10, row 13). */
 const submission = (game, basedOn) => ({
   version: VERSION,
   basedOn,
-  game: plain(game),
+  game: plain({ ...game, saveTimeMs: CLOCK_MS }),
 });
 
 /** The names of the client's calls still waiting, oldest first. */
@@ -1489,6 +1502,44 @@ const ACTS = [
   },
 ];
 
+// Spec section 9; D-211, D-231. Catches `keep()` writing a document with no save time, which the
+// sign-in would refuse and start anew, a moment older than the reading it makes, and a stamp written
+// into the view's state, which the saver's comparison would take for a change.
+test("the document kept for the same account holds the moment of its reading and loads, and the view's state stays what it was", async () => {
+  await onPage(async () => {
+    let current = CLOCK_MS;
+    const date = mock.method(Date, "now", () => current);
+    try {
+      const { createGameView } =
+        await import("../../dist/public/view/game-view.js");
+      const held = heldClient();
+      const view = createGameView({
+        client: held.client,
+        state: withCharacter(),
+        revision: 3,
+        onConflict: () => {},
+        onOutdated: () => {},
+        onSignedOut: () => {},
+      });
+      current = CLOCK_MS + 5_000;
+      const kept = view.keep();
+      assert.equal(kept.revision, 3);
+      assert.equal(kept.document.game.saveTimeMs, CLOCK_MS + 5_000);
+      assert.deepEqual(loadSavedGame(kept.document), {
+        ok: true,
+        state: { ...withCharacter(), saveTimeMs: CLOCK_MS + 5_000 },
+      });
+
+      mock.timers.tick(30_000);
+      await settle();
+      assert.deepEqual(waitingCalls(held), [], "keep() changes no state");
+      view.dispose();
+    } finally {
+      date.mock.restore();
+    }
+  });
+});
+
 // To do 7; D-207, decision 6's list. Catches an act of the player whose change is left to the next
 // 30-second check or to the hidden page, and an act that changes nothing sending a save.
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
@@ -1512,7 +1563,13 @@ test("each act of the player that changes the game state is saved at once, and o
         assert.deepEqual(waitingCalls(held), ["saveGame"], name);
         const [sent] = argsOf(held, "saveGame");
         assert.equal(sent.basedOn, 4, name);
-        if (expected) assert.deepEqual(sent.game, plain(expected(begun)), name);
+        // To do 10 with D-206; row 13: the document holds the clock's moment, the state does not.
+        if (expected)
+          assert.deepEqual(
+            sent.game,
+            plain({ ...expected(begun), saveTimeMs: CLOCK_MS }),
+            name,
+          );
         else check(sent.game, begun);
       });
     }
@@ -1712,7 +1769,12 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
-    ["another version", saveOf(withCharacter(), 7, 3), OTHER_VERSION],
+    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    [
+      "another version",
+      saveOf(withCharacter(), 7, OLDER_VERSION),
+      OTHER_VERSION,
+    ],
     [
       "an archetype absent from the data",
       { ok: true, value: { version: VERSION, revision: 7, game: foreign } },
@@ -1838,7 +1900,11 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     buttonNamed(root, "4×").fire("click");
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
-    await held.answer("loadSavedGame", saveOf(withCharacter(), 6, 3));
+    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    await held.answer(
+      "loadSavedGame",
+      saveOf(withCharacter(), 6, OLDER_VERSION),
+    );
     assert.deepEqual(pageNotices(root), [OTHER_VERSION]);
     assert.equal(saveLine(root), null);
     assert.deepEqual(argsOf(held, "saveGame"), [submission(newGame(), 6)]);

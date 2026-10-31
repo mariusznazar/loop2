@@ -1,7 +1,8 @@
 // The game saver (task zapis-stanu-na-serwerze, To do 7, 8 and 10; spec sections 6 and 8; D-207,
 // D-208, D-209, D-210, D-211, D-97). These tests run the saver with a client the test answers,
 // Node's mocked timers and a hand-made document model: they prove when it sends, what it sends and
-// what it shows and reports for each outcome, never real events or rendering (D-88).
+// what it shows and reports for each outcome, never real events or rendering (D-88). Each document
+// holds the clock's moment as its save time (task petla-zarobkowa, To do 10 and row 13; D-231).
 import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 import {
@@ -11,6 +12,7 @@ import {
   send,
   setPace,
   setPaused,
+  withSaveTime,
 } from "../../dist/public/sim/game.js";
 import { loadSavedGame, savedGame } from "../../dist/public/sim/saved-game.js";
 import { createGameSaver } from "../../dist/public/view/game-saver.js";
@@ -125,12 +127,21 @@ function heldClient() {
   };
 }
 
-/** The page's one game state: `read` passes real time first, as the page's clock does. */
+/** The real date the page's clock reads, unless a case moves it on. */
+const CLOCK_MS = 1_760_000_000_000;
+
+/**
+ * The page's one game state: `read` passes real time first and takes the real date as the clock's
+ * moment, as the page's clock does at each reading.
+ */
 function gameOf(state) {
   const game = {
     state,
     realMsPerRead: 0,
+    dateMs: CLOCK_MS,
+    momentMs: CLOCK_MS - 1,
     read() {
+      game.momentMs = game.dateMs;
       const result = passRealTime(game.state, game.realMsPerRead);
       // The page keeps a result only when it differs (store.apply).
       if (result.state !== game.state) game.state = result.state;
@@ -159,6 +170,7 @@ function saverOf(held, game, revision = 3, extra = {}) {
   const saver = createGameSaver({
     client: held.client,
     read: () => game.read(),
+    moment: () => game.momentMs,
     state: game.state,
     revision,
     onConflict: page.onConflict,
@@ -169,10 +181,13 @@ function saverOf(held, game, revision = 3, extra = {}) {
   return { saver, calls: page.calls };
 }
 
-/** What a save of `state` sends, written out from the document of the saved game state. */
+/**
+ * What a save of `state` sends, written out from the document of the saved game state, stamped with
+ * the clock's moment: To do 10 with D-206 and row 13, every document holds it.
+ */
 function submissionOf(state, basedOn) {
   const { version, game } = savedGame(state);
-  return { version, basedOn, game };
+  return { version, basedOn, game: { ...game, saveTimeMs: CLOCK_MS } };
 }
 
 const withCharacter = () => createCharacter(newGame(), "Ala").state;
@@ -271,7 +286,8 @@ test("a failed save shows that the game retries, and the retries follow after 5,
       game.act(setPace(game.state, index % 2 === 0 ? 2 : 4));
       mock.timers.tick(1);
       assert.equal(held.sent.length, index + 2, `a retry at ${wait} ms`);
-      assert.deepEqual(held.sent.at(-1).game, savedGame(game.state).game);
+      // To do 10 with D-206; row 13: each retry's document is stamped too.
+      assert.deepEqual(held.sent.at(-1).game, submissionOf(game.state, 0).game);
       await held.answer(FAILED);
       assert.equal(sentenceOf(saver), RETRYING);
     }
@@ -402,7 +418,8 @@ test("a save refused as outdated shows its sentence, tells the page, and nothing
 // --- the checks for changes ------------------------------------------------------------------
 
 test("an untouched game sends nothing at the 30-second check or at hiding, and sends at the player's first act", async () => {
-  const loaded = loadSavedGame(savedGame(passing()));
+  // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+  const loaded = loadSavedGame(savedGame(withSaveTime(passing(), CLOCK_MS)));
   // Precondition: a loaded map run comes back paused, so real time changes nothing in it.
   assert.ok(loaded.ok && loaded.state.paused);
   const cases = [
@@ -447,6 +464,79 @@ test("a passing map run is saved at the 30-second check and at hiding, and a hid
     fakeDocument.turn("visible");
     fakeDocument.turn("hidden");
     assert.equal(held.sent.length, 2);
+    saver.dispose();
+  });
+});
+
+// --- the save time ---------------------------------------------------------------------------
+
+/** The document a save sent, as the server hands it back. */
+const documentOf = ({ version, game }) => ({ version, revision: 9, game });
+
+// Spec section 9; D-231. Catches a document unstamped, which the load refuses, a moment read before
+// the reading that sends, so older than the state it stamps, and a stamp written into the state held.
+test("each document holds the moment of the reading made for it and loads, and the state held stays what it was", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    const game = gameOf(withCharacter());
+    const start = game.state;
+    const { saver } = saverOf(held, game);
+
+    game.dateMs = 1_760_000_000_500;
+    saver.moment();
+    await held.answer(SAVED(4));
+    game.dateMs = 1_760_000_030_000;
+    saver.moment();
+    await held.answer(FAILED);
+    game.dateMs = 1_760_000_035_000;
+    mock.timers.tick(5_000);
+    await held.answer(SAVED(5));
+    game.dateMs = 1_760_000_040_000;
+    const report = saver.saveBeforeLogout();
+    await held.answer(SAVED(6));
+    assert.deepEqual(await report, { kind: "saved" });
+
+    assert.deepEqual(
+      held.sent.map((sent) => sent.game.saveTimeMs),
+      [
+        1_760_000_000_500, 1_760_000_030_000, 1_760_000_035_000,
+        1_760_000_040_000,
+      ],
+    );
+    for (const sent of held.sent) {
+      const loaded = loadSavedGame(documentOf(sent));
+      assert.equal(loaded.ok, true);
+      assert.equal(loaded.state.saveTimeMs, sent.game.saveTimeMs);
+    }
+    assert.equal(game.state, start, "the state held is not replaced");
+    assert.equal(game.state.saveTimeMs, null);
+    saver.dispose();
+  });
+});
+
+// Spec section 9; D-207, D-231. Catches a stamped state taken for the one last sent, so that the
+// comparison by identity finds a change at every check, and a tab that has only loaded sending.
+test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden page sees", async () => {
+  const savedMs = CLOCK_MS - 60_000;
+  const { state } = loadSavedGame(savedGame(withSaveTime(passing(), savedMs)));
+  await onPage(async () => {
+    const held = heldClient();
+    const game = gameOf(state);
+    game.realMsPerRead = 1_000;
+    const { saver } = saverOf(held, game);
+    mock.timers.tick(90_000);
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 0, "nothing after the load");
+
+    fakeDocument.turn("visible");
+    saver.moment();
+    assert.equal(held.sent[0].game.saveTimeMs, CLOCK_MS);
+    await held.answer(SAVED(4));
+    mock.timers.tick(90_000);
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 1, "nothing more after its save");
+    assert.equal(game.state, state);
+    assert.equal(game.state.saveTimeMs, savedMs);
     saver.dispose();
   });
 });

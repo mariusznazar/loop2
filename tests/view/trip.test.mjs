@@ -9,6 +9,7 @@ import {
   mapRunEnded,
   setPaused,
   settleDeath,
+  withSaveTime,
 } from "../../dist/public/sim/game.js";
 import { emptyProgram } from "../../dist/public/sim/programs.js";
 import { tripCount, tripChoices } from "../../dist/public/view/trip-editor.js";
@@ -238,7 +239,8 @@ test("a death not yet settled draws no settlement, and a loaded screen reads the
     completed(solvedSent()),
     solvedSent(),
   ]) {
-    const loaded = loadSavedGame(savedGame(state));
+    // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+    const loaded = loadSavedGame(savedGame(withSaveTime(state, 9_000_000)));
     assert.equal(loaded.ok, true, String(state.run.completion?.minute));
     assert.deepEqual(solvedRunText(loaded.state), solvedRunText(state));
     assert.deepEqual(

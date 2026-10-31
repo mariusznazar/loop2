@@ -3,10 +3,12 @@
  * request at a time, every moment of saving during one coalesced into one more save after its
  * answer, except a moment asked for during the save before a logout that goes on, which is
  * dropped (D-207); a check every 30 real seconds and at a hidden page that sends only a changed
- * state; and the header sentence of what the player sees of saving. It is created with the game
+ * state; each document holding the clock's moment as its save time, which changes no state
+ * (D-231); and the header sentence of what the player sees of saving. It is created with the game
  * and disposed with it; nothing here runs when the module is imported.
  */
 import type { AccountClient, SaveOutcome } from "../account-api.js";
+import { withSaveTime } from "../sim/game.js";
 import { savedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
 import { createFormWarning } from "./controls/text-field.js";
@@ -30,6 +32,8 @@ export type GameSaverOptions = {
   readonly client: Pick<AccountClient, "saveGame">;
   /** The current game state; the page passes the clock's real time to the simulation first. */
   readonly read: () => GameState;
+  /** The real moment of the clock's latest reading, the one `read` has just made (D-231). */
+  readonly moment: () => number;
   /** The state the game was built on, held as already saved at `revision`. */
   readonly state: GameState;
   /** The revision of the saved game state the game was built on; 0 when the server held none. */
@@ -123,9 +127,11 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     pending = false;
     inFlight = true;
     const state = read();
+    // The state read stays the baseline: only its document holds the save time (D-231).
     baseline = state;
+    const stamped = withSaveTime(state, options.moment());
     void client
-      .saveGame({ ...savedGame(state), basedOn: revision })
+      .saveGame({ ...savedGame(stamped), basedOn: revision })
       .then((outcome) => answered(outcome, forLogout));
   };
 

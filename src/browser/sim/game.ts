@@ -218,6 +218,10 @@ export function newGame(): GameState {
     pace: 1,
     discovery: null,
     realMsCarry: 0,
+    loops: {},
+    stoppedLoops: {},
+    awayReport: [],
+    saveTimeMs: null,
   };
 }
 
@@ -474,6 +478,21 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
     },
     events: [],
   };
+}
+
+/**
+ * A copy of the state holding the real moment `nowMs` as its save time (D-231). Whoever saves applies
+ * it on the way to the saved document only, so the state the view holds stays the very value it was
+ * and a comparison by identity sees no change in a save. A `nowMs` that is no safe integer is a
+ * RangeError.
+ */
+export function withSaveTime(state: GameState, nowMs: number): GameState {
+  if (!Number.isSafeInteger(nowMs)) {
+    throw new RangeError(
+      `withSaveTime: ${String(nowMs)} is not a safe integer moment`,
+    );
+  }
+  return { ...state, saveTimeMs: nowMs };
 }
 
 /**

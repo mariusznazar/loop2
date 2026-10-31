@@ -7,6 +7,7 @@ import {
   setPace,
   setPaused,
   setProgram,
+  withSaveTime,
   type GameResult,
 } from "../sim/game.js";
 import {
@@ -177,6 +178,7 @@ export function createGameView(options: GameViewOptions): GameView {
       clock.flush();
       return state;
     },
+    moment: () => clock.moment(),
     state,
     revision: options.revision,
     afterConflict: options.afterConflict ?? false,
@@ -264,7 +266,10 @@ export function createGameView(options: GameViewOptions): GameView {
     saveBeforeLogout: () => saver.saveBeforeLogout(),
     keep(): KeptGame {
       clock.flush();
-      return { document: savedGame(state), revision: saver.revision() };
+      return {
+        document: savedGame(withSaveTime(state, clock.moment())),
+        revision: saver.revision(),
+      };
     },
     dispose(): void {
       if (disposed) return;

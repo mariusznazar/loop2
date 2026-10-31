@@ -310,6 +310,44 @@ export type GameMapRun = MapRun & {
   deathSettlement: DeathSettlement | null;
 };
 
+/**
+ * An earning loop of one character (D-224): the content of the program taken at its start, a plain
+ * map run, which always goes on, since the function that reaches its end deals with that end at
+ * once, the number of that map run from 1, the map runs completed, and the practice gathered from
+ * them. Each map run binds its lists anew from `program`, so the loop keeps no copy of a manual
+ * map run and no link to the player's programs.
+ */
+export type EarningLoop = {
+  program: Program;
+  run: MapRun;
+  runNumber: number;
+  completed: number;
+  practice: Practice;
+};
+
+/**
+ * How the earning loop of a report's line stopped: the generation the death gave the character,
+ * and whether it stopped in a catch-up (`away`) or in the open game.
+ */
+export type LoopStop = { generation: number; away: boolean };
+
+/**
+ * A line of the report on earning loops (D-229): what one earning loop of one character did. It
+ * closes at its stop, so a later loop of that character opens a line of its own.
+ */
+export type AwayReportLine = {
+  characterId: CharacterId;
+  /** Whole game minutes caught up; 0 only on a line stopped in the open game. */
+  minutes: number;
+  /** This character's change of the chest, signed, by item; no zero is kept. */
+  chest: Partial<Record<ItemId, number>>;
+  /** The gain in the earning loop's practice. */
+  practice: Practice;
+  resurrectionUsed: boolean;
+  /** Null while the line is open. */
+  stop: LoopStop | null;
+};
+
 /** Tells the characters of the team apart; two characters may share a name. */
 export type CharacterId = number;
 
@@ -379,4 +417,18 @@ export type GameState = {
   discovery: Understanding | null;
   /** Scaled real ms (at the pace in force when passed) not yet a game minute, 0 <= x < 1000. */
   realMsCarry: number;
+  /**
+   * The earning loops, by the number of the character of each, so a character has at most one
+   * (D-224); go over them by the team's list, never by this record. None in a new game.
+   */
+  loops: Partial<Record<CharacterId, EarningLoop>>;
+  /** The practice paid at the stop, by character, until its next send or loop start (D-228). */
+  stoppedLoops: Partial<Record<CharacterId, Practice>>;
+  /** The report the player reads and closes (D-229); it lies here, so it survives a reload. */
+  awayReport: AwayReportLine[];
+  /**
+   * The real moment of the save the state came from (D-231), written on the way to the document
+   * only; null in a game that never came from a save. Only the catch-up reads it, on a loaded state.
+   */
+  saveTimeMs: number | null;
 };
