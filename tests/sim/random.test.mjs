@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   mixSeed,
   nextRandom,
+  nextSeed,
   streamState,
 } from "../../dist/public/sim/random.js";
 
@@ -68,4 +69,54 @@ test("mixSeed is deterministic and changes with either argument", () => {
 
 test("mixSeed uses the high part of a large realMs", () => {
   assert.notEqual(mixSeed(1, 5), mixSeed(1, 5 + 2 ** 32));
+});
+
+// Adding the fifth stream, for the next seed of an earning loop (spec 5), changes no stream that
+// existed: these are the states the four streams gave before it was added (an independent
+// computation of the same two published hash steps), so a stream of the same seed still starts
+// where it did.
+test("adding the fifth stream changes no state of the four streams before it", () => {
+  const before = [
+    [1, "layout", 615540736],
+    [1, "wander", 2190006448],
+    [1, "gather", 1276593949],
+    [1, "attack", 3749833116],
+    [12345, "layout", 3017758333],
+    [12345, "wander", 4087383320],
+    [12345, "gather", 301122398],
+    [12345, "attack", 3224370889],
+    [4294967295, "layout", 1337064981],
+    [4294967295, "wander", 4169035890],
+    [4294967295, "gather", 2440979857],
+    [4294967295, "attack", 938460452],
+  ];
+  for (const [seed, stream, state] of before)
+    assert.equal(streamState(seed, stream), state, `${stream} of ${seed}`);
+});
+
+test("the fifth stream starts from the seed at a state of its own, none of the other four's", () => {
+  for (const seed of [1, 12345, 4294967295]) {
+    const others = ["layout", "wander", "gather", "attack"].map((stream) =>
+      streamState(seed, stream),
+    );
+    assert.ok(!others.includes(streamState(seed, "next")));
+  }
+});
+
+// The expected draws are worked out by hand-checkable steps in an independent implementation of
+// mulberry32 over the fmix32 state of the stream: the first draw of the fifth stream, as a uint32.
+test("the next seed is the first draw of the fifth stream of the seed, as a uint32", () => {
+  assert.equal(nextSeed(1), 3392212447);
+  assert.equal(nextSeed(12345), 2555624278);
+  assert.equal(nextSeed(4294967295), 1338111422);
+});
+
+test("the next seed is deterministic, a uint32, differs with the seed and from the seed itself", () => {
+  assert.equal(nextSeed(77), nextSeed(77));
+  assert.notEqual(nextSeed(77), nextSeed(78));
+  for (const seed of [0, 1, 2, 4294967295, 1946377216]) {
+    const next = nextSeed(seed);
+    assert.ok(Number.isInteger(next) && next >= 0 && next <= 0xffffffff);
+    assert.notEqual(next, seed);
+  }
 });
