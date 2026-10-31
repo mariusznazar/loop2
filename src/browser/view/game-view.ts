@@ -78,7 +78,8 @@ export type GameView = {
 /**
  * Builds the game from the state it starts from and starts its clock and its saver. The view holds
  * the one current game state; it replaces it only with the state a simulation function returned
- * and draws only from it. It lands where the state says: the headquarters, a map run (a loaded one
+ * and draws from it and from the real moment of the clock's latest reading, which the headquarters'
+ * resurrection lines need and the state never holds. It lands where the state says: the headquarters, a map run (a loaded one
  * that goes on comes back paused by the load) or the screen after a map run's end. Every act of the
  * player whose result changed the state, and every game minute that ends the map run in a death or
  * a completion, is a moment of saving (D-207). Nothing here runs when the module is imported.
@@ -164,7 +165,12 @@ export function createGameView(options: GameViewOptions): GameView {
       if (ended) saver.moment();
     },
   };
-  const clock = startClock(store);
+  // After each reading of the clock the headquarters, while it shows, rewrites its resurrection
+  // lines at the moment read: real time passes there with no change of the game state, so nothing
+  // is applied to the store and nothing is saved by a tick.
+  const clock = startClock(store, () => {
+    if (state.run === null) headquarters.tick(state, clock.moment());
+  });
   const saver = createGameSaver({
     client: options.client,
     read() {
@@ -225,7 +231,9 @@ export function createGameView(options: GameViewOptions): GameView {
     statusRow.discovery,
     combatLine.element,
     tripLines.deposited,
+    tripLines.settlement,
     bodyRow.element,
+    tripLines.solved,
     practice,
     tripLines.preview,
     terrainPanel.element,
@@ -235,7 +243,7 @@ export function createGameView(options: GameViewOptions): GameView {
   function renderMapColumn(): void {
     headquarters.element.hidden = state.run !== null;
     runPanel.hidden = state.run === null;
-    headquarters.update(state);
+    headquarters.update(state, clock.moment());
     statusRow.update(state);
     combatLine.update(state.run?.lastCombat ?? null);
     bodyRow.update(state);

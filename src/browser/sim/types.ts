@@ -282,25 +282,50 @@ export type MapRun = {
   completion: Completion | null;
 };
 
+/**
+ * How a death was settled: the resurrection it used up, or everything it took, with the generation
+ * number the death gave the character, which stays the number of that death however the character
+ * goes on.
+ */
+export type DeathSettlement =
+  { kind: "resurrectionUsed" } | { kind: "progressLost"; generation: number };
+
 /** The map run of the game state: the map run of the minute with the record of its copy. */
 export type GameMapRun = MapRun & {
   copy: ProgramCopy;
   /** Bound at entry; editing or switching the copy leaves this snapshot intact. */
   bringPlan: TripEntry[];
-  /** Actual deposit at completion; null until then. Retained with the frozen end screen. */
+  /** Actual deposit at completion; null until then, `[]` for a marked run. Retained with the frozen end screen. */
   deposited: TripEntry[] | null;
+  /**
+   * Whether the map was solved when this map run started (D-189): a marked run takes its equipment
+   * from nowhere, deposits nothing and pays no practice. Bound at the start and carried unchanged to
+   * the run's end, the saved document and back; a restart binds it anew.
+   */
+  solvedMapRun: boolean;
+  /**
+   * How the run's death was settled; null until `settleDeath` settles it, and null on a run with no
+   * death. A settlement held is what keeps a death from being settled twice.
+   */
+  deathSettlement: DeathSettlement | null;
 };
 
 /** Tells the characters of the team apart; two characters may share a name. */
 export type CharacterId = number;
 
-/** A character of the player's team; its traits are made when it is created and saved with it. */
+/**
+ * A character of the player's team; its traits are made when it is created and saved with it. The
+ * generation number is 1 at creation and grows at a death with no resurrection ready; the
+ * resurrection is ready from the real moment `resurrectionReadyAtMs` on, and from the start at 0.
+ */
 export type Character = {
   skills: CharacterSkills;
   id: CharacterId;
   name: string;
   archetypeId: ArchetypeId;
   traits: Traits;
+  generation: number;
+  resurrectionReadyAtMs: number;
 };
 
 /** The team's chest: pieces held, by item; a key absent holds none. */

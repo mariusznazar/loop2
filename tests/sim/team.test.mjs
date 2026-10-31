@@ -50,6 +50,7 @@ function createdKnowing(...names) {
   return createdIn(newKnowingGame(), names);
 }
 
+// Generation 1 and a resurrection ready from the start: task rozliczenie-przejsc, To do 8.
 test("a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
   const state = created("Ala", "Ola", "Ela");
   assert.deepEqual(state.team.characters, [
@@ -59,6 +60,8 @@ test("a created character joins the end of the team's list as an elemental mage,
       archetypeId: "elementalMage",
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
+      generation: 1,
+      resurrectionReadyAtMs: 0,
     },
     {
       id: 2,
@@ -66,6 +69,8 @@ test("a created character joins the end of the team's list as an elemental mage,
       archetypeId: "elementalMage",
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
+      generation: 1,
+      resurrectionReadyAtMs: 0,
     },
     {
       id: 3,
@@ -73,6 +78,8 @@ test("a created character joins the end of the team's list as an elemental mage,
       archetypeId: "elementalMage",
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
+      generation: 1,
+      resurrectionReadyAtMs: 0,
     },
   ]);
   assert.equal(state.nextCharacterId, 4);

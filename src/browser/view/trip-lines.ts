@@ -49,16 +49,54 @@ export function tripTexts(state: GameState): {
   };
 }
 
+const SOLVED_RUN_TEXT =
+  "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.";
+
+/** The line of a run on a solved map, whatever its moment; null for any other run. */
+export function solvedRunText(state: GameState): string | null {
+  return state.run?.solvedMapRun ? SOLVED_RUN_TEXT : null;
+}
+
+/**
+ * The line of how a death was settled and whether it stands in `danger` (D-39); read from the
+ * settlement alone, so null while there is none and the same after a load.
+ */
+export function deathSettlementLine(
+  state: GameState,
+): { text: string; danger: boolean } | null {
+  const settlement = state.run?.deathSettlement;
+  if (!settlement) return null;
+  if (settlement.kind === "resurrectionUsed")
+    return {
+      text: "Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.",
+      danger: false,
+    };
+  return {
+    text: `Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie ${settlement.generation}.`,
+    danger: true,
+  };
+}
+
 export function createTripLines(): {
   deposited: HTMLElement;
+  settlement: HTMLElement;
+  solved: HTMLElement;
   preview: HTMLElement;
   update(state: GameState): void;
 } {
   const deposited = document.createElement("p");
+  const settlement = document.createElement("p");
+  const solved = document.createElement("p");
   const preview = document.createElement("p");
-  deposited.className = preview.className = "trip-result";
+  deposited.className =
+    settlement.className =
+    solved.className =
+    preview.className =
+      "trip-result";
   return {
     deposited,
+    settlement,
+    solved,
     preview,
     update(state): void {
       const text = tripTexts(state);
@@ -66,6 +104,13 @@ export function createTripLines(): {
       preview.hidden = text.preview === null;
       deposited.textContent = text.deposited ?? "";
       preview.textContent = text.preview ?? "";
+      const dead = deathSettlementLine(state);
+      settlement.hidden = dead === null;
+      settlement.textContent = dead?.text ?? "";
+      settlement.classList.toggle("danger", dead?.danger ?? false);
+      const solvedText = solvedRunText(state);
+      solved.hidden = solvedText === null;
+      solved.textContent = solvedText ?? "";
     },
   };
 }

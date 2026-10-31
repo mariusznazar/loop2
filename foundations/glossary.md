@@ -202,3 +202,15 @@ threshold the data files give.
 A trip plan is two ordered lists with counts: what a character takes into a map run and what it brings out of it.
 
 - **Not:** none
+
+## resurrection
+
+A resurrection is what a character has ready or not at the moment of its death and what then protects its practice, its bought ranks and its generation number, the map run ending in death with a resurrection ready too.
+
+- **Not:** none
+
+## generation number
+
+A generation number is a count kept at a character that grows by one at a death with no resurrection ready, the character staying the same character with the number the game gave it at its creation (D-56).
+
+- **Not:** the number the game gives a character at its creation (D-56) — "character's number"
