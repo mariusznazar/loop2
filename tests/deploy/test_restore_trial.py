@@ -149,6 +149,37 @@ class WithoutDocker(unittest.TestCase):
             self.assertNotIn(secret, shown)
 
 
+class PasswordReading(unittest.TestCase):
+    """`cleanPassword`, run in Node.js on the text the launcher read from standard input."""
+
+    def clean(self, text):
+        """(exit code, standard output) of `cleanPassword(text)`; the output is the JSON of the
+        result, or the message of the refusal."""
+        script = ("import(process.argv[1]).then(m => { try { console.log(JSON.stringify("
+                  "m.cleanPassword(JSON.parse(process.argv[2])))) } catch (e) { "
+                  "console.log('refused: ' + e.message); process.exitCode = 5 } })")
+        result = subprocess.run(
+            [NODE, "-e", script, "file:///" + LAUNCHER.replace(os.sep, "/"), json.dumps(text)],
+            capture_output=True, timeout=30)
+        return result.returncode, result.stdout.decode("utf-8").strip()
+
+    def test_a_byte_order_mark_that_a_console_put_before_the_password_is_dropped(self):
+        # Windows PowerShell 5.1 under code page 65001 writes U+FEFF before piped text.
+        for text in ("\ufeffascii-pass-1\r\n", "\ufeffascii-pass-1\n", "\ufeffascii-pass-1"):
+            with self.subTest(text=repr(text)):
+                self.assertEqual(self.clean(text), (0, '"ascii-pass-1"'))
+
+    def test_only_the_first_mark_is_dropped_and_a_password_without_one_is_unchanged(self):
+        self.assertEqual(self.clean("ascii-pass-1\r\n"), (0, '"ascii-pass-1"'))
+        self.assertEqual(self.clean("\ufeff\ufeffx\n"), (0, '"\ufeffx"'))
+        self.assertEqual(self.clean("pa ss-\ufeff1\n"), (0, '"pa ss-\ufeff1"'))
+
+    def test_a_mark_alone_is_an_empty_password_and_is_refused(self):
+        code, shown = self.clean("\ufeff\r\n")
+        self.assertEqual(code, 5, shown)
+        self.assertIn("empty", shown)
+
+
 class SettingsAreProductions(unittest.TestCase):
 
     def test_the_launcher_runs_the_database_and_secrets_where_compose_yaml_puts_them(self):

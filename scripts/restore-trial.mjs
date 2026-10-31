@@ -147,8 +147,10 @@ export function checkDatabaseFile(path) {
   return size;
 }
 
+// A console in UTF-8 (Windows PowerShell 5.1 under code page 65001) writes a
+// byte-order mark before piped text; it is no part of the password.
 export function cleanPassword(text) {
-  const password = text.replace(/\r?\n$/, "");
+  const password = text.replace(/^\u{feff}/u, "").replace(/\r?\n$/, "");
   if (password === "")
     throw new UsageError("the password on standard input is empty");
   if (password.length > 1000 || /[\r\n]/.test(password))
