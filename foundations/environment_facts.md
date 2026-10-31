@@ -249,9 +249,9 @@ Express-session 1.19.0 signs the session cookie with the first configured secret
 
 ## node-sqlite-database
 
-Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, parameterizable prepared statements and explicit connection closing.
+Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, parameterizable prepared statements, explicit connection closing and an asynchronous `backup()` function that transmits a positive number of pages in each batch, 100 by default, and that restarts on mutations from other connections.
 
-- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection."; read 2026-10-27
+- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection." · § sqlite.backup(sourceDb, path[, options]) — "A promise that fulfills with the total number of backed-up pages upon completion, or rejects if an error occurs." · "Positive number of pages to be transmitted in each batch of the backup. Default: 100." · "This method makes a database backup." · "However, mutations from other connections will cause the backup process to restart."; read 2026-10-31
 
 ## fetch-same-origin-credentials
 
@@ -354,6 +354,24 @@ The Fetch Standard's HTTP-network-or-cache fetch returns a network error for a `
 A document's `visibilitychange` event fires with the visibility state `hidden` when the user navigates to a new page, switches tabs, closes the tab, minimizes or closes the browser or, on mobile, switches to another app, and that transition is the last event the page reliably observes.
 
 - **Source:** https://raw.githubusercontent.com/mdn/content/9a0e5c1cfa8d5079e22c410de757707706f1cc75/files/en-us/web/api/document/visibilitychange_event/index.md § Usage notes — "This event fires with a visibilityState of hidden when a user navigates to a new page, switches tabs, closes the tab, minimizes or closes the browser, or, on mobile, switches from the browser to a different app. Transitioning to hidden is the last event that's reliably observable by the page, so developers should treat it as the likely end of the user's session (for example, for sending analytics data)."; read 2026-10-30
+
+## sqlite-online-backup
+
+A completed SQLite Online Backup is a consistent snapshot of its source database, each step copies up to the number of pages it is asked for, and a change to the source through another connection restarts the backup at its next step, so that a backup restarted often enough may never complete.
+
+- **Source:** https://www.sqlite.org/backup.html (archived: https://web.archive.org/web/20261022232221/https://www.sqlite.org/backup.html, 2026-10-22) § 3.1. File and Database Connection Locking — "Whether or not the backup process is restarted as a result of writes to the source database mid-backup, the user can be sure that when the backup operation is completed the backup database contains a consistent and up-to-date snapshot of the original." · "If the backup process is restarted frequently enough it may never run to completion and the backupDb() function may never return."; read 2026-10-31 · https://www.sqlite.org/c3ref/backup_finish.html (archived: https://web.archive.org/web/20261019222442/https://www.sqlite.org/c3ref/backup_finish.html, 2026-10-19) § sqlite3_backup_step() — "Function sqlite3_backup_step(B,N) will copy up to N pages between the source and destination databases specified by sqlite3_backup object B." · "If the source database is modified by an external process or via a database connection other than the one being used by the backup operation, then the backup will be automatically restarted by the next call to sqlite3_backup_step()."; read 2026-10-31
+
+## mikrus-pusher-mail
+
+Mikrus documents `pusher` as a tool that sends mail to its own user, reads standard input and takes the mail's subject as its first parameter, names no recipient address and no limit, and its script calls `curl` on `push.mikr.us/$1` without `https`, so a message may travel unencrypted.
+
+- **Source:** https://wiki.mikr.us/pusher/ (archived: https://web.archive.org/web/20260519191805/https://wiki.mikr.us/pusher/, 2026-05-19) § Pusher — "Pusher jest prostym narzędziem pozwalającym Ci wysyłać maile do samego siebie, bez konieczności instalowania serwera mailowego." · "Pusher czyta ze standardowego wejścia. Jeśli chcesz zmienić temat maila wysyłanego przez pushera, podaj go jako pierwszy parametr (podkreślenia będą traktowane jak spacje)."; read 2026-10-31 · https://mikr.us/tools/pusher (archived: https://web.archive.org/web/20260417121329/https://mikr.us/tools/pusher, 2026-04-17) § the script — "curl -s --data-urlencode data@- push.mikr.us/$1"; read 2026-10-31
+
+## age-file-encryption
+
+age 1.0.0 lets an identity file passed with `-i` serve as a symmetric key when `-e` is given explicitly, exits 0 if and only if encryption or decryption succeeded for the full length of the input, writes files that are not malleable and releases no unauthenticated output.
+
+- **Source:** https://raw.githubusercontent.com/FiloSottile/age/552aa0a07de0b42c16126d3107bd8895184a69e7/doc/age.1.ronn § DESCRIPTION — "age encrypted files are binary and not malleable, with around 200 bytes of overhead per recipient, plus 16 bytes every 64KiB of plaintext." · § Decryption options, -i, --identity — "If -e/--encrypt is explicitly specified (to avoid confusion), -i/--identity may also be used to encrypt to the RECIPIENTS corresponding to the IDENTITIES listed at <PATH>. This allows using an identity file as a symmetric key, if desired." · § EXIT STATUS — "age will exit 0 if and only if encryption or decryption are succesful for the full length of the input." · "If an error occurs during decryption, partial output might still be generated, but only if it was possible to securely authenticate it. No unauthenticathed output is ever released."; read 2026-10-31
 
 ## Withdrawn identifiers
 
