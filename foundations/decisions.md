@@ -4037,7 +4037,8 @@ transaction of D-112 that sets the password. Every token that is malformed, unkn
 stopped, of another kind or of a blocked account gets one and the same refusal `invalid-link`, before
 the hashing or after it, a full password gate answers 429 `too-many-attempts`, and any other failure
 writes nothing, so the last two leave the link working. The route neither uses nor changes the
-session a request brings with it, which ends with the account's others or stays as it was.
+session a request brings with it, which ends with the account's others or stays working, renewed as
+D-101 renews it at every request.
 
 - **Scope:** account-server
 - **Based on:** express-session-end-of-request
