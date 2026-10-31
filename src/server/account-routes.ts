@@ -9,6 +9,7 @@ import {
   AccountPolicy,
   accountMessageLimits,
   checkLogin,
+  checkNewPassword,
   checkRegistration,
   confirmationLinkLifetime,
   createLinkToken,
@@ -44,6 +45,7 @@ const paths = {
   emailConfirmation: "/api/email-confirmation",
   confirmationMessage: "/api/email-confirmation-message",
   passwordResetMessage: "/api/password-reset-message",
+  passwordReset: "/api/password-reset",
   savedGame: "/api/saved-game",
 };
 
@@ -369,6 +371,7 @@ export function accountRoutes(
       paths.emailConfirmation,
       paths.confirmationMessage,
       paths.passwordResetMessage,
+      paths.passwordReset,
     ],
     ...mutationGuards(runtime.configuration.publicOrigin, accountBodyLimit),
   );
@@ -542,6 +545,63 @@ export function accountRoutes(
     setImmediate(() => {
       void sendResetMessage(runtime, policy, email);
     });
+  });
+
+  // The link alone authorizes setting its own account's password (D-109): no
+  // session is needed, and the route never touches the one a request brings
+  // with it, so the reset's deletion of the account's sessions is the end of
+  // that one too (D-218). The order is the point of this route: the fields,
+  // the password rules, then the link read before any password work, so that a
+  // bad password tells nothing of a token and a bad token never reaches the
+  // password gate; then the hashing, then the one transaction that reads the
+  // link again and sets the password, and only after the commit, in the same
+  // turn, the clearing of the address's failed logins and the answer.
+  router.post(paths.passwordReset, async (request, response) => {
+    const input = stringFields(request.body, [
+      "token",
+      "password",
+      "passwordConfirmation",
+    ] as const);
+    if (!input) {
+      invalidRequest(response);
+      return;
+    }
+    const checked = checkNewPassword(input);
+    if (!checked.ok) {
+      refuse(
+        response,
+        400,
+        checked.problem,
+        registrationProblems[checked.problem],
+      );
+      return;
+    }
+    if (!isLinkToken(input.token)) {
+      invalidLink(response);
+      return;
+    }
+    const tokenDigest = linkTokenDigest(input.token);
+    if (!runtime.database.resetLinkWorks(tokenDigest)) {
+      invalidLink(response);
+      return;
+    }
+    let hash: string;
+    try {
+      hash = await hashPassword(checked.password);
+    } catch (error) {
+      if (error instanceof PasswordCapacityError) {
+        limited(response);
+        return;
+      }
+      throw error;
+    }
+    const outcome = runtime.database.resetPassword(tokenDigest, hash);
+    if (outcome.outcome !== "reset") {
+      invalidLink(response);
+      return;
+    }
+    policy.clearEmailAttempts(outcome.email);
+    response.status(204).end();
   });
 
   router.post(paths.logout, (request, response) => {
