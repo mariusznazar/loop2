@@ -687,7 +687,7 @@ test("registration problems follow the server's rules, counting a password in co
   }
 });
 
-// --- the form „Nie pamiętam hasła” (task reset-hasla, To do 1 and 3; D-96, D-214) --------------
+// --- the form „Nie pamiętam hasła” (task reset-hasla, To do 1 and 3; D-96, D-222) --------------
 
 const RESET_SENTENCE =
   "Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik. Gdy wiadomość nie przyjdzie, spróbuj ponownie później.";

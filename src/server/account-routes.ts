@@ -258,7 +258,7 @@ function boundedSending(
 
 // What differs between the messages one link can come in: the purpose of the
 // link, its lifetime, the fragment of its address and the function that
-// composes the message (D-156, D-216, D-155, D-158, D-219).
+// composes the message (D-156, D-224, D-155, D-158, D-227).
 interface LinkKind {
   readonly purpose: LinkPurpose;
   readonly lifetimeMs: number;
@@ -328,7 +328,7 @@ async function sendLinkMessage(
 // rejects. A message goes only to a confirmed address; whether it goes at all
 // is shown to nobody, so the outcome is ignored. A blocked account reaches
 // the recording, which answers "blocked" and records nothing, and a limit
-// leaves no trace beyond the count (D-214).
+// leaves no trace beyond the count (D-222).
 async function sendResetMessage(
   runtime: AccountRuntime,
   policy: AccountPolicy,
@@ -524,7 +524,7 @@ export function accountRoutes(
   // No session is needed, and the address names only the account whose own
   // confirmed address a link may go to (D-109). The handler reads the request's
   // own text and answers, so the answer holds nothing of any account; the work
-  // on an account starts in a later turn of the event loop (D-214).
+  // on an account starts in a later turn of the event loop (D-222).
   router.post(paths.passwordResetMessage, (request, response) => {
     const input = stringFields(request.body, ["email"] as const);
     if (!input) {
@@ -550,7 +550,7 @@ export function accountRoutes(
   // The link alone authorizes setting its own account's password (D-109): no
   // session is needed, and the route never touches the one a request brings
   // with it, so the reset's deletion of the account's sessions is the end of
-  // that one too (D-218). The order is the point of this route: the fields,
+  // that one too (D-226). The order is the point of this route: the fields,
   // the password rules, then the link read before any password work, so that a
   // bad password tells nothing of a token and a bad token never reaches the
   // password gate; then the hashing, then the one transaction that reads the

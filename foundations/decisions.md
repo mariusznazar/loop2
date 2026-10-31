@@ -888,7 +888,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany” and „Przełącz postać na ten program” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-214) appears in that place in `text-secondary`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany” and „Przełącz postać na ten program” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text-secondary`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -1745,7 +1745,7 @@ If the dependency audit reports an advisory in a package introduced by StrykerJS
 
 ### D-96 — What does a player see before and after signing in?
 
-A signed-out visitor sees the „Zaloguj się” form with email and password and under it the button „Nie pamiętam hasła”, and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible; that button puts in place of both forms the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings the two forms back, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-217) in place of game and forms, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
+A signed-out visitor sees the „Zaloguj się” form with email and password and under it the button „Nie pamiętam hasła”, and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible; that button puts in place of both forms the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings the two forms back, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in place of game and forms, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
@@ -1876,7 +1876,7 @@ The session cookie uses SameSite=Strict, and every state-changing route requires
 
 ### D-105 — How is sending account email limited?
 
-The account server sends at most 30 account messages per hour in total and at most three per email address per hour. Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-214, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”; no monthly sending cap applies.
+The account server sends at most 30 account messages per hour in total and at most three per email address per hour. Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”; no monthly sending cap applies.
 
 - **Scope:** account-server
 - **Based on:** none
@@ -1886,7 +1886,7 @@ The account server sends at most 30 account messages per hour in total and at mo
   - violates: either mail path sends after a limit is reached or adds an unapproved monthly cap
 - **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 3, and § Settlements to record, rows 3 and 4
 
-*Rationale:* Hourly limits bound a burst while retaining a simple sending rule; they can exhaust the provider's monthly allowance and prevent recovery messages until delivery becomes available again. The chosen policy accepts that risk rather than reserving a monthly balance, and accepts through D-215 that the hourly limit too can be exhausted by requests for password-reset links. A player above a limit reads in the one answer only its condition and its ending, because a sentence of its own would tell anyone that the address has a confirmed account.
+*Rationale:* Hourly limits bound a burst while retaining a simple sending rule; they can exhaust the provider's monthly allowance and prevent recovery messages until delivery becomes available again. The chosen policy accepts that risk rather than reserving a monthly balance, and accepts through D-223 that the hourly limit too can be exhausted by requests for password-reset links. A player above a limit reads in the one answer only its condition and its ending, because a sentence of its own would tell anyone that the address has a confirmed account.
 *Rejected:* A persistent monthly cap below the provider allowance — adds a shared balance and restricts sends earlier; unrestricted sending — lets a burst consume delivery capacity; a sentence of its own for a request above a limit, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” — a fourth request in an hour shows anyone that the address has an account with a confirmed address, the gain being that this decision stays as it was and the player knows not to wait.
 
 ### D-106 — How are player passwords hashed and checked?
@@ -2899,7 +2899,7 @@ An account's email address is the address given at its registration, and no oper
 
 ### D-160 — What does an emailed link of a blocked account do?
 
-An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game, as D-156 and D-217 give. A link that a block stopped stays stopped after the account is unblocked, and the player, signed in again, asks for a new confirmation message with „Wyślij ponownie”.
+An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game, as D-156 and D-225 give. A link that a block stopped stays stopped after the account is unblocked, and the player, signed in again, asks for a new confirmation message with „Wyślij ponownie”.
 
 - **Scope:** account-server, browser-view
 - **Based on:** none
@@ -3893,7 +3893,7 @@ shape, apart from the functions that pass game time.
 D-04; a lenient load that fills missing keys — a migration by another name, against discarding
 another version whole.
 
-### D-214 — What does a request for a password-reset link answer?
+### D-222 — What does a request for a password-reset link answer?
 
 Every request for a password-reset link whose address is well formed under D-99 gets one and the
 same answer, which leaves before any work on an account and without waiting for the mail server, so
@@ -3946,7 +3946,7 @@ fixed or random floor on the answer's time — hides the usual commit and not a 
 every request; a durable queue of messages — a schema step for a message the player can ask for
 again.
 
-### D-215 — Does a request for a password-reset link have a limit of its own per client address?
+### D-223 — Does a request for a password-reset link have a limit of its own per client address?
 
 A request for a password-reset link has no limit of its own per client address, and only the limits
 of D-105 bound it. This holds while only the owner has accounts, and the decision is reviewed before
@@ -3954,7 +3954,7 @@ the game's address is given to other players, if abuse has become real.
 
 - **Scope:** account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Implement protections against excessive automated submissions such as rate-limiting on a per-account basis"; read 2026-10-30
-- **Relations:** derives from D-105 · derives from D-214
+- **Relations:** derives from D-105 · derives from D-222
 - **Verification:** an agent compares a change with the decision:
   - complies: a request for a link going through the two limits of D-105 and no other count
   - violates: a counter of requests per client address added beside those limits while this decision
@@ -3968,10 +3968,10 @@ confirmation included; and the same person can stop another player's waiting lin
 (D-155).
 *Rejected:* a limit of its own, for example five requests from a client address per hour, counted in
 memory as D-102 and D-103 count — a new counter, changes of D-102, D-103 and `account-attempt-limits`,
-a limit to show without spoiling the one answer of D-214, and an attack from many client addresses
+a limit to show without spoiling the one answer of D-222, and an attack from many client addresses
 gets through anyway.
 
-### D-216 — What form does a password-reset link take?
+### D-224 — What form does a password-reset link take?
 
 The link of a password-reset message is the configured public origin followed by
 `/#reset-password=<token>`, its token 32 random bytes written in base64url, of which the account
@@ -3993,7 +3993,7 @@ reaches no server, no request log and no `Referer`, a digest in the database yie
 to whoever reads it, and a mail client or a spam filter that opens the link uses up nothing.
 *Rejected:* unknown
 
-### D-217 — What does the form „Ustaw nowe hasło” hold, and how does it end?
+### D-225 — What does the form „Ustaw nowe hasło” hold, and how does it end?
 
 The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw
 hasło” and „Anuluj”, which removes the fragment of the address and opens the page as usual, and the
@@ -4006,7 +4006,7 @@ connection or a full password gate leaves the form, one sentence under it and th
 
 - **Scope:** browser-view, account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "The user should confirm the password they set by writing it twice."; read 2026-10-30
-- **Relations:** derives from D-96 · derives from D-98 · derives from D-156 · derives from D-216
+- **Relations:** derives from D-96 · derives from D-98 · derives from D-156 · derives from D-224
 - **Verification:** an agent compares a change with the decision:
   - complies: the fragment removed before the page goes on, with `history.replaceState`, so neither a
     reload nor the back button returns to the token; the sentence of a refused link above the game for
@@ -4027,7 +4027,7 @@ whether a token works, one more state of the page with its tests, and one more s
 the account forms with that sentence after every refusal — a player with a valid session sees the
 login as if signed out, though a reload returns to the game and nothing is lost.
 
-### D-218 — How does the route that sets a password by a link check its request and bound its password work?
+### D-226 — How does the route that sets a password by a link check its request and bound its password work?
 
 `POST /api/password-reset` checks the fields of its request, then the rules of D-98, then the form of
 the token and whether its link works, all before any password work, so a link that does not work
@@ -4069,7 +4069,7 @@ would take the place of logins and could lock them; destroying a session of the 
 branch on whose session it is, for a row the transaction already removed; clearing the cookie — two
 `Set-Cookie` headers for a cookie that is already harmless.
 
-### D-219 — Which messages does a password reset send, and what do they say?
+### D-227 — Which messages does a password reset send, and what do they say?
 
 The password-reset message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain
 text without HTML, with the subject „Ustaw nowe hasło w loop2” and a body of three paragraphs

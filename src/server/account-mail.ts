@@ -13,7 +13,7 @@ const confirmationReset =
   "Potwierdzony adres pozwala samodzielnie zresetować zapomniane hasło.";
 const confirmationIgnore = "Jeśli to nie Ty, zignoruj tę wiadomość.";
 
-// D-219: subject and the three paragraphs of the password-reset message; the
+// D-227: subject and the three paragraphs of the password-reset message; the
 // sender is the confirmation message's.
 const resetSubject = "Ustaw nowe hasło w loop2";
 const resetOpening =

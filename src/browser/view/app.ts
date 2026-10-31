@@ -88,7 +88,7 @@ function createPageNotice(sentence: string): HTMLElement {
  * sentence above the first screen that check leads to, and leaves at the next change between forms
  * and game. When the address carries a password-reset token instead, the page places the form
  * „Ustaw nowe hasło” and stops: it asks nothing, builds no game and saves nothing, whoever is
- * signed in, until the form ends (D-217). A save answered with no session keeps the game state in
+ * signed in, until the form ends (D-225). A save answered with no session keeps the game state in
  * this page only, for a sign-in to the same account (D-211).
  */
 export function startApp(

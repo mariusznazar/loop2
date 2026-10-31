@@ -1051,7 +1051,7 @@ A password-reset link sets a new password only once, only before its expiry, onl
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-112 · D-155 · D-160 · D-218
+- **Derives from:** D-112 · D-155 · D-160 · D-226
 - **Part:** account-server
 - **Violated:** no
 

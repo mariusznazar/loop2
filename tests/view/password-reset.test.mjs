@@ -1,5 +1,5 @@
 // The reset link in the page's address and the meaning of the server's answer to setting a
-// password (task reset-hasla, To do 4; spec decisions 10 and 11; D-216, D-217). The pure reading
+// password (task reset-hasla, To do 4; spec decisions 10 and 11; D-224, D-225). The pure reading
 // of the fragment and the sorting of each answer; the screen and the page are proved in
 // account-screen.test.mjs on the hand-made document model (D-88).
 import assert from "node:assert/strict";

@@ -462,7 +462,7 @@ test("the submitted reset message has one recipient, the fixed sender and subjec
   );
 
   const { headers, text } = parse(smtp.record.messages[0].raw);
-  // Sender, subject and body: D-219 (foundations/decisions.md).
+  // Sender, subject and body: D-227 (foundations/decisions.md).
   assert.match(
     decodeWords(headers.get("from")[0]),
     /^(?:loop2|"loop2") <sender@example\.test>$/,

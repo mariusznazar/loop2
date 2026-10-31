@@ -31,7 +31,7 @@ przejściu połączenia na TLS.
 
 ### Jedna wiadomość dla jednego odbiorcy, od ustalonego nadawcy
 
-- **Decision:** D-158 · D-219
+- **Decision:** D-158 · D-227
 - **Invariant:** none
 - **Good:** Wiadomość ma jednego odbiorcę, ustalonego nadawcę z nazwą wyświetlaną, ustalony temat i treść zwykłym tekstem, a adres odbiorcy stoi tylko w jego własnym polu.
 - **Bad:** Obok tekstu stoi część HTML, adres gracza trafia do pola innego niż pole odbiorcy albo wiadomość ma drugiego odbiorcę.
@@ -41,7 +41,7 @@ nie wstawia go do żadnego pola poza polem odbiorcy i nie dopuszcza, żeby doda�
 odbiorców lub tekst do nagłówka. Nadawca, nazwa wyświetlana, temat i treść są
 ustalone w pliku wysyłki, nie dobierane przez wywołującego; dotyczy to obu
 wiadomości, potwierdzającej i o ustawieniu nowego hasła, która ma tekst zwykły
-bez HTML (D-219). Przegląd każdej
+bez HTML (D-227). Przegląd każdej
 zmiany porównuje wiadomość z tą zasadą.
 
 ### Porażka jest wynikiem, nie błędem

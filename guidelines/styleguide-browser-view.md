@@ -154,7 +154,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-214
+- **Decision:** D-38 · D-44 · D-222
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text-secondary`.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -186,7 +186,7 @@ stanów:
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
   gracz zaczął. Odpowiedź na prośbę o odnośnik do zmiany hasła niczego nie
   odmawia, więc stoi w tym samym miejscu pod formularzem „Nie pamiętam hasła”
-  jednym zdaniem w `text-secondary`, nie w `warning` (D-44, D-214).
+  jednym zdaniem w `text-secondary`, nie w `warning` (D-44, D-222).
 
 Pole hasła to pole tekstowe z ukrytym wpisem (przeglądarka maskuje znaki)
 i ma te same stany co ono. Pole z widoczną etykietą stawia jej tekst nad polem

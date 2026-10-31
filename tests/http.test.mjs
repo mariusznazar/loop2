@@ -2644,7 +2644,7 @@ test(
     // invariant: password-reset-verified-email
     // Faults: the lookup of the account or the recording of its link run
     // before the response has ended, or in the same turn right after it
-    // (D-214, which gives this order as its verification).
+    // (D-222, which gives this order as its verification).
     const f = await accountFixture(t);
     const order = [];
     f.listening.on("request", (_request, response) =>
@@ -2869,7 +2869,7 @@ test(
     // invariant: password-reset-verified-email
     // Faults: a lifetime other than one hour; an earlier link left working
     // beside the newest; the route handing on another message than the
-    // password-reset message (its subject, D-219).
+    // password-reset message (its subject, D-227).
     const f = await accountFixture(t);
     const account = confirmedAccount(f, "lifetime@example.test");
     f.mailer.outcome = "failed";
