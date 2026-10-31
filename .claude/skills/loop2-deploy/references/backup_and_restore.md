@@ -54,7 +54,7 @@ holds its size beside the exit code. The log holds no player data and no access 
 | 3 | key | the key file is missing, empty or unreadable; nothing was made |
 | 4 | lock | the lock file cannot be opened, the lock was not free within 900 seconds (a deployment was running), or could not be released |
 | 5 | temporary | no private temporary directory on the host (disk or permissions) |
-| 6 | stream | `docker` or `age` did not exit 0; the line gives both statuses. `docker` 1: the database could not be backed up; 2: wrong arguments; 3: no database file at the container's path; 4: the output could not be written out; 124 or 137: the 300 second limit; 125 to 127: Docker itself or no container named `loop2`. A commit from before the backup command gives a failure here too |
+| 6 | stream | `docker` or `age` did not exit 0; the line gives both statuses. `docker` 1: no running container `loop2` (missing or stopped), no backup command in the running commit, or a failed backup; Docker's own text stands in the line before it in the log and says which; 2: wrong arguments; 3: no database file at the container's path; 4: the output could not be written out; 124 or 137: the 300 second limit; 125 to 127: Docker itself failed or could not start the command. A commit from before the backup command gives a failure here too, with `docker` 1 |
 | 7 | file | the encrypted file is missing or empty |
 | 8 | send | `rsync` exit N, see below |
 | 9 | weekday | the UTC day of the week could not be read |
@@ -103,8 +103,10 @@ script with `bash -n`, then `install` (see "Installing a script from an exact co
    `deployed`. The build output of the first build of a commit shows the Node.js release the image
    was checked on; that line stands in `/var/log/loop2-deploy.log`, not on the terminal of a human
    run, and a repeat of the same commit prints none. The deployment's warnings about the two
-   absent installed copies are expected until steps 7 and 11. From this deployment until a merge,
-   the rules in "Deploying a request head and accepting it" in `setup_and_secrets.md` apply.
+   absent installed copies are expected until steps 7 and 11. **From this deployment until this
+   request's merge, merge nothing else to `main` and deploy nothing else to the server.** Any
+   other deployment replaces the image with one that has no backup command: the nightly run then
+   fails, and the later steps (the hand runs, the restore trial) would run on the wrong code.
 3. `apt install age` on the server (`age --version` shows it works). The package holds
    `age-keygen` too.
 4. Make the key: `age-keygen -o /etc/loop2/backup-encryption-key` as root, then set owner root,
@@ -210,13 +212,16 @@ owner's computer in PowerShell, with the Docker engine on and `age` installed (`
 4. Build the image from a clean checkout of the same commit: `docker build -t <image> .`
 5. Read the test account's password without placing it in the shell history. Keep that
    password ASCII: the console code page may alter another character on its way to the launcher.
+   This form needs no special console: the launcher drops a byte-order mark that a UTF-8 console
+   puts before the piped text.
 
    ```powershell
    $secure = Read-Host -AsSecureString 'Test account password'
    $credential = New-Object System.Net.NetworkCredential('', $secure)
    $credential.Password | node scripts/restore-trial.mjs --image <image> --database .\accounts.sqlite --marker '<the marker name written down in the install step 8>' --email <test account address>
    ```
-6. Read the result. Exit 0 is PASS; 1 the trial ran and judged the backup (FAIL); 2 refused,
+6. Read the result. Exit 0 is PASS; 1 the trial ran and judged the backup (FAIL), for example the
+   test account could not log in; 2 refused,
    nothing was started (arguments, or a terminal as standard input); 3 could not run to a verdict;
    4 a container or volume could not be removed and is named; 130 interrupted. The launcher
    prints the Node.js release, the login status, the save's revision and whether the marker
@@ -231,28 +236,61 @@ schema versions.
 
 Eight steps, all the human's. The procedure has never been tried.
 
-1. Choose the backup (the newest by time on Strych, or the one wanted) and bring it to the
-   server as root with the Strych login and key, into a directory only root can open (`umask 077`).
+The private directory of step 1 is `/root/loop2-restore`. It lies outside `/srv/loop2` on purpose:
+the deployment of step 6 runs `git clean -ffdx` in `/srv/loop2` and would erase anything left
+there. It is not `/tmp`, a shared directory. It holds the plain database (addresses and password
+hashes), so step 7 removes it.
+
+1. Choose the backup (the newest by time on Strych, or the one wanted). Make the directory:
+   `mkdir -m 0700 /root/loop2-restore`, and bring the backup into it as root with the Strych
+   login and key.
 2. Decrypt it there: `age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file>`.
    `head -c 15 accounts.sqlite` shows `SQLite format 3`.
 3. Stop the application: from `/srv/loop2`, `docker compose -p loop2 stop app`.
 4. Find the volume's directory with `docker volume inspect --format '{{ .Mountpoint }}' loop2_accounts`.
-   Move the current `accounts.sqlite` out of it (keep it until step 7), and remove
-   `accounts.sqlite-wal` and `accounts.sqlite-shm` beside it.
+   Move all three files, `accounts.sqlite`, `accounts.sqlite-wal` and `accounts.sqlite-shm`
+   (those that exist), together into `/root/loop2-restore/previous`. The recent writes lie in the
+   two companions, so the one file is not the database; after a crash they were never merged.
+   The volume is left with none of the three.
 5. Install the decrypted file there as `accounts.sqlite` with owner uid 1000 and group 1000.
 6. Start by deploying the commit that was running (`loop2-deploy <sha>`, `SSH_ORIGINAL_COMMAND`
    unset); take the sha from the running container's label (`SKILL.md`). If the backup is from a
    newer schema than that commit knows, deploy a commit that knows it instead; until then health
    fails with exit 8.
 7. Check: the deployment ends with `deployed`, the public page loads, the test account logs in
-   and its marker name is there. Then remove the moved-aside database and the decrypted file.
+   and its marker name is there. Only when the check passes, remove the whole directory:
+   `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go the way
+   back below.
 8. Write down what was lost: everything after the backup's time.
+
+The way back, when step 7 fails and the database from before the restore is wanted: stop `app`
+(`docker compose -p loop2 stop app` from `/srv/loop2`), remove the restored `accounts.sqlite` and
+any `-wal` and `-shm` beside it in the volume's directory, move the three files back from
+`/root/loop2-restore/previous` (owner uid 1000, group 1000), and deploy the running commit
+(`loop2-deploy <sha>`). Then remove `/root/loop2-restore`.
 
 ### With no server
 
-Provision a new host first ("Initial host provisioning" in `setup_and_secrets.md`), with the
-files from the owner's private note: the session keys, the SMTP password, the tunnel token, the
-backup key and the Strych key. Fill root's SSH configuration entry and the known-hosts file
-(steps 5 and 6 of "Installing and reinstalling"). Deploy a commit that knows the backup's schema
-so the volume exists, then follow "Restoring over the server's database" from step 1. Install
-the backup script and schedule again afterwards.
+This path has never been tried; this text is all there is. Every step is the human's, ten in all,
+in this order:
+
+1. Provision a new host ("Initial host provisioning" in `setup_and_secrets.md`), which includes
+   the installed `loop2-deploy`.
+2. Create `/etc/loop2` as in H2 of "H1-H5" in `setup_and_secrets.md` (deployment account as
+   owner, numeric group 65532, mode 0750).
+3. Put the session keys, the SMTP password and the tunnel token in place, each by its section of
+   `setup_and_secrets.md`, from the owner's private note.
+4. `apt install age`. Check that `rsync` exists (`rsync --version`; install it with `apt` if not)
+   and that `pusher` exists (`command -v pusher`). Send a test message with
+   `echo test | pusher test_kopii` and check that it arrives. On a host with no `pusher` the script's notice
+   reaches no one: a failed night leaves only `notice: pusher exit 127` in the log. Then do not
+   leave the schedule unwatched: read `/var/log/loop2-backup.log` every morning, or take the
+   missing notice to the owner as a decision before step 10.
+5. Write `/etc/loop2/backup-encryption-key` from the private note, root:root, mode 0400.
+6. Write `/backup_key` from the private note, root:root, mode 0600 (`ssh` refuses a private key
+   that others can read).
+7. Fill root's SSH configuration entry and the known-hosts file (steps 5 and 6 of "Installing and
+   reinstalling").
+8. Deploy a commit that knows the backup's schema (`loop2-deploy <sha>`), so the volume exists.
+9. Restore: steps 1 to 8 of "Restoring over the server's database".
+10. Install the backup script and schedule again: steps 7 to 12 of "Installing and reinstalling".
