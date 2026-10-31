@@ -50,8 +50,9 @@ jedną operację i je zamyka; samo nie trzyma żadnego SQL.
 ### Stan konta w instrukcji zapisu
 
 Zapis sesji czyta stan blokady konta w tej samej instrukcji, która wstawia
-rekord, więc blokada zatwierdzona przez inne połączenie nie wejdzie między
-sprawdzenie a zapis.
+rekord, a razem z nim skrót hasła, który sesja nazywa, gdy go podano, więc
+blokada ani reset hasła zatwierdzone przez inne połączenie nie wejdą między
+sprawdzenie a zapis (D-112).
 
 ## Where in code
 

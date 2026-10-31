@@ -31,7 +31,7 @@ przejściu połączenia na TLS.
 
 ### Jedna wiadomość dla jednego odbiorcy, od ustalonego nadawcy
 
-- **Decision:** D-158
+- **Decision:** D-158 · D-219
 - **Invariant:** none
 - **Good:** Wiadomość ma jednego odbiorcę, ustalonego nadawcę z nazwą wyświetlaną, ustalony temat i treść zwykłym tekstem, a adres odbiorcy stoi tylko w jego własnym polu.
 - **Bad:** Obok tekstu stoi część HTML, adres gracza trafia do pola innego niż pole odbiorcy albo wiadomość ma drugiego odbiorcę.
@@ -39,7 +39,9 @@ przejściu połączenia na TLS.
 Adres odbiorcy pochodzi od gracza, więc plik traktuje go jak dane z zewnątrz:
 nie wstawia go do żadnego pola poza polem odbiorcy i nie dopuszcza, żeby dodał
 odbiorców lub tekst do nagłówka. Nadawca, nazwa wyświetlana, temat i treść są
-ustalone w pliku wysyłki, nie dobierane przez wywołującego. Przegląd każdej
+ustalone w pliku wysyłki, nie dobierane przez wywołującego; dotyczy to obu
+wiadomości, potwierdzającej i o ustawieniu nowego hasła, która ma tekst zwykły
+bez HTML (D-219). Przegląd każdej
 zmiany porównuje wiadomość z tą zasadą.
 
 ### Porażka jest wynikiem, nie błędem
@@ -81,8 +83,9 @@ od pliku wynik i nie sięga do błędów biblioteki poczty.
 
 ### Wzorzec rodzaju
 
-`src/server/account-mail.ts` ma czystą funkcję składania wiadomości
-potwierdzającej z adresu i odnośnika oraz nadawcę SMTP tworzony z ustawień
+`src/server/account-mail.ts` ma czyste funkcje składania wiadomości
+potwierdzającej (`composeConfirmationMessage`) i o ustawieniu nowego hasła
+(`composePasswordResetMessage`), każda z adresu i odnośnika, oraz nadawcę SMTP tworzony z ustawień
 poczty. Nadawca ma jedną operację, która przyjmuje złożoną wiadomość
 i zwraca wynik; trasy dostają go przez interfejs, więc ich testy podstawiają
 zastępczego nadawcę.
