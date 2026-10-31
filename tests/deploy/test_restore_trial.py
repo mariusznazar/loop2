@@ -169,9 +169,9 @@ class PasswordReading(unittest.TestCase):
             with self.subTest(text=repr(text)):
                 self.assertEqual(self.clean(text), (0, '"ascii-pass-1"'))
 
-    def test_only_the_first_mark_is_dropped_and_a_password_without_one_is_unchanged(self):
+    def test_every_leading_mark_is_dropped_and_a_mark_inside_or_none_is_unchanged(self):
         self.assertEqual(self.clean("ascii-pass-1\r\n"), (0, '"ascii-pass-1"'))
-        self.assertEqual(self.clean("\ufeff\ufeffx\n"), (0, '"\ufeffx"'))
+        self.assertEqual(self.clean("\ufeff\ufeffx\n"), (0, '"x"'))
         self.assertEqual(self.clean("pa ss-\ufeff1\n"), (0, '"pa ss-\ufeff1"'))
 
     def test_a_mark_alone_is_an_empty_password_and_is_refused(self):
