@@ -1,0 +1,64 @@
+name: AI Code Review
+
+# One paid model call per opened pull request. A push to an open pull request runs nothing, so a
+# series of pushes costs nothing; closing and reopening it asks for a new review.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    # A pull request from a fork gets no secrets, and its code must not run with them.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Prepare the diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: >-
+          git diff "origin/$BASE_REF...HEAD" --
+          .
+          ':(exclude,glob)**/package-lock.json'
+          ':(exclude)assets'
+          ':(exclude)dist'
+          > "$RUNNER_TEMP/pull-request.diff"
+
+      - name: Review the pull request
+        id: review
+        uses: ./.github/actions/ai-reviewer
+        with:
+          api-key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-6.1-terra
+          pr-title: ${{ github.event.pull_request.title }}
+          pr-body: ${{ github.event.pull_request.body }}
+          diff-file: ${{ runner.temp }}/pull-request.diff
+
+      - name: Comment on the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMENT_FILE: ${{ steps.review.outputs.comment-file }}
+        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$COMMENT_FILE"
+
+      - name: Stop on a failed review
+        if: steps.review.outputs.verdict == 'fail'
+        run: |
+          echo "The review did not pass, see the comment on the pull request."
+          exit 1
