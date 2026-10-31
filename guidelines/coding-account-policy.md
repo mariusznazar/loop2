@@ -19,10 +19,14 @@ Czytaj również ogólne wytyczne kodowania.
 
 ### Rezerwacja przed pracą hasła, rozliczenie po jej końcu
 
-- **Decision:** D-102 · D-103 · D-116
+- **Decision:** D-102 · D-103 · D-116 · D-226
 - **Invariant:** account-attempt-limits
-- **Good:** Trasa dostaje zgodę na próbę przed haszowaniem i rozlicza ją raz, po zakończeniu sprawdzenia hasła.
+- **Good:** Trasa logowania albo zakładania konta dostaje zgodę na próbę przed haszowaniem i rozlicza ją raz, po zakończeniu sprawdzenia hasła.
 - **Bad:** Próba jest liczona dopiero po haszowaniu albo zwalniana, gdy klient się rozłączy.
+
+Reguła dotyczy prób logowania i zakładania konta. Trasa ustawiania hasła
+odnośnikiem nie przyjmuje próby: przed pracą hasła sprawdza, czy odnośnik
+działa, a haszuje przez samą bramkę haseł (D-226).
 
 Dopuszczenie próby rezerwuje jej miejsce w progach adresu e-mail i adresu
 klienta, zanim zacznie się praca hasła, a rezerwacje liczą się do progu razem

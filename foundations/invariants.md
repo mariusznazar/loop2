@@ -717,7 +717,7 @@ The browser loads the built game and sends account and save requests to relative
 
 ## account-session-authorization
 
-The account API returns JSON 401 for `GET /api/account` and `GET /api/saved-game`, and for `PUT /api/saved-game`, `POST /api/email-confirmation-message` and `POST /api/logout` that meet the Origin, media-type and body requirements, without a valid server-side session, and an account identifier or email address supplied by the caller cannot authorize reading or changing another account or session or direct a message to another address.
+The account API returns JSON 401 for `GET /api/account` and `GET /api/saved-game`, and for `PUT /api/saved-game`, `POST /api/email-confirmation-message` and `POST /api/logout` that meet the Origin, media-type and body requirements, without a valid server-side session; an account identifier or email address supplied by the caller cannot authorize reading or changing another account or session or direct a message to another address, the address of a `POST /api/password-reset-message` naming only the account to whose own confirmed address a link may go; and a password-reset link sent to `POST /api/password-reset`, with or without a session, authorizes setting a new password of its own account and nothing else.
 
 - **Method:** test
 - **Rests on:** none
@@ -777,7 +777,7 @@ Opening an account database initializes the current schema version atomically, m
 
 ## account-session-storage
 
-The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, stores no session for a blocked account, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
+The SQLite session Store returns only valid stored account identity and cookie data for unexpired records, stores no session for a blocked account and none named with a password hash its account no longer holds, and renewal preserves identity and the later expiry without recreating removed or expired sessions.
 
 - **Method:** test
 - **Rests on:** express-session-store-contract · node-sqlite-database · express-session-cookie-lifecycle · cookie-serialization-validation · sqlite-wal-concurrency
@@ -787,7 +787,7 @@ The SQLite session Store returns only valid stored account identity and cookie d
 
 ## account-attempt-limits
 
-The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes since its last successful login or within 15 minutes of its fifth failure, a login from a client address with twenty failed or unsettled logins in the last 15 minutes and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only after the password work it started has completed, whether or not its client is still connected.
+The account server refuses before password work a login for an email address with five failed or unsettled logins in the last 15 minutes since its last successful login or successful password reset, or within 15 minutes of its fifth failure unless a password reset has succeeded since, a login from a client address with twenty failed or unsettled logins in the last 15 minutes, whether or not a password reset has succeeded since, and a registration from a client address with five created or unsettled accounts in the last hour, and settles each admitted attempt only after the password work it started has completed, whether or not its client is still connected.
 
 - **Method:** test
 - **Rests on:** none
@@ -867,7 +867,7 @@ A blocked account cannot sign in or use authenticated game endpoints.
 
 ## player-server-session
 
-The account server validates authenticated requests against a server-side SQLite session record and invalidates that record on logout or account blocking.
+The account server validates authenticated requests against a server-side SQLite session record and invalidates that record on logout, on account blocking or at a password reset of its account.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database · sqlite-wal-concurrency
@@ -897,7 +897,7 @@ An emailed confirmation link confirms its account's address only once, only befo
 
 ## unblock-restores-no-link
 
-An emailed link stopped when its account was blocked confirms nothing after the account is unblocked.
+An emailed link stopped when its account was blocked confirms nothing and sets no password after the account is unblocked.
 
 - **Method:** test
 - **Rests on:** none
@@ -917,7 +917,7 @@ The account server hands no account message to the mail service once 30 account 
 
 ## account-email-via-outsider
 
-Player email confirmation messages are sent from `mariusznazar.com` through Mikrus Outsider.
+Player email confirmation and password-reset messages are sent from `mariusznazar.com` through Mikrus Outsider.
 
 - **Method:** review
 - **Rests on:** mikrus-outsider-mail
@@ -927,7 +927,7 @@ Player email confirmation messages are sent from `mariusznazar.com` through Mikr
 
 ## account-email-nodemailer-starttls
 
-The account server submits player email confirmation messages to Mikrus Outsider with Nodemailer 10 only when the SMTP connection has upgraded to TLS.
+The account server submits player email confirmation and password-reset messages to Mikrus Outsider with Nodemailer 10 only when the SMTP connection has upgraded to TLS.
 
 - **Method:** test
 - **Rests on:** none
@@ -1063,6 +1063,36 @@ One death of a character is settled once: a further settling of that death and a
 - **Rests on:** none
 - **Derives from:** D-190 · D-212 · D-221
 - **Part:** simulation
+- **Violated:** no
+
+## password-reset-verified-email
+
+A password reset link is single-use and sent only to the account's previously confirmed email address.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-152 · D-155
+- **Part:** account-server
+- **Violated:** no
+
+## password-reset-link
+
+A password-reset link sets a new password only once, only before its expiry, only until a later password-reset link of its account has been recorded, only while its account is not blocked and only if no block stopped it, also after the account is unblocked; a refusal changes nothing, and a password the server does not accept and a full password gate leave the link working.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-112 · D-155 · D-160 · D-226
+- **Part:** account-server
+- **Violated:** no
+
+## password-reset-ends-sessions
+
+No session its account held when a password reset committed authorizes a request that starts after the reset, and no login or registration in progress at the reset leaves a session.
+
+- **Method:** test
+- **Rests on:** express-session-end-of-request · express-session-regenerated-session-saved-again
+- **Derives from:** D-112 · D-138
+- **Part:** account-server
 - **Violated:** no
 
 ## Withdrawn identifiers

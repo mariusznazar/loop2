@@ -4,7 +4,8 @@
  * apply; every role of the styleguide's table Roles; and samples of tiles in each state, drawn
  * with the roles by the game's own stylesheet — never a drawing of the game from a game state
  * (D-04). Forms and the header row of an unconfirmed address are shown waiting for the server and
- * with a refusal sentence, with made-up values. Code only this page needs stays in this module: beyond it the page imports only modules
+ * with a refusal sentence, and the form „Nie pamiętam hasła” with the sentence that answers its
+ * request, with made-up values. Code only this page needs stays in this module: beyond it the page imports only modules
  * the game itself uses, so nothing of the page is compiled into what `npm run build` writes.
  */
 import type { Account, ConfirmationMessage } from "../account-api.js";
@@ -18,7 +19,9 @@ import {
 } from "../view/controls/button.js";
 import { createNumberField } from "../view/controls/number-field.js";
 import { createSelectList } from "../view/controls/select-list.js";
+import { RESET_REQUESTED_SENTENCE } from "../view/account-screen.js";
 import {
+  createFormNote,
   createFormWarning,
   createPasswordField,
   createTextField,
@@ -222,63 +225,80 @@ function controlsSection(): HTMLElement {
 
 /** The sentences of the task and of the client in `account-api.ts`, as a form shows them (D-44). */
 const REFUSAL = "Nieprawidłowy adres e-mail lub hasło.";
+const ACCOUNT_EXISTS = "Konto z tym adresem już istnieje.";
 const NO_CONNECTION = "Brak połączenia z serwerem. Spróbuj ponownie.";
+const SERVER_ERROR = "Serwer nie mógł obsłużyć żądania. Spróbuj ponownie.";
+const TOO_MANY_ATTEMPTS = "Za dużo prób. Spróbuj ponownie za kilka minut.";
+
+/** The kinds of form the page shows, each with its button, its waiting text and its fields. */
+const FORM_KINDS = {
+  login: { button: "Zaloguj się", waiting: "Logowanie…" },
+  register: { button: "Załóż konto", waiting: "Zakładanie konta…" },
+  request: { button: "Wyślij odnośnik", waiting: "Wysyłanie…" },
+  reset: { button: "Ustaw hasło", waiting: "Ustawianie…" },
+} as const;
+
+type FormKind = keyof typeof FORM_KINDS;
 
 /**
  * A form of the account screen as the page shows it, with a made-up address and password: the
- * sign-in form or the registration form, waiting for the server (its fields locked and its button
- * waiting) or with the sentence of a refusal under it.
+ * sign-in form, the registration form, the form „Nie pamiętam hasła” or the form „Ustaw nowe
+ * hasło”, waiting for the server (its fields locked and its button waiting), with the sentence of
+ * a refusal under it, or, for the request form, with the sentence that answers a request (shown in
+ * `text-secondary`, which refuses nothing).
  */
 function formSample(
-  kind: "login" | "register",
-  state: "waiting" | "warning",
+  kind: FormKind,
+  state: "waiting" | "warning" | "note",
   sentence: string | null,
 ): HTMLElement {
-  const registering = kind === "register";
   const form = document.createElement("form");
   form.className = "form";
   // The page sends nothing: the handler only keeps the page from reloading on Enter.
   form.addEventListener("submit", (event) => event.preventDefault());
-  const fields = [
-    createTextField({
-      label: "Adres e-mail",
-      hint: "adres e-mail",
-      visibleLabel: true,
-      autocomplete: "email",
-    }),
-    createPasswordField({
-      label: "Hasło",
-      hint: "hasło",
-      visibleLabel: true,
-      autocomplete: registering ? "new-password" : "current-password",
-    }),
-  ];
-  if (registering)
-    fields.push(
-      createPasswordField({
-        label: "Powtórz hasło",
-        hint: "hasło jeszcze raz",
-        visibleLabel: true,
-        autocomplete: "new-password",
-      }),
-    );
-  const values = [
-    "przyklad@example.com",
-    "przykładowe-hasło",
-    "przykładowe-hasło",
-  ];
+  const password = (label: string, hint: string, autocomplete: string) =>
+    createPasswordField({ label, hint, visibleLabel: true, autocomplete });
+  const address = createTextField({
+    label: "Adres e-mail",
+    hint: "adres e-mail",
+    visibleLabel: true,
+    autocomplete: "email",
+  });
+  const fields: Field[] = {
+    login: [address, password("Hasło", "hasło", "current-password")],
+    register: [
+      address,
+      password("Hasło", "hasło", "new-password"),
+      password("Powtórz hasło", "hasło jeszcze raz", "new-password"),
+    ],
+    request: [address],
+    reset: [
+      password("Nowe hasło", "nowe hasło", "new-password"),
+      password("Powtórz hasło", "hasło jeszcze raz", "new-password"),
+    ],
+  }[kind];
+  const values =
+    kind === "request"
+      ? ["przyklad@example.com"]
+      : kind === "reset"
+        ? ["przykładowe-hasło", "przykładowe-hasło"]
+        : ["przyklad@example.com", "przykładowe-hasło", "przykładowe-hasło"];
   fields.forEach((field, index) => {
     field.input.value = values[index];
     field.input.disabled = state === "waiting";
   });
-  const button = createButton(registering ? "Załóż konto" : "Zaloguj się", {
-    submit: true,
-  });
-  if (state === "waiting")
-    setButtonWaiting(button, registering ? "Zakładanie konta…" : "Logowanie…");
-  const warning = createFormWarning();
-  warning.set(sentence);
-  form.append(...fields.map((field) => field.element), button, warning.element);
+  const button = createButton(FORM_KINDS[kind].button, { submit: true });
+  if (state === "waiting") setButtonWaiting(button, FORM_KINDS[kind].waiting);
+  form.append(...fields.map((field) => field.element), button);
+  if (state === "note") {
+    const note = createFormNote();
+    note.set(sentence);
+    form.append(note.element);
+  } else {
+    const warning = createFormWarning();
+    warning.set(sentence);
+    form.append(warning.element);
+  }
   return form;
 }
 
@@ -294,8 +314,32 @@ function formsSection(): HTMLElement {
     ],
     ["Zaloguj się: odmowa serwera", formSample("login", "warning", REFUSAL)],
     [
+      "Załóż konto: odmowa serwera",
+      formSample("register", "warning", ACCOUNT_EXISTS),
+    ],
+    [
       "Załóż konto: brak połączenia",
       formSample("register", "warning", NO_CONNECTION),
+    ],
+    [
+      "Nie pamiętam hasła: oczekiwanie na serwer",
+      formSample("request", "waiting", null),
+    ],
+    [
+      "Nie pamiętam hasła: odmowa serwera",
+      formSample("request", "warning", SERVER_ERROR),
+    ],
+    [
+      "Nie pamiętam hasła: odpowiedź na prośbę",
+      formSample("request", "note", RESET_REQUESTED_SENTENCE),
+    ],
+    [
+      "Ustaw nowe hasło: oczekiwanie na serwer",
+      formSample("reset", "waiting", null),
+    ],
+    [
+      "Ustaw nowe hasło: odmowa serwera",
+      formSample("reset", "warning", TOO_MANY_ATTEMPTS),
     ],
   ];
   const list = document.createElement("div");

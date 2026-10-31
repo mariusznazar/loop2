@@ -3,7 +3,8 @@
  * an `<input>` with, under it, the message of its error state, both in one wrapper that
  * `styles.css` draws from its classes. An empty field shows its hint, if it has one. A field
  * waiting for a server is locked by `input.disabled`, which draws the state disabled. The module
- * also makes the one sentence under a form that tells of a server refusal or a lost connection.
+ * also makes the one sentence under a form that tells of a server refusal or a lost connection and
+ * the one that tells of an answer which refuses nothing.
  * Nothing here runs when the module is imported.
  */
 
@@ -106,6 +107,32 @@ export function createFormWarning(): FormWarning {
   const element = document.createElement("p");
   element.className = "form-warning";
   element.setAttribute("role", "alert");
+  element.hidden = true;
+  return {
+    element,
+    set(sentence: string | null): void {
+      element.hidden = sentence === null;
+      element.textContent = sentence ?? "";
+    },
+  };
+}
+
+export type FormNote = {
+  /** The sentence to place under the form; it is hidden while there is none. */
+  element: HTMLElement;
+  /** Shows `sentence` in the role `status`, or, given null, removes it. */
+  set(sentence: string | null): void;
+};
+
+/**
+ * The one sentence under a form that tells of an answer which refuses nothing, such as the one to
+ * a request for a password-reset link (D-44, D-222). It stands where the warning stands, in
+ * `text-secondary`, and is announced politely to assistive technology when it appears.
+ */
+export function createFormNote(): FormNote {
+  const element = document.createElement("p");
+  element.className = "form-note";
+  element.setAttribute("role", "status");
   element.hidden = true;
   return {
     element,

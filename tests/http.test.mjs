@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { request } from "node:http";
-import { createHmac, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes } from "node:crypto";
 import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import argon2 from "argon2";
 import session from "express-session";
-import { AccountPolicy } from "../dist/server/account-policy.js";
+import {
+  AccountPolicy,
+  checkNewPassword,
+  checkRegistration,
+} from "../dist/server/account-policy.js";
 import { createApp } from "../dist/server/app.js";
 import { openAccountRuntime } from "../dist/server/configuration.js";
 import { AccountDatabase } from "../dist/server/database.js";
@@ -203,6 +207,8 @@ test("unconfigured accounts answer the canonical account routes as unavailable J
     ["POST", "/api/logout"],
     ["POST", "/api/email-confirmation"],
     ["POST", "/api/email-confirmation-message"],
+    ["POST", "/api/password-reset-message"],
+    ["POST", "/api/password-reset"],
     ["GET", "/api/saved-game"],
     ["PUT", "/api/saved-game"],
   ]) {
@@ -310,14 +316,22 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
   const mailer = standInMailer();
   // A case may act just before a route records a link, as another connection
   // committing between the route's session check and its write would.
-  const hooks = { beforeIssue: null, beforeSave: null };
+  const hooks = {
+    beforeIssue: null,
+    beforeSave: null,
+    beforeFind: null,
+    beforeReset: null,
+  };
   const database = new Proxy(runtime.database, {
     get(target, name) {
       const value = Reflect.get(target, name, target);
       if (typeof value !== "function") return value;
-      const hook = { issueLink: "beforeIssue", writeSavedGame: "beforeSave" }[
-        name
-      ];
+      const hook = {
+        issueLink: "beforeIssue",
+        writeSavedGame: "beforeSave",
+        findAccountByEmail: "beforeFind",
+        resetPassword: "beforeReset",
+      }[name];
       if (!hook) return value.bind(target);
       return (...parameters) => {
         hooks[hook]?.();
@@ -350,6 +364,7 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
     path,
     mailer,
     hooks,
+    listening,
     keys,
     first,
     second,
@@ -1439,6 +1454,232 @@ test(
   },
 );
 
+// Clearing an address's attempts after a password reset (D-102, task
+// reset-hasla). These cases drive the policy with an explicit clock.
+function clockedPolicy(options = {}) {
+  const clock = { time: 1_000_000 };
+  return {
+    clock,
+    policy: new AccountPolicy({ now: () => clock.time, ...options }),
+  };
+}
+
+function failLogin(policy, email, address) {
+  const ticket = policy.admitLogin(email, address);
+  assert.ok(ticket, `${email} from ${address} is admitted`);
+  ticket.fail();
+}
+
+test("the password rules of a new password are those of registration, with the same problems", () => {
+  const long = "p".repeat(12);
+  assert.deepEqual(
+    checkNewPassword({ password: long, passwordConfirmation: long }),
+    {
+      ok: true,
+      password: long,
+    },
+  );
+  assert.deepEqual(
+    checkNewPassword({
+      password: "p".repeat(11),
+      passwordConfirmation: "p".repeat(11),
+    }),
+    { ok: false, problem: "invalid-password" },
+  );
+  assert.deepEqual(
+    checkNewPassword({ password: long, passwordConfirmation: `${long}x` }),
+    { ok: false, problem: "password-mismatch" },
+  );
+  assert.deepEqual(
+    checkRegistration({
+      email: " A@B ",
+      password: long,
+      passwordConfirmation: `${long}x`,
+    }),
+    { ok: false, problem: "password-mismatch" },
+  );
+  assert.deepEqual(
+    checkRegistration({
+      email: "nobody",
+      password: "short",
+      passwordConfirmation: "short",
+    }),
+    { ok: false, problem: "invalid-email" },
+  );
+  assert.deepEqual(
+    checkRegistration({
+      email: " A@B ",
+      password: long,
+      passwordConfirmation: long,
+    }),
+    { ok: true, email: "a@b", password: long },
+  );
+});
+
+test("a locked address admits a login after its attempts are cleared, and failures before the lock are forgotten", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that leaves the lock or the failures; a lock lifted for
+  // every address.
+  const { clock, policy } = clockedPolicy();
+  for (let attempt = 0; attempt < 5; attempt += 1)
+    failLogin(policy, "locked@example.test", `198.51.100.${attempt}`);
+  failLogin(policy, "other@example.test", "198.51.100.9");
+  clock.time += minute;
+  assert.equal(policy.admitLogin("locked@example.test", "198.51.100.77"), null);
+  policy.clearEmailAttempts("locked@example.test");
+  const ticket = policy.admitLogin("locked@example.test", "198.51.100.77");
+  assert.ok(ticket, "the cleared address is admitted inside the old lock");
+  ticket.release();
+  for (let attempt = 0; attempt < 4; attempt += 1)
+    failLogin(policy, "locked@example.test", "198.51.100.78");
+  const last = policy.admitLogin("locked@example.test", "198.51.100.78");
+  assert.ok(last, "four failures after the clear do not lock");
+  last.fail();
+  assert.equal(
+    policy.admitLogin("locked@example.test", "198.51.100.79"),
+    null,
+    "five new failures lock again",
+  );
+  failLogin(policy, "other@example.test", "198.51.100.9");
+  assert.equal(policy.inFlight, 0);
+});
+
+test("clearing an address's attempts leaves its client address's failures counting", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that empties the client-address entries too.
+  const { policy } = clockedPolicy();
+  const address = "198.51.100.20";
+  for (let attempt = 0; attempt < 5; attempt += 1)
+    failLogin(policy, "locked@example.test", address);
+  for (let other = 0; other < 3; other += 1)
+    for (let attempt = 0; attempt < 4; attempt += 1)
+      failLogin(policy, `other-${other}@example.test`, address);
+  // 5 + 4 + 4 + 4 = 17 so far; three more reach twenty.
+  for (let attempt = 0; attempt < 3; attempt += 1)
+    failLogin(policy, `more-${attempt}@example.test`, address);
+  assert.equal(policy.admitLogin("fresh@example.test", address), null);
+  policy.clearEmailAttempts("locked@example.test");
+  assert.equal(
+    policy.admitLogin("locked@example.test", address),
+    null,
+    "the client address is still at its limit",
+  );
+  const elsewhere = policy.admitLogin("locked@example.test", "198.51.100.21");
+  assert.ok(elsewhere, "the cleared address is admitted from another client");
+  elsewhere.release();
+});
+
+test("a login in progress at a clear keeps its reservation and settles once on the same entry", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that drops the entry, resets the reservation or lets a
+  // settlement count twice.
+  const { policy } = clockedPolicy();
+  const email = "busy@example.test";
+  const address = "198.51.100.30";
+  for (let attempt = 0; attempt < 3; attempt += 1)
+    failLogin(policy, email, `198.51.100.${35 + attempt}`);
+  const running = policy.admitLogin(email, address);
+  assert.ok(running);
+  assert.equal(policy.inFlight, 1);
+  policy.clearEmailAttempts(email);
+  assert.equal(policy.inFlight, 1, "the clear does not settle the login");
+  for (let attempt = 0; attempt < 4; attempt += 1)
+    failLogin(policy, email, `198.51.100.${40 + attempt}`);
+  assert.equal(
+    policy.admitLogin(email, "198.51.100.50"),
+    null,
+    "four failures and the reservation of the login in progress are five",
+  );
+  running.fail();
+  running.fail();
+  running.succeed();
+  assert.equal(policy.inFlight, 0, "settled once");
+  assert.equal(
+    policy.admitLogin(email, "198.51.100.51"),
+    null,
+    "its failure counts after the clear: five failures lock the address",
+  );
+});
+
+// Admits and fails logins of one address from one client until it refuses.
+function failsUntilRefused(policy, email, address) {
+  let admitted = 0;
+  for (;;) {
+    const ticket = policy.admitLogin(email, address);
+    if (!ticket) return admitted;
+    ticket.fail();
+    admitted += 1;
+  }
+}
+
+test("a login in progress at a clear that is released leaves the failures made after the clear counting", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that installs a new entry and copies the reservation, so
+  // that the old ticket's release lands on an entry nobody reads.
+  const { policy } = clockedPolicy();
+  const email = "released@example.test";
+  const running = policy.admitLogin(email, "198.51.100.60");
+  assert.ok(running);
+  policy.clearEmailAttempts(email);
+  failLogin(policy, email, "198.51.100.61");
+  running.release();
+  running.release();
+  assert.equal(policy.inFlight, 0, "settled once");
+  assert.equal(
+    failsUntilRefused(policy, email, "198.51.100.62"),
+    4,
+    "one failure after the clear, then four more admissions up to the limit of five",
+  );
+});
+
+test("a login in progress at a clear leaves no reservation behind once it has failed", () => {
+  // invariant: account-attempt-limits
+  // Faults: a clear that installs a new entry and copies the reservation, so
+  // that the reservation is never settled and counts for ever.
+  const { clock, policy } = clockedPolicy();
+  const email = "failed@example.test";
+  const running = policy.admitLogin(email, "198.51.100.70");
+  assert.ok(running);
+  policy.clearEmailAttempts(email);
+  running.fail();
+  clock.time += 16 * minute;
+  const held = [];
+  for (let ticket = policy.admitLogin(email, "198.51.100.71"); ticket;) {
+    held.push(ticket);
+    ticket = policy.admitLogin(email, "198.51.100.71");
+  }
+  assert.equal(held.length, 5, "no reservation outlives the settled login");
+  for (const ticket of held) ticket.release();
+  assert.equal(policy.inFlight, 0);
+});
+
+test("clearing an unknown address changes nothing and a clear frees a locked place without touching others", () => {
+  // invariant: account-attempt-tracking
+  // Faults: a clear that fills a place for an address with no entry, or that
+  // disturbs another live entry of a full table.
+  const { policy } = clockedPolicy({ keyCapacity: 2 });
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    failLogin(policy, "one@example.test", "198.51.100.60");
+    failLogin(policy, "two@example.test", "198.51.100.70");
+  }
+  policy.clearEmailAttempts("nobody@example.test");
+  assert.equal(
+    policy.admitLogin("three@example.test", "198.51.100.60"),
+    null,
+    "a full table of live entries still refuses a newcomer",
+  );
+  assert.equal(policy.admitLogin("two@example.test", "198.51.100.60"), null);
+  policy.clearEmailAttempts("one@example.test");
+  const ticket = policy.admitLogin("three@example.test", "198.51.100.60");
+  assert.ok(ticket, "the cleared address no longer holds its place");
+  ticket.release();
+  assert.equal(
+    policy.admitLogin("two@example.test", "198.51.100.70"),
+    null,
+    "another address keeps its lock",
+  );
+});
+
 // Blocking by the owner (task blokada-konta, To do 3 and 4). The message is the
 // one the owner settled (task, question 4; Mariusz, 2026-10-28).
 const blockedMessage = "To konto jest zablokowane.";
@@ -1601,6 +1842,91 @@ test(
     assert.equal(sessionCount(f), 0, "no session is stored");
     assertLoginRefused(await login(f, email, `${password}!`), "fifth failure");
     assertLimited(await login(f, email, password), "the four still counted");
+  },
+);
+
+// A reset committed directly on the database, as a reset request does in one
+// transaction: the link is recorded, then the password hash replaced and every
+// session of the account deleted.
+function resetDirectly(f, email, passwordHash) {
+  const tokenDigest = createHash("sha256")
+    .update(randomBytes(16))
+    .digest("base64url");
+  const issued = f.runtime.database.issueLink(
+    {
+      accountId: storedAccount(f, email).id,
+      purpose: "password-reset",
+      tokenDigest,
+      lifetimeMs: 60 * minute,
+    },
+    { windowMs: 60 * minute, total: 30, perAccount: 3 },
+  );
+  assert.equal(issued, "issued", "precondition: a reset link is recorded");
+  assert.equal(
+    f.runtime.database.resetPassword(tokenDigest, passwordHash).outcome,
+    "reset",
+  );
+}
+
+test(
+  "a password replaced while the old password is checked refuses that login, stores no session and clears no failure",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-ends-sessions
+    // Faults: a login deciding on the account it read before the password
+    // check, so that it answers 503 or stores a session of the old password;
+    // a refusal counted as a failure or as a success.
+    const f = await accountFixture(t);
+    const email = "replaced-during@example.test";
+    assert.equal(
+      (await register(f, email, { address: "198.51.100.95" })).status,
+      201,
+    );
+    const replacement = await hashPassword("a password set by the reset");
+    for (let attempt = 1; attempt <= 4; attempt += 1)
+      assertLoginRefused(
+        await login(f, email, `${password}!`),
+        `failure ${attempt}`,
+      );
+    assert.equal(sessionCount(f), 1, "precondition: the registration's own");
+    const pending = login(f, email, password);
+    await waitFor(() => f.policy.inFlight === 1, "login admitted");
+    resetDirectly(f, email, replacement);
+    assertLoginRefused(await pending, "replaced meanwhile");
+    assert.equal(sessionCount(f), 0, "no session is stored");
+    assertLoginRefused(await login(f, email, `${password}!`), "fifth failure");
+    assertLimited(await login(f, email, password), "the four still counted");
+  },
+);
+
+test(
+  "a password replaced while a registration waits on its message leaves no session, and the cookie it got is refused",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-ends-sessions
+    // Fault: a second store, made when the response ends, that writes without
+    // the guard; the login case commits before either store and cannot see it.
+    const f = await accountFixture(t);
+    const email = "replaced-waiting@example.test";
+    f.mailer.outcome = "hold";
+    const settled = register(f, email, { address: "198.51.100.96" }).then(
+      (response) => response,
+      (error) => error,
+    );
+    const replacement = await hashPassword("a password set by the reset");
+    try {
+      await waitFor(() => f.mailer.held.length === 1, "message handed on");
+      assert.equal(sessionCount(f), 1, "precondition: the first store");
+      resetDirectly(f, email, replacement);
+      assert.equal(sessionCount(f), 0, "the reset deleted it");
+    } finally {
+      for (const answer of f.mailer.held) answer("sent");
+    }
+    const response = await settled;
+    assert.equal(response.status, 201, "the registration still answers");
+    assert.equal(sessionCount(f), 0, "the second store put nothing back");
+    const { cookie } = issuedSession(response, "registration");
+    assertRefusal(await readAccount(f, cookie), 401, "its cookie");
   },
 );
 
@@ -2194,6 +2520,1091 @@ test(
       );
     }
     assert.ok(!logged.some((line) => line.includes("confirm-email")));
+  },
+);
+
+// The request for a password-reset link (task reset-hasla, spec decisions 1 to 3).
+const resetMessagePath = "/api/password-reset-message";
+const hour = 60 * minute;
+const invalidEmail = {
+  code: "invalid-email",
+  error: "Podaj adres e-mail w postaci nazwa@domena.",
+};
+
+function askReset(f, email, options = {}) {
+  return post(f, resetMessagePath, { email }, options);
+}
+
+// The configured public origin, `/#reset-password=` and 43 base64url
+// characters, alone on a line of the message.
+function resetTokenOf(message) {
+  assert.ok(message, "a message was handed on");
+  const link =
+    /^https:\/\/game\.example\.test:8443\/#reset-password=([A-Za-z0-9_-]{43})$/m.exec(
+      message.text,
+    );
+  assert.ok(link, "the message holds the reset link on a line of its own");
+  return link[1];
+}
+
+// An account whose address is confirmed, made directly in the database.
+function confirmedAccount(f, email) {
+  const account = f.runtime.database.createAccount(email, f.runtime.dummyHash);
+  assert.ok(account, `precondition: an account for ${email}`);
+  f.inspection
+    .prepare("UPDATE accounts SET email_confirmed_at = ? WHERE email = ?")
+    .run(Date.now(), email);
+  return account;
+}
+
+function resetLinks(f, accountId) {
+  return f.inspection
+    .prepare(
+      "SELECT token_digest AS digest, created_at AS createdAt, expires_at AS expiresAt, spent FROM emailed_links WHERE account_id = ? AND purpose = 'password-reset' ORDER BY created_at, rowid",
+    )
+    .all(accountId);
+}
+
+// Work that follows an answer ends after it, and immediates run in order: a
+// request for a confirmed control address, once its message is handed on,
+// shows that the work of every earlier request has ended (spec decision 2).
+let controlCount = 0;
+async function afterEarlierWork(f) {
+  controlCount += 1;
+  const email = `control-${controlCount}@example.test`;
+  confirmedAccount(f, email);
+  const outcome = f.mailer.outcome;
+  f.mailer.outcome = "sent";
+  try {
+    assert.equal((await askReset(f, email)).status, 204, "control request");
+    await waitFor(
+      () => f.mailer.messages.some((message) => message.to === email),
+      "control message",
+    );
+  } finally {
+    f.mailer.outcome = outcome;
+  }
+  return email;
+}
+
+function shapeOf(response) {
+  const headers = { ...response.headers };
+  delete headers.date;
+  return { status: response.status, body: response.body, headers };
+}
+
+// Every line the server's log gets while the test runs.
+function captureLog(t) {
+  const logged = [];
+  const methods = ["log", "info", "warn", "error", "debug"];
+  const originals = methods.map((name) => console[name]);
+  t.after(() =>
+    methods.forEach((name, index) => {
+      console[name] = originals[index];
+    }),
+  );
+  for (const name of methods)
+    console[name] = (...values) => logged.push(values.map(String).join(" "));
+  return logged;
+}
+
+test(
+  "a request for a reset link is answered before the mail service is asked, whatever it does",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // Faults: the answer waiting for the mailer's answer; the answer
+    // carrying a body.
+    const f = await accountFixture(t);
+    confirmedAccount(f, "waiting@example.test");
+    f.mailer.outcome = "hold";
+    const started = Date.now();
+    try {
+      const response = await askReset(f, "waiting@example.test");
+      assert.equal(response.status, 204);
+      assert.equal(response.body, "");
+      assert.equal(response.headers["cache-control"], "no-store");
+      // The answer came while the mailer, once asked, held its own back.
+      await waitFor(() => f.mailer.held.length === 1, "message handed on");
+      assert.ok(Date.now() - started < 2000, "answered long before 10 seconds");
+    } finally {
+      for (const answer of f.mailer.held) answer("sent");
+    }
+    assert.deepEqual(
+      f.mailer.messages.map((message) => message.to),
+      ["waiting@example.test"],
+    );
+  },
+);
+
+test(
+  "the answer to a request for a reset link ends before the account is looked up and before the link is recorded",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // Faults: the lookup of the account or the recording of its link run
+    // before the response has ended, or in the same turn right after it
+    // (D-222, which gives this order as its verification).
+    const f = await accountFixture(t);
+    const order = [];
+    f.listening.on("request", (_request, response) =>
+      response.on("finish", () => order.push("answer")),
+    );
+    f.hooks.beforeFind = () => order.push("lookup");
+    f.hooks.beforeIssue = () => order.push("record");
+    for (let index = 0; index < 3; index += 1) {
+      const email = `order-${index}@example.test`;
+      confirmedAccount(f, email);
+      order.length = 0;
+      assert.equal((await askReset(f, email)).status, 204);
+      await waitFor(() => f.mailer.messages.length === index + 1, "message");
+      assert.deepEqual(order, ["answer", "lookup", "record"], `run ${index}`);
+    }
+  },
+);
+
+test(
+  "a well-formed address gets the same answer whether its account is confirmed, unknown, unconfirmed, blocked, above a limit or fails to record, and the last five hand nothing on",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // Faults: a different status or body for one account state; a message to
+    // an unconfirmed, unknown or blocked account or above a limit.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    confirmedAccount(f, "reachable@example.test");
+    const blocked = confirmedAccount(f, "blocked@example.test");
+    assert.equal(
+      f.runtime.database.blockAccount("blocked@example.test"),
+      "blocked",
+    );
+    const full = confirmedAccount(f, "full@example.test");
+    recordMessages(f, full.id, 3);
+    const failing = confirmedAccount(f, "failing@example.test");
+
+    const reference = await askReset(f, "reachable@example.test");
+    assert.equal(reference.status, 204);
+    assert.equal(reference.body, "");
+    await waitFor(() => f.mailer.messages.length === 1, "reference message");
+    assert.equal(f.mailer.messages[0].to, "reachable@example.test");
+
+    for (const [label, email] of [
+      ["unknown", "nobody@example.test"],
+      ["unconfirmed", "second@example.test"],
+      ["blocked", "blocked@example.test"],
+      ["above a limit", "full@example.test"],
+    ]) {
+      const handed = f.mailer.messages.length;
+      const links = linkCount(f);
+      const response = await askReset(f, email);
+      assert.deepEqual(shapeOf(response), shapeOf(reference), label);
+      const control = await afterEarlierWork(f);
+      assert.deepEqual(
+        f.mailer.messages.slice(handed).map((message) => message.to),
+        [control],
+        `${label}: nothing handed on but the control's`,
+      );
+      assert.equal(linkCount(f), links + 1, `${label}: only the control's`);
+    }
+    assert.equal(resetLinks(f, blocked.id).length, 0);
+    assert.equal(resetLinks(f, full.id).length, 0);
+    assert.equal(logged.length, 0, "no case is a failure to log");
+
+    const handed = f.mailer.messages.length;
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_link BEFORE INSERT ON emailed_links
+      BEGIN SELECT RAISE(ABORT, 'synthetic link refusal'); END;
+    `);
+    const response = await askReset(f, "failing@example.test");
+    assert.deepEqual(shapeOf(response), shapeOf(reference), "recording fails");
+    await waitFor(() => logged.length === 1, "the failure is logged");
+    f.inspection.exec("DROP TRIGGER refuse_link");
+    const control = await afterEarlierWork(f);
+    assert.deepEqual(
+      f.mailer.messages.slice(handed).map((message) => message.to),
+      [control],
+      "recording fails: nothing handed on but the control's",
+    );
+    assert.equal(resetLinks(f, failing.id).length, 0);
+    assert.doesNotMatch(logged.join("\n"), /failing@|synthetic/);
+  },
+);
+
+test(
+  "a failed lookup after the answer leaves the process alive and one fixed line in the log without the address",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // Faults: the work after the answer rejecting and ending the process; the
+    // address or the error's text written to the log; the answer changing.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    confirmedAccount(f, "lookup@example.test");
+    f.hooks.beforeFind = () => {
+      throw new Error("synthetic lookup fault for lookup@example.test");
+    };
+    const response = await askReset(f, "lookup@example.test");
+    assert.equal(response.status, 204);
+    assert.equal(response.body, "");
+    await waitFor(() => logged.length >= 1, "the failure is logged");
+    f.hooks.beforeFind = null;
+    const control = await afterEarlierWork(f);
+    assert.deepEqual(
+      f.mailer.messages.map((message) => message.to),
+      [control],
+      "the failed lookup handed nothing on",
+    );
+    assert.equal(logged.length, 1, "one line");
+    assert.doesNotMatch(logged[0], /lookup@|synthetic|example\.test/);
+    assert.equal(
+      (await askReset(f, "lookup@example.test")).status,
+      204,
+      "the server still answers",
+    );
+    await waitFor(
+      () =>
+        f.mailer.messages.some(
+          (message) => message.to === "lookup@example.test",
+        ),
+      "the next request is served",
+    );
+  },
+);
+
+test(
+  "an address not written as name@domain is refused with invalid-email and a body of other fields with invalid-request, and nothing is handed on",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // invariant: account-mutation-request-guards
+    // Faults: work started for a badly written address; a body naming
+    // anything else than the address accepted; a coerced field.
+    const f = await accountFixture(t);
+    confirmedAccount(f, "named@example.test");
+    for (const email of [
+      "",
+      "   ",
+      "no-at-sign",
+      "@domain",
+      "name@",
+      "a@b@c",
+    ]) {
+      const response = await askReset(f, email);
+      assert.equal(response.status, 400, JSON.stringify(email));
+      assert.match(response.headers["content-type"], /^application\/json/);
+      assert.equal(response.headers["cache-control"], "no-store");
+      assert.deepEqual(JSON.parse(response.body), invalidEmail);
+    }
+    for (const fields of [
+      {},
+      { email: 7 },
+      { email: null },
+      { email: ["named@example.test"] },
+      { email: "named@example.test", accountId: f.first.id },
+      { email: "named@example.test", to: "elsewhere@example.test" },
+      { address: "named@example.test" },
+    ])
+      assertInvalidRequest(
+        await post(f, resetMessagePath, fields),
+        JSON.stringify(fields),
+      );
+    const control = await afterEarlierWork(f);
+    assert.deepEqual(
+      f.mailer.messages.map((message) => message.to),
+      [control],
+      "nothing handed on but the control's",
+    );
+    assert.equal(linkCount(f), 1, "only the control's link");
+  },
+);
+
+test(
+  "a request needs no session, names only the account whose confirmed address gets the link, and nothing else in the request changes where it goes",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-session-authorization
+    // invariant: password-reset-verified-email
+    // Faults: a session required or used to pick the account; a field, query
+    // or header taking the message to another address; an address not
+    // normalized as at registration.
+    const f = await accountFixture(t);
+    const target = confirmedAccount(f, "target@example.test");
+    const other = confirmedAccount(f, "other@example.test");
+    const own = seed(f, "reset-other", other);
+
+    assert.equal((await askReset(f, "target@example.test")).status, 204);
+    await waitFor(() => f.mailer.messages.length === 1, "without a session");
+    const query = `accountId=${other.id}&email=other%40example.test`;
+    const sent = await f.send(`${resetMessagePath}?${query}`, {
+      method: "POST",
+      headers: {
+        ...logoutHeaders,
+        Cookie: own,
+        "X-Account-Id": other.id,
+        "X-Forwarded-For": "198.51.100.77",
+      },
+      body: JSON.stringify({ email: "  TARGET@Example.Test " }),
+    });
+    assert.equal(sent.status, 204, "with another account's session");
+    await waitFor(() => f.mailer.messages.length === 2, "with a session");
+    assert.deepEqual(
+      f.mailer.messages.map((message) => message.to),
+      ["target@example.test", "target@example.test"],
+    );
+    assert.equal(resetLinks(f, other.id).length, 0, "the session's account");
+    assert.equal(resetLinks(f, target.id).length, 2);
+    assert.equal(
+      storedRow(f, "reset-other")?.account_id,
+      other.id,
+      "the session is untouched",
+    );
+    assert.equal(sessionCount(f), 1, "no session made");
+  },
+);
+
+test(
+  "a recorded reset link lives one hour, a later request stops the earlier link, and each message is of the password-reset kind",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // Faults: a lifetime other than one hour; an earlier link left working
+    // beside the newest; the route handing on another message than the
+    // password-reset message (its subject, D-227).
+    const f = await accountFixture(t);
+    const account = confirmedAccount(f, "lifetime@example.test");
+    f.mailer.outcome = "failed";
+    assert.equal((await askReset(f, "lifetime@example.test")).status, 204);
+    await waitFor(() => f.mailer.messages.length === 1, "first message");
+    f.mailer.outcome = "sent";
+    assert.equal((await askReset(f, "lifetime@example.test")).status, 204);
+    await waitFor(() => f.mailer.messages.length === 2, "second message");
+    const [first, second] = f.mailer.messages.map(resetTokenOf);
+    assert.notEqual(first, second);
+    const digest = (token) =>
+      createHash("sha256").update(token).digest("base64url");
+    const links = resetLinks(f, account.id);
+    assert.equal(links.length, 2);
+    assert.deepEqual(
+      links.map((link) => [link.digest, link.spent]),
+      [
+        [digest(first), 1],
+        [digest(second), 0],
+      ],
+      "only the later link works, though the earlier message failed",
+    );
+    for (const link of links)
+      assert.equal(link.expiresAt - link.createdAt, hour, "one hour");
+    for (const message of f.mailer.messages)
+      assert.equal(message.subject, "Ustaw nowe hasło w loop2");
+    assert.doesNotMatch(f.mailer.messages[1].text, /confirm-email/);
+    assert.equal(linkCount(f, account.id), 2);
+  },
+);
+
+test(
+  "a reset message counts against the limits shared with the confirmation message: three an hour for an account, thirty in all",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-message-limits
+    // Faults: reset messages outside the count; a limit checked after the
+    // message is handed on; a limit for reset messages of its own.
+    const f = await accountFixture(t);
+    const owner = confirmedAccount(f, "counted@example.test");
+    f.mailer.outcome = "failed";
+    for (let index = 0; index < 3; index += 1)
+      assert.equal((await askReset(f, "counted@example.test")).status, 204);
+    await waitFor(() => f.mailer.messages.length === 3, "three messages");
+    let control = await afterEarlierWork(f);
+    assert.equal(f.mailer.messages.length, 4, "the fourth is not handed on");
+    assert.equal(resetLinks(f, owner.id).length, 3, "the fourth not recorded");
+    assert.equal(f.mailer.messages.at(-1).to, control);
+
+    // Two confirmation messages recorded, one reset message: the three of an hour.
+    const mixed = confirmedAccount(f, "mixed@example.test");
+    recordMessages(f, mixed.id, 2);
+    assert.equal((await askReset(f, "mixed@example.test")).status, 204);
+    await waitFor(
+      () => f.mailer.messages.some((message) => message.to === mixed.email),
+      "the third of the hour",
+    );
+    const handed = f.mailer.messages.length;
+    assert.equal((await askReset(f, "mixed@example.test")).status, 204);
+    control = await afterEarlierWork(f);
+    assert.deepEqual(
+      f.mailer.messages.slice(handed).map((message) => message.to),
+      [control],
+      "the fourth of the hour is not handed on",
+    );
+
+    // Thirty in all: reset messages count beside the recorded ones.
+    const crowd = confirmedAccount(f, "crowd@example.test");
+    f.mailer.outcome = "sent";
+    recordMessages(f, crowd.id, 30 - linkCount(f) - 1);
+    assert.equal(linkCount(f), 29, "precondition: one below the total");
+    const last = confirmedAccount(f, "last@example.test");
+    assert.equal((await askReset(f, "last@example.test")).status, 204);
+    await waitFor(
+      () => f.mailer.messages.some((message) => message.to === last.email),
+      "the thirtieth",
+    );
+    const before = f.mailer.messages.length;
+    confirmedAccount(f, "thirty-first@example.test");
+    assert.equal((await askReset(f, "thirty-first@example.test")).status, 204);
+    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(f.mailer.messages.length, before, "the thirty-first");
+    assert.equal(linkCount(f), 30);
+
+    // An hour on, the count starts again.
+    f.inspection
+      .prepare("UPDATE emailed_links SET created_at = ?")
+      .run(Date.now() - hour - 1);
+    assert.equal((await askReset(f, "thirty-first@example.test")).status, 204);
+    await waitFor(
+      () =>
+        f.mailer.messages.some(
+          (message) => message.to === "thirty-first@example.test",
+        ),
+      "after the hour",
+    );
+  },
+);
+
+test(
+  "no answer and no line of the server's log holds a reset link's token or the address asked for",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // Faults: a token or link echoed in an answer; the link, the message, the
+    // address or an error holding them written to the log.
+    const f = await accountFixture(t, { sendingDeadline: 200 });
+    const logged = captureLog(t);
+    confirmedAccount(f, "private@example.test");
+    const responses = [];
+    // Three messages an hour is the most one account gets (D-105).
+    for (const outcome of ["never", "reject", "failed"]) {
+      f.mailer.outcome = outcome;
+      responses.push(await askReset(f, "private@example.test"));
+      await waitFor(
+        () => f.mailer.messages.length === responses.length,
+        outcome,
+      );
+      if (outcome === "never")
+        await waitFor(() => logged.length >= 1, "the deadline passes");
+    }
+    await waitFor(() => logged.length >= 2, "the failures are logged");
+    assert.ok(logged.length > 0, "precondition: the failures were logged");
+    for (const token of f.mailer.messages.map(resetTokenOf)) {
+      for (const response of responses)
+        assert.ok(
+          !response.body.includes(token) &&
+            !JSON.stringify(response.headers).includes(token),
+          "no answer holds a token",
+        );
+      assert.ok(!logged.some((line) => line.includes(token)));
+    }
+    assert.ok(!logged.some((line) => /reset-password|private@/.test(line)));
+  },
+);
+
+// Setting a password by a reset link (task reset-hasla, spec decisions 1, 4, 5,
+// 8 and 9).
+const resetPath = "/api/password-reset";
+const oldPassword = "the password before the reset";
+const newPassword = "  A new password 🙂 set by a link  ";
+const shortPassword = "too short";
+const invalidPasswordMessage = "Hasło musi mieć od 12 do 128 znaków.";
+const mismatchMessage = "Powtórzone hasło różni się od hasła.";
+
+const digestOf = (token) =>
+  createHash("sha256").update(token).digest("base64url");
+
+// An account with a known password, made directly in the database.
+async function resettable(f, email) {
+  const account = f.runtime.database.createAccount(
+    email,
+    await hashPassword(oldPassword),
+  );
+  assert.ok(account, `precondition: an account for ${email}`);
+  return account;
+}
+
+// A link recorded directly for the account, with its token. Recording a link
+// stops the account's earlier links of the same kind.
+function recordLink(f, account, purpose = "password-reset") {
+  const token = randomBytes(32).toString("base64url");
+  const issued = f.runtime.database.issueLink(
+    {
+      accountId: account.id,
+      purpose,
+      tokenDigest: digestOf(token),
+      lifetimeMs: hour,
+    },
+    { windowMs: hour, total: 1000, perAccount: 1000 },
+  );
+  assert.equal(issued, "issued", "precondition: a link is recorded");
+  return token;
+}
+
+function setPassword(f, token, secret = newPassword, options = {}) {
+  return post(
+    f,
+    resetPath,
+    {
+      token,
+      password: secret,
+      passwordConfirmation: options.confirmation ?? secret,
+    },
+    options,
+  );
+}
+
+const hashOf = (f, email) => storedAccount(f, email).hash;
+
+function assertPasswordRefusal(response, code, label) {
+  assert.equal(response.status, 400, label);
+  assert.match(response.headers["content-type"], /^application\/json/, label);
+  assert.equal(response.headers["cache-control"], "no-store", label);
+  assert.deepEqual(
+    JSON.parse(response.body),
+    {
+      code,
+      error:
+        code === "invalid-password" ? invalidPasswordMessage : mismatchMessage,
+    },
+    label,
+  );
+  assertNoCookie(response, label);
+}
+
+// The state of every link: a refusal spends none.
+function linkStates(f) {
+  return f.inspection
+    .prepare(
+      "SELECT token_digest AS digest, spent, expires_at AS expiresAt FROM emailed_links ORDER BY token_digest",
+    )
+    .all();
+}
+
+// The hashing of a password fails as an Argon2 fault would, apart from the
+// capacity gate.
+async function withFailingHash(action) {
+  const original = argon2.hash;
+  argon2.hash = () => Promise.reject(new Error("synthetic hashing fault"));
+  try {
+    return await action();
+  } finally {
+    argon2.hash = original;
+  }
+}
+
+test(
+  "a working link sets the exact password once, the new password signs in and the old one does not, and the reset signs nobody in",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-link
+    // invariant: player-argon2-password-hash
+    // Faults: the password trimmed before it is hashed; an answer of 200 with
+    // a body where 204 with none is given.
+    const f = await accountFixture(t);
+    const email = "reset-sets@example.test";
+    const account = await resettable(f, email);
+    const token = recordLink(f, account);
+    const response = await setPassword(f, token);
+    assert.equal(response.status, 204);
+    assert.equal(response.body, "");
+    assert.equal(response.headers["cache-control"], "no-store");
+    assertNoCookie(response, "the reset");
+    assert.equal(sessionCount(f), 0, "the reset signs nobody in");
+    const stored = hashOf(f, email);
+    assert.ok(
+      /^\$argon2id\$v=19\$m=65536,p=1,t=3\$/.test(stored),
+      "the stored value is an encoded Argon2id hash of the configured profile",
+    );
+    assert.equal(await argon2.verify(stored, newPassword), true);
+    assert.equal(await argon2.verify(stored, newPassword.trim()), false);
+    assert.equal(await argon2.verify(stored, oldPassword), false);
+    assertInvalidLink(await setPassword(f, token, `${newPassword}!`), "reused");
+    assert.equal(hashOf(f, email), stored, "the second use changed nothing");
+    assertLoginRefused(await login(f, email, oldPassword), "the old password");
+    const signedIn = await login(f, email, newPassword);
+    assert.equal(signedIn.status, 200, "the exact new password signs in");
+    assert.equal(JSON.parse(signedIn.body).id, account.id);
+  },
+);
+
+test(
+  "the password rules come before the link and the link before any password work, and a good link survives every refusal",
+  { timeout: 60000 },
+  async (t) => {
+    // invariant: password-reset-link
+    // Faults: the link checked before the password rules; the link not read
+    // before the hashing, so that a bad link meets a full gate as 429; a full
+    // gate answered 500; a trimmed password hashed.
+    const f = await accountFixture(t);
+    const email = "matrix@example.test";
+    const account = await resettable(f, email);
+    const token = recordLink(f, account);
+    const unknown = randomBytes(32).toString("base64url");
+    const before = hashOf(f, email);
+    const links = linkStates(f);
+
+    // A bad password gets its own refusal whatever the link is, and the same
+    // answer for a good link and a bad one, so it tells nothing of the token.
+    for (const [label, secret, confirmation, code] of [
+      ["short", shortPassword, undefined, "invalid-password"],
+      ["too long", "x".repeat(129), undefined, "invalid-password"],
+      [
+        "different confirmation",
+        newPassword,
+        `${newPassword}!`,
+        "password-mismatch",
+      ],
+    ]) {
+      const answers = [];
+      for (const [kind, candidate] of [
+        ["good", token],
+        ["unknown", unknown],
+        ["malformed", "not-a-token"],
+      ]) {
+        const response = await setPassword(f, candidate, secret, {
+          confirmation,
+        });
+        assertPasswordRefusal(response, code, `${kind} link, ${label}`);
+        answers.push(shapeOf(response));
+      }
+      assert.deepEqual(answers[1], answers[0], `${label}: unknown as good`);
+      assert.deepEqual(answers[2], answers[0], `${label}: malformed as good`);
+    }
+    assert.equal(hashOf(f, email), before, "no refusal changed the password");
+    assert.deepEqual(linkStates(f), links, "no refusal spent the link");
+
+    // A bad link gets the refusal of the link with a full password gate as
+    // with a free one: it reaches no password work. A bad password under a
+    // full gate is refused for its rules, and a good link with a good
+    // password is then refused for the gate and stays working.
+    for (const candidate of [unknown, "not-a-token"]) {
+      await withFullGate(async () => {
+        assertInvalidLink(await setPassword(f, candidate), candidate);
+      });
+    }
+    await withFullGate(async () => {
+      assertPasswordRefusal(
+        await setPassword(f, unknown, shortPassword),
+        "invalid-password",
+        "bad link, bad password, full gate",
+      );
+      assertLimited(await setPassword(f, token), "good link, full gate");
+    });
+    assert.equal(hashOf(f, email), before, "the full gate changed nothing");
+    assert.deepEqual(linkStates(f), links, "the full gate spent nothing");
+    assert.equal(f.runtime.database.resetLinkWorks(digestOf(token)), true);
+
+    assert.equal((await setPassword(f, token)).status, 204, "the link worked");
+    assert.equal(
+      await argon2.verify(hashOf(f, email), newPassword),
+      true,
+      "and set the password",
+    );
+  },
+);
+
+test(
+  "every token that does not work gets the one refusal after no password work, and changes nothing",
+  { timeout: 60000 },
+  async (t) => {
+    // invariant: password-reset-link
+    // invariant: unblock-restores-no-link
+    // Faults: the link not read before the hashing, so that a used or
+    // stopped link meets a full gate as 429; an answer of 200.
+    const f = await accountFixture(t);
+    const candidates = [];
+    const named = (label, email, token) =>
+      candidates.push([label, email, token]);
+
+    const used = await resettable(f, "used@example.test");
+    const usedToken = recordLink(f, used);
+    assert.equal((await setPassword(f, usedToken)).status, 204);
+    named("used", used.email, usedToken);
+
+    const superseded = await resettable(f, "superseded@example.test");
+    const first = recordLink(f, superseded);
+    const second = recordLink(f, superseded);
+    named("superseded", superseded.email, first);
+
+    const expired = await resettable(f, "expired@example.test");
+    const lapsed = recordLink(f, expired);
+    f.inspection
+      .prepare("UPDATE emailed_links SET expires_at = ? WHERE token_digest = ?")
+      .run(Date.now() - 1, digestOf(lapsed));
+    named("expired", expired.email, lapsed);
+
+    const confirming = await resettable(f, "other-kind@example.test");
+    named(
+      "of the other kind",
+      confirming.email,
+      recordLink(f, confirming, "email-confirmation"),
+    );
+
+    const blocked = await resettable(f, "blocked-link@example.test");
+    const blockedToken = recordLink(f, blocked);
+    assert.equal(
+      asOwner(f, (owner) => owner.blockAccount(blocked.email)),
+      "blocked",
+    );
+    named("of a blocked account", blocked.email, blockedToken);
+
+    const stopped = await resettable(f, "stopped-link@example.test");
+    const stoppedToken = recordLink(f, stopped);
+    assert.equal(
+      asOwner(f, (owner) => owner.blockAccount(stopped.email)),
+      "blocked",
+    );
+    assert.equal(
+      asOwner(f, (owner) => owner.unblockAccount(stopped.email)),
+      "unblocked",
+    );
+    named("stopped by a block, after the unblock", stopped.email, stoppedToken);
+
+    const spelled = await resettable(f, "spelled@example.test");
+    const real = recordLink(f, spelled);
+    named("in another spelling", spelled.email, otherSpelling(real));
+
+    const anyone = await resettable(f, "anyone@example.test");
+    const anyoneToken = recordLink(f, anyone);
+    for (const [label, token] of [
+      ["empty", ""],
+      ["42 characters", anyoneToken.slice(1)],
+      ["44 characters", `${anyoneToken}A`],
+      ["with padding", `${anyoneToken.slice(0, 42)}=`],
+      ["with a space", ` ${anyoneToken.slice(1)}`],
+      ["with a standard base64 character", `${anyoneToken.slice(0, 42)}+`],
+      ["unknown", randomBytes(32).toString("base64url")],
+    ])
+      named(label, anyone.email, token);
+
+    const hashes = candidates.map(([, email]) => hashOf(f, email));
+    const links = linkStates(f);
+    const answers = [];
+    for (const [label, , token] of candidates) {
+      await withFullGate(async () => {
+        const response = await setPassword(f, token);
+        assertInvalidLink(response, label);
+        answers.push(shapeOf(response));
+      });
+    }
+    for (const answer of answers)
+      assert.deepEqual(answer, answers[0], "one and the same refusal");
+    assert.deepEqual(
+      candidates.map(([, email]) => hashOf(f, email)),
+      hashes,
+      "no refusal changed a password",
+    );
+    assert.deepEqual(linkStates(f), links, "no refusal changed a link");
+    assert.equal(confirmedAt(f, confirming.email), null);
+    assert.equal(sessionCount(f), 0);
+    // The refusals did not use up the working links beside them.
+    assert.equal((await setPassword(f, second)).status, 204, "the later link");
+    assert.equal((await setPassword(f, real)).status, 204, "the real spelling");
+    assert.equal(
+      (await setPassword(f, anyoneToken)).status,
+      204,
+      "the well-formed link",
+    );
+  },
+);
+
+test(
+  "a block, a later link or an expiry committed during the hashing change nothing and the old link gets the one refusal",
+  { timeout: 60000 },
+  async (t) => {
+    // invariant: password-reset-link
+    // invariant: unblock-restores-no-link
+    // Faults: the outcome of the transaction ignored, so that a link stopped
+    // meanwhile answers 204; an answer of 200.
+    const f = await accountFixture(t);
+
+    const blocked = await resettable(f, "blocked-meanwhile@example.test");
+    const blockedToken = recordLink(f, blocked);
+    f.hooks.beforeReset = () =>
+      asOwner(f, (owner) => owner.blockAccount(blocked.email));
+    const beforeBlocked = hashOf(f, blocked.email);
+    assertInvalidLink(await setPassword(f, blockedToken), "blocked meanwhile");
+    assert.equal(hashOf(f, blocked.email), beforeBlocked);
+    assert.equal(
+      asOwner(f, (owner) => owner.unblockAccount(blocked.email)),
+      "unblocked",
+    );
+    f.hooks.beforeReset = null;
+    assertInvalidLink(await setPassword(f, blockedToken), "after the unblock");
+    assert.equal(hashOf(f, blocked.email), beforeBlocked);
+
+    const later = await resettable(f, "later-meanwhile@example.test");
+    const earlierToken = recordLink(f, later);
+    let laterToken;
+    f.hooks.beforeReset = () => {
+      laterToken = recordLink(f, later);
+    };
+    const beforeLater = hashOf(f, later.email);
+    assertInvalidLink(
+      await setPassword(f, earlierToken),
+      "superseded meanwhile",
+    );
+    assert.equal(hashOf(f, later.email), beforeLater);
+    f.hooks.beforeReset = null;
+    assert.equal(
+      (await setPassword(f, laterToken)).status,
+      204,
+      "the later link",
+    );
+
+    const lapsing = await resettable(f, "expiring-meanwhile@example.test");
+    const lapsingToken = recordLink(f, lapsing);
+    f.hooks.beforeReset = () =>
+      f.inspection
+        .prepare(
+          "UPDATE emailed_links SET expires_at = ? WHERE token_digest = ?",
+        )
+        .run(Date.now() - 1, digestOf(lapsingToken));
+    const beforeLapsing = hashOf(f, lapsing.email);
+    assertInvalidLink(await setPassword(f, lapsingToken), "expired meanwhile");
+    assert.equal(hashOf(f, lapsing.email), beforeLapsing);
+    f.hooks.beforeReset = null;
+  },
+);
+
+test(
+  "a reset ends every session of its account, even the one sent along, and leaves the sessions of another account",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-ends-sessions
+    // invariant: player-server-session
+    // invariant: account-session-authorization
+    // Faults: the route saving the session it was sent along with, which
+    // brings back the row the reset deleted; the route destroying a session
+    // it was sent along with, which ends a session of another account.
+    const f = await accountFixture(t);
+    const account = await resettable(f, "sessions@example.test");
+    const one = seed(f, "reset-one", account);
+    const two = seed(f, "reset-two", account);
+    const other = seed(f, "reset-other", f.second);
+    assert.equal(sessionCount(f), 3, "precondition: three sessions");
+
+    const response = await setPassword(f, recordLink(f, account), newPassword, {
+      cookie: one,
+    });
+    assert.equal(response.status, 204);
+    // The session sent along was loaded before the reset and renewed as the
+    // request ended; the renewal brought nothing back.
+    assert.equal(storedRow(f, "reset-one"), undefined, "the one sent along");
+    assert.equal(storedRow(f, "reset-two"), undefined, "the other browser's");
+    for (const [label, cookie] of [
+      ["sent along", one],
+      ["of another browser", two],
+    ]) {
+      const refused = await readAccount(f, cookie);
+      assertRefusal(refused, 401, label);
+      assert.equal(JSON.parse(refused.body).code, "unauthenticated", label);
+      assertRefusal(
+        await readAccount(f, cookie, "/api/saved-game"),
+        401,
+        `${label}: saved game`,
+      );
+    }
+    assert.equal(sessionCount(f), 1, "only the second account's remains");
+
+    // A session of another account sent along is neither used nor changed.
+    const third = await resettable(f, "sessions-third@example.test");
+    const kept = storedRow(f, "reset-other");
+    const sent = await setPassword(f, recordLink(f, third), newPassword, {
+      cookie: other,
+    });
+    assert.equal(sent.status, 204);
+    const after = storedRow(f, "reset-other");
+    assert.ok(after, "the session of another account remains");
+    assert.equal(after.account_id, f.second.id);
+    assert.equal(after.data, kept.data, "its data was not written");
+    assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
+      id: f.second.id,
+      email: "second@example.test",
+      emailConfirmed: false,
+    });
+  },
+);
+
+test(
+  "a locked address logs in with the new password straight after a reset, the client address keeps its failures, and a refused set-password clears nothing",
+  { timeout: 90000 },
+  async (t) => {
+    // invariant: account-attempt-limits
+    // Faults: no clearing; the clearing of another address than the one the
+    // reset returned; an address cleared on a refusal in the transaction; a
+    // full gate answered 500; a trimmed password hashed; the outcome of the
+    // transaction ignored.
+    const f = await accountFixture(t);
+    const email = "locked-reset@example.test";
+    const address = "198.51.100.150";
+    const account = await resettable(f, email);
+    for (let attempt = 1; attempt <= 5; attempt += 1)
+      assertLoginRefused(
+        await login(f, email, `${oldPassword}!`, { address }),
+        `failure ${attempt}`,
+      );
+    const stillLocked = async (label) =>
+      assertLimited(await login(f, email, oldPassword, { address }), label);
+    await stillLocked("precondition: locked");
+
+    const token = recordLink(f, account);
+    assertPasswordRefusal(
+      await setPassword(f, token, shortPassword),
+      "invalid-password",
+      "short password",
+    );
+    await stillLocked("after a refused password");
+    assertInvalidLink(await setPassword(f, "not-a-token"), "malformed token");
+    await stillLocked("after a refused token");
+    await withFullGate(async () => {
+      assertLimited(await setPassword(f, token), "full gate");
+    });
+    await stillLocked("after a full gate");
+    let later;
+    f.hooks.beforeReset = () => {
+      later = recordLink(f, account);
+    };
+    assertInvalidLink(await setPassword(f, token), "superseded meanwhile");
+    f.hooks.beforeReset = null;
+    await stillLocked("after a refusal in the transaction");
+
+    assert.equal((await setPassword(f, later)).status, 204);
+    const signedIn = await login(f, email, newPassword, { address });
+    assert.equal(signedIn.status, 200, "straight after the reset");
+
+    // The client address kept its five failures: fifteen more make twenty.
+    for (let index = 0; index < 15; index += 1)
+      assertLoginRefused(
+        await login(f, `nobody-${index}@example.test`, password, { address }),
+        `failure of the address ${index}`,
+      );
+    assertLimited(
+      await login(f, email, newPassword, { address }),
+      "the address's twenty failures still count",
+    );
+  },
+);
+
+test(
+  "the route clears the address's failed logins once, with the address the reset returned, after the commit and in the same turn, and a refusal clears none",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: account-attempt-limits
+    // Faults: no clearing; the clearing of another address than the one the
+    // reset returned; the clearing after a turn of the event loop; the outcome
+    // of the transaction ignored; the link checked before the password rules.
+    const f = await accountFixture(t);
+    const email = "ordered@example.test";
+    const account = await resettable(f, email);
+    const before = hashOf(f, email);
+    const events = [];
+    let nextTurn = false;
+    const clear = f.policy.clearEmailAttempts.bind(f.policy);
+    f.policy.clearEmailAttempts = (address) => {
+      events.push(["clear", address, hashOf(f, email) !== before, nextTurn]);
+      clear(address);
+    };
+    f.hooks.beforeReset = () => {
+      nextTurn = false;
+      setImmediate(() => {
+        nextTurn = true;
+      });
+    };
+    const token = recordLink(f, account);
+    assert.equal((await setPassword(f, token)).status, 204);
+    assert.deepEqual(
+      events,
+      [["clear", email, true, false]],
+      "once, for the returned address, after the commit, before the next turn",
+    );
+    assertInvalidLink(await setPassword(f, token), "reused");
+    assertPasswordRefusal(
+      await setPassword(f, token, shortPassword),
+      "invalid-password",
+      "short",
+    );
+    assert.equal(events.length, 1, "no refusal cleared anything");
+  },
+);
+
+test(
+  "a hash that fails answers 500 with no detail and spends nothing, and the failure clears no lock",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-link
+    // Faults: a failure of the hashing answered 429 where 500 is given; an
+    // answer of 200.
+    const f = await accountFixture(t);
+    const email = "failing-hash@example.test";
+    const address = "198.51.100.151";
+    const account = await resettable(f, email);
+    for (let attempt = 1; attempt <= 5; attempt += 1)
+      assertLoginRefused(
+        await login(f, email, `${oldPassword}!`, { address }),
+        `failure ${attempt}`,
+      );
+    const token = recordLink(f, account);
+    const before = hashOf(f, email);
+    const links = linkStates(f);
+    const response = await withFailingHash(() => setPassword(f, token));
+    assert.equal(response.status, 500);
+    assert.match(response.headers["content-type"], /^application\/json/);
+    assert.equal(response.headers["cache-control"], "no-store");
+    assert.ok(!response.body.includes("synthetic"), "no detail");
+    assertNoCookie(response, "the failure");
+    assert.equal(hashOf(f, email), before, "nothing was written");
+    assert.deepEqual(linkStates(f), links, "nothing was spent");
+    assertLimited(
+      await login(f, email, oldPassword, { address }),
+      "still locked",
+    );
+    assert.equal((await setPassword(f, token)).status, 204, "the link works");
+  },
+);
+
+test(
+  "no answer and no line of the server's log holds a set-password request's token or password",
+  { timeout: 30000 },
+  async (t) => {
+    // Fault: a token written to the log by a failure of the hashing.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const account = await resettable(f, "private-reset@example.test");
+    const good = recordLink(f, account);
+    const unknown = randomBytes(32).toString("base64url");
+    const secret = "a secret nobody may read in a log";
+    const responses = [];
+    const keep = async (pending) => responses.push(await pending);
+    await keep(setPassword(f, unknown, secret));
+    await keep(setPassword(f, good, shortPassword));
+    await keep(withFailingHash(() => setPassword(f, good, secret)));
+    await withFullGate(async () => keep(setPassword(f, good, secret)));
+    await keep(setPassword(f, good, secret));
+    await keep(setPassword(f, good, secret));
+    assert.deepEqual(
+      responses.map((response) => response.status),
+      [400, 400, 500, 429, 204, 400],
+      "precondition: the refusals and the success all happened",
+    );
+    for (const text of [good, unknown, secret, shortPassword]) {
+      for (const response of responses)
+        assert.ok(
+          !response.body.includes(text) &&
+            !JSON.stringify(response.headers).includes(text),
+          "no answer holds a token or a password",
+        );
+      assert.ok(
+        !logged.some((line) => line.includes(text)),
+        "no log line holds a token or a password",
+      );
+    }
   },
 );
 
