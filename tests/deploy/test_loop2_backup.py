@@ -14,6 +14,8 @@ import unittest
 import backup_script_support as support
 
 SENTINEL_LOGIN = "sentinel-login-3f9a"
+# The notice as the owner settled it, on 2026-10-31 through the cycle's orchestrator.
+NOTICE_BYTES = b"Kopia bazy loop2 nie uda\xc5\x82a si\xc4\x99.\n"
 # Options of rsync that delete on the receiving side, or leave a broken file in place of the older
 # backup (rsync manual, options summary, the commit D-216 cites).
 DELETING = re.compile(r"^--(del|delete.*|remove-source-files|max-delete.*|force|prune-empty-dirs)$")
@@ -104,6 +106,16 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(result.of("docker"), [
             ["exec", "loop2", "node", "dist/server/account-backup.js", "--to-standard-output"]],
             result)
+
+    def test_pusher_gets_the_polish_notice_as_these_bytes(self):
+        # The break: the script saved in another encoding, or a locale that rewrites the text. The
+        # expected bytes are the owner's text in UTF-8, by hand: l with stroke is C5 82, e with
+        # ogonek is C4 99. The subject goes into a URL path, so it is ASCII.
+        fixture = self.fixture()
+        fixture.answer("rsync", exit_code=12)
+        result = fixture.run()
+        self.assertEqual(result.of("pusher"), [["kopia_bazy_loop2_nieudana"]], result)
+        self.assertEqual(result.notice_input, NOTICE_BYTES, result)
 
     def test_rsync_replaces_one_file_whole_keeping_its_time(self):
         result = self.fixture().run()
