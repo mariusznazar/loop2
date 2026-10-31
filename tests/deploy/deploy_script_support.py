@@ -38,6 +38,8 @@ import unittest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SCRIPT = os.path.join(ROOT, "deploy", "loop2-deploy")
+BACKUP_SCRIPT = os.path.join(ROOT, "deploy", "loop2-backup")
+BACKUP_SCHEDULE = os.path.join(ROOT, "deploy", "loop2-backup.cron")
 
 BLOCK_BEGIN = b"# >>> constants >>>"
 BLOCK_END = b"# === end of constants ==="  # no "<<" in it: a heredoc to shell readers
@@ -251,10 +253,12 @@ class DeployFixture:
         self.git("clone", "--quiet", self.github, self.checkout)
 
         self.installed = self.path("usr", "local", "bin", "loop2-deploy")
+        self.installed_backup = self.path("usr", "local", "bin", "loop2-backup")
+        self.installed_schedule = self.path("etc", "cron.d", "loop2-backup")
         self.log_file = self.path("var", "log", "loop2-deploy.log")
         self.lock_file = self.path("run", "loop2-deploy.lock")
         self.meminfo = self.path("proc", "meminfo")
-        for directory in (self.installed, self.log_file, self.lock_file):
+        for directory in (self.installed, self.installed_schedule, self.log_file, self.lock_file):
             os.makedirs(os.path.dirname(directory), exist_ok=True)
         write_bytes(self.meminfo, b"MemTotal:        4456448 kB\nMemAvailable:    3788800 kB\n")
 
@@ -275,6 +279,8 @@ class DeployFixture:
             "PATH": self.copy_path_value,
             "CHECKOUT_DIR": shell_path(self.checkout),
             "INSTALLED_SCRIPT": shell_path(self.installed),
+            "INSTALLED_BACKUP_SCRIPT": shell_path(self.installed_backup),
+            "INSTALLED_BACKUP_SCHEDULE": shell_path(self.installed_schedule),
             "LOG_FILE": shell_path(self.log_file),
             "LOCK_FILE": shell_path(self.lock_file),
             "MEMINFO_FILE": shell_path(self.meminfo),
@@ -351,15 +357,24 @@ class DeployFixture:
     # --- a deployable commit and a host that lets it through -----------------------------------
 
     def deployable_commit(self, message="deployable", script=None):
-        """A new commit on main holding `compose.yaml` and `deploy/loop2-deploy` (by default the
-        repository's script), as every commit of this task on does."""
+        """A new commit on main holding `compose.yaml` and the three installable files:
+        `deploy/loop2-deploy` (by default the repository's script), `deploy/loop2-backup` and
+        `deploy/loop2-backup.cron`, the last two from the repository's own files, as every commit
+        of this task on does."""
         files = {"compose.yaml": b"name: loop2\n",
-                 "deploy/loop2-deploy": read_bytes(SCRIPT) if script is None else script}
+                 "deploy/loop2-deploy": read_bytes(SCRIPT) if script is None else script,
+                 "deploy/loop2-backup": read_bytes(BACKUP_SCRIPT),
+                 "deploy/loop2-backup.cron": read_bytes(BACKUP_SCHEDULE)}
         return self.commit("main", message, files=files)
 
-    def install(self, data=None):
-        """Write the installed copy of the script (by default the repository's script)."""
+    def install(self, data=None, backup=None, schedule=None):
+        """Write the three installed copies: the deploy script, the backup script and the backup
+        schedule (by default the repository's files)."""
         write_bytes(self.installed, read_bytes(SCRIPT) if data is None else data)
+        write_bytes(self.installed_backup,
+                    read_bytes(BACKUP_SCRIPT) if backup is None else backup)
+        write_bytes(self.installed_schedule,
+                    read_bytes(BACKUP_SCHEDULE) if schedule is None else schedule)
 
     def answer_passing_run(self, running=None):
         """Answers under which a deployment gets through every stage: Docker's root directory,
