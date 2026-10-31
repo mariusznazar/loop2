@@ -1099,7 +1099,7 @@ A character's death in the k-th game minute of the catch-up is settled at the re
 
 A map run of an earning loop currently leaves the Understanding and the player's programs as it found them.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-232
 - **Part:** simulation

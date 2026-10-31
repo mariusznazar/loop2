@@ -62,6 +62,8 @@ import type {
 export type GameEvent =
   | { kind: "mapRunStarted"; seed: number }
   | { kind: "mapRunEnded" }
+  /** A map run of an earning loop of this character reached an end and was dealt with at once. */
+  | { kind: "loopRunEnded"; characterId: CharacterId }
   | {
       kind: "activityStarted";
       minute: number;

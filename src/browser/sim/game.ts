@@ -34,6 +34,7 @@ import {
 import type {
   Character,
   CharacterId,
+  CharacterSkills,
   GameMapRun,
   GameState,
   MapId,
@@ -109,14 +110,15 @@ function countStarts(
 }
 
 /**
- * The copy `program` as the character `characterId` can carry it out: reduced to the repertoire of
- * its archetype over the game's Understanding. A rule outside it is passed over and stays in the
- * copy; a character the team does not list takes the archetype of created characters.
+ * The copy `program` as the character `characterId` can carry it out with `skills`: reduced to the
+ * repertoire of its archetype over the game's Understanding. A rule outside it is passed over and
+ * stays in the copy; a character the team does not list takes the archetype of created characters.
  */
-function programOf(
+export function programOf(
   state: GameState,
   program: Program,
   characterId: CharacterId,
+  skills: CharacterSkills | undefined,
 ): Program {
   const character = state.team.characters.find(
     (listed) => listed.id === characterId,
@@ -124,11 +126,7 @@ function programOf(
   const archetype = ARCHETYPES[character?.archetypeId ?? CREATED_ARCHETYPE];
   return programInRepertoire(
     program,
-    repertoireOf(
-      state.understanding,
-      archetype.predispositions,
-      state.run?.character.skills ?? character?.skills,
-    ),
+    repertoireOf(state.understanding, archetype.predispositions, skills),
   );
 }
 
@@ -161,15 +159,17 @@ function startRun(
         traits.carryingCapacity,
         mapOf(mapId),
       );
+  const skills =
+    state.run?.character.skills ??
+    state.team.characters.find((character) => character.id === characterId)!
+      .skills;
   const started = newMapRun(
     mapOf(mapId),
     seed,
-    programOf(state, copy.program, characterId),
+    programOf(state, copy.program, characterId, skills),
     { mapId, characterId },
     traits,
-    state.run?.character.skills ??
-      state.team.characters.find((character) => character.id === characterId)!
-        .skills,
+    skills,
     equipment.backpack,
   );
   return {
@@ -304,8 +304,9 @@ export function createCharacter(state: GameState, name: string): GameResult {
  * seed and real time, its character carrying its own copy of the traits of the team's character
  * sent, carrying out a copy of that program whose base is the program's content. That program
  * becomes the character's program used last and the one a character last entered a map with, and
- * the character's pick is cleared. Throws while a map run is in progress, so one map run goes on at
- * a time, and on a program number not on the list.
+ * the character's pick is cleared and its entry of `stoppedLoops` goes. Throws while a map run is in
+ * progress, so one map run goes on at a time, for a character in an earning loop, and on a program
+ * number not on the list.
  */
 export function send(
   state: GameState,
@@ -323,6 +324,10 @@ export function send(
   );
   if (!sent)
     throw new Error(`send: no character ${String(characterId)} in the team`);
+  if (Object.hasOwn(state.loops, characterId))
+    throw new Error(
+      `send: character ${String(characterId)} is in an earning loop`,
+    );
   const chosen =
     programId === undefined
       ? rowProgram(state, characterId)
@@ -332,11 +337,14 @@ export function send(
   const seed = mixSeed(state.lastSeed, realMs);
   const pickedPrograms = { ...state.pickedPrograms };
   delete pickedPrograms[characterId];
+  const stoppedLoops = { ...state.stoppedLoops };
+  delete stoppedLoops[characterId];
   return startRun(
     {
       ...state,
       lastSeed: seed,
       pickedPrograms,
+      stoppedLoops,
       lastUsedPrograms: { ...state.lastUsedPrograms, [characterId]: chosen.id },
       lastEnteredProgram: chosen.id,
     },
@@ -427,6 +435,34 @@ export function setPace(state: GameState, pace: Pace): GameResult {
 }
 
 /**
+ * What a death at the real moment `nowMs` does to the character, the one rule both a manual map run
+ * and an earning loop settle by. With a resurrection ready it is used up: it is ready again the
+ * renewal after `nowMs`, and the character stays as it is. With none ready the character loses all
+ * its practice and ranks and its generation number grows by one, its moment of readiness
+ * unchanged. `nowMs` is taken as a safe integer; the caller checks it.
+ */
+export function characterAfterDeath(
+  died: Character,
+  nowMs: number,
+): { character: Character; resurrectionUsed: boolean } {
+  const resurrectionUsed = resurrectionReady(died, nowMs);
+  return {
+    character: resurrectionUsed
+      ? {
+          ...died,
+          resurrectionReadyAtMs:
+            nowMs + BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE,
+        }
+      : {
+          ...died,
+          skills: newSkills(ARCHETYPES[died.archetypeId].predispositions),
+          generation: died.generation + 1,
+        },
+    resurrectionUsed,
+  };
+}
+
+/**
  * Settles the death of the map run at the real moment `nowMs`, once. Called by whoever knows real
  * time, never by the functions that pass game time. With a resurrection ready it is used up: it is
  * ready again the renewal after `nowMs`, and the character stays as it is. With none ready the
@@ -447,19 +483,11 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
   const died = state.team.characters.find(
     (character) => character.id === run.character.id,
   )!;
-  const ready = resurrectionReady(died, nowMs);
-  const generation = died.generation + 1;
-  const settled: Character = ready
-    ? {
-        ...died,
-        resurrectionReadyAtMs:
-          nowMs + BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE,
-      }
-    : {
-        ...died,
-        skills: newSkills(ARCHETYPES[died.archetypeId].predispositions),
-        generation,
-      };
+  const { character: settled, resurrectionUsed: ready } = characterAfterDeath(
+    died,
+    nowMs,
+  );
+  const generation = settled.generation;
   return {
     state: {
       ...state,
@@ -563,7 +591,12 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   let current = state;
   let run: MapRun = state.run;
   let copy = state.run.copy;
-  let program = programOf(current, copy.program, run.character.id);
+  let program = programOf(
+    current,
+    copy.program,
+    run.character.id,
+    run.character.skills,
+  );
   let revealed: Understanding | null = null;
   let completed = false;
   for (let minute = 0; minute < minutes; minute += 1) {
@@ -602,7 +635,12 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
           base: withFirstChillRule(copy.base),
         };
       }
-      program = programOf(current, copy.program, run.character.id);
+      program = programOf(
+        current,
+        copy.program,
+        run.character.id,
+        run.character.skills,
+      );
     }
     const finished = finishMinute(stepped, map, program);
     // Collect the entire minute once in catalog order, including its attack, after the
