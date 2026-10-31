@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { DatabaseSync } from "node:sqlite";
+import { backup, DatabaseSync } from "node:sqlite";
 
 export interface Account {
   id: string;
@@ -134,6 +134,13 @@ function boundedInteger(value: number, maximum: number): number {
   }
   return value;
 }
+
+// The page count a backup copies per step. It is a positive whole number above
+// any page count a database of this server can reach, so the backup is one
+// step: a write from another connection restarts a backup at its next step,
+// and one step has no next step to suffer it (D-217). Node.js takes a 32-bit
+// integer here and refuses a negative one.
+const backupRate = 2 ** 31 - 1;
 
 const SQLITE_BUSY = 5;
 const RETRY_PAUSE = new Int32Array(new SharedArrayBuffer(4));
@@ -592,6 +599,13 @@ export class AccountDatabase {
     `,
       )
       .run(this.now());
+  }
+
+  // Writes one consistent copy of the whole database to a new file at `path`,
+  // the rows held only in the write-ahead log included, in one step through
+  // SQLite's online backup. The file stands alone: no -wal file belongs to it.
+  async backupTo(path: string): Promise<void> {
+    await backup(this.connection, path, { rate: backupRate });
   }
 
   close(): void {
