@@ -12,11 +12,12 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { DatabaseSync } from "node:sqlite";
+import { backup as sqliteBackup, DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 import { AccountDatabase } from "../dist/server/database.js";
 
-// The backup command (D-217) and the method behind it (D-112, D-215), run as
+// The backup command (D-217) and the method behind it (D-112, D-215, D-222),
+// run as
 // `docker exec loop2 node dist/server/account-backup.js --to-standard-output`
 // runs them: their own process, the database path its only setting, on real
 // SQLite files.
@@ -33,6 +34,9 @@ const SEEDED = 1500;
 // 6 KiB of text per row: the backup is some 9 MB, far above a pipe's buffer.
 const FILLER = "x".repeat(6144);
 const sentinelEmail = "wal-only@example.test";
+// Long enough for a loaded computer, short enough that a stuck writer fails the
+// test instead of hanging the gate (D-84).
+const writerLimitMs = 30_000;
 
 async function sandbox(t) {
   const directory = await mkdtemp(join(tmpdir(), "loop2-backup-test-"));
@@ -40,7 +44,11 @@ async function sandbox(t) {
   const temporary = join(directory, "tmp");
   await mkdir(temporary);
   const servers = [];
+  const writers = [];
   t.after(async () => {
+    // A writer left running would hold the files and keep this process open,
+    // so a backup that never finishes would hang the run instead of failing.
+    for (const writer of writers) await writer.kill();
     for (const server of servers) server.close();
     await rm(directory, { recursive: true, force: true });
   });
@@ -48,6 +56,7 @@ async function sandbox(t) {
     directory,
     temporary,
     servers,
+    writers,
     path: join(directory, "accounts.sqlite"),
   };
 }
@@ -165,18 +174,30 @@ while (!stopped) {
 process.stdout.write("failures " + failures + "\\n");
 `;
 
-function startWriter(path) {
+function startWriter({ path, writers }) {
   const child = spawn(
     process.execPath,
     ["--input-type=module", "-e", writerScript, path],
     { stdio: ["pipe", "pipe", "inherit"] },
   );
+  const closed = new Promise((resolve) => child.once("close", resolve));
   let commits = 0;
   let failures = null;
   let buffered = "";
   let started;
-  const first = new Promise((resolve) => {
-    started = resolve;
+  const first = new Promise((resolve, reject) => {
+    const limit = setTimeout(
+      () => reject(new Error("the writer made no commit in time")),
+      writerLimitMs,
+    );
+    started = () => {
+      clearTimeout(limit);
+      resolve();
+    };
+    child.once("close", () => {
+      clearTimeout(limit);
+      reject(new Error("the writer ended before its first commit"));
+    });
   });
   child.stdout.setEncoding("utf8").on("data", (chunk) => {
     buffered += chunk;
@@ -190,16 +211,23 @@ function startWriter(path) {
       } else failures = Number(number);
     }
   });
-  const closed = new Promise((resolve) => child.once("close", resolve));
-  return {
+  const writer = {
     first,
     commits: () => commits,
     async stop() {
       child.stdin.end();
+      const limit = setTimeout(() => child.kill(), writerLimitMs);
       await closed;
+      clearTimeout(limit);
       return { commits, failures };
     },
+    async kill() {
+      child.kill();
+      await closed;
+    },
   };
+  writers.push(writer);
+  return writer;
 }
 
 test("a backup made beside a separate writer finishes, opens and holds everything committed before it started, a row only in the write-ahead log included", async (t) => {
@@ -215,7 +243,7 @@ test("a backup made beside a separate writer finishes, opens and holds everythin
     "precondition: the database file alone lacks the sentinel",
   );
 
-  const writer = startWriter(path);
+  const writer = startWriter(box);
   await writer.first;
   const before = writer.commits();
   const result = await runBackup([word], path, temporary);
@@ -256,6 +284,30 @@ test("a backup made beside a separate writer finishes, opens and holds everythin
     assert.ok(emails.has(`seed-${i}@example.test`), `seed ${i} is in`);
   assert.ok(emails.has(sentinelEmail), "the row held only in the log is in");
   assert.deepEqual(await readdir(temporary), [], "nothing stays behind");
+});
+
+test("a backup takes one step, where the default rate takes many on the same database", async (t) => {
+  const box = await sandbox(t);
+  const { path, directory, servers } = box;
+  const server = seedDatabase(box);
+  // Precondition: counted the same way, the default rate needs more than one
+  // step here, so one step below comes from the method, not from a small file.
+  const raw = new DatabaseSync(path);
+  servers.push(raw);
+  let unfinished = 0;
+  await sqliteBackup(raw, join(directory, "default-rate.sqlite"), {
+    progress: () => {
+      unfinished += 1;
+    },
+  });
+  assert.ok(
+    unfinished > 0,
+    "precondition: the database takes several steps at the default rate",
+  );
+
+  const steps = await server.backupTo(join(directory, "one-step.sqlite"));
+
+  assert.equal(steps, 1);
 });
 
 test("without the one fixed word, or with anything else, the command refuses before it opens the database and prints nothing to standard output", async (t) => {
