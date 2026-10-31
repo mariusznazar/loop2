@@ -4015,10 +4015,10 @@ leaves. With the lock a backup and a deployment never overlap: each waits out th
 that outwaits 900 seconds is a failed night with a message. The minute avoids the round hours other
 users of a shared server pick. The command's output holds every address and password hash, so the
 bare command, the likeliest slip, shows no player's data on any screen, and a missing file stays
-missing rather than becoming an empty database. Opening the database prunes only the expired sessions
-and links the server itself prunes every minute, so the command changes nothing a player can see, the
-limit on changes of D-12 is not what keeps an agent from it, and the rule on who runs it is what
-keeps that output out of an agent's session.
+missing rather than becoming an empty database. Opening the database prunes expired sessions and
+links, as the server does every minute, and a run holds the plain database for its seconds in the
+container's writable layer, so the command is a change D-12 keeps from an agent, and the rule on who
+runs it also keeps that output out of an agent's session.
 *Rejected:* a third Compose service, a container of its own beside the game — a change of D-17 and
 of its host-sharing rule, a second container on one database file, a third memory limit on a host
 without swap, an image with maintenance tools, the key to Strych as another Compose secret, and,
