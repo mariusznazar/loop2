@@ -59,7 +59,7 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns the persistence of accounts, sessions and each player's saved game state, sends account email through the mail service, gives the operator a command that blocks and unblocks a player account, and measures its own password work in the image it runs in.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns the persistence of accounts, sessions and each player's saved game state, sends account email through the mail service, gives the operator a command that blocks and unblocks a player account and a command that writes one consistent backup of the database to its standard output, checks the database's read, write and backup operations on the Node.js release of the image it is built into, and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs
@@ -78,7 +78,7 @@ The part is the account and save server: it serves the built game, handles the H
 
 ## build-tools
 
-The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, and builds and serves the browser view's kitchen-sink page on the developer's machine.
+The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the owner's computer, and builds and serves the browser view's kitchen-sink page on the developer's machine.
 
 - **Files:** /package.json
   /package-lock.json
@@ -134,8 +134,9 @@ The part holds the product's foundation.
 
 ## deployment
 
-The part builds the application into the loop2 container and deploys a commit of the repository to
-the test server.
+The part builds the application into the loop2 container, deploys a commit of the repository to the
+test server, and holds the nightly backup script and its schedule, which a human installs on the
+host and which encrypt the database backup and send it off the server.
 
 - **Files:** Dockerfile
   .dockerignore
@@ -170,6 +171,8 @@ the test server.
 | game-icons.net | them → us | untrusted |
 | github.com/vercel/geist-font | them → us | untrusted |
 | Mikrus Outsider | both | untrusted |
+| Mikrus Strych | both | untrusted |
+| the `pusher` service of Mikrus | both | untrusted |
 
 ## Files left out on purpose
 
