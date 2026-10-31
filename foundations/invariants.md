@@ -1069,7 +1069,7 @@ One death of a character is settled once: a further settling of that death and a
 
 For the same starting game state and real-time inputs, a character whose team's chest no other character's map run reaches during a span of game minutes has the same character and chest state after catch-up as after the game runs without a break over that span.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-223
 - **Part:** every
@@ -1079,7 +1079,7 @@ For the same starting game state and real-time inputs, a character whose team's 
 
 The catch-up passes an earning loop, until it stops, by one game minute for each whole real minute from the save time to the reading of the browser's clock, the rest shorter than a real minute waiting for the earning loop's next game minute, and a reading before the save time passes zero game minutes, takes nothing and starts the clock of the earning loops from that reading.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-225 · D-230
 - **Part:** simulation · browser-view
@@ -1089,7 +1089,7 @@ The catch-up passes an earning loop, until it stops, by one game minute for each
 
 A character's death in the k-th game minute of the catch-up is settled at the real moment k real minutes after the save time.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-190 · D-225
 - **Part:** simulation · browser-view

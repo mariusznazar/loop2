@@ -1,4 +1,6 @@
+import { BALANCE } from "./data/balance.js";
 import { MAPS } from "./data/maps.js";
+import type { SkillId } from "./data/skills.js";
 import {
   characterAfterDeath,
   programOf,
@@ -11,13 +13,16 @@ import { mapRunEnded, newMapRun, stepMinute } from "./run.js";
 import { paidPractice, sumPractice } from "./skills.js";
 import { takeTrip, tripLoot } from "./trip.js";
 import type {
+  AwayReportLine,
   Character,
   CharacterId,
   Chest,
   EarningLoop,
   GameState,
+  ItemId,
   MapId,
   MapRun,
+  Practice,
   Program,
   ProgramId,
 } from "./types.js";
@@ -345,4 +350,240 @@ function withCharacter(
       ),
     },
   };
+}
+
+/** What `passLoops` and `catchUp` return: the usual result and the new value of the loop clock. */
+export type LoopPass = GameResult & { clockMs: number };
+
+const MS_PER_LOOP_MINUTE = BALANCE.loopMinuteRealSeconds * 1000;
+
+function assertMoment(name: string, momentMs: number): void {
+  if (!Number.isSafeInteger(momentMs)) {
+    throw new RangeError(
+      `${name}: ${String(momentMs)} is not a safe integer moment`,
+    );
+  }
+}
+
+/**
+ * The whole game minutes of an earning loop from the loop clock `fromMs` to the reading `nowMs`, and
+ * the clock's new value, `fromMs` plus those minutes; the rest shorter than a minute waits. A reading
+ * before `fromMs` gives no minutes and the reading as the clock's value: it runs from now and takes
+ * nothing. The k-th minute after `fromMs` has the real moment `fromMs` plus k minutes. A moment that
+ * is no safe integer is a RangeError.
+ */
+export function loopSpan(
+  fromMs: number,
+  nowMs: number,
+): { minutes: number; clockMs: number } {
+  assertMoment("loopSpan", fromMs);
+  assertMoment("loopSpan", nowMs);
+  if (nowMs < fromMs) return { minutes: 0, clockMs: nowMs };
+  const minutes = Math.floor((nowMs - fromMs) / MS_PER_LOOP_MINUTE);
+  return { minutes, clockMs: fromMs + minutes * MS_PER_LOOP_MINUTE };
+}
+
+/** How the end of a loop's map run was dealt with. */
+type EndKind = "none" | "completion" | "covered" | "stopped";
+
+/** Takes the end of the character's loop run at `momentMs`, if there is one, and says which it was. */
+function takeEnd(
+  state: GameState,
+  characterId: CharacterId,
+  momentMs: number,
+): GameResult & { kind: EndKind } {
+  const found = loopOf(state, characterId);
+  if (!found || !mapRunEnded(found.loop.run))
+    return { state, events: [], kind: "none" };
+  const taken = endLoopRun(state, characterId, momentMs);
+  const kind: EndKind = !Object.hasOwn(taken.state.loops, characterId)
+    ? "stopped"
+    : found.loop.run.death
+      ? "covered"
+      : "completion";
+  return { ...taken, kind };
+}
+
+/** The generation of the team's character `characterId`. */
+function generationOf(state: GameState, characterId: CharacterId): number {
+  return state.team.characters.find((listed) => listed.id === characterId)!
+    .generation;
+}
+
+const emptyLine = (characterId: CharacterId): AwayReportLine => ({
+  characterId,
+  minutes: 0,
+  chest: {},
+  practice: {},
+  resurrectionUsed: false,
+  stop: null,
+});
+
+/**
+ * The report with the open line of `characterId` (a new one where none is open, appended) replaced
+ * by what `update` makes of it.
+ */
+function withLine(
+  report: AwayReportLine[],
+  characterId: CharacterId,
+  update: (line: AwayReportLine) => AwayReportLine,
+): AwayReportLine[] {
+  const at = report.findIndex(
+    (line) => line.characterId === characterId && line.stop === null,
+  );
+  if (at < 0) return [...report, update(emptyLine(characterId))];
+  return report.map((line, index) => (index === at ? update(line) : line));
+}
+
+/** The sum of two signed changes of the chest, an item whose sum is 0 left out. */
+function addedChange(
+  left: AwayReportLine["chest"],
+  right: AwayReportLine["chest"],
+): AwayReportLine["chest"] {
+  const sum: AwayReportLine["chest"] = { ...left };
+  for (const item of Object.keys(right) as ItemId[]) {
+    const pieces = (sum[item] ?? 0) + right[item]!;
+    if (pieces === 0) delete sum[item];
+    else sum[item] = pieces;
+  }
+  return sum;
+}
+
+/** What `after` holds more or fewer of each item than `before`, signed, no zero kept. */
+function chestChange(before: Chest, after: Chest): AwayReportLine["chest"] {
+  const change: AwayReportLine["chest"] = {};
+  const items = new Set([
+    ...Object.keys(before.pieces),
+    ...Object.keys(after.pieces),
+  ]) as Set<ItemId>;
+  for (const item of items) {
+    const pieces = (after.pieces[item] ?? 0) - (before.pieces[item] ?? 0);
+    if (pieces !== 0) change[item] = pieces;
+  }
+  return change;
+}
+
+/** The practice `after` holds beyond `before`, only the skills it grew in. */
+function practiceGain(before: Practice, after: Practice): Practice {
+  const gain: Practice = {};
+  for (const skill of Object.keys(after) as SkillId[]) {
+    const grown = after[skill]! - (before[skill] ?? 0);
+    if (grown > 0) gain[skill] = grown;
+  }
+  return gain;
+}
+
+/** A line closed by the stop of its loop: no practice stays, the loop's being gone. */
+function stoppedLine(
+  line: AwayReportLine,
+  generation: number,
+  away: boolean,
+): AwayReportLine {
+  return { ...line, practice: {}, stop: { generation, away } };
+}
+
+/**
+ * The open game's passing (D-225): the whole minutes from the loop clock `fromMs` to `nowMs`, one
+ * after another, within each minute the characters with a loop in the team's order, each end dealt
+ * with at the minute's own real moment (`fromMs` plus k minutes). A loop that stops writes its stop
+ * into the report; a covered death and a completion write nothing. With no loop in the state the
+ * clock is set to `nowMs`; with no whole minute the very state is returned and the clock stays.
+ */
+export function passLoops(
+  state: GameState,
+  fromMs: number,
+  nowMs: number,
+): LoopPass {
+  const span = loopSpan(fromMs, nowMs);
+  if (Object.keys(state.loops).length === 0)
+    return { state, events: [], clockMs: nowMs };
+  if (span.minutes === 0) return { state, events: [], clockMs: span.clockMs };
+  let current = state;
+  const events: GameEvent[] = [];
+  for (let minute = 1; minute <= span.minutes; minute += 1) {
+    const momentMs = fromMs + minute * MS_PER_LOOP_MINUTE;
+    for (const { id } of state.team.characters) {
+      if (!Object.hasOwn(current.loops, id)) continue;
+      const taken = takeEnd(advanceLoopRun(current, id, 1).state, id, momentMs);
+      current = taken.state;
+      events.push(...taken.events);
+      if (taken.kind === "stopped") {
+        const generation = generationOf(current, id);
+        current = {
+          ...current,
+          awayReport: withLine(current.awayReport, id, (line) =>
+            stoppedLine(line, generation, false),
+          ),
+        };
+      }
+    }
+  }
+  return { state: current, events, clockMs: span.clockMs };
+}
+
+/**
+ * The catch-up (D-223, D-230): the whole minutes from the save time to `nowMs`, one character at a
+ * time in the team's order, each through the whole span and the chest as the one before left it. It
+ * reads neither the manual map run nor the pause, and a loop that stops does not stop the others.
+ * Each character's turn is written into the report: its minutes, its own change of the chest and
+ * the practice its loop gained, and a covered death or a stop. With no loop, no whole minute or no
+ * save time, the very state is returned.
+ */
+export function catchUp(state: GameState, nowMs: number): LoopPass {
+  assertMoment("catchUp", nowMs);
+  if (state.saveTimeMs === null || Object.keys(state.loops).length === 0)
+    return { state, events: [], clockMs: nowMs };
+  const fromMs = state.saveTimeMs;
+  const span = loopSpan(fromMs, nowMs);
+  if (span.minutes === 0) return { state, events: [], clockMs: span.clockMs };
+  let current = state;
+  const events: GameEvent[] = [];
+  for (const { id } of state.team.characters) {
+    const found = loopOf(current, id);
+    if (!found) continue;
+    const chestBefore = current.team.chest;
+    const practiceBefore = found.loop.practice;
+    let passed = 0;
+    let covered = false;
+    let stopped = false;
+    while (passed < span.minutes && !stopped) {
+      const advanced = advanceLoopRun(current, id, span.minutes - passed);
+      if (advanced.passed === 0) break;
+      passed += advanced.passed;
+      const taken = takeEnd(
+        advanced.state,
+        id,
+        fromMs + passed * MS_PER_LOOP_MINUTE,
+      );
+      current = taken.state;
+      events.push(...taken.events);
+      covered ||= taken.kind === "covered";
+      stopped = taken.kind === "stopped";
+    }
+    const change = chestChange(chestBefore, current.team.chest);
+    const gain = stopped
+      ? {}
+      : practiceGain(practiceBefore, current.loops[id]!.practice);
+    const generation = generationOf(current, id);
+    current = {
+      ...current,
+      awayReport: withLine(current.awayReport, id, (line) => {
+        const grown: AwayReportLine = {
+          ...line,
+          minutes: line.minutes + passed,
+          chest: addedChange(line.chest, change),
+          practice: sumPractice(line.practice, gain),
+          resurrectionUsed: line.resurrectionUsed || covered,
+        };
+        return stopped ? stoppedLine(grown, generation, true) : grown;
+      }),
+    };
+  }
+  return { state: current, events, clockMs: span.clockMs };
+}
+
+/** Closes the report: the whole section at once. An empty report is the very state. */
+export function closeAwayReport(state: GameState): GameResult {
+  if (state.awayReport.length === 0) return { state, events: [] };
+  return { state: { ...state, awayReport: [] }, events: [] };
 }
