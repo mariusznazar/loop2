@@ -26,7 +26,6 @@ import unittest
 import uuid
 
 from tests.invariants import account_container_support as support
-from tests.invariants import loop2_invariant_support as compose  # noqa: F401  (path setup)
 from tests.deploy import test_account_storage as storage
 
 WORD = "--to-standard-output"
