@@ -17,6 +17,7 @@ import {
   setPace,
   setPaused,
   setProgram,
+  settleDeath,
 } from "../../dist/public/sim/game.js";
 import {
   createProgram,
@@ -1725,8 +1726,8 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-206). */
-const VERSION = 1;
+/** The version of the shape of the saved game state this game writes and loads (D-206); 2 since To do 21 of rozliczenie-przejsc. */
+const VERSION = 2;
 const withCharacter = () => createCharacter(newGame(), "Ala").state;
 /** A game whose map run passes: Ala sent to the forest at the real date 0, unpaused. */
 const passing = () =>
@@ -1845,13 +1846,16 @@ test("a sign-in to another account after a 401 on a save drops the kept state an
   });
 });
 
-/** A game whose map run ended in Ala's death, the pause of each discovery lifted by the player. */
+/**
+ * A game whose map run ended in Ala's death, the pause of each discovery lifted by the player, the
+ * death settled as the game's clock settles it; the load refuses a death unsettled (spec, decision 9).
+ */
 function ended() {
   let state = passing();
   for (let round = 0; round < 50 && !mapRunEnded(state.run); round += 1)
     state = advanceMinutes(setPaused(state, false).state, 5000).state;
   assert.ok(state.run.death, "precondition: the map run ended in a death");
-  return state;
+  return settleDeath(state, 1_760_000_000_000).state;
 }
 
 /** The header's line of saving, or null while it says nothing. */
@@ -2212,8 +2216,9 @@ function lastMinute() {
   return state;
 }
 
-// To do 7; D-207. Catches a death left unsaved until the next 30-second check.
-test("a game minute that ends the map run in a death is saved at once", async () => {
+// To do 7; D-207; To do 16. Catches a death left unsaved until the next 30-second check, and a death
+// saved unsettled, which the next load would refuse.
+test("a game minute that ends the map run in a death is saved at once, settled", async () => {
   await onPage(async ({ root }) => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
     let now = 0;
@@ -2239,8 +2244,81 @@ test("a game minute that ends the map run in a death is saved at once", async ()
       const [sent] = argsOf(held, "saveGame");
       assert.equal(sent.basedOn, 5);
       assert.equal(sent.game.run.death.cause, "cold");
+      assert.deepEqual(sent.game.run.deathSettlement, {
+        kind: "resurrectionUsed",
+      });
     } finally {
       Object.defineProperty(globalThis, "performance", saved);
+    }
+  });
+});
+
+/** Ala at generation 2 at the headquarters, her resurrection ready `left` ms after `at`. */
+function renewing(at, left) {
+  const state = withCharacter();
+  const [ala] = state.team.characters;
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      characters: [{ ...ala, generation: 2, resurrectionReadyAtMs: at + left }],
+    },
+  };
+}
+
+// To do 19, 20; spec decisions 7 and 8; D-207. Catches a headquarters that draws the passing of
+// real time only when the game state changes, one that rewrites a line that did not change, and a
+// tick that makes a new state, which the saver would send.
+test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
+  await onPage(async ({ root }) => {
+    const T = 1_760_000_000_000;
+    let current = T;
+    const date = mock.method(Date, "now", () => current);
+    try {
+      const held = heldClient();
+      await startPage(held);
+      await held.answer("currentAccount", ACCOUNT);
+      // 59 min 30 s left at the clock's start: rounded up, one whole hour.
+      await held.answer("loadSavedGame", saveOf(renewing(T, 3_570_000), 4));
+      const [line] = byClass(root, "team-member-resurrection");
+      const warning = " — śmierć zabierze wprawę i wykupione stopnie";
+      assert.equal(line.textContent, `Wskrzeszenie za 1 godz. 0 min${warning}`);
+      assert.ok(line.classList.contains("danger"));
+      const [label] = byClass(root, "team-member-generation");
+      assert.equal(label.textContent, "pokolenie 2");
+
+      let writes = 0;
+      Object.defineProperty(line, "textContent", {
+        configurable: true,
+        get: () => line.ownText,
+        set: (text) => {
+          writes += 1;
+          line.ownText = String(text);
+        },
+      });
+      // 20 s on: 59 min 10 s left is 60 minutes still; the tick writes nothing.
+      current = T + 20_000;
+      mock.timers.tick(200);
+      assert.equal(writes, 0);
+      // 31 s on: 58 min 59 s left rounds up to 59 minutes.
+      current = T + 31_000;
+      mock.timers.tick(200);
+      assert.equal(writes, 1);
+      assert.equal(line.textContent, `Wskrzeszenie za 59 min${warning}`);
+      mock.timers.tick(200);
+      assert.equal(writes, 1, "a tick in the same minute writes nothing");
+      // At the moment of readiness the line turns ready, within one tick, and loses `danger`.
+      current = T + 3_570_000;
+      mock.timers.tick(200);
+      assert.equal(line.textContent, "Wskrzeszenie gotowe");
+      assert.ok(!line.classList.contains("danger"));
+      assert.equal(writes, 2);
+
+      // Nothing was saved: the ticks made no new state, and the saver's own check finds none.
+      mock.timers.tick(60_000);
+      assert.deepEqual(waitingCalls(held), []);
+    } finally {
+      date.mock.restore();
     }
   });
 });
@@ -2304,7 +2382,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
-    ["another version", saveOf(withCharacter(), 7, 2), OTHER_VERSION],
+    ["another version", saveOf(withCharacter(), 7, 3), OTHER_VERSION],
     [
       "an archetype absent from the data",
       { ok: true, value: { version: VERSION, revision: 7, game: foreign } },
@@ -2430,7 +2508,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     buttonNamed(root, "4×").fire("click");
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
-    await held.answer("loadSavedGame", saveOf(withCharacter(), 6, 2));
+    await held.answer("loadSavedGame", saveOf(withCharacter(), 6, 3));
     assert.deepEqual(pageNotices(root), [OTHER_VERSION]);
     assert.equal(saveLine(root), null);
     assert.deepEqual(argsOf(held, "saveGame"), [submission(newGame(), 6)]);

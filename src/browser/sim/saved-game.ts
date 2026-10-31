@@ -41,11 +41,13 @@ import type {
   CurrentActivity,
   Death,
   DeathCause,
+  DeathSettlement,
   GameMapRun,
   GameState,
   Hex,
   ItemId,
   LastCombat,
+  MapId,
   Pace,
   Practice,
   Program,
@@ -66,7 +68,7 @@ import type {
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
  * `GameState` or a type it reaches, and of the items of the data, which `Backpack` enumerates.
  */
-export const SAVED_GAME_VERSION = 1;
+export const SAVED_GAME_VERSION = 2;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -419,13 +421,16 @@ function hex(value: unknown): Hex {
 
 /**
  * What the game state names a program or a character by, and what it holds of them: the
- * characters of the team by their archetypes, and the skill trees the Understanding holds.
+ * characters of the team, already read, by their numbers, and the skill trees the Understanding
+ * holds.
  */
 type Records = {
   nextProgramId: ProgramId;
   listed: ReadonlySet<ProgramId>;
-  characters: ReadonlyMap<CharacterId, ArchetypeId>;
+  characters: ReadonlyMap<CharacterId, Character>;
   trees: readonly SkillId[];
+  /** The maps solved, read before the map run: the mark of a run and its completion rest on them. */
+  solved: readonly MapId[];
 };
 
 /** A program number the game gave, the number of a deleted program included (D-165). */
@@ -488,6 +493,8 @@ function team(
       "archetypeId",
       "traits",
       "skills",
+      "generation",
+      "resurrectionReadyAtMs",
     ]);
     const id = identity(character.id);
     if (id >= nextCharacterId || ids.has(id)) refuse();
@@ -499,6 +506,9 @@ function team(
       archetypeId,
       traits: traits(character.traits),
       skills: characterSkills(character.skills, archetypeId, trees),
+      generation: identity(character.generation),
+      // Any safe integer: the moment is real time of a past death, and no clock is read here.
+      resurrectionReadyAtMs: integer(character.resurrectionReadyAtMs),
     };
   });
   return { characters, chest: chest(read.chest) };
@@ -729,12 +739,14 @@ function copy(value: unknown, records: Records): ProgramCopy {
 
 /**
  * What completion put in the chest: none before a completion, and at one the frozen bring plan's
- * entries in its order, each at most the count it plans (D-179, D-189).
+ * entries in its order, each at most the count it plans (D-179, D-189); at the completion of a
+ * marked run an empty list, since such a run deposits nothing.
  */
 function deposited(
   value: unknown,
   bringPlan: readonly TripEntry[],
   completed: boolean,
+  marked: boolean,
 ): TripEntry[] | null {
   if (value === null) {
     if (completed) refuse();
@@ -742,6 +754,7 @@ function deposited(
   }
   if (!completed) refuse();
   const put = tripList(value);
+  if (marked && put.length > 0) refuse();
   let from = 0;
   for (const entry of put) {
     const at = bringPlan.findIndex(
@@ -751,6 +764,46 @@ function deposited(
     from = at + 1;
   }
   return put;
+}
+
+const SETTLEMENTS: {
+  [K in DeathSettlement["kind"]]: (
+    value: unknown,
+    currentGeneration: number,
+  ) => DeathSettlement;
+} = {
+  resurrectionUsed: (value) => {
+    fields(value, ["kind"]);
+    return { kind: "resurrectionUsed" };
+  },
+  progressLost: (value, currentGeneration) => {
+    const read = fields(value, ["kind", "generation"]);
+    // A death that takes everything leaves a number from 2 up, and later deaths only raise it.
+    const generation = integer(read.generation, 2);
+    if (generation > currentGeneration) refuse();
+    return { kind: "progressLost", generation };
+  },
+};
+
+/**
+ * How a death was settled: none without a death, and at a death one of the closed list, so a death
+ * unsettled does not load; a number of a death that took everything up to the current generation of
+ * the map run's character.
+ */
+function deathSettlement(
+  value: unknown,
+  died: boolean,
+  currentGeneration: number,
+): DeathSettlement | null {
+  if (value === null) {
+    if (died) refuse();
+    return null;
+  }
+  if (!died) refuse();
+  return SETTLEMENTS[oneOf(own(plainObject(value), "kind"), SETTLEMENTS)](
+    value,
+    currentGeneration,
+  );
 }
 
 const RUN_KEYS = [
@@ -778,13 +831,18 @@ const RUN_KEYS = [
   "copy",
   "bringPlan",
   "deposited",
+  "solvedMapRun",
+  "deathSettlement",
 ] as const;
 
 /**
  * The map run, with what the simulation follows in it: its character in the team, with skills its
  * archetype allows, every place on its tiles, one campfire a tile, an attack going on only with no
  * activity and before an end, an activity going on until it ends, an end in its own game minute,
- * and a deposit only at a completion, out of the frozen bring plan.
+ * and a deposit only at a completion, out of the frozen bring plan. Its mark says whether the map
+ * was solved when it started: a run that has not completed holds the mark exactly when the solved
+ * maps hold its map, which one manual map run at a time keeps true (D-55); a run that completed
+ * has its map among the solved maps, whatever its mark. A death is settled, so no load settles one.
  */
 function mapRun(value: unknown, records: Records): GameMapRun {
   const read = fields(value, RUN_KEYS);
@@ -805,10 +863,10 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     "backpack",
   ]);
   const id = identity(carried.id);
-  const archetypeId = records.characters.get(id);
-  if (archetypeId === undefined) refuse();
+  const owner = records.characters.get(id);
+  if (owner === undefined) refuse();
   const character: RunCharacter = {
-    skills: characterSkills(carried.skills, archetypeId, records.trees),
+    skills: characterSkills(carried.skills, owner.archetypeId, records.trees),
     id,
     at: onMap(carried.at),
     traits: traits(carried.traits),
@@ -855,6 +913,9 @@ function mapRun(value: unknown, records: Records): GameMapRun {
   const streak = count(read.streak);
   if (attackCooldownStart > minute || streak > minute) refuse();
   const bringPlan = tripList(read.bringPlan);
+  const solvedMapRun = flag(read.solvedMapRun);
+  const mapSolved = records.solved.includes(mapId);
+  if (ended.completion ? !mapSolved : solvedMapRun !== mapSolved) refuse();
 
   return {
     practice: practice(read.practice),
@@ -880,7 +941,18 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     ...ended,
     copy: copy(read.copy, records),
     bringPlan,
-    deposited: deposited(read.deposited, bringPlan, ended.completion !== null),
+    deposited: deposited(
+      read.deposited,
+      bringPlan,
+      ended.completion !== null,
+      solvedMapRun,
+    ),
+    solvedMapRun,
+    deathSettlement: deathSettlement(
+      read.deathSettlement,
+      ended.death !== null,
+      owner.generation,
+    ),
   };
 }
 
@@ -917,14 +989,13 @@ function game(value: unknown): GameState {
   const programs = programList(read.programs, nextProgramId);
   const nextCharacterId = identity(read.nextCharacterId);
   const theTeam = team(read.team, nextCharacterId, known.trees);
+  const solvedMaps = uniqueOf(read.solvedMaps, MAPS);
   const records: Records = {
+    solved: solvedMaps,
     nextProgramId,
     listed: new Set(programs.map((saved) => saved.id)),
     characters: new Map(
-      theTeam.characters.map((character) => [
-        character.id,
-        character.archetypeId,
-      ]),
+      theTeam.characters.map((character) => [character.id, character]),
     ),
     trees: known.trees,
   };
@@ -978,7 +1049,7 @@ function game(value: unknown): GameState {
     lastSeed: uint32(read.lastSeed),
     // A map run that goes on comes back paused, and one that ended as it ended (D-212).
     paused: run !== null && !mapRunEnded(run) ? true : paused,
-    solvedMaps: uniqueOf(read.solvedMaps, MAPS),
+    solvedMaps,
     pace: read.pace as Pace,
     discovery,
     realMsCarry,

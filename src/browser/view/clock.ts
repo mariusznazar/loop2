@@ -1,4 +1,9 @@
-import { passRealTime, send, type GameResult } from "../sim/game.js";
+import {
+  passRealTime,
+  send,
+  settleDeath,
+  type GameResult,
+} from "../sim/game.js";
 import type { CharacterId, GameState, MapId, ProgramId } from "../sim/types.js";
 
 /** Access to the one game state the app holds; `apply` replaces it with a simulation result. */
@@ -8,11 +13,20 @@ export type GameStore = {
 };
 
 export type Clock = {
-  /** Passes the real time elapsed since the clock's previous reading to the simulation now. */
+  /**
+   * Makes a reading now: passes the real time elapsed since the clock's previous reading to the
+   * simulation and settles a death at the real date read.
+   */
   flush(): void;
   /**
-   * Sends a character, passing the real date to the simulation as the send's real time; the
-   * program number, where given, goes to the simulation's send with it.
+   * The real date, in milliseconds, of the clock's latest reading: the one it read at its start
+   * until the first flush, then the one of the latest flush. The view draws the passing of real
+   * time from it; the game state never holds it.
+   */
+  moment(): number;
+  /**
+   * Sends a character, passing the real date of the reading it makes first to the simulation as
+   * the send's real time; the program number, where given, goes to the simulation's send with it.
    */
   send(ids: {
     mapId: MapId;
@@ -29,27 +43,40 @@ export type Clock = {
 const TICK_MS = 200;
 
 /**
- * Starts the clock: every 200 ms it reads `performance.now()` and passes the real milliseconds
- * elapsed since its previous reading to `passRealTime`. Time elapsed while the tab is hidden counts
- * too, since it is measured, not counted in ticks.
+ * Starts the clock: every 200 ms it makes a reading, of `performance.now()` for the real
+ * milliseconds elapsed since its previous reading, which go to `passRealTime`, and of `Date.now()`
+ * for the moment `settleDeath` settles a death at. The store gets one result of each reading, the
+ * events of the passing of time with the state settled, so it never holds a death unsettled, and
+ * an unchanged game gives it the very state it holds. Time elapsed while the tab is hidden counts
+ * too, since it is measured, not counted in ticks; a date that jumps changes no pace. After each
+ * reading's result has gone to the store, `onReading` is called, so the view can draw what the
+ * passing of real time changes without a game state changing; a disposed clock calls nothing.
  */
-export function startClock(store: GameStore): Clock {
+export function startClock(
+  store: GameStore,
+  onReading: () => void = () => undefined,
+): Clock {
   let previous = performance.now();
+  let moment = Date.now();
   let running = true;
   const flush = (): void => {
     if (!running) return;
     const now = performance.now();
     const elapsed = now - previous;
     previous = now;
-    store.apply(passRealTime(store.get(), elapsed));
+    moment = Date.now();
+    const { state, events } = passRealTime(store.get(), elapsed);
+    store.apply({ state: settleDeath(state, moment).state, events });
+    onReading();
   };
   const interval = setInterval(flush, TICK_MS);
   return {
     flush,
+    moment: () => moment,
     send(ids) {
       if (!running) return;
       flush();
-      store.apply(send(store.get(), ids, Date.now()));
+      store.apply(send(store.get(), ids, moment));
     },
     dispose() {
       running = false;
