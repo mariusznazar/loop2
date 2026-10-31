@@ -230,6 +230,12 @@ header .save-line {
   color: var(--warning);
 }
 
+/* The sentence under a form of an answer that refuses nothing, in `text-secondary` (D-40, D-44). */
+.form-note {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
 /* While the page asks the server whom this browser is signed in as (D-96). */
 .session-check {
   display: flex;
@@ -272,6 +278,16 @@ header .save-line {
 
 .account-form .input-field input {
   min-width: 0;
+}
+
+/* The form „Nie pamiętam hasła” stands alone: it keeps the width of one form, not the whole row. */
+.account-form:only-child {
+  max-width: 480px;
+}
+
+/* A button under a form that opens or leaves a state of the screen sits with a gap below the form. */
+.account-form-switch {
+  margin-top: var(--space-m);
 }
 
 /* The program panel's list „Program:”, its actions and the name field, above the editor. */
