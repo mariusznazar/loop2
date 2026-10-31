@@ -7,6 +7,8 @@ import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 import {
   createCharacter,
+  end,
+  mapRunEnded,
   newGame,
   passRealTime,
   send,
@@ -165,12 +167,17 @@ function pageCalls() {
   };
 }
 
+/** A manual map run passes: one present, not ended, not paused (D-207). */
+const runPasses = (state) =>
+  state.run !== null && !mapRunEnded(state.run) && !state.paused;
+
 function saverOf(held, game, revision = 3, extra = {}) {
   const page = pageCalls();
   const saver = createGameSaver({
     client: held.client,
     read: () => game.read(),
     moment: () => game.momentMs,
+    runPasses: () => runPasses(game.state),
     state: game.state,
     revision,
     onConflict: page.onConflict,
@@ -240,7 +247,7 @@ test("a moment during a request in flight sends once more, after the answer, wit
 // --- the outcomes ----------------------------------------------------------------------------
 
 const TOO_LARGE =
-  "Nie udało się zapisać postępu: stan gry jest za duży. Usuń niepotrzebne programy.";
+  "Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.";
 const CONFLICT =
   "Gra została zapisana w innej przeglądarce. Wczytano ten zapis.";
 const OUTDATED = "Gra została zaktualizowana. Odśwież stronę.";
@@ -464,6 +471,46 @@ test("a passing map run is saved at the 30-second check and at hiding, and a hid
     fakeDocument.turn("visible");
     fakeDocument.turn("hidden");
     assert.equal(held.sent.length, 2);
+    saver.dispose();
+  });
+});
+
+// Task petla-zarobkowa, To do 17, row 18 (Q11); spec section 10; D-207. Catches a rhythm that sends
+// every 30 seconds for loops alone, which the player left on overnight, and a hidden page or an act
+// that no longer sends.
+test("the 30-second check is silent while no manual map run passes, though the state changes at every reading; hiding and an act still send", async () => {
+  const cases = [
+    ["no manual map run", withCharacter()],
+    ["a paused manual map run", setPaused(passing(), true).state],
+    ["an ended manual map run", end(passing()).state],
+  ];
+  for (const [name, state] of cases) {
+    await onPage(async () => {
+      const held = heldClient();
+      const game = gameOf(state);
+      // Earning loops pass their minutes at each reading: a new state every time.
+      game.read = () => (game.state = { ...game.state });
+      const { saver } = saverOf(held, game);
+      mock.timers.tick(90_000);
+      assert.equal(held.sent.length, 0, name);
+
+      fakeDocument.turn("hidden");
+      assert.equal(held.sent.length, 1, `${name}: the hidden page sends`);
+      await held.answer(SAVED(4));
+      fakeDocument.turn("visible");
+      game.act(setPace(game.state, 2));
+      saver.moment();
+      assert.equal(held.sent.length, 2, `${name}: an act sends`);
+      saver.dispose();
+    });
+  }
+  await onPage(async () => {
+    const held = heldClient();
+    const game = gameOf(passing());
+    game.read = () => (game.state = { ...game.state });
+    const { saver } = saverOf(held, game);
+    mock.timers.tick(30_000);
+    assert.equal(held.sent.length, 1, "a passing manual map run is checked");
     saver.dispose();
   });
 });

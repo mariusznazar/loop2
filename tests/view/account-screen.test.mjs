@@ -19,6 +19,7 @@ import {
   setProgram,
   settleDeath,
 } from "../../dist/public/sim/game.js";
+import { advanceLoopRun, startLoop } from "../../dist/public/sim/loop.js";
 import {
   createProgram,
   deleteProgram,
@@ -1271,6 +1272,68 @@ test("a save builds the game the load gives: a map run that went on comes back p
       assert.deepEqual(waitingCalls(held), [], `${name}: nothing is sent`);
     });
   }
+});
+
+/** Ala in an earning loop in Las; with `short` her first map run is one game minute from its end. */
+function loopingAla(short) {
+  const made = { ...withCharacter(), solvedMaps: ["forest"] };
+  const started = startLoop(made, { mapId: "forest", characterId: 1 }, 5).state;
+  if (!short) return started;
+  const whole = advanceLoopRun(started, 1, 100_000);
+  assert.ok(
+    mapRunEnded(whole.state.loops[1].run),
+    "precondition: the run ends",
+  );
+  return advanceLoopRun(started, 1, whole.passed - 1).state;
+}
+
+/** The page hides, as a browser tells it. */
+function hidePage() {
+  fakeDocument.visibilityState = "hidden";
+  for (const listener of fakeDocument.listeners.get("visibilitychange") ?? [])
+    listener({ type: "visibilitychange" });
+}
+
+// Task petla-zarobkowa, To do 11 and 17, row 25; spec sections 8 and 10; D-212. The save loaded was
+// made a minute before the clock's date. Catches a game that does not catch up after the load, and a
+// catch-up that ended a run and is not saved at once, or saved once per run end.
+test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(loopingAla(true), 3));
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    const [sent] = argsOf(held, "saveGame");
+    assert.equal(sent.basedOn, 3);
+    assert.equal(sent.game.loops[1].runNumber, 2, "the end was taken");
+    assert.equal(sent.game.awayReport.length, 1);
+    assert.equal(sent.game.awayReport[0].minutes, 1, "one minute, passed once");
+    assert.equal(sent.game.saveTimeMs, CLOCK_MS);
+    assert.ok(gameShown(root));
+  });
+});
+
+// Spec section 10: saving after any caught-up minute would make each reload send, and two open tabs
+// refuse each other (D-209).
+test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caught up once", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(loopingAla(false), 3));
+    assert.deepEqual(waitingCalls(held), []);
+    mock.timers.tick(90_000);
+    await settle();
+    assert.deepEqual(waitingCalls(held), [], "the rhythm is the manual run's");
+
+    hidePage();
+    await settle();
+    const [sent] = argsOf(held, "saveGame");
+    assert.equal(sent.game.loops[1].run.minute, 1);
+    assert.equal(sent.game.awayReport[0].minutes, 1);
+    assert.equal(sent.game.loops[1].runNumber, 1);
+  });
 });
 
 // The starts of the acts below. Ala in the team and a second program, „Program 2”, on the list.
