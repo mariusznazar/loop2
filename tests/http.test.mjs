@@ -357,6 +357,7 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
     path,
     mailer,
     hooks,
+    listening,
     keys,
     first,
     second,
@@ -2605,8 +2606,8 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: password-reset-verified-email
-    // Faults: the answer waiting for the mailer's answer; the message handed
-    // on before the answer; the answer carrying a body.
+    // Faults: the answer waiting for the mailer's answer; the answer
+    // carrying a body.
     const f = await accountFixture(t);
     confirmedAccount(f, "waiting@example.test");
     f.mailer.outcome = "hold";
@@ -2630,13 +2631,38 @@ test(
 );
 
 test(
+  "the answer to a request for a reset link ends before the account is looked up and before the link is recorded",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: password-reset-verified-email
+    // Faults: the lookup of the account or the recording of its link run
+    // before the response has ended, or in the same turn right after it
+    // (D-214, which gives this order as its verification).
+    const f = await accountFixture(t);
+    const order = [];
+    f.listening.on("request", (_request, response) =>
+      response.on("finish", () => order.push("answer")),
+    );
+    f.hooks.beforeFind = () => order.push("lookup");
+    f.hooks.beforeIssue = () => order.push("record");
+    for (let index = 0; index < 3; index += 1) {
+      const email = `order-${index}@example.test`;
+      confirmedAccount(f, email);
+      order.length = 0;
+      assert.equal((await askReset(f, email)).status, 204);
+      await waitFor(() => f.mailer.messages.length === index + 1, "message");
+      assert.deepEqual(order, ["answer", "lookup", "record"], `run ${index}`);
+    }
+  },
+);
+
+test(
   "a well-formed address gets the same answer whether its account is confirmed, unknown, unconfirmed, blocked, above a limit or fails to record, and the last five hand nothing on",
   { timeout: 30000 },
   async (t) => {
     // invariant: password-reset-verified-email
     // Faults: a different status or body for one account state; a message to
-    // an unconfirmed, unknown or blocked account or above a limit; recording
-    // a link before the answer.
+    // an unconfirmed, unknown or blocked account or above a limit.
     const f = await accountFixture(t);
     const logged = captureLog(t);
     confirmedAccount(f, "reachable@example.test");
@@ -2835,7 +2861,8 @@ test(
   async (t) => {
     // invariant: password-reset-verified-email
     // Faults: a lifetime other than one hour; an earlier link left working
-    // beside the newest; the confirmation kind or message for a reset.
+    // beside the newest; the route handing on another message than the
+    // password-reset message (its subject, D-219).
     const f = await accountFixture(t);
     const account = confirmedAccount(f, "lifetime@example.test");
     f.mailer.outcome = "failed";
@@ -2860,6 +2887,8 @@ test(
     );
     for (const link of links)
       assert.equal(link.expiresAt - link.createdAt, hour, "one hour");
+    for (const message of f.mailer.messages)
+      assert.equal(message.subject, "Ustaw nowe hasło w loop2");
     assert.doesNotMatch(f.mailer.messages[1].text, /confirm-email/);
     assert.equal(linkCount(f, account.id), 2);
   },
