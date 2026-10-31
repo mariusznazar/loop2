@@ -1050,7 +1050,7 @@ The account and save server's database has a completed, consistent backup stored
 A deployed Node.js release has passed a check of the account and save server's database read, write and backup operations on that release.
 
 - **Method:** test
-- **Rests on:** node-sqlite-database
+- **Rests on:** node-sqlite-database · docker-build-cache-invalidation
 - **Derives from:** D-215
 - **Part:** account-server · deployment
 - **Violated:** no

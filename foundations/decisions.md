@@ -4180,8 +4180,8 @@ result is one file, whole on its own: a row held only in the write-ahead log and
 were present after that file alone was moved and opened. In write-ahead log mode readers and a
 writer run together, so the game's writes go on through the step: beside a separate process
 committing with full synchronization, the longest commit stayed under the busy timeout of D-112 and
-no commit met a busy error. If a Node.js release refuses that `rate`, the check of D-215 fails the
-build and the running game stays in service.
+no commit met a busy error. If a Node.js release refuses that `rate`, the release check of D-223
+fails the build and the running game stays in service.
 *Rejected:* `VACUUM INTO` — would also finish beside a writer, but it is a second operation beside
 the Online Backup API D-214 rests on, and it rewrites the database rather than backing up its pages;
 it is the fallback if a one-step backup ever fails; the default `rate` of 100 pages — a backup of
@@ -4190,3 +4190,35 @@ not finished after 20 s on a bind mount of a Windows disk; `rate: -1` — the do
 positive number, Node.js 24.17.0 accepted it and 24.22.1 refuses it with `ERR_OUT_OF_RANGE`; copying
 the database's three files — not consistent; a `sqlite3` tool — not in the image and not
 `node:sqlite`.
+
+### D-223 — How is a Node.js release checked before it is deployed?
+
+A build step of the server image's final stage, run as the server's own user on the image's own
+Node.js release, makes a temporary database through the server's database code, writes and reads back
+an account and a saved game state, makes a backup by the method of D-222 and in its one backup step,
+opens that backup, reads the same values and prints the release it checked, and any difference or
+error fails the image's build. The Node.js image stays unpinned.
+
+- **Scope:** account-server, deployment
+- **Based on:** node-sqlite-database · docker-build-cache-invalidation
+- **Relations:** derives from D-215 · derives from D-222
+- **Verification:** an agent compares a change with the decision:
+  - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build that takes the step from its cache on an unchanged base image and unchanged code
+  - violates: a release check moved out of the image's build into the deploy script; a base image pinned by version and digest while this entry stands; a release check that reads the server's database
+- **Origin:** none
+
+*Rationale:* no server image exists without having passed on its own release, whatever release the
+host's Docker store holds, and on a new host after a disaster the build step simply runs on the
+release that host gets. A failure ends the build, so the deployment stops with the running containers
+in service. Docker reruns the build step when the base image or the built code changes, so a step
+taken from the cache means the same release and the same code passed before; the release shows in
+the deployment's log at the first build of a commit. Unpinned, the image of the restore trial may
+stand on another Node.js 24 release than the server's, and the launcher reports the release it ran
+on. If a new release fails, deployments stop until a human pins the last good release, which takes
+one change of this decision.
+*Rejected:* a pin of the Node.js image alone, by version and digest — a pin checks nothing: someone
+has to run a check by hand at each move of it, and fixes of the base image stop until someone moves
+it; a check in the deploy script before the containers are replaced — one more container on a host
+without swap, a new allowed `docker run` that the reading of loop2-host-sharing forbids, and a
+reinstall of the script at every change of it; both a pin and a check — reproducible builds, which
+D-215 does not need, at the price of a pin to maintain.

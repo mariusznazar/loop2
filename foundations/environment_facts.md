@@ -379,6 +379,12 @@ A file in `/etc/cron.d` for cron 3.0pl1-137ubuntu3 of Ubuntu 22.04 must be owned
 
 - **Source:** https://git.launchpad.net/ubuntu/+source/cron/plain/cron.8?h=applied/3.0pl1-137ubuntu3 § NOTES — "/etc/crontab and the files in /etc/cron.d must be owned by root, and must not be group- or other-writable." · § DEBIAN SPECIFIC — "This directory can contain any file defining tasks following the format used in /etc/crontab, i.e. unlike the user cron spool, these files must provide the username to run the task as in the task definition." · "Files in this directory have to be owned by root, do not need to be executable (they are configuration files, just like /etc/crontab) and must conform to the same naming convention as used by run-parts(8) : they must consist solely of upper- and lower-case letters, digits, underscores, and hyphens. This means that they cannot contain any dots."; read 2026-10-31
 
+## docker-build-cache-invalidation
+
+Docker's builder checks the base image and then each instruction against the cached layers, invalidates the cache where no cached layer matches, checks `COPY` by file metadata and `RUN` by its command string, and uses no cache for any instruction after an invalidation.
+
+- **Source:** https://raw.githubusercontent.com/docker/docs/62f6d26c183faf98fc8567f0b675f660f4e91ae6/content/manuals/build/cache/invalidation.md § General rules — "The builder begins by checking if the base image is already cached. Each subsequent instruction is compared against the cached layers. If no cached layer matches the instruction exactly, the cache is invalidated." · "For the ADD and COPY instructions, and for RUN instructions with bind mounts (RUN --mount=type=bind), the builder calculates a cache checksum from file metadata to determine whether cache is valid." · "In that case just the command string itself is used to find a match." · "Once the cache is invalidated, all subsequent Dockerfile commands generate new images and the cache isn't used."; read 2026-10-31
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
