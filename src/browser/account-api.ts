@@ -111,6 +111,14 @@ export interface AccountClient {
   confirmEmail(token: string): Promise<AccountResult<null>>;
   /** POST /api/email-confirmation-message: asks for a new link for the signed-in account. */
   sendConfirmationMessage(): Promise<AccountResult<ConfirmationMessage>>;
+  /** POST /api/password-reset-message: asks for a link to set a new password; needs no session. */
+  requestPasswordReset(email: string): Promise<AccountResult<null>>;
+  /** POST /api/password-reset: spends the link's token to set a new password; needs no session. */
+  setPassword(
+    token: string,
+    password: string,
+    passwordConfirmation: string,
+  ): Promise<AccountResult<null>>;
   /** GET /api/saved-game: the account's saved game state, or null when it has none. */
   loadSavedGame(): Promise<AccountResult<SavedGame | null>>;
   /** PUT /api/saved-game: replaces the saved game state, sent with `keepalive`. */
@@ -431,6 +439,14 @@ export function createAccountClient(
         {},
         200,
         messageOf,
+        timeoutMs,
+      ),
+    requestPasswordReset: (email) =>
+      noContentRequest("/api/password-reset-message", { email }, timeoutMs),
+    setPassword: (token, password, passwordConfirmation) =>
+      noContentRequest(
+        "/api/password-reset",
+        { token, password, passwordConfirmation },
         timeoutMs,
       ),
     loadSavedGame: () => loadSavedGame(timeoutMs),

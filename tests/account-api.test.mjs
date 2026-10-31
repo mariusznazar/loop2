@@ -124,6 +124,9 @@ const calls = {
   logout: (c) => c.logout(),
   confirmEmail: (c) => c.confirmEmail("tok-1_a"),
   sendConfirmationMessage: (c) => c.sendConfirmationMessage(),
+  requestPasswordReset: (c) => c.requestPasswordReset("a@x.pl"),
+  setPassword: (c) =>
+    c.setPassword("tok-1_a", "new twelve chars", "new twelve chars"),
 };
 
 const accountJson = '{"id":"u1","email":"a@x.pl","emailConfirmed":false}';
@@ -135,7 +138,9 @@ test("each call sends its documented method, relative path and JSON body", async
   respond = (request, response) => {
     if (
       request.url === "/api/logout" ||
-      request.url === "/api/email-confirmation"
+      request.url === "/api/email-confirmation" ||
+      request.url === "/api/password-reset-message" ||
+      request.url === "/api/password-reset"
     ) {
       return response.writeHead(204).end();
     }
@@ -154,11 +159,13 @@ test("each call sends its documented method, relative path and JSON body", async
     await within(c.logout(), "d"),
     await within(c.confirmEmail("tok-1_a"), "e"),
     await within(c.sendConfirmationMessage(), "f"),
+    await within(c.requestPasswordReset("Ala@x.pl"), "g"),
+    await within(c.setPassword("tok-2_b", "new pass one", "new pass two"), "h"),
   ];
   // Precondition: every answer was a success, so each request was fully sent.
   assert.deepEqual(
     results.map((result) => result.ok),
-    [true, true, true, true, true, true],
+    [true, true, true, true, true, true, true, true],
   );
   assert.deepEqual(
     seen.map(({ method, url, contentType }) => ({
@@ -173,6 +180,8 @@ test("each call sends its documented method, relative path and JSON body", async
       { method: "POST", url: "/api/logout", json: true },
       { method: "POST", url: "/api/email-confirmation", json: true },
       { method: "POST", url: "/api/email-confirmation-message", json: true },
+      { method: "POST", url: "/api/password-reset-message", json: true },
+      { method: "POST", url: "/api/password-reset", json: true },
     ],
   );
   assert.deepEqual(JSON.parse(seen[0].body), {
@@ -188,6 +197,12 @@ test("each call sends its documented method, relative path and JSON body", async
   assert.deepEqual(JSON.parse(seen[3].body), {});
   assert.deepEqual(JSON.parse(seen[4].body), { token: "tok-1_a" });
   assert.deepEqual(JSON.parse(seen[5].body), {});
+  assert.deepEqual(JSON.parse(seen[6].body), { email: "Ala@x.pl" });
+  assert.deepEqual(JSON.parse(seen[7].body), {
+    token: "tok-2_b",
+    password: "new pass one",
+    passwordConfirmation: "new pass two",
+  });
 });
 
 // invariant: account-client-requests
@@ -238,6 +253,12 @@ test("the success status of each call with an account body gives that account an
     ok: true,
     value: null,
   });
+  for (const name of ["requestPasswordReset", "setPassword"]) {
+    assert.deepEqual(await within(calls[name](client()), name), {
+      ok: true,
+      value: null,
+    });
+  }
 });
 
 // invariant: account-client-outcomes
@@ -254,6 +275,12 @@ test("a success status other than the call's own is no success, whatever the bod
     ["confirmEmail", 200, "{}"],
     ["confirmEmail", 201, ""],
     ["confirmEmail", 202, ""],
+    ["requestPasswordReset", 200, "{}"],
+    ["requestPasswordReset", 201, ""],
+    ["requestPasswordReset", 202, ""],
+    ["setPassword", 200, "{}"],
+    ["setPassword", 201, ""],
+    ["setPassword", 202, ""],
     ["sendConfirmationMessage", 201, message],
     ["sendConfirmationMessage", 202, message],
     ["sendConfirmationMessage", 204, ""],
@@ -416,6 +443,37 @@ test("an error status is a refusal carrying the server's code and message, even 
       400,
       "invalid-link",
       "Odnośnik jest nieważny albo wygasł.",
+    ],
+    [
+      "requestPasswordReset",
+      400,
+      "invalid-email",
+      "Podaj adres e-mail w postaci nazwa@domena.",
+    ],
+    [
+      "requestPasswordReset",
+      429,
+      "too-many-attempts",
+      "Za dużo prób. Spróbuj ponownie za kilka minut.",
+    ],
+    [
+      "setPassword",
+      400,
+      "invalid-password",
+      "Hasło musi mieć od 12 do 128 znaków.",
+    ],
+    [
+      "setPassword",
+      400,
+      "password-mismatch",
+      "Powtórzone hasło różni się od hasła.",
+    ],
+    ["setPassword", 400, "invalid-link", "Odnośnik jest nieważny albo wygasł."],
+    [
+      "setPassword",
+      429,
+      "too-many-attempts",
+      "Za dużo prób. Spróbuj ponownie za kilka minut.",
     ],
     [
       "sendConfirmationMessage",
