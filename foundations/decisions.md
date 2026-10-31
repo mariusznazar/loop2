@@ -3991,11 +3991,11 @@ the installed schedule with their sources at the deployed commit and only warns 
 installing or reinstalling them being a human's change.
 
 - **Scope:** account-server, deployment, agent-workflow
-- **Based on:** mikrus-host-swap
+- **Based on:** mikrus-host-swap · cron-d-file-rules
 - **Relations:** derives from D-214 · derives from D-12
 - **Verification:** an agent compares a change with the decision:
   - complies: a script that calls `docker exec` without a terminal and holds the lock only for the stream and its encryption; a difference in the installed schedule that warns while the deployment goes on; a run of the command without its fixed word that ends with the usage exit code, an empty standard output and the database never opened
-  - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a plain backup left in the database's volume for fetching; a command that opens the database or writes to standard output without its fixed word; a skill instruction in which an agent runs the command through the `mikrus` MCP server
+  - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a schedule installed under a file name with a dot; a plain backup left in the database's volume for fetching; a command that opens the database or writes to standard output without its fixed word; a skill instruction in which an agent runs the command through the `mikrus` MCP server
 - **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 2
 
 *Rationale:* the key to Strych stays away from the process that serves players, a failed send
@@ -4008,14 +4008,17 @@ the script at each of its changes, as with the deploy script of D-16. The compar
 deployment shows the drift this accepts, and a warning rather than a refusal keeps a rollback past a
 change of the sources possible. The plain database rests in the container's writable layer for the
 seconds of the run and on the host only passes through a pipe. The command counts towards the
-container's memory limit on a host without swap; measured in a container limited to 512 MiB it peaks
-at 58 MiB. With the lock a backup and a deployment never overlap: each waits out the other, and a
-backup that outwaits 900 seconds is a failed night with a message. The minute avoids the round hours
-other users of a shared server pick. The command's output holds every address and password hash, so
-the bare command, the likeliest slip, shows no player's data on any screen, and a missing file stays
-missing rather than becoming an empty database. Running the command changes nothing on the server,
-so the limit on changes of D-12 does not reach it, and the rule on who runs it is what keeps that
-output out of an agent's session.
+container's memory limit on a host without swap; measured in a container limited to 512 MiB, its
+backup step alone on a 66 MB database peaks at 58 MiB and the whole command, streaming a 33 MB
+database to a slow reader, at about 73 MiB, within the room of about 100 MiB the password work
+leaves. With the lock a backup and a deployment never overlap: each waits out the other, and a backup
+that outwaits 900 seconds is a failed night with a message. The minute avoids the round hours other
+users of a shared server pick. The command's output holds every address and password hash, so the
+bare command, the likeliest slip, shows no player's data on any screen, and a missing file stays
+missing rather than becoming an empty database. Opening the database prunes only the expired sessions
+and links the server itself prunes every minute, so the command changes nothing a player can see, the
+limit on changes of D-12 is not what keeps an agent from it, and the rule on who runs it is what
+keeps that output out of an agent's session.
 *Rejected:* a third Compose service, a container of its own beside the game — a change of D-17 and
 of its host-sharing rule, a second container on one database file, a third memory limit on a host
 without swap, an image with maintenance tools, the key to Strych as another Compose secret, and,

@@ -373,6 +373,12 @@ age 1.0.0 lets an identity file passed with `-i` serve as a symmetric key when `
 
 - **Source:** https://raw.githubusercontent.com/FiloSottile/age/552aa0a07de0b42c16126d3107bd8895184a69e7/doc/age.1.ronn § DESCRIPTION — "age encrypted files are binary and not malleable, with around 200 bytes of overhead per recipient, plus 16 bytes every 64KiB of plaintext." · § Decryption options, -i, --identity — "If -e/--encrypt is explicitly specified (to avoid confusion), -i/--identity may also be used to encrypt to the RECIPIENTS corresponding to the IDENTITIES listed at <PATH>. This allows using an identity file as a symmetric key, if desired." · § EXIT STATUS — "age will exit 0 if and only if encryption or decryption are succesful for the full length of the input." · "If an error occurs during decryption, partial output might still be generated, but only if it was possible to securely authenticate it. No unauthenticathed output is ever released."; read 2026-10-31
 
+## cron-d-file-rules
+
+A file in `/etc/cron.d` for cron 3.0pl1-137ubuntu3 of Ubuntu 22.04 must be owned by root, must not be group- or other-writable, must give the user each task runs as, and must have a name made solely of letters, digits, underscores and hyphens, which cannot contain any dots.
+
+- **Source:** https://git.launchpad.net/ubuntu/+source/cron/plain/cron.8?h=applied/3.0pl1-137ubuntu3 § NOTES — "/etc/crontab and the files in /etc/cron.d must be owned by root, and must not be group- or other-writable." · § DEBIAN SPECIFIC — "This directory can contain any file defining tasks following the format used in /etc/crontab, i.e. unlike the user cron spool, these files must provide the username to run the task as in the task definition." · "Files in this directory have to be owned by root, do not need to be executable (they are configuration files, just like /etc/crontab) and must conform to the same naming convention as used by run-parts(8) : they must consist solely of upper- and lower-case letters, digits, underscores, and hyphens. This means that they cannot contain any dots."; read 2026-10-31
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
