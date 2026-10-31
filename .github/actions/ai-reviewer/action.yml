@@ -48,5 +48,9 @@ runs:
         DIFF_FILE: ${{ inputs.diff-file }}
         COMMENT_FILE: ${{ runner.temp }}/review-comment.md
       run: |
+        if [ -z "$OPENAI_API_KEY" ]; then
+          echo "::error::The OPENAI_API_KEY secret is empty"
+          exit 1
+        fi
         node "$ACTION_PATH/review.mjs"
         echo "comment-file=$COMMENT_FILE" >> "$GITHUB_OUTPUT"
