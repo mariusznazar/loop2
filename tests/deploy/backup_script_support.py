@@ -19,6 +19,9 @@ What a run gets:
   read and writes CIPHERTEXT to its `--output`, an `rsync` that keeps the file it was given and
   the log as it found it, and notes whether the lock's file descriptor is still open, and a
   `pusher` that keeps what it read;
+- on request, a reader of the script's standard output that reads some lines and leaves, closing
+  its end of a real pipe, while a stand-in waits for it, so the next line the script prints raises
+  a real SIGPIPE (`BackupFixture.run`);
 - `timeout`, `mktemp`, `stat` and `rm` of the machine, so a time limit, a missing directory and a
   missing file are real;
 - Git's own bash, found as `deploy_script_support.git_bash` finds it;
@@ -58,6 +61,7 @@ WEEKDAY_FILES = tuple(f"loop2-accounts-{day}.sqlite.age" for day in "1234567")
 
 RUN_TIMEOUT = 45    # seconds for one run of the copy; a run past it fails its test
 HANG_SECONDS = 120  # a hanging stand-in outlasts RUN_TIMEOUT, so only a time limit ends it
+READER_TRIES = 300  # tenths of a second a stand-in waits for the reader to have left
 
 STUB = """#!/bin/bash
 # Stand-in for {tool}, written by tests/deploy/backup_script_support.py.
@@ -65,6 +69,12 @@ stubs='{stubs}'
 printf -v record '%s\\037' {tool} "$@"
 printf '%s\\036' "$record" >>"$stubs/calls/all"
 output=''
+if [[ -e $stubs/wait-for-reader/{tool} ]]; then
+  for (( tries = 0; tries < {reader_tries}; tries++ )); do
+    [[ -e $stubs/calls/reader-left ]] && break
+    sleep 0.1
+  done
+fi
 {before}
 for rule in "$stubs/answers/{tool}"/*; do
   [[ -d $rule ]] || continue
@@ -76,7 +86,8 @@ for rule in "$stubs/answers/{tool}"/*; do
     case $(<"$rule/action") in
       hang) exec sleep {hang} ;;
       kill) kill -KILL $$ ;;
-      TERM | HUP | INT) kill -"$(<"$rule/action")" "$LOOP2_TEST_SCRIPT" ;;
+      HUP | INT | USR1 | USR2 | ALRM | TERM | VTALRM)
+        kill -"$(<"$rule/action")" "$LOOP2_TEST_SCRIPT" ;;
     esac
     exit "$(<"$rule/exit")"
   fi
@@ -128,6 +139,21 @@ shift
 exec "$BASH" "$script" "$@"
 """
 
+READER_LAUNCHER = """#!/bin/bash
+# Starts the copy with its standard output in a real pipe. The reader reads the lines it was told
+# to, closes its end and only then says so, so a stand-in waiting for that knows the pipe is broken.
+script=$1 lines=$2 left=$3
+shift 3
+"$BASH" "$script" "$@" | {
+  for (( line = 0; line < lines; line++ )); do
+    IFS= read -r _ignored
+  done
+  exec 0<&-
+  : >"$left"
+}
+exit "${PIPESTATUS[0]}"
+"""
+
 
 class Result:
     def __init__(self, code, stdout, stderr, calls, log, notice_input, age_input, sent, lock_open,
@@ -175,7 +201,8 @@ class BackupFixture:
         self.stubs = self.path("stubs")
         for tool in STUBBED_TOOLS:
             stub = STUB.format(tool=tool, stubs=deploy_support.shell_path(self.stubs),
-                               hang=HANG_SECONDS, before=BEFORE.get(tool, ""),
+                               hang=HANG_SECONDS, reader_tries=READER_TRIES,
+                               before=BEFORE.get(tool, ""),
                                default=DEFAULT.get(tool, "")).encode()
             deploy_support.write_bytes(os.path.join(self.stubs, tool), stub)
             os.chmod(os.path.join(self.stubs, tool), 0o755)
@@ -185,6 +212,8 @@ class BackupFixture:
         self.set_weekday("6")
         self.launcher = self.path("launcher.sh")
         deploy_support.write_bytes(self.launcher, LAUNCHER.encode())
+        self.reader_launcher = self.path("reader-launcher.sh")
+        deploy_support.write_bytes(self.reader_launcher, READER_LAUNCHER.encode())
         self.guard = self.path("guard.sh")
         deploy_support.write_bytes(self.guard, deploy_support.GUARD.encode())
 
@@ -243,7 +272,7 @@ class BackupFixture:
         """Make a stand-in answer the calls whose arguments, joined by spaces, match a bash
         pattern; rules are tried in the order given, the first match answers, and a call no rule
         matches gets the tool's default. `action` is `hang`, `kill` (the stand-in kills itself) or
-        a signal name sent to the script. `output` is what `age` leaves at its `--output`; with
+        a signal's name, sent to the script. `output` is what `age` leaves at its `--output`; with
         None, a matching rule leaves no file there."""
         directory = os.path.join(self.stubs, "answers", tool)
         rule = os.path.join(directory, f"{len(os.listdir(directory)):03d}")
@@ -284,19 +313,26 @@ class BackupFixture:
         path = os.path.join(self.stubs, "calls", name)
         return deploy_support.read_bytes(path) if os.path.exists(path) else None
 
-    def run(self, arguments=()):
+    def run(self, arguments=(), reader_lines=None, reader_awaited_by="docker"):
         """Run the copy once and return its Result. A run past RUN_TIMEOUT has its process tree
-        stopped and raises AssertionError."""
+        stopped and raises AssertionError. With `reader_lines`, standard output goes to a reader
+        that leaves after that many lines, and the tool named by `reader_awaited_by` does not go
+        on until it has left."""
         self.guard_stubs()
+        shell_path = deploy_support.shell_path
+        command = [self.bash, shell_path(self.launcher), shell_path(self.copy), *arguments]
+        if reader_lines is not None:
+            deploy_support.write_bytes(os.path.join(self.stubs, "wait-for-reader",
+                                                    reader_awaited_by), b"")
+            command = [self.bash, shell_path(self.reader_launcher), shell_path(self.copy),
+                       str(reader_lines), shell_path(os.path.join(self.stubs, "calls",
+                                                                  "reader-left")), *arguments]
         calls = os.path.join(self.stubs, "calls")
         shutil.rmtree(calls, ignore_errors=True)
         os.makedirs(calls)
         out_path, err_path = self.path("stdout.txt"), self.path("stderr.txt")
         with open(out_path, "wb") as out, open(err_path, "wb") as err:
-            process = process_support.popen(
-                [self.bash, deploy_support.shell_path(self.launcher),
-                 deploy_support.shell_path(self.copy), *arguments],
-                cwd=self.root, stdout=out, stderr=err)
+            process = process_support.popen(command, cwd=self.root, stdout=out, stderr=err)
             try:
                 code = process.wait(timeout=RUN_TIMEOUT)
             except subprocess.TimeoutExpired:

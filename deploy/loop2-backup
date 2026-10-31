@@ -24,7 +24,8 @@
 # nothing of what failed, because the message may travel unencrypted.
 #
 # Exit codes: 0 sent · 2 input · 3 key · 4 lock · 5 temporary directory · 6 stream or encryption
-#             7 encrypted file · 8 send · 9 weekday · 129, 130, 143 a signal
+#             7 encrypted file · 8 send · 9 weekday · 129, 130, 138, 140, 141, 142, 143 a signal
+#             1 in the log, for a signal no trap names: bash then ends with that signal's status
 
 set -uo pipefail
 
@@ -62,6 +63,7 @@ WORK_DIRECTORY=''
 ENCRYPTED_FILE=''
 ENCRYPTED_SIZE=''
 WEEKDAY_FILE=''
+SENT=''
 COMMAND_STATUS=none
 ENCRYPTION_STATUS=none
 LOG_WARNED=''
@@ -79,10 +81,12 @@ append_to_log() {
 }
 
 log() {
+  # The file first: a reader of standard output that has left raises SIGPIPE at the printf, and the
+  # line must stand in the log all the same.
   local line
   line="$(date -u '+%Y-%m-%dT%H:%M:%SZ') loop2-backup: $*"
-  printf '%s\n' "$line"
   append_to_log "$line"
+  printf '%s\n' "$line" 2>/dev/null
 }
 
 fail() {
@@ -97,7 +101,7 @@ send_notice() {
   # Only the fixed subject and text go to pusher, never a tool's output. Its exit status tells
   # little: it reports no connection, not an HTTP error.
   local statuses
-  printf '%s\n' "$NOTICE_TEXT" \
+  printf '%s\n' "$NOTICE_TEXT" 2>/dev/null \
     | timeout --kill-after="$KILL_WAIT_SECONDS" "$NOTICE_WAIT_SECONDS" \
       pusher "$NOTICE_SUBJECT" >/dev/null 2>&1
   statuses=("${PIPESTATUS[@]}")
@@ -112,14 +116,18 @@ remove_work_directory() {
 }
 
 on_exit() {
+  # Bash runs this handler for a signal no trap names too, with $? still that of the last command,
+  # so only the mark set after the send proves a success. SIGPIPE stays ignored here, because the
+  # lines below may meet the reader that raised it.
   local code=$?
   trap - EXIT
-  trap '' HUP INT TERM
+  trap '' HUP INT USR1 USR2 PIPE ALRM TERM
   exec 9>&-
   remove_work_directory
-  if (( code == 0 )); then
+  if [[ $SENT == yes ]] && (( code == 0 )); then
     log "end: sent $WEEKDAY_FILE"
   else
+    (( code != 0 )) || code=1
     send_notice
     log "end: failed (exit $code)"
   fi
@@ -246,11 +254,16 @@ main() {
   choose_weekday_file
   log "made: $WEEKDAY_FILE, $ENCRYPTED_SIZE bytes"
   send_file
+  SENT=yes
 }
 
 trap on_exit EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
+trap 'exit 138' USR1
+trap 'exit 140' USR2
+trap 'exit 141' PIPE
+trap 'exit 142' ALRM
 trap 'exit 143' TERM
 
 main "$@"
