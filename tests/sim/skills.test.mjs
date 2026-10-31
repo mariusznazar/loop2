@@ -534,7 +534,9 @@ test("the combat resolution minute adds its successful strikes to the run's earl
   assert.deepEqual(fixture, before);
 });
 
-test("completion pays this minute's practice once to the runner, also on a previously solved map; death and early exits pay nothing", () => {
+// A run that holds no mark pays even when its map has been solved since it started (To do 2, 3);
+// the loop test is src/sim/skills.test.ts:470-480. A marked run pays nothing: tests/sim/trip.test.mjs.
+test("completion pays this minute's practice once to the runner of a run begun before its map was solved; death and early exits pay nothing", () => {
   const sent = send(headquarters(), ids, 1).state;
   const fixture = {
     ...sent,

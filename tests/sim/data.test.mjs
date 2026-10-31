@@ -252,6 +252,12 @@ test("every item and every item of the campfire names an item of the data", () =
   assert.ok(CAMPFIRE.light.item in ITEMS);
 });
 
+// Task rozliczenie-przejsc, To do 9 (question Q10): 480 real minutes, the number of loop, commit
+// cdc7c0d, `src/sim/data/balance.ts:125` (`revivalCooldownMinutes`). Real minutes, not game minutes.
+test("the resurrection renews 480 real minutes after the death that used it", () => {
+  assert.equal(BALANCE.resurrectionRenewalRealMinutes, 480);
+});
+
 test("the archetype and the pace are in data", () => {
   assert.equal(ARCHETYPES.elementalMage.name, "Mag żywiołów");
   assert.equal(BALANCE.gameMinutesPerRealSecond, 1);

@@ -1,6 +1,6 @@
 import { newTraits } from "./character.js";
 import { newSkills, paidPractice } from "./skills.js";
-import { takeTrip, tripLoot } from "./trip.js";
+import { takeFromNowhere, takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
   discover,
@@ -53,9 +53,21 @@ export type { GameEvent };
 export type GameResult = { state: GameState; events: GameEvent[] };
 
 const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = 60 * MS_PER_SECOND;
 
 function mapOf(mapId: MapId): MapDef {
   return MAPS[mapId];
+}
+
+/**
+ * Whether the character's resurrection is ready at the real moment `nowMs`: from the moment of
+ * readiness on, that moment included.
+ */
+export function resurrectionReady(
+  character: Character,
+  nowMs: number,
+): boolean {
+  return character.resurrectionReadyAtMs <= nowMs;
 }
 
 /** Whether a map's prerequisite maps are all in this game's solved-map record. */
@@ -132,12 +144,23 @@ function startRun(
   traits: Traits,
   copy: ProgramCopy,
 ): GameResult {
-  const equipment = takeTrip(
-    copy.program.tripPlan,
-    state.team.chest,
-    traits.carryingCapacity,
-    mapOf(mapId),
-  );
+  // The state of the map at this start settles whether the run pays and takes (D-189).
+  const solvedMapRun = state.solvedMaps.includes(mapId);
+  const equipment = solvedMapRun
+    ? {
+        chest: state.team.chest,
+        backpack: takeFromNowhere(
+          copy.program.tripPlan,
+          traits.carryingCapacity,
+          mapOf(mapId),
+        ),
+      }
+    : takeTrip(
+        copy.program.tripPlan,
+        state.team.chest,
+        traits.carryingCapacity,
+        mapOf(mapId),
+      );
   const started = newMapRun(
     mapOf(mapId),
     seed,
@@ -160,6 +183,8 @@ function startRun(
         copy,
         bringPlan: copy.program.tripPlan.bring.map((entry) => ({ ...entry })),
         deposited: null,
+        solvedMapRun,
+        deathSettlement: null,
       },
       paused: false,
       discovery: null,
@@ -253,6 +278,8 @@ export function createCharacter(state: GameState, name: string): GameResult {
     archetypeId: CREATED_ARCHETYPE,
     traits: newTraits(),
     skills: newSkills(ARCHETYPES[CREATED_ARCHETYPE].predispositions),
+    generation: 1,
+    resurrectionReadyAtMs: 0,
   };
   return {
     state: {
@@ -325,12 +352,16 @@ export function send(
 /**
  * Ends the map run in progress, or one ended in death or a completion, and starts a new one of the
  * same map, character, traits and seed, carrying out the copy record of the map run it replaces as
- * it is, unsaved changes included; every count starts from zero.
+ * it is, unsaved changes included; every count starts from zero. The new map run takes the skills
+ * of the one it replaces, its repertoire with them; after a death that took everything, the skills
+ * the team's character was left with.
  */
 export function restart(state: GameState): GameResult {
   const run = requireRun(state, "restart");
+  const lost = run.deathSettlement?.kind === "progressLost";
   const started = startRun(
-    state,
+    // With no map run standing, the start reads the character's skills from the team.
+    lost ? { ...state, run: null } : state,
     run.mapId,
     run.character.id,
     run.seed,
@@ -392,7 +423,61 @@ export function setPace(state: GameState, pace: Pace): GameResult {
 }
 
 /**
- * The only way real time enters the simulation. Ignored without a map run, with one ended in
+ * Settles the death of the map run at the real moment `nowMs`, once. Called by whoever knows real
+ * time, never by the functions that pass game time. With a resurrection ready it is used up: it is
+ * ready again the renewal after `nowMs`, and the character stays as it is. With none ready the
+ * character loses all its practice and ranks and its generation number grows by one, its moment of
+ * readiness unchanged. The map run holds how it went; its own skills, the chest, the programs, the
+ * Understanding and the solved maps are out of reach, and the mark of a solved map plays no part.
+ * With no map run, no death or a death settled, returns the very state it got, without reading
+ * `nowMs`; otherwise a `nowMs` that is no safe integer is a RangeError.
+ */
+export function settleDeath(state: GameState, nowMs: number): GameResult {
+  const run = state.run;
+  if (!run?.death || run.deathSettlement) return { state, events: [] };
+  if (!Number.isSafeInteger(nowMs)) {
+    throw new RangeError(
+      `settleDeath: ${String(nowMs)} is not a safe integer moment`,
+    );
+  }
+  const died = state.team.characters.find(
+    (character) => character.id === run.character.id,
+  )!;
+  const ready = resurrectionReady(died, nowMs);
+  const generation = died.generation + 1;
+  const settled: Character = ready
+    ? {
+        ...died,
+        resurrectionReadyAtMs:
+          nowMs + BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE,
+      }
+    : {
+        ...died,
+        skills: newSkills(ARCHETYPES[died.archetypeId].predispositions),
+        generation,
+      };
+  return {
+    state: {
+      ...state,
+      team: {
+        ...state.team,
+        characters: state.team.characters.map((character) =>
+          character === died ? settled : character,
+        ),
+      },
+      run: {
+        ...run,
+        deathSettlement: ready
+          ? { kind: "resurrectionUsed" }
+          : { kind: "progressLost", generation },
+      },
+    },
+    events: [],
+  };
+}
+
+/**
+ * Passes real time to the map run in progress. Ignored without a map run, with one ended in
  * death or a completion, while paused, or when realMs is not a finite number above zero; otherwise
  * every whole scaled second becomes a game minute, real time scaled by the pace in force, and the
  * rest carries over to the next call at the pace it was passed at. Where the character dies or the
@@ -434,9 +519,13 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * leaves the game paused, holding what the minute revealed. A map run that meets the solving
  * condition of its map in a minute completes there, once the minute's discovery has taken hold: the
  * rest of the minute has taken effect, the event `mapRunCompleted` follows the minute's other
- * events, no program rule is picked and the map is added to the solved maps; where that minute is
+ * events, no program rule is picked and the map is added to the solved maps; the completion pays
+ * practice and deposits the bring list only for a run not marked `solvedMapRun`, and a death pays
+ * nothing; where that minute is
  * also a discovery's, the game holds the discovery and is not paused. A map run that has ended
- * changes nothing.
+ * changes nothing. A death stays unsettled here: this function knows no real time, and whoever
+ * passes it game time then calls `settleDeath`, as a saved document holding a death unsettled is
+ * refused at the load.
  */
 export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (
@@ -529,6 +618,8 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     copy,
     bringPlan: state.run.bringPlan,
     deposited: null,
+    solvedMapRun: state.run.solvedMapRun,
+    deathSettlement: null,
   };
   const deposited = completed
     ? tripLoot(endedRun, current.team.chest, map)
@@ -547,19 +638,20 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
         !current.solvedMaps.includes(run.mapId) && {
           solvedMaps: [...current.solvedMaps, run.mapId],
         }),
-      ...(completed && {
-        team: {
-          ...current.team,
-          characters: current.team.characters.map((character) =>
-            character.id === run.character.id
-              ? {
-                  ...character,
-                  skills: paidPractice(character.skills, run.practice),
-                }
-              : character,
-          ),
-        },
-      }),
+      ...(completed &&
+        !endedRun.solvedMapRun && {
+          team: {
+            ...current.team,
+            characters: current.team.characters.map((character) =>
+              character.id === run.character.id
+                ? {
+                    ...character,
+                    skills: paidPractice(character.skills, run.practice),
+                  }
+                : character,
+            ),
+          },
+        }),
       run: { ...endedRun, deposited },
       ruleCounts: countStarts(current.ruleCounts, events),
     },
