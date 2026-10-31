@@ -17,17 +17,18 @@
 // server's own HTTP port and reads GET /api/saved-game; the saved game state is
 // searched for the marker inside the container and never leaves it. The
 // container and both volumes are removed at every end, a failure and an
-// interruption included.
+// interruption included, and an end at which Docker does not show them gone is
+// exit 4, since the data volume holds the plain database.
 //
 // Prints the Node.js release, the login's status, the save's revision, whether
 // the marker stands in the saved game state, then PASS or FAIL. It prints no
 // game text, no address and no password.
 //
 // Exit codes: 0 PASS; 1 FAIL, the trial ran and judged the backup; 2 refused,
-// nothing was started; 3 FAIL, the trial could not run to a judgement; 4 a
-// container or volume could not be removed and is named; 130 interrupted.
-// Built-in modules only. The docker commands go to the daemon the docker CLI is
-// set to.
+// nothing was started; 3 FAIL, the trial could not run to a judgement; 4 FAIL,
+// a container or volume could not be removed or shown to be gone, and is named;
+// 130 interrupted. Built-in modules only. The docker commands go to the daemon
+// the docker CLI is set to.
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import {
@@ -331,8 +332,9 @@ function sleep(milliseconds) {
 }
 
 // Everything the trial makes, then its verdict. Throws Interrupted or NotRun;
-// `facts` collects the lines printed before the verdict.
-async function trial(request, password, size, ids, facts) {
+// `facts` collects the lines printed before the verdict, and `made` each name
+// before the command that makes it, so a command cut short still counts.
+async function trial(request, password, size, ids, facts, made) {
   const secrets = [request.email, password, request.marker];
   const notRun = (step, answer) => {
     const detail = answer ? safeText(answer.stderr, secrets) : "";
@@ -364,10 +366,12 @@ async function trial(request, password, size, ids, facts) {
   );
 
   for (const volume of [ids.data, ids.secrets]) {
+    made.push(volume);
     const created = await docker(["volume", "create", volume]);
     if (created.status !== 0)
       throw notRun("a volume could not be created", created);
   }
+  made.push(ids.setup);
   const copied = await docker(
     [
       "run",
@@ -401,6 +405,7 @@ async function trial(request, password, size, ids, facts) {
   const environment = Object.entries(PRODUCTION_ENVIRONMENT).flatMap(
     ([key, value]) => ["-e", `${key}=${value}`],
   );
+  made.push(ids.app);
   const started = await docker([
     "run",
     "-d",
@@ -487,46 +492,51 @@ async function trial(request, password, size, ids, facts) {
   return null;
 }
 
-// Removes the containers and volumes of this run, then checks that none is
-// left. Returns the names that are.
-async function cleanup(ids) {
-  const all = Object.values(ids);
-  const present = async () => {
-    const found = [];
-    for (const [kind, format] of [
-      ["ps", "{{.Names}}"],
-      ["volume ls", "{{.Name}}"],
-    ]) {
+// Removes what this run made, containers before volumes, then reads back what
+// stands. Only an attempt whose removals and listings all exited 0, and whose
+// listings hold none of it, shows it gone: a failed listing has empty output and
+// says nothing. Returns the names Docker still lists (`left`) and those it did
+// not show gone (`unknown`); both are empty when nothing was made.
+async function cleanup(ids, made) {
+  const kinds = [
+    {
+      remove: ["rm", "--force", "--volumes"],
+      list: ["ps", "-a"],
+      format: "{{.Names}}",
+      names: made.filter((name) => name === ids.app || name === ids.setup),
+    },
+    {
+      remove: ["volume", "rm", "--force"],
+      list: ["volume", "ls"],
+      format: "{{.Name}}",
+      names: made.filter((name) => name === ids.data || name === ids.secrets),
+    },
+  ].filter((kind) => kind.names.length > 0);
+  let left = [];
+  let unknown = [];
+  for (let attempt = 0; attempt < REMOVE_ATTEMPTS; attempt += 1) {
+    if (attempt > 0) await sleep(1000);
+    left = [];
+    unknown = [];
+    for (const { remove, names } of kinds) {
+      const removal = await docker([...remove, ...names], { cleanup: true });
+      if (removal.status !== 0) unknown.push(...names);
+    }
+    for (const { list, format, names } of kinds) {
       const listing = await docker(
-        [
-          ...kind.split(" "),
-          ...(kind === "ps" ? ["-a"] : []),
-          "--filter",
-          `name=${PREFIX}`,
-          "--format",
-          format,
-        ],
+        [...list, "--filter", `name=${PREFIX}`, "--format", format],
         { cleanup: true },
       );
-      for (const name of listing.stdout.split(/\s+/))
-        if (all.includes(name)) found.push(name);
+      if (listing.status !== 0) unknown.push(...names);
+      else
+        left.push(
+          ...listing.stdout.split(/\s+/).filter((n) => names.includes(n)),
+        );
     }
-    return found;
-  };
-  let left = [];
-  for (let attempt = 0; attempt < REMOVE_ATTEMPTS; attempt += 1) {
-    for (const container of [ids.app, ids.setup])
-      await docker(["rm", "--force", "--volumes", container], {
-        cleanup: true,
-      });
-    await docker(["volume", "rm", "--force", ids.data, ids.secrets], {
-      cleanup: true,
-    });
-    left = await present();
-    if (left.length === 0) return left;
-    await sleep(1000);
+    unknown = [...new Set(unknown)].filter((name) => !left.includes(name));
+    if (left.length === 0 && unknown.length === 0) break;
   }
-  return left;
+  return { left, unknown };
 }
 
 export async function run(argv) {
@@ -549,10 +559,11 @@ export async function run(argv) {
   const id = randomBytes(6).toString("hex");
   const ids = names(id);
   const facts = [];
+  const made = [];
   let code;
   let verdict;
   try {
-    const problem = await trial(request, password, size, ids, facts);
+    const problem = await trial(request, password, size, ids, facts, made);
     code = problem === null ? EXIT_PASS : EXIT_FAIL;
     verdict = problem === null ? "PASS" : `FAIL: ${problem}`;
   } catch (error) {
@@ -571,13 +582,19 @@ export async function run(argv) {
     code = EXIT_INTERRUPTED;
     verdict = "FAIL: interrupted";
   }
-  const left = await cleanup(ids);
+  const { left, unknown } = await cleanup(ids, made);
   for (const line of facts) console.log(line);
-  if (left.length > 0) {
+  if (left.length > 0)
     console.log(`left behind, remove by hand: ${left.join(" ")}`);
+  if (unknown.length > 0)
+    console.log(
+      `not shown to be gone, check and remove by hand: ${unknown.join(" ")}`,
+    );
+  if (left.length > 0 || unknown.length > 0) {
     code = EXIT_LEFT_BEHIND;
     if (verdict === "PASS")
-      verdict = "FAIL: the container or a volume could not be removed";
+      verdict =
+        "FAIL: a container or a volume could not be removed or shown to be gone";
   }
   console.log(verdict);
   return code;
