@@ -1153,7 +1153,8 @@ const GAME_KEYS = [
  * The game state of a document, every key read and checked. The counts stand beside the rules of
  * the copy during a map run and beside the rules of the program they name after „Zakończ”, and are
  * none otherwise; without a map run nothing is paused, held as a discovery or carried. The save time
- * is a safe integer from 0 up: every document is stamped, and a clock cannot read below zero.
+ * is a safe integer of any sign, as a moment of readiness is: every document is stamped, and a device
+ * clock set before 1970 is the player's own, so a save the game wrote is never refused for it.
  */
 function game(value: unknown): GameState {
   const read = fields(value, GAME_KEYS);
@@ -1237,7 +1238,7 @@ function game(value: unknown): GameState {
       ...looping,
     ]),
     awayReport: awayReport(read.awayReport, records),
-    saveTimeMs: count(read.saveTimeMs),
+    saveTimeMs: integer(read.saveTimeMs),
   };
 }
 

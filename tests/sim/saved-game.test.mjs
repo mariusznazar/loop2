@@ -1482,11 +1482,10 @@ const CRAFTED = {
     document.game.run.tiles.push(tile(0, 5, -2, false, {})),
   "the tiles of Las on Las — głębiej": (document) =>
     (document.game.run.tiles = document.game.run.tiles.slice(0, 16)),
-  // Spec section 13, the save time: a safe integer from 0 up, so a document unstamped is refused.
+  // Spec section 13, the save time: a safe integer of any sign, so a document unstamped is refused.
   "the game without its save time": (document) =>
     delete document.game.saveTimeMs,
   "a save time of none": (document) => (document.game.saveTimeMs = null),
-  "a save time below 0": (document) => (document.game.saveTimeMs = -1),
   "a fractional save time": (document) => (document.game.saveTimeMs = 0.5),
   "a save time as text": (document) =>
     (document.game.saveTimeMs = "1760000000000"),
@@ -1494,6 +1493,8 @@ const CRAFTED = {
   "a save time infinite": (document) => (document.game.saveTimeMs = Infinity),
   "a save time beyond the safe integers": (document) =>
     (document.game.saveTimeMs = 2 ** 53),
+  "a save time below the safe integers": (document) =>
+    (document.game.saveTimeMs = -(2 ** 53)),
   // Spec section 13, the earning loops: a key in canonical form naming a character of the team.
   "the game without its earning loops": (document) =>
     delete document.game.loops,
@@ -1773,11 +1774,14 @@ test("a crafted document of the current version is refused whole as shape", () =
 });
 
 // Spec section 13. Catches a condition set one step too strict, each edge being a value the game
-// writes: a clock at zero, a loop's first run, a stop with nothing gathered, a stop in the open game
-// with no minutes, a second loop of a character whose first stopped.
+// writes: a clock at zero or below it, a loop's first run, a stop with nothing gathered, a stop in
+// the open game with no minutes, a second loop of a character whose first stopped.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
   const edges = {
     "a save time of 0": (document) => (document.game.saveTimeMs = 0),
+    // Spec section 13, as settled at the review of the slice: a safe integer of any sign, as
+    // `resurrectionReadyAtMs` is read, so the case left the crafted documents.
+    "a save time below 0": (document) => (document.game.saveTimeMs = -1),
     "an earning loop in its first map run, nothing gathered": (document) => {
       olaLoop(document).runNumber = 1;
       olaLoop(document).completed = 0;
@@ -1857,6 +1861,21 @@ test("a moment that is no safe integer gives no save time", () => {
     assert.throws(
       () => withSaveTime(newGame(), moment),
       RangeError,
+      String(moment),
+    );
+  }
+});
+
+// Spec section 13; Q8, D-07. Catches a save the game writes and then refuses: a device clock set
+// before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
+test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
+  const state = newGame();
+  for (const moment of [-1, -60_000, Number.MIN_SAFE_INTEGER]) {
+    assert.deepEqual(
+      loadSavedGame(
+        JSON.parse(JSON.stringify(savedGame(withSaveTime(state, moment)))),
+      ),
+      { ok: true, state: { ...state, saveTimeMs: moment } },
       String(moment),
     );
   }
