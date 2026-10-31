@@ -1,0 +1,12 @@
+﻿# Slice sizes
+
+Too large: more than 250000 estimated tokens to read, a quarter of a 1000000-token context window at 2.5 characters a token, or more than 10 files to change.
+
+| Slice | Files to change | Characters to read | Estimated tokens | Verdict | Why |
+|---|---|---|---|---|---|
+| 1 | 10 | 416060 | 166424 | fits | — |
+| 2 | 8 | 257545 | 103018 | fits | — |
+| 3 | 6 | 191074 | 76430 | fits | — |
+| 4 | 6 | 250206 | 100083 | fits | — |
+| 5 | 10 | 285206 | 114083 | fits | — |
+| 6 | 6 | 222924 | 89170 | fits | — |

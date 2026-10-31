@@ -1,0 +1,11 @@
+﻿python : .....
+At line:1 char:626
++ ... ng version; python -B scripts/test.py tests/quality/test_quality_inva ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (.....:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+----------------------------------------------------------------------
+Ran 5 tests in 9.876s
+
+OK
