@@ -4145,3 +4145,34 @@ the services accept the script's way of talking to them.
 *Rejected:* a contract test against the real services, as the adopted template asks for someone
 else's service — takes the key to Strych outside the server against D-13 and gives a result that
 depends on the service.
+
+### D-222 — How is the consistent database backup made?
+
+The backup command of D-217 makes a database backup through `backup()` of `node:sqlite`, on the
+connection it opens, whole in one step, by a `rate` that is a positive whole number above any page
+count the database can reach.
+
+- **Scope:** account-server
+- **Based on:** sqlite-online-backup · node-sqlite-database · sqlite-wal-concurrency
+- **Relations:** derives from D-214 · derives from D-215 · derives from D-217
+- **Verification:** an agent compares a change with the decision:
+  - complies: a `rate` above any page count the database can reach, so that the backup takes one step
+  - violates: `backup()` without a `rate`, or with a `rate` a database of this server can exceed; `VACUUM INTO` in place of `backup()`
+- **Origin:** none
+
+*Rationale:* a change through another connection restarts a backup at its next step, and a backup
+restarted often enough may never complete. One step has no next step, so the backup has no restart
+to suffer, whatever the disk's speed and however often the game writes. The choice rests on that,
+not on whether a backup of many steps finishes on a given disk, which follows the disk's speed. The
+result is one file, whole on its own: a row held only in the write-ahead log and the schema version
+were present after that file alone was moved and opened. In write-ahead log mode readers and a
+writer run together, so the game's writes go on through the step: beside a separate process
+committing with full synchronization, the longest commit stayed under the busy timeout of D-112 and
+no commit met a busy error. If a Node.js release refuses that `rate`, the check of D-215 fails the
+build and the running game stays in service.
+*Rejected:* `VACUUM INTO` — would also finish beside a writer, but it is a second operation beside
+the Online Backup API D-214 rests on, and it rewrites the database rather than backing up its pages;
+it is the fallback if a one-step backup ever fails; the default `rate` of 100 pages — a backup of
+many steps, each open to a restart: beside a writer it finished in 1.5 s on a Docker volume and had
+not finished after 20 s on a bind mount of a Windows disk; `rate: -1` — the documentation says a
+positive number, Node.js 24.17.0 accepted it and 24.22.1 refuses it with `ERR_OUT_OF_RANGE`.
