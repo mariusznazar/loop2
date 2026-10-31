@@ -68,6 +68,7 @@ The part is the account and save server: it serves the built game, handles the H
   tests/passwords.test.mjs
   tests/account-storage.test.mjs
   tests/account-backup.test.mjs
+  tests/account-database-check.test.mjs
   tests/account-mail.test.mjs
   tests/invariants/test_account_server_express_http.py
   tests/invariants/test_loop2_api_error_route.py
@@ -154,6 +155,7 @@ host and which encrypt the database backup and send it off the server.
   tests/invariants/test_loop2_deploy_keeps_running.py
   tests/invariants/test_loop2_host_sharing.py
   tests/invariants/test_loop2_application_port.py
+  tests/invariants/test_account_save_sqlite_upgrade.py
 - **Depends on:** browser-view · account-server · build-tools
 - **Trust boundary:** deploy/**
 

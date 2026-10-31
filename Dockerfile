@@ -24,6 +24,9 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 RUN mkdir -p /app/data && chown node:node /app/data
 USER node
+# The image exists only if the release it is built on passes the check of the
+# database's read, write and backup operations (account-save-sqlite-upgrade).
+RUN node dist/server/account-database-check.js
 EXPOSE 3000
 HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
   CMD ["node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.status===200?0:1),()=>process.exit(1))"]
