@@ -3901,10 +3901,10 @@ neither its content nor its time tells what became of the request; the page then
 konto ma potwierdzony adres, wysłaliśmy na niego odnośnik. Gdy wiadomość nie przyjdzie, spróbuj
 ponownie później.” in `text-secondary` under the form „Nie pamiętam hasła”, which stays with its
 address field empty and with „Wróć do logowania”. An address not so written gets „Podaj adres e-mail
-w postaci nazwa@domena.” under the field, from the form and from the server alike, and nothing is
-sent. Only after the answer does the server record and send a link, and only for an account with a
-confirmed address that is not blocked and within the limits of D-105, and a failure of that work
-shows only in the server's log.
+w postaci nazwa@domena.” under the field and nothing is sent: the form holds that condition, and so
+does the server, which refuses such an address with that sentence. Only after the answer does the
+server record and send a link, and only for an account with a confirmed address that is not blocked
+and within the limits of D-105, and a failure of that work shows only in the server's log.
 
 - **Scope:** account-server, browser-view
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Return a consistent message for both existent and non-existent accounts." · "Ensure that responses return in a consistent amount of time to prevent an attacker enumerating which accounts exist."; read 2026-10-30
