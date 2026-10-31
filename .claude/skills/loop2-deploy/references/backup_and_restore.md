@@ -241,15 +241,15 @@ the deployment of step 6 runs `git clean -ffdx` in `/srv/loop2` and would erase 
 there. It is not `/tmp`, a shared directory. It holds the plain database (addresses and password
 hashes), so step 7 removes it.
 
-1. Choose the backup (the newest by time on Strych, or the one wanted). Make the directory:
-   `mkdir -m 0700 /root/loop2-restore`, and bring the backup into it as root with the Strych
-   login and key.
+1. Choose the backup (the newest by time on Strych, or the one wanted). Make the directory and the one inside
+   it: `mkdir -m 0700 /root/loop2-restore /root/loop2-restore/previous`. Bring the backup into
+   `/root/loop2-restore` as root with the Strych login and key.
 2. Decrypt it there: `age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file>`.
    `head -c 15 accounts.sqlite` shows `SQLite format 3`.
 3. Stop the application: from `/srv/loop2`, `docker compose -p loop2 stop app`.
 4. Find the volume's directory with `docker volume inspect --format '{{ .Mountpoint }}' loop2_accounts`.
    Move all three files, `accounts.sqlite`, `accounts.sqlite-wal` and `accounts.sqlite-shm`
-   (those that exist), together into `/root/loop2-restore/previous`. The recent writes lie in the
+   (those that exist), together into `/root/loop2-restore/previous` (made in step 1). The recent writes lie in the
    two companions, so the one file is not the database; after a crash they were never merged.
    The volume is left with none of the three.
 5. Install the decrypted file there as `accounts.sqlite` with owner uid 1000 and group 1000.
