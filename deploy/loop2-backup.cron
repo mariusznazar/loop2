@@ -1,0 +1,7 @@
+# loop2-backup.cron: starts the nightly database backup at 03:17 by the server's clock.
+#
+# Installed root-owned, mode 0644, at /etc/cron.d/loop2-backup, by a human; cron skips a file in
+# that directory whose name holds a dot. The script writes its own log and sends its own notice, so
+# cron's mail is off.
+MAILTO=""
+17 3 * * * root /usr/local/bin/loop2-backup

@@ -157,6 +157,8 @@ host and which encrypt the database backup and send it off the server.
   tests/invariants/test_loop2_host_sharing.py
   tests/invariants/test_loop2_application_port.py
   tests/invariants/test_account_save_sqlite_upgrade.py
+  tests/invariants/test_account_save_backup_encrypted.py
+  tests/invariants/test_account_save_backup_failure_notice.py
 - **Depends on:** browser-view · account-server · build-tools
 - **Trust boundary:** deploy/**
 

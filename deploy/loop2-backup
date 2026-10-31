@@ -1,0 +1,256 @@
+#!/bin/bash
+# loop2-backup: makes one night's backup of the account and save database on the test server.
+#
+# Installed root-owned, mode 0755, at /usr/local/bin/loop2-backup, outside the checkout, by a human;
+# deploy/loop2-backup.cron starts it as root. A human may run it too. It takes no argument. In order:
+#   1. checks that the encryption key can be read
+#   2. takes the deployment's lock, so the backup and a deployment never overlap
+#   3. streams the backup command's output from the running container through age into one file
+#      in a private temporary directory: the plain database exists on this host only in the pipe
+#   4. releases the lock
+#   5. only if every stage of the pipe exited 0 and the file is not empty, logs the weekday file
+#      and the file's size
+#   6. sends the file to Mikrus Strych, replacing the backup of seven days ago
+#
+# One of seven fixed names is computed from the UTC date: nothing is deleted, no answer of Strych
+# is read, and rsync's default keeps the older file until the new one is whole. The login stands
+# only in root's SSH configuration on the server, never here.
+#
+# The log holds attempts, sizes, stages and exit codes. The error text of docker, age and flock goes
+# to the log file alone. The text of ssh and rsync reaches no file, because a refused login prints
+# the login; a human who needs it runs the send by hand, as the loop2-deploy skill gives.
+#
+# One handler at the exit calls pusher once at any non-zero end, with a fixed subject and text and
+# nothing of what failed, because the message may travel unencrypted.
+#
+# Exit codes: 0 sent · 2 input · 3 key · 4 lock · 5 temporary directory · 6 stream or encryption
+#             7 encrypted file · 8 send · 9 weekday · 129, 130, 143 a signal
+
+set -uo pipefail
+
+# Every constant stands in this block. No environment variable and no argument changes one. The
+# tests of deploy/ replace only the lines between the two markers.
+# >>> constants >>>
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+umask 027
+readonly LOG_FILE=/var/log/loop2-backup.log
+readonly LOCK_FILE=/run/loop2-deploy.lock
+readonly ENCRYPTION_KEY_FILE=/etc/loop2/backup-encryption-key
+readonly STRYCH_KNOWN_HOSTS_FILE=/etc/loop2/strych-known-hosts
+readonly TEMPORARY_ROOT=/tmp
+readonly STRYCH_HOST=strych.mikr.us
+readonly CONTAINER_NAME=loop2
+readonly BACKUP_COMMAND=dist/server/account-backup.js
+readonly BACKUP_WORD=--to-standard-output
+readonly ENCRYPTED_FILE_NAME=backup.sqlite.age
+readonly WEEKDAY_FILE_PREFIX=loop2-accounts-
+readonly WEEKDAY_FILE_SUFFIX=.sqlite.age
+readonly LOCK_WAIT_SECONDS=900
+readonly STREAM_WAIT_SECONDS=300
+readonly SEND_WAIT_SECONDS=1800
+readonly SEND_INPUT_WAIT_SECONDS=120
+readonly SEND_CONNECT_WAIT_SECONDS=30
+readonly NOTICE_WAIT_SECONDS=60
+readonly KILL_WAIT_SECONDS=10
+readonly NOTICE_SUBJECT=loop2_backup_failed
+readonly NOTICE_TEXT='The loop2 database backup failed.'
+# === end of constants ===
+
+export LC_ALL=C
+
+WORK_DIRECTORY=''
+ENCRYPTED_FILE=''
+ENCRYPTED_SIZE=''
+WEEKDAY_FILE=''
+COMMAND_STATUS=none
+ENCRYPTION_STATUS=none
+LOG_WARNED=''
+
+# --- output -------------------------------------------------------------------------------------
+
+append_to_log() {
+  # One text to the log file only. A log that cannot be written is reported once, on stderr.
+  if ! { printf '%s\n' "$1" >>"$LOG_FILE"; } 2>/dev/null; then
+    if [[ -z $LOG_WARNED ]]; then
+      printf 'loop2-backup: warning: cannot write the log file %s\n' "$LOG_FILE" >&2
+      LOG_WARNED=yes
+    fi
+  fi
+}
+
+log() {
+  local line
+  line="$(date -u '+%Y-%m-%dT%H:%M:%SZ') loop2-backup: $*"
+  printf '%s\n' "$line"
+  append_to_log "$line"
+}
+
+fail() {
+  # fail CODE STAGE MESSAGE: logs the stage and ends the run with the code.
+  log "stage $2: $3 (exit $1)"
+  exit "$1"
+}
+
+# --- the handler at the exit --------------------------------------------------------------------
+
+send_notice() {
+  # Only the fixed subject and text go to pusher, never a tool's output. Its exit status tells
+  # little: it reports no connection, not an HTTP error.
+  local statuses
+  printf '%s\n' "$NOTICE_TEXT" \
+    | timeout --kill-after="$KILL_WAIT_SECONDS" "$NOTICE_WAIT_SECONDS" \
+      pusher "$NOTICE_SUBJECT" >/dev/null 2>&1
+  statuses=("${PIPESTATUS[@]}")
+  log "notice: pusher exit ${statuses[1]}"
+}
+
+remove_work_directory() {
+  [[ -n $WORK_DIRECTORY ]] || return 0
+  if ! rm -rf -- "$WORK_DIRECTORY" 2>/dev/null; then
+    log "warning: the temporary directory $WORK_DIRECTORY was not removed; it holds an encrypted file only"
+  fi
+}
+
+on_exit() {
+  local code=$?
+  trap - EXIT
+  trap '' HUP INT TERM
+  exec 9>&-
+  remove_work_directory
+  if (( code == 0 )); then
+    log "end: sent $WEEKDAY_FILE"
+  else
+    send_notice
+    log "end: failed (exit $code)"
+  fi
+  exit "$code"
+}
+
+# --- 1. key -------------------------------------------------------------------------------------
+
+check_key() {
+  if [[ ! -f $ENCRYPTION_KEY_FILE || ! -s $ENCRYPTION_KEY_FILE ]] \
+      || ! { : <"$ENCRYPTION_KEY_FILE"; } 2>/dev/null; then
+    fail 3 key "the encryption key cannot be read; nothing was made"
+  fi
+}
+
+# --- 2. lock ------------------------------------------------------------------------------------
+
+take_lock() {
+  # File descriptor 9 holds the lock until release_lock.
+  local status
+  if ! { exec 9>>"$LOCK_FILE"; } 2>/dev/null; then
+    fail 4 lock "cannot open the lock file $LOCK_FILE; nothing was made"
+  fi
+  flock --exclusive --wait "$LOCK_WAIT_SECONDS" 9 2>>"$LOG_FILE"
+  status=$?
+  if (( status != 0 )); then
+    fail 4 lock "the lock was not free within $LOCK_WAIT_SECONDS s (flock exit $status); nothing was made"
+  fi
+}
+
+# --- 3. stream and encryption -------------------------------------------------------------------
+
+make_work_directory() {
+  local status
+  WORK_DIRECTORY=$(mktemp --directory --tmpdir="$TEMPORARY_ROOT" loop2-backup.XXXXXXXX 2>>"$LOG_FILE")
+  status=$?
+  if (( status != 0 )) || [[ ! -d $WORK_DIRECTORY ]]; then
+    fail 5 temporary "no private temporary directory (mktemp exit $status); nothing was made"
+  fi
+  ENCRYPTED_FILE=$WORK_DIRECTORY/$ENCRYPTED_FILE_NAME
+}
+
+stream_through_age() {
+  # No -t and no -i: a terminal would damage the bytes. age cannot tell a shortened input from a
+  # whole one, so both stages' statuses are kept for require_whole_file.
+  local statuses
+  timeout --kill-after="$KILL_WAIT_SECONDS" "$STREAM_WAIT_SECONDS" \
+      docker exec "$CONTAINER_NAME" node "$BACKUP_COMMAND" "$BACKUP_WORD" 2>>"$LOG_FILE" \
+    | timeout --kill-after="$KILL_WAIT_SECONDS" "$STREAM_WAIT_SECONDS" \
+      age --encrypt --identity "$ENCRYPTION_KEY_FILE" --output "$ENCRYPTED_FILE" 2>>"$LOG_FILE"
+  statuses=("${PIPESTATUS[@]}")
+  COMMAND_STATUS=${statuses[0]}
+  ENCRYPTION_STATUS=${statuses[1]}
+}
+
+# --- 4. release ---------------------------------------------------------------------------------
+
+release_lock() {
+  # The send runs without the lock and without its descriptor, so a deployment never waits for it.
+  local status
+  flock --unlock 9 2>>"$LOG_FILE"
+  status=$?
+  exec 9>&-
+  if (( status != 0 )); then
+    fail 4 lock "the lock could not be released (flock exit $status); nothing was sent"
+  fi
+}
+
+# --- 5. the gate before the send ----------------------------------------------------------------
+
+require_whole_file() {
+  # The script's only way to the send: each status must read 0, so one never set stops it too.
+  local size status
+  if [[ $COMMAND_STATUS != 0 || $ENCRYPTION_STATUS != 0 ]]; then
+    fail 6 stream "docker exit $COMMAND_STATUS, age exit $ENCRYPTION_STATUS; nothing was sent"
+  fi
+  size=$(stat --format=%s -- "$ENCRYPTED_FILE" 2>>"$LOG_FILE")
+  status=$?
+  if (( status != 0 )) || [[ ! $size =~ ^[1-9][0-9]*$ ]]; then
+    fail 7 file "the encrypted file is missing or empty (stat exit $status); nothing was sent"
+  fi
+  ENCRYPTED_SIZE=$size
+}
+
+choose_weekday_file() {
+  local day status
+  day=$(date -u +%u 2>>"$LOG_FILE")
+  status=$?
+  if (( status != 0 )) || [[ ! $day =~ ^[1-7]$ ]]; then
+    fail 9 weekday "the UTC day of the week cannot be read (date exit $status); nothing was sent"
+  fi
+  WEEKDAY_FILE=$WEEKDAY_FILE_PREFIX$day$WEEKDAY_FILE_SUFFIX
+}
+
+# --- 6. send ------------------------------------------------------------------------------------
+
+send_file() {
+  # Into the home directory on Strych, whole, by rsync's default temporary file. Host-key checking
+  # stands on the command line, so nothing in root's SSH configuration can loosen it.
+  local status
+  timeout --kill-after="$KILL_WAIT_SECONDS" "$SEND_WAIT_SECONDS" \
+    rsync --whole-file --times --timeout="$SEND_INPUT_WAIT_SECONDS" \
+    --rsh="ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$STRYCH_KNOWN_HOSTS_FILE -o GlobalKnownHostsFile=/dev/null -o ConnectTimeout=$SEND_CONNECT_WAIT_SECONDS" \
+    "$ENCRYPTED_FILE" "$STRYCH_HOST:$WEEKDAY_FILE" >/dev/null 2>&1
+  status=$?
+  if (( status != 0 )); then
+    fail 8 send "rsync exit $status"
+  fi
+}
+
+# --- run ----------------------------------------------------------------------------------------
+
+main() {
+  log "start"
+  if (( $# != 0 )); then
+    fail 2 input "refused: the script takes no argument; got $#"
+  fi
+  check_key
+  take_lock
+  make_work_directory
+  stream_through_age
+  release_lock
+  require_whole_file
+  choose_weekday_file
+  log "made: $WEEKDAY_FILE, $ENCRYPTED_SIZE bytes"
+  send_file
+}
+
+trap on_exit EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+main "$@"

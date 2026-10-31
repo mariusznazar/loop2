@@ -26,7 +26,9 @@ Covers:
     `docker compose … build` or `up` is a `build` and an `up` follows; every `up` carries
     `--no-build`, and no command brings an image in by another way (`docker pull`, `load`,
     `import`, `tag`, `compose pull`, `create`, `run`, `start`, `restart`);
-- the repository holds no deployment route file other than those three and the workflow.
+- the repository holds no deployment route file other than those three and the workflow. The
+  nightly backup script and its schedule stand under `deploy/`, which the search counts, and deploy
+  nothing: the script's every Docker command is an `exec` in the running container.
 
 Does NOT cover: a deployment defined outside this repository; that the script stops before `up`
 when the build fails (the script's own tests read that: whatever it does, the image `up` starts
@@ -65,6 +67,9 @@ WORKFLOW = ".github/workflows/deploy.yml"
 DEPLOY_SCRIPT = "deploy/loop2-deploy"
 ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT,
                "deploy/cloudflared.Dockerfile")
+# Files of `deploy/` that start no image: the backup script is read by a test of its own below.
+BACKUP_SCRIPT = "deploy/loop2-backup"
+NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron")
 
 TYPECHECK_COMMAND = ["npm", "run", "typecheck"]
 BUILT_OUTPUT = "dist"
@@ -291,9 +296,18 @@ class ServingImageBuiltOnlyAfterTypecheck(unittest.TestCase):
 
     def test_no_other_deployment_route(self):
         # invariant: account-server-typecheck
-        others = [p for p in support.deployment_route_files() if p not in ROUTE_FILES]
+        others = [p for p in support.deployment_route_files()
+                  if p not in ROUTE_FILES and p not in NOT_ROUTES]
         self.assertEqual(others, [], "deployment files exist that this check does not read; "
                                      "extend it to show their route runs the type check first")
+
+    def test_backup_script_starts_no_image(self):
+        # invariant: account-server-typecheck
+        commands = support.docker_commands(support.read_required(BACKUP_SCRIPT))
+        self.assertTrue(commands, f"{BACKUP_SCRIPT} holds no Docker command to read")
+        others = [(number, words) for number, words in commands if words[:1] != ["exec"]]
+        self.assertEqual(others, [], f"{BACKUP_SCRIPT} runs Docker other than by `docker exec`, "
+                                     "so it may be a route of its own")
 
 
 if __name__ == "__main__":
