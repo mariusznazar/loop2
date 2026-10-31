@@ -3981,18 +3981,21 @@ At 03:17 by the server's clock each night, a schedule on the game server's host 
 script, installed by hand outside the game container and outside the checkout, which runs a short
 command in the running `loop2` container, takes the finished backup from that command's standard
 output through `docker exec` and sends the file itself, so there is no third Compose service and no
-timer in the game server, and the key to Mikrus Strych never enters the game container. The script
-holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds,
-while the command and the encryption run, and releases it before sending. Each deployment compares
-the installed script and the installed schedule with their sources at the deployed commit and only
-warns when they differ, and installing or reinstalling them is a human's change.
+timer in the game server, and the key to Mikrus Strych never enters the game container. That command
+opens only an existing database file, needs its one fixed word `--to-standard-output`, without which
+it refuses before it opens the database and prints nothing to standard output, and is run only by a
+human or the installed backup script. The script holds the deployment's lock,
+`/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the
+encryption run and releases it before sending, and each deployment compares the installed script and
+the installed schedule with their sources at the deployed commit and only warns when they differ,
+installing or reinstalling them being a human's change.
 
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** mikrus-host-swap
 - **Relations:** derives from D-214 · derives from D-12
 - **Verification:** an agent compares a change with the decision:
-  - complies: a script that calls `docker exec` without a terminal and holds the lock only for the stream and its encryption; a difference in the installed schedule that warns while the deployment goes on
-  - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a plain backup left in the database's volume for fetching
+  - complies: a script that calls `docker exec` without a terminal and holds the lock only for the stream and its encryption; a difference in the installed schedule that warns while the deployment goes on; a run of the command without its fixed word that ends with the usage exit code, an empty standard output and the database never opened
+  - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a plain backup left in the database's volume for fetching; a command that opens the database or writes to standard output without its fixed word; a skill instruction in which an agent runs the command through the `mikrus` MCP server
 - **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 2
 
 *Rationale:* the key to Strych stays away from the process that serves players, a failed send
@@ -4008,7 +4011,11 @@ seconds of the run and on the host only passes through a pipe. The command count
 container's memory limit on a host without swap; measured in a container limited to 512 MiB it peaks
 at 58 MiB. With the lock a backup and a deployment never overlap: each waits out the other, and a
 backup that outwaits 900 seconds is a failed night with a message. The minute avoids the round hours
-other users of a shared server pick.
+other users of a shared server pick. The command's output holds every address and password hash, so
+the bare command, the likeliest slip, shows no player's data on any screen, and a missing file stays
+missing rather than becoming an empty database. Running the command changes nothing on the server,
+so the limit on changes of D-12 does not reach it, and the rule on who runs it is what keeps that
+output out of an agent's session.
 *Rejected:* a third Compose service, a container of its own beside the game — a change of D-17 and
 of its host-sharing rule, a second container on one database file, a third memory limit on a host
 without swap, an image with maintenance tools, the key to Strych as another Compose secret, and,
@@ -4020,7 +4027,9 @@ trust boundary widens, though nothing would be installed on the server; a file i
 volume fetched by `docker cp` — a plain backup in the persistent volume, left there by any failure,
 and three commands to fail; a new bind mount, or a volume mount in a helper container — a change of
 D-17; no lock — a replaced container fails the backup, a false alarm for a normal event; no
-comparison — the drift stays invisible.
+comparison — the drift stays invisible; a refusal for a terminal — inside the container the command
+sees one only under `docker exec -t`, so it would stop only a person who typed both `-t` and the
+word, who has already asked for the output.
 
 ### D-218 — How is the database backup encrypted?
 
