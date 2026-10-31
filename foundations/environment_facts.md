@@ -397,6 +397,12 @@ In OpenSSH portable 8.9p1, `ssh` uses the first value it obtains for each parame
 
 - **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § DESCRIPTION — "ssh(1) obtains configuration data from the following sources in the following order:" · "command-line options" · "For each parameter, the first obtained value will be used."; read 2026-10-31
 
+## openssh-extra-host-key-sources
+
+In OpenSSH portable 8.9p1, `ssh` with `KnownHostsCommand` set obtains host keys from that command in addition to the known-hosts files, and with `VerifyHostKeyDNS` set to `yes`, its default being `no`, implicitly trusts keys that match a secure fingerprint from DNS.
+
+- **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § KnownHostsCommand — "Specifies a command to use to obtain a list of host keys, in addition to those listed in UserKnownHostsFile and GlobalKnownHostsFile." · § VerifyHostKeyDNS — "If this option is set to yes, the client will implicitly trust keys that match a secure fingerprint from DNS." · "The default is no."; read 2026-10-31
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

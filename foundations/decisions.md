@@ -4226,25 +4226,31 @@ reproducible builds, which D-215 does not need, at the price of a pin to maintai
 ### D-224 — How does the backup script reach Mikrus Strych?
 
 The backup script sends the encrypted backup by `rsync` over `ssh` into the home directory on Mikrus
-Strych, in batch mode and with strict host-key checking against `/etc/loop2/strych-known-hosts`
-alone, all of it given on the command line, so a host whose key that file does not hold fails the
-send. A human fills that file with the host-key line whose fingerprint a human has compared, the file
-holds no secret, and after a changed host key the send fails until a human repeats that comparison.
+Strych, giving on the command line batch mode, strict host-key checking and
+`/etc/loop2/strych-known-hosts` as its one known-hosts file, and those options win over any SSH
+configuration for those options. Root's SSH configuration and the system-wide one set neither
+`KnownHostsCommand` nor `VerifyHostKeyDNS`, which the script does not give, so a host whose key that
+file does not hold fails the send. A human fills that file with the host-key line whose fingerprint a
+human has compared, the file holds no secret, and after a changed host key the send fails until a
+human repeats that comparison.
 
 - **Scope:** deployment, agent-workflow
-- **Based on:** openssh-strict-host-key-checking · openssh-option-order · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § JAK TO ZROBIĆ? — "IdentityFile /backup_key"; read 2026-10-31
+- **Based on:** openssh-strict-host-key-checking · openssh-option-order · openssh-extra-host-key-sources · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § JAK TO ZROBIĆ? — "IdentityFile /backup_key"; read 2026-10-31
 - **Relations:** derives from D-214 · derives from D-216 · derives from D-13
 - **Verification:** an agent compares a change with the decision:
-  - complies: a send whose `ssh` options, on the command line, name that file and turn off every other known-hosts file
-  - violates: `StrictHostKeyChecking` set to `accept-new` or `no`; a send that reads root's default known-hosts file; a line taken into the file without its fingerprint compared; a script that writes to the file
+  - complies: a send whose `ssh` options, on the command line, name that file and turn off every other known-hosts file; root's SSH entry for Strych holding only the login and the path of the key
+  - violates: `StrictHostKeyChecking` set to `accept-new` or `no`; a send that reads root's default known-hosts file; a line taken into the file without its fingerprint compared; a script that writes to the file; an installation procedure that sets `KnownHostsCommand` or `VerifyHostKeyDNS` in root's SSH configuration or the system-wide one
 - **Origin:** none
 
 *Rationale:* a script started by a schedule has nobody to answer the question about an unknown host,
 and the name it connects to belongs to a shared server, so what it trusts is a line a human compared,
-not whatever answers first. Options on the command line come before every SSH configuration, so
-nothing in root's configuration loosens the host-key check, while the login stays there by D-13. A
-legitimate change of the host key at Mikrus stops the backups, with a message each night, until a
-human repeats the comparison. `rsync` over `ssh` into the home directory is the way a trial from the
+not whatever answers first. Options on the command line come before every SSH configuration, so no
+configuration changes what the script gives. `KnownHostsCommand` and `VerifyHostKeyDNS`, which it
+does not give, would widen what it trusts beyond that one line, so the host-key check also rests on
+root's SSH configuration and the system-wide one setting neither, and the human's installation
+writes only the login, which stays there by D-13, and the path of the key into root's. A legitimate
+change of the host key at Mikrus stops the backups, with a message each night, until a human repeats
+the comparison. `rsync` over `ssh` into the home directory is the way a trial from the
 game server has shown to work.
 *Rejected:* `rsnappush`, the tool of Strych's documentation — not installed on the server, deletes
 nothing, and its saving does not apply to a file that changes daily; `accept-new` — trusts whatever
