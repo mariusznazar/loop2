@@ -230,8 +230,8 @@ server's opened the backup.
    -join ($b | ForEach-Object { [char]$_ })
    ```
 4. Build the image from a clean checkout of the commit step 2 of "Installing and reinstalling"
-   deployed, with that commit's sha: `docker build --build-arg LOOP2_COMMIT=<sha> -t <image> .`
-   The launcher's report must read `image revision: <sha>`. `unknown` or another value shows no
+   deployed, with that commit's sha: `docker build --build-arg LOOP2_COMMIT=<sha> -t <image> <path of the clean checkout>`
+   Stay in the private folder: the build names the checkout by its path. The launcher's report must read `image revision: <sha>`. `unknown` or another value shows no
    same commit, and the trial does not count until a build gives that sha.
 5. Read the test account's password without placing it in the shell history. Keep that
    password ASCII: the console code page may alter another character on its way to the launcher.
@@ -265,11 +265,14 @@ server's opened the backup.
 
    ```powershell
    icacls <key file> /grant:r "${env:USERNAME}:F"
+   Set-Location ..
    Remove-Item -Recurse -Force <the private folder>
    Test-Path <the private folder>
    ```
 
-   `Test-Path` shows `False`. Then `Remove-Variable secure, credential` and close the window.
+   `Set-Location ..` leaves the folder, which PowerShell will not remove while you stand in it.
+   `Test-Path` shows `False`. A `True` means the folder still holds the plain database and the
+   keys: read the error, leave the folder, and remove it again before going on. Then `Remove-Variable secure, credential` and close the window.
 
 Not proven by this trial: building a new server, restoring over a live volume, backups of later
 schema versions.
