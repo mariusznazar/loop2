@@ -201,15 +201,34 @@ not a rollback (D-15): code and data are separate paths.
 ### Trying a backup on the owner's computer
 
 This proves a backup restores in the built image without touching the server. Run on the
-owner's computer in PowerShell, with the Docker engine on and `age` installed (`winget`).
+owner's computer in PowerShell, with the Docker engine on and `age` installed. `winget` hung on
+the owner's computer; the Windows zip of `age`'s releases page serves too. A newer `age` than the
+server's opened the backup.
 
-1. Make a temporary Strych key from the private note and fetch the weekday files with `scp -p`
-   (keeps their times), using the login from the note and the host from the constants block of
-   `deploy/loop2-backup`.
+1. Make a private folder and work in it. Paste the Strych key from the private note into a file
+   there, `strych-key`, with a final line break and no `.txt`. Take the file's rights away from
+   everyone but you, or `ssh` refuses the key:
+
+   ```powershell
+   icacls .\strych-key /inheritance:r /grant:r "${env:USERNAME}:R"
+   scp -p -i .\strych-key <login>@<host from the constants block>:loop2-accounts-<day>.sqlite.age .
+   ```
+
+   `scp -p` keeps the files' times; fetch each weekday file you need, with the login from the
+   note. On a first connection, compare the ED25519 fingerprint `ssh` shows with the one of
+   step 6 of "Installing and reinstalling" before you answer yes. A prompt for another key type
+   is no match to accept.
 2. Take the newest file by time and write down its size in bytes: the capacity sum is
    7 x size, within 200 000 000, and the limit above is 25 MB.
-3. Decrypt it with the key from the note, saved to a temporary file:
+3. Decrypt it with the key from the note, saved to a temporary file of its own with the same
+   `icacls` as in step 1 (its name in place of `strych-key`; the backup key is a second key):
    `age --decrypt -i <key file> -o accounts.sqlite loop2-accounts-<day>.sqlite.age`.
+   Check the first 15 bytes of the result in Windows PowerShell; they show `SQLite format 3`:
+
+   ```powershell
+   $b = Get-Content .\accounts.sqlite -Encoding Byte -TotalCount 15
+   -join ($b | ForEach-Object { [char]$_ })
+   ```
 4. Build the image from a clean checkout of the commit step 2 of "Installing and reinstalling"
    deployed, with that commit's sha: `docker build --build-arg LOOP2_COMMIT=<sha> -t <image> .`
    The launcher's report must read `image revision: <sha>`. `unknown` or another value shows no
@@ -219,10 +238,18 @@ owner's computer in PowerShell, with the Docker engine on and `age` installed (`
    This form needs no special console: the launcher drops a byte-order mark that a UTF-8 console
    puts before the piped text.
 
+   Enter the first block alone and answer its prompt. A pasted block would read its next line as
+   the password.
+
    ```powershell
    $secure = Read-Host -AsSecureString 'Test account password'
+   ```
+
+   Then the second block. The path of the launcher may be given whole.
+
+   ```powershell
    $credential = New-Object System.Net.NetworkCredential('', $secure)
-   $credential.Password | node scripts/restore-trial.mjs --image <image> --database .\accounts.sqlite --marker '<the marker name written down in the install step 8>' --email <test account address>
+   $credential.Password | node <path to the checkout>\scripts\restore-trial.mjs --image <image> --database .\accounts.sqlite --marker '<the marker name written down in the install step 8>' --email <test account address>
    ```
 6. Read the result. Exit 0 is PASS; 1 the trial ran and judged the backup (FAIL), for example the
    test account could not log in; 2 refused,
@@ -233,7 +260,16 @@ owner's computer in PowerShell, with the Docker engine on and `age` installed (`
    with exit 3 is not a PASS. After exit 4 the named volume may still hold the plain database, so
    check it and remove it by hand.
 7. Write the capacity sum and the launcher's report into the request's record.
-8. Remove the fetched files, the decrypted file and both temporary keys.
+8. Remove the fetched files, the decrypted file and both temporary keys, in this order. Read-only
+   keys stopped `Remove-Item`, so give the rights back first, for both key files:
+
+   ```powershell
+   icacls <key file> /grant:r "${env:USERNAME}:F"
+   Remove-Item -Recurse -Force <the private folder>
+   Test-Path <the private folder>
+   ```
+
+   `Test-Path` shows `False`. Then `Remove-Variable secure, credential` and close the window.
 
 Not proven by this trial: building a new server, restoring over a live volume, backups of later
 schema versions.
