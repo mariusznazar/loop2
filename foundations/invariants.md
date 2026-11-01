@@ -701,7 +701,7 @@ The account and save server accesses its SQLite database through Node.js's built
 
 - **Method:** review
 - **Rests on:** node-sqlite-database
-- **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/definicja_mvp_loop2.md § Projected foundation changes, account-save-sqlite-access/1 — "The account and save server accesses its SQLite database through Node.js's built-in `node:sqlite` module rather than an external SQLite driver."; read 2026-10-26
+- **Derives from:** D-229
 - **Part:** account-server · build-tools · deployment
 - **Violated:** no
 
@@ -1093,6 +1093,46 @@ No session its account held when a password reset committed authorizes a request
 - **Rests on:** express-session-end-of-request · express-session-regenerated-session-saved-again
 - **Derives from:** D-112 · D-138
 - **Part:** account-server
+- **Violated:** no
+
+## account-save-backup
+
+The account and save server's database has a completed, consistent backup stored outside the game server host.
+
+- **Method:** review
+- **Rests on:** sqlite-online-backup
+- **Derives from:** D-228
+- **Part:** account-server · deployment
+- **Violated:** no
+
+## account-save-sqlite-upgrade
+
+A deployed Node.js release has passed a check of the account and save server's database read, write and backup operations on that release.
+
+- **Method:** test
+- **Rests on:** node-sqlite-database · docker-build-cache-invalidation
+- **Derives from:** D-229
+- **Part:** account-server · deployment
+- **Violated:** no
+
+## account-save-backup-encrypted
+
+A backup of the account and save server's database does not leave the game server host unencrypted.
+
+- **Method:** test
+- **Rests on:** age-file-encryption
+- **Derives from:** D-232
+- **Part:** deployment
+- **Violated:** no
+
+## account-save-backup-failure-notice
+
+Every failed step of the backup script — the command in the container, a container that is not running included, the encryption, and the send, which also replaces the oldest backup — ends in a call of `pusher`.
+
+- **Method:** test
+- **Rests on:** mikrus-pusher-mail
+- **Derives from:** D-233
+- **Part:** deployment
 - **Violated:** no
 
 ## Withdrawn identifiers

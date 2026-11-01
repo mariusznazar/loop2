@@ -249,9 +249,9 @@ Express-session 1.19.0 signs the session cookie with the first configured secret
 
 ## node-sqlite-database
 
-Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, parameterizable prepared statements and explicit connection closing.
+Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, parameterizable prepared statements, explicit connection closing and an asynchronous `backup()` function that transmits a positive number of pages in each batch, 100 by default, that calls an optional `progress` callback after each backup step with the remaining and the total pages, and that restarts on mutations from other connections.
 
-- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection."; read 2026-10-27
+- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection." · § sqlite.backup(sourceDb, path[, options]) — "A promise that fulfills with the total number of backed-up pages upon completion, or rejects if an error occurs." · "Positive number of pages to be transmitted in each batch of the backup. Default: 100." · "An optional callback function that will be called after each backup step." · "with remainingPages and totalPages properties, describing the current progress of the backup operation." · "This method makes a database backup." · "However, mutations from other connections will cause the backup process to restart."; read 2026-10-31
 
 ## fetch-same-origin-credentials
 
@@ -366,6 +366,54 @@ Express-session 1.19.0 with `resave` false, at the end of a request, calls the S
 Express-session 1.19.0 saves a session made by `regenerate` again at the end of the request, even when the route has already saved it, and each save hands the Store's `set` the same session object.
 
 - **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/session/store.js § Store.prototype.regenerate — "self.generate(req);"; read 2026-10-30 · https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/index.js § store.generate — "req.session = new Session(req);" · § generate — "store.generate(req);" · "wrapmethods(req.session);" · § wrapmethods, save — "savedHash = hash(this);" · § isSaved — "return originalId === sess.id && savedHash === hash(sess);" · § isModified — "return originalId !== sess.id || originalHash !== hash(sess);" · § shouldSave — "return !saveUninitializedSession && !savedHash && cookieId !== req.sessionID" · § res.end — "req.session.save(function onsave(err) {"; read 2026-10-30 · https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/session/session.js § save — "this.req.sessionStore.set(this.id, this, fn || function(){});"; read 2026-10-30
+
+## sqlite-online-backup
+
+A completed SQLite Online Backup is a consistent snapshot of its source database, each step copies up to the number of pages it is asked for, and a change to the source through another connection restarts the backup at its next step, so that a backup restarted often enough may never complete.
+
+- **Source:** https://www.sqlite.org/backup.html (archived: https://web.archive.org/web/20261022232221/https://www.sqlite.org/backup.html, 2026-10-22) § 3.1. File and Database Connection Locking — "Whether or not the backup process is restarted as a result of writes to the source database mid-backup, the user can be sure that when the backup operation is completed the backup database contains a consistent and up-to-date snapshot of the original." · "If the backup process is restarted frequently enough it may never run to completion and the backupDb() function may never return."; read 2026-10-31 · https://www.sqlite.org/c3ref/backup_finish.html (archived: https://web.archive.org/web/20261019222442/https://www.sqlite.org/c3ref/backup_finish.html, 2026-10-19) § sqlite3_backup_step() — "Function sqlite3_backup_step(B,N) will copy up to N pages between the source and destination databases specified by sqlite3_backup object B." · "If the source database is modified by an external process or via a database connection other than the one being used by the backup operation, then the backup will be automatically restarted by the next call to sqlite3_backup_step()."; read 2026-10-31
+
+## mikrus-pusher-mail
+
+Mikrus documents `pusher` as a tool that sends mail to its own user, reads standard input and takes the mail's subject as its first parameter, names no recipient address and no limit, and its script calls `curl` on `push.mikr.us/$1` without `https`, so a message may travel unencrypted.
+
+- **Source:** https://wiki.mikr.us/pusher/ (archived: https://web.archive.org/web/20260519191805/https://wiki.mikr.us/pusher/, 2026-05-19) § Pusher — "Pusher jest prostym narzędziem pozwalającym Ci wysyłać maile do samego siebie, bez konieczności instalowania serwera mailowego." · "Pusher czyta ze standardowego wejścia. Jeśli chcesz zmienić temat maila wysyłanego przez pushera, podaj go jako pierwszy parametr (podkreślenia będą traktowane jak spacje)."; read 2026-10-31 · https://mikr.us/tools/pusher (archived: https://web.archive.org/web/20260417121329/https://mikr.us/tools/pusher, 2026-04-17) § the script — "curl -s --data-urlencode data@- push.mikr.us/$1"; read 2026-10-31
+
+## age-file-encryption
+
+age 1.0.0 lets an identity file passed with `-i` serve as a symmetric key when `-e` is given explicitly, exits 0 if and only if encryption or decryption succeeded for the full length of the input, writes files that are not malleable and releases no unauthenticated output.
+
+- **Source:** https://raw.githubusercontent.com/FiloSottile/age/552aa0a07de0b42c16126d3107bd8895184a69e7/doc/age.1.ronn § DESCRIPTION — "age encrypted files are binary and not malleable, with around 200 bytes of overhead per recipient, plus 16 bytes every 64KiB of plaintext." · § Decryption options, -i, --identity — "If -e/--encrypt is explicitly specified (to avoid confusion), -i/--identity may also be used to encrypt to the RECIPIENTS corresponding to the IDENTITIES listed at <PATH>. This allows using an identity file as a symmetric key, if desired." · § EXIT STATUS — "age will exit 0 if and only if encryption or decryption are succesful for the full length of the input." · "If an error occurs during decryption, partial output might still be generated, but only if it was possible to securely authenticate it. No unauthenticathed output is ever released."; read 2026-10-31
+
+## cron-d-file-rules
+
+A file in `/etc/cron.d` for cron 3.0pl1-137ubuntu3 of Ubuntu 22.04 must be owned by root, must not be group- or other-writable, must give the user each task runs as, and must have a name made solely of letters, digits, underscores and hyphens, which cannot contain any dots.
+
+- **Source:** https://git.launchpad.net/ubuntu/+source/cron/plain/cron.8?h=applied/3.0pl1-137ubuntu3 § NOTES — "/etc/crontab and the files in /etc/cron.d must be owned by root, and must not be group- or other-writable." · § DEBIAN SPECIFIC — "This directory can contain any file defining tasks following the format used in /etc/crontab, i.e. unlike the user cron spool, these files must provide the username to run the task as in the task definition." · "Files in this directory have to be owned by root, do not need to be executable (they are configuration files, just like /etc/crontab) and must conform to the same naming convention as used by run-parts(8) : they must consist solely of upper- and lower-case letters, digits, underscores, and hyphens. This means that they cannot contain any dots."; read 2026-10-31
+
+## docker-build-cache-invalidation
+
+Docker's builder checks the base image and then each instruction against the cached layers, invalidates the cache where no cached layer matches, checks `COPY` by file metadata and `RUN` by its command string, and uses no cache for any instruction after an invalidation.
+
+- **Source:** https://raw.githubusercontent.com/docker/docs/62f6d26c183faf98fc8567f0b675f660f4e91ae6/content/manuals/build/cache/invalidation.md § General rules — "The builder begins by checking if the base image is already cached. Each subsequent instruction is compared against the cached layers. If no cached layer matches the instruction exactly, the cache is invalidated." · "For the ADD and COPY instructions, and for RUN instructions with bind mounts (RUN --mount=type=bind), the builder calculates a cache checksum from file metadata to determine whether cache is valid." · "In that case just the command string itself is used to find a match." · "Once the cache is invalidated, all subsequent Dockerfile commands generate new images and the cache isn't used."; read 2026-10-31
+
+## openssh-strict-host-key-checking
+
+In OpenSSH portable 8.9p1, `ssh` with `StrictHostKeyChecking` set to `yes` never adds host keys to the known-hosts file, refuses hosts whose host key has changed and leaves every new host to be added by hand, with `accept-new` adds new host keys by itself, with `no` also lets connections to changed host keys proceed, and with `BatchMode` set to `yes` asks for no host key confirmation.
+
+- **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § StrictHostKeyChecking — "If this flag is set to yes, ssh(1) will never automatically add host keys to the ~/.ssh/known_hosts file, and refuses to connect to hosts whose host key has changed." · "This option forces the user to manually add all new hosts." · "If this flag is set to accept-new then ssh will automatically add new host keys to the user's known_hosts file, but will not permit connections to hosts with changed host keys." · "If this flag is set to no or off, ssh will automatically add new host keys to the user known hosts files and allow connections to hosts with changed hostkeys to proceed, subject to some restrictions." · § BatchMode — "If set to yes, user interaction such as password prompts and host key confirmation requests will be disabled."; read 2026-10-31
+
+## openssh-option-order
+
+In OpenSSH portable 8.9p1, `ssh` uses the first value it obtains for each parameter and obtains command-line options before the user's configuration file and the system-wide configuration file.
+
+- **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § DESCRIPTION — "ssh(1) obtains configuration data from the following sources in the following order:" · "command-line options" · "For each parameter, the first obtained value will be used."; read 2026-10-31
+
+## openssh-extra-host-key-sources
+
+In OpenSSH portable 8.9p1, `ssh` with `KnownHostsCommand` set obtains host keys from that command in addition to the known-hosts files, and with `VerifyHostKeyDNS` set to `yes`, its default being `no`, implicitly trusts keys that match a secure fingerprint from DNS.
+
+- **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § KnownHostsCommand — "Specifies a command to use to obtain a list of host keys, in addition to those listed in UserKnownHostsFile and GlobalKnownHostsFile." · § VerifyHostKeyDNS — "If this option is set to yes, the client will implicitly trust keys that match a secure fingerprint from DNS." · "The default is no."; read 2026-10-31
 
 ## Withdrawn identifiers
 

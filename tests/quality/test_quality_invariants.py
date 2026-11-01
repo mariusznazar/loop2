@@ -19,7 +19,7 @@ PRETTIER_PATTERNS = [f"src/browser/**/*.{WEB}", f"src/server/**/*.{SCRIPT}",
                      f"tests/{{sim,view}}/**/*.{WEB}", "tests/{http,startup}.test.mjs",
                      "{eslint,prettier}.config.mjs"]
 # Named one by one: review keeps a new standalone Bash script from going unnamed (D-31).
-BASH_SCRIPTS = ["deploy/loop2-deploy"]
+BASH_SCRIPTS = ["deploy/loop2-deploy", "deploy/loop2-backup"]
 
 
 def venv_tool(name):

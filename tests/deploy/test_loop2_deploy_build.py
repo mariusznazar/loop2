@@ -1,8 +1,10 @@
 """The deployment script from the checkout to the build (spec § 5, steps 7–9 and 12).
 
-- the installed script compared with the checked-out `deploy/loop2-deploy`: a difference is a
-  warning, with the rollback wording, and the run goes on with the installed copy; a commit
-  without the script's source is a warning too, never a crash, and such a commit (it has no
+- the three installed copies (the deploy script, the backup script and the backup schedule)
+  compared with their sources at the checked-out commit (`deploy/loop2-deploy`,
+  `deploy/loop2-backup`, `deploy/loop2-backup.cron`): a difference is a warning, with the rollback
+  wording, and the run goes on with the installed copy; an unreadable installed copy or a commit
+  without a source is a warning too, never a crash, and a commit without the sources (it has no
   `compose.yaml` either) fails at the build with exit 7;
 - the resource gate before any build: `MemAvailable` at least 1024 MiB and at least 4 GiB free on
   the filesystem of Docker's root directory, that one field read from `docker info`; both values
@@ -13,6 +15,7 @@
 - the old game's container state logged after a failed build.
 """
 
+import os
 import unittest
 
 import deploy_script_support as support
@@ -74,19 +77,76 @@ class InstalledScriptComparison(DeployBuildTestCase):
         self.assertEqual(len(self.compose_calls(result, "build")), 1, result)
         self.assertLess(self.index_of("differs"), self.index_of("build of"))
 
-    def test_commit_without_the_script_warns_then_fails_the_build_with_7(self):
+    def test_commit_without_the_sources_warns_for_each_pair_then_fails_the_build_with_7(self):
+        # Changed from one warning to three by spec decision 10: the comparison covers three pairs.
         sha = self.fixture.commit("main", "from before the deployment existed")
         self.fixture.install()
         self.fixture.answer_passing_run()
         result = self.deploy(sha)
         self.assertEqual(result.code, 7, result)
         warning = [line for line in result.stdout.splitlines() if "warning" in line]
-        self.assertEqual(len(warning), 1, result)
-        self.assertIn("deploy/loop2-deploy", warning[0])
-        self.assertIn("missing", warning[0])
+        self.assertEqual(len(warning), 3, result)
+        for line, source in zip(warning, ("deploy/loop2-deploy ", "deploy/loop2-backup ",
+                                          "deploy/loop2-backup.cron ")):
+            self.assertIn(source, line)
+            self.assertIn("missing", line)
         self.assertEqual(self.compose_calls(result, "up"), [], result)
         self.assertIn("build", self.log_lines()[-1])
         self.assertIn("(exit 7)", self.log_lines()[-1])
+
+
+    def test_each_new_pair_differing_warns_once_and_continues(self):
+        cases = {
+            "backup script": ({"backup": support.read_bytes(support.BACKUP_SCRIPT) + b"# x\n"},
+                              "deploy/loop2-backup at", "/usr/local/bin/loop2-backup"),
+            "backup schedule": ({"schedule": b'MAILTO=""\n'}, "deploy/loop2-backup.cron at",
+                                "/etc/cron.d/loop2-backup"),
+        }
+        for name, (installed, source, path) in cases.items():
+            with self.subTest(pair=name):
+                self.fixture = support.DeployFixture()
+                self.addCleanup(self.fixture.remove)
+                sha = self.fixture.deployable_commit()
+                self.fixture.install(**installed)
+                self.fixture.answer_passing_run()
+                result = self.deploy(sha)
+                self.assertEqual(result.code, 0, result)
+                warning = [line for line in result.stdout.splitlines() if "warning" in line]
+                self.assertEqual(len(warning), 1, result)
+                self.assertIn("differs", warning[0])
+                self.assertIn(source, warning[0])
+                self.assertIn(sha, warning[0])
+                self.assertIn("reinstall", warning[0])
+                self.assertIn("rollback", warning[0])
+                self.assertIn(os.path.basename(path), warning[0])
+                self.assertIn(warning[0], self.fixture.log_text())
+                self.assertEqual(len(self.compose_calls(result, "build")), 1, result)
+                self.assertLess(self.index_of("differs"), self.index_of("build of"))
+
+    def test_unreadable_installed_copy_warns_for_that_pair_only_and_continues(self):
+        for name in ("installed_backup", "installed_schedule"):
+            with self.subTest(missing=name):
+                self.fixture = support.DeployFixture()
+                self.addCleanup(self.fixture.remove)
+                sha = self.fixture.deployable_commit()
+                self.fixture.install()
+                os.remove(getattr(self.fixture, name))
+                self.fixture.answer_passing_run()
+                result = self.deploy(sha)
+                self.assertEqual(result.code, 0, result)
+                warning = [line for line in result.stdout.splitlines() if "warning" in line]
+                self.assertEqual(len(warning), 1, result)
+                self.assertIn("cannot be read", warning[0])
+                self.assertIn(os.path.basename(getattr(self.fixture, name)), warning[0])
+
+    def test_all_three_differing_warn_three_times(self):
+        sha = self.fixture.deployable_commit()
+        self.fixture.install(b"# a\n", b"# b\n", b"# c\n")
+        self.fixture.answer_passing_run()
+        result = self.deploy(sha)
+        self.assertEqual(result.code, 0, result)
+        warning = [line for line in result.stdout.splitlines() if "warning" in line]
+        self.assertEqual(len(warning), 3, result)
 
 
 class ResourceGate(DeployBuildTestCase):
