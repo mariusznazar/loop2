@@ -1,5 +1,5 @@
 /** Kinds of draw; each has its own generator, derived from the map run's seed. */
-export type Stream = "layout" | "wander" | "gather" | "attack";
+export type Stream = "layout" | "wander" | "gather" | "attack" | "next";
 
 /** A fixed distinct constant per stream: adding a stream changes no existing one. */
 const STREAM_CONSTANT: Record<Stream, number> = {
@@ -7,6 +7,7 @@ const STREAM_CONSTANT: Record<Stream, number> = {
   wander: 0x57414e44,
   gather: 0x47415448,
   attack: 0x4154544b,
+  next: 0x4e455854,
 };
 
 /** MurmurHash3's 32-bit finaliser. */
@@ -39,4 +40,13 @@ export function mixSeed(previous: number, realMs: number): number {
   const lo = realMs % 4294967296;
   const hi = Math.floor(realMs / 4294967296);
   return fmix32(previous ^ fmix32(lo ^ fmix32(hi + 0x9e3779b9)));
+}
+
+/**
+ * The seed of the next map run of an earning loop: one draw, as a uint32, from the generator that
+ * `streamState` starts for the stream "next" from the seed of the map run that ended. It draws from
+ * no other stream and takes no real time (D-22).
+ */
+export function nextSeed(seed: number): number {
+  return Math.floor(nextRandom(streamState(seed, "next")).value * 4294967296);
 }

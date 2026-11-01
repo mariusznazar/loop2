@@ -18,6 +18,7 @@ import {
   setPace,
   setProgram,
   settleDeath,
+  withSaveTime,
 } from "../../dist/public/sim/game.js";
 import { loadSavedGame, savedGame } from "../../dist/public/sim/saved-game.js";
 import { branchRank, buyBranch } from "../../dist/public/sim/skills.js";
@@ -212,7 +213,8 @@ test("the renewal does not depend on the pace of the map run", () => {
 // To do 13: the renewal runs while the game is closed, as the state holds a moment, not a countdown.
 test("a resurrection used up is ready again at its moment after a save and a load, and the next death goes by it", () => {
   const settled = settleDeath(fallen(), T0).state;
-  const loaded = loadSavedGame(savedGame(end(settled).state));
+  // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+  const loaded = loadSavedGame(savedGame(withSaveTime(end(settled).state, T0)));
   assert.equal(loaded.ok, true);
   const back = loaded.state;
   assert.equal(resurrectionReady(ala(back), T0 + RENEWAL_MS - 1), false);
@@ -319,9 +321,10 @@ test("a death settled is not settled again, however late", () => {
 test("a settled death saved and loaded on its screen is left as it stood by a later settling", () => {
   for (const readyAtMs of [0, T0 + 1]) {
     const settled = settleDeath(fallen(readyAtMs), T0).state;
-    const loaded = loadSavedGame(savedGame(settled));
+    // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+    const loaded = loadSavedGame(savedGame(withSaveTime(settled, T0)));
     assert.equal(loaded.ok, true);
-    assert.deepEqual(loaded.state, settled);
+    assert.deepEqual(loaded.state, { ...settled, saveTimeMs: T0 });
     assert.equal(
       settleDeath(loaded.state, T0 + 2 * RENEWAL_MS).state,
       loaded.state,

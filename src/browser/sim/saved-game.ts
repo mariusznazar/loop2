@@ -23,6 +23,7 @@ import type {
   Action,
   Activity,
   ActiveCombat,
+  AwayReportLine,
   Backpack,
   Body,
   BurningItem,
@@ -42,12 +43,15 @@ import type {
   Death,
   DeathCause,
   DeathSettlement,
+  EarningLoop,
   GameMapRun,
   GameState,
   Hex,
   ItemId,
   LastCombat,
+  LoopStop,
   MapId,
+  MapRun,
   Pace,
   Practice,
   Program,
@@ -68,7 +72,7 @@ import type {
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
  * `GameState` or a type it reaches, and of the items of the data, which `Backpack` enumerates.
  */
-export const SAVED_GAME_VERSION = 2;
+export const SAVED_GAME_VERSION = 3;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -766,6 +770,16 @@ function deposited(
   return put;
 }
 
+/**
+ * The generation a death that took everything gave: a number from 2 up, as such a death leaves, and
+ * later deaths only raise it, so at most the character's current one.
+ */
+function lostGeneration(value: unknown, currentGeneration: number): number {
+  const generation = integer(value, 2);
+  if (generation > currentGeneration) refuse();
+  return generation;
+}
+
 const SETTLEMENTS: {
   [K in DeathSettlement["kind"]]: (
     value: unknown,
@@ -778,10 +792,10 @@ const SETTLEMENTS: {
   },
   progressLost: (value, currentGeneration) => {
     const read = fields(value, ["kind", "generation"]);
-    // A death that takes everything leaves a number from 2 up, and later deaths only raise it.
-    const generation = integer(read.generation, 2);
-    if (generation > currentGeneration) refuse();
-    return { kind: "progressLost", generation };
+    return {
+      kind: "progressLost",
+      generation: lostGeneration(read.generation, currentGeneration),
+    };
   },
 };
 
@@ -806,7 +820,8 @@ function deathSettlement(
   );
 }
 
-const RUN_KEYS = [
+/** The keys of a `MapRun`, exactly those of the map run of an earning loop. */
+const MAP_RUN_KEYS = [
   "practice",
   "mapId",
   "seed",
@@ -828,6 +843,11 @@ const RUN_KEYS = [
   "defeatedAttacks",
   "death",
   "completion",
+] as const;
+
+/** The keys of a `GameMapRun`: those of a `MapRun` and the record of its copy. */
+const GAME_MAP_RUN_KEYS = [
+  ...MAP_RUN_KEYS,
   "copy",
   "bringPlan",
   "deposited",
@@ -836,16 +856,14 @@ const RUN_KEYS = [
 ] as const;
 
 /**
- * The map run, with what the simulation follows in it: its character in the team, with skills its
+ * A `MapRun`, with what the simulation follows in it: its character in the team, with skills its
  * archetype allows, every place on its tiles, one campfire a tile, an attack going on only with no
- * activity and before an end, an activity going on until it ends, an end in its own game minute,
- * and a deposit only at a completion, out of the frozen bring plan. Its mark says whether the map
- * was solved when it started: a run that has not completed holds the mark exactly when the solved
- * maps hold its map, which one manual map run at a time keeps true (D-55); a run that completed
- * has its map among the solved maps, whatever its mark. A death is settled, so no load settles one.
+ * activity and before an end, an activity going on until it ends, and an end in its own game minute.
  */
-function mapRun(value: unknown, records: Records): GameMapRun {
-  const read = fields(value, RUN_KEYS);
+function plainMapRun(
+  read: Record<(typeof MAP_RUN_KEYS)[number], unknown>,
+  records: Records,
+): MapRun {
   const mapId = oneOf(read.mapId, MAPS);
   const minute = count(read.minute);
   const layout = tiles(read.tiles, MAPS[mapId]);
@@ -899,7 +917,7 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     read.activeCombat === null
       ? null
       : attack(fields(read.activeCombat, COMBAT_KEYS), minute);
-  const ended: Pick<GameMapRun, "death" | "completion"> = {
+  const ended: Pick<MapRun, "death" | "completion"> = {
     death: read.death === null ? null : death(read.death, minute),
     completion:
       read.completion === null ? null : completion(read.completion, minute),
@@ -912,10 +930,6 @@ function mapRun(value: unknown, records: Records): GameMapRun {
   const attackCooldownStart = count(read.attackCooldownStart);
   const streak = count(read.streak);
   if (attackCooldownStart > minute || streak > minute) refuse();
-  const bringPlan = tripList(read.bringPlan);
-  const solvedMapRun = flag(read.solvedMapRun);
-  const mapSolved = records.solved.includes(mapId);
-  if (ended.completion ? !mapSolved : solvedMapRun !== mapSolved) refuse();
 
   return {
     practice: practice(read.practice),
@@ -939,21 +953,176 @@ function mapRun(value: unknown, records: Records): GameMapRun {
     streak,
     defeatedAttacks: count(read.defeatedAttacks),
     ...ended,
+  };
+}
+
+/**
+ * The manual map run: a `MapRun`, and a deposit only at a completion, out of the frozen bring plan.
+ * Its mark says whether the map was solved when it started: a run that has not completed holds the
+ * mark exactly when the solved maps hold its map, which one manual map run at a time keeps true
+ * (D-55); a run that completed has its map among the solved maps, whatever its mark. A death is
+ * settled, so no load settles one.
+ */
+function mapRun(value: unknown, records: Records): GameMapRun {
+  const read = fields(value, GAME_MAP_RUN_KEYS);
+  const run = plainMapRun(read, records);
+  const bringPlan = tripList(read.bringPlan);
+  const solvedMapRun = flag(read.solvedMapRun);
+  const mapSolved = records.solved.includes(run.mapId);
+  if (run.completion ? !mapSolved : solvedMapRun !== mapSolved) refuse();
+  return {
+    ...run,
     copy: copy(read.copy, records),
     bringPlan,
     deposited: deposited(
       read.deposited,
       bringPlan,
-      ended.completion !== null,
+      run.completion !== null,
       solvedMapRun,
     ),
     solvedMapRun,
     deathSettlement: deathSettlement(
       read.deathSettlement,
-      ended.death !== null,
-      owner.generation,
+      run.death !== null,
+      records.characters.get(run.character.id)!.generation,
     ),
   };
+}
+
+/**
+ * A key of a record by character (D-56): in its canonical form, naming a character of the team that
+ * is not among `taken`, the characters the record may not name.
+ */
+function characterKey(
+  key: string,
+  records: Records,
+  taken: readonly CharacterId[],
+): CharacterId {
+  const character = identityKey(key);
+  if (!records.characters.has(character) || taken.includes(character)) refuse();
+  return character;
+}
+
+/**
+ * The earning loop of `characterId`: its program by the program check, and a `MapRun` that is that
+ * character's, goes on (D-241) and stands on a map among the solved maps, since no loop's map run
+ * adds to them. Completions stand below the number of the map run going on.
+ */
+function earningLoop(
+  value: unknown,
+  characterId: CharacterId,
+  records: Records,
+): EarningLoop {
+  const read = fields(value, [
+    "program",
+    "run",
+    "runNumber",
+    "completed",
+    "practice",
+  ]);
+  const run = plainMapRun(fields(read.run, MAP_RUN_KEYS), records);
+  if (
+    run.character.id !== characterId ||
+    mapRunEnded(run) ||
+    !records.solved.includes(run.mapId)
+  )
+    refuse();
+  const runNumber = identity(read.runNumber);
+  const completed = count(read.completed);
+  if (completed >= runNumber) refuse();
+  return {
+    program: program(read.program),
+    run,
+    runNumber,
+    completed,
+    practice: practice(read.practice),
+  };
+}
+
+/** The earning loops by character, none of them the character of the manual map run. */
+function earningLoops(
+  value: unknown,
+  records: Records,
+  manual: readonly CharacterId[],
+): GameState["loops"] {
+  const loops: GameState["loops"] = {};
+  for (const [key, loop] of entries(value)) {
+    const character = characterKey(key, records, manual);
+    loops[character] = earningLoop(loop, character, records);
+  }
+  return loops;
+}
+
+/** What each stopped loop paid, by character; such a character has no loop and no manual map run. */
+function stoppedLoops(
+  value: unknown,
+  records: Records,
+  busy: readonly CharacterId[],
+): GameState["stoppedLoops"] {
+  const stopped: GameState["stoppedLoops"] = {};
+  for (const [key, paid] of entries(value))
+    stopped[characterKey(key, records, busy)] = practice(paid);
+  return stopped;
+}
+
+/** A character's change of the chest: items of the data, each a non-zero safe integer. */
+function chestChange(value: unknown): AwayReportLine["chest"] {
+  const change: AwayReportLine["chest"] = {};
+  for (const [key, amount] of entries(value)) {
+    const item = oneOf(key, ITEMS);
+    const pieces = integer(amount);
+    if (pieces === 0) refuse();
+    change[item] = pieces;
+  }
+  return change;
+}
+
+function loopStop(value: unknown, currentGeneration: number): LoopStop | null {
+  if (value === null) return null;
+  const read = fields(value, ["generation", "away"]);
+  return {
+    generation: lostGeneration(read.generation, currentGeneration),
+    away: flag(read.away),
+  };
+}
+
+/**
+ * A line of the report: of a character of the team, a line that is open or stopped in a catch-up
+ * holding a minute at least, as only a stop in the open game goes without one.
+ */
+function reportLine(value: unknown, records: Records): AwayReportLine {
+  const read = fields(value, [
+    "characterId",
+    "minutes",
+    "chest",
+    "practice",
+    "resurrectionUsed",
+    "stop",
+  ]);
+  const characterId = identity(read.characterId);
+  const character = records.characters.get(characterId);
+  if (character === undefined) refuse();
+  const minutes = count(read.minutes);
+  const stop = loopStop(read.stop, character.generation);
+  if (minutes === 0 && (stop === null || stop.away)) refuse();
+  return {
+    characterId,
+    minutes,
+    chest: chestChange(read.chest),
+    practice: practice(read.practice),
+    resurrectionUsed: flag(read.resurrectionUsed),
+    stop,
+  };
+}
+
+/** The report: its lines, at most one of them open for a character. */
+function awayReport(value: unknown, records: Records): AwayReportLine[] {
+  const lines = list(value).map((line) => reportLine(line, records));
+  const open = lines
+    .filter((line) => line.stop === null)
+    .map((line) => line.characterId);
+  if (new Set(open).size !== open.length) refuse();
+  return lines;
 }
 
 const GAME_KEYS = [
@@ -974,12 +1143,18 @@ const GAME_KEYS = [
   "pace",
   "discovery",
   "realMsCarry",
+  "loops",
+  "stoppedLoops",
+  "awayReport",
+  "saveTimeMs",
 ] as const;
 
 /**
  * The game state of a document, every key read and checked. The counts stand beside the rules of
  * the copy during a map run and beside the rules of the program they name after „Zakończ”, and are
- * none otherwise; without a map run nothing is paused, held as a discovery or carried.
+ * none otherwise; without a map run nothing is paused, held as a discovery or carried. The save time
+ * is a safe integer of any sign, as a moment of readiness is: every document is stamped, and a device
+ * clock set before 1970 is the player's own, so a save the game wrote is never refused for it.
  */
 function game(value: unknown): GameState {
   const read = fields(value, GAME_KEYS);
@@ -1031,6 +1206,10 @@ function game(value: unknown): GameState {
   if (!run && (paused || discovery !== null || realMsCarry !== 0)) refuse();
   if (!PACES.includes(read.pace as number)) refuse();
 
+  const manual = run ? [run.character.id] : [];
+  const loops = earningLoops(read.loops, records, manual);
+  const looping = Object.keys(loops).map(Number);
+
   return {
     programs,
     nextProgramId,
@@ -1053,6 +1232,13 @@ function game(value: unknown): GameState {
     pace: read.pace as Pace,
     discovery,
     realMsCarry,
+    loops,
+    stoppedLoops: stoppedLoops(read.stoppedLoops, records, [
+      ...manual,
+      ...looping,
+    ]),
+    awayReport: awayReport(read.awayReport, records),
+    saveTimeMs: integer(read.saveTimeMs),
   };
 }
 

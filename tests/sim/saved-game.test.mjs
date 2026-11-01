@@ -11,6 +11,7 @@ import {
   setPace,
   setProgram,
   settleDeath,
+  withSaveTime,
 } from "../../dist/public/sim/game.js";
 import {
   createProgram,
@@ -28,23 +29,26 @@ import { buyBranch } from "../../dist/public/sim/skills.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-// The saved document of version 1 of the shape stays below as it was, written out by hand; the
-// game refuses it as another version. The document of the current version, version 2, is that one
-// with the mark `solvedMapRun` added to its map run (spec, decisions 1 and 9); its map run is on
-// forestDeep, which `solvedMaps` lacks, so the mark is false. The document fills every optional
-// branch of the game state the spec lists: a map run with a campfire, a burning item, a combat
-// record, a copy whose program was deleted, a discovery held and counts beside the copy's rules;
-// and those of trip plans and character skills: trip lists in programs, the copy changed from its
-// frozen bring plan, a chest, known trees, practice of the map run and of its combat, and ranks
-// bought. `HEADQUARTERS` below holds the counts beside a program of the list, which a game state
-// holds only outside a map run. Its map run is written paused, so the load's pause changes nothing
-// in it. A change of the game state's shape makes the load refuse this document; it is rewritten
-// only together with a raised version, or while no saved game state of the current version exists
-// anywhere. The characters of the current version's documents also hold `generation` and
-// `resurrectionReadyAtMs` (spec, decision 9), and their map runs `deathSettlement`, null on the map
-// run below, which goes on (spec, decisions 5 and 9); both are written into version 2 under that
-// exception: version 2 is on no server yet, so no saved game state of it exists. The document of
-// version 1 keeps its characters and its map run without them.
+// The saved documents of versions 1 and 2 of the shape stay below as they were, written out by
+// hand; the game refuses each as another version. The document of version 2 is that of version 1
+// with the mark `solvedMapRun` added to its map run; its map run is on forestDeep, which
+// `solvedMaps` lacks, so the mark is false. Its characters also hold `generation` and
+// `resurrectionReadyAtMs` and its map run `deathSettlement`, null on that map run, which goes on;
+// the document of version 1 keeps its characters and its map run without them.
+//
+// The document of the current version, version 3, is that of version 2 with the four keys of the
+// earning loops added and a third character for them (task petla-zarobkowa, To do 10 with D-206;
+// spec sections 1, 9, 11 and 13). It fills every optional branch of the game state: a map run with a
+// campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
+// counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
+// plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
+// earning loop with an activity going on; a stopped loop that gathered practice; and report lines
+// open, stopped away and stopped in the open game. `HEADQUARTERS` below holds the counts beside a
+// program of the list, which a game state holds only outside a map run, and an earning loop in a
+// combat going on, with no manual map run. Its map run is written paused, so the load's pause
+// changes nothing in it. A change of the game state's shape makes the load refuse this document; it
+// is rewritten only together with a raised version, or while no saved game state of the current
+// version exists anywhere.
 
 /** A tile of Las — głębiej, whose game minutes to enter a tile are 5; `q` written out by hand. */
 function tile(col, row, q, revealed, stock) {
@@ -439,11 +443,11 @@ const DOCUMENT_V1 = {
 };
 
 /**
- * The document of the current version: version 1 with the mark of its map run (forestDeep,
- * unsolved) and its characters' generation and moment of readiness (Ala has lived a death with
- * no resurrection ready, so generation 2, and used her resurrection at a real moment of 2025).
+ * The document of version 2: version 1 with the mark of its map run (forestDeep, unsolved) and its
+ * characters' generation and moment of readiness (Ala has lived a death with no resurrection ready,
+ * so generation 2, and used her resurrection at a real moment of 2025).
  */
-const DOCUMENT = {
+const DOCUMENT_V2 = {
   version: 2,
   game: {
     ...DOCUMENT_V1.game,
@@ -470,9 +474,135 @@ const DOCUMENT = {
   },
 };
 
-/** A document of the current version at the headquarters, its counts beside program 1. */
+/**
+ * The map run of an earning loop of the character `id`, on Las, which `solvedMaps` holds: in game
+ * minute 42 of its fourth run, exploring. It holds exactly the keys of a `MapRun`.
+ */
+function loopRun(id) {
+  return {
+    practice: { exploration: 2 },
+    mapId: "forest",
+    seed: 77,
+    minute: 42,
+    tiles: [
+      tile(0, 0, 0, false, { stick: 12 }),
+      tile(1, 0, 1, true, { berry: 8 }),
+      tile(2, 0, 2, false, {}),
+      tile(3, 0, 3, false, { moss: 6 }),
+      tile(0, 1, 0, true, {}),
+      tile(1, 1, 1, true, { stick: 3 }),
+      tile(2, 1, 2, true, { fiber: 6 }),
+      tile(3, 1, 3, false, {}),
+      tile(0, 2, -1, false, { stick: 12 }),
+      tile(1, 2, 0, true, {}),
+      tile(2, 2, 1, false, { berry: 8 }),
+      tile(3, 2, 2, false, {}),
+      tile(0, 3, -1, false, {}),
+      tile(1, 3, 0, false, { moss: 6 }),
+      tile(2, 3, 1, false, {}),
+      tile(3, 3, 2, false, { stick: 12 }),
+    ],
+    character: {
+      skills: NEW_SKILLS,
+      id,
+      at: { q: 1, r: 1 },
+      traits: { carryingCapacity: 15 },
+      backpack: { stick: 3, berry: 0, moss: 0, fiber: 0 },
+    },
+    body: { temperature: 36.6, satiety: 90.5, health: 100 },
+    natureEnergy: 100,
+    campfires: [],
+    burningItems: [],
+    current: {
+      activity: { kind: "rule", ruleId: 1, action: { kind: "explore" } },
+      startMinute: 40,
+      endMinute: 45,
+      stepTo: null,
+    },
+    activeCombat: null,
+    lastCombat: null,
+    attackRandom: 11,
+    attackCooldownStart: 0,
+    wanderRandom: 22,
+    gatherRandom: 33,
+    streak: 42,
+    defeatedAttacks: 0,
+    death: null,
+    completion: null,
+  };
+}
+
+/** An earning loop in its fourth run, three completed, with the content of program 3. */
+const loopOf = (id) => ({
+  program: PROGRAM_3,
+  run: loopRun(id),
+  runNumber: 4,
+  completed: 3,
+  practice: { exploration: 12, smallItemGathering: 30 },
+});
+
+/**
+ * The document of the current version: version 2 with Ewa, who stopped a loop at generation 3, Ola's
+ * earning loop, Ewa's stopped loop, a report of each kind of line and the moment of the save.
+ */
+const DOCUMENT = {
+  version: 3,
+  game: {
+    ...DOCUMENT_V2.game,
+    team: {
+      ...DOCUMENT_V2.game.team,
+      characters: [
+        ...DOCUMENT_V2.game.team.characters,
+        {
+          id: 3,
+          name: "Ewa",
+          archetypeId: "elementalMage",
+          traits: { carryingCapacity: 15 },
+          skills: NEW_SKILLS,
+          generation: 3,
+          resurrectionReadyAtMs: 0,
+        },
+      ],
+    },
+    nextCharacterId: 4,
+    loops: { 2: loopOf(2) },
+    stoppedLoops: { 3: { exploration: 9, smallItemGathering: 1 } },
+    awayReport: [
+      {
+        characterId: 3,
+        minutes: 57,
+        chest: {},
+        practice: {},
+        resurrectionUsed: false,
+        stop: { generation: 3, away: true },
+      },
+      {
+        characterId: 1,
+        minutes: 0,
+        chest: {},
+        practice: {},
+        resurrectionUsed: false,
+        stop: { generation: 2, away: false },
+      },
+      {
+        characterId: 2,
+        minutes: 120,
+        chest: { stick: 7, berry: -2 },
+        practice: { exploration: 14 },
+        resurrectionUsed: true,
+        stop: null,
+      },
+    ],
+    saveTimeMs: 1760000000000,
+  },
+};
+
+/**
+ * A document of the current version at the headquarters, its counts beside program 1, Ala in an
+ * earning loop whose map run is in a combat going on.
+ */
 const HEADQUARTERS = {
-  version: 2,
+  version: 3,
   game: {
     programs: [{ id: 1, name: "Program", program: PROGRAM_1 }],
     nextProgramId: 2,
@@ -506,10 +636,27 @@ const HEADQUARTERS = {
     run: null,
     lastSeed: 99,
     paused: false,
-    solvedMaps: [],
+    solvedMaps: ["forest"],
     pace: 1,
     discovery: null,
     realMsCarry: 0,
+    loops: {
+      1: {
+        ...loopOf(1),
+        run: {
+          ...loopRun(1),
+          current: null,
+          activeCombat: {
+            creatureId: "wolf",
+            attackMinute: 41,
+            resolveMinute: 46,
+          },
+        },
+      },
+    },
+    stoppedLoops: {},
+    awayReport: [],
+    saveTimeMs: 1760000000000,
   },
 };
 
@@ -531,12 +678,13 @@ test("the current version is the one the document of the current version is writ
 // The `save` the server hands back: exactly `version`, `revision` and `game` (spec, decision 1).
 test("the server's save of the current version loads into the game it holds, its revision left out", () => {
   const save = {
-    version: 2,
+    version: 3,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  assert.deepEqual(loadSavedGame({ ...save, version: 3 }), {
+  // To do 10 with D-206: 3 is the current version since the raise, so 4 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 4 }), {
     ok: false,
     reason: "version",
   });
@@ -710,7 +858,8 @@ test("a moment of readiness below zero loads, as it is a safe integer of any sig
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
-  for (const version of [0, 3, -1]) {
+  // To do 10 with D-206: 3 is the current version since the raise, so 4 stands in for another one.
+  for (const version of [0, 4, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -718,14 +867,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 3 of another shape",
-    { version: 3, game: "Las" },
+    "version 4 of another shape",
+    { version: 4, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 3 with an archetype absent from the data",
+    "version 4 with an archetype absent from the data",
     changed((document) => {
-      document.version = 3;
+      document.version = 4;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -738,6 +887,17 @@ test("the document of version 1 is refused as version, whatever its game holds",
   assertRefused(
     "the document of version 1",
     structuredClone(DOCUMENT_V1),
+    "version",
+  );
+});
+
+// invariant: save-version
+// To do 10 with D-206: a save of the version before the raise is discarded whole, whatever it holds.
+test("the document of version 2 is refused as version, whatever its game holds", () => {
+  assert.equal(DOCUMENT_V2.version, 2);
+  assertRefused(
+    "the document of version 2",
+    structuredClone(DOCUMENT_V2),
     "version",
   );
 });
@@ -791,6 +951,22 @@ function defineProto(object, value) {
     configurable: true,
   });
 }
+
+/** Ola's earning loop in a document. */
+const olaLoop = (document) => document.game.loops[2];
+
+/** Ola's earning loop under the key `key` alone, with its character's number as the key names it. */
+function loopUnder(document, key, number) {
+  const loop = olaLoop(document);
+  loop.run.character.id = number;
+  document.game.loops = JSON.parse(`{"${key}":${JSON.stringify(loop)}}`);
+}
+
+/** Ola's line of the report, which is open. */
+const openLine = (document) => document.game.awayReport[2];
+
+/** Ewa's line of the report, which stopped away, and whose generation is 3 in the document. */
+const stoppedLine = (document) => document.game.awayReport[0];
 
 /** Crafted documents of the current version, each refused whole as shape. */
 const CRAFTED = {
@@ -1306,6 +1482,283 @@ const CRAFTED = {
     document.game.run.tiles.push(tile(0, 5, -2, false, {})),
   "the tiles of Las on Las — głębiej": (document) =>
     (document.game.run.tiles = document.game.run.tiles.slice(0, 16)),
+  // Spec section 13, the save time: a safe integer of any sign, so a document unstamped is refused.
+  "the game without its save time": (document) =>
+    delete document.game.saveTimeMs,
+  "a save time of none": (document) => (document.game.saveTimeMs = null),
+  "a fractional save time": (document) => (document.game.saveTimeMs = 0.5),
+  "a save time as text": (document) =>
+    (document.game.saveTimeMs = "1760000000000"),
+  "a save time not a number": (document) => (document.game.saveTimeMs = NaN),
+  "a save time infinite": (document) => (document.game.saveTimeMs = Infinity),
+  "a save time beyond the safe integers": (document) =>
+    (document.game.saveTimeMs = 2 ** 53),
+  "a save time below the safe integers": (document) =>
+    (document.game.saveTimeMs = -(2 ** 53)),
+  // Spec section 13, the earning loops: a key in canonical form naming a character of the team.
+  "the game without its earning loops": (document) =>
+    delete document.game.loops,
+  "earning loops of none": (document) => (document.game.loops = null),
+  "earning loops as a list": (document) => (document.game.loops = []),
+  "an earning loop by a key with a leading zero": (document) =>
+    loopUnder(document, "02", 2),
+  "an earning loop by a key with a fraction": (document) =>
+    loopUnder(document, "2.0", 2),
+  "an earning loop by a key with white space": (document) =>
+    loopUnder(document, " 2", 2),
+  "an earning loop by a key that is no number": (document) =>
+    loopUnder(document, "Ola", 2),
+  "an earning loop by the key 0": (document) => loopUnder(document, "0", 0),
+  "an earning loop by a key below 0": (document) =>
+    loopUnder(document, "-2", -2),
+  "an earning loop by the key __proto__": (document) =>
+    loopUnder(document, "__proto__", 2),
+  "an earning loop of a character not in the team": (document) =>
+    loopUnder(document, "9", 9),
+  "an earning loop of the character of the manual map run": (document) =>
+    loopUnder(document, "1", 1),
+  // Each key of an earning loop, present and alone.
+  "an earning loop with a key added": (document) =>
+    (olaLoop(document).pause = true),
+  "an earning loop without its program": (document) =>
+    delete olaLoop(document).program,
+  "an earning loop without its map run": (document) =>
+    delete olaLoop(document).run,
+  "an earning loop without its run number": (document) =>
+    delete olaLoop(document).runNumber,
+  "an earning loop without its count of completions": (document) =>
+    delete olaLoop(document).completed,
+  "an earning loop without its practice": (document) =>
+    delete olaLoop(document).practice,
+  // Its program, by the program check.
+  "an earning loop's program of none": (document) =>
+    (olaLoop(document).program = null),
+  "an earning loop's program without its trip plan": (document) =>
+    delete olaLoop(document).program.tripPlan,
+  "an earning loop's program with a key added to a rule": (document) =>
+    (olaLoop(document).program.groups[0].rules[0].note = "x"),
+  "an earning loop's program with a condition off the list": (document) =>
+    (olaLoop(document).program.groups[1].condition = { kind: "nightFalls" }),
+  "an earning loop's program with an item twice on a trip list": (document) =>
+    olaLoop(document).program.tripPlan.take.push({ item: "berry", count: 1 }),
+  "an earning loop's program nested deep": (document) =>
+    (olaLoop(document).program.groups = nested(100000)),
+  // Its map run: the checks of a map run, with exactly the keys of a `MapRun`.
+  "an earning loop's map run of none": (document) =>
+    (olaLoop(document).run = null),
+  "an earning loop's map run with the copy of a manual one": (document) =>
+    (olaLoop(document).run.copy = document.game.run.copy),
+  "an earning loop's map run with a frozen bring plan": (document) =>
+    (olaLoop(document).run.bringPlan = []),
+  "an earning loop's map run with a deposit": (document) =>
+    (olaLoop(document).run.deposited = null),
+  "an earning loop's map run with a mark": (document) =>
+    (olaLoop(document).run.solvedMapRun = false),
+  "an earning loop's map run with a death settlement": (document) =>
+    (olaLoop(document).run.deathSettlement = null),
+  "an earning loop's map run with a key added": (document) =>
+    (olaLoop(document).run.speed = 2),
+  "an earning loop's map run without its streak": (document) =>
+    delete olaLoop(document).run.streak,
+  "an earning loop's map run on a map absent from the data": (document) =>
+    (olaLoop(document).run.mapId = "desert"),
+  "an earning loop's map run with a tile fewer than the map's layout": (
+    document,
+  ) => olaLoop(document).run.tiles.pop(),
+  "an earning loop's character off the map's tiles": (document) =>
+    (olaLoop(document).run.character.at = { q: 9, r: 9 }),
+  "an earning loop's map run with its game minute fractional": (document) =>
+    (olaLoop(document).run.minute = 42.5),
+  "an earning loop's map run with its seed beyond 32 bits": (document) =>
+    (olaLoop(document).run.seed = 2 ** 32),
+  // The character of its map run: the key's, with skills its archetype allows.
+  "an earning loop's character another of the team": (document) =>
+    (olaLoop(document).run.character.id = 3),
+  "an earning loop's character not in the team": (document) =>
+    (olaLoop(document).run.character.id = 9),
+  "an earning loop's character without its skills": (document) =>
+    delete olaLoop(document).run.character.skills,
+  "an earning loop's character with a skill absent from the data": (document) =>
+    (olaLoop(document).run.character.skills = {
+      ...olaLoop(document).run.character.skills,
+      swimming: { practice: 0, ranks: {} },
+    }),
+  "an earning loop's character with ranks beyond its points": (document) =>
+    (olaLoop(document).run.character.skills = {
+      ...olaLoop(document).run.character.skills,
+      flameSpell: { practice: 0, ranks: { quickHand: 1 } },
+    }),
+  // Its map run goes on: no end, and so an activity or a combat going on.
+  "an earning loop's map run ended in a death": (document) =>
+    (olaLoop(document).run.death = { minute: 42, cause: "cold" }),
+  "an earning loop's map run ended in a completion": (document) =>
+    (olaLoop(document).run.completion = { minute: 42 }),
+  "an earning loop's map run with no activity and no combat": (document) =>
+    (olaLoop(document).run.current = null),
+  "an earning loop's map run with an activity beside a combat": (document) =>
+    (olaLoop(document).run.activeCombat = {
+      creatureId: "wolf",
+      attackMinute: 41,
+      resolveMinute: 46,
+    }),
+  // Its map among the solved maps; the manual map run on forestDeep, unmarked, stands on its own.
+  "an earning loop on a map absent from the solved maps": (document) =>
+    (document.game.solvedMaps = []),
+  // The run number from 1, and completions a count below it.
+  "a run number of 0, nothing completed": (document) => {
+    olaLoop(document).runNumber = 0;
+    olaLoop(document).completed = 0;
+  },
+  "a run number below 0": (document) => (olaLoop(document).runNumber = -4),
+  "a fractional run number": (document) => (olaLoop(document).runNumber = 4.5),
+  "a run number as text": (document) => (olaLoop(document).runNumber = "4"),
+  "a run number of none": (document) => (olaLoop(document).runNumber = null),
+  "a run number beyond the safe integers": (document) =>
+    (olaLoop(document).runNumber = 2 ** 53),
+  "completions below 0": (document) => (olaLoop(document).completed = -1),
+  "fractional completions": (document) => (olaLoop(document).completed = 1.5),
+  "completions as text": (document) => (olaLoop(document).completed = "3"),
+  "completions equal to the run number": (document) =>
+    (olaLoop(document).completed = 4),
+  "completions above the run number": (document) =>
+    (olaLoop(document).completed = 5),
+  // Its practice, by `practice`.
+  "an earning loop's practice of a skill absent from the data": (document) =>
+    (olaLoop(document).practice.swimming = 1),
+  "an earning loop's practice at 0": (document) =>
+    (olaLoop(document).practice.kicking = 0),
+  "an earning loop's practice fractional": (document) =>
+    (olaLoop(document).practice.exploration = 2.5),
+  "an earning loop's practice by the key __proto__": (document) =>
+    (olaLoop(document).practice = JSON.parse('{"__proto__":1}')),
+  // Spec section 13, the stopped loops: a character of the team, with no earning loop and not the
+  // character of the manual map run; a value by `practice`.
+  "the game without its stopped loops": (document) =>
+    delete document.game.stoppedLoops,
+  "stopped loops of none": (document) => (document.game.stoppedLoops = null),
+  "stopped loops as a list": (document) => (document.game.stoppedLoops = []),
+  "a stopped loop by a key with a leading zero": (document) =>
+    (document.game.stoppedLoops = { "03": {} }),
+  "a stopped loop by the key 0": (document) =>
+    (document.game.stoppedLoops = { 0: {} }),
+  "a stopped loop by the key __proto__": (document) =>
+    (document.game.stoppedLoops = JSON.parse('{"__proto__":{}}')),
+  "a stopped loop of a character not in the team": (document) =>
+    (document.game.stoppedLoops = { 9: {} }),
+  "a stopped loop of a character with an earning loop": (document) =>
+    (document.game.stoppedLoops = { 2: {} }),
+  "a stopped loop of the character of the manual map run": (document) =>
+    (document.game.stoppedLoops = { 1: {} }),
+  "a stopped loop of none": (document) =>
+    (document.game.stoppedLoops = { 3: null }),
+  "a stopped loop as a number": (document) =>
+    (document.game.stoppedLoops = { 3: 9 }),
+  "a stopped loop's practice of a skill absent from the data": (document) =>
+    (document.game.stoppedLoops[3].swimming = 1),
+  "a stopped loop's practice at 0": (document) =>
+    (document.game.stoppedLoops[3].kicking = 0),
+  "a stopped loop's practice fractional": (document) =>
+    (document.game.stoppedLoops[3].exploration = 2.5),
+  // Spec section 13, the report: a list of lines with exactly their keys.
+  "the game without its report": (document) => delete document.game.awayReport,
+  "a report of none": (document) => (document.game.awayReport = null),
+  "a report that is no list": (document) => (document.game.awayReport = {}),
+  "a report with a hole": (document) => (document.game.awayReport[5] = null),
+  "a line of none": (document) => (document.game.awayReport[1] = null),
+  "a line with a key added": (document) => (openLine(document).note = "x"),
+  "a line without its character": (document) =>
+    delete openLine(document).characterId,
+  "a line without its minutes": (document) => delete openLine(document).minutes,
+  "a line without its chest": (document) => delete openLine(document).chest,
+  "a line without its practice": (document) =>
+    delete openLine(document).practice,
+  "a line without its flag of a resurrection used": (document) =>
+    delete openLine(document).resurrectionUsed,
+  "a line without its stop": (document) => delete openLine(document).stop,
+  // Its character in the team.
+  "a line of a character not in the team": (document) =>
+    (openLine(document).characterId = 9),
+  "a line of the character number 0": (document) =>
+    (openLine(document).characterId = 0),
+  "a line of a character as text": (document) =>
+    (openLine(document).characterId = "2"),
+  "a line of a character of none": (document) =>
+    (openLine(document).characterId = null),
+  // Its minutes a count.
+  "a line's minutes below 0": (document) => (openLine(document).minutes = -1),
+  "a line's minutes fractional": (document) =>
+    (openLine(document).minutes = 1.5),
+  "a line's minutes as text": (document) => (openLine(document).minutes = "9"),
+  "a line's minutes of none": (document) => (openLine(document).minutes = null),
+  // Its chest: items of the data, each a non-zero safe integer.
+  "a line's chest of none": (document) => (openLine(document).chest = null),
+  "a line's chest of an item absent from the data": (document) =>
+    (openLine(document).chest.sword = 1),
+  "a line's chest of a key every object inherits": (document) =>
+    (openLine(document).chest = JSON.parse('{"toString":1}')),
+  "a line's chest by the key __proto__": (document) =>
+    (openLine(document).chest = JSON.parse('{"__proto__":1}')),
+  "a line's chest holding a zero": (document) =>
+    (openLine(document).chest.moss = 0),
+  "a line's chest holding a negative zero": (document) =>
+    (openLine(document).chest.moss = -0),
+  "a line's chest fractional": (document) =>
+    (openLine(document).chest.stick = 7.5),
+  "a line's chest as text": (document) =>
+    (openLine(document).chest.stick = "7"),
+  "a line's chest beyond the safe integers": (document) =>
+    (openLine(document).chest.stick = 2 ** 53),
+  "a line's chest below the safe integers": (document) =>
+    (openLine(document).chest.berry = -(2 ** 53)),
+  // Its practice, by `practice`.
+  "a line's practice of a skill absent from the data": (document) =>
+    (openLine(document).practice.swimming = 1),
+  "a line's practice at 0": (document) =>
+    (openLine(document).practice.kicking = 0),
+  "a line's practice fractional": (document) =>
+    (openLine(document).practice.exploration = 2.5),
+  // Its flag of a resurrection used.
+  "a line's flag of a resurrection as text": (document) =>
+    (openLine(document).resurrectionUsed = "true"),
+  "a line's flag of a resurrection of 1": (document) =>
+    (openLine(document).resurrectionUsed = 1),
+  "a line's flag of a resurrection of none": (document) =>
+    (openLine(document).resurrectionUsed = null),
+  // Its stop: none, or a generation from 2 up to the character's current one with a flag.
+  "a stop of false": (document) => (stoppedLine(document).stop = false),
+  "a stop as text": (document) => (stoppedLine(document).stop = "away"),
+  "a stop as a list": (document) => (stoppedLine(document).stop = [3, true]),
+  "a stop with a key added": (document) =>
+    (stoppedLine(document).stop.note = "x"),
+  "a stop without its generation": (document) =>
+    delete stoppedLine(document).stop.generation,
+  "a stop without its flag": (document) =>
+    delete stoppedLine(document).stop.away,
+  "a stop's flag as text": (document) =>
+    (stoppedLine(document).stop.away = "true"),
+  "a stop's flag of none": (document) =>
+    (stoppedLine(document).stop.away = null),
+  "a stop at generation 1": (document) =>
+    (stoppedLine(document).stop.generation = 1),
+  "a stop at generation 0": (document) =>
+    (stoppedLine(document).stop.generation = 0),
+  "a stop at a fractional generation": (document) =>
+    (stoppedLine(document).stop.generation = 2.5),
+  "a stop at a generation as text": (document) =>
+    (stoppedLine(document).stop.generation = "3"),
+  "a stop at a generation of none": (document) =>
+    (stoppedLine(document).stop.generation = null),
+  "a stop above the character's current generation": (document) =>
+    (stoppedLine(document).stop.generation = 4),
+  "a stop at a generation only another character reached": (document) => {
+    stoppedLine(document).characterId = 2;
+  },
+  // Its minutes against its stop, and one open line for a character.
+  "an open line with no minute": (document) => (openLine(document).minutes = 0),
+  "a line stopped away with no minute": (document) =>
+    (stoppedLine(document).minutes = 0),
+  "two open lines of one character": (document) =>
+    document.game.awayReport.push({ ...openLine(document) }),
   // Deep nesting where a value stands.
   "the pace nested deep": (document) => (document.game.pace = nested(100000)),
   "a tile's stock nested deep": (document) =>
@@ -1318,6 +1771,119 @@ const CRAFTED = {
 test("a crafted document of the current version is refused whole as shape", () => {
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
+});
+
+// Spec section 13. Catches a condition set one step too strict, each edge being a value the game
+// writes: a clock at zero or below it, a loop's first run, a stop with nothing gathered, a stop in
+// the open game with no minutes, a second loop of a character whose first stopped.
+test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
+  const edges = {
+    "a save time of 0": (document) => (document.game.saveTimeMs = 0),
+    // Spec section 13, as settled at the review of the slice: a safe integer of any sign, as
+    // `resurrectionReadyAtMs` is read, so the case left the crafted documents.
+    "a save time below 0": (document) => (document.game.saveTimeMs = -1),
+    "an earning loop in its first map run, nothing gathered": (document) => {
+      olaLoop(document).runNumber = 1;
+      olaLoop(document).completed = 0;
+      olaLoop(document).practice = {};
+    },
+    "a stopped loop that gathered nothing": (document) =>
+      (document.game.stoppedLoops[3] = {}),
+    "an open line of one minute": (document) =>
+      (openLine(document).minutes = 1),
+    "a line stopped away after one minute": (document) =>
+      (stoppedLine(document).minutes = 1),
+    "a line stopped in the open game holding minutes of an earlier return": (
+      document,
+    ) => (document.game.awayReport[1].minutes = 45),
+    "a stop at generation 2 of a character gone on to generation 3": (
+      document,
+    ) => (stoppedLine(document).stop.generation = 2),
+    "a line of a stopped loop beside the open line of a later loop": (
+      document,
+    ) => {
+      document.game.team.characters[1].generation = 2;
+      document.game.awayReport.push({
+        ...openLine(document),
+        stop: { generation: 2, away: false },
+      });
+    },
+    "open lines of two characters": (document) =>
+      document.game.awayReport.push({ ...openLine(document), characterId: 3 }),
+  };
+  for (const [name, change] of Object.entries(edges)) {
+    const document = changed(change);
+    assert.deepEqual(
+      loadSavedGame(document),
+      { ok: true, state: document.game },
+      name,
+    );
+  }
+});
+
+test("the load shares none of the earning loops, the stopped loops or the report with the document", () => {
+  const passed = structuredClone(DOCUMENT);
+  const { state } = loadSavedGame(passed);
+  olaLoop(passed).run.tiles[0].stock.stick = 1;
+  olaLoop(passed).program.groups[0].rules.pop();
+  olaLoop(passed).practice.exploration = 1;
+  passed.game.stoppedLoops[3].exploration = 1;
+  openLine(passed).chest.stick = 1;
+  openLine(passed).practice.exploration = 1;
+  stoppedLine(passed).stop.generation = 2;
+  assert.deepEqual(state, DOCUMENT.game);
+});
+
+// Spec section 1: no function fills the four keys yet but `withSaveTime`, and a game from no save
+// holds no save time.
+test("a new game holds no earning loop, no stopped loop, no report and no save time", () => {
+  const state = newGame();
+  assert.deepEqual(state.loops, {});
+  assert.deepEqual(state.stoppedLoops, {});
+  assert.deepEqual(state.awayReport, []);
+  assert.equal(state.saveTimeMs, null);
+});
+
+// Spec section 9: stamped only on the way to the document, so the state passed stays what it was.
+test("a state with its save time is a copy holding the moment, the state passed left as it was", () => {
+  const state = deepFreeze(newGame());
+  const stamped = withSaveTime(state, 1760000000123);
+  assert.notEqual(stamped, state);
+  assert.equal(stamped.saveTimeMs, 1760000000123);
+  assert.equal(state.saveTimeMs, null);
+  assert.deepEqual(stamped, { ...state, saveTimeMs: 1760000000123 });
+  assert.equal(withSaveTime(stamped, 0).saveTimeMs, 0);
+});
+
+// Spec section 9: as in `settleDeath`, so a broken clock never reaches a document.
+test("a moment that is no safe integer gives no save time", () => {
+  for (const moment of [NaN, Infinity, 1.5, 2 ** 53, "1760000000000", null]) {
+    assert.throws(
+      () => withSaveTime(newGame(), moment),
+      RangeError,
+      String(moment),
+    );
+  }
+});
+
+// Spec section 13; Q8, D-07. Catches a save the game writes and then refuses: a device clock set
+// before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
+test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
+  const state = newGame();
+  for (const moment of [-1, -60_000, Number.MIN_SAFE_INTEGER]) {
+    assert.deepEqual(
+      loadSavedGame(
+        JSON.parse(JSON.stringify(savedGame(withSaveTime(state, moment)))),
+      ),
+      { ok: true, state: { ...state, saveTimeMs: moment } },
+      String(moment),
+    );
+  }
+});
+
+// Spec section 13: `savedGame` takes no real time, so a state never stamped does not load.
+test("the saved document of a state never stamped is refused as shape", () => {
+  assertRefused("a new game unstamped", savedGame(newGame()), "shape");
 });
 
 test("the saved document of a state is the current version beside a copy of the state, shared nowhere", () => {
@@ -1340,6 +1906,8 @@ const FIGHTING = programFromRules(
 );
 // On this real time the wolf attacks in Las — głębiej and the kicking mage dies in that combat.
 const REAL_MS = 1760000000008;
+// To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+const SAVE_MS = 1760000060000;
 
 /** Two characters and two programs; the first character in Las at 4×, 155 game minutes in. */
 function played() {
@@ -1667,9 +2235,10 @@ test("a game state the simulation made loads back from its saved document", () =
     true,
   );
   for (const [name, { state, goesOn }] of Object.entries(states)) {
+    const stamped = { ...state, saveTimeMs: SAVE_MS };
     assert.deepEqual(
-      loadSavedGame(savedGame(state)),
-      { ok: true, state: goesOn ? { ...state, paused: true } : state },
+      loadSavedGame(savedGame(withSaveTime(state, SAVE_MS))),
+      { ok: true, state: goesOn ? { ...stamped, paused: true } : stamped },
       name,
     );
   }
@@ -1684,8 +2253,10 @@ test("the largest trip count the game accepts loads back, and one beyond the saf
     }).state;
   const largest = withCount(Number.MAX_SAFE_INTEGER);
   assert.deepEqual(
-    loadSavedGame(JSON.parse(JSON.stringify(savedGame(largest)))),
-    { ok: true, state: largest },
+    loadSavedGame(
+      JSON.parse(JSON.stringify(savedGame(withSaveTime(largest, SAVE_MS)))),
+    ),
+    { ok: true, state: { ...largest, saveTimeMs: SAVE_MS } },
   );
   for (const count of [2 ** 53, Number("99999999999999999999")])
     assert.throws(() => withCount(count), `${count}`);

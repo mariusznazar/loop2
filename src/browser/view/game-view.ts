@@ -7,6 +7,7 @@ import {
   setPace,
   setPaused,
   setProgram,
+  withSaveTime,
   type GameResult,
 } from "../sim/game.js";
 import {
@@ -20,6 +21,7 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../sim/programs.js";
+import { closeAwayReport, stopLoop } from "../sim/loop.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
 import { buyBranch } from "../sim/skills.js";
@@ -81,8 +83,10 @@ export type GameView = {
  * and draws from it and from the real moment of the clock's latest reading, which the headquarters'
  * resurrection lines need and the state never holds. It lands where the state says: the headquarters, a map run (a loaded one
  * that goes on comes back paused by the load) or the screen after a map run's end. Every act of the
- * player whose result changed the state, and every game minute that ends the map run in a death or
- * a completion, is a moment of saving (D-207). Nothing here runs when the module is imported.
+ * player whose result changed the state, every game minute that ends the map run in a death or
+ * a completion and every result in which a loop's map run ended is a moment of saving (D-207). The
+ * clock catches up the earning loops of a loaded state as the last step of building (D-247).
+ * Nothing here runs when the module is imported.
  */
 export function createGameView(options: GameViewOptions): GameView {
   let state: GameState = options.state;
@@ -158,11 +162,15 @@ export function createGameView(options: GameViewOptions): GameView {
         !mapRunEnded(state.run) &&
         result.state.run !== null &&
         mapRunEnded(result.state.run);
+      const loopEnded = result.events.some(
+        (event) => event.kind === "loopRunEnded",
+      );
       state = result.state;
       renderMapColumn();
       programPanel.update(state, result.events);
-      // A game minute that ends the map run in a death or a completion is a moment of saving.
-      if (ended) saver.moment();
+      // A game minute that ends the map run in a death or a completion, and a result in which a
+      // loop's map run ended, however many, is one moment of saving (D-207).
+      if (ended || loopEnded) saver.moment();
     },
   };
   // After each reading of the clock the headquarters, while it shows, rewrites its resurrection
@@ -177,6 +185,10 @@ export function createGameView(options: GameViewOptions): GameView {
       clock.flush();
       return state;
     },
+    moment: () => clock.moment(),
+    // The rhythm of 30 seconds is the manual map run's; loops are saved at acts, ends and hiding.
+    runPasses: () =>
+      state.run !== null && !mapRunEnded(state.run) && !state.paused,
     state,
     revision: options.revision,
     afterConflict: options.afterConflict ?? false,
@@ -201,6 +213,20 @@ export function createGameView(options: GameViewOptions): GameView {
       const before = state;
       clock.send({ mapId, characterId, programId });
       if (state !== before) saver.moment();
+    },
+    // An act of the player like a send: the reading is made first, and a changed state is saved (D-207).
+    startLoop(characterId, mapId, programId) {
+      const before = state;
+      clock.startLoop({ mapId, characterId, programId });
+      if (state !== before) saver.moment();
+    },
+    stop(characterId) {
+      clock.flush();
+      act(stopLoop(state, characterId));
+    },
+    closeReport() {
+      clock.flush();
+      act(closeAwayReport(state));
     },
   });
   const statusRow = createStatusRow({
@@ -255,6 +281,8 @@ export function createGameView(options: GameViewOptions): GameView {
 
   renderMapColumn();
   programPanel.update(state, []);
+  // The catch-up is the last step of building, so every place of loading goes the same way (D-212).
+  clock.catchUp();
 
   let disposed = false;
   return {
@@ -264,7 +292,10 @@ export function createGameView(options: GameViewOptions): GameView {
     saveBeforeLogout: () => saver.saveBeforeLogout(),
     keep(): KeptGame {
       clock.flush();
-      return { document: savedGame(state), revision: saver.revision() };
+      return {
+        document: savedGame(withSaveTime(state, clock.moment())),
+        revision: saver.revision(),
+      };
     },
     dispose(): void {
       if (disposed) return;

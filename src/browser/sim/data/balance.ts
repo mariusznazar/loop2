@@ -3,6 +3,12 @@ export const BALANCE = {
   chestCapacity: 60,
   /** Game minutes that pass in one real second at the pace 1. */
   gameMinutesPerRealSecond: 1,
+  /**
+   * Real seconds of one game minute of an earning loop. The speed control (`paces`) does not reach
+   * it: an earning loop goes with the world's time. Given in seconds so that every real moment of
+   * the loop clock is a whole number of milliseconds.
+   */
+  loopMinuteRealSeconds: 60,
   /** The paces the player picks from; the game starts at the first. */
   paces: [1, 2, 4, 8, 16],
   /** Minutes the character waits when no rule applies. */

@@ -157,7 +157,7 @@ header .save-line {
 }
 
 /* The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
-   program” (D-44). */
+   program”, „Zatrzymaj” (D-44). */
 .button.destructive {
   color: var(--danger);
 }
@@ -455,6 +455,27 @@ header .save-line {
   color: var(--text-label);
 }
 
+/* The report on earning loops (D-246): the lines in `text`, a loop that stopped in `danger`, a full chest in `warning` (D-39). */
+.away-report-list {
+  list-style: none;
+  margin: 0 0 var(--space-s);
+  padding: 0;
+  color: var(--text);
+}
+
+.away-report-line {
+  margin-bottom: var(--space-xs);
+}
+
+.away-report-line.danger {
+  color: var(--danger);
+}
+
+.away-report-full {
+  margin: 0 0 var(--space-s);
+  color: var(--warning);
+}
+
 /* An empty team or chest: a note in `text-secondary` (D-40). */
 .headquarters-empty {
   margin: 0 0 var(--space-s);
@@ -533,6 +554,26 @@ header .save-line {
 
 .team-member-resurrection.danger {
   color: var(--danger);
+}
+
+/* The line of a character in an earning loop, in `text`, with „Zatrzymaj” beside it (D-244). */
+.team-member-loop {
+  margin: 0;
+  color: var(--text);
+}
+
+/* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */
+.team-member-stopped {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* The mark of a rehearsal the loop cannot repeat, under „Wyślij”, in `warning` as the line of D-188 (D-251). */
+.rehearsal-mark {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--warning);
 }
 
 .team-member-program-label {

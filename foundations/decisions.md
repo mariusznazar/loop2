@@ -482,28 +482,41 @@ inactive during a pause — the player could not set the pace before going on.
 ### D-22 — Where does the simulation's randomness come from?
 
 Every random draw of the simulation comes from generators seeded by the seed saved in the map run's
-state, one generator for each kind of draw — the game map's layout and wandering among them — and
-the map run draws its game map's layout at its start, before the first game minute, in a fixed
-order. A map run restart keeps its seed, and any other map run takes a new seed.
+state, one generator for each kind of draw — attacks, gathering, the map's layout and wandering among
+them — and the map run draws its map's layout at its start, before the first game minute, in a fixed
+order. A restart of a map run keeps its seed, any other map run outside an earning loop takes a new
+seed, and each map run of an earning loop takes its seed from a draw of the map run before it. The
+first map run of an earning loop, with none before it, takes a new seed, as a send of a character
+does.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: map-run-repeatability · simulation-randomness · restart-seed ·
-  map-run-layout. For the new seed of a map run other than a map run restart and for which generator
-  a kind of draw uses, an agent compares the change with the decision:
-  - complies: a map run sent anew that takes a seed other than that of the map run before it
+  map-run-layout. For where the seed of a map run comes from and for which generator a kind of draw
+  uses, an agent compares the change with the decision:
+  - complies: a map run sent anew that takes a seed other than that of the map run before it; a
+    restart that brings back the same layout of the map; two programs on one seed meeting the wolf
+    in the same game minute; the next seed of an earning loop drawn from a generator of its own, a
+    fifth kind of draw, which moves no draw of the other four
   - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
-    from the generator of the game map's layout
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D19 and §9 "Losowania akcji dzielą strumień z losowaniem napaści" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Where does the simulation's randomness come from?"
+    from the generator of the game map's layout; an earning loop that draws each map run's seed
+    afresh; gathering that draws from the generator of attacks
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D19 and §9 "Losowania akcji dzielą strumień z losowaniem napaści" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Where does the simulation's randomness come from?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10, § Questions carried to cycle, second question, and § Settlements to record, row 9
 
 *Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
 run can be repeated when something has to be understood, and tests of the simulation can expect
-exact values. With a generator for each kind of draw, a draw of one kind leaves the draws of every
-other kind where they were, so a difference between two programs on one seed is a difference of
-programs rather than of luck.
-*Rejected:* the browser's own random numbers in the simulation — repeatability goes; one generator
-for every kind of draw — a draw of one kind shifts the draws of every other kind.
+exact values. With a generator for each kind of draw, two programs on one seed meet attacks in the
+same game minutes, so a difference between them is a difference of programs rather than of luck. The
+catch-up stands on it: without the seed it would invent a new course instead of computing the one that
+would have happened. Draws in combat, when they come, stay repeatable. The first map run of an
+earning loop has no map run to draw from, so it starts as a send does.
+*Rejected:* the browser's own random numbers in the simulation — repeatability goes, and with it the
+meaning of the count of firings a program rule shows; one generator for every kind of draw — two
+programs on one seed meet attacks in different game minutes, and splitting it once the maps are
+balanced means balancing them again; the next seed of an earning loop drawn from the generator of
+gathering, wandering or attacks as it stands at the map run's end — a draw of one kind in the
+generator of another, and a seed that depends on what the program did; the seed plus one — no draw.
 
 ### D-23 — How does a character act by its program?
 
@@ -899,17 +912,17 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany” and „Przełącz postać na ten program” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text-secondary`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text-secondary`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** an agent compares a change with the decision:
   - complies: the button „Wyślij” of a new screen made with the shared button; the answer to a request for a password-reset link standing under its form in `text-secondary`;
-  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany” or „Przełącz postać na ten program” made as a plain button; that answer written in `warning`, as if it refused something.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 4 and 13, and § Settlements to record, rows 1, 3 and 8
+  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany”, „Przełącz postać na ten program” or „Zatrzymaj” made as a plain button; that answer written in `warning`, as if it refused something.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 4 and 13, and § Settlements to record, rows 1, 3 and 8 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7
 
-*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, and a calm sentence in that place is new on the screen. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes.
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, stops an earning loop, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, and a calm sentence in that place is new on the screen. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes.
 *Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
@@ -1216,7 +1229,7 @@ A character dies in the game minute in which its health reaches zero, also durin
 
 ### D-62 — What does the screen show, and what can the player do, after a character's death?
 
-After a character's death the screen stays on the state of the game minute of death and time stands still, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character. After a character's death the pace buttons are gone together with „Pauza”.
+After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character. After a character's death the pace buttons are gone together with „Pauza”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -1224,7 +1237,7 @@ After a character's death the screen stays on the state of the game minute of de
 - **Verification:** an agent compares a change with the decision:
   - complies: after a death of cold in game minute 312 the status row reads „Minuta 312 · Mag zamarzł”, „Pauza” and the pace buttons are gone, the game minute stays at 312, and „Restart” starts game minute zero on the same seed;
   - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?"
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20
 
 *Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen from which the player sends the character, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
 *Rejected:* going back to sending the character at once after death — the player loses the state that explains the death; the pace buttons kept active after death while gone after a completion, and the pace buttons shown inactive or active on both screens of an end — the screens of the two ends would differ, or show controls of a time that stands still.
@@ -1366,7 +1379,7 @@ A campfire shows on the terrain panel's drawing of the game map as an icon on it
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
-Outside combat a game minute takes effect in this order: the character's body cools by the map's ambient temperature and warms by what burns on its tile, satiety falls, the nature energy of a well-fed mage comes back, up to its cap, health changes for cold and hunger or recovers, and the streak follows D-136; health at zero ends the map run in death at that point, otherwise burning loses a minute, tiles renew, the ending action takes effect, completion is checked, and a continuing run tries an eligible attack before the ordinary program pick, with an attack replacing that pick and interrupting any action still running. In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew, then in the last combat minute all combat turns resolve, their result and cooldown are recorded, a creature defeated in those turns adds a beaten attack and death ends the run before completion is checked; completion is checked in the earlier combat minutes too and ends the encounter with its attack description and no turns or outcome, while a continuing run after the final combat minute picks its next ordinary action in that same minute. Discoveries enter the Understanding where their cause occurs — body, ending action or attack — and the following effects and picks read that updated Understanding and program, a rule written by a discovery included, with discoveries collected once for the whole minute and the pause taken after that minute has finished.
+Outside combat a game minute takes effect in this order: the character's body cools by the map's ambient temperature and warms by what burns on its tile, satiety falls, the nature energy of a well-fed mage comes back, up to its cap, health changes for cold and hunger or recovers, and the streak follows D-136; health at zero ends the map run in death at that point, otherwise burning loses a minute, tiles renew, the ending action takes effect, completion is checked, and a continuing run tries an eligible attack before the ordinary program pick, with an attack replacing that pick and interrupting any action still running. In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew, then in the last combat minute all combat turns resolve, their result and cooldown are recorded, a creature defeated in those turns adds a beaten attack and death ends the run before completion is checked; completion is checked in the earlier combat minutes too and ends the encounter with its attack description and no turns or outcome, while a continuing run after the final combat minute picks its next ordinary action in that same minute. Discoveries of a manual map run enter the Understanding where their cause occurs — body, ending action or attack — and the following effects and picks read that updated Understanding and program, a rule written by a discovery included, with discoveries collected once for the whole minute and the pause taken after that minute has finished.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -1374,9 +1387,9 @@ Outside combat a game minute takes effect in this order: the character's body co
 - **Verification:** invariants: minute-span-split · nature-energy-range. An agent compares a change with the decision:
   - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage first chilled in game minute 84 discovering „Eksploruj” and starting „Zawsze → Eksploruj” at the pick of game minute 84, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute; a well-fed mage at full nature energy finishing a lighting in a game minute having after it the nature energy of the cap less the lighting's price, the energy that minute gives back lost at the cap;
   - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; nature energy coming back after the effect of the action ending in its game minute, or in a game minute of combat; a completion checked before combat turns in their final minute; an attack tried again after those turns.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "8. W której chwili minuty gry przejście się domyka i co z akcją postaci kończącą się w tej minucie?" · plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Czy energia natury wraca w minutach walki?" and "Q10. W którym miejscu kolejności minuty gry (D-71) energia natury wraca — razem z ciałem, zaraz po spadku sytości, czy dopiero po skutku akcji kończącej się w tej minucie?"
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "8. W której chwili minuty gry przejście się domyka i co z akcją postaci kończącą się w tej minucie?" · plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Czy energia natury wraca w minutach walki?" and "Q10. W którym miejscu kolejności minuty gry (D-71) energia natury wraca — razem z ciałem, zaraz po spadku sytości, czy dopiero po skutku akcji kończącej się w tej minucie?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q9, and § Settlements to record, row 16
 
-*Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Nature energy comes back with the body, as health does, before the action ending in the game minute lands, so a spell paid in that minute pays from the energy the minute has already given back. Accepted with it: a mage at full nature energy loses the energy one game minute gives back for each lighting it finishes; a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
+*Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. A map run of an earning loop takes the same order and discovers nothing (D-249). The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Nature energy comes back with the body, as health does, before the action ending in the game minute lands, so a spell paid in that minute pays from the energy the minute has already given back. Accepted with it: a mage at full nature energy loses the energy one game minute gives back for each lighting it finishes; a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
 *Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it; a completion right after the character's body, as death comes — the effect of an action ending in that game minute would be lost; completion before the final combat turns — the encounter's result would be skipped; waiting another game minute for the ordinary pick after combat — an extra idle minute beyond the combat's fixed cost; nature energy coming back after the effect of the action ending in the game minute, satiety read after its fall — a mage at full nature energy finishing a lighting would keep the energy that minute gives back.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
@@ -1678,13 +1691,13 @@ counting completed actions — a rule whose action was cut short by death would 
 
 ### D-93 — What does a program rule show the player?
 
-During a map run every program rule of the copy the map run carries out shows how many times it
-fired in that map run, written as a number followed by „×”, such as „3×”, while the rules of a saved
-program the program panel shows then show no count. The count starts from zero at the start of each
-map run, a map run restart included, at a switch of the character to another program, and when the
+During a manual map run every program rule of the copy the map run carries out shows how many times
+it fired in that map run, written as a number followed by „×”, such as „3×”, while the rules of a
+saved program the program panel shows then show no count. The count starts from zero at the start of
+each manual map run, a map run restart included, at a switch of the character to another program, and when the
 program rule's condition or action changes; it survives reordering the rule, moving it to another
 rule group, changing its group's condition or name, and a save of the copy. Before the game's first
-map run the rules show no counts; after a map run ends in death or in a completion its counts remain
+manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain
 beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to,
 each rule there showing the count of the same rule of the copy where the two have the same condition
 and action and „0×” otherwise, and beside the rules of no other program, until the next send or map
@@ -1699,13 +1712,15 @@ run restart, subject to the same reset on a change of a rule's content.
     from zero; counts retained after death, after a completion and after „Zakończ”, reset on the
     next send or restart; a switch to another program starting every count of the new copy's rules
     from zero; after „Zakończ” the rules of the copy's program showing the copy's counts, and „0×”
-    beside a rule whose action there differs from the copy's
+    beside a rule whose action there differs from the copy's; the start of an earning loop leaving
+    the counts of the last manual map run as they were
   - violates: counts kept per position in the list; a rename of a group resetting its rules'
     counts; a count shown before the first map run; „Zakończ” hiding the ended run's counts; a
     completion clearing the counts of its map run; counts shown beside a saved program opened
     during a map run; the counts of the former copy kept after a switch; after „Zakończ” a count
-    of the copy shown beside a rule of the program whose condition there differs
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14 · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "17. Co pokazują liczniki reguł programu po domknięciu przejścia — zostają przy regułach jak po śmierci i po „Zakończ”, aż do następnego wysłania albo „Restart”?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?" and "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?"
+    of the copy shown beside a rule of the program whose condition there differs; firing counts
+    gathered in a map run of an earning loop
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14 · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "17. Co pokazują liczniki reguł programu po domknięciu przejścia — zostają przy regułach jak po śmierci i po „Zakończ”, aż do następnego wysłania albo „Restart”?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?" and "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2, and § Settlements to record, row 4
 
 *Rationale:* The count is the sign that a program rule is dead — one standing too low is caught
 by one above it and stays silent for a whole map run. A program rule whose content changed is
@@ -1715,7 +1730,9 @@ run ends, whichever way it ends, the run that solved a map included. Accepted wi
 earned under a group's former condition remains when the condition changes, and the next run gives
 a fresh picture of the edited program. A switch brings another program, whose rules have fired
 nothing in the map run. After „Zakończ” the counts stand beside the program the player goes back to,
-and a rule whose content differs there is not the rule that fired.
+and a rule whose content differs there is not the rule that fired. The player watches a manual map
+run and reads an earning loop by what it brought (D-244), so the counts stand with the manual map
+run. Accepted with it: the rule that a map run counts its firings takes an exception.
 *Rejected:* counts per position — moving a rule would attach another rule's history to it;
 resetting on a move or group edit — arranging the same rules would erase their history; hiding
 the counts after „Zakończ” — the player would lose the ended run's evidence while editing; clearing
@@ -2449,7 +2466,7 @@ an act that changes nothing; keeping beaten attacks through a changed program �
 ### D-132 — What does the screen show, and what can the player do, after a completion?
 
 After a completion the screen stays on the state of the game minute of the completion and time
-stands still, and the status row reads, in Las, „Minuta {game minute} · Las rozwiązany”, such as
+stands still for that map run, and the status row reads, in Las, „Minuta {game minute} · Las rozwiązany”, such as
 „Minuta 480 · Las rozwiązany”, and in Las — głębiej „Minuta {game minute} · Las — głębiej rozwiązany”, in the role `positive`. „Pauza” and the pace buttons are gone, and the
 player has „Restart” and „Zakończ” as after a character's death.
 
@@ -2463,7 +2480,7 @@ player has „Restart” and „Zakończ” as after a character's death.
   - violates: the game going back to the headquarters with a message the moment the map run
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
     written in a role other than `positive`
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?"
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
 which the program met the map's condition, can repeat the same seed with „Restart” and returns with
@@ -2966,15 +2983,15 @@ Mikrus Outsider's SMTP service has no contract test, and no test reaches it: mai
 
 ### D-164 — Who owns a program?
 
-Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run carries out a copy taken at its start, except that a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included, and that during a manual map run the player can switch the character to another program, the map run going on with a fresh copy of that program. A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program; saving a copy over a program that changed since the copy was taken from it or last saved into it is announced, never blocked. A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart or at the next switch to it during a manual map run.
+Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start, except that a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included, and that during a manual map run the player can switch the character to another program, the map run going on with a fresh copy of that program. A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program; saving a copy over a program that changed since the copy was taken from it or last saved into it is announced, never blocked. A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart, at the next switch to it during a manual map run or at the next start of an earning loop, never in an earning loop already running.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: saved-program-edit · copy-save. An agent compares a change with the decision:
-  - complies: „Restart” after a death carrying on the copy with the unsaved fix the player made in it; a character switched to another program in the middle of a manual map run, the map run going on with the same seed on a fresh copy of that program
+  - complies: a program edited while a character's earning loop goes on its copy, the loop unchanged until its next start; „Restart” after a death carrying on the copy with the unsaved fix the player made in it; a character switched to another program in the middle of a manual map run, the map run going on with the same seed on a fresh copy of that program
   - violates: a program stored as a field of the character; saving a program that rewrites the copies of characters already out; a save over a changed program refused; „Restart” taking a fresh copy of the program and dropping the copy's unsaved fix
-- **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Who owns a program?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D39
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Who owns a program?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D39
 
 *Rationale:* a saved program serves every character. A program carried out live would reset the streaks of characters in an earning loop and move them in the middle of a map run at every fix; locking a program that has copies would close exactly the programs in use, since copies live for hours. Programs are the player's work, not the character's. A fix made after a death and tried by a restart on the same seed is the basic rhythm of tuning a program, so a restart keeps the copy with its unsaved fix; a switch to another program lets the player try another program on the same seed without ending the map run.
 *Rejected:* programs held by the character — a saved program has to serve all characters; one program carried out live without a copy; locking the editing of a program that has copies; a restart taking a fresh copy of the program — a fix made in the copy after a death is lost, or has to be saved into the program before every try on the same seed; a restart refused while the copy holds unsaved changes — one more step before every restart with a fix; another program only by ending the map run — another program cannot be tried on the same seed.
@@ -3269,13 +3286,13 @@ The program of a new game and a newly created program have both trip lists empty
 
 ### D-183 — What happens to carried items when the player stops a run or completes with items outside its plan?
 
-When „Zakończ” or „Restart” ends a map run before completion, its carried items — brought in and gathered — are lost. At completion, the items outside the frozen bring list are lost.
+When „Zakończ” or „Restart” ends a map run before completion, or „Zatrzymaj” stops an earning loop in the middle of a map run, that map run's carried items — brought in and gathered — are lost. At completion, the items outside the frozen bring list are lost.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179
 - **Verification:** invariants: trip-run-end.
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6"
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7
 
 *Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents.
 *Rejected:* unknown
@@ -3345,34 +3362,34 @@ In the headquarters, at a character's map, „Plan wyprawy wejdzie przycięty: m
 *Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places.
 *Rejected:* a warning confined to the headquarters — omits the next restart.
 
-### D-189 — Which current runs take equipment and pay loot?
+### D-189 — What pays, and what takes from the chest?
 
-A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing. Earned loot reaches the chest on completion. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap.
+A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-179
+- **Relations:** derives from D-179 · derives from D-239
 - **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. An agent compares a change with the decision:
-  - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was
-  - violates: a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What pays, and what takes from the chest?" · plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5", "Q6" and § Settlements to record, row 11 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 5 and 22, and Questions to settle, questions 1 and 2
+  - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was; stopping an earning loop in the middle of a map run adds the practice of that map run, while its loot stays out
+  - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What pays, and what takes from the chest?" · plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5", "Q6" and § Settlements to record, row 11 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 5 and 22, and Questions to settle, questions 1 and 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 19, and Questions to settle, Q5
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out.
-*Rejected:* a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet.
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion.
+*Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it.
 
 ### D-190 — What does a character's death take?
 
-A character's death takes what it carried and pays nothing of its map run; when the character has no resurrection ready, it also takes all its practice and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged. The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it. Each character has one resurrection, used up by a death and renewed after a span of real time set in the balance data, eight hours to start.
+A character's death takes what it carried and pays nothing of its map run; when the character has no resurrection ready, it also takes all its practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged. The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it. Each character has one resurrection, used up by a death and renewed after a span of real time set in the balance data, eight hours to start, and a death without one stops the character's earning loop.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-179
-- **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once. An agent compares a change with the decision:
-  - complies: a character dying without a resurrection coming back with empty trees, its archetype and its place in the team unchanged
-  - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a character's death take?" · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 10, 11, 14, 15, 17 and 22, and Questions to settle, questions 1 and 3
+- **Relations:** derives from D-179 · narrows D-189
+- **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once · catch-up-death-moment. An agent compares a change with the decision:
+  - complies: a character dying without a resurrection coming back with empty trees, its archetype and its place in the team unchanged; a death with a resurrection ready in an earning loop using it up, the map run paying nothing, the practice gathered at the earning loop staying and the next map run starting at once; a death with none stopping the earning loop and taking the practice gathered at it
+  - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death; a death with no resurrection ready paying the practice gathered at the earning loop into the character skills
+- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a character's death take?" · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 10, 11, 14, 15, 17 and 22, and Questions to settle, questions 1 and 3 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q13 and Q16, and § Settlements to record, row 8
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. The resurrection is a valve, paid in real time, a currency the game already knows.
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows.
 *Rejected:* death without a cost; a stake in the earning loop only — everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection as an item in the chest — no chain of making produces it; partial pay for a map run ending in death — a leaky program would earn as much as a tight one.
 
 ### D-191 — How does a character skill grow?
@@ -3432,7 +3449,7 @@ A manual map run holds the practice it gathers separately by character skill and
   - violates: practice reaching the character during an unfinished run; a second character's manual completion of a solved map paying practice; „Zakończ” paying a completed run a second time
 - **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q1; accepted settlements 2 and 12 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
 
-*Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189). Accepted with it: today practice and loot come from the first completion of each map, so while the game currently has no earning loop the whole team has at most two payments of practice and two of loot, and a new character has nowhere to take practice from.
+*Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189).
 *Rejected:* practice for a repeat of a solved map paid on until the earning loop comes — a change of the goal of the work and of its plan, `solved-map-manual-run` broken on practice for that time, and this decision changed twice; the payment of the first completion and the earning loop entering the game in one push — a finished change waits for the next, and a longer branch brings more conflicts.
 
 ### D-195 — When does a character skill tree become known?
@@ -3512,18 +3529,18 @@ At each character the headquarters currently shows „Umiejętności” after a 
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
-The player currently buys a branch rank with „Kup” in the headquarters outside a map run, and the rank acts from that character’s next map run. The game currently has no purchase in the map-run view and no undo of a purchase.
+The player currently buys a branch rank with „Kup” in the headquarters outside a manual map run, at a character in an earning loop too, and the rank acts from that character’s next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game currently has no purchase in the map-run view and no undo of a purchase.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
 - **Verification:** an agent compares a change with the decision:
-  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send
-  - violates: a purchase changing the skills of a retained run, including one ended in death or completion
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9
+  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run
+  - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4, and § Settlements to record, row 6
 
-*Rationale:* Purchases belong beside the character’s skills in the headquarters, and a run keeps the skills with which it starts.
-*Rejected:* none
+*Rationale:* Purchases belong beside the character’s skills in the headquarters, and a run keeps the skills with which it starts. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
+*Rejected:* „Kup” inactive at a character in an earning loop — to spend its points the player loses the backpack of the map run going on.
 
 ### D-201 — What does the map-run view show of its practice?
 
@@ -3661,11 +3678,13 @@ requires separate compatibility handling, which is outside the MVP.
 
 The game saves the game state on the server by itself right after each change of it the player
 makes — an edit of a program or of the copy, an act on the list of programs, creating a character,
-sending one, buying a branch rank, „Restart”, „Zakończ”, a pause and a pace — right after a map run
-ends in a completion
-or in the character's death, every 30 real seconds while a map run passes, and once more when the
-page becomes hidden, closing included, with no guarantee that this last save arrives. The 30-second
-rhythm and the hidden page send the game state only where it changed since the save last sent; the
+sending one, „Puść w pętlę”, „Zatrzymaj”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of
+the report, a pause and a pace — right after a manual map run ends in a completion or in the
+character's death, right after a reading of the clock or a catch-up whose result ended map runs of
+earning loops, with one save for that result, every 30 real seconds while a manual map run passes,
+and once more when the page becomes hidden, closing included, with no guarantee that this last save
+arrives. The 30-second rhythm and the hidden page send the game state only where it changed since
+the save last sent, the save time of a document being no change of it; the
 browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving
 during one is sent after its answer, unless that request is the save before a logout that goes on
 (D-97). A save whose body is larger than 64 KiB is not sent and counts
@@ -3679,23 +3698,39 @@ as refused as too large (D-208).
     in the headquarters followed at once by a save request; a map run passing at 16×
     saved once every 30 real seconds; a tab hidden in the middle of a map run sending its latest
     game state as a `keepalive` request; a tab that has just loaded a saved game state with its map
-    run paused sending nothing until the player acts in it
+    run paused and no earning loop passing sending nothing until the player acts in it; earning
+    loops passing with no manual map run sending nothing on the 30-second rhythm; a catch-up that
+    ended several map runs of earning loops followed by one save request; a catch-up that ended none
+    sending nothing until the page becomes hidden or the player acts
   - violates: a button „Zapisz” for the game state; a rhythm of saving counted in game minutes; two
-    save requests of one tab in flight at once; a save body over 64 KiB sent with `keepalive`
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row 1
+    save requests of one tab in flight at once; a save body over 64 KiB sent with `keepalive`; a
+    save every 30 real seconds while earning loops alone pass; a save for each map run a catch-up
+    ended; a new save time counted as a change, so a loaded paused tab with nothing passing sends at
+    the hidden page
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row 1 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q11, § Questions carried to cycle, fourth and fifth questions, and § Settlements to record, row 18
 
 *Rationale:* the player saves nothing by hand, and a closed tab takes at most the last 30 real
-seconds of a map run — 30 game minutes at 1×, up to 480 at 16×, a whole map run of Las from the
-sending of the character — at the cost of a request every 30 real seconds per player while a map
-run passes. The page becoming hidden is the last moment a page reliably observes, and a `keepalive`
+seconds of a manual map run — 30 game minutes at 1×, up to 480 at 16×, a whole map run of Las from the
+sending of the character — at the cost of a request every 30 real seconds per player while a manual
+map run passes. An earning loop takes no rhythm: a tab closed with its last save lost computes the
+game minutes since the save before by the catch-up, the same course at one earning loop, so earning
+loops save at the player's acts, after the ends of their map runs and at the hidden page. One save
+for a result sends what a save at its last end would send, and a save time changes at every save
+while the game state stays, so a loaded game state with nothing passing sends nothing. The page
+becoming hidden is the last moment a page reliably observes, and a `keepalive`
 request outlives the closing page, but the browser refuses one whose body brings the page's
 `keepalive` bodies in flight over 64 KiB, so one save request at a time keeps each within that
 quota, and a body over it is never sent; one request at a time also lets each save name the
 revision the one before was given (D-209).
-*Rejected:* saving only at the player's acts, a completion and a death, with no save while a map run
-passes — fewer requests, but closing the tab in the middle of a map run takes it back to the sending
+*Rejected:* saving only at the player's acts, a completion and a death, with no save while a manual
+map run passes — fewer requests, but the catch-up does not recompute a manual map run, so closing the
+tab in the middle of one takes it back to the sending
 of the character: up to 8 real minutes at 1× (the whole 480 game minutes of Las), up to half a real
-minute at 16×; a button „Zapisz” — a player who forgets to click loses everything since the last
+minute at 16×; the 30-second rhythm for earning loops too — a tab left overnight sends about 1440
+saves a day, which at one earning loop protect nothing, since the catch-up computes the same course;
+a save at each map run a catch-up ended — it sends what the last one sends; no save after a catch-up
+— map runs that ended stay unsaved; a save after any game minute of a catch-up — each reload sends,
+and two open tabs refuse each other (D-209); a button „Zapisz” — a player who forgets to click loses everything since the last
 click, and a new button with its states; the same moments with a save every 30 game minutes while a
 map run passes instead of every 30 real seconds — the same as every 30 real seconds at 1×, but at
 16× a request every less than 2 real seconds, 16 saves of about 80 KB together in the half minute of
@@ -3710,8 +3745,9 @@ that failure, and the game retries the save after 5, 10 and 20 real seconds and 
 30 real seconds, each time with the game state of that moment and at once at a moment of saving of
 D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than
 its limit of D-104, the game does not retry that save but tries again at its next moment of saving,
-and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Usuń niepotrzebne
-programy.” in `warning` until a save succeeds.
+and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo
+usuń niepotrzebne programy.” in `warning` until a save succeeds; the game currently sets no limit on
+the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -3719,26 +3755,32 @@ programy.” in `warning` until a save succeeds.
 - **Verification:** an agent compares a change with the decision:
   - complies: a save with no answer within its time limit showing „Nie udało się zapisać postępu.
     Gra spróbuje ponownie.” above „Adres e-mail niepotwierdzony.”, and the retry five real seconds
-    later clearing it when it succeeds; a too-large refusal followed by no request until the
-    player's next act
+    later clearing it when it succeeds; a too-large refusal followed by no request until the next
+    moment of saving
   - violates: a line „Zapisano o 12:31” after each save; a too-large refusal retried as a failed
-    save; a failed save shown nowhere
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 18, and § Settlements to record, row 2
+    save; a failed save shown nowhere; a start of an earning loop refused for the number of earning
+    loops
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 18, and § Settlements to record, row 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q12, and § Settlements to record, row 19
 
 *Rationale:* the player is told only when the progress is not being saved, at the cost of not
 seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage
 from costing a request every few seconds per tab. A save refused as too large fails again until the
 game state shrinks, so the game waits for a change instead of retrying, and the progress since the
-last successful save is lost at logout or when the tab closes; the programs are the one thing the
-player can make smaller, with „Usuń” on the list of programs (D-167), the last program staying, so a
-player whose game state grows beyond the programs stays without a save until the limit changes. One
-state of the header more.
+last successful save is lost at logout or when the tab closes; the earning loops and the programs
+are what the player can make smaller, with „Zatrzymaj” and with „Usuń” on the list of programs
+(D-167), the last program staying, so a player whose game state grows beyond them stays without a
+save until the limit changes. One state of the header more. Accepted with it: with several earning
+loops saving stops until the player stops one of them, the limit holding at most about 12 earning
+loops on Las or 10 on Las — głębiej, and in practice fewer.
 *Rejected:* a lasting line „Zapisano o 12:31” in `text-secondary` beside the warning — a line that
 changes every 30 seconds during a map run, and more text in the header beside the line of D-157;
 nothing shown, a failed save included — the player plays on believing the progress saved and loses
 it when the tab closes; the too-large refusal counted as a failed save — endless retries, a promise
 „Gra spróbuje ponownie.” that is not kept and a „Wyloguj” that does not work, leaving the player
-signed in at a shared computer.
+signed in at a shared computer; a limit of N earning loops at once — a rule the project definition
+does not have, and a new number to settle; a slimmer save of earning loops — a longer cycle, a more
+involved load and no guarantee of a threshold; a higher limit — the browser sends no more than 64 KiB
+when a tab closes, so the last save would be lost.
 
 ### D-209 — Which browser's save of the game state does the server accept?
 
@@ -3764,8 +3806,8 @@ plays on from the loaded state, saving as D-207 gives.
 *Rationale:* with saving that runs by itself, a tab left open on one device would otherwise overwrite
 an hour of play from another at its next save, without a word; refusing a save based on what the
 browser did not see costs a number more at saving and a state of the screen, and the progress of the
-browser that lost is lost. A loaded map run comes back paused, so the tab that lost sends nothing
-until the player acts in it: a player who plays by turns in two open tabs loses at each change of
+browser that lost is lost. A loaded map run comes back paused, so with no earning loop passing the tab that
+lost sends nothing until the player acts in it: a player who plays by turns in two open tabs loses at each change of
 tab the first act in the tab returned to and sees the sentence, and with a map run passing in the
 other tab also each later act made more than 30 seconds after the load, until one is saved, with one
 click of „Wznów” when the map run came back paused. A counter checked in the transaction that writes
@@ -4638,3 +4680,407 @@ nothing, and its saving does not apply to a file that changes daily; `accept-new
 answers first on a shared server's name; a disabled host-key check — sends past any impostor; root's
 default known-hosts file — what stands there is what the first connection happened to answer, while
 the script's own file holds only the line compared with the fingerprint.
+
+### D-239 — How fast does the earning loop go?
+
+An earning loop goes only on a solved map, one game minute per real minute, and the speed control
+does not reach it, while a manual map run may be fast-forwarded. Each map run of an earning loop is a
+map run of its own, followed at once by the next as long as the earning loop goes on. Solving a map
+unlocks its earning loop without certifying that the chosen program survives every seed.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the speed control inactive for a character in an earning loop; an earning loop
+    starting on a solved map without a safety check across all seeds
+  - violates: an earning loop going sixteen game minutes per real minute when the speed is set so;
+    an earning loop kept as one long map run; an earning loop started on a map not yet solved; a
+    solved map refused as unsafe after a failed seed
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D22 and §5 "Pętla zarobkowa" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How fast does the earning loop go?"
+
+*Rationale:* solving a map is a puzzle and may be fast-forwarded; earning is income and goes with the
+world's time. Without that split "passive" would be a fiction — fast-forward a day and take the
+wages. With it comes the rhythm of a session: tinker with a program, let the character go, come back
+the next day. Short map runs keep the catch-up cheap, since the cost of a game minute grows with the
+length of a map run. One completion opens the earning loop but does not establish that the program
+survives every seed, so trying to earn still carries the risk of death.
+*Rejected:* the earning loop as one long map run — the cost of a game minute grows without end; one
+speed control for tuning and earning — passivity goes, and with it the sense of the earning loop;
+requiring a safety guarantee across all seeds before earning — delays the loop and promises more
+than the player's first completion establishes.
+
+### D-240 — When and how is the time away computed?
+
+The catch-up takes place when the player returns and advances the missed game minutes, taking the
+characters one at a time, each to the end, in the order of the player's list of characters.
+Characters meet only at the borders of map runs: an item reaches the chest when a map
+run completes, and the next map run takes what it finds there; when the chest has room for one
+character's loot only, the character earlier on the list takes it.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-07 · derives from D-22
+- **Verification:** invariants: catch-up-state. For the order of characters and the borders, an agent
+  compares a change with the decision:
+  - complies: two characters of one team caught up one after the other in the list's order, the
+    first taking its loot into a chest with room for one
+  - violates: characters caught up together, game minute by game minute; a map run that takes from
+    the chest in the middle of another character's map run
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D23 and §4 "Wiele postaci — fundament zbudowany" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "When and how is the time away computed?"
+
+*Rationale:* nothing has to run while no browser is open. Characters that meet only at the borders
+of map runs make several characters several independent computations rather than a schedule, so the
+catch-up stays cheap arithmetic; a handover between map runs going on at once would need a schedule
+and lose that.
+*Rejected:* the simulation running on a server — there is nothing to compute while no browser is
+open; characters meeting inside map runs — needs a schedule and loses the cheap catch-up.
+
+### D-241 — How does the game state hold earning loops?
+
+The game state holds its earning loops beside the one manual map run, by character number, so a
+character has at most one, each with the content of the program taken at its start, its map run
+going on, the number of that map run, the count of its completions and the practice gathered from
+those completions. In every game state the browser view holds or a saved game state admits, the map
+run of an earning loop is going on: the function that reaches its end deals with that end at once.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-55 · derives from D-56 · derives from D-164
+- **Verification:** an agent compares a change with the decision:
+  - complies: a game state holding the manual map run of one character and the earning loops of two
+    others; each next map run binding its lists anew from the program content the earning loop holds;
+    deleting a program leaving an earning loop on that program's content as it was
+  - violates: a second earning loop for one character; a saved game state admitted with the map run
+    of an earning loop ended in a death or in a completion; a pause, a pace or firing counts held
+    for an earning loop
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3, 4 and 6, and § Questions carried to cycle, first question
+
+*Rationale:* the shape itself gives a character one earning loop, and the manual map run stays as
+D-55 keeps it, so what reads it goes on reading it. Content that never changes needs no link to the
+program, so deleting or editing a program, or a rule written at a discovery, reaches no earning loop,
+and each map run binds the same lists anew. An end dealt with where it is reached leaves a load
+nothing to settle. Accepted with it: a later preview of an earning loop's map run needs more of the
+copy, which is a change of the shape and of its version.
+*Rejected:* map runs held by character in place of the one manual map run — everything that reads the
+manual map run changes, and D-55 keeps one manual map run anyway; an earning loop holding the whole
+map run and copy of a manual map run — it reuses the load's reading of a map run whole, but carries what an earning
+loop never reads, doubles the program in a save under 64 KiB and makes the deletion of a program
+reach into earning loops; an earning loop held on the character — the load reads characters before
+the records it reads an earning loop by.
+
+### D-242 — Which clock drives an earning loop?
+
+Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the
+game state up to which their whole game minutes have been counted, each game minute as long as the
+balance data gives, and a reading before it passes zero game minutes and sets it to that reading.
+Each game minute has its own real moment, the loop clock's value plus the real time up to and
+including that game minute, and a death in it is settled at that moment, in the open game as in the
+catch-up. In the open game a reading passes its game minutes one after another, within each game
+minute the characters in the team's order, however many game minutes it brings.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-219 · derives from D-221 · derives from D-239
+- **Verification:** invariants: catch-up-minutes · catch-up-death-moment. An agent compares a change
+  with the decision:
+  - complies: a computer waking after an hour passing 60 game minutes of each earning loop at one
+    reading, minute by minute, the characters in the team's order; an earning loop started beside
+    another sharing its clock, its first game minute shorter than a real minute; with no earning loop
+    in the game state the clock set to the reading, so a first earning loop gets a whole first game
+    minute; the loop clock taking its new value before the result reaches the game, so a save made
+    on its way passes no game minute twice
+  - violates: a death settled at the reading in place of its game minute's moment; the loop clock's
+    value held in the game state; one character passed through all the game minutes of a reading
+    before the next in the open game; the speed control or the pause of a manual map run reaching
+    the loop clock
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2, 11, 12 and 14, and § Questions carried to cycle, third question
+
+*Rationale:* one game minute per real minute is world time, and a date says what time it is with no
+statement about what a monotonic clock does during sleep, so a hidden tab, throttled timers and a
+sleeping computer all arrive as more whole game minutes at the next reading. The manual map run keeps
+its elapsed measure, so a date that jumps changes no pace there. Between whole game minutes the game
+state stays the very same value, as D-04 and the saving of D-207 want. Whole real moments keep a death
+at one place on the clock however the span is read, and passing the open game minute by minute keeps
+`minute-span-split` true for every split, two earning loops reaching one chest included. Accepted
+with it: a character reaching the chest in the open game can differ from the catch-up, where the
+characters go one at a time (D-240), which `catch-up-state` leaves outside its words.
+*Rejected:* the elapsed measure of a manual map run for earning loops — it would need a claim about
+sleep; a carry of milliseconds in the game state — a new game state at each reading, against D-04
+and D-207; the clock's value in the game state, written at each whole game minute — it duplicates the
+save time and leaves two moments to say where absence starts; the catch-up in lock-step — D-240 names
+it as a breach; the open game one character at a time in a reading of several game minutes — the
+split of a span would change who gets the chest, and `minute-span-split` would need an exception.
+
+### D-243 — How does the player start an earning loop?
+
+The player currently starts an earning loop with „Puść w pętlę”, which stands in the character's row
+of the headquarters at each solved map, beside „Wyślij”, takes the program of that row's list
+„Program:” and acts at once on the click. For that list the start counts as a send: the program
+becomes the one the character used last and the one with which a character last entered a map, and
+the pick on the row clears. At a character in an earning loop „Wyślij” and „Puść w pętlę” are
+currently inactive, and the player stops the earning loop first.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-53 · derives from D-170 · derives from D-239
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Puść w pętlę” at Las starting the character at once on the program its row shows, the
+    row afterwards showing that program as after a send; a pick on the list of a character in an
+    earning loop reaching its next send or start and leaving the running earning loop as it is
+  - violates: a question for a program or a map before the start; „Wyślij” stopping the earning
+    loop by itself; „Puść w pętlę” at a map not yet solved; a start leaving the pick on the row
+    standing
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q1 and Q3, and § Settlements to record, rows 1, 2 and 5
+
+*Rationale:* a character goes to earn from the place it is sent from, on the program its row already
+shows, so a tuned program goes out with one click. Stopping first keeps the backpack of the map run
+going on from being lost by a click on another button. Accepted with it: one more button in a long
+row, and one click more before a send.
+*Rejected:* a section „Pętle” of the headquarters with a pick of character, map and program — a second
+place for sending characters and several times the view; „Wyślij” stopping the earning loop by itself
+— one click silently loses the backpack of the map run going on.
+
+### D-244 — What does the player see of an earning loop?
+
+A running earning loop currently shows in its character's row of the headquarters as one line in the
+role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button
+„Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view
+and the program panel show during a map run stands for a manual map run; the firing counts cover a
+manual map run, and the start of an earning loop leaves the counts a manual map run left as they
+were.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-239 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
+- **Verification:** an agent compares a change with the decision:
+  - complies: a row reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2”, moving with each
+    game minute of the earning loop; the counts of the last manual map run staying as they were
+    after an earning loop starts; the program panel staying on the player's programs while earning
+    loops pass
+  - violates: a button that opens the map of an earning loop's map run; firing counts gathered in an
+    earning loop's map run; the start of an earning loop clearing the counts
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4
+
+*Rationale:* the player checks a program in a manual map run and reads an earning loop by what it
+brings, so one line says what it does and how far it has come, and a preview can come later with the
+earning loop as it stands. Accepted with it: the player sees neither what the character does nor why
+it died, and the rule that a map run counts its firings takes an exception.
+*Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of
+map-run screen and a large piece of work.
+
+### D-245 — What does „Zatrzymaj” do?
+
+„Zatrzymaj” is a destructive button with its text in the role `danger` that acts at once on the
+click: the items carried in the map run going on are lost, its loot stays out of the chest, the
+practice D-189 gives enters the character skills, and the character returns to its ordinary row. In
+that row, until the next send or start of that character and after a load of the saved game state
+too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or
+„Pętla zatrzymana” where the earning loop gathered no practice.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-44 · derives from D-183 · derives from D-189
+- **Verification:** invariants: trip-run-end. An agent compares a change with the decision:
+  - complies: a stop in the middle of a map run leaving the chest as it stood and the character's
+    skills grown by what the earning loop and that map run gathered; „Pętla zatrzymana” after a stop
+    with nothing gathered, standing after a reload and gone at the next send
+  - violates: a question before the stop; the stopped map run left on the screen; the line gone after
+    a reload; the loot of the stopped map run reaching the chest
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, Q5 and Q18, and § Settlements to record, row 7
+
+*Rationale:* a stop is the player's own act on a character it can see, so it acts at once, and the
+line says what the stop paid; the button looks destructive for the backpack it drops. Accepted with
+it: the player does not see the map run it stopped.
+*Rejected:* the map run left on the screen to look at, as in the predecessor game — a third kind of
+end of a map run, and it takes the place of the one manual map run; no line after a stop that
+gathered no practice — nothing says that what the player asked for took place; „Pętla zatrzymana ·
+wprawa: nic” — the line speaks of practice that was not there.
+
+### D-246 — What does the player read after being away?
+
+After being away the player currently reads a report in the section „Gdy cię nie było” of the
+headquarters, above „Drużyna”, one line for each character that had an earning loop, a later earning
+loop of a character whose earning loop a death stopped opening a line of its own, and one button
+„Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}:
+pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz
+to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n},
+{przedmiot} −{n} · wprawa: {umiejętność} +{n}”, with what is empty left out, with „ · wskrzeszenie
+zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the
+chest is full, {m} in both lines being the game minutes the catch-up passed. The report lies in the
+game state, so it survives a reload; a further return before „Zamknij” adds to it; the section shows
+from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number
+of game minutes. An earning loop a death stops in the open game enters the same section as „{imię}:
+pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to
+pokolenie {n}.”, the title reading
+„Pętle, które stanęły” where the section holds no line of a return, and a player returning to a
+manual map run reads the report in the headquarters after „Zakończ”.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-39 · derives from D-240
+- **Verification:** an agent compares a change with the decision:
+  - complies: an earning loop a death stopped standing above one that went on; a line of an earning
+    loop a death stopped naming no practice, since the death took it; a character's own change in the
+    chest on its line, with the practice its earning loop gathered from completions in this catch-up;
+    a resurrection used in the catch-up adding „ · wskrzeszenie zużyte”, and one used in the open game
+    adding no line; a stop in the open game on a line that holds minutes of an earlier return reading
+    with no minutes; „Skrzynka jest pełna.” following the chest as the section is drawn; „Zatrzymaj”
+    leaving the character's line open, so the next return of a later earning loop of that character
+    adds to it
+  - violates: a second return replacing the report; a report held outside the game state; a button
+    „Zamknij” at each character; a stop in the first game minute of the catch-up left out of the
+    section; „Gdy cię nie było” over a section that holds stops in the open game and no return; the report drawn on the
+    screen of a manual map run
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 16, Questions to settle, Q6, Q19 and Q21, and § Settlements to record, rows 10, 11, 22, 23, 24 and 26 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
+
+*Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
+line for each character says which of them it was, and one button closes the section in one click.
+In the game state the report outlives a reload between the return and the reading. Each character
+counts its own change, which the catch-up taking characters one at a time gives. A line that closes
+at the death that stops its earning loop keeps both a right {m} and the return of a later earning
+loop. Accepted with it: a new
+section and a new piece of the game state, a section that shows after a short reload too, one line
+closed along with the others, a stop in the open game that does not say how long the earning loop
+went, and the chest and practice of an earlier return leaving the screen when that line stops in the
+open game.
+*Rejected:* closing at each character — as many clicks as characters; one line for the whole team —
+the player does not know which character it was about; all the minutes of the earning loop from its
+start in a line of a stop in the open game — a number that can exceed the last absence, and {m} means
+two things in the section; the minutes from the last catch-up there — a further counter in the game
+state, for a number that says little; „Gdy cię nie było” kept as the title of stops in the open game —
+the title says what is untrue to a player who sat at the game.
+
+### D-247 — When is time away computed, and how much?
+
+The catch-up currently computes all the missed game minutes, and the game currently sets no upper
+bound on them. It runs on its own after each load of a saved game state: after a sign-in,
+after a reload of the page, after a save lost to another browser's (D-209) and after a sign-in to the
+same account with the state kept in the page's memory (D-211).
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-212 · derives from D-240
+- **Verification:** invariants: catch-up-minutes. An agent compares a change with the decision:
+  - complies: a game closed for a month computing all its game minutes on return, the page waiting for
+    it; the tab that lost to another browser's save loading that save and then catching up; the load
+    taking no time passed, the catch-up running after it; a new game and a refused save passing
+    through it and changing nothing
+  - violates: a load that advances earning loops itself; a bound on the minutes with the rest lost; a
+    state kept in the page's memory going on from the sign-in with its missed game minutes dropped
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 11 and 13, Questions to settle, Q7, and § Settlements to record, rows 12 and 25
+
+*Rationale:* the player comes back to what the earning loops earned, however long the absence, and
+each way back into the game counts its time alike. Standing apart from the load, it keeps the load free of
+time passed, and a manual map run standing in the loaded state stands through it (D-212). Accepted
+with it: after many months the page stands for some seconds per character, longer on a telephone and
+on longer map runs, and a clock moved by years gives progress in the player's own game, which D-07
+accepts. A bound can be added later.
+*Rejected:* a bound of 7 days with the rest lost — a change of the approved project definition, with
+its readiness gate and the plan checked again, and no task going ahead until they end; another
+number — the same cost.
+
+### D-248 — What is the save time?
+
+The save time comes from the browser's clock and lies in the game state: a saved document carries the
+moment it was saved, written on its way to the document, and the game state the browser view holds
+stays the value it was. A game that came from no save holds none, and a game from a save holds the
+moment of that save.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-219
+- **Verification:** an agent compares a change with the decision:
+  - complies: the save time travelling inside the game of the saved document, which the server stores
+    unread; a save leaving the game state of the browser view the same value, so the comparison of
+    D-207 sees no change
+  - violates: a column of the account database for the save time; the server's clock as the save
+    time; the loop clock's value written as the save time; a load reading the clock
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10, Questions to settle, Q8, § Questions carried to cycle, fifth question, and § Settlements to record, row 13
+
+*Rationale:* the catch-up counts from this moment, and the renewal of a resurrection goes by the same
+clock, so the game holds one (D-219). Inside the game the moment travels with the document, and the
+server stays as it is (D-07). Written on the way to the document, it changes at every save and changes
+no game state, so a comparison by identity keeps its meaning, and between saves nothing reads it but
+the catch-up, once, on a loaded state. What passed of a game minute of an earning loop before
+the save is not counted after a load: at most a game minute per load. Accepted with it: a wrong clock
+on the device computes too many or zero game minutes, and a player can cheat, which D-07 accepts for
+the player's own progress.
+*Rejected:* the server's clock — a new version of the account database with a human action on the
+server, a change of two decisions, and an open tab goes by the browser's clock all the same, so the
+game would hold two clocks; the game state stamped at each save — the saver writes through the game
+state and compares against stamped states, for a value nothing reads; a key of the document beside the
+game — the server keeps the version, the revision and the game, so it would be lost; the saved-game
+code taking the moment — it would work, and a separate function that keeps that code free of real time
+costs nothing; the loop clock as the save time — no loss at a load, at the price of a save time that is
+not the moment of the save.
+
+### D-249 — What does a map run of an earning loop discover?
+
+A map run of an earning loop currently discovers nothing: the Understanding and the program stay as
+they stand, game time goes on, and the game writes no program rule at a discovery, and the player
+discovers what the character met in a manual map run.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** narrows D-118 · narrows D-121 · narrows D-143 · narrows D-198 · derives from D-239
+- **Verification:** invariants: loop-run-knowledge. An agent compares a change with the decision:
+  - complies: a first chill in an earning loop's map run adding nothing to the Understanding and no
+    rule to the content the earning loop holds, its game minutes taking effect in the order of D-71;
+    what a manual map run discovers meanwhile widening an earning loop's repertoire, as D-119 gives
+  - violates: an earning loop's map run stopping at a discovery; a program rule written into a
+    program by an earning loop; a discovery named in the report
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, Q9, and § Settlements to record, rows 16 and 17
+
+*Rationale:* on a solved map discoveries are few and nothing loses them, the player makes them in a
+manual map run, and a catch-up that leaves the Understanding and the programs as they stand is what keeps
+`catch-up-state` true. Accepted with it: a character meets hunger and the game records nothing of it.
+*Rejected:* a discovery entering at once, the report naming it — `catch-up-state` stops being true, so
+the project definition changes with its gate; discoveries waiting in the report and entering when it
+closes — one more piece of the game state.
+
+### D-250 — What does a pause or an end screen hold?
+
+A pause of a manual map run, its stop at a discovery and the screen after its end hold that map run,
+and the earning loops of other characters go on through them.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-21 · derives from D-122 · derives from D-239
+- **Verification:** an agent compares a change with the decision:
+  - complies: a manual map run paused in game minute 100 while another character's earning loop
+    passes its game minutes and ends a map run; the screen after a death standing while an earning
+    loop deposits into the chest
+  - violates: one pause holding every map run of the game; earning loops standing still while the
+    screen after a completion stays
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, P1 and Q17, and § Settlements to record, row 20
+
+*Rationale:* earning goes with the world's time (D-239), so looking at a manual map run or at its
+result does not hold up what the other characters earn. A manual map run and the earning loops pass
+apart, so a pause, a stop at a discovery and the screen after an end hold that one map run, and the
+words "time stands still" of the screens after an end speak of it.
+*Rejected:* the screen after an end stopping the earning loops of other characters — looking at the
+result holds up what they earn.
+
+### D-251 — How does the list of maps mark a rehearsal the loop cannot repeat?
+
+At a solved map, in the character's row, when an item of the take list of the row's program, clipped
+by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas,
+którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wyślij” in the role
+`warning`.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-188 · derives from D-189
+- **Verification:** an agent compares a change with the decision:
+  - complies: a program taking three pieces of an item the chest holds two of showing the line under
+    „Wyślij” at Las once Las is solved; the same program at a map not yet solved showing no line
+  - violates: the line measured against the take list before its clipping; the line in a role other
+    than `warning`
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 18, Questions to settle, Q14, and § Settlements to record, row 21
+
+*Rationale:* a manual map run of a solved map takes its equipment from nowhere (D-189), so it can go
+where an earning loop, bound to the chest, goes cut, and the mark names that one price before the
+player starts. It stands where the line of D-188 stands, in the same role.
+*Rejected:* the mark brought in before the earning loop — the game speaks of a loop it does not have
+yet; another text, given by the human — its cost was not named.

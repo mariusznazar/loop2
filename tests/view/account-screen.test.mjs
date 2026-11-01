@@ -19,16 +19,19 @@ import {
   setProgram,
   settleDeath,
 } from "../../dist/public/sim/game.js";
+import { advanceLoopRun, startLoop } from "../../dist/public/sim/loop.js";
 import {
   createProgram,
   deleteProgram,
   discardCopyChanges,
+  editProgram,
   pickProgram,
   renameProgram,
   saveCopyAsNewProgram,
   saveCopyIntoProgram,
   switchProgram,
 } from "../../dist/public/sim/programs.js";
+import { loadSavedGame } from "../../dist/public/sim/saved-game.js";
 import { buyBranch } from "../../dist/public/sim/skills.js";
 import {
   addressProblem,
@@ -208,7 +211,13 @@ const fakeDocument = {
  */
 const GAME_INTERVALS = 2;
 
-/** Runs `body` with the document model as the page's document and Node's mocked intervals. */
+/** The real date the page's clock reads, unless a case moves it on; every document it saves holds it. */
+const CLOCK_MS = 1_760_000_000_000;
+
+/**
+ * Runs `body` with the document model as the page's document, Node's mocked intervals and the real
+ * date at `CLOCK_MS`.
+ */
 async function onPage(body) {
   const saved = {
     document: globalThis.document,
@@ -230,6 +239,7 @@ async function onPage(body) {
   };
   // The saver's retries wait on setTimeout; mocked, they run only when a case moves time on.
   mock.timers.enable({ apis: ["setInterval", "setTimeout"] });
+  const date = mock.method(Date, "now", () => CLOCK_MS);
   const mockedSet = globalThis.setInterval;
   const mockedClear = globalThis.clearInterval;
   const live = new Set();
@@ -248,6 +258,7 @@ async function onPage(body) {
     globalThis.setInterval = mockedSet;
     globalThis.clearInterval = mockedClear;
     mock.timers.reset();
+    date.mock.restore();
     Object.assign(globalThis, saved);
   }
 }
@@ -1726,24 +1737,28 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-206); 2 since To do 21 of rozliczenie-przejsc. */
-const VERSION = 2;
+/** The version of the shape of the saved game state this game writes and loads (D-206); 3 since To do 10 of petla-zarobkowa. */
+const VERSION = 3;
+/** The version before the raise, which To do 10 and D-206 make another version. */
+const OLDER_VERSION = 2;
+/** The moment the saves the server hands back were saved at; the load refuses a document without one. */
+const SAVED_MS = CLOCK_MS - 60_000;
 const withCharacter = () => createCharacter(newGame(), "Ala").state;
 /** A game whose map run passes: Ala sent to the forest at the real date 0, unpaused. */
 const passing = () =>
   send(withCharacter(), { mapId: "forest", characterId: 1 }, 0).state;
 /** A game state as plain JSON, as it travels in a save. */
 const plain = (state) => JSON.parse(JSON.stringify(state));
-/** The server's answer holding a save of `game` at `revision`. */
+/** The server's answer holding a save of `game` at `revision`, stamped at its save (To do 10, row 13). */
 const saveOf = (game, revision, version = VERSION) => ({
   ok: true,
-  value: { version, revision, game: plain(game) },
+  value: { version, revision, game: plain({ ...game, saveTimeMs: SAVED_MS }) },
 });
-/** What the page sends to save `game` on the basis of `basedOn`. */
+/** What the page sends to save `game` on the basis of `basedOn`, stamped by the clock (To do 10, row 13). */
 const submission = (game, basedOn) => ({
   version: VERSION,
   basedOn,
-  game: plain(game),
+  game: plain({ ...game, saveTimeMs: CLOCK_MS }),
 });
 
 /** The names of the client's calls still waiting, oldest first. */
@@ -1930,6 +1945,68 @@ test("a save builds the game the load gives: a map run that went on comes back p
   }
 });
 
+/** Ala in an earning loop in Las; with `short` her first map run is one game minute from its end. */
+function loopingAla(short) {
+  const made = { ...withCharacter(), solvedMaps: ["forest"] };
+  const started = startLoop(made, { mapId: "forest", characterId: 1 }, 5).state;
+  if (!short) return started;
+  const whole = advanceLoopRun(started, 1, 100_000);
+  assert.ok(
+    mapRunEnded(whole.state.loops[1].run),
+    "precondition: the run ends",
+  );
+  return advanceLoopRun(started, 1, whole.passed - 1).state;
+}
+
+/** The page hides, as a browser tells it. */
+function hidePage() {
+  fakeDocument.visibilityState = "hidden";
+  for (const listener of fakeDocument.listeners.get("visibilitychange") ?? [])
+    listener({ type: "visibilitychange" });
+}
+
+// Task petla-zarobkowa, To do 11 and 17, row 25; spec sections 8 and 10; D-212. The save loaded was
+// made a minute before the clock's date. Catches a game that does not catch up after the load, and a
+// catch-up that ended a run and is not saved at once, or saved once per run end.
+test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(loopingAla(true), 3));
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    const [sent] = argsOf(held, "saveGame");
+    assert.equal(sent.basedOn, 3);
+    assert.equal(sent.game.loops[1].runNumber, 2, "the end was taken");
+    assert.equal(sent.game.awayReport.length, 1);
+    assert.equal(sent.game.awayReport[0].minutes, 1, "one minute, passed once");
+    assert.equal(sent.game.saveTimeMs, CLOCK_MS);
+    assert.ok(gameShown(root));
+  });
+});
+
+// Spec section 10: saving after any caught-up minute would make each reload send, and two open tabs
+// refuse each other (D-209).
+test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caught up once", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(loopingAla(false), 3));
+    assert.deepEqual(waitingCalls(held), []);
+    mock.timers.tick(90_000);
+    await settle();
+    assert.deepEqual(waitingCalls(held), [], "the rhythm is the manual run's");
+
+    hidePage();
+    await settle();
+    const [sent] = argsOf(held, "saveGame");
+    assert.equal(sent.game.loops[1].run.minute, 1);
+    assert.equal(sent.game.awayReport[0].minutes, 1);
+    assert.equal(sent.game.loops[1].runNumber, 1);
+  });
+});
+
 // The starts of the acts below. Ala in the team and a second program, „Program 2”, on the list.
 const twoPrograms = () => createProgram(withCharacter()).state;
 /** Ala's map run of the forest under program 1, paused, as a loaded map run comes back. */
@@ -2005,6 +2082,10 @@ function pickOn(list, value) {
   list.value = value;
   list.fire("change");
 }
+
+/** Ala with the forest solved and the second program picked on her row (D-170). */
+const solvedAla = () =>
+  pickProgram({ ...twoPrograms(), solvedMaps: ["forest"] }, 1, 2).state;
 
 /**
  * Each act of the player D-207 names, made once on a game built from `start`: `act` clicks, types
@@ -2124,6 +2205,28 @@ const ACTS = [
     expected: (start) => pickProgram(start, 1, 2).state,
   },
   {
+    name: "„Puść w pętlę”",
+    start: solvedAla,
+    act: (root) =>
+      buttonLabelled(root, "Puść w pętlę: Ala, mapa Las").fire("click"),
+    // The start takes the real date as its time, and the row's list shows program 2.
+    expected: (start) =>
+      startLoop(
+        start,
+        { mapId: "forest", characterId: 1, programId: 2 },
+        CLOCK_MS,
+      ).state,
+  },
+  {
+    name: "„Zatrzymaj”",
+    start: () => loopingAla(false),
+    act: (root) => buttonNamed(root, "Zatrzymaj").fire("click"),
+    check: (game) => {
+      assert.equal(game.loops[1], undefined);
+      assert.notEqual(game.stoppedLoops[1], undefined);
+    },
+  },
+  {
     name: "sending",
     start: twoPrograms,
     act: (root) => buttonNamed(root, "Wyślij").fire("click"),
@@ -2159,6 +2262,44 @@ const ACTS = [
   },
 ];
 
+// Spec section 9; D-211, D-248. Catches `keep()` writing a document with no save time, which the
+// sign-in would refuse and start anew, a moment older than the reading it makes, and a stamp written
+// into the view's state, which the saver's comparison would take for a change.
+test("the document kept for the same account holds the moment of its reading and loads, and the view's state stays what it was", async () => {
+  await onPage(async () => {
+    let current = CLOCK_MS;
+    const date = mock.method(Date, "now", () => current);
+    try {
+      const { createGameView } =
+        await import("../../dist/public/view/game-view.js");
+      const held = heldClient();
+      const view = createGameView({
+        client: held.client,
+        state: withCharacter(),
+        revision: 3,
+        onConflict: () => {},
+        onOutdated: () => {},
+        onSignedOut: () => {},
+      });
+      current = CLOCK_MS + 5_000;
+      const kept = view.keep();
+      assert.equal(kept.revision, 3);
+      assert.equal(kept.document.game.saveTimeMs, CLOCK_MS + 5_000);
+      assert.deepEqual(loadSavedGame(kept.document), {
+        ok: true,
+        state: { ...withCharacter(), saveTimeMs: CLOCK_MS + 5_000 },
+      });
+
+      mock.timers.tick(30_000);
+      await settle();
+      assert.deepEqual(waitingCalls(held), [], "keep() changes no state");
+      view.dispose();
+    } finally {
+      date.mock.restore();
+    }
+  });
+});
+
 // To do 7; D-207, decision 6's list. Catches an act of the player whose change is left to the next
 // 30-second check or to the hidden page, and an act that changes nothing sending a save.
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
@@ -2182,7 +2323,13 @@ test("each act of the player that changes the game state is saved at once, and o
         assert.deepEqual(waitingCalls(held), ["saveGame"], name);
         const [sent] = argsOf(held, "saveGame");
         assert.equal(sent.basedOn, 4, name);
-        if (expected) assert.deepEqual(sent.game, plain(expected(begun)), name);
+        // To do 10 with D-206; row 13: the document holds the clock's moment, the state does not.
+        if (expected)
+          assert.deepEqual(
+            sent.game,
+            plain({ ...expected(begun), saveTimeMs: CLOCK_MS }),
+            name,
+          );
         else check(sent.game, begun);
       });
     }
@@ -2202,6 +2349,264 @@ test("each act of the player that changes the game state is saved at once, and o
     pause.fire("click");
     await settle();
     assert.deepEqual(waitingCalls(held), []);
+  });
+});
+
+// --- the character's row: starting, watching and stopping an earning loop --------------------
+// Task petla-zarobkowa, To do 1, 8, 9 and 18; D-243, D-244, D-245, D-251; spec section 12.
+
+/** The row of the character named `name` in the headquarters under `root`. */
+function rowOf(root, name) {
+  const row = byClass(root, "team-member").find(
+    (candidate) =>
+      byClass(candidate, "team-member-name")[0].textContent === name,
+  );
+  assert.ok(row, `a row of ${name} stands`);
+  return row;
+}
+
+/** The game of `state` built in the page without the account page around it; its element stands in the body. */
+async function viewOf(state) {
+  const { createGameView } =
+    await import("../../dist/public/view/game-view.js");
+  const held = heldClient();
+  const view = createGameView({
+    client: held.client,
+    state,
+    revision: 1,
+    onConflict: () => {},
+    onOutdated: () => {},
+    onSignedOut: () => {},
+  });
+  fakeDocument.body.append(view.element);
+  return { view, held };
+}
+
+/** Ala, the first character, and Ola, the second, with the forest solved and Ala in a loop in it. */
+function alaLoopingOlaFree() {
+  const solved = { ...eatingPoint(), solvedMaps: ["forest"] };
+  const team = createCharacter(solved, "Ola").state;
+  return startLoop(team, { mapId: "forest", characterId: 1 }, 5).state;
+}
+
+// Catches a row that draws the loop line and „Zatrzymaj” for every character or for none, and
+// buttons disabled for the whole team (or by the one map run, as before) when only the character in
+// the loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
+test("a character in a loop shows its line and „Zatrzymaj”; its „Wyślij” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(alaLoopingOlaFree());
+    const ala = rowOf(root, "Ala");
+    const ola = rowOf(root, "Ola");
+    const [line] = byClass(ala, "team-member-loop");
+    assert.ok(shown(line));
+    assert.equal(
+      line.textContent,
+      "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
+    );
+    assert.ok(shown(buttonNamed(ala, "Zatrzymaj")));
+    assert.ok(buttonNamed(ala, "Zatrzymaj").classList.contains("destructive"));
+    assert.ok(!shown(byClass(ola, "team-member-loop")[0]));
+    assert.ok(!shown(buttonNamed(ola, "Zatrzymaj")));
+
+    for (const map of ["Las", "Las — głębiej"]) {
+      assert.equal(
+        buttonLabelled(ala, `Wyślij: Ala, mapa ${map}`).disabled,
+        true,
+        map,
+      );
+      assert.equal(
+        buttonLabelled(ola, `Wyślij: Ola, mapa ${map}`).disabled,
+        false,
+        map,
+      );
+    }
+    assert.equal(
+      buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").disabled,
+      true,
+    );
+    assert.equal(
+      buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las").disabled,
+      false,
+    );
+    // The map not yet solved has no loop button at all.
+    assert.equal(
+      all(ola).filter((element) =>
+        element.getAttribute("aria-label")?.startsWith("Puść w pętlę"),
+      ).length,
+      1,
+    );
+    assert.equal(buttonLabelled(ala, "Kup: Szybki posiłek").disabled, false);
+    assert.equal(listLabelled(ala, "Program: Ala").disabled, false);
+    view.dispose();
+  });
+});
+
+// Catches a click on „Puść w pętlę” that leaves the row as it was, that opens a map run, or that is
+// not saved; the loop line must stand at once with the buttons of the row shut.
+test("„Puść w pętlę” puts the character into a loop at once and the row shows it, with no map run opened", async () => {
+  await onPage(async ({ root }) => {
+    const { view, held } = await viewOf(solvedAla());
+    const ala = rowOf(root, "Ala");
+    assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
+    buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").fire("click");
+    assert.equal(
+      byClass(ala, "team-member-loop")[0].textContent,
+      "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
+    );
+    assert.ok(
+      shown(byClass(root, "headquarters")[0]),
+      "the headquarters stays",
+    );
+    assert.equal(buttonLabelled(ala, "Wyślij: Ala, mapa Las").disabled, true);
+    assert.equal(
+      buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").disabled,
+      true,
+    );
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    view.dispose();
+  });
+});
+
+// Catches a stop that asks first, one that leaves the line of the loop or none of the stop, and one
+// that shows practice the loop did not gather (D-245, Q18).
+test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” with the practice paid, or the bare words, until the next start", async () => {
+  await onPage(async ({ root }) => {
+    const base = alaLoopingOlaFree();
+    const gathering = {
+      ...base,
+      loops: {
+        1: { ...base.loops[1], practice: { eating: 4, exploration: 12 } },
+      },
+    };
+    const { view } = await viewOf(gathering);
+    const ala = rowOf(root, "Ala");
+    buttonNamed(ala, "Zatrzymaj").fire("click");
+    assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
+    assert.ok(!shown(buttonNamed(ala, "Zatrzymaj")));
+    const [stopped] = byClass(ala, "team-member-stopped");
+    assert.ok(shown(stopped));
+    assert.equal(
+      stopped.textContent,
+      "Pętla zatrzymana · wprawa: Eksploracja +12, Jedzenie +4",
+    );
+    assert.equal(buttonLabelled(ala, "Wyślij: Ala, mapa Las").disabled, false);
+    assert.ok(!shown(byClass(rowOf(root, "Ola"), "team-member-stopped")[0]));
+
+    // The next start clears the line.
+    buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").fire("click");
+    assert.ok(!shown(stopped));
+    view.dispose();
+  });
+
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(alaLoopingOlaFree());
+    const ala = rowOf(root, "Ala");
+    buttonNamed(ala, "Zatrzymaj").fire("click");
+    assert.equal(
+      byClass(ala, "team-member-stopped")[0].textContent,
+      "Pętla zatrzymana",
+    );
+    view.dispose();
+  });
+});
+
+// Catches a line lost on a load: the entry lives in the game state, so a game built from a state
+// holding it shows the line, in that character's row alone (D-245).
+test("a game built from a state with a stopped loop shows the line of the stop in that character's row", async () => {
+  await onPage(async ({ root }) => {
+    const base = alaLoopingOlaFree();
+    const { view } = await viewOf({
+      ...base,
+      loops: {},
+      stoppedLoops: { 1: { eating: 7 } },
+    });
+    assert.equal(
+      byClass(rowOf(root, "Ala"), "team-member-stopped")[0].textContent,
+      "Pętla zatrzymana · wprawa: Jedzenie +7",
+    );
+    assert.ok(!shown(byClass(rowOf(root, "Ola"), "team-member-stopped")[0]));
+    view.dispose();
+  });
+});
+
+// Catches the chest inside the key of the rows (spec section 12): a deposit, or a take at another
+// character's start, rebuilt every row, so a list open in a row and the focus on „Zatrzymaj” went.
+test("a change of the chest redraws the chest alone: the rows, their lists and the focus on „Zatrzymaj” stay", async () => {
+  await onPage(async ({ root }) => {
+    const solved = { ...eatingPoint(), solvedMaps: ["forest"] };
+    const stocked = {
+      ...solved,
+      team: { ...solved.team, chest: { pieces: { stick: 10 } } },
+    };
+    const taking = editProgram(stocked, 1, {
+      ...stocked.programs[0].program,
+      tripPlan: { take: [{ item: "stick", count: 3 }], bring: [] },
+    }).state;
+    const team = createCharacter(taking, "Ola").state;
+    const begun = startLoop(team, { mapId: "forest", characterId: 1 }, 5).state;
+    const { view } = await viewOf(begun);
+    const ala = rowOf(root, "Ala");
+    const ola = rowOf(root, "Ola");
+    const stop = buttonNamed(ala, "Zatrzymaj");
+    const list = listLabelled(ala, "Program: Ala");
+    stop.focus();
+    assert.equal(fakeDocument.activeElement, stop);
+    const chestText = () =>
+      byClass(root, "chest-list")[0].children.map((item) => item.textContent);
+    const heading = () =>
+      byClass(root, "chest-list")[0].parent.children[0].textContent;
+    assert.deepEqual(chestText(), ["patyk: 7"]);
+    assert.ok(heading().startsWith("Skrzynka 7/"));
+
+    // Ola's start takes three sticks out of the chest.
+    buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las").fire("click");
+    assert.deepEqual(chestText(), ["patyk: 4"]);
+    assert.ok(heading().startsWith("Skrzynka 4/"));
+    assert.equal(rowOf(root, "Ala"), ala, "the row is the same element");
+    assert.equal(buttonNamed(ala, "Zatrzymaj"), stop);
+    assert.equal(listLabelled(ala, "Program: Ala"), list);
+    assert.equal(fakeDocument.activeElement, stop, "the focus stays");
+    view.dispose();
+  });
+});
+
+// D-251, To do 18. Catches a mark in the wrong place or role, a mark at a map not yet solved, and a
+// mark that ignores the chest.
+test("the mark of a rehearsal the loop cannot repeat stands under „Wyślij” of a solved map, and only where the chest lacks what the list takes", async () => {
+  const MARK =
+    "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
+  /** Ala with the forest solved, a take list of three sticks and `held` sticks in the chest. */
+  const holding = (held) => {
+    const solved = { ...twoPrograms(), solvedMaps: ["forest"] };
+    const stocked = {
+      ...solved,
+      team: { ...solved.team, chest: { pieces: { stick: held } } },
+    };
+    return editProgram(stocked, 1, {
+      ...stocked.programs[0].program,
+      tripPlan: { take: [{ item: "stick", count: 3 }], bring: [] },
+    }).state;
+  };
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(holding(2));
+    const row = rowOf(root, "Ala");
+    const marks = byClass(row, "rehearsal-mark");
+    assert.equal(marks.length, 2, "one under each map's „Wyślij”");
+    const [forest, deep] = marks;
+    assert.ok(shown(forest));
+    assert.equal(forest.textContent, MARK);
+    assert.ok(!shown(deep), "the map not yet solved has no mark");
+    assert.ok(
+      row.children.indexOf(forest) >
+        row.children.indexOf(buttonLabelled(row, "Wyślij: Ala, mapa Las")),
+      "under „Wyślij”",
+    );
+    view.dispose();
+  });
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(holding(3));
+    assert.ok(!shown(byClass(rowOf(root, "Ala"), "rehearsal-mark")[0]));
+    view.dispose();
   });
 });
 
@@ -2382,7 +2787,12 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
-    ["another version", saveOf(withCharacter(), 7, 3), OTHER_VERSION],
+    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    [
+      "another version",
+      saveOf(withCharacter(), 7, OLDER_VERSION),
+      OTHER_VERSION,
+    ],
     [
       "an archetype absent from the data",
       { ok: true, value: { version: VERSION, revision: 7, game: foreign } },
@@ -2508,7 +2918,11 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     buttonNamed(root, "4×").fire("click");
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
-    await held.answer("loadSavedGame", saveOf(withCharacter(), 6, 3));
+    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    await held.answer(
+      "loadSavedGame",
+      saveOf(withCharacter(), 6, OLDER_VERSION),
+    );
     assert.deepEqual(pageNotices(root), [OTHER_VERSION]);
     assert.equal(saveLine(root), null);
     assert.deepEqual(argsOf(held, "saveGame"), [submission(newGame(), 6)]);
@@ -2656,4 +3070,193 @@ test("a save that finds no session while the logout's request is under way waits
       }
     });
   }
+});
+
+// --- the report on earning loops in the headquarters ------------------------------------------
+// Task petla-zarobkowa, To do 16 and rows 10, 11, 22-24 and 26 of Settlements to record; spec
+// section 11; D-246, D-42.
+
+/** The section of the report in the headquarters under `root`, or undefined. */
+const reportSection = (root) => {
+  const section = byClass(root, "away-report")[0];
+  assert.ok(section, "the section of the report is built");
+  return section;
+};
+
+/** Ala and Ola with a report: Ala's loop went on for 5 minutes, Ola's stopped in the catch-up. */
+function reported(rest = {}) {
+  const made = createCharacter(withCharacter(), "Ola").state;
+  // Ola's loop stopped in a death that gave her generation 2, as the report's stop says.
+  const base = {
+    ...made,
+    team: {
+      ...made.team,
+      characters: made.team.characters.map((character) =>
+        character.id === 2 ? { ...character, generation: 2 } : character,
+      ),
+    },
+  };
+  return {
+    ...base,
+    awayReport: [
+      {
+        characterId: 1,
+        minutes: 5,
+        chest: { stick: 3 },
+        practice: {},
+        resurrectionUsed: false,
+        stop: null,
+      },
+      {
+        characterId: 2,
+        minutes: 2,
+        chest: {},
+        practice: {},
+        resurrectionUsed: false,
+        stop: { generation: 2, away: true },
+      },
+    ],
+    ...rest,
+  };
+}
+
+// Catches a section missing, placed under „Drużyna”, or with the lines in the order of the data.
+test("a game built from a state with a report shows the section above „Drużyna”, the stopped line first", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(reported());
+    const section = reportSection(root);
+    assert.ok(shown(section));
+    assert.equal(
+      section.children[0].textContent,
+      "Gdy cię nie było",
+      "the title",
+    );
+    assert.deepEqual(
+      byClass(section, "away-report-line").map((line) => line.textContent),
+      [
+        "Ola: pętla stanęła po 2 min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 2.",
+        "Ala: 5 min · skrzynka: patyk +3",
+      ],
+    );
+    assert.ok(
+      byClass(section, "away-report-line")[0].classList.contains("danger"),
+    );
+    assert.ok(
+      !byClass(section, "away-report-line")[1].classList.contains("danger"),
+    );
+    const [headquarters] = byClass(root, "headquarters");
+    const sections = headquarters.children.filter((child) =>
+      child.classList.contains("headquarters-section"),
+    );
+    assert.equal(sections[0], section, "above the team's section");
+    assert.equal(sections[1].children[0].textContent, "Drużyna");
+    view.dispose();
+  });
+});
+
+// Catches the title of a section that holds only stops in the open game (Q19) and a full chest
+// that is not said, or said for a chest that is not full.
+test("only stops in the open game give „Pętle, które stanęły”, and a full chest adds its sentence", async () => {
+  await onPage(async ({ root }) => {
+    const base = reported();
+    const { view } = await viewOf({
+      ...base,
+      awayReport: [
+        {
+          characterId: 2,
+          minutes: 0,
+          chest: {},
+          practice: {},
+          resurrectionUsed: false,
+          stop: { generation: 3, away: false },
+        },
+      ],
+      team: { ...base.team, chest: { pieces: { stick: 60 } } },
+    });
+    const section = reportSection(root);
+    assert.equal(section.children[0].textContent, "Pętle, które stanęły");
+    assert.equal(
+      byClass(section, "away-report-line")[0].textContent,
+      "Ola: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 3.",
+    );
+    const [full] = byClass(section, "away-report-full");
+    assert.ok(shown(full));
+    assert.equal(full.textContent, "Skrzynka jest pełna.");
+    view.dispose();
+  });
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(reported());
+    assert.ok(!shown(byClass(reportSection(root), "away-report-full")[0]));
+    view.dispose();
+  });
+});
+
+test("a state with an empty report shows no section", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(withCharacter());
+    assert.ok(!shown(reportSection(root)));
+    view.dispose();
+  });
+});
+
+// Catches a „Zamknij” that closes one line, one that is not saved, and one that leaves focus on the
+// page body once the button is gone (D-42; spec, Left to the maker).
+test("„Zamknij” closes the whole section at once, saves, and focus stays on the screen", async () => {
+  await onPage(async ({ root }) => {
+    const { view, held } = await viewOf(reported());
+    const close = buttonNamed(reportSection(root), "Zamknij");
+    close.focus();
+    assert.equal(fakeDocument.activeElement, close);
+    close.fire("click");
+    assert.ok(!shown(reportSection(root)));
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    assert.deepEqual(argsOf(held, "saveGame")[0].game.awayReport, []);
+    const focused = fakeDocument.activeElement;
+    assert.notEqual(
+      focused,
+      fakeDocument.body,
+      "focus did not fall to the body",
+    );
+    assert.ok(shown(focused), "focus is on something on the screen");
+    assert.ok(byClass(root, "headquarters")[0].contains(focused));
+    view.dispose();
+  });
+});
+
+// Catches a report that is not in the game state: it must come back from a reload, and what the
+// reload of a closed report returns must not show it again.
+test("the report survives a reload, and a closed report stays closed after one", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(reported(), 3));
+    assert.ok(shown(reportSection(root)));
+    buttonNamed(reportSection(root), "Zamknij").fire("click");
+    const [sent] = argsOf(held, "saveGame");
+    assert.deepEqual(sent.game.awayReport, []);
+    const stored = { ok: true, value: { ...sent, revision: 4 } };
+    await held.answer("saveGame", { kind: "saved", revision: 4 });
+
+    // A second page loads what the first one saved.
+    fakeDocument.body.replaceChildren();
+    const again = heldClient();
+    await startPage(again);
+    await again.answer("currentAccount", ACCOUNT);
+    await again.answer("loadSavedGame", stored);
+    assert.ok(gameShown(root));
+    assert.ok(!shown(reportSection(root)));
+  });
+});
+
+// Catches the report drawn on the screen of a manual map run (D-246, row 26): it hides with the
+// headquarters and shows when „Zakończ” brings the headquarters back.
+test("a manual map run hides the report with the headquarters, and „Zakończ” shows it", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf({ ...reported(), run: passing().run });
+    assert.ok(!shown(reportSection(root)));
+    buttonNamed(root, "Zakończ").fire("click");
+    assert.ok(shown(reportSection(root)));
+    view.dispose();
+  });
 });

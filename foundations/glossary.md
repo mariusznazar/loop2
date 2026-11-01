@@ -214,3 +214,27 @@ A resurrection is what a character has ready or not at the moment of its death a
 A generation number is a count kept at a character that grows by one at a death with no resurrection ready, the character staying the same character with the number the game gave it at its creation (D-56).
 
 - **Not:** the number the game gives a character at its creation (D-56) — "character's number"
+
+## earning loop
+
+An earning loop is a succession of map runs that one character makes on one map without the player starting each.
+
+- **Not:** none
+
+## catch-up
+
+The catch-up is the computing of the game minutes that passed while the game was closed.
+
+- **Not:** none
+
+## save time
+
+The save time is the moment of the browser's clock at which a saved game state was saved, which the game state holds and from which time away counts.
+
+- **Not:** an occasion on which the game sends a save (D-207) — "moment of saving"
+
+## loop clock
+
+The loop clock is the date, kept by the browser view apart from the game state, up to which the whole game minutes of the earning loops have been counted.
+
+- **Not:** none

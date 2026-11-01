@@ -2,18 +2,20 @@
  * The saver of the game state on the server (D-207, D-208, D-209, D-210, D-211, D-97): one save
  * request at a time, every moment of saving during one coalesced into one more save after its
  * answer, except a moment asked for during the save before a logout that goes on, which is
- * dropped (D-207); a check every 30 real seconds and at a hidden page that sends only a changed
- * state; and the header sentence of what the player sees of saving. It is created with the game
+ * dropped (D-207); a check every 30 real seconds, made only while a manual map run passes, and at a
+ * hidden page, that sends only a changed state; each document holding the clock's moment as its save time, which changes no state
+ * (D-248); and the header sentence of what the player sees of saving. It is created with the game
  * and disposed with it; nothing here runs when the module is imported.
  */
 import type { AccountClient, SaveOutcome } from "../account-api.js";
+import { withSaveTime } from "../sim/game.js";
 import { savedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
 import { createFormWarning } from "./controls/text-field.js";
 
 const RETRYING = "Nie udało się zapisać postępu. Gra spróbuje ponownie.";
 const TOO_LARGE =
-  "Nie udało się zapisać postępu: stan gry jest za duży. Usuń niepotrzebne programy.";
+  "Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.";
 const CONFLICT =
   "Gra została zapisana w innej przeglądarce. Wczytano ten zapis.";
 const OUTDATED = "Gra została zaktualizowana. Odśwież stronę.";
@@ -30,6 +32,14 @@ export type GameSaverOptions = {
   readonly client: Pick<AccountClient, "saveGame">;
   /** The current game state; the page passes the clock's real time to the simulation first. */
   readonly read: () => GameState;
+  /** The real moment of the clock's latest reading, the one `read` has just made (D-248). */
+  readonly moment: () => number;
+  /**
+   * A manual map run passes now: present, not ended, not paused. The 30-second rhythm checks only
+   * then; the earning loops are saved at the player's acts, at the end of each of their map runs and
+   * at a hidden page (D-207). `check` itself and the hidden page do not ask it.
+   */
+  readonly runPasses: () => boolean;
   /** The state the game was built on, held as already saved at `revision`. */
   readonly state: GameState;
   /** The revision of the saved game state the game was built on; 0 when the server held none. */
@@ -123,9 +133,11 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     pending = false;
     inFlight = true;
     const state = read();
+    // The state read stays the baseline: only its document holds the save time (D-248).
     baseline = state;
+    const stamped = withSaveTime(state, options.moment());
     void client
-      .saveGame({ ...savedGame(state), basedOn: revision })
+      .saveGame({ ...savedGame(stamped), basedOn: revision })
       .then((outcome) => answered(outcome, forLogout));
   };
 
@@ -204,7 +216,9 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     if (document.visibilityState === "hidden") check();
   };
 
-  const interval = setInterval(check, CHECK_MS);
+  const interval = setInterval(() => {
+    if (options.runPasses()) check();
+  }, CHECK_MS);
   document.addEventListener("visibilitychange", onVisibility);
 
   return {

@@ -58,6 +58,22 @@ export function takeTrip(
 }
 
 /**
+ * The take list as a run of a solved map takes it (D-189): each entry cut by the carrying capacity
+ * and the map's entry cap in list order, the list's own counts standing in for the stock. Pure.
+ */
+export function clippedTake(
+  plan: TripPlan,
+  capacity: number,
+  map: MapDef,
+): TripEntry[] {
+  return clipTrip(
+    plan.take,
+    Object.fromEntries(plan.take.map(({ item, count }) => [item, count])),
+    Math.min(capacity, map.carryIn ?? Infinity),
+  );
+}
+
+/**
  * Equipment of a marked run (a manual map run of a solved map): the take list taken from nowhere,
  * the list's own counts standing in for the stock, clipped only by the carrying capacity and the
  * map's entry cap. The chest is not an argument, so nothing leaves it.
@@ -67,13 +83,9 @@ export function takeFromNowhere(
   capacity: number,
   map: MapDef,
 ): Backpack {
-  const taken = clipTrip(
-    plan.take,
-    Object.fromEntries(plan.take.map(({ item, count }) => [item, count])),
-    Math.min(capacity, map.carryIn ?? Infinity),
-  );
   const backpack = newBackpack();
-  for (const { item, count } of taken) backpack[item] = count;
+  for (const { item, count } of clippedTake(plan, capacity, map))
+    backpack[item] = count;
   return backpack;
 }
 

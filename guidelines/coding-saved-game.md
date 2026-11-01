@@ -161,10 +161,13 @@ pole (D-197).
 
 ### Przebieg mapy po wczytaniu
 
-Przebieg mapy, który trwał, wraca zatrzymany, w minucie gry, z tempem i resztą
-czasu rzeczywistego dokumentu; zakończony wraca zakończony, z ekranem po końcu
-(D-212), z tym, co ukończenie włożyło do skrzyni, i z wprawą przebiegu.
-Wczytanie niczego nie posuwa naprzód.
+Ręczny przebieg mapy, który trwał, wraca zatrzymany, w minucie gry, z tempem
+i resztą czasu rzeczywistego dokumentu; zakończony wraca zakończony, z ekranem
+po końcu (D-212), z tym, co ukończenie włożyło do skrzyni, i z wprawą przebiegu.
+Przebieg pętli zarobkowej nie ma pauzy ani tempa i wraca trwający, bo dokument
+z zakończonym przebiegiem pętli to `shape` (D-241). Wczytanie niczego nie posuwa
+naprzód: chwilę zapisu bierze z dokumentu, a minuty nieobecności dolicza osobny
+krok po wczytaniu (D-247).
 
 ## Where in code
 

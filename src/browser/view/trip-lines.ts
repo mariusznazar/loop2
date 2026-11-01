@@ -1,8 +1,8 @@
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { sameData } from "../sim/programs.js";
-import { tripEntryCut, tripLoot } from "../sim/trip.js";
-import type { GameState, TripEntry, TripPlan } from "../sim/types.js";
+import { clippedTake, tripEntryCut, tripLoot } from "../sim/trip.js";
+import type { Chest, GameState, TripEntry, TripPlan } from "../sim/types.js";
 
 /** A map cuts the requested equipment below what the character could carry. */
 export function tripWarning(
@@ -13,6 +13,31 @@ export function tripWarning(
   return tripEntryCut(plan, capacity, map)
     ? `Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej ${map.carryIn} sztuk.`
     : null;
+}
+
+/** The mark of a rehearsal an earning loop cannot repeat (D-251). */
+export const REHEARSAL_MARK =
+  "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
+
+/**
+ * The mark under „Wyślij” at a map: a solved map where an item of the take list, cut by the
+ * carrying capacity and the map's entry cap, is more than the chest holds, since a manual run of a
+ * solved map takes from nowhere and an earning loop takes from the chest (D-251); null otherwise.
+ * Pure.
+ */
+export function rehearsalMark(
+  solved: boolean,
+  plan: TripPlan,
+  capacity: number,
+  map: MapDef,
+  chest: Chest,
+): string | null {
+  const short =
+    solved &&
+    clippedTake(plan, capacity, map).some(
+      ({ item, count }) => count > (chest.pieces[item] ?? 0),
+    );
+  return short ? REHEARSAL_MARK : null;
 }
 
 function itemList(entries: readonly TripEntry[]): string {
