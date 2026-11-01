@@ -105,6 +105,14 @@ export class SqliteSessionStore extends session.Store {
     super();
   }
 
+  // The password hash a session object stands on, kept beside the object and
+  // not in it, so the stored payload stays as D-115 has it (D-112).
+  private readonly expectedHashes = new WeakMap<object, string>();
+
+  expectPasswordHash(value: session.SessionData, passwordHash: string): void {
+    this.expectedHashes.set(value, passwordHash);
+  }
+
   override get(
     id: string,
     callback: (error: Error | null, value?: session.SessionData | null) => void,
@@ -140,6 +148,7 @@ export class SqliteSessionStore extends session.Store {
         accountId: decoded.accountId!,
         data,
         expiresAt: decoded.cookie.expires!.getTime(),
+        expectedPasswordHash: this.expectedHashes.get(value),
       });
     }, callback);
   }

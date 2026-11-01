@@ -33,7 +33,12 @@ import {
 } from "../../dist/public/sim/programs.js";
 import { loadSavedGame } from "../../dist/public/sim/saved-game.js";
 import { buyBranch } from "../../dist/public/sim/skills.js";
-import { registrationProblems } from "../../dist/public/view/account-screen.js";
+import {
+  addressProblem,
+  createAccountScreen,
+  passwordProblems,
+  registrationProblems,
+} from "../../dist/public/view/account-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- a document model with just what the page and the game build ---------------------------
@@ -311,6 +316,9 @@ function forms(root) {
           warning: all(form).find(
             (element) => element.getAttribute("role") === "alert",
           ),
+          note: all(form).find(
+            (element) => element.getAttribute("role") === "status",
+          ),
         },
       ];
     }),
@@ -334,10 +342,12 @@ function heldClient() {
     client: {
       register: call("register"),
       login: call("login"),
+      requestPasswordReset: call("requestPasswordReset"),
       currentAccount: call("currentAccount"),
       logout: call("logout"),
       confirmEmail: call("confirmEmail"),
       sendConfirmationMessage: call("sendConfirmationMessage"),
+      setPassword: call("setPassword"),
       loadSavedGame: call("loadSavedGame"),
       saveGame: call("saveGame"),
     },
@@ -687,6 +697,292 @@ test("registration problems follow the server's rules, counting a password in co
     for (const field of expected)
       assert.ok(problems[field], `${name}: ${field} has a message`);
   }
+});
+
+// --- the form „Nie pamiętam hasła” (task reset-hasla, To do 1 and 3; D-96, D-222) --------------
+
+const RESET_SENTENCE =
+  "Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik. Gdy wiadomość nie przyjdzie, spróbuj ponownie później.";
+const ADDRESS_SENTENCE = "Podaj adres e-mail w postaci nazwa@domena.";
+const REQUEST_REFUSED = {
+  ok: false,
+  failure: {
+    kind: "refused",
+    status: 400,
+    code: "invalid-request",
+    message: "Nie udało się wysłać prośby.",
+  },
+};
+const REQUESTED = { ok: true, value: null };
+
+/** Whether the form shows a sentence of the reset under it. */
+const noteShown = (form) => form.note !== undefined && shown(form.note);
+
+/** The signed-out page with the request form opened by its button. */
+async function requestPage(held) {
+  await signedOutPage(held);
+  buttonNamed(fakeDocument.body, "Nie pamiętam hasła").fire("click");
+  await settle();
+  return forms(fakeDocument.body)["Nie pamiętam hasła"];
+}
+
+test("the button under „Zaloguj się” puts one form with an empty address, „Wyślij odnośnik” and „Wróć do logowania” in place of both forms", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const before = await signedOutPage(held);
+    assert.deepEqual(Object.keys(before), ["Zaloguj się", "Załóż konto"]);
+    const opener = buttonNamed(root, "Nie pamiętam hasła");
+    assert.ok(opener, "the button stands under „Zaloguj się”");
+    assert.ok(before["Zaloguj się"].form.parent.contains(opener));
+    assert.equal(before["Zaloguj się"].form.contains(opener), false);
+    // What was typed in the two forms must not come back in the new state.
+    before["Zaloguj się"].inputs[0].value = "ala@example.com";
+    before["Załóż konto"].inputs[1].value = "dwanaście znaków";
+
+    opener.fire("click");
+    await settle();
+    const after = forms(root);
+    assert.deepEqual(Object.keys(after), ["Nie pamiętam hasła"]);
+    const request = after["Nie pamiętam hasła"];
+    assert.equal(request.inputs.length, 1);
+    assert.equal(request.inputs[0].value, "");
+    assert.deepEqual(
+      request.labels.map((label) => label.textContent),
+      ["Adres e-mail"],
+    );
+    assert.equal(request.button.textContent, "Wyślij odnośnik");
+    assert.ok(buttonNamed(root, "Wróć do logowania"));
+    assert.equal(shown(request.warning), false);
+    assert.equal(noteShown(request), false);
+    assert.equal(fakeDocument.activeElement, request.inputs[0]);
+    assert.equal(held.calls.length, 0, "no request was made by the opening");
+  });
+});
+
+test("a request waits with its field and every button of the screen locked, and sends nothing twice", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    const request = await requestPage(held);
+    request.inputs[0].value = "ala@example.com";
+    request.inputs[0].focus();
+    request.form.fire("submit");
+    await settle();
+
+    assert.deepEqual(
+      held.calls.map(({ name, args }) => [name, ...args]),
+      [["requestPasswordReset", "ala@example.com"]],
+    );
+    assert.equal(request.button.textContent, "Wysyłanie…");
+    assert.equal(request.inputs[0].disabled, true);
+    assert.equal(request.button.disabled, true);
+    assert.equal(
+      buttonNamed(fakeDocument.body, "Wróć do logowania").disabled,
+      true,
+    );
+    request.form.fire("submit");
+    await settle();
+    assert.equal(held.calls.length, 1);
+  });
+});
+
+test("while a login waits, the button „Nie pamiętam hasła” is locked with the two forms and opens nothing", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const { "Zaloguj się": login } = await signedOutPage(held);
+    login.inputs[0].value = "ala@example.com";
+    login.inputs[1].value = "dwanaście znaków";
+    login.form.fire("submit");
+    await settle();
+    const opener = buttonNamed(root, "Nie pamiętam hasła");
+    assert.equal(opener.disabled, true);
+    opener.fire("click");
+    await settle();
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+
+    await held.answer("login", NO_CONNECTION);
+    assert.equal(opener.disabled, false);
+  });
+});
+
+test("an address not written as name@domain gets its sentence under the field, nothing is sent and the field takes focus", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    const request = await requestPage(held);
+    const [email] = request.inputs;
+    email.value = "ala.example.com";
+    request.button.focus();
+    request.form.fire("submit");
+    await settle();
+
+    assert.equal(held.calls.length, 0);
+    assert.equal(email.getAttribute("aria-invalid"), "true");
+    const message = all(request.form).find(
+      (element) =>
+        element.classList.contains("input-field-message") && shown(element),
+    );
+    assert.equal(message.textContent, ADDRESS_SENTENCE);
+    assert.equal(email.value, "ala.example.com");
+    assert.equal(request.button.disabled, false);
+    assert.equal(fakeDocument.activeElement, email);
+    assert.equal(noteShown(request), false);
+  });
+});
+
+test("a well-formed address gets the one sentence of the reset under the form in a status, with the field empty and the form and „Wróć do logowania” staying", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const request = await requestPage(held);
+    const [email] = request.inputs;
+    email.value = "  nieznany@example.com ";
+    email.focus();
+    request.form.fire("submit");
+    await settle();
+    await held.answer("requestPasswordReset", REQUESTED);
+
+    assert.ok(request.note, "the note stands in the form");
+    assert.equal(request.note.getAttribute("role"), "status");
+    assert.equal(request.note.textContent, RESET_SENTENCE);
+    assert.ok(shown(request.note));
+    assert.equal(email.value, "");
+    assert.equal(email.disabled, false);
+    assert.equal(request.button.textContent, "Wyślij odnośnik");
+    assert.equal(request.button.disabled, false);
+    assert.equal(shown(request.warning), false);
+    assert.equal(shownAlerts(root).length, 0);
+    assert.deepEqual(Object.keys(forms(root)), ["Nie pamiętam hasła"]);
+    assert.equal(buttonNamed(root, "Wróć do logowania").disabled, false);
+    assert.equal(fakeDocument.activeElement, email);
+
+    // Asking again removes the sentence while the new request is under way.
+    email.value = "ala@example.com";
+    request.form.fire("submit");
+    await settle();
+    assert.equal(noteShown(request), false);
+  });
+});
+
+test("a refusal or a lost connection on a request stands as the form's warning, keeps the address and returns focus to where it was sent from", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const request = await requestPage(held);
+    const [email] = request.inputs;
+    email.value = "ala@example.com";
+    email.focus();
+    request.form.fire("submit");
+    await settle();
+    await held.answer("requestPasswordReset", REQUEST_REFUSED);
+    assert.ok(shown(request.warning));
+    assert.equal(request.warning.textContent, REQUEST_REFUSED.failure.message);
+    assert.equal(noteShown(request), false);
+    assert.equal(email.value, "ala@example.com");
+    assert.equal(email.disabled, false);
+    assert.equal(request.button.textContent, "Wyślij odnośnik");
+    assert.equal(fakeDocument.activeElement, email);
+
+    request.button.focus();
+    request.form.fire("submit");
+    await settle();
+    assert.equal(shown(request.warning), false);
+    await held.answer("requestPasswordReset", NO_CONNECTION);
+    assert.equal(request.warning.textContent, NO_CONNECTION.failure.message);
+    assert.equal(shownAlerts(root).length, 1);
+    assert.equal(email.value, "ala@example.com");
+    assert.equal(fakeDocument.activeElement, request.button);
+  });
+});
+
+test("„Wróć do logowania” brings back both forms, and nothing typed, no sentence and no warning survives a second visit", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const request = await requestPage(held);
+    request.inputs[0].value = "ala@example.com";
+    request.form.fire("submit");
+    await settle();
+    await held.answer("requestPasswordReset", REQUESTED);
+    request.inputs[0].value = "druga@example.com";
+    request.form.fire("submit");
+    await settle();
+    await held.answer("requestPasswordReset", REQUEST_REFUSED);
+    request.inputs[0].value = "trzecia@example.com";
+    assert.ok(shown(request.warning));
+
+    buttonNamed(root, "Wróć do logowania").fire("click");
+    await settle();
+    const back = forms(root);
+    assert.deepEqual(Object.keys(back), ["Zaloguj się", "Załóż konto"]);
+    assert.equal(fakeDocument.activeElement, back["Zaloguj się"].inputs[0]);
+    for (const input of [
+      ...back["Zaloguj się"].inputs,
+      ...back["Załóż konto"].inputs,
+    ])
+      assert.equal(input.value, "");
+
+    buttonNamed(root, "Nie pamiętam hasła").fire("click");
+    await settle();
+    const again = forms(root)["Nie pamiętam hasła"];
+    assert.equal(again.inputs[0].value, "");
+    assert.equal(shown(again.warning), false);
+    assert.equal(noteShown(again), false);
+  });
+});
+
+test("reset from outside empties the request form, removes its sentence and shows the two forms, and a request answered afterwards is ignored", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const screen = createAccountScreen(held.client, () =>
+      assert.fail("no account was signed in"),
+    );
+    root.append(screen.element);
+    const opener = buttonNamed(root, "Nie pamiętam hasła");
+    opener.fire("click");
+    const request = forms(root)["Nie pamiętam hasła"];
+    request.inputs[0].value = "ala@example.com";
+    request.form.fire("submit");
+    await settle();
+    assert.equal(request.button.textContent, "Wysyłanie…");
+
+    screen.reset();
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.equal(request.inputs[0].value, "");
+    assert.equal(request.button.textContent, "Wyślij odnośnik");
+    assert.equal(request.inputs[0].disabled, false);
+
+    await held.answer("requestPasswordReset", REQUESTED);
+    assert.equal(noteShown(request), false);
+    assert.equal(request.inputs[0].value, "");
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+
+    // The sentence of a finished request goes with a reset too.
+    opener.fire("click");
+    request.inputs[0].value = "ala@example.com";
+    request.form.fire("submit");
+    await settle();
+    await held.answer("requestPasswordReset", REQUESTED);
+    assert.equal(noteShown(request), true);
+    screen.reset();
+    assert.equal(noteShown(request), false);
+    assert.equal(request.note.textContent, "");
+  });
+});
+
+test("the address rule and the password rules each give registration's result alone", () => {
+  const twelve = "a".repeat(12);
+  assert.equal(addressProblem(" ala@example.com "), null);
+  assert.equal(addressProblem("ala"), ADDRESS_SENTENCE);
+  assert.equal(addressProblem("a@b@c"), ADDRESS_SENTENCE);
+  assert.equal(addressProblem("@b"), ADDRESS_SENTENCE);
+  assert.equal(addressProblem("a@ "), ADDRESS_SENTENCE);
+  assert.deepEqual(passwordProblems(twelve, twelve), {});
+  assert.deepEqual(Object.keys(passwordProblems("krótkie", "krótkie")), [
+    "password",
+  ]);
+  assert.deepEqual(Object.keys(passwordProblems(twelve, `${twelve} `)), [
+    "confirmation",
+  ]);
+  assert.deepEqual(registrationProblems("ala", "krótkie", "inne"), {
+    email: ADDRESS_SENTENCE,
+    ...passwordProblems("krótkie", "inne"),
+  });
 });
 
 // --- logout ---------------------------------------------------------------------------------
@@ -1050,6 +1346,380 @@ test("the sentence of a confirmation waits through a failed session check and sh
       false,
     );
   });
+});
+
+// --- the form for a password-reset link ---------------------------------------------------------
+
+const RESET_TOKEN = "cmVzZXRyZXNldHJlc2V0cmVzZXRyZXNldHJlc2V0cmVzZXQ";
+const RESET_LINK = `#reset-password=${RESET_TOKEN}`;
+const NEW_PASSWORD = "nowe hasło 123";
+const CHANGED = { ok: true, value: null };
+
+/** The failures that keep the form: the client's one sentence under it and the link as it was. */
+const KEEPING_FAILURES = {
+  "no connection": NO_CONNECTION,
+  "a timeout": {
+    ok: false,
+    failure: { kind: "unreachable", reason: "timeout", message: "Za długo." },
+  },
+  "the gate full": {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 429,
+      code: "too-many-attempts",
+      message: "Za dużo prób. Spróbuj ponownie za kilka minut.",
+    },
+  },
+  "a server error": {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 500,
+      code: null,
+      message: "Serwer nie mógł.",
+    },
+  },
+  "a password the server refuses": {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 400,
+      code: "invalid-password",
+      message: "Hasło musi mieć od 12 do 128 znaków.",
+    },
+  },
+};
+
+/**
+ * An address that, at the moment its fragment is cleared, notes whether the reset form still
+ * stands alone in the page: the fragment must go before the page moves on.
+ */
+function resetAddress(root) {
+  const address = fakeAddress(RESET_LINK);
+  const clear = address.clearFragment;
+  address.formAtClear = [];
+  address.clearFragment = () => {
+    const standing = Object.keys(forms(root));
+    address.formAtClear.push(
+      standing.length === 1 && standing[0] === "Ustaw nowe hasło",
+    );
+    clear();
+  };
+  return address;
+}
+
+const resetFormOf = (root) => forms(root)["Ustaw nowe hasło"];
+
+/** Types the new password twice into the form. */
+function fillReset(form, password = NEW_PASSWORD, repeated = password) {
+  form.inputs[0].value = password;
+  form.inputs[1].value = repeated;
+}
+
+/** The sentences the page puts above its screen, in order, with their roles. */
+function pageSentences(root) {
+  return all(root)
+    .filter(
+      (element) =>
+        shown(element) &&
+        (element.classList.contains("confirmation-notice") ||
+          element.classList.contains("page-notice")),
+    )
+    .map((element) => [
+      element.textContent,
+      element.classList.contains("positive") ? "positive" : "warning",
+    ]);
+}
+
+/** The message standing under a field of the form, or null while it shows none. */
+function fieldMessage(input) {
+  const message = all(input.parent).find(
+    (element) =>
+      element.classList.contains("input-field-message") && shown(element),
+  );
+  return message ? message.textContent : null;
+}
+
+test("with a reset token in the address the page shows the form at once, asking nothing, building no game and saving nothing", async () => {
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    // Whoever is signed in in this browser, the page has asked nothing to know it.
+    assert.deepEqual(held.calls, []);
+    assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"]);
+    const form = resetFormOf(root);
+    assert.deepEqual(
+      form.labels.map((label) => label.textContent),
+      ["Nowe hasło", "Powtórz hasło"],
+    );
+    assert.deepEqual(
+      form.inputs.map((input) => [
+        input.type,
+        input.getAttribute("autocomplete"),
+      ]),
+      [
+        ["password", "new-password"],
+        ["password", "new-password"],
+      ],
+    );
+    assert.equal(form.button.textContent, "Ustaw hasło");
+    assert.equal(form.button.type, "submit");
+    assert.ok(buttonNamed(root, "Anuluj"), "the button „Anuluj” stands");
+    assert.equal(shown(form.warning), false);
+    assert.equal(gameShown(root), false);
+    assert.equal(intervals.size, 0);
+    assert.equal(
+      byClass(root, "session-check").some(shown),
+      false,
+      "no session check is shown",
+    );
+    assert.ok(!shown(buttonNamed(root, "Wyloguj")));
+    assert.equal(address.cleared, 0);
+    assert.equal(address.hash(), RESET_LINK);
+    // Time passing sends nothing either: no timer of a game or a saver exists.
+    mock.timers.tick(10 * 60_000);
+    await settle();
+    assert.deepEqual(held.calls, []);
+  });
+});
+
+test("a sent form waits with its fields and „Anuluj” locked, sends the token and both passwords once and keeps the fragment", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    const form = resetFormOf(root);
+    fillReset(form);
+    form.inputs[0].focus();
+    form.form.fire("submit");
+    await settle();
+
+    assert.deepEqual(
+      held.calls.map(({ name, args }) => [name, ...args]),
+      [["setPassword", RESET_TOKEN, NEW_PASSWORD, NEW_PASSWORD]],
+    );
+    assert.equal(form.button.textContent, "Ustawianie…");
+    assert.equal(form.button.disabled, true);
+    assert.deepEqual(
+      form.inputs.map((input) => input.disabled),
+      [true, true],
+    );
+    const cancel = buttonNamed(root, "Anuluj");
+    assert.equal(cancel.disabled, true);
+    // A second send and a click on the locked „Anuluj” do nothing.
+    form.form.fire("submit");
+    cancel.fire("click");
+    await settle();
+    assert.equal(held.calls.length, 1);
+    assert.equal(address.cleared, 0);
+    assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"]);
+  });
+});
+
+test("a password the server would refuse sends nothing, marks the field at fault, takes focus there and keeps the link", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    const form = resetFormOf(root);
+
+    fillReset(form, "krótkie", "krótkie");
+    form.form.fire("submit");
+    await settle();
+    assert.equal(
+      fieldMessage(form.inputs[0]),
+      "Hasło musi mieć od 12 do 128 znaków.",
+    );
+    assert.equal(fieldMessage(form.inputs[1]), null);
+    assert.equal(fakeDocument.activeElement, form.inputs[0]);
+
+    fillReset(form, NEW_PASSWORD, "inne hasło 123");
+    form.form.fire("submit");
+    await settle();
+    assert.equal(fieldMessage(form.inputs[0]), null);
+    assert.equal(
+      fieldMessage(form.inputs[1]),
+      "Powtórzone hasło różni się od hasła.",
+    );
+    assert.equal(fakeDocument.activeElement, form.inputs[1]);
+
+    assert.deepEqual(held.calls, []);
+    assert.equal(address.cleared, 0);
+    assert.equal(address.hash(), RESET_LINK);
+    assert.equal(form.button.disabled, false);
+    assert.equal(buttonNamed(root, "Anuluj").disabled, false);
+  });
+});
+
+test("a change clears the fragment first, then shows the forms with the sentence in positive above them, asks about no session and focuses the address field", async () => {
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    const address = resetAddress(root);
+    await startPage(held, address);
+    const form = resetFormOf(root);
+    fillReset(form);
+    form.form.fire("submit");
+    await settle();
+    await held.answer("setPassword", CHANGED);
+
+    assert.deepEqual(address.formAtClear, [true]);
+    assert.equal(address.cleared, 1);
+    assert.equal(address.hash(), "");
+    assert.deepEqual(held.calls, []);
+    const shownForms = forms(root);
+    assert.deepEqual(Object.keys(shownForms), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(pageSentences(root), [
+      ["Hasło zmienione. Zaloguj się nowym hasłem.", "positive"],
+    ]);
+    const [notice] = noticeOf(root);
+    assert.equal(notice.parent.children.indexOf(notice), 0);
+    assert.equal(
+      fakeDocument.activeElement,
+      shownForms["Zaloguj się"].inputs[0],
+    );
+    assert.equal(gameShown(root), false);
+    assert.equal(intervals.size, 0);
+  });
+});
+
+test("a refused link, whatever its reason, clears the fragment first and then checks the session: the forms or the game with the sentence in warning above them", async () => {
+  const reasons = {
+    "an unknown or spent link": "Odnośnik jest nieważny albo wygasł.",
+    "a link of a blocked account": "Konto jest zablokowane.",
+  };
+  for (const [name, message] of Object.entries(reasons)) {
+    const refused = {
+      ok: false,
+      failure: { kind: "refused", status: 400, code: "invalid-link", message },
+    };
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = resetAddress(root);
+      await startPage(held, address);
+      const form = resetFormOf(root);
+      fillReset(form);
+      form.form.fire("submit");
+      await settle();
+      await held.answer("setPassword", refused);
+      assert.deepEqual(address.formAtClear, [true], name);
+      assert.equal(address.hash(), "", name);
+      assert.deepEqual(
+        held.calls.map((entry) => entry.name),
+        ["currentAccount"],
+        name,
+      );
+      await held.answer("currentAccount", NO_SESSION);
+      assert.deepEqual(Object.keys(forms(root)), [
+        "Zaloguj się",
+        "Załóż konto",
+      ]);
+      assert.deepEqual(
+        pageSentences(root),
+        [["Odnośnik jest nieważny albo wygasł.", "warning"]],
+        name,
+      );
+      const [notice] = noticeOf(root);
+      assert.equal(notice.parent.children.indexOf(notice), 0, name);
+    });
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      await startPage(held, fakeAddress(RESET_LINK));
+      const form = resetFormOf(root);
+      fillReset(form);
+      form.form.fire("submit");
+      await settle();
+      await held.answer("setPassword", refused);
+      await held.answer("currentAccount", ACCOUNT);
+      await held.answer("loadSavedGame", NO_SAVE);
+      assert.equal(gameShown(root), true, name);
+      assert.deepEqual(
+        pageSentences(root),
+        [["Odnośnik jest nieważny albo wygasł.", "warning"]],
+        name,
+      );
+      const [notice] = noticeOf(root);
+      assert.equal(notice.parent.children.indexOf(notice), 0, name);
+    });
+  }
+});
+
+test("„Anuluj” clears the fragment first and opens the page as usual with the session check and no sentence", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = resetAddress(root);
+    await startPage(held, address);
+    buttonNamed(root, "Anuluj").fire("click");
+    await settle();
+    assert.deepEqual(address.formAtClear, [true]);
+    assert.equal(address.hash(), "");
+    assert.deepEqual(
+      held.calls.map((entry) => entry.name),
+      ["currentAccount"],
+    );
+    await held.answer("currentAccount", NO_SESSION);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(pageSentences(root), []);
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(RESET_LINK));
+    buttonNamed(root, "Anuluj").fire("click");
+    await settle();
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", NO_SAVE);
+    assert.equal(gameShown(root), true);
+    assert.deepEqual(pageSentences(root), []);
+  });
+});
+
+test("a failure that is no change and no refused link keeps the form, the fragment and the link, with the client's sentence under the form and focus back where the player sent it from", async () => {
+  for (const [name, failure] of Object.entries(KEEPING_FAILURES)) {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = fakeAddress(RESET_LINK);
+      await startPage(held, address);
+      const form = resetFormOf(root);
+      fillReset(form);
+      form.inputs[1].focus();
+      form.form.fire("submit");
+      await settle();
+      await held.answer("setPassword", failure);
+
+      assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"], name);
+      assert.equal(shown(form.warning), true, name);
+      assert.equal(form.warning.textContent, failure.failure.message, name);
+      assert.equal(address.cleared, 0, name);
+      assert.equal(address.hash(), RESET_LINK, name);
+      assert.equal(fakeDocument.activeElement, form.inputs[1], name);
+      assert.equal(form.button.textContent, "Ustaw hasło", name);
+      assert.equal(form.button.disabled, false, name);
+      assert.deepEqual(
+        form.inputs.map((input) => [input.disabled, input.value]),
+        [
+          [false, NEW_PASSWORD],
+          [false, NEW_PASSWORD],
+        ],
+        name,
+      );
+      assert.equal(buttonNamed(root, "Anuluj").disabled, false, name);
+      assert.deepEqual(held.calls, [], name);
+
+      // The link still works: the same token goes out again, from the button this time.
+      form.button.focus();
+      form.form.fire("submit");
+      await settle();
+      assert.deepEqual(
+        held.calls.map(({ name: call, args }) => [call, ...args]),
+        [["setPassword", RESET_TOKEN, NEW_PASSWORD, NEW_PASSWORD]],
+        name,
+      );
+      assert.equal(shown(form.warning), false, name);
+      await held.answer("setPassword", failure);
+      assert.equal(fakeDocument.activeElement, form.button, name);
+    });
+  }
 });
 
 // --- the saved game state -------------------------------------------------------------------

@@ -296,8 +296,10 @@ log), so copying the one file while the application runs does not copy the datab
   when no loop2 container references it; none of these is part of any loop2 procedure.
 - Docker keeps the volume in its own data directory on the server; the human finds it with
   `docker volume inspect loop2_accounts` and opens it only as root or through Docker.
-- The database holds e-mail addresses and password hashes. No agent reads or copies it, and
-  nothing here copies it off the server: losing the volume loses the accounts.
+- The database holds e-mail addresses and password hashes. No agent reads or copies it. A
+  nightly encrypted backup leaves the server for Strych (`backup_and_restore.md`): losing the
+  volume loses the accounts made after the latest backup, and the human's restore brings back
+  the rest.
 
 ## Deploying a request head and accepting it
 

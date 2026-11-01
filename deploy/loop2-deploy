@@ -29,6 +29,8 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 umask 027
 readonly CHECKOUT_DIR=/srv/loop2
 readonly INSTALLED_SCRIPT=/usr/local/bin/loop2-deploy
+readonly INSTALLED_BACKUP_SCRIPT=/usr/local/bin/loop2-backup
+readonly INSTALLED_BACKUP_SCHEDULE=/etc/cron.d/loop2-backup
 readonly LOG_FILE=/var/log/loop2-deploy.log
 readonly LOCK_FILE=/run/loop2-deploy.lock
 readonly MEMINFO_FILE=/proc/meminfo
@@ -196,22 +198,31 @@ check_out_commit() {
   log "checked out $REQUESTED in $CHECKOUT_DIR"
 }
 
-# --- 7. installed script against the checked-out source -----------------------------------------
+# --- 7. installed copies against the checked-out sources ---------------------------------------
+
+compare_installed_copy() {
+  # compare_installed_copy INSTALLED SOURCE: SOURCE is a path in the repository. A difference is a
+  # warning, never a failure: this run goes on with the installed copy.
+  local installed=$1 relative=$2
+  local source="$CHECKOUT_DIR/$relative"
+  if [[ ! -f $source ]]; then
+    log "warning: commit $REQUESTED has no $relative (the source is missing, as in every commit from before it existed); this run goes on with the installed $installed"
+    return
+  fi
+  if [[ ! -r $installed ]]; then
+    log "warning: the installed $installed cannot be read, so it cannot be compared with $relative at commit $REQUESTED; a human should check the installation (see the loop2-deploy skill)"
+    return
+  fi
+  if ! cmp -s -- "$installed" "$source"; then
+    log "warning: the installed $installed differs from $relative at commit $REQUESTED; this run goes on with the installed copy. A human should review the difference and reinstall the copy (see the loop2-deploy skill). After a rollback to a commit older than the last change of the copy this difference is expected."
+  fi
+}
 
 compare_installed_script() {
-  # A difference is a warning, never a failure: this run goes on with the installed copy.
-  local source="$CHECKOUT_DIR/deploy/loop2-deploy"
-  if [[ ! -f $source ]]; then
-    log "warning: commit $REQUESTED has no deploy/loop2-deploy (the script's source is missing, as in every commit from before the deployment existed); this run goes on with the installed $INSTALLED_SCRIPT"
-    return
-  fi
-  if [[ ! -r $INSTALLED_SCRIPT ]]; then
-    log "warning: the installed $INSTALLED_SCRIPT cannot be read, so it cannot be compared with deploy/loop2-deploy at commit $REQUESTED; a human should check the installation (see the loop2-deploy skill)"
-    return
-  fi
-  if ! cmp -s -- "$INSTALLED_SCRIPT" "$source"; then
-    log "warning: the installed $INSTALLED_SCRIPT differs from deploy/loop2-deploy at commit $REQUESTED; this run goes on with the installed copy. A human should review the difference and reinstall the script (see the loop2-deploy skill). After a rollback to a commit older than the last change of the script this difference is expected."
-  fi
+  # The three installed copies: the deploy script, the backup script and the backup schedule.
+  compare_installed_copy "$INSTALLED_SCRIPT" deploy/loop2-deploy
+  compare_installed_copy "$INSTALLED_BACKUP_SCRIPT" deploy/loop2-backup
+  compare_installed_copy "$INSTALLED_BACKUP_SCHEDULE" deploy/loop2-backup.cron
 }
 
 # --- 8. resource gate ---------------------------------------------------------------------------

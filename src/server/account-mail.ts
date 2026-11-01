@@ -2,14 +2,25 @@ import { rootCertificates } from "node:tls";
 import MailComposer from "nodemailer/lib/mail-composer";
 import SMTPConnection from "nodemailer/lib/smtp-connection";
 
-// D-158: sender name, subject and the three paragraphs of the confirmation message.
+// D-158: sender name, subject and the four paragraphs of the confirmation message.
 const senderName = "loop2";
 const confirmationSubject = "Potwierdź adres e-mail w loop2";
 const confirmationOpening =
   "Ktoś — zapewne Ty — założył konto w loop2 na ten adres e-mail. Aby go potwierdzić, otwórz odnośnik:";
 const confirmationValidity =
   "Odnośnik jest ważny przez 24 godziny i działa raz.";
+const confirmationReset =
+  "Potwierdzony adres pozwala samodzielnie zresetować zapomniane hasło.";
 const confirmationIgnore = "Jeśli to nie Ty, zignoruj tę wiadomość.";
+
+// D-227: subject and the three paragraphs of the password-reset message; the
+// sender is the confirmation message's.
+const resetSubject = "Ustaw nowe hasło w loop2";
+const resetOpening =
+  "Ktoś — zapewne Ty — poprosił o ustawienie nowego hasła do konta w loop2 na tym adresie e-mail. Aby je ustawić, otwórz odnośnik:";
+const resetValidity = "Odnośnik jest ważny przez godzinę i działa raz.";
+const resetIgnore =
+  "Jeśli to nie Ty, zignoruj tę wiadomość. Hasło się nie zmieni.";
 
 const defaultDeadline = 10_000;
 const phaseTimeout = 5_000;
@@ -45,6 +56,17 @@ export type SmtpMailerOptions = {
   readonly trustedCertificate?: string;
 };
 
+export function composePasswordResetMessage(
+  address: string,
+  link: string,
+): AccountMessage {
+  return {
+    to: address,
+    subject: resetSubject,
+    text: [`${resetOpening}\n${link}`, resetValidity, resetIgnore].join("\n\n"),
+  };
+}
+
 export function composeConfirmationMessage(
   address: string,
   link: string,
@@ -55,6 +77,7 @@ export function composeConfirmationMessage(
     text: [
       `${confirmationOpening}\n${link}`,
       confirmationValidity,
+      confirmationReset,
       confirmationIgnore,
     ].join("\n\n"),
   };
