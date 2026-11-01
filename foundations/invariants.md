@@ -1103,7 +1103,7 @@ The account and save server's database has a completed, consistent backup stored
 - **Rests on:** sqlite-online-backup
 - **Derives from:** D-228
 - **Part:** account-server · deployment
-- **Violated:** yes
+- **Violated:** no
 
 ## account-save-sqlite-upgrade
 
