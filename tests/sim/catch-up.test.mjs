@@ -496,7 +496,7 @@ test("the open game passes minute by minute, the characters in the team's order,
 });
 
 // invariant: trip-transfer
-// To do 12, D-223: the open game alternates minute by minute and the catch-up goes one character at
+// To do 12, D-240: the open game alternates minute by minute and the catch-up goes one character at
 // a time, so who gets the last room of the chest differs, each as the spec section 7 gives.
 test("with room in the chest for one, the open game gives it to whoever completes first and the catch-up to the earlier character of the team", () => {
   let state = looping({ moss: 57 });

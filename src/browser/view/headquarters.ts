@@ -118,13 +118,13 @@ export function resurrectionLine(
   };
 }
 
-/** The line of a character in an earning loop (D-227): the map, the run, its minute, runs completed. Pure. */
+/** The line of a character in an earning loop (D-244): the map, the run, its minute, runs completed. Pure. */
 export function loopLine(loop: EarningLoop): string {
   return `Pętla: ${MAPS[loop.run.mapId].name} · przejście ${loop.runNumber} · minuta ${loop.run.minute} · domknięte ${loop.completed}`;
 }
 
 /**
- * The line of a character whose earning loop was stopped (D-228): „Pętla zatrzymana” and, where the
+ * The line of a character whose earning loop was stopped (D-245): „Pętla zatrzymana” and, where the
  * loop gathered practice, „ · wprawa: {skill} +{n}, …” in the order of the skills' data. Pure.
  */
 export function stoppedLoopLine(practice: Practice): string {
@@ -149,7 +149,7 @@ export type HeadquartersControls = {
   startLoop(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
   /** Stops a character's earning loop at once. */
   stop(characterId: CharacterId): void;
-  /** Closes the whole report on earning loops (D-229). */
+  /** Closes the whole report on earning loops (D-246). */
   closeReport(): void;
 };
 
@@ -184,7 +184,7 @@ function emptyNote(text: string): HTMLElement {
 
 /**
  * Builds the headquarters: the section of the report on earning loops above it while the report
- * holds a line (D-229); the section „Drużyna” with the team's characters in the order they were
+ * holds a line (D-246); the section „Drużyna” with the team's characters in the order they were
  * created, each with its name, its generation „pokolenie {n}” from 2 up, the name of its
  * archetype, the line of its resurrection on a row of its own, one list „Program:” and the button
  * „Wyślij” for each map, and the creation of a character; and the section „Skrzynka” with the team's chest. Every name of the
@@ -375,7 +375,7 @@ export function createHeadquarters(
           controls.send(character.id, mapId, Number(programList.value)),
         );
         sendButtons.push({ element: button, characterId: character.id });
-        // A map not yet solved has no loop (D-226).
+        // A map not yet solved has no loop (D-243).
         const loopButton = isSolved
           ? createButton("Puść w pętlę", {
               label: `Puść w pętlę: ${character.name}, mapa ${MAPS[mapId].name}`,
@@ -445,7 +445,7 @@ export function createHeadquarters(
       element.textContent = text;
   }
 
-  /** Draws each row's line of a loop and „Zatrzymaj”, or the line of the stop, in place (D-227, D-228). */
+  /** Draws each row's line of a loop and „Zatrzymaj”, or the line of the stop, in place (D-244, D-245). */
   function drawLoops(state: GameState): void {
     for (const row of loopRows) {
       const loop = Object.hasOwn(state.loops, row.characterId)
@@ -515,7 +515,7 @@ export function createHeadquarters(
           rowProgram(state, characterId),
         ).value;
       // One map run at a time: while one goes on, no other character can be sent. A character in
-      // a loop can neither be sent nor put into another loop; the others can (D-226).
+      // a loop can neither be sent nor put into another loop; the others can (D-243).
       const inLoop = (characterId: CharacterId): boolean =>
         Object.hasOwn(state.loops, characterId);
       for (const { element, characterId } of sendButtons)

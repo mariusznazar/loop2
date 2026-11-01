@@ -4,7 +4,7 @@
  * answer, except a moment asked for during the save before a logout that goes on, which is
  * dropped (D-207); a check every 30 real seconds, made only while a manual map run passes, and at a
  * hidden page, that sends only a changed state; each document holding the clock's moment as its save time, which changes no state
- * (D-231); and the header sentence of what the player sees of saving. It is created with the game
+ * (D-248); and the header sentence of what the player sees of saving. It is created with the game
  * and disposed with it; nothing here runs when the module is imported.
  */
 import type { AccountClient, SaveOutcome } from "../account-api.js";
@@ -32,7 +32,7 @@ export type GameSaverOptions = {
   readonly client: Pick<AccountClient, "saveGame">;
   /** The current game state; the page passes the clock's real time to the simulation first. */
   readonly read: () => GameState;
-  /** The real moment of the clock's latest reading, the one `read` has just made (D-231). */
+  /** The real moment of the clock's latest reading, the one `read` has just made (D-248). */
   readonly moment: () => number;
   /**
    * A manual map run passes now: present, not ended, not paused. The 30-second rhythm checks only
@@ -133,7 +133,7 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     pending = false;
     inFlight = true;
     const state = read();
-    // The state read stays the baseline: only its document holds the save time (D-231).
+    // The state read stays the baseline: only its document holds the save time (D-248).
     baseline = state;
     const stamped = withSaveTime(state, options.moment());
     void client

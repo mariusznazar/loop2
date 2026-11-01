@@ -56,7 +56,7 @@ function withLoop(
 }
 
 /**
- * A map run of an earning loop at minute 0 (D-224, D-232): the program of the loop reduced to the
+ * A map run of an earning loop at minute 0 (D-241, D-249): the program of the loop reduced to the
  * repertoire of the run's skills, the skills and traits those of the team's `character` now, and the
  * equipment the take list takes from the chest as it stands, whether the map is solved or not. The
  * map run is not marked, and nothing is discovered, counted or reported by it.
@@ -167,7 +167,7 @@ export function startLoop(
 }
 
 /**
- * Stops the earning loop of a character at once (D-228): the practice the loop gathered and that of
+ * Stops the earning loop of a character at once (D-245): the practice the loop gathered and that of
  * the map run going on are paid into the character's skills, the loop is dropped, and the sum paid
  * is written into `stoppedLoops`, `{}` where the loop gathered none. The items the map run carries
  * are lost and its loot does not reach the chest. A map run that ended in death pays nothing. With
@@ -483,7 +483,7 @@ function stoppedLine(
 }
 
 /**
- * The open game's passing (D-225): the whole minutes from the loop clock `fromMs` to `nowMs`, one
+ * The open game's passing (D-242): the whole minutes from the loop clock `fromMs` to `nowMs`, one
  * after another, within each minute the characters with a loop in the team's order, each end dealt
  * with at the minute's own real moment (`fromMs` plus k minutes). A loop that stops writes its stop
  * into the report; a covered death and a completion write nothing. With no loop in the state the
@@ -522,7 +522,7 @@ export function passLoops(
 }
 
 /**
- * The catch-up (D-223, D-230): the whole minutes from the save time to `nowMs`, one character at a
+ * The catch-up (D-240, D-247): the whole minutes from the save time to `nowMs`, one character at a
  * time in the team's order, each through the whole span and the chest as the one before left it. It
  * reads neither the manual map run nor the pause, and a loop that stops does not stop the others.
  * Each character's turn is written into the report: its minutes, its own change of the chest and

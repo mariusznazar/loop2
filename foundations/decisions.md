@@ -1389,7 +1389,7 @@ Outside combat a game minute takes effect in this order: the character's body co
   - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; nature energy coming back after the effect of the action ending in its game minute, or in a game minute of combat; a completion checked before combat turns in their final minute; an attack tried again after those turns.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions carried to cycle, first question, "Kolejność skutków w jednej minucie gry" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "11. W której chwili minuty gry zapada odkrycie i od której minuty działa reguła wpisana przy odkryciu?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "8. W której chwili minuty gry przejście się domyka i co z akcją postaci kończącą się w tej minucie?" · plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Czy energia natury wraca w minutach walki?" and "Q10. W którym miejscu kolejności minuty gry (D-71) energia natury wraca — razem z ciałem, zaraz po spadku sytości, czy dopiero po skutku akcji kończącej się w tej minucie?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q9, and § Settlements to record, row 16
 
-*Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. A map run of an earning loop takes the same order and discovers nothing (D-232). The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Nature energy comes back with the body, as health does, before the action ending in the game minute lands, so a spell paid in that minute pays from the energy the minute has already given back. Accepted with it: a mage at full nature energy loses the energy one game minute gives back for each lighting it finishes; a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
+*Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole. A map run of an earning loop takes the same order and discovers nothing (D-249). The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Nature energy comes back with the body, as health does, before the action ending in the game minute lands, so a spell paid in that minute pays from the energy the minute has already given back. Accepted with it: a mage at full nature energy loses the energy one game minute gives back for each lighting it finishes; a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
 *Rejected:* the action of the character first, then the body and death — an effect would count for a game minute the character spent on the action, and dying in a game minute could be undone by what lands in it; death last, after the action of the character and the next pick — the character would start a program rule in the game minute it dies; a feeding that adds nothing where its campfire burnt out before its end — a program rule feeding a campfire with few minutes left would not feed it; a completion right after the character's body, as death comes — the effect of an action ending in that game minute would be lost; completion before the final combat turns — the encounter's result would be skipped; waiting another game minute for the ordinary pick after combat — an extra idle minute beyond the combat's fixed cost; nature energy coming back after the effect of the action ending in the game minute, satiety read after its fall — a mage at full nature energy finishing a lighting would keep the energy that minute gives back.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
@@ -1731,7 +1731,7 @@ earned under a group's former condition remains when the condition changes, and 
 a fresh picture of the edited program. A switch brings another program, whose rules have fired
 nothing in the map run. After „Zakończ” the counts stand beside the program the player goes back to,
 and a rule whose content differs there is not the rule that fired. The player watches a manual map
-run and reads an earning loop by what it brought (D-227), so the counts stand with the manual map
+run and reads an earning loop by what it brought (D-244), so the counts stand with the manual map
 run. Accepted with it: the rule that a map run counts its firings takes an exception.
 *Rejected:* counts per position — moving a rule would attach another rule's history to it;
 resetting on a move or group edit — arranging the same rules would erase their history; hiding
@@ -3364,7 +3364,7 @@ A manual map run that first solves its map pays practice and loot once per map f
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-179 · derives from D-222
+- **Relations:** derives from D-179 · derives from D-239
 - **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. An agent compares a change with the decision:
   - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was; stopping an earning loop in the middle of a map run adds the practice of that map run, while its loot stays out
   - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
@@ -4103,7 +4103,7 @@ split differently gives another game state at the game minute of death, against
 `minute-span-split`; the current reading kept in the game state — each reading makes a new game
 state to save (D-04).
 
-### D-222 — How fast does the earning loop go?
+### D-239 — How fast does the earning loop go?
 
 An earning loop goes only on a solved map, one game minute per real minute, and the speed control
 does not reach it, while a manual map run may be fast-forwarded. Each map run of an earning loop is a
@@ -4132,7 +4132,7 @@ speed control for tuning and earning — passivity goes, and with it the sense o
 requiring a safety guarantee across all seeds before earning — delays the loop and promises more
 than the player's first completion establishes.
 
-### D-223 — When and how is the time away computed?
+### D-240 — When and how is the time away computed?
 
 The catch-up takes place when the player returns and advances the missed game minutes, taking the
 characters one at a time, each to the end, in the order of the player's list of characters.
@@ -4158,7 +4158,7 @@ and lose that.
 *Rejected:* the simulation running on a server — there is nothing to compute while no browser is
 open; characters meeting inside map runs — needs a schedule and loses the cheap catch-up.
 
-### D-224 — How does the game state hold earning loops?
+### D-241 — How does the game state hold earning loops?
 
 The game state holds its earning loops beside the one manual map run, by character number, so a
 character has at most one, each with the content of the program taken at its start, its map run
@@ -4191,7 +4191,7 @@ loop never reads, doubles the program in a save under 64 KiB and makes the delet
 reach into earning loops; an earning loop held on the character — the load reads characters before
 the records it reads an earning loop by.
 
-### D-225 — Which clock drives an earning loop?
+### D-242 — Which clock drives an earning loop?
 
 Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the
 game state up to which their whole game minutes have been counted, each game minute as long as the
@@ -4203,7 +4203,7 @@ minute the characters in the team's order, however many game minutes it brings.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
-- **Relations:** derives from D-04 · derives from D-219 · derives from D-221 · derives from D-222
+- **Relations:** derives from D-04 · derives from D-219 · derives from D-221 · derives from D-239
 - **Verification:** invariants: catch-up-minutes · catch-up-death-moment. An agent compares a change
   with the decision:
   - complies: a computer waking after an hour passing 60 game minutes of each earning loop at one
@@ -4226,15 +4226,15 @@ state stays the very same value, as D-04 and the saving of D-207 want. Whole rea
 at one place on the clock however the span is read, and passing the open game minute by minute keeps
 `minute-span-split` true for every split, two earning loops reaching one chest included. Accepted
 with it: a character reaching the chest in the open game can differ from the catch-up, where the
-characters go one at a time (D-223), which `catch-up-state` leaves outside its words.
+characters go one at a time (D-240), which `catch-up-state` leaves outside its words.
 *Rejected:* the elapsed measure of a manual map run for earning loops — it would need a claim about
 sleep; a carry of milliseconds in the game state — a new game state at each reading, against D-04
 and D-207; the clock's value in the game state, written at each whole game minute — it duplicates the
-save time and leaves two moments to say where absence starts; the catch-up in lock-step — D-223 names
+save time and leaves two moments to say where absence starts; the catch-up in lock-step — D-240 names
 it as a breach; the open game one character at a time in a reading of several game minutes — the
 split of a span would change who gets the chest, and `minute-span-split` would need an exception.
 
-### D-226 — How does the player start an earning loop?
+### D-243 — How does the player start an earning loop?
 
 The player currently starts an earning loop with „Puść w pętlę”, which stands in the character's row
 of the headquarters at each solved map, beside „Wyślij”, takes the program of that row's list
@@ -4245,7 +4245,7 @@ currently inactive, and the player stops the earning loop first.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
-- **Relations:** derives from D-53 · derives from D-170 · derives from D-222
+- **Relations:** derives from D-53 · derives from D-170 · derives from D-239
 - **Verification:** an agent compares a change with the decision:
   - complies: „Puść w pętlę” at Las starting the character at once on the program its row shows, the
     row afterwards showing that program as after a send; a pick on the list of a character in an
@@ -4263,7 +4263,7 @@ row, and one click more before a send.
 place for sending characters and several times the view; „Wyślij” stopping the earning loop by itself
 — one click silently loses the backpack of the map run going on.
 
-### D-227 — What does the player see of an earning loop?
+### D-244 — What does the player see of an earning loop?
 
 A running earning loop currently shows in its character's row of the headquarters as one line in the
 role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button
@@ -4274,7 +4274,7 @@ were.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
-- **Relations:** derives from D-222 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
+- **Relations:** derives from D-239 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
 - **Verification:** an agent compares a change with the decision:
   - complies: a row reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2”, moving with each
     game minute of the earning loop; the counts of the last manual map run staying as they were
@@ -4291,7 +4291,7 @@ it died, and the rule that a map run counts its firings takes an exception.
 *Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of
 map-run screen and a large piece of work.
 
-### D-228 — What does „Zatrzymaj” do?
+### D-245 — What does „Zatrzymaj” do?
 
 „Zatrzymaj” is a destructive button with its text in the role `danger` that acts at once on the
 click: the items carried in the map run going on are lost, its loot stays out of the chest, the
@@ -4319,7 +4319,7 @@ end of a map run, and it takes the place of the one manual map run; no line afte
 gathered no practice — nothing says that what the player asked for took place; „Pętla zatrzymana ·
 wprawa: nic” — the line speaks of practice that was not there.
 
-### D-229 — What does the player read after being away?
+### D-246 — What does the player read after being away?
 
 After being away the player currently reads a report in the section „Gdy cię nie było” of the
 headquarters, above „Drużyna”, one line for each character that had an earning loop, a later earning
@@ -4340,7 +4340,7 @@ manual map run reads the report in the headquarters after „Zakończ”.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
-- **Relations:** derives from D-39 · derives from D-223
+- **Relations:** derives from D-39 · derives from D-240
 - **Verification:** an agent compares a change with the decision:
   - complies: an earning loop a death stopped standing above one that went on; a line of an earning
     loop a death stopped naming no practice, since the death took it; a character's own change in the
@@ -4373,7 +4373,7 @@ two things in the section; the minutes from the last catch-up there — a furthe
 state, for a number that says little; „Gdy cię nie było” kept as the title of stops in the open game —
 the title says what is untrue to a player who sat at the game.
 
-### D-230 — When is time away computed, and how much?
+### D-247 — When is time away computed, and how much?
 
 The catch-up currently computes all the missed game minutes, and the game currently sets no upper
 bound on them. It runs on its own after each load of a saved game state: after a sign-in,
@@ -4382,7 +4382,7 @@ same account with the state kept in the page's memory (D-211).
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
-- **Relations:** derives from D-212 · derives from D-223
+- **Relations:** derives from D-212 · derives from D-240
 - **Verification:** invariants: catch-up-minutes. An agent compares a change with the decision:
   - complies: a game closed for a month computing all its game minutes on return, the page waiting for
     it; the tab that lost to another browser's save loading that save and then catching up; the load
@@ -4402,7 +4402,7 @@ accepts. A bound can be added later.
 its readiness gate and the plan checked again, and no task going ahead until they end; another
 number — the same cost.
 
-### D-231 — What is the save time?
+### D-248 — What is the save time?
 
 The save time comes from the browser's clock and lies in the game state: a saved document carries the
 moment it was saved, written on its way to the document, and the game state the browser view holds
@@ -4437,7 +4437,7 @@ code taking the moment — it would work, and a separate function that keeps tha
 costs nothing; the loop clock as the save time — no loss at a load, at the price of a save time that is
 not the moment of the save.
 
-### D-232 — What does a map run of an earning loop discover?
+### D-249 — What does a map run of an earning loop discover?
 
 A map run of an earning loop currently discovers nothing: the Understanding and the program stay as
 they stand, game time goes on, and the game writes no program rule at a discovery, and the player
@@ -4445,7 +4445,7 @@ discovers what the character met in a manual map run.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** narrows D-118 · narrows D-121 · narrows D-143 · narrows D-198 · derives from D-222
+- **Relations:** narrows D-118 · narrows D-121 · narrows D-143 · narrows D-198 · derives from D-239
 - **Verification:** invariants: loop-run-knowledge. An agent compares a change with the decision:
   - complies: a first chill in an earning loop's map run adding nothing to the Understanding and no
     rule to the content the earning loop holds, its game minutes taking effect in the order of D-71;
@@ -4461,14 +4461,14 @@ manual map run, and a catch-up that leaves the Understanding and the programs as
 the project definition changes with its gate; discoveries waiting in the report and entering when it
 closes — one more piece of the game state.
 
-### D-233 — What does a pause or an end screen hold?
+### D-250 — What does a pause or an end screen hold?
 
 A pause of a manual map run, its stop at a discovery and the screen after its end hold that map run,
 and the earning loops of other characters go on through them.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
-- **Relations:** derives from D-21 · derives from D-122 · derives from D-222
+- **Relations:** derives from D-21 · derives from D-122 · derives from D-239
 - **Verification:** an agent compares a change with the decision:
   - complies: a manual map run paused in game minute 100 while another character's earning loop
     passes its game minutes and ends a map run; the screen after a death standing while an earning
@@ -4477,14 +4477,14 @@ and the earning loops of other characters go on through them.
     screen after a completion stays
 - **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, P1 and Q17, and § Settlements to record, row 20
 
-*Rationale:* earning goes with the world's time (D-222), so looking at a manual map run or at its
+*Rationale:* earning goes with the world's time (D-239), so looking at a manual map run or at its
 result does not hold up what the other characters earn. A manual map run and the earning loops pass
 apart, so a pause, a stop at a discovery and the screen after an end hold that one map run, and the
 words "time stands still" of the screens after an end speak of it.
 *Rejected:* the screen after an end stopping the earning loops of other characters — looking at the
 result holds up what they earn.
 
-### D-234 — How does the list of maps mark a rehearsal the loop cannot repeat?
+### D-251 — How does the list of maps mark a rehearsal the loop cannot repeat?
 
 At a solved map, in the character's row, when an item of the take list of the row's program, clipped
 by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas,

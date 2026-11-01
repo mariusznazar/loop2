@@ -602,7 +602,7 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
   assert.deepEqual(plan, before);
 });
 
-// D-234: the mark of the list of maps and the run read one cut. Catches a cut that spends the budget
+// D-251: the mark of the list of maps and the run read one cut. Catches a cut that spends the budget
 // out of list order, drops a partial row, or ignores the entry cap of the map.
 test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };

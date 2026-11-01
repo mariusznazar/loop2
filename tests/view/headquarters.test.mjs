@@ -168,7 +168,7 @@ test("the label of a generation is „pokolenie {n}” from 2 up and nothing at 
   assert.equal(generationLabel(13), "pokolenie 13");
 });
 
-// D-227, To do 9. Catches a number of the line read from the wrong place (the run's number for the
+// D-244, To do 9. Catches a number of the line read from the wrong place (the run's number for the
 // minute, the completed runs for the run's number) and a map name written into the view.
 test("the line of a character in a loop names the map, the run, its minute and the runs completed", () => {
   assert.equal(
@@ -189,7 +189,7 @@ test("the line of a character in a loop names the map, the run, its minute and t
   );
 });
 
-// D-228, To do 8, Q18. Catches a stop that gathered nothing reading „wprawa: nic”, a skill with
+// D-245, To do 8, Q18. Catches a stop that gathered nothing reading „wprawa: nic”, a skill with
 // zero practice listed, and an order other than the skills' data.
 test("the line after a stop lists the practice gathered in the skills' order, and is the bare words where none was", () => {
   assert.equal(stoppedLoopLine({}), "Pętla zatrzymana");

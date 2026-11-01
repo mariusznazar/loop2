@@ -2,7 +2,7 @@
 // D-208, D-209, D-210, D-211, D-97). These tests run the saver with a client the test answers,
 // Node's mocked timers and a hand-made document model: they prove when it sends, what it sends and
 // what it shows and reports for each outcome, never real events or rendering (D-88). Each document
-// holds the clock's moment as its save time (task petla-zarobkowa, To do 10 and row 13; D-231).
+// holds the clock's moment as its save time (task petla-zarobkowa, To do 10 and row 13; D-248).
 import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 import {
@@ -520,7 +520,7 @@ test("the 30-second check is silent while no manual map run passes, though the s
 /** The document a save sent, as the server hands it back. */
 const documentOf = ({ version, game }) => ({ version, revision: 9, game });
 
-// Spec section 9; D-231. Catches a document unstamped, which the load refuses, a moment read before
+// Spec section 9; D-248. Catches a document unstamped, which the load refuses, a moment read before
 // the reading that sends, so older than the state it stamps, and a stamp written into the state held.
 test("each document holds the moment of the reading made for it and loads, and the state held stays what it was", async () => {
   await onPage(async () => {
@@ -561,7 +561,7 @@ test("each document holds the moment of the reading made for it and loads, and t
   });
 });
 
-// Spec section 9; D-207, D-231. Catches a stamped state taken for the one last sent, so that the
+// Spec section 9; D-207, D-248. Catches a stamped state taken for the one last sent, so that the
 // comparison by identity finds a change at every check, and a tab that has only loaded sending.
 test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden page sees", async () => {
   const savedMs = CLOCK_MS - 60_000;

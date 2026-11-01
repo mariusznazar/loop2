@@ -311,7 +311,7 @@ export type GameMapRun = MapRun & {
 };
 
 /**
- * An earning loop of one character (D-224): the content of the program taken at its start, a plain
+ * An earning loop of one character (D-241): the content of the program taken at its start, a plain
  * map run, which always goes on, since the function that reaches its end deals with that end at
  * once, the number of that map run from 1, the map runs completed, and the practice gathered from
  * them. Each map run binds its lists anew from `program`, so the loop keeps no copy of a manual
@@ -332,7 +332,7 @@ export type EarningLoop = {
 export type LoopStop = { generation: number; away: boolean };
 
 /**
- * A line of the report on earning loops (D-229): what one earning loop of one character did. It
+ * A line of the report on earning loops (D-246): what one earning loop of one character did. It
  * closes at its stop, so a later loop of that character opens a line of its own.
  */
 export type AwayReportLine = {
@@ -419,15 +419,15 @@ export type GameState = {
   realMsCarry: number;
   /**
    * The earning loops, by the number of the character of each, so a character has at most one
-   * (D-224); go over them by the team's list, never by this record. None in a new game.
+   * (D-241); go over them by the team's list, never by this record. None in a new game.
    */
   loops: Partial<Record<CharacterId, EarningLoop>>;
-  /** The practice paid at the stop, by character, until its next send or loop start (D-228). */
+  /** The practice paid at the stop, by character, until its next send or loop start (D-245). */
   stoppedLoops: Partial<Record<CharacterId, Practice>>;
-  /** The report the player reads and closes (D-229); it lies here, so it survives a reload. */
+  /** The report the player reads and closes (D-246); it lies here, so it survives a reload. */
   awayReport: AwayReportLine[];
   /**
-   * The real moment of the save the state came from (D-231), written on the way to the document
+   * The real moment of the save the state came from (D-248), written on the way to the document
    * only; null in a game that never came from a save. Only the catch-up reads it, on a loaded state.
    */
   saveTimeMs: number | null;

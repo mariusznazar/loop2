@@ -426,7 +426,7 @@ test("a loop's map run through a death and its next map run still leaves the Und
 });
 
 // To do 4 and spec 3: the repertoire is computed on each call that passes minutes, so what a manual
-// map run discovers meanwhile widens a loop's repertoire (D-119, D-232).
+// map run discovers meanwhile widens a loop's repertoire (D-119, D-249).
 test("an action a manual map run discovers meanwhile enters the loop's next pick, and not before", () => {
   let state = setProgram(
     newGame(),
@@ -807,7 +807,7 @@ test("taking an end reads the moment only when there is an end to settle, and th
 });
 
 // invariant: trip-run-end
-// To do 8, Q5, D-228, D-183; loop `sim.test.ts:1630`-`1665`: the practice of the loop and of the map
+// To do 8, Q5, D-245, D-183; loop `sim.test.ts:1630`-`1665`: the practice of the loop and of the map
 // run going on are paid, the loot of that map run stays out.
 test("stopping a loop pays the loop's practice and the map run's into the skills, records the sum, drops the loop and deposits nothing", () => {
   const program = withTrip(EMPTY, [], [entry("stick", 3)]);

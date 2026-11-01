@@ -85,7 +85,7 @@ export type GameView = {
  * that goes on comes back paused by the load) or the screen after a map run's end. Every act of the
  * player whose result changed the state, every game minute that ends the map run in a death or
  * a completion and every result in which a loop's map run ended is a moment of saving (D-207). The
- * clock catches up the earning loops of a loaded state as the last step of building (D-230).
+ * clock catches up the earning loops of a loaded state as the last step of building (D-247).
  * Nothing here runs when the module is imported.
  */
 export function createGameView(options: GameViewOptions): GameView {

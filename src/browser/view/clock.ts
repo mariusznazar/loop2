@@ -17,7 +17,7 @@ export type Clock = {
   /**
    * Makes a reading now: passes the real time elapsed since the clock's previous reading to the
    * simulation and settles a death at the real date read, then passes the whole minutes of the
-   * earning loops since the loop clock (D-225), and hands the store one result of all of it.
+   * earning loops since the loop clock (D-242), and hands the store one result of all of it.
    */
   flush(): void;
   /**
@@ -50,7 +50,7 @@ export type Clock = {
     programId?: ProgramId;
   }): void;
   /**
-   * The catch-up after a load (D-230): makes a reading of the date and passes the whole minutes
+   * The catch-up after a load (D-247): makes a reading of the date and passes the whole minutes
    * of the earning loops from the game state's save time to it. The manual map run is not passed,
    * and the loop clock goes on from where the catch-up leaves it.
    */
@@ -63,7 +63,7 @@ const TICK_MS = 200;
  * Starts the clock: every 200 ms it makes a reading, of `performance.now()` for the real
  * milliseconds elapsed since its previous reading, which go to `passRealTime`, and of `Date.now()`
  * for the moment `settleDeath` settles a death at and for the earning loops. The clock holds the
- * loop clock, a date up to which whole loop minutes have been passed (D-225); a reading passes the
+ * loop clock, a date up to which whole loop minutes have been passed (D-242); a reading passes the
  * manual run and settles it, then the loops, and takes the loop clock's new value before it hands
  * the store the result, as a moment of saving inside `apply` reads the clock again and would
  * otherwise pass the same minutes twice. The store gets one result of each reading, the events of

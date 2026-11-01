@@ -11,9 +11,9 @@ import type {
 } from "../sim/types.js";
 import { createButton } from "./controls/button.js";
 
-/** The title while the report holds a line of a return (D-229). */
+/** The title while the report holds a line of a return (D-246). */
 export const AWAY_TITLE = "Gdy cię nie było";
-/** The title while the report holds only loops that stopped in the open game (D-229). */
+/** The title while the report holds only loops that stopped in the open game (D-246). */
 export const STOPPED_TITLE = "Pętle, które stanęły";
 /** The sentence under the lines while the chest is full, in `warning`. */
 export const CHEST_FULL_TEXT = "Skrzynka jest pełna.";
@@ -109,7 +109,7 @@ export type AwayReport = {
 };
 
 /**
- * Builds the section of the report on earning loops (D-229): its title, one line for each entry
+ * Builds the section of the report on earning loops (D-246): its title, one line for each entry
  * with the loops that stopped in `danger`, „Skrzynka jest pełna.” in `warning` where the chest is
  * full, and one button „Zamknij” that asks `close` to empty the whole report. The button is made
  * once; the lines are rebuilt only when the report or the names changed.

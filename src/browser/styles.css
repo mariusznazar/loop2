@@ -439,7 +439,7 @@ header .save-line {
   color: var(--text-label);
 }
 
-/* The report on earning loops (D-229): the lines in `text`, a loop that stopped in `danger`, a full chest in `warning` (D-39). */
+/* The report on earning loops (D-246): the lines in `text`, a loop that stopped in `danger`, a full chest in `warning` (D-39). */
 .away-report-list {
   list-style: none;
   margin: 0 0 var(--space-s);
@@ -540,20 +540,20 @@ header .save-line {
   color: var(--danger);
 }
 
-/* The line of a character in an earning loop, in `text`, with „Zatrzymaj” beside it (D-227). */
+/* The line of a character in an earning loop, in `text`, with „Zatrzymaj” beside it (D-244). */
 .team-member-loop {
   margin: 0;
   color: var(--text);
 }
 
-/* The line after a loop's stop, on a row of its own in `text-secondary` (D-228). */
+/* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */
 .team-member-stopped {
   flex-basis: 100%;
   margin: 0;
   color: var(--text-secondary);
 }
 
-/* The mark of a rehearsal the loop cannot repeat, under „Wyślij”, in `warning` as the line of D-188 (D-234). */
+/* The mark of a rehearsal the loop cannot repeat, under „Wyślij”, in `warning` as the line of D-188 (D-251). */
 .rehearsal-mark {
   flex-basis: 100%;
   margin: 0;

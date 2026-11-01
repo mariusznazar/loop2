@@ -1592,7 +1592,7 @@ const ACTS = [
   },
 ];
 
-// Spec section 9; D-211, D-231. Catches `keep()` writing a document with no save time, which the
+// Spec section 9; D-211, D-248. Catches `keep()` writing a document with no save time, which the
 // sign-in would refuse and start anew, a moment older than the reading it makes, and a stamp written
 // into the view's state, which the saver's comparison would take for a change.
 test("the document kept for the same account holds the moment of its reading and loads, and the view's state stays what it was", async () => {
@@ -1683,7 +1683,7 @@ test("each act of the player that changes the game state is saved at once, and o
 });
 
 // --- the character's row: starting, watching and stopping an earning loop --------------------
-// Task petla-zarobkowa, To do 1, 8, 9 and 18; D-226, D-227, D-228, D-234; spec section 12.
+// Task petla-zarobkowa, To do 1, 8, 9 and 18; D-243, D-244, D-245, D-251; spec section 12.
 
 /** The row of the character named `name` in the headquarters under `root`. */
 function rowOf(root, name) {
@@ -1798,7 +1798,7 @@ test("„Puść w pętlę” puts the character into a loop at once and the row 
 });
 
 // Catches a stop that asks first, one that leaves the line of the loop or none of the stop, and one
-// that shows practice the loop did not gather (D-228, Q18).
+// that shows practice the loop did not gather (D-245, Q18).
 test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” with the practice paid, or the bare words, until the next start", async () => {
   await onPage(async ({ root }) => {
     const base = alaLoopingOlaFree();
@@ -1841,7 +1841,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
 });
 
 // Catches a line lost on a load: the entry lives in the game state, so a game built from a state
-// holding it shows the line, in that character's row alone (D-228).
+// holding it shows the line, in that character's row alone (D-245).
 test("a game built from a state with a stopped loop shows the line of the stop in that character's row", async () => {
   await onPage(async ({ root }) => {
     const base = alaLoopingOlaFree();
@@ -1900,7 +1900,7 @@ test("a change of the chest redraws the chest alone: the rows, their lists and t
   });
 });
 
-// D-234, To do 18. Catches a mark in the wrong place or role, a mark at a map not yet solved, and a
+// D-251, To do 18. Catches a mark in the wrong place or role, a mark at a map not yet solved, and a
 // mark that ignores the chest.
 test("the mark of a rehearsal the loop cannot repeat stands under „Wyślij” of a solved map, and only where the chest lacks what the list takes", async () => {
   const MARK =
@@ -2404,7 +2404,7 @@ test("a save that finds no session while the logout's request is under way waits
 
 // --- the report on earning loops in the headquarters ------------------------------------------
 // Task petla-zarobkowa, To do 16 and rows 10, 11, 22-24 and 26 of Settlements to record; spec
-// section 11; D-229, D-42.
+// section 11; D-246, D-42.
 
 /** The section of the report in the headquarters under `root`, or undefined. */
 const reportSection = (root) => {
@@ -2579,7 +2579,7 @@ test("the report survives a reload, and a closed report stays closed after one",
   });
 });
 
-// Catches the report drawn on the screen of a manual map run (D-229, row 26): it hides with the
+// Catches the report drawn on the screen of a manual map run (D-246, row 26): it hides with the
 // headquarters and shows when „Zakończ” brings the headquarters back.
 test("a manual map run hides the report with the headquarters, and „Zakończ” shows it", async () => {
   await onPage(async ({ root }) => {

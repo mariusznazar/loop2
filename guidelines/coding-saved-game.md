@@ -165,9 +165,9 @@ Ręczny przebieg mapy, który trwał, wraca zatrzymany, w minucie gry, z tempem
 i resztą czasu rzeczywistego dokumentu; zakończony wraca zakończony, z ekranem
 po końcu (D-212), z tym, co ukończenie włożyło do skrzyni, i z wprawą przebiegu.
 Przebieg pętli zarobkowej nie ma pauzy ani tempa i wraca trwający, bo dokument
-z zakończonym przebiegiem pętli to `shape` (D-224). Wczytanie niczego nie posuwa
+z zakończonym przebiegiem pętli to `shape` (D-241). Wczytanie niczego nie posuwa
 naprzód: chwilę zapisu bierze z dokumentu, a minuty nieobecności dolicza osobny
-krok po wczytaniu (D-230).
+krok po wczytaniu (D-247).
 
 ## Where in code
 

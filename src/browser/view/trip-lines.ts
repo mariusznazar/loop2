@@ -15,14 +15,14 @@ export function tripWarning(
     : null;
 }
 
-/** The mark of a rehearsal an earning loop cannot repeat (D-234). */
+/** The mark of a rehearsal an earning loop cannot repeat (D-251). */
 export const REHEARSAL_MARK =
   "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
 
 /**
  * The mark under „Wyślij” at a map: a solved map where an item of the take list, cut by the
  * carrying capacity and the map's entry cap, is more than the chest holds, since a manual run of a
- * solved map takes from nowhere and an earning loop takes from the chest (D-234); null otherwise.
+ * solved map takes from nowhere and an earning loop takes from the chest (D-251); null otherwise.
  * Pure.
  */
 export function rehearsalMark(

@@ -1,5 +1,5 @@
 // The report on earning loops, its pure texts (task petla-zarobkowa, To do 16; spec section 11;
-// D-229), tested without a browser. The expected wordings are written out from To do 16, not
+// D-246), tested without a browser. The expected wordings are written out from To do 16, not
 // computed from the module. Importing the module must not touch the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";

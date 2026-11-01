@@ -509,7 +509,7 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
 }
 
 /**
- * A copy of the state holding the real moment `nowMs` as its save time (D-231). Whoever saves applies
+ * A copy of the state holding the real moment `nowMs` as its save time (D-248). Whoever saves applies
  * it on the way to the saved document only, so the state the view holds stays the very value it was
  * and a comparison by identity sees no change in a save. A `nowMs` that is no safe integer is a
  * RangeError.

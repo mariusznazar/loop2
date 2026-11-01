@@ -132,7 +132,7 @@ test("map warning appears below desired load and backpack capacity, including a 
 const MARK =
   "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
 
-// D-234, To do 18. Catches a mark measured against the take list before its cut, one shown at a map
+// D-251, To do 18. Catches a mark measured against the take list before its cut, one shown at a map
 // not yet solved, and one that stays where the chest holds exactly what the run takes.
 test("the mark shows at a solved map when a take entry cut by capacity and the entry cap exceeds the chest, and only then", () => {
   const take = (...entries) => ({ take: entries, bring: [] });

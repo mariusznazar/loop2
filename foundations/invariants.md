@@ -971,7 +971,7 @@ Death, ending or restarting an unfinished map run, or stopping the earning loop 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-179 · D-183 · D-189 · D-190 · D-214 · D-228
+- **Derives from:** D-179 · D-183 · D-189 · D-190 · D-214 · D-245
 - **Part:** simulation
 - **Violated:** no
 
@@ -1071,7 +1071,7 @@ For the same starting game state and real-time inputs, a character whose team's 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-223
+- **Derives from:** D-240
 - **Part:** every
 - **Violated:** no
 
@@ -1081,7 +1081,7 @@ The catch-up passes an earning loop, until it stops, by one game minute for each
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-225 · D-230
+- **Derives from:** D-242 · D-247
 - **Part:** simulation · browser-view
 - **Violated:** no
 
@@ -1091,7 +1091,7 @@ A character's death in the k-th game minute of the catch-up is settled at the re
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-190 · D-225
+- **Derives from:** D-190 · D-242
 - **Part:** simulation · browser-view
 - **Violated:** no
 
@@ -1101,7 +1101,7 @@ A map run of an earning loop currently leaves the Understanding and the player's
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-232
+- **Derives from:** D-249
 - **Part:** simulation
 - **Violated:** no
 

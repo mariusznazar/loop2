@@ -258,7 +258,7 @@ test("the resurrection renews 480 real minutes after the death that used it", ()
   assert.equal(BALANCE.resurrectionRenewalRealMinutes, 480);
 });
 
-// Task petla-zarobkowa, To do 2 (D-18, D-222, spec section 14): one game minute of an earning loop
+// Task petla-zarobkowa, To do 2 (D-18, D-239, spec section 14): one game minute of an earning loop
 // is 60 real seconds, a whole number from 1 up so that every real moment of the loop clock stays a
 // whole number of milliseconds; the speed control does not reach it.
 test("an earning loop goes one game minute in 60 real seconds, a whole number of seconds", () => {
