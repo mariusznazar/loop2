@@ -3,3 +3,4 @@ node_modules/
 dist/
 .stryker-tmp/
 stryker.log
+.playwright-cli/

@@ -1976,7 +1976,7 @@ In the private Cloudflare Tunnel topology of D-10, account requests require exac
 - **Scope:** account-server, deployment
 - **Based on:** cloudflare-tunnel-transport
 - **Relations:** derives from D-10 · derives from D-102
-- **Verification:** invariants: account-request-transport. An agent compares a change with the decision:
+- **Verification:** invariants: account-request-transport · local-start-access. An agent compares a change with the decision:
   - complies: target acceptance checks actual cookie issuance and client-address handling through the tunnel, including provider transformations
   - violates: treating synthetic header tests as proof of the deployed provider route
 - **Origin:** none
@@ -4557,7 +4557,8 @@ trial on the game server in a separate container with a separate volume — does
 without the old server, needs a change of D-17 and shows only that the file opens; a sequence of
 commands in the skill alone — about ten Docker commands, an inline client and a password to keep out
 of arguments, never run before the trial; a browser on the owner's computer — a login cannot work on
-a locally run production image.
+a locally run production image, which takes requests of the tunnel alone; the local start signs in
+over HTTPS, but it runs a build and not the image the trial has to prove.
 
 ### D-235 — How is the code that talks to Mikrus Strych and `pusher` tested?
 
@@ -5084,3 +5085,122 @@ where an earning loop, bound to the chest, goes cut, and the mark names that one
 player starts. It stands where the line of D-188 stands, in the same role.
 *Rejected:* the mark brought in before the earning loop — the game speaks of a loop it does not have
 yet; another text, given by the human — its cost was not named.
+
+### D-252 — How does an agent operate the game as a player does?
+
+An agent operates the running game in a real browser with Playwright CLI, and with Playwright MCP
+where the CLI fails, and reads motion from a stream of frames. This inspection adds to the checks
+D-75 and D-88 leave with a person and replaces none of them.
+
+- **Scope:** agent-workflow · browser-view
+- **Based on:** playwright-cli-token-use · playwright-cli-config-path · playwright-screencast-frames
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a changed screen operated once through Playwright CLI, the evidence in the request,
+    and the person's check of that change still made
+  - violates: a Playwright test left in the repository; a request that drops the person's check
+    because an agent has seen the screen
+- **Origin:** technologia_obsluga_gry_przez_agenta.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
+
+*Rationale:* the project is made of screens, and an agent that cannot use them as a player does
+cannot check its own work. Its maker recommends the CLI to agents writing code for the tokens it
+saves, its setting for a certificate stands in a file of the repository, and it holds the same
+engine as the MCP server, so going back costs almost nothing. Lacks of the option chosen: its
+version is below 1.0 and leans on an alpha of Playwright, a session with no window closes by itself
+after an hour, the text of a page shows no motion, and images cost tokens. Risks taken, each a
+hypothesis: a drag may catch a select list instead of a handle; an agent judging motion from a few
+frames may report that a scene works while a person sees it jerk at 16×.
+*Rejected:* Playwright MCP as the first way — more tokens and a setting outside the repository;
+Chrome DevTools MCP and agent-browser — no clock, and their frames unchecked; Puppeteer, Selenium,
+WebdriverIO, Cypress and Stagehand — nothing above Playwright; computer use, direct calls to the
+API, a document model and a person clicking — an agent does not check the running product this way.
+
+### D-253 — Where does the data an agent checks the game on come from?
+
+An agent reaches the early states a check needs by playing, on a local server with a database made
+for that check. One command of the repository starts the game locally over HTTPS, and a check
+touches neither the test server nor a player's save.
+
+- **Scope:** agent-workflow · build-tools
+- **Based on:** none
+- **Relations:** derives from D-12 · derives from D-110
+- **Verification:** invariants: local-start-access. An agent compares a change with the decision:
+  - complies: a check on an account made through the form of a game started by the command
+  - violates: a check that signs in to the test server; a check that opens a copy of a player's
+    save
+- **Origin:** technologia_dane_do_sprawdzania.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
+
+*Rationale:* an early state reached by playing goes through the same signing in and saving as a
+player's, so a change of the save's version costs nothing here. Lacks of the option chosen: the late
+states of the game take too long to reach by playing, and the repository holds no program that
+solves a map. Risks taken, each a hypothesis: protection on a computer may block the script that
+makes a certificate.
+*Rejected:* swapping the server's answer in the browser — it passes over signing in and saving;
+writing straight into the database — it passes over the way of a save; ready files of saves — every
+change of version renews them; a developer screen like the old probe — much work and a new entry for
+a game state; a lasting local database — its saves go at a change of version; a lasting environment
+on a server — much work for the owner; the test server itself — it rests on how D-12 reads.
+
+### D-254 — Does the local start keep an account between its starts?
+
+The local start keeps no account and no saved game state for a person between its starts: each start
+of the command makes a database of its own and removes the databases of the starts that have ended.
+A person plays on the test server.
+
+- **Scope:** build-tools · agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-253
+- **Verification:** an agent compares a change with the decision:
+  - complies: an account gone after the next start; a start still running keeping its database
+    beside a later one
+  - violates: a setting that keeps the database between starts; a start that removes the database
+    of a start still running
+- **Origin:** lokalny_start_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q1, and § Settlements to record, row 1
+
+*Rationale:* a database made for one check starts from what the check assumes, and a person has the
+test server to play on, so nothing of worth goes with it. The removal comes at the next start
+because a command closed from outside does not always clean up after itself on Windows.
+*Rejected:* a switch that keeps the database between starts — a second mode in the command and in
+its description, and the saves go at a change of the game's version anyway.
+
+### D-255 — Where does account mail go at the local start?
+
+At the local start the mail settings point at an address where nothing answers and the server stays
+as it is. A person goes through the whole way with mail on the test server.
+
+- **Scope:** build-tools · agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-111 · derives from D-253
+- **Verification:** an agent compares a change with the decision:
+  - complies: a registration at the local start that ends at once with the message failed and the
+    address unconfirmed; confirming an address left to a person on the test server
+  - violates: a branch of the server that switches mail off for the local start; a check at the
+    local start that claims a message arrived
+- **Origin:** lokalny_start_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2, and § Settlements to record, row 2
+
+*Rationale:* a server that holds accounts always has its mail settings, so the local start gives
+them too, and an address where nothing answers fails a message at once instead of holding a
+registration up to its deadline. Accepted with it: confirming an address and setting a new password
+run to their end only on the test server, so every later check of them stands there.
+*Rejected:* a small mail receiver on the computer with the links printed by the command — the work
+grows, the server may have to change, and the variable that would spare that change was never run.
+
+### D-256 — What does the game present to a browser at the local start?
+
+The local start makes its own certificate, and a person clicks through the browser's warning.
+
+- **Scope:** build-tools · agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-253
+- **Verification:** an agent compares a change with the decision:
+  - complies: a certificate made by the command, and a warning a person passes in the browser
+  - violates: a step that adds a certificate authority to the trusted ones of the system; an
+    instruction to install another program for the certificate
+- **Origin:** lokalny_start_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q3, and § Settlements to record, row 3
+
+*Rationale:* the command needs no new program and changes no trust on the computer, at the price of
+a click for a person. Accepted with it: an agent cannot type the commands that make a certificate by
+hand where the computer's protection stops them, and where that protection blocks the script the
+choice comes back.
+*Rejected:* a local certificate authority trusted by the system, through mkcert or Caddy — a new
+program, a lasting change of trust, a key on the disk and a step for a person before the work.

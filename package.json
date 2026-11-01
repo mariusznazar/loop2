@@ -12,6 +12,8 @@
     "kitchen-sink": "node scripts/kitchen-sink.mjs",
     "start": "node dist/server/main.js",
     "dev": "npm run build && npm start",
+    "local": "npm run build && node scripts/local-start.mjs",
+    "local:stop": "node scripts/local-start.mjs --stop",
     "test": "python -B scripts/test.py"
   },
   "dependencies": {

@@ -415,6 +415,24 @@ In OpenSSH portable 8.9p1, `ssh` with `KnownHostsCommand` set obtains host keys 
 
 - **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § KnownHostsCommand — "Specifies a command to use to obtain a list of host keys, in addition to those listed in UserKnownHostsFile and GlobalKnownHostsFile." · § VerifyHostKeyDNS — "If this option is set to yes, the client will implicitly trust keys that match a secure fingerprint from DNS." · "The default is no."; read 2026-10-31
 
+## playwright-cli-token-use
+
+The maker of Playwright CLI says that CLI invocations are more token-efficient for coding agents than MCP.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Playwright CLI vs Playwright MCP — "Modern coding agents increasingly favor CLI–based workflows exposed as SKILLs over MCP because CLI invocations are more token-efficient: they avoid loading large tool schemas and verbose accessibility trees into the model context, allowing agents to act through concise, purpose-built commands."; read 2026-11-02
+
+## playwright-cli-config-path
+
+Playwright CLI reads its configuration from `.playwright/cli.config.json` by default.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file — "Playwright CLI will load config from `.playwright/cli.config.json` by default so that you did not need to specify it every time."; read 2026-11-02
+
+## playwright-screencast-frames
+
+Playwright's screencast of a page delivers JPEG-encoded frames to a callback.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright/cfe490d941f992655948eee8fd4fd94e1c4234bf/docs/src/api/class-screencast.md § Screencast.start — "delivers JPEG-encoded frames to the callback."; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

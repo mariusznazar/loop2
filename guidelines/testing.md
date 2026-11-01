@@ -146,8 +146,8 @@ przypadku wynikającą z wymagania, nie techniczną strukturę danych.
 
 ### Trust boundaries
 
-- **Decision:** D-73 · D-76 · D-86 · D-96 · D-97 · D-99 · D-100 · D-102 · D-103 · D-104 · D-105 · D-109 · D-110 · D-137 · D-139 · D-155 · D-156 · D-160 · D-161 · D-163 · D-202 · D-204 · D-206 · D-209 · D-210 · D-231 · D-235 · D-27 · D-33 · D-45 · D-46 · D-09 · D-11 · D-222 · D-225 · D-226
-- **Invariant:** icon-file-content · public-file-access · account-session-authorization · blocked-account-access · player-save-isolation · save-version · account-mutation-request-guards · account-request-transport · account-attempt-limits · account-attempt-tracking · email-confirmation-link · unblock-restores-no-link · account-message-limits · account-email-nodemailer-starttls · dependency-audit-refusal · font-file-provenance · preview-server-access · loop2-deploy-trigger-input · password-reset-verified-email · password-reset-link · password-reset-ends-sessions · account-save-backup-encrypted
+- **Decision:** D-73 · D-76 · D-86 · D-96 · D-97 · D-99 · D-100 · D-102 · D-103 · D-104 · D-105 · D-109 · D-110 · D-137 · D-139 · D-155 · D-156 · D-160 · D-161 · D-163 · D-202 · D-204 · D-206 · D-209 · D-210 · D-231 · D-235 · D-27 · D-33 · D-45 · D-46 · D-09 · D-11 · D-222 · D-225 · D-226 · D-253 · D-256
+- **Invariant:** icon-file-content · public-file-access · account-session-authorization · blocked-account-access · player-save-isolation · save-version · account-mutation-request-guards · account-request-transport · account-attempt-limits · account-attempt-tracking · email-confirmation-link · unblock-restores-no-link · account-message-limits · account-email-nodemailer-starttls · dependency-audit-refusal · font-file-provenance · preview-server-access · loop2-deploy-trigger-input · password-reset-verified-email · password-reset-link · password-reset-ends-sessions · account-save-backup-encrypted · local-start-access
 - **Good:** Spreparowana zakodowana ścieżka dostaje odmowę i nie ujawnia pliku spoza katalogu publicznego.
 - **Bad:** Sprawdzenie samego uruchomienia serwera jest przedstawione jako dowód odmowy.
 
@@ -169,6 +169,7 @@ przegląd każdej dotyczącej jej zmiany.
 | `package-lock.json` | `dependency-audit-refusal`: odmowa nieczytelnego raportu i nowego zgłoszenia w `tests/quality/test_audit_dependencies.py`; kontrola samego lockfile'u pozostaje osobnym `introduced-npm-vulnerabilities`. |
 | `scripts/audit_dependencies.py` | Ten sam test odmowy audytu, bez dublowania; podstawiona odpowiedź nie dowodzi działania prawdziwego rejestru (D-79). |
 | `scripts/kitchen-sink.mjs` | `preview-server-access`: przegląd ograniczenia do własnego katalogu podglądu i komputera dewelopera; czasowe odstępstwo D-76. |
+| `scripts/local-start.mjs` | `local-start-access`: spreparowane nagłówki pośrednika wysłane przez prawdziwy TLS, przypadek `test_no_proxy_header_of_a_browser_reaches_the_server`, i połączenia z adresów innych niż 127.0.0.1, przypadek `test_both_ports_listen_on_this_computer_alone`, w `tests/invariants/test_local_start_access.py`. Za pośrednikiem stoi tam podstawiony serwer, bo prawdziwy pomija większość tych nagłówków i jego odpowiedź niczego by nie pokazała. |
 | `deploy/` | `loop2-deploy-trigger-input`: spreparowane wejścia i commit spoza gałęzi wdrożenia w `tests/invariants/test_loop2_deploy_trigger_input.py`. `account-save-backup-encrypted` (D-232): odmowa wysłania, gdy szyfrowanie nie skończyło całego wejścia, w przypadku `test_a_run_that_does_not_finish_the_encryption_sends_nothing` w `tests/invariants/test_account_save_backup_encrypted.py`, z podstawionymi narzędziami skryptu (D-235); przypadek `test_an_argument_is_refused_before_anything_runs` w `tests/deploy/test_loop2_backup.py` pokazuje odmowę skryptu wobec argumentu. |
 
 Dla fontów i serwera podglądu do pierwszej zmiany danej granicy obowiązuje
@@ -380,6 +381,7 @@ może pokazywać rzeczywiście różne ryzyka.
 - `deploy/`
 - `scripts/audit_dependencies.py`
 - `scripts/kitchen-sink.mjs`
+- `scripts/local-start.mjs`
 - `package-lock.json`
 - `package.json`
 - `stryker.config.json`
@@ -416,6 +418,7 @@ może pokazywać rzeczywiście różne ryzyka.
 - `tests/invariants/test_account_server_occupied_address.py`
 - `tests/invariants/loop2_invariant_support.py`
 - `tests/invariants/test_icon_file_content.py`
+- `tests/invariants/test_local_start_access.py`
 - `tests/invariants/test_loop2_deploy_trigger_input.py`
 - `tests/quality/test_audit_dependencies.py`
 - `tests/quality/test_node_test_selection.py`

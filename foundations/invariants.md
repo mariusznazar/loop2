@@ -1175,6 +1175,16 @@ A map run of an earning loop currently leaves the Understanding and the player's
 - **Part:** simulation
 - **Violated:** no
 
+## local-start-access
+
+`npm run local` listens on 127.0.0.1 alone, at its HTTPS port and at its server's port, and of the headers `Forwarded`, `X-Real-IP`, `CF-Connecting-IP` and those whose name begins `X-Forwarded` that a browser sends none reaches the server, which gets only the proxy's own `X-Forwarded-Proto: https`.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-253 · D-110
+- **Part:** build-tools
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
