@@ -67,6 +67,19 @@ class Loop2PlaySkill(unittest.TestCase):
             self.assertEqual(read_bytes(folder, "001.jpeg"), b"second")
             self.assertIn(b"+250 ms", result.stdout)
 
+    def test_frames_come_also_from_the_file_named_as_the_argument(self):
+        frames = [{"timestamp": 5.0, "data": base64.b64encode(b"from a file").decode()}]
+        with tempfile.TemporaryDirectory() as directory:
+            source = os.path.join(directory, "frames.json")
+            with open(source, "w", encoding="utf-8") as handle:
+                json.dump(frames, handle, indent=2)
+            result = subprocess.run(["node", SAVE_FRAMES, source], cwd=directory,
+                                    stdin=subprocess.DEVNULL, capture_output=True, timeout=30,
+                                    check=False)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            folder = os.path.join(directory, ".playwright-cli", "frames")
+            self.assertEqual(read_bytes(folder, "000.jpeg"), b"from a file")
+
     def test_a_run_with_no_frames_fails_and_keeps_the_frames_of_the_run_before(self):
         frame = [{"timestamp": 1.0, "data": base64.b64encode(b"kept").decode()}]
         with tempfile.TemporaryDirectory() as directory:

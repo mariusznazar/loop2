@@ -4,3 +4,4 @@ dist/
 .stryker-tmp/
 stryker.log
 .playwright-cli/
+.playwright-mcp/

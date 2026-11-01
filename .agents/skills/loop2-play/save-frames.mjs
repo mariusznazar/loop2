@@ -1,13 +1,17 @@
-// Takes the JSON frames.js gives on standard input and writes each frame to
-// .playwright-cli/frames/ in the current directory, replacing the frames of the run before.
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+// Takes the JSON of the frames, from the file named as its argument or else on standard input, and
+// writes each frame to .playwright-cli/frames/ in the current directory, replacing the frames of
+// the run before.
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { text } from "node:stream/consumers";
 
 const directory = join(".playwright-cli", "frames");
+const source = process.argv[2];
 let frames;
 try {
-  frames = JSON.parse(await text(process.stdin));
+  frames = JSON.parse(
+    source ? readFileSync(source, "utf8") : await text(process.stdin),
+  );
 } catch {
   frames = [];
 }

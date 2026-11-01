@@ -91,7 +91,41 @@ async (page) => {
 ```
 
 After that `browser_navigate`, `browser_snapshot`, `browser_click` and the other tools work on the
-game as usual. For images use `browser_take_screenshot`: the stream of frames above is the CLI's.
+game as usual.
+
+The stream of frames is the same one, on one condition: `page.screencast` gives nothing on a page
+MCP opened until `page.setViewportSize` has given it a viewport. With a map run going, run this
+through `browser_run_code_unsafe`; it answers with the number of frames:
+
+```js
+async (page) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  const frames = [];
+  await page.screencast.start({
+    quality: 60,
+    onFrame: ({ data, timestamp }) =>
+      frames.push({ timestamp, data: data.toString("base64") }),
+  });
+  await page.waitForTimeout(3000);
+  await page.screencast.stop();
+  await page.evaluate((all) => {
+    window.loop2Frames = all;
+  }, frames);
+  return `frames: ${frames.length}`;
+}
+```
+
+The frames wait in the page, because in an answer each would cost tokens as text. Call
+`browser_evaluate` with the function `() => window.loop2Frames` and the filename
+`.playwright-mcp/frames.json`, then make images of that file:
+
+```sh
+node .claude/skills/loop2-play/save-frames.mjs .playwright-mcp/frames.json
+```
+
+The images stand in `.playwright-cli/frames/`, as above. The MCP server takes a file only under the
+directory it started in, so `browser_run_code_unsafe` gets this code as text, not as a file of a
+worktree, and where the server started elsewhere the path of `frames.json` is that directory's.
 
 ## End the check
 
@@ -102,7 +136,8 @@ npm run local:stop
 
 `npm run local:stop` ends every start of this checkout and says how many; a person at the console
 uses Ctrl+C. It needs no process number. The database stays until the next start and is no leftover
-to clean up. Delete `.playwright-cli/` when the evidence is in your report.
+to clean up. Delete `.playwright-cli/` and `.playwright-mcp/frames.json` when the evidence is in
+your report; on Playwright MCP, `browser_close` takes the place of `playwright-cli close`.
 
 ## What this start cannot check
 
