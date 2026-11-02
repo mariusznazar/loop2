@@ -5,7 +5,7 @@
 // of Las (D-80), a streak of 479 stands one game minute short of it.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   canSendMap,
@@ -16,9 +16,9 @@ import {
   restart,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { sameHex } from "../../dist/public/sim/hex.js";
-import { meetsSolving } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/game.js";
+import { sameHex } from "../../dist/browser/sim/hex.js";
+import { meetsSolving } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 

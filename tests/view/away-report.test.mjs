@@ -3,7 +3,7 @@
 // computed from the module. Importing the module must not touch the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createCharacter, newGame } from "../../dist/public/sim/game.js";
+import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
 import {
   AWAY_TITLE,
   CHEST_FULL_TEXT,
@@ -11,7 +11,7 @@ import {
   reportChestFull,
   reportEntries,
   reportTitle,
-} from "../../dist/public/view/away-report.js";
+} from "../../dist/browser/view/away-report.js";
 
 /** A team of Ala (1), Ola (2) and Ela (3), in the order they were created. */
 function team() {

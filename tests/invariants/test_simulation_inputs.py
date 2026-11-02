@@ -3,7 +3,7 @@ passed to it.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory imports every module
-under `dist/public/sim/` and calls every function each one exports, through one checker: before a
+under `dist/browser/sim/` and calls every function each one exports, through one checker: before a
 call it takes a deep snapshot of every argument — every own key, its value, `undefined`, `NaN`,
 `-0`, array lengths and the identity of functions included — and after the call, whether it
 returned or threw, it takes the snapshot again; any difference is a change of a value passed.
@@ -62,7 +62,7 @@ import unittest
 import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules
 
-BUILT_DIRECTORY = "dist/public/sim"
+BUILT_DIRECTORY = "dist/browser/sim"
 
 # Every exported function this check calls with inputs chosen for it, by module.
 TABLE = {

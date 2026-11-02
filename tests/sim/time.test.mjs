@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -10,7 +10,7 @@ import {
   setPace,
   setPaused,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 

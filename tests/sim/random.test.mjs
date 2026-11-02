@@ -5,7 +5,7 @@ import {
   nextRandom,
   nextSeed,
   streamState,
-} from "../../dist/public/sim/random.js";
+} from "../../dist/browser/sim/random.js";
 
 function sequence(state, count) {
   const values = [];

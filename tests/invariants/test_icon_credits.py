@@ -5,7 +5,7 @@ author, that page and the licence CC BY 3.0, and says how the icon file differs 
 The application is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory installs a small
 stand-in for the page's `document` (elements, text, attributes, properties such as `href`, and
-`innerHTML` kept as written), calls `createFooter()` of the built `dist/public/view/footer.js` and
+`innerHTML` kept as written), calls `createFooter()` of the built `dist/browser/view/footer.js` and
 writes the element it returns out as HTML, which the check parses. The SVG files are the files
 with the extension `.svg` that git tracks or would track directly in `assets/icons/`.
 
@@ -52,7 +52,7 @@ import unittest
 import loop2_invariant_support as support
 
 ICON_DIRECTORY = "assets/icons/"
-FOOTER_MODULE = "dist/public/view/footer.js"
+FOOTER_MODULE = "dist/browser/view/footer.js"
 VIEW_DIRECTORY = "dist/public"
 LICENCE = "CC BY 3.0"
 PAGE = re.compile(r"https://game-icons\.net/1x1/([\w-]+)/([\w-]+)\.html")

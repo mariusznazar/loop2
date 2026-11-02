@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   hexDistance,
   nearestTile,
@@ -9,10 +9,10 @@ import {
   offsetToAxial,
   sameHex,
   tileAt,
-} from "../../dist/public/sim/hex.js";
-import { actionFeasible } from "../../dist/public/sim/program.js";
-import { streamState } from "../../dist/public/sim/random.js";
-import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/hex.js";
+import { actionFeasible } from "../../dist/browser/sim/program.js";
+import { streamState } from "../../dist/browser/sim/random.js";
+import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 
 const [mapId, map] = Object.entries(MAPS)[0];

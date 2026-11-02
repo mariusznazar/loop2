@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
 import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
 import {
@@ -11,7 +11,7 @@ import {
   newGame,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 
 // The task's acceptance criterion: on Las a program drawn from the closed list as this task leaves
 // it passes 480 game minutes alive on a seed named here, and the empty program dies. The program

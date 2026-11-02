@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { offsetToAxial, sameHex } from "../../dist/public/sim/hex.js";
-import { drawLayout } from "../../dist/public/sim/layout.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { offsetToAxial, sameHex } from "../../dist/browser/sim/hex.js";
+import { drawLayout } from "../../dist/browser/sim/layout.js";
 import {
   mixSeed,
   nextRandom,
   streamState,
-} from "../../dist/public/sim/random.js";
+} from "../../dist/browser/sim/random.js";
 
 const map = Object.values(MAPS)[0];
 const resourceIds = map.resources.map((resource) => resource.id);

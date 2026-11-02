@@ -4,7 +4,7 @@ holds no resource missing from that list.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory imports
-`dist/public/sim/game.js` and, for each game map written out in MAP_RESOURCES, starts map runs
+`dist/browser/sim/game.js` and, for each game map written out in MAP_RESOURCES, starts map runs
 through the public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, `restart` and
 `end`, recording the map run's tiles at each start.
 The new game of each start has an Understanding that holds everything the built data
@@ -19,7 +19,7 @@ Reading of the sentence:
   (`src/browser/sim/data/maps.ts`), each with its `id` and `stock`; the check does not read the
   data at run time for its expected values (WAY-228), so a game map added to the data is checked
   only once it is written out here, and a stock changed in the data fails the check until it is
-  written out anew; a tripwire reads the game maps of `MAPS` (`dist/public/sim/data/maps.js`)
+  written out anew; a tripwire reads the game maps of `MAPS` (`dist/browser/sim/data/maps.js`)
   with their lists of resources and stocks, only to fail when one of them is not written out
   here, telling the maintainer to add it;
 - a tile holds of a resource: `tile.stock[id]`; holds none: the key is missing, or its value is 0;
@@ -59,7 +59,7 @@ import unittest
 import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules
 
-BUILT_DIRECTORY = "dist/public/sim"
+BUILT_DIRECTORY = "dist/browser/sim"
 # The game maps and, for each, its list of resources with the stock per tile, as
 # src/browser/sim/data/maps.ts gives them.
 MAP_RESOURCES = {

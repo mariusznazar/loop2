@@ -2,8 +2,8 @@
 // at death the minute and the cause, with no pause button (task ognisko-i-jedzenie, To do 3).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { RESOURCES } from "../../dist/public/sim/data/resources.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -12,12 +12,12 @@ import {
   setPace,
   setPaused,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   discoveryText,
   pauseLabel,
   statusText,
-} from "../../dist/public/view/status-row.js";
+} from "../../dist/browser/view/status-row.js";
 import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -337,7 +337,7 @@ function fakeDocument() {
 
 test("on the screen the pause button is hidden after death; „Restart” and „Zakończ” stay", async () => {
   const { createStatusRow } =
-    await import("../../dist/public/view/status-row.js");
+    await import("../../dist/browser/view/status-row.js");
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {
@@ -441,7 +441,7 @@ test("a condition that takes no number is named without a unit, and a discovery 
 
 test("on the screen the line is shown while the game holds a discovery and hidden after the player moves on", async () => {
   const { createStatusRow } =
-    await import("../../dist/public/view/status-row.js");
+    await import("../../dist/browser/view/status-row.js");
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {
@@ -479,7 +479,7 @@ test("on the screen the line is shown while the game holds a discovery and hidde
 /** The status row built on the hand-made document, with the paces its pace buttons asked for. */
 async function rowAskingPaces() {
   const { createStatusRow } =
-    await import("../../dist/public/view/status-row.js");
+    await import("../../dist/browser/view/status-row.js");
   const asked = [];
   const row = createStatusRow({
     togglePause() {},

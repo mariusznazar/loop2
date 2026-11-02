@@ -12,20 +12,20 @@ import {
   setProgram,
   settleDeath,
   withSaveTime,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   createProgram,
   deleteProgram,
   editProgram,
   emptyProgram,
   pickProgram,
-} from "../../dist/public/sim/programs.js";
+} from "../../dist/browser/sim/programs.js";
 import {
   loadSavedGame,
   SAVED_GAME_VERSION,
   savedGame,
-} from "../../dist/public/sim/saved-game.js";
-import { buyBranch } from "../../dist/public/sim/skills.js";
+} from "../../dist/browser/sim/saved-game.js";
+import { buyBranch } from "../../dist/browser/sim/skills.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 

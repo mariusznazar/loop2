@@ -18,15 +18,15 @@ import {
   advanceMinutes,
   setProgram,
   withSaveTime,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   catchUp,
   closeAwayReport,
   loopSpan,
   passLoops,
   startLoop,
-} from "../../dist/public/sim/loop.js";
-import { loadSavedGame, savedGame } from "../../dist/public/sim/saved-game.js";
+} from "../../dist/browser/sim/loop.js";
+import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 

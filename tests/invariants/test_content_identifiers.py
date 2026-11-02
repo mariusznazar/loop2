@@ -56,7 +56,7 @@ ENTRIES = (
 )
 
 # The data modules and collections the tripwire reads, as `npm run build` compiles them.
-BUILT_DATA = "dist/public/sim/data"
+BUILT_DATA = "dist/browser/sim/data"
 COLLECTIONS = (("maps.js", "MAPS", "map"), ("resources.js", "RESOURCES", "resource"),
                ("archetypes.js", "ARCHETYPES", "archetype"))
 READER = r"""

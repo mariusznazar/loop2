@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { programFromRules, programRules } from "./program-fixture.mjs";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -12,7 +12,7 @@ import {
   send,
   setPaused,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
 const [mapId, map] = Object.entries(MAPS)[0];

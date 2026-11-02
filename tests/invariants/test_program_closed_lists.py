@@ -2,7 +2,7 @@
 action of the character whose kind the data files of `src/browser/sim/data/` do not list.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
-is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
+is never written) and driven through its public functions in `dist/browser/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram` and
 `send`. The program the check reads is the one `setProgram` edits (`heldProgram` in
 `HELD_PROGRAMS_JS` of `program_fixture.py`): the copy of the map run during a map run, in the
@@ -55,8 +55,8 @@ import unittest
 import loop2_invariant_support as support
 from program_fixture import HELD_PROGRAMS_JS, KNOWING_GAME_JS, program_from_rules, program_rules
 
-GAME_MODULE = "dist/public/sim/game.js"
-BUILT_DATA = "dist/public/sim/data"
+GAME_MODULE = "dist/browser/sim/game.js"
+BUILT_DATA = "dist/browser/sim/data"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
 SENT = {"mapId": "forest", "characterId": 1}

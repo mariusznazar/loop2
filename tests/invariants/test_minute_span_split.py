@@ -4,7 +4,7 @@ into calls of the simulation, up to and including the game minute in which the m
 something is discovered.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
-is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
+is never written) and driven through its public functions in `dist/browser/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `setProgram`, `createCharacter`,
 `send`, `advanceMinutes` and `passRealTime`, each returning `{state, events}`. After every call
 the script records the JSON of the whole game state and the events that call gave.
@@ -80,7 +80,7 @@ import unittest
 import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules
 
-GAME_MODULE = "dist/public/sim/game.js"
+GAME_MODULE = "dist/browser/sim/game.js"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
 SENT = {"mapId": "forest", "characterId": 1}

@@ -7,9 +7,9 @@ import { fileURLToPath } from "node:url";
 import {
   ICON_CREDITS,
   ICON_SOURCE_COMMIT,
-} from "../../dist/public/view/credits.js";
-import { RESOURCES } from "../../dist/public/sim/data/resources.js";
-import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
+} from "../../dist/browser/view/credits.js";
+import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
+import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
 
 const ICONS = fileURLToPath(new URL("../../assets/icons/", import.meta.url));
 
@@ -142,7 +142,7 @@ const textOf = (node) =>
 
 async function builtFooter() {
   const { createFooter, footerCredits } =
-    await import("../../dist/public/view/footer.js");
+    await import("../../dist/browser/view/footer.js");
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {

@@ -7,7 +7,7 @@ import { test } from "node:test";
 import {
   createEmailStatus,
   messageSentence,
-} from "../../dist/public/view/email-status.js";
+} from "../../dist/browser/view/email-status.js";
 
 // --- a document model with just what the row builds ----------------------------------------
 

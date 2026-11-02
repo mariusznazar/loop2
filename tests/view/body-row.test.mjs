@@ -5,7 +5,7 @@
 // plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania, To do 6, line 23, and Q5).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { backpackText, bodyValues } from "../../dist/public/view/body-row.js";
+import { backpackText, bodyValues } from "../../dist/browser/view/body-row.js";
 
 /** The texts of the body row joined as the row shows them. */
 function joined(body, natureEnergy = 100) {
@@ -137,7 +137,7 @@ function fakeDocument() {
 
 /** The body row built on a fake document and shown the given body, backpack and energy. */
 async function shownRow(body, backpack, natureEnergy = 100) {
-  const { createBodyRow } = await import("../../dist/public/view/body-row.js");
+  const { createBodyRow } = await import("../../dist/browser/view/body-row.js");
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {

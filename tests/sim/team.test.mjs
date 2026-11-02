@@ -1,7 +1,7 @@
 // The player's one team: creating its characters, its chest and sending its characters.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { programFromRules } from "./program-fixture.mjs";
 import {
   advanceMinutes,
@@ -12,7 +12,7 @@ import {
   restart,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
 const mapId = Object.keys(MAPS)[0];

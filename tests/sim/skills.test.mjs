@@ -1,8 +1,8 @@
 // Expectations: accepted task wprawa_i_drzewa_loop2.md, To do and Questions 1–12.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { SKILLS } from "../../dist/public/sim/data/skills.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { SKILLS } from "../../dist/browser/sim/data/skills.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -11,22 +11,22 @@ import {
   restart,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   newMapRun,
   pickActivity,
   stepMinute,
-} from "../../dist/public/sim/run.js";
-import { resolveCombat } from "../../dist/public/sim/combat.js";
-import { actionFeasible } from "../../dist/public/sim/program.js";
-import { nextRandom } from "../../dist/public/sim/random.js";
-import { neighbours } from "../../dist/public/sim/hex.js";
+} from "../../dist/browser/sim/run.js";
+import { resolveCombat } from "../../dist/browser/sim/combat.js";
+import { actionFeasible } from "../../dist/browser/sim/program.js";
+import { nextRandom } from "../../dist/browser/sim/random.js";
+import { neighbours } from "../../dist/browser/sim/hex.js";
 import {
   branchRank,
   buyBranch,
   skillProgress,
-} from "../../dist/public/sim/skills.js";
-import { editorRepertoire } from "../../dist/public/sim/understanding.js";
+} from "../../dist/browser/sim/skills.js";
+import { editorRepertoire } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { fullUnderstanding } from "./understanding-fixture.mjs";
 

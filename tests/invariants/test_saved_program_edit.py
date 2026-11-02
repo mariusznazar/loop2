@@ -5,8 +5,8 @@ were.
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions by a Node script this check writes to a
 temporary directory: `newGame`, `createCharacter`, `setProgram`, `send`, `advanceMinutes` and
-`setPaused` in `dist/public/sim/game.js`, and `createProgram` and `editProgram` in
-`dist/public/sim/programs.js`, each returning `{state, events}`. The new game starts from one whose
+`setPaused` in `dist/browser/sim/game.js`, and `createProgram` and `editProgram` in
+`dist/browser/sim/programs.js`, each returning `{state, events}`. The new game starts from one whose
 Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
 `program_fixture.py` gives it, so that the rules of the program stay what the check drives. The
 map run is on the map Las (`forest`), sent with program 1 after 10 game minutes in which the
@@ -47,7 +47,7 @@ import unittest
 import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules, program_rules
 
-GAME_MODULE = "dist/public/sim/game.js"
+GAME_MODULE = "dist/browser/sim/game.js"
 SENT = {"mapId": "forest", "characterId": 1, "programId": 1}
 CREATE = ["createCharacter", "Ala"]
 T = 1760000000000

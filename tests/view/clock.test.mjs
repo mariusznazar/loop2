@@ -4,7 +4,7 @@
 // (task rozliczenie-przejsc, To do 13 and 16; spec, decisions 4 and 7).
 import assert from "node:assert/strict";
 import { mock, test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -13,15 +13,15 @@ import {
   passRealTime,
   send,
   withSaveTime,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   advanceLoopRun,
   catchUp,
   passLoops,
   startLoop,
-} from "../../dist/public/sim/loop.js";
-import { createProgram } from "../../dist/public/sim/programs.js";
-import { startClock } from "../../dist/public/view/clock.js";
+} from "../../dist/browser/sim/loop.js";
+import { createProgram } from "../../dist/browser/sim/programs.js";
+import { startClock } from "../../dist/browser/view/clock.js";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
 /**

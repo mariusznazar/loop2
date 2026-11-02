@@ -5,8 +5,8 @@
 // first chill (minute 83 at 35,008 °C, minute 84 at 34,984 °C) in Context at line 99.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BALANCE } from "../../dist/public/sim/data/balance.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { BALANCE } from "../../dist/browser/sim/data/balance.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -17,10 +17,10 @@ import {
   send,
   setPaused,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { sameHex, tileAt } from "../../dist/public/sim/hex.js";
-import { nextRandom } from "../../dist/public/sim/random.js";
-import { stepMinute } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/game.js";
+import { sameHex, tileAt } from "../../dist/browser/sim/hex.js";
+import { nextRandom } from "../../dist/browser/sim/random.js";
+import { stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 
 const MAP_ID = Object.keys(MAPS)[0];

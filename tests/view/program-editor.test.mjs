@@ -2,10 +2,10 @@
 // tested without a browser. Importing the module must not touch the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
-import { ITEMS } from "../../dist/public/sim/data/items.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -13,7 +13,7 @@ import {
   newGame,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   addGroup,
   renameGroup,
@@ -37,7 +37,7 @@ import {
   withConditionKind,
   withConditionResource,
   withConditionValue,
-} from "../../dist/public/view/program-editor.js";
+} from "../../dist/browser/view/program-editor.js";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
 const SENT = {

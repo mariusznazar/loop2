@@ -10,7 +10,7 @@ import {
   restart,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   createProgram,
   deleteProgram,
@@ -20,8 +20,8 @@ import {
   saveCopyAsNewProgram,
   saveCopyIntoProgram,
   switchProgram,
-} from "../../dist/public/sim/programs.js";
-import { createProgramPanel } from "../../dist/public/view/program-panel.js";
+} from "../../dist/browser/sim/programs.js";
+import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 

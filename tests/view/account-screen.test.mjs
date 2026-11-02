@@ -18,8 +18,8 @@ import {
   setPaused,
   setProgram,
   settleDeath,
-} from "../../dist/public/sim/game.js";
-import { advanceLoopRun, startLoop } from "../../dist/public/sim/loop.js";
+} from "../../dist/browser/sim/game.js";
+import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import {
   createProgram,
   deleteProgram,
@@ -30,15 +30,15 @@ import {
   saveCopyAsNewProgram,
   saveCopyIntoProgram,
   switchProgram,
-} from "../../dist/public/sim/programs.js";
-import { loadSavedGame } from "../../dist/public/sim/saved-game.js";
-import { buyBranch } from "../../dist/public/sim/skills.js";
+} from "../../dist/browser/sim/programs.js";
+import { loadSavedGame } from "../../dist/browser/sim/saved-game.js";
+import { buyBranch } from "../../dist/browser/sim/skills.js";
 import {
   addressProblem,
   createAccountScreen,
   passwordProblems,
   registrationProblems,
-} from "../../dist/public/view/account-screen.js";
+} from "../../dist/browser/view/account-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- a document model with just what the page and the game build ---------------------------
@@ -405,7 +405,7 @@ function fakeAddress(hash = "") {
 }
 
 async function startPage(held, address = fakeAddress()) {
-  const { startApp } = await import("../../dist/public/view/app.js");
+  const { startApp } = await import("../../dist/browser/view/app.js");
   startApp(fakeDocument.body, held.client, address);
   await settle();
 }
@@ -1076,7 +1076,7 @@ test("signing in and out again and again keeps at most one clock running", async
 test("an answer that comes after the screen was left is ignored", async () => {
   await onPage(async () => {
     const { createAccountScreen } =
-      await import("../../dist/public/view/account-screen.js");
+      await import("../../dist/browser/view/account-screen.js");
     const held = heldClient();
     const signedIn = [];
     const screen = createAccountScreen(held.client, (account) =>
@@ -2390,7 +2390,7 @@ test("the document kept for the same account holds the moment of its reading and
     const date = mock.method(Date, "now", () => current);
     try {
       const { createGameView } =
-        await import("../../dist/public/view/game-view.js");
+        await import("../../dist/browser/view/game-view.js");
       const held = heldClient();
       const view = createGameView({
         client: held.client,
@@ -2487,7 +2487,7 @@ function rowOf(root, name) {
 /** The game of `state` built in the page without the account page around it; its element stands in the body. */
 async function viewOf(state) {
   const { createGameView } =
-    await import("../../dist/public/view/game-view.js");
+    await import("../../dist/browser/view/game-view.js");
   const held = heldClient();
   const view = createGameView({
     client: held.client,

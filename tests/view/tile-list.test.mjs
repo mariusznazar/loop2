@@ -1,15 +1,15 @@
 // The list of revealed tiles beside the terrain drawing (spec section 5, choices C4 and C5).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
   newGame,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { tileList } from "../../dist/public/view/tile-list.js";
+} from "../../dist/browser/sim/game.js";
+import { tileList } from "../../dist/browser/view/tile-list.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -288,7 +288,7 @@ const descendants = (node) =>
 
 test("on the panel the campfire's icon stands in its tile and the state in the row of the same key", async () => {
   const { createTerrainPanel } =
-    await import("../../dist/public/view/terrain-panel.js");
+    await import("../../dist/browser/view/terrain-panel.js");
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {

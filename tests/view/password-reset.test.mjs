@@ -7,7 +7,7 @@ import { test } from "node:test";
 import {
   readResetToken,
   resetOutcome,
-} from "../../dist/public/view/password-reset.js";
+} from "../../dist/browser/view/password-reset.js";
 
 const TOKEN = "Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE";
 

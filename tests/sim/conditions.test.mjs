@@ -1,20 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ITEMS } from "../../dist/public/sim/data/items.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   neighbours,
   offsetToAxial,
   sameHex,
-} from "../../dist/public/sim/hex.js";
+} from "../../dist/browser/sim/hex.js";
 import {
   createCharacter,
   newGame,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { conditionHolds } from "../../dist/public/sim/program.js";
-import { newMapRun } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/game.js";
+import { conditionHolds } from "../../dist/browser/sim/program.js";
+import { newMapRun } from "../../dist/browser/sim/run.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
 
 // The conditions on the body, the backpack and the campfire (task, To do 12–13; spec Decision 3;

@@ -4,7 +4,7 @@ Node.js adds to those of the JavaScript language.
 
 The files of the simulation are the files git tracks or would track under `src/browser/sim/` (the
 part `simulation`'s source) and, for the run, the modules `npm run build` places under
-`dist/public/sim/` in a temporary copy of the working tree (the real tree is never written).
+`dist/browser/sim/` in a temporary copy of the working tree (the real tree is never written).
 
 Reading of the sentence:
 - imports a file from outside the simulation: an `import ... from`, `export ... from`, a bare
@@ -30,7 +30,7 @@ Covers:
   simulation into a `node:vm` context that holds only the globals of the JavaScript language —
   `console` and `WebAssembly`, which `node:vm` adds, removed — with `Date` replaced by one that
   throws on `Date.now()`, `Date()` and `new Date()`; every import is resolved by the script and
-  any specifier resolving outside `dist/public/sim/` is recorded and refused. It then drives the
+  any specifier resolving outside `dist/browser/sim/` is recorded and refused. It then drives the
   public functions of `game.js` through a character created, a send, a mixed program for 150 game
   minutes, real time,
   a pause, a restart, an end and a second send. The game it starts from is one whose Understanding
@@ -59,7 +59,7 @@ import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 SOURCE_DIRECTORY = "src/browser/sim/"
-BUILT_DIRECTORY = "dist/public/sim"
+BUILT_DIRECTORY = "dist/browser/sim"
 CODE_EXTENSIONS = (".ts", ".mts", ".cts", ".tsx", ".js", ".mjs", ".cjs")
 
 # Globals the browser or Node.js add to those of the JavaScript language, as a name standing
