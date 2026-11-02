@@ -79,7 +79,7 @@ header .save-line {
   color: var(--warning);
 }
 
-/* The result of a confirmation from the link, above the screen: `positive` or `warning` (D-39). */
+/* The page's one sentence, above the game or in the login card: `positive` or `warning` (D-39, D-261). */
 .confirmation-notice {
   margin: 0 0 var(--space-m);
 }
@@ -92,16 +92,13 @@ header .save-line {
   color: var(--warning);
 }
 
-/*
- * A sentence of the page above the screen it opens, in `warning` (D-39): a saved game state that
- * did not load above the new game, an expired session or an update above the account forms.
- */
+/* A sentence of the page above the new game, of a saved game state that did not load, in `warning` (D-39). */
 .page-notice {
   margin: 0 0 var(--space-m);
   color: var(--warning);
 }
 
-/* The place of the screen: the session check, the account forms or the game. */
+/* The place of the screen: the session check or the game; the login card stands beside it (D-262). */
 .app-main {
   flex: 1;
 }
@@ -249,30 +246,60 @@ header .save-line {
   color: var(--text-secondary);
 }
 
-/* The forms „Zaloguj się” and „Załóż konto”, each a block of its own, side by side when they fit. */
-.account-screen {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-xl);
-  align-items: start;
+/*
+ * The screen of the login card, in the body in place of the header, the main and the footer, which
+ * are hidden while it stands (D-262): all the height left, with the card in its middle. A card
+ * taller than the window makes the page taller, so nothing of it is cut off.
+ */
+.account-card-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) 0;
 }
 
-.account-form {
+/* The login card (D-96): one panel, 400 px wide, or as wide as a narrower window lets it. */
+.account-card {
+  box-sizing: border-box;
+  width: 400px;
+  max-width: 100%;
+  padding: var(--space-xl);
   background: var(--panel);
   color: var(--text);
   border: var(--frame-width) solid var(--divider);
-  padding: var(--space-m) var(--space-l);
+}
+
+.account-card h1 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-game-title);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+/* The sentence about the game: a description in `text-secondary` (D-40). */
+.account-card-about {
+  margin: 0 0 var(--space-l);
+  color: var(--text-secondary);
+}
+
+/* The switch between „Zaloguj się” and „Załóż konto”: two buttons selected in their group. */
+.account-card-switch {
+  display: flex;
+  gap: var(--space-s);
+  margin-bottom: var(--space-l);
 }
 
 .account-form h2 {
-  margin: 0 0 var(--space-s);
+  margin: 0 0 var(--space-m);
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
   color: var(--text-strong);
 }
 
-/* The fields of an account form take the width of the form, so a long address stays visible. */
-.account-form .input-field {
+/* The fields and the main button take the width of the card, so a long address stays visible. */
+.account-form .input-field,
+.account-form .form > .button {
   align-self: stretch;
 }
 
@@ -280,14 +307,31 @@ header .save-line {
   min-width: 0;
 }
 
-/* The form „Nie pamiętam hasła” stands alone: it keeps the width of one form, not the whole row. */
-.account-form:only-child {
-  max-width: 480px;
-}
-
-/* A button under a form that opens or leaves a state of the screen sits with a gap below the form. */
+/* A button under a form that opens or leaves a state of the card sits with a gap below the form. */
 .account-form-switch {
   margin-top: var(--space-m);
+}
+
+/* The folded credits, last in the card and set off by a line: an addition in `text-secondary`. */
+.account-card details {
+  margin-top: var(--space-l);
+  padding-top: var(--space-m);
+  border-top: var(--frame-width) solid var(--divider);
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+.account-card summary {
+  cursor: pointer;
+}
+
+.account-card .credits {
+  margin-top: var(--space-s);
+}
+
+/* A row of the credits wraps in the card, so a gap tells one icon's row from the next. */
+.account-card .credits li + li {
+  margin-top: var(--space-xs);
 }
 
 /* The program panel's list „Program:”, its actions and the name field, above the editor. */
