@@ -187,6 +187,35 @@ test("a waiting submit button is the same element in both forms", async () => {
   });
 });
 
+// A button of a card that waits is locked, its text kept: the DOM screen sets `disabled` on it.
+test("a button locked with its text is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Nie pamiętam hasła", disabled: true }),
+    );
+    const expected = createButton("Nie pamiętam hasła");
+    expected.disabled = true;
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+test("a button of a group locked with its text is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        text: "Zaloguj się",
+        selected: true,
+        disabled: true,
+      }),
+    );
+    const expected = createButton("Zaloguj się", { kind: "selected" });
+    expected.disabled = true;
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
 test("a button that stopped waiting is the same element as one that never waited", async () => {
   await withPage(async ({ document }) => {
     const drawing = await drawn(
@@ -331,6 +360,26 @@ const FIELD_CASES = [
     dom: () => {
       const field = createPasswordField({ label: "Hasło", visibleLabel: true });
       field.input.disabled = true;
+      return field;
+    },
+  },
+  {
+    // jsdom does not reflect the property `spellcheck`, which the DOM screen sets, to the attribute.
+    name: "an address field with the keyboard of an address and no spell check",
+    react: () => ({
+      type: "text",
+      label: "Adres e-mail",
+      visibleLabel: true,
+      inputMode: "email",
+      spellCheck: false,
+    }),
+    dom: () => {
+      const field = createTextField({
+        label: "Adres e-mail",
+        visibleLabel: true,
+      });
+      field.input.setAttribute("inputmode", "email");
+      field.input.setAttribute("spellcheck", "false");
       return field;
     },
   },

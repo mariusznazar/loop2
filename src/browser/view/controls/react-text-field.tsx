@@ -18,6 +18,10 @@ export type ReactFieldProps = {
   visibleLabel?: boolean;
   /** The `autocomplete` token of the input, such as "email" or "new-password". */
   autocomplete?: string;
+  /** The keyboard a text input asks for, such as that of an address. */
+  inputMode?: "email";
+  /** Given false, the browser does not check the spelling of what is typed. */
+  spellCheck?: boolean;
   /** The message under the field in the error state; null or left out, there is none. */
   error?: string | null;
   /** Locks the field while it waits for the server. */
@@ -34,6 +38,8 @@ function ReactInputField({
   hint,
   visibleLabel,
   autocomplete,
+  inputMode,
+  spellCheck,
   error,
   disabled,
   value,
@@ -56,6 +62,8 @@ function ReactInputField({
         id={visibleLabel ? inputId : undefined}
         type={type}
         autoComplete={autocomplete}
+        inputMode={inputMode}
+        spellCheck={spellCheck}
         placeholder={hint}
         aria-label={visibleLabel ? undefined : label}
         aria-invalid={failed ? "true" : undefined}

@@ -22,6 +22,8 @@ export type ReactButtonProps = {
    * busy, as `setButtonWaiting` does. Given null or left out, it shows `text`.
    */
   waitingText?: string | null;
+  /** Locks the button with its text kept, while the screen around it waits for the server. */
+  disabled?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   /** The button's element, for the screen that moves focus to it. */
   buttonRef?: Ref<HTMLButtonElement>;
@@ -34,6 +36,7 @@ export function ReactButton({
   submit,
   selected,
   waitingText,
+  disabled,
   onClick,
   buttonRef,
 }: ReactButtonProps) {
@@ -46,7 +49,7 @@ export function ReactButton({
       aria-label={label}
       aria-pressed={selected === undefined ? undefined : selected}
       aria-busy={waiting ? "true" : undefined}
-      disabled={waiting}
+      disabled={waiting || disabled}
       onClick={onClick}
     >
       {waiting ? waitingText : text}
