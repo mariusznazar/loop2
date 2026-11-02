@@ -1,6 +1,10 @@
 import { createApp } from "./app.js";
 import { openAccountRuntime, StartupFailure } from "./configuration.js";
-import { installLastResort, writeFailure } from "./log-line.js";
+import {
+  installLastResort,
+  ReasonedFailure,
+  writeFailure,
+} from "./log-line.js";
 
 installLastResort("main");
 
@@ -9,8 +13,11 @@ const rawPort = process.env.LOOP2_LISTEN_PORT ?? "3000";
 const port = /^\d+$/.test(rawPort) ? Number(rawPort) : NaN;
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
-  console.error(
-    `Loop could not start: LOOP2_LISTEN_PORT must be an integer from 1 to 65535, got ${JSON.stringify(rawPort)}`,
+  writeFailure(
+    "Loop could not start: LOOP2_LISTEN_PORT must be an integer from 1 to 65535",
+    "main.start",
+    new ReasonedFailure("INVALID_LISTEN_PORT"),
+    { listen: rawPort },
   );
   process.exit(1);
 }

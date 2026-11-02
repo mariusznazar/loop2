@@ -4366,33 +4366,87 @@ test(
   },
 );
 
+// The session library reports a store that failed as the response ends, through
+// the `next` it was given, where the request may be past every layer. The fault
+// each case guards: the error running off the end of the router into Express's
+// own handler, which prints its stack and message (NODE_ENV=production in the
+// image), or a failure of the session with no line. Each renewal is refused by
+// a real trigger, whose text SQLite puts in the error's message.
+const refusedRenewal = "synthetic first@example.test";
+const failedRenewal = (f) => ({
+  failure: "session",
+  kind: "Error",
+  code: "ERR_SQLITE_ERROR",
+  errcode: 1811,
+  place: "app.sessions",
+  accountId: f.first.id,
+});
+
+/** The session of the first account, whose renewal the database now refuses. */
+function refusingRenewal(f) {
+  const cookie = seed(f, "renewal", f.first);
+  f.inspection.exec(`
+    CREATE TRIGGER refuse_renewal BEFORE UPDATE ON sessions
+    BEGIN SELECT RAISE(ABORT, '${refusedRenewal}'); END;
+  `);
+  return cookie;
+}
+
+/** The log once the request's late failures have had their turn. */
+async function settledLog(logged) {
+  await waitFor(() => logged.length >= 1, "the failure is logged");
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  return logged.map(fieldsOf);
+}
+
 test(
-  "a failure after the answer has left writes its one line, and Express prints no stack beside it",
+  "a failed renewal after a route answered writes one line of the session, and no stack",
   { timeout: 20000 },
   async (t) => {
-    // The session's renewal runs as the response ends, so its failure reaches
-    // the error handler with the headers sent. Fault: the error handed on to
-    // Express, whose own handler prints the stack and message, so that one
-    // failure gets two records and the second quotes values.
     const f = await accountFixture(t);
     const logged = captureLog(t);
-    const cookie = seed(f, "renewal", f.first);
-    f.runtime.database.renewSession = () => {
-      throw new Error("synthetic renewal fault for first@example.test");
-    };
-    const response = await readAccount(f, cookie);
+    const response = await readAccount(f, refusingRenewal(f));
     assert.equal(response.status, 200);
-    await waitFor(() => logged.length >= 1, "the failure is logged");
-    delete f.runtime.database.renewSession;
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    assert.deepEqual(logged.map(fieldsOf), [
-      {
-        failure: "request",
-        kind: "Error",
-        code: "none",
-        place: "app.errors",
-        accountId: f.first.id,
-      },
+    assert.deepEqual(await settledLog(logged), [failedRenewal(f)]);
+  },
+);
+
+test(
+  "a failed renewal of a request for a missing file, past every layer, writes one line of the session, and no stack",
+  { timeout: 20000 },
+  async (t) => {
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const response = await readAccount(
+      f,
+      refusingRenewal(f),
+      "/no-such-file-here",
+    );
+    assert.equal(response.status, 404);
+    assert.deepEqual(await settledLog(logged), [failedRenewal(f)]);
+  },
+);
+
+test(
+  "a route that fails and a renewal that fails write one line each, with their own place, and no stack",
+  { timeout: 20000 },
+  async (t) => {
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const cookie = refusingRenewal(f);
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_save BEFORE INSERT ON saved_games
+      BEGIN SELECT RAISE(ABORT, '${refusedRenewal}'); END;
+    `);
+    const response = await putSave(f, cookie, {
+      version: 1,
+      basedOn: 0,
+      game: {},
+    });
+    assert.equal(response.status, 500);
+    assert.deepEqual(await settledLog(logged), [
+      { ...failedRenewal(f), failure: "request", place: "app.errors" },
+      failedRenewal(f),
     ]);
   },
 );

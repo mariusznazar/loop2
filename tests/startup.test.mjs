@@ -198,6 +198,21 @@ for (const value of ["0", "65536", "abc", "3000x", ""]) {
       `stderr must name the value: ${result.stderr}`,
     );
     assert.doesNotMatch(result.stdout, /Loop: http:/);
+    // To do 3, D-252: a start that fails is a failure the server handled, so
+    // it goes the one way of writing, as one JSON object on one line.
+    const lines = result.stderr.split(/\r?\n/).filter((line) => line !== "");
+    assert.equal(lines.length, 1, result.stderr);
+    const { failure, kind, code, place, listen } = JSON.parse(lines[0]);
+    assert.match(failure, /LOOP2_LISTEN_PORT/);
+    assert.deepEqual(
+      { kind, code, place, listen },
+      {
+        kind: "ReasonedFailure",
+        code: "INVALID_LISTEN_PORT",
+        place: "main.start",
+        listen: value,
+      },
+    );
   });
 }
 
