@@ -5771,12 +5771,11 @@ the screens drift apart, and „Usuń” or „Zakończ” could look like a har
 
 ### D-276 — What is a tab of the browser view?
 
-A tab is a button selected in its group that switches the states of a form and is drawn without a
-frame, the chosen one with its text in `text-strong` and a line in `selected` at its bottom. A tab
-keeps the element, `aria-pressed` and keyboard of the button selected in its group — Tab reaches
-each, Enter or Space switches — with neither arrow keys nor the roles of tabs. The switch of the
-login card stands as tabs, and the pace buttons of D-130 keep the look of the button selected in
-its group.
+A tab is a button selected in its group drawn without a frame, the chosen one with its text in
+`text-strong` and a line in `selected` at its bottom. A tab keeps the element, `aria-pressed` and
+keyboard of the button selected in its group — Tab reaches each, Enter or Space switches — with
+neither arrow keys nor the roles of tabs. The switch of the login card stands as tabs, and the pace
+buttons of D-130 keep the look of the button selected in its group.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -5822,9 +5821,9 @@ The menu bar marks the place the player is at as the chosen tab is marked (D-276
   - violates: that item marked in green, by a background or by a frame
 - **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2b, and § Settlements to record, row 4
 
-*Rationale:* one mark says where the player is, among the tabs of a form and on the menu bar alike,
-so the bar takes no look of its own for it. Accepted with it: the menu bar and the tabs look alike,
-though NN/g advises telling navigation from tabs by their look.
+*Rationale:* one mark says where the player is, among tabs and on the menu bar alike, so the bar
+takes no look of its own for it. Accepted with it: the menu bar and the tabs look alike, though NN/g
+advises telling navigation from tabs by their look.
 *Rejected:* the task that builds the menu bar settling the mark once the bar can be seen — a second
 conversation about the look, and that task losing its main reason to wait for this one.
 

@@ -342,15 +342,15 @@ States of shared controls.
   Zostaje przyciskiem, bo zmienia stan ekranu i nie ma adresu, nigdy
   odnośnikiem. Każde inne działanie, choćby poboczne, zostaje przy
   przycisku, który daje mu D-44.
-- Zakładka (`kind: "tab"`) to przycisk wybrany w grupie, który przełącza
-  stany formularza, narysowany bez ramki — dziś przełącznik „Zaloguj się”
-  i „Załóż konto” karty logowania (D-276). „Zakładka” znaczy w wytycznych
-  wygląd: element, atrybut `aria-pressed` i klawiatura zostają jak przy
-  przycisku wybranym w grupie — Tab przechodzi przez każdą, Enter albo Spacja
-  przełącza — bez strzałek i bez ról zakładek (`role="tab"`). Grupa zaznacza
-  wybraną zakładkę jak wybrany przycisk (`setButtonSelected`, w React
-  `selected`), a kontener zakładek dostaje klasę `tabs`. Przyciski tempa
-  (D-130) zostają przy wyglądzie przycisku wybranego w grupie.
+- Zakładka (`kind: "tab"`) to przycisk wybrany w grupie narysowany bez
+  ramki — dziś przełącznik „Zaloguj się” i „Załóż konto” karty logowania
+  (D-276). „Zakładka” znaczy w wytycznych wygląd: element, atrybut
+  `aria-pressed` i klawiatura zostają jak przy przycisku wybranym w grupie —
+  Tab przechodzi przez każdą, Enter albo Spacja przełącza — bez strzałek
+  i bez ról zakładek (`role="tab"`). Grupa zaznacza wybraną zakładkę jak
+  wybrany przycisk (`setButtonSelected`, w React `selected`), a kontener
+  zakładek dostaje klasę `tabs`. Przyciski tempa (D-130) zostają przy
+  wyglądzie przycisku wybranego w grupie.
 - Pasek menu znaczy pozycję, na której jest gracz, tak jak wybraną zakładkę:
   tekst w `text-strong` i ta sama linia w `selected` u dołu (D-277) — nigdy
   zielenią, tłem ani ramką.
