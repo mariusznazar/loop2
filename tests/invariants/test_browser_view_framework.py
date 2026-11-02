@@ -12,15 +12,19 @@ Covers, in the working tree being checked:
   removed and the text of string and template literals emptied, `document.` is followed by one of
   the DOM members DOM_RENDERING_MEMBERS lists below (creating, finding or inserting elements);
 - no UI framework from the list below (React is not on it) is a runtime dependency — in
-  package.json `dependencies` or in any package-lock.json entry not marked `dev` — or is imported
-  or loaded by the browser source, by package name or by URL;
+  package.json `dependencies`, in what an `npm:` alias there installs, or in any package-lock.json
+  entry not marked `dev`, by its key and by its `name` — or is imported or loaded by the browser
+  source, by package name or by URL; nor is a library built on React: a package-lock.json entry
+  not marked `dev`, other than react and react-dom, whose `peerDependencies` name react, as a
+  runtime dependency or as an import of the browser source;
 - what `npm run build` places in `dist/public` imports only its own files (relative or
   root-relative specifiers, no bare package and no URL), also in the minified form `import"x"`
   of the bundle, loads no script from another origin, and
   holds none of the global markers the listed frameworks leave in their built code (React's
   markers are not among them: the bundle holds React).
 
-Does NOT cover: a UI framework absent from the list; a framework copied into the source under
+Does NOT cover: a UI framework absent from the list; a library built on React that declares no
+peer dependency on react in the lock file; a framework copied into the source under
 another name that leaves none of the listed markers; whether the page renders correctly in a
 browser (no browser runs in this check); code inside `${...}` of a template literal, which is
 emptied with the literal.
@@ -36,7 +40,8 @@ import loop2_invariant_support as support
 BROWSER_SOURCE = "src/browser"
 BUILT_PAGE = "dist/public"
 
-# UI frameworks and component libraries other than React, as npm package names.
+# UI frameworks other than React, as npm package names. A library built on React is not named
+# here: refused_names() finds it in the lock file by its peer dependency on react.
 UI_FRAMEWORKS = (
     "preact", "vue", "@vue/runtime-dom", "@vue/runtime-core", "svelte",
     "@sveltejs/kit", "solid-js", "@angular/core", "@angular/platform-browser", "lit", "lit-html",
@@ -46,6 +51,8 @@ UI_FRAMEWORKS = (
     "astro", "uhtml", "hyperhtml", "million", "van", "vanjs-core", "@hotwired/stimulus",
     "@hotwired/turbo", "aurelia", "@aurelia/runtime-html", "cycle", "@cycle/dom", "elm",
 )
+# React itself, which the view is built with.
+REACT_ITSELF = ("react", "react-dom")
 # Global names the listed frameworks leave in their built code.
 FRAMEWORK_MARKERS = (
     "__VUE_PROD_DEVTOOLS__", "__VUE_OPTIONS_API__", "__PREACT_DEVTOOLS__", "ngDevMode",
@@ -97,6 +104,51 @@ def names_in(specifier):
     if specifier.startswith("@"):
         return {"/".join(specifier.split("/")[:2])}
     return {specifier.split("/")[0]}
+
+
+def alias_target(version):
+    """The package an `npm:name@range` alias of package.json really installs, else None."""
+    if not version.startswith("npm:"):
+        return None
+    target = version[4:]
+    at = target.rfind("@")
+    return target[:at] if at > 0 else target
+
+
+def runtime_names(manifest, lock):
+    """Every package name that is a runtime dependency: the keys of `dependencies` and what an
+    alias there installs, and each lock entry not marked `dev` by its key and by its `name`
+    (an aliased entry such as `node_modules/react` holds the real name there)."""
+    names = set()
+    for key, version in manifest.get("dependencies", {}).items():
+        names.add(key)
+        target = alias_target(str(version))
+        if target:
+            names.add(target)
+    for key, entry in lock.get("packages", {}).items():
+        if key and not entry.get("dev", False):
+            names.add(key.rsplit("node_modules/", 1)[-1])
+            if entry.get("name"):
+                names.add(entry["name"])
+    return names
+
+
+def react_libraries(lock):
+    """Libraries built on React that are runtime dependencies: each lock entry not marked `dev`,
+    other than react and react-dom, whose `peerDependencies` name react."""
+    found = set()
+    for key, entry in lock.get("packages", {}).items():
+        name = entry.get("name") or key.rsplit("node_modules/", 1)[-1]
+        if (key and not entry.get("dev", False) and name not in REACT_ITSELF
+                and "react" in entry.get("peerDependencies", {})):
+            found.add(name)
+    return found
+
+
+def refused_names(lock):
+    """The package names the guard refuses: the listed frameworks and the libraries built on React
+    that the lock holds."""
+    return set(UI_FRAMEWORKS) | react_libraries(lock)
 
 
 def code_only(text):
@@ -180,25 +232,62 @@ class NoUiFramework(unittest.TestCase):
 
     def test_no_ui_framework_in_runtime_dependencies(self):
         # invariant: browser-view-framework
-        declared = set(load_json("package.json").get("dependencies", {}))
-        self.assertEqual(sorted(declared & set(UI_FRAMEWORKS)), [])
-        locked = set()
-        for key, entry in load_json("package-lock.json").get("packages", {}).items():
-            if key and not entry.get("dev", False):
-                locked.add(key.rsplit("node_modules/", 1)[-1])
-        self.assertEqual(sorted(locked & set(UI_FRAMEWORKS)), [],
-                         "package-lock.json holds a UI framework outside development")
+        manifest, lock = load_json("package.json"), load_json("package-lock.json")
+        self.assertEqual(sorted(runtime_names(manifest, lock) & refused_names(lock)), [],
+                         "a UI framework or a library built on React is a runtime dependency")
 
     def test_browser_source_imports_no_ui_framework(self):
         # invariant: browser-view-framework
         found = []
+        refused = refused_names(load_json("package-lock.json"))
         for relative, text in text_files(BROWSER_SOURCE, support.ROOT):
             for specifier in IMPORT_SPECIFIER.findall(text) + SCRIPT_SOURCE.findall(text):
-                hit = names_in(specifier) & set(UI_FRAMEWORKS)
+                hit = names_in(specifier) & refused
                 if hit:
                     found.append((relative, specifier))
             found += [(relative, m) for m in FRAMEWORK_MARKERS if m in text]
         self.assertEqual(found, [])
+
+    def test_control_the_dependency_check_reads_what_an_entry_really_is(self):
+        # invariant: browser-view-framework
+        react = {"name": "loop2", "dependencies": {"react": "19.3.1", "react-dom": "19.3.1"}}
+        lock = {"packages": {
+            "": {"name": "loop2"},
+            "node_modules/react": {"version": "19.3.1"},
+            "node_modules/react-dom": {"peerDependencies": {"react": "^19.3.1"}},
+            "node_modules/scheduler": {"version": "0.28.0"},
+            "node_modules/@mui/material": {"dev": True, "peerDependencies": {"react": "^19"}},
+        }}
+        # The tree as it is: React, react-dom, scheduler, a development library on React.
+        self.assertEqual(runtime_names(react, lock) & refused_names(lock), set())
+        crafted = {
+            "an alias in package.json to a listed framework": (
+                {"dependencies": {"react": "npm:preact@10.0.0"}},
+                {"packages": {"node_modules/react": {"version": "10.0.0"}}}),
+            "an alias in package.json without a version": (
+                {"dependencies": {"react": "npm:vue"}}, {"packages": {}}),
+            "an alias in package.json to a scoped framework": (
+                {"dependencies": {"react": "npm:@vue/runtime-dom@3.0.0"}}, {"packages": {}}),
+            "a lock entry named after a listed framework": (
+                {"dependencies": {"react": "19.3.1"}},
+                {"packages": {"node_modules/react": {"name": "preact", "version": "10.0.0"}}}),
+            "a nested lock entry named after a listed framework": (
+                {"dependencies": {}},
+                {"packages": {"node_modules/a/node_modules/x": {"name": "vue"}}}),
+            "a component library on React": (
+                {"dependencies": {"react": "19.3.1", "@mui/material": "7.0.0"}},
+                {"packages": {"node_modules/@mui/material": {"peerDependencies": {"react": "^19"}}}}),
+            "a component library on React that only the lock holds": (
+                {"dependencies": {"react": "19.3.1"}},
+                {"packages": {"node_modules/ui-kit": {"peerDependencies": {"react": "^19"}}}}),
+        }
+        for name, (manifest, crafted_lock) in crafted.items():
+            with self.subTest(case=name):
+                hit = runtime_names(manifest, crafted_lock) & refused_names(crafted_lock)
+                self.assertNotEqual(hit, set())
+        # A source import of a library on React found in the lock is refused.
+        refused = refused_names(crafted["a component library on React"][1])
+        self.assertEqual(names_in("@mui/material/Button") & refused, {"@mui/material"})
 
     def test_built_page_loads_only_its_own_code_and_no_framework(self):
         # invariant: browser-view-framework
