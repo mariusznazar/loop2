@@ -139,7 +139,7 @@ compilation configurations and output directories. Building the application comp
 configurations and bundles the browser's code, React included, into the files the server hands out.
 
 - **Scope:** build-tools, browser-view, simulation, account-server
-- **Based on:** none
+- **Based on:** react-entry-format
 - **Relations:** none
 - **Verification:** invariants: application-package-layout · application-build-layout ·
   application-build-output
@@ -148,7 +148,7 @@ configurations and bundles the browser's code, React included, into the files th
 *Rationale:* a shared installation keeps the local starting point small, while separate compiler
 environments keep browser and server types apart. The simulation is browser code, compiled by the
 browser's configuration and held in the shared package. The browser cannot load React's packages by
-itself, so the build takes one more step, which also runs at each deployment.
+itself, so the build takes one more build step, which also runs at each deployment.
 *Rejected:* separate packages — add installation coordination; a map of imports with no bundler —
 React's packages hold a format the browser does not load.
 
@@ -5402,7 +5402,7 @@ case a fresh window, moves focus away from a control that becomes disabled, awai
 on a report of React's development build through `console.error`.
 
 - **Scope:** browser-view · build-tools
-- **Based on:** none
+- **Based on:** react-hook-order-report · react-entry-build
 - **Relations:** derives from D-03 · derives from D-88
 - **Verification:** an agent compares a change with the decision:
   - complies: a case of a screen in React that imports the harness first and walks the page,
@@ -5428,14 +5428,14 @@ keep, where a ready one runs the same cases; real-browser tests — D-75 and D-8
 
 Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen
 uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one
-element tree with the same classes and attributes, and a screen no task has moved to React yet stays
-in those APIs on the DOM form. A test draws both forms for each kind and state the React screens use
-and compares their tag, attributes and text, the input's `value` attribute apart. The kitchen-sink
-page shows the DOM form, and `src/browser/styles.css` stays the one place of the look of both.
+tree of DOM elements with the same classes and attributes, and a screen no task has moved to React
+yet stays in those APIs on the DOM form. A test draws both forms for each kind and state the React
+screens use and compares their tag, attributes and text, the input's `value` attribute apart, and
+`src/browser/styles.css` stays the one place of the look of both.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-44 · derives from D-45 · narrows D-03
+- **Relations:** derives from D-44 · narrows D-03
 - **Verification:** an agent compares a change with the decision:
   - complies: a new attribute of the button written in both forms in one change; a DOM screen left
     on the DOM form by a change that moves another screen
@@ -5447,15 +5447,13 @@ page shows the DOM form, and `src/browser/styles.css` stays the one place of the
 page and have to look alike. Components written as React writes them give the next screens an
 exemplar with controlled fields and state in the component. Accepted with it: the two forms live
 until the last DOM screen moves, and a new attribute is written twice, with the test failing until
-both agree. The kitchen-sink page shows the React forms only through that likeness.
+both agree.
 *Rejected:* wrapping the DOM functions in a React component — one implementation, but fields become
-uncontrolled, the card's state lives in elements and the waiting state runs in effects, which D-36
-would then hold up to every later screen; moving the controls to React and mounting them in DOM
+uncontrolled, the card's state lives in DOM elements and the waiting state runs in effects, which
+D-36 would then hold up to every later screen; moving the controls to React and mounting them in DOM
 screens — a React root for each control, a render that is not synchronous when a control waits, and
 it moves screens that stay in DOM; a shared function of class names under both forms — it changes
-the DOM controls for what the comparison already catches; bundling the kitchen-sink page and
-drawing the React forms on it — a changed script at a trust boundary, a second bundle and a second
-set of samples for nothing the comparison leaves open.
+the DOM controls for what the comparison already catches.
 
 ### D-266 — Where does the output of the browser's compilation stand?
 
@@ -5497,7 +5495,7 @@ data for rendering or to handle a user event. A defect of these rules that passe
 reopens D-29 for the human.
 
 - **Scope:** browser-view · build-tools
-- **Based on:** react-hook-call-place · react-effect-dependencies · react-effect-cleanup · react-effect-use
+- **Based on:** react-hook-call-place · react-effect-dependencies · react-effect-cleanup · react-effect-use · react-hook-order-report
 - **Relations:** derives from D-03 · derives from D-29
 - **Verification:** an agent compares a change with the decision:
   - complies: a reviewer refusing an Effect whose code reads a prop its dependency list leaves out
@@ -5526,19 +5524,19 @@ More than ten test files on a document imitation, or memory running away in a te
 how the limit is held.
 
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
-- **Based on:** node-assert-failure-inspect
+- **Based on:** node-assert-failure-inspect · node-worker-threads · node-sigkill-termination · node-process-rss
 - **Relations:** derives from D-264
 - **Verification:** invariants: document-test-memory-limit. An agent compares a change with the
   decision:
   - complies: a throwaway file that starts the limit before it loads jsdom; a failing comparison on
-    an element that ends in a short message naming its case
+    a DOM element that ends in a short message naming its case
   - violates: a helper on jsdom that takes `assert` from `node:assert`; a file outside `tests/` that
     loads jsdom with no limit
 - **Origin:** none
 
-*Rationale:* Node writes out both values of a failing comparison before it throws, and on an element
-React has drawn that work grows faster than a limit of time can act; why it grows is read from
-Node's source and not proved. A thread of the same process keeps running while the main thread is
+*Rationale:* Node writes out both values of a failing comparison before it throws, and on a DOM
+element React has drawn that work grows faster than a limit of time can act; why it grows is read
+from Node's source and not proved. A thread of the same process keeps running while the main thread is
 stuck in one synchronous call, stays out of reach of the cases' mocked timers and needs no branch by
 system. The harness's `assert` keeps a failure small and names its case, and the thread answers what
 that does not foresee, so neither replaces the other. Files on an imitation run side by side and add
@@ -5558,3 +5556,58 @@ limit with the rule on `assert` left a convention — a failing case then report
 died; Node's `assert` with a message at each call — a rule to remember, and the error still carries
 its values to the runner; a file outside `tests/` left to an agent's recollection — one lapse takes
 the machine's memory.
+
+### D-269 — Does the kitchen-sink page hold React?
+
+The kitchen-sink page holds no React: it shows each shared control in its DOM form, and no module it
+imports, directly or through other modules, reaches a `.tsx` file while `scripts/kitchen-sink.mjs`
+bundles nothing. A task that needs React on the page makes that script bundle, by a change of its
+build step and never of its lines that serve files.
+
+- **Scope:** browser-view · build-tools
+- **Based on:** none
+- **Relations:** derives from D-45 · derives from D-76 · derives from D-265
+- **Verification:** an agent compares a change with the decision:
+  - complies: a constant the page needs moved into a module with no React, the page's samples left
+    on the DOM form of each control
+  - violates: a module the page imports that imports a `.tsx` file; a sample of the page drawn with
+    a React form while the page's command bundles nothing
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czy strona wszystkich stanów wstaje bez zmiany `scripts/kitchen-sink.mjs`, gdy stała `RESET_REQUESTED_SENTENCE` przejdzie do modułu bez Reacta?”
+
+*Rationale:* the page's own command compiles its modules one by one and the browser resolves no bare
+import, so a module that reaches React leaves a blank page while its build passes. The page needs no
+React: a test keeps the two forms of a control alike and the look stands in one stylesheet, so the
+DOM form shows what the React form looks like. Accepted with it: the page shows the React forms only
+through that likeness, and nothing fails when a module lets React in, so review keeps this decision.
+*Rejected:* bundling the kitchen-sink page and drawing the React forms on it — a changed script at a
+trust boundary, a second bundle and a second set of samples for nothing the comparison of the two
+forms leaves open.
+
+### D-270 — Which libraries built on React may the browser view take?
+
+A library built on React — a package other than `react` and `react-dom` whose entry in
+`package-lock.json` declares a peer dependency on `react` — counts as another UI framework under
+D-03, whether it draws anything or not, so none stands in the browser view's code or its runtime
+dependencies. A task that needs one names it in this decision and lets it through the check of
+browser-view-framework in the same change.
+
+- **Scope:** browser-view · build-tools
+- **Based on:** none
+- **Relations:** derives from D-03
+- **Verification:** invariants: browser-view-framework. An agent compares a change with the
+  decision:
+  - complies: a screen built with React and the browser's APIs alone; a library for dragging taken
+    in by a change that names it here and lets it through that check
+  - violates: a component library on React added to the runtime dependencies; a library on React
+    taken as a development dependency and imported by a screen
+- **Origin:** none
+
+*Rationale:* with React allowed, a library on React is the likely way another way of drawing comes
+in, and its peer dependency reads that whole class with no list of names to keep. Accepted with it:
+a helper that draws nothing — a router, a state library, a library for dragging — is refused until a
+task lets it in on purpose, which the program editor's dragging may be the first to meet; the
+refusal is loud, and its way out is a change of this decision. A library that declares no peer
+dependency on `react` stands outside this decision.
+*Rejected:* a list of component libraries by name — none stands in the product, and a list misses
+the next one; leaving libraries on React outside the check and saying so — the likely way in stays
+open while the screens move to React.

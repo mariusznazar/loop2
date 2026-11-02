@@ -144,7 +144,7 @@ porównaniem; nowa postać dostaje w nim przypadek.
 
 ### Strona wszystkich stanów bez Reacta
 
-- **Decision:** D-45 · D-265
+- **Decision:** D-269
 - **Invariant:** none
 - **Good:** Moduł importowany przez stronę wszystkich stanów sięga tylko do plików `.ts` bez Reacta.
 - **Bad:** Moduł importowany przez stronę wszystkich stanów importuje plik `.tsx`.

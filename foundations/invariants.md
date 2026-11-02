@@ -38,7 +38,7 @@ The browser view renders its screens with React and browser APIs, with no other 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-03
+- **Derives from:** D-03 · D-270
 - **Part:** every
 - **Violated:** no
 
@@ -330,9 +330,9 @@ namespace declarations.
 
 ## icon-credits
 
-For each SVG icon file directly in `assets/icons/`, the game's footer and the login card's section
-of credits each hold a credit that names the icon's title as its page on game-icons.net gives it,
-the icon's author, that page and the licence CC BY 3.0, and says how the icon file differs from its
+For each SVG icon file directly in `assets/icons/`, the game's footer and the game's section of
+credits each hold a credit that names the icon's title as its page on game-icons.net gives it, the
+icon's author, that page and the licence CC BY 3.0, and says how the icon file differs from its
 source.
 
 - **Method:** test

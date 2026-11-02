@@ -493,6 +493,42 @@ React's documentation says that Effects are not needed to transform data for ren
 
 - **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/you-might-not-need-an-effect.md § How to remove unnecessary Effects — "You don't need Effects to transform data for rendering." · "You don't need Effects to handle user events." · "You do need Effects to synchronize with external systems."; read 2026-11-02
 
+## react-hook-order-report
+
+React's development build reports a change in the order of the Hooks a component calls through `console.error`.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react-reconciler/src/ReactFiberHooks.js § warnOnHookMismatchInDev — "if (__DEV__) {" · "console.error(" · "'React has detected a change in the order of Hooks called by %s. ' +"; read 2026-11-02
+
+## react-entry-build
+
+The entry file of React's npm package loads its production build when `process.env.NODE_ENV` is `production`, and its development build otherwise.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react/npm/index.js § the whole file — "if (process.env.NODE_ENV === 'production') {" · "module.exports = require('./cjs/react.production.js');" · "module.exports = require('./cjs/react.development.js');"; read 2026-11-02
+
+## react-entry-format
+
+The entry file of React's npm package is a CommonJS module, which exports through `module.exports` what it loads through `require`.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react/npm/index.js § the whole file — "module.exports = require('./cjs/react.production.js');"; read 2026-11-02
+
+## node-worker-threads
+
+Node.js's module `node:worker_threads` gives threads that execute JavaScript in parallel.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/doc/api/worker_threads.md § Worker threads — "The node:worker_threads module enables the use of threads that execute JavaScript in parallel."; read 2026-11-02
+
+## node-sigkill-termination
+
+`SIGKILL` unconditionally terminates Node.js on all platforms, and on Windows, which has no signals, `process.kill()` emulates it by terminating the target process.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/doc/api/process.md § Signal events — "'SIGKILL' cannot have a listener installed, it will unconditionally terminate Node.js on all platforms." · "Windows does not support signals so has no equivalent to termination by signal, but Node.js offers some emulation with process.kill(), and subprocess.kill():" · "Sending SIGINT, SIGTERM, and SIGKILL will cause the unconditional termination of the target process, and afterwards, subprocess will report that the process was terminated by signal."; read 2026-11-02
+
+## node-process-rss
+
+`process.memoryUsage.rss()` returns the Resident Set Size in bytes, the amount of space the process occupies in the main memory device, which is a subset of its total allocated memory.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/doc/api/process.md § process.memoryUsage.rss() — "The process.memoryUsage.rss() method returns an integer representing the Resident Set Size (RSS) in bytes." · "The Resident Set Size, is the amount of space occupied in the main memory device (that is a subset of the total allocated memory) for the process, including all C++ and JavaScript objects and code."; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
