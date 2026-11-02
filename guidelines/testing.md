@@ -26,7 +26,7 @@ Poziom wynika z zasobów używanych przez test, nie z katalogu.
 | Part | Where its complexity lies |
 |---|---|
 | simulation | W obliczeniach: regułach gry, czasie i losowaniach. |
-| browser-view | W obliczaniu rysunku i list z danych gry oraz w zdarzeniach, fokusie i SVG prawdziwej przeglądarki, których ręczny model dokumentu nie dowodzi. |
+| browser-view | W obliczaniu rysunku i list z danych gry oraz w zdarzeniach, fokusie i SVG prawdziwej przeglądarki, których ani ręczny model dokumentu, ani gotowa imitacja (jsdom) nie dowodzi. |
 | account-server | W połączeniach: HTTP, plikach gry i starcie procesu. |
 | build-tools | W połączeniach: plikach, procesach i rejestrze npm. |
 | deployment | W połączeniach: git, kontenerze i serwerze. |
@@ -174,9 +174,12 @@ przegląd każdej dotyczącej jej zmiany.
 
 Dla fontów i serwera podglądu do pierwszej zmiany danej granicy obowiązuje
 przegląd zamiast stałego testu (D-76). Brak testu nie jest dowodem skutecznej
-odmowy. Pierwsze zadanie zmieniające granicę wprowadza jej test odmowy
-i przestawia metodę niezmiennika na `test`. `application-build-kitchen-sink`
-sprawdza oddzielenie wyniku budowania, nie serwowanie podglądu.
+odmowy. Granicę zmienia tylko zmiana jej zasady: inny rodzaj pliku, inna droga
+wejścia, inny odbiorca; zmiana sposobu budowania strony wszystkich stanów nie
+zmienia granicy serwera podglądu. Pierwsze zadanie zmieniające granicę
+wprowadza jej test odmowy i przestawia metodę niezmiennika na `test`.
+`application-build-kitchen-sink` sprawdza oddzielenie wyniku budowania, nie
+serwowanie podglądu.
 
 | Who | Resource | Action | Expected result | Decision |
 |---|---|---|---|---|
@@ -277,6 +280,24 @@ sprawdzanie w głowie autora (D-95); nie osłabiamy audytu.
 Ponowne uruchomienie niestabilnego testu służy diagnozie, nigdy uzyskaniu
 zielonej bramki. Wyłączenie lub usunięcie podlega Changing an existing test.
 
+### Tests on a document imitation
+
+- **Decision:** D-264 · D-268
+- **Invariant:** document-test-memory-limit
+- **Good:** Plik testu ekranu w React importuje najpierw `tests/view/page-document.mjs` i bierze z niego `assert`; plik poza `tests/` importuje najpierw `tests/view/memory-limit.mjs` i wywołuje `startMemoryLimit`, zanim załaduje jsdom.
+- **Bad:** Pomocnik na jsdom bierze `assert` z `node:assert`, albo plik poza `tests/` ładuje jsdom lub happy-dom bez limitu.
+
+Pod `tests/` tylko `tests/view/page-document.mjs` ładuje jsdom albo happy-dom;
+plik testu ekranu w React importuje go przed wszystkim innym i bierze z niego
+`assert`. Pomocnik na jsdom też bierze `assert` z modułu pomocniczego, nie
+z `node:assert`. Porównanie elementu przez `assert` z Node, także z komunikatem,
+zapisuje cały element przed rzuceniem błędu i zabiera pamięć komputera. Plik
+poza `tests/`, także jednorazowy pod `.runs/`, który ładuje jsdom albo
+happy-dom, importuje najpierw `tests/view/memory-limit.mjs` i wywołuje
+`startMemoryLimit` przed załadowaniem imitacji; przed tym wywołaniem plik nie
+uruchamia porównania na elemencie, które może się nie powieść. Tej reguły nie
+pilnuje żaden mechanizm, a limit nie obejmuje testów bez imitacji dokumentu.
+
 ### Test files in the gate
 
 - **Decision:** D-83 · D-77 · D-94
@@ -307,10 +328,10 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 
 ### unit test
 
-- **Purpose:** Reguły symulacji i logika widoku w pamięci, także kilku funkcji razem; bez sieci, plików danych testu, procesów i przeglądarki. Import zbudowanego modułu nie jest operacją na danych testowych w pliku. Ręczny model dokumentu nie dowodzi prawdziwych zdarzeń, fokusu ani SVG. (D-81)
+- **Purpose:** Reguły symulacji i logika widoku w pamięci, także kilku funkcji razem; bez sieci, plików danych testu, procesów i przeglądarki. Import zbudowanego modułu nie jest operacją na danych testowych w pliku. Test ekranu w React idzie na jsdom przez `tests/view/page-document.mjs` i bierze z niego `assert`, tak samo pomocnik na jsdom. Ręczny model dokumentu ani jsdom nie dowodzi prawdziwych zdarzeń, fokusu ani SVG. (D-81, D-88, D-264, D-268)
 - **Files:** `tests/sim/` i `tests/view/`, pliki `*.test.mjs`; poziomu nie wyznacza katalog. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** Nazwa opisuje zachowanie i warunek; przygotowanie, działanie, sprawdzenie; jedno zachowanie, ewentualnie tabela jawnie nazwanych wariantów. Bez odtwarzania algorytmu produktu i wybierania oczekiwania po wyniku. (D-78)
-- **Doubles:** Brak zależności zewnętrznych do zastąpienia; kod pod testem i generator gry pozostają rzeczywiste. (D-84)
+- **Doubles:** Brak zależności zewnętrznych do zastąpienia; kod pod testem i generator gry pozostają rzeczywiste. Własne zastępniki dokumentu tracą tylko pliki testów ekranów w React; test innego ekranu zachowuje swój. (D-84, D-264)
 - **Data:** Każdy przypadek ma własne dane, które zmienia; wspólne tylko niemodyfikowane dane i przygotowanie. Wartość rozstrzygająca oczekiwanie stoi w przypadku. (D-73)
 - **Time and randomness:** Jawny stan, upływ czasu i ziarno, rzeczywisty generator gry; bez czekania na minuty komputera. Powtarzalność nie zastępuje niezależnego oczekiwania. (D-84)
 - **Exemplar:** `tests/sim/traits.test.mjs`, wyłącznie „the count of a hand-made backpack is the pieces of all items together”: jawne dane i niezależne sumy; nie wzorzec czasu ani całej rozgrywki. (D-85)
@@ -320,7 +341,7 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 ### integration test
 
 - **Purpose:** Konkretna operacja lub połączenie na prawdziwych plikach, lokalnym HTTP lub procesach, także kontrola plików repozytorium skryptem; start gotowej aplikacji należy do smoke test. (D-81)
-- **Files:** `tests/http.test.mjs`, `tests/transport.test.mjs`, `tests/account-storage.test.mjs`, `tests/account-mail.test.mjs`, `tests/passwords.test.mjs`, `tests/account-api.test.mjs`, `tests/password-measurement.test.mjs`, `tests/account-backup.test.mjs` i `tests/account-database-check.test.mjs` oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
+- **Files:** `tests/http.test.mjs`, `tests/transport.test.mjs`, `tests/account-storage.test.mjs`, `tests/account-mail.test.mjs`, `tests/passwords.test.mjs`, `tests/account-api.test.mjs`, `tests/password-measurement.test.mjs`, `tests/account-backup.test.mjs`, `tests/account-database-check.test.mjs` i `tests/view/memory-limit.test.mjs` (uruchamia procesy potomne, które limit zabija, i czyta pliki testów) oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** as in `unit test`. (D-78)
 - **Doubles:** Rzeczywista zależność, gdy jest szybka, powtarzalna i prosta, potem działające uproszczenie, potem podstawiona odpowiedź lub kontrola wywołania; obce typy za własnym adapterem. Nie zastępuj kodu pod testem; wywołanie sprawdzaj tylko dla skutku widocznego poza produktem. Błąd plików lub HTTP sprawdzaj na prawdziwych plikach tymczasowych lub lokalnym serwerze; podstawiona odpowiedź dowodzi reakcji na błąd, nie zastąpionej operacji. Wysyłkę poczty sprawdzaj na prawdziwym serwerze SMTP na pętli zwrotnej, uruchamianym w teście na porcie 0, zamykanym po każdym przypadku także po porażce i z certyfikatem testowym, któremu przypadek ufa przez szew nadawcy bez wyłączania weryfikacji; trasy wysyłające pocztę sprawdzaj z podstawionym nadawcą wiadomości, który zapisuje wiadomości i zwraca wynik wybrany przez przypadek albo nie odpowiada: dowodzi on reakcji trasy, nie wysłania ani dostarczenia. Żaden test nie łączy się z prawdziwym Outsiderem (D-163). Skrypt kopii bazy sprawdzaj z podstawionymi narzędziami (`docker`, `age`, `rsync`, `flock`, `pusher`, `date`) przez szew `tests/deploy/backup_script_support.py`: dowodzą one kolejności kroków i reakcji skryptu na każdą porażkę, nie przesłania pliku ani dostarczenia wiadomości; żaden test nie łączy się ze Strychem ani z prawdziwym `pusher` (D-235). (D-73, D-84, D-163, D-235)
 - **Data:** as in `unit test`; wspólny niemodyfikowany serwer lub kopia zbudowanej aplikacji są dozwolone. (D-73)
@@ -346,7 +367,7 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 - Kod jedynie przekazujący lub kopiujący dane, bez własnej decyzji: bez osobnego stałego testu; powrót, gdy pojawi się reguła, przekształcenie lub błąd wymagający ochrony. Nie obejmuje granic zaufania. (D-73)
 - Całe ekrany porównywane piksel po pikselu: zmieniony wygląd oglądamy w przeglądarce; powrót przy konkretnej usterce wyglądu lub uzgodnionym wymaganiu dokładnego układu. Reguły wyglądu zachowują istniejące kontrole, a bezpieczeństwo ikon i fontów nie jest wyłączone. (D-87)
 - Całe ścieżki gracza w prawdziwej przeglądarce: ręczne sprawdzenie po zmianie; powrót przy błędzie krytycznej ścieżki niewykrytym przez mniejsze testy albo istotnym koszcie powtarzanego sprawdzania ręcznego; zadanie wybiera narzędzie i zakres. (D-75)
-- Prawdziwe zdarzenia, fokus i rysowanie SVG: ręczne sprawdzenie w przeglądarce po zmianie; powrót przy usterce niewykrytej przez ręczny model dokumentu albo razem z automatyzacją całych ścieżek. Nie obejmuje granic zaufania. (D-88)
+- Prawdziwe zdarzenia, fokus i rysowanie SVG: ręczne sprawdzenie w przeglądarce po zmianie, także gdy test idzie na jsdom, który nie dowodzi, że Enter w polu wysyła formularz, że kliknięcie etykiety przenosi fokus ani układu; powrót przy usterce niewykrytej przez ręczny model dokumentu albo gotową imitację albo razem z automatyzacją całych ścieżek. Nie obejmuje granic zaufania. (D-88, D-264)
 
 Autor i recenzent sprawdzają warunek powrotu przy każdej zmianie dotyczącej
 wyłączonej kategorii (D-89). Wyłączenie nie pozwala usuwać istniejącego testu
@@ -390,6 +411,9 @@ może pokazywać rzeczywiście różne ryzyka.
 - `.the-way/gate/run_tests.py`
 - `tests/sim/`
 - `tests/view/`
+- `tests/view/page-document.mjs`
+- `tests/view/memory-limit.mjs`
+- `tests/view/memory-limit.test.mjs`
 - `tests/invariants/`
 - `tests/quality/`
 - `tests/deploy/`
