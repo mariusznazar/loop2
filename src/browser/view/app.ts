@@ -40,6 +40,10 @@ const REFUSED_LOAD: Readonly<Record<SavedGameRefusal, string>> = {
   archetype: OTHER_VERSION,
   shape: "Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.",
 };
+/** The sentence of a load that met an error of the code: it refused nothing, so nothing is replaced. */
+const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
+/** What of an error may stand in a console line; its message may quote what the save holds. */
+const LINE_WORD = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
 
 /** The server's answer that this browser has no valid session: the player is signed out. */
 function signedOut(failure: AccountFailure): boolean {
@@ -53,12 +57,40 @@ type GameStart = {
   readonly refused: SavedGameRefusal | null;
 };
 
-/** The game a saved document gives through the load, or a new game where the load refuses it. */
-function startFrom(document: unknown, revision: number): GameStart {
-  const loaded = loadSavedGame(document);
-  return loaded.ok
-    ? { state: loaded.state, revision, refused: null }
-    : { state: newGame(), revision, refused: loaded.reason };
+function lineWord(value: unknown): string {
+  return typeof value === "string" && LINE_WORD.test(value) ? value : "none";
+}
+
+/** The console line of a load that met an error of the code: its kind and code, never its text. */
+function recordLoadFailure(error: unknown, accountId: string): void {
+  const { name, code } = (error instanceof Error ? error : {}) as {
+    name?: unknown;
+    code?: unknown;
+  };
+  console.error(
+    `saved-game-load kind=${lineWord(name)} code=${lineWord(code)} place=view/app.startFrom accountId=${accountId}`,
+  );
+}
+
+/**
+ * The game a saved document gives through the load, a new game where the load refuses it, or none
+ * where the load meets an error of the code, which refused nothing, so that a new game would be
+ * saved over a save that may be whole (D-213).
+ */
+function startFrom(
+  document: unknown,
+  revision: number,
+  owner: Account,
+): GameStart | null {
+  try {
+    const loaded = loadSavedGame(document);
+    return loaded.ok
+      ? { state: loaded.state, revision, refused: null }
+      : { state: newGame(), revision, refused: loaded.reason };
+  } catch (error) {
+    recordLoadFailure(error, owner.id);
+    return null;
+  }
 }
 
 /** A sentence of the page in `warning`, standing once above the screen it opens. */
@@ -76,7 +108,8 @@ function createPageNotice(sentence: string): HTMLElement {
  * asking; once the server names an account, it goes on asking for the account's saved game state,
  * and only that answer builds the game: a new game where there is none, else the game the load
  * gives. The forms come only once the server says there is no session. Any other answer is a
- * warning with „Spróbuj ponownie”, which repeats both requests, never a guess. „Wyloguj” beside
+ * warning with „Spróbuj ponownie”, which repeats both requests, never a guess, and so is a load
+ * that meets an error of the code: it builds no game, so nothing is saved. „Wyloguj” beside
  * the title saves the game state, then ends this browser's session; the game leaves the page only
  * when the server confirms it, and stays with a warning when the outcome is uncertain (D-97). One
  * transition runs at a time, and an answer that comes after the page moved on is ignored.
@@ -164,6 +197,12 @@ export function startApp(
     checkWarning.set(message);
     retryButton.hidden = false;
     retryButton.focus();
+  }
+
+  /** A load that met an error of the code: the waiting screen with its warning and its retry. */
+  function loadFailed(): void {
+    main.replaceChildren(check);
+    askingFailed(LOAD_FAILED);
   }
 
   /** The waiting screen starts afresh the next time it is shown. */
@@ -258,16 +297,22 @@ export function startApp(
 
   /**
    * A named account: the state kept for it builds the game and is saved at once; otherwise the
-   * kept state, if any, is dropped and the account's saved game state is asked for.
+   * kept state, if any, is dropped and the account's saved game state is asked for. A kept state
+   * whose load met an error of the code stays for the retry, since the page holds it alone.
    */
   function enter(named: Account): void {
-    const keptGame = kept;
-    kept = null;
-    if (keptGame !== null && keptGame.accountId === named.id) {
+    if (kept?.accountId === named.id) {
       latest += 1;
-      showGame(named, startFrom(keptGame.document, keptGame.revision), true);
+      const start = startFrom(kept.document, kept.revision, named);
+      if (start === null) {
+        loadFailed();
+        return;
+      }
+      kept = null;
+      showGame(named, start, true);
       return;
     }
+    kept = null;
     void loadGame(named);
   }
 
@@ -279,13 +324,12 @@ export function startApp(
     setButtonWaiting(retryButton, null);
     if (result.ok) {
       const save = result.value;
-      showGame(
-        owner,
+      const start =
         save === null
           ? { state: newGame(), revision: 0, refused: null }
-          : startFrom(save, save.revision),
-        false,
-      );
+          : startFrom(save, save.revision, owner);
+      if (start === null) loadFailed();
+      else showGame(owner, start, false);
     } else if (signedOut(result.failure)) {
       showForms(null);
     } else {

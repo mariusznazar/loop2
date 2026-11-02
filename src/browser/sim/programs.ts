@@ -20,8 +20,19 @@ import type {
   TripEntry,
 } from "./types.js";
 
+/**
+ * The program check's refusal of a value outside the closed lists, told apart from a fault of the
+ * code: the load of a saved game state turns this one error into its own refusal.
+ */
+export class ProgramCheckError extends Error {}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+/** A value in a refusal's message; an object may refuse to become text, so it stays a word. */
+function shown(value: unknown): string {
+  return isObject(value) ? "an object" : String(value);
 }
 
 /** The resources a program may name: the run's map's, or without a run those of any map. */
@@ -37,8 +48,8 @@ function checkResource(
   allowed: ReadonlySet<string>,
 ): ResourceId {
   if (typeof value !== "string" || !allowed.has(value)) {
-    throw new Error(
-      `program: resource ${String(value)} is not a resource of the map`,
+    throw new ProgramCheckError(
+      `program: resource ${shown(value)} is not a resource of the map`,
     );
   }
   return value as ResourceId;
@@ -47,8 +58,8 @@ function checkResource(
 /** An item of the data, bound to no map. */
 function checkItem(value: unknown): ItemId {
   if (typeof value !== "string" || !Object.hasOwn(ITEMS, value)) {
-    throw new Error(
-      `program: item ${String(value)} is not an item of the data`,
+    throw new ProgramCheckError(
+      `program: item ${shown(value)} is not an item of the data`,
     );
   }
   return value as ItemId;
@@ -67,7 +78,9 @@ const STEP_TOLERANCE = 1e-9;
 function checkNumber(kind: Condition["kind"], value: unknown): number {
   const number = conditionNumber(kind);
   if (!number)
-    throw new Error(`program: condition kind ${kind} takes no number`);
+    throw new ProgramCheckError(
+      `program: condition kind ${kind} takes no number`,
+    );
   const { min, max, step } = number;
   if (
     typeof value !== "number" ||
@@ -75,14 +88,14 @@ function checkNumber(kind: Condition["kind"], value: unknown): number {
     value < min ||
     value > max
   ) {
-    throw new Error(
-      `program: ${String(value)} is not a number from ${min} to ${max}`,
+    throw new ProgramCheckError(
+      `program: ${shown(value)} is not a number from ${min} to ${max}`,
     );
   }
   const held = onStep(value, number);
   if (Math.abs(value - held) > step * STEP_TOLERANCE) {
-    throw new Error(
-      `program: ${String(value)} does not lie on the step ${step} from ${min}`,
+    throw new ProgramCheckError(
+      `program: ${shown(value)} does not lie on the step ${step} from ${min}`,
     );
   }
   return held;
@@ -92,7 +105,8 @@ function checkCondition(
   value: unknown,
   allowed: ReadonlySet<string>,
 ): Condition {
-  if (!isObject(value)) throw new Error("program: a rule has no condition");
+  if (!isObject(value))
+    throw new ProgramCheckError("program: a rule has no condition");
   switch (value.kind) {
     case "always":
       return { kind: "always" };
@@ -121,14 +135,15 @@ function checkCondition(
     case "awayFromCampfire":
       return { kind: "awayFromCampfire" };
     default:
-      throw new Error(
-        `program: condition kind ${String(value.kind)} is not on the closed list`,
+      throw new ProgramCheckError(
+        `program: condition kind ${shown(value.kind)} is not on the closed list`,
       );
   }
 }
 
 function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
-  if (!isObject(value)) throw new Error("program: a rule has no action");
+  if (!isObject(value))
+    throw new ProgramCheckError("program: a rule has no action");
   switch (value.kind) {
     case "explore":
       return { kind: "explore" };
@@ -166,8 +181,8 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
     case "dodge":
       return { kind: "dodge" };
     default:
-      throw new Error(
-        `program: action kind ${String(value.kind)} is not on the closed list`,
+      throw new ProgramCheckError(
+        `program: action kind ${shown(value.kind)} is not on the closed list`,
       );
   }
 }
@@ -175,7 +190,9 @@ function checkAction(value: unknown, allowed: ReadonlySet<string>): Action {
 /** A positive safe integer, so a stored identity remains exact. */
 function checkIdentity(value: unknown): number {
   if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1)
-    throw new Error("program: an identity is not a positive safe integer");
+    throw new ProgramCheckError(
+      "program: an identity is not a positive safe integer",
+    );
   return value;
 }
 
@@ -187,7 +204,7 @@ function uniqueIdentity(
 ): number {
   const id = checkIdentity(value);
   if (id >= next || seen.has(id))
-    throw new Error(
+    throw new ProgramCheckError(
       "program: an identity is duplicated or reaches its next counter",
     );
   seen.add(id);
@@ -196,10 +213,11 @@ function uniqueIdentity(
 
 /** A trip list: items of the data, each once, each count a safe integer from 1 up (D-181). */
 function checkTripList(value: unknown): TripEntry[] {
-  if (!Array.isArray(value)) throw new Error("program: no trip list");
+  if (!Array.isArray(value))
+    throw new ProgramCheckError("program: no trip list");
   const seen = new Set<ItemId>();
   return value.map((entry: unknown) => {
-    if (!isObject(entry)) throw new Error("program: no trip entry");
+    if (!isObject(entry)) throw new ProgramCheckError("program: no trip entry");
     const item = checkItem(entry.item);
     const count = entry.count;
     if (
@@ -208,7 +226,9 @@ function checkTripList(value: unknown): TripEntry[] {
       !Number.isSafeInteger(count) ||
       count < 1
     )
-      throw new Error("program: duplicate trip item or invalid count");
+      throw new ProgramCheckError(
+        "program: duplicate trip item or invalid count",
+      );
     seen.add(item);
     return { item, count };
   });
@@ -217,7 +237,7 @@ function checkTripList(value: unknown): TripEntry[] {
 /** A copy of the program built from the closed list; throws on anything outside it. */
 export function checkProgram(value: unknown, run: MapRun | null): Program {
   if (!isObject(value) || !Array.isArray(value.groups))
-    throw new Error("program: no list of groups");
+    throw new ProgramCheckError("program: no list of groups");
   const nextGroupId = checkIdentity(value.nextGroupId);
   const nextRuleId = checkIdentity(value.nextRuleId);
   const allowed = allowedResources(run);
@@ -230,14 +250,14 @@ export function checkProgram(value: unknown, run: MapRun | null): Program {
       !Array.isArray(group.rules) ||
       Object.hasOwn(group, "groups")
     )
-      throw new Error(
+      throw new ProgramCheckError(
         "program: a group must hold a name and a list of rules at one level",
       );
     const id = uniqueIdentity(group.id, nextGroupId, groupIds);
     const condition = checkCondition(group.condition, allowed);
     const rules = group.rules.map((rule: unknown): ProgramRule => {
       if (!isObject(rule))
-        throw new Error(
+        throw new ProgramCheckError(
           "program: a rule is not a pair of a condition and an action",
         );
       return {
@@ -248,7 +268,8 @@ export function checkProgram(value: unknown, run: MapRun | null): Program {
     });
     return { id, name: group.name, condition, rules };
   });
-  if (!isObject(value.tripPlan)) throw new Error("program: no trip plan");
+  if (!isObject(value.tripPlan))
+    throw new ProgramCheckError("program: no trip plan");
   const tripPlan = {
     take: checkTripList(value.tripPlan.take),
     bring: checkTripList(value.tripPlan.bring),

@@ -1773,6 +1773,114 @@ test("a crafted document of the current version is refused whole as shape", () =
     assertRefused(name, changed(change), "shape");
 });
 
+// Values a JSON document can hold in place of any other, among them objects
+// that refuse to become text, which a message quoting the value would trip on.
+const HOSTILE_VALUES = [
+  null,
+  true,
+  0,
+  -1,
+  1.5,
+  2 ** 53,
+  "",
+  "x",
+  [],
+  [null],
+  {},
+  { toString: 1, valueOf: 1 },
+  { kind: { toString: 1, valueOf: 1 } },
+  JSON.parse('{"__proto__":null}'),
+];
+
+/** Each place under `value`: the path of keys that leads to it. */
+function placesIn(value, path = []) {
+  if (typeof value !== "object" || value === null) return [];
+  return Object.keys(value).flatMap((key) => [
+    [...path, key],
+    ...placesIn(value[key], [...path, key]),
+  ]);
+}
+
+/** A copy of `document` with `edit` applied to the object holding the place `path` ends at. */
+function editedAt(document, path, edit) {
+  const copy = structuredClone(document);
+  let holder = copy;
+  for (const key of path.slice(0, -1)) holder = holder[key];
+  edit(holder, path.at(-1));
+  return copy;
+}
+
+// invariant: save-version
+// Fault: a document no JSON rule stops makes the reading throw something other
+// than its own refusal, and the player gets „Spróbuj ponownie” for a damaged
+// save for good instead of the refusal D-96 gives. The expected result comes
+// from D-213: a crafted document is a refusal, so it never throws.
+test("no value a document can hold, at any place of it, throws out of the load", () => {
+  for (const document of [DOCUMENT, HEADQUARTERS, changed(dead)]) {
+    const places = placesIn(document);
+    assert.ok(places.length > 50, "precondition: the sweep reaches the game");
+    for (const path of places) {
+      const label = path.join(".");
+      for (const hostile of HOSTILE_VALUES)
+        loadWithoutThrowing(
+          label,
+          editedAt(document, path, (holder, key) => {
+            holder[key] = structuredClone(hostile);
+          }),
+        );
+      loadWithoutThrowing(
+        `${label} removed`,
+        editedAt(document, path, (holder, key) => {
+          delete holder[key];
+        }),
+      );
+    }
+  }
+});
+
+function loadWithoutThrowing(name, document) {
+  assert.doesNotThrow(() => loadSavedGame(document), name);
+}
+
+/**
+ * A value that answers as `target` does, but for one fault of the code at the first read of `key`:
+ * once, so that a reading which swallows it leaves a later reading to load the document.
+ */
+function faultyAt(target, key) {
+  let met = false;
+  return new Proxy(target, {
+    getOwnPropertyDescriptor(object, name) {
+      if (name === key && !met) {
+        met = true;
+        throw new TypeError("a fault of the code");
+      }
+      return Reflect.getOwnPropertyDescriptor(object, name);
+    },
+  });
+}
+
+// Faults: a catch of the reading that takes every error for a refusal, so that
+// the page starts a new game over a whole save (D-213, D-96). A proxy is no
+// document: only a value JSON cannot hold reaches a fault here, each at a
+// different reading, the version, the archetypes and the rest of the game.
+test("an error of the code in the load is no refusal: it leaves the load as the error it is", () => {
+  const atVersion = faultyAt(structuredClone(DOCUMENT), "version");
+  const atTeam = structuredClone(DOCUMENT);
+  atTeam.game = faultyAt(atTeam.game, "team");
+  const atChest = structuredClone(DOCUMENT);
+  atChest.game.team = faultyAt(atChest.game.team, "chest");
+  for (const [name, document] of Object.entries({
+    "the version": atVersion,
+    "the archetypes": atTeam,
+    "the rest of the game": atChest,
+  }))
+    assert.throws(
+      () => loadSavedGame(document),
+      { name: "TypeError", message: "a fault of the code" },
+      name,
+    );
+});
+
 // Spec section 13. Catches a condition set one step too strict, each edge being a value the game
 // writes: a clock at zero or below it, a loop's first run, a stop with nothing gathered, a stop in
 // the open game with no minutes, a second loop of a character whose first stopped.
