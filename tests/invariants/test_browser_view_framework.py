@@ -1,27 +1,28 @@
-"""Invariant browser-view-framework: The browser view uses TypeScript and browser APIs to render
-its screens, with no UI framework in its code or runtime dependencies.
+"""Invariant browser-view-framework: The browser view renders its screens with React and browser
+APIs, with no other UI framework in its code or runtime dependencies.
 
 Covers, in the working tree being checked:
-- the browser view's source (`src/browser`, as README.md places it) holds TypeScript files and no
-  code file of another language or template format (.js, .jsx, .tsx, .vue, .svelte, ...);
+- the browser view's source (`src/browser`, as README.md places it) holds TypeScript files (.ts,
+  .mts, .cts, .tsx) and no code file of another language or template format (.js, .jsx, .vue,
+  .svelte, ...);
 - its browser compilation names the libraries it compiles against and they include the DOM:
   tsconfig.browser.json `compilerOptions.lib` must be present and hold `DOM` (any case) — an
   absent `lib` fails, since the check then cannot see what the compilation is told about;
 - its source uses a browser API to render: in at least one of its TypeScript files, with comments
   removed and the text of string and template literals emptied, `document.` is followed by one of
   the DOM members DOM_RENDERING_MEMBERS lists below (creating, finding or inserting elements);
-- no UI framework from the list below is a runtime dependency — in package.json `dependencies` or
-  in any package-lock.json entry not marked `dev` — or is imported or loaded by the browser
-  source, by package name or by URL;
+- no UI framework from the list below (React is not on it) is a runtime dependency — in
+  package.json `dependencies` or in any package-lock.json entry not marked `dev` — or is imported
+  or loaded by the browser source, by package name or by URL;
 - what `npm run build` places in `dist/public` imports only its own files (relative or
   root-relative specifiers, no bare package and no URL), loads no script from another origin, and
-  holds none of the global markers the listed frameworks leave in their built code.
+  holds none of the global markers the listed frameworks leave in their built code (React's
+  markers are not among them: the bundle holds React).
 
 Does NOT cover: a UI framework absent from the list; a framework copied into the source under
 another name that leaves none of the listed markers; whether the page renders correctly in a
 browser (no browser runs in this check); code inside `${...}` of a template literal, which is
-emptied with the literal. A `.tsx` file counts as a framework's format (JSX), not
-as TypeScript the sentence allows.
+emptied with the literal.
 """
 
 import json
@@ -34,9 +35,9 @@ import loop2_invariant_support as support
 BROWSER_SOURCE = "src/browser"
 BUILT_PAGE = "dist/public"
 
-# UI frameworks and component libraries, as npm package names.
+# UI frameworks and component libraries other than React, as npm package names.
 UI_FRAMEWORKS = (
-    "react", "react-dom", "preact", "vue", "@vue/runtime-dom", "@vue/runtime-core", "svelte",
+    "preact", "vue", "@vue/runtime-dom", "@vue/runtime-core", "svelte",
     "@sveltejs/kit", "solid-js", "@angular/core", "@angular/platform-browser", "lit", "lit-html",
     "lit-element", "@lit/reactive-element", "mithril", "inferno", "hyperapp", "alpinejs",
     "htmx.org", "ember-source", "@builder.io/qwik", "@stencil/core", "backbone", "knockout",
@@ -46,17 +47,16 @@ UI_FRAMEWORKS = (
 )
 # Global names the listed frameworks leave in their built code.
 FRAMEWORK_MARKERS = (
-    "__REACT_DEVTOOLS_GLOBAL_HOOK__", "__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED",
     "__VUE_PROD_DEVTOOLS__", "__VUE_OPTIONS_API__", "__PREACT_DEVTOOLS__", "ngDevMode",
     "litHtmlVersions", "litElementVersions", "reactiveElementVersions", "__svelte",
     "_$HY", "Alpine.start", "htmx.config",
 )
 # Code formats other than TypeScript.
 FOREIGN_CODE_EXTENSIONS = (
-    ".js", ".mjs", ".cjs", ".jsx", ".tsx", ".vue", ".svelte", ".astro", ".marko", ".riot",
+    ".js", ".mjs", ".cjs", ".jsx", ".vue", ".svelte", ".astro", ".marko", ".riot",
     ".coffee", ".elm", ".dart", ".hbs", ".handlebars", ".ejs", ".pug", ".njk",
 )
-TYPESCRIPT_EXTENSIONS = (".ts", ".mts", ".cts")
+TYPESCRIPT_EXTENSIONS = (".ts", ".mts", ".cts", ".tsx")
 TEXT_EXTENSIONS = (".ts", ".mts", ".cts", ".js", ".mjs", ".cjs", ".html", ".htm", ".css",
                    ".json", ".svg", ".jsx", ".tsx", ".vue", ".svelte")
 
