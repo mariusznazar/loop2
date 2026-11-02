@@ -152,6 +152,118 @@ się automatycznie i nie ma terminu rewizji. Zapytanie wysyła nazwy i wersje
 pakietów bez kodu aplikacji. Audyt nie obejmuje runtime, obrazów kontenerów,
 pakietów systemowych ani zależności spoza npm.
 
+### Recording a failure
+
+- **Decision:** D-252
+- **Invariant:** none
+- **Good:** none
+- **Bad:** none
+
+Awaria to sytuacja, w której produkt nie zrobił tego, o co go poproszono albo
+co miał zrobić sam, z powodu innego niż spodziewana odmowa, także gdy zawiodła
+usługa zewnętrzna. Spodziewana odmowa, taka jak błędne hasło, jest zwykłą
+odpowiedzią i ta reguła jej nie dotyczy. Awarię zapisuj zawsze z przyczyną,
+czyli z pierwotnym błędem, a nie z samym napisem, raz, tam gdzie kod ją
+obsługuje. W kodzie Node.js robi to `writeFailure` z `src/server/log-line.ts`,
+a porażkę bez pierwotnego błędu nazywa kodem `ReasonedFailure`.
+
+Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która zapisuje
+to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
+serwer, `account-block` i `account-backup` — mają własną, `installLastResort`,
+bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręcznie
+albo przez bramkę testów, które tych danych nie dotykają, regułę spełnia domyślny
+wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. `account-database-check`,
+`measure-passwords`, `deploy/loop2-backup` i `scripts/restore-trial.mjs` już ją
+mają. Reguła obowiązuje też przeglądarkę, gdzie tej obsługi jeszcze nie ma, oraz
+`deploy/loop2-deploy`, który nie zostawia wiersza końcowego, gdy zostanie zabity.
+
+### Hiding a failure
+
+- **Decision:** D-252
+- **Invariant:** none
+- **Good:** none
+- **Bad:** none
+
+Awarii nie zamieniaj ani w odpowiedź „wszystko w porządku”, ani w pustą listę.
+Tryb zdegradowany, w którym produkt działa dalej bez jednej funkcji, jest
+dopuszczalny tylko tam, gdzie ustala go zadanie, zapisując go jako decyzję
+produktu, i zawsze zostawia wiersz w logach.
+
+### Identifiers in log lines
+
+- **Decision:** D-252
+- **Invariant:** none
+- **Good:** none
+- **Bad:** none
+
+Wiersz przebiegu sprawy, czyli tego, co produkt robi dla jednej sprawy od żądania
+albo zadania w tle do jej końca, niesie te identyfikatory z listy
+`### Logging scope`, które łączą zdarzenia tej sprawy, każdy pod nazwą z listy,
+tą samą w każdym wierszu, tak aby wyszukiwanie znalazło całą sprawę. W kodzie
+Node.js stałe pola wiersza to `event` albo `failure`, `kind`, `code`, `place`
+i identyfikatory z listy; dalsze pole, takie jak `linkPurpose`, jest polem,
+a nie pozycją listy. W konsoli przeglądarki wiersz jest zwykłym tekstem,
+a skrypty Bash zostają przy swoim tekście. Wiersz spoza przebiegu sprawy, taki
+jak wiersz przy starcie procesu albo skryptu budowania, nie niesie żadnego
+identyfikatora. Wiersz obsługi ostatniej szansy nie musi nieść żadnego, bo ta
+obsługa zwykle nie wie, jaka to była sprawa.
+
+### Business events
+
+- **Decision:** D-252
+- **Invariant:** none
+- **Good:** none
+- **Bad:** none
+
+Każde zdarzenie biznesowe z listy `### Logging scope` zostawia wiersz logu.
+W kodzie Node.js pisze go `writeEvent` z `src/server/log-line.ts`.
+
+### Secrets and personal data
+
+- **Decision:** D-252
+- **Invariant:** none
+- **Good:** none
+- **Bad:** none
+
+Logi nie zawierają żadnego sekretu, bez wyjątku, więc identyfikator będący
+sekretem zostaje poza nimi, nawet gdyby stał na liście. Nie zawierają danych
+osobowych; jedynym wyjątkiem od tego zakazu są identyfikatory z listy
+`### Logging scope`. Kod nie zapisuje całego obiektu ani treści żądania, co nie
+dotyczy samego błędu. Pierwotny błąd cytujący takie wartości zapisuj bez nich,
+z jego rodzajem, kodem i miejscem w kodzie, a ta reguła ma pierwszeństwo przed
+`### Recording a failure`. Dlatego z błędu czytaj tylko jego nazwę i kod oraz
+numer `errcode` SQLite, nigdy `message` ani `stack`.
+
+### Logging scope
+
+- **Decision:** D-252
+- **Invariant:** none
+- **Good:** none
+- **Bad:** none
+
+Identyfikatory:
+
+- `accountId` — numer konta.
+
+Zdarzenia biznesowe:
+
+- konto założone (`account-created`);
+- logowanie (`signed-in`), także to po rejestracji;
+- wylogowanie (`signed-out`);
+- odnośnik wystawiony (`link-issued`);
+- wiadomość wysłana (`message-sent`);
+- adres potwierdzony (`email-confirmed`);
+- hasło ustawione odnośnikiem (`password-set`);
+- konto zablokowane (`account-blocked`);
+- konto odblokowane (`account-unblocked`);
+- kopia bazy wykonana;
+- wdrożenie.
+
+Ta lista jest obietnicą produktu, a nie spisem jego kodu. Pozycja pasująca do
+zasady z D-252 wchodzi w zmianie, która ją wnosi; agent dodaje ją sam, także
+identyfikator rzeczy. Pozycja wskazująca na osobę, także numer, który produkt
+nadaje użytkownikowi, wchodzi tylko za zgodą człowieka, jako nowe znaczenie.
+
 ## Examples
 
 ### PLW1510

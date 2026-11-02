@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { backup, DatabaseSync } from "node:sqlite";
+import { ReasonedFailure, writeFailure } from "./log-line.js";
 
 export interface Account {
   id: string;
@@ -14,14 +15,20 @@ export interface Account {
   emailConfirmed: boolean;
 }
 
-export type BlockOutcome = "blocked" | "already-blocked" | "unknown";
-export type UnblockOutcome = "unblocked" | "not-blocked" | "unknown";
+export type BlockOutcome =
+  | { outcome: "blocked" | "already-blocked"; accountId: string }
+  | { outcome: "unknown" };
+export type UnblockOutcome =
+  | { outcome: "unblocked" | "not-blocked"; accountId: string }
+  | { outcome: "unknown" };
 
 export type LinkPurpose = "email-confirmation" | "password-reset";
 export type IssueOutcome = "issued" | "limited" | "blocked";
-export type ConfirmOutcome = "confirmed" | "invalid";
+export type ConfirmOutcome =
+  { outcome: "confirmed"; accountId: string } | { outcome: "invalid" };
 export type ResetOutcome =
-  { outcome: "reset"; email: string } | { outcome: "invalid" };
+  | { outcome: "reset"; accountId: string; email: string }
+  | { outcome: "invalid" };
 
 export interface LinkRequest {
   accountId: string;
@@ -194,7 +201,7 @@ export class AccountDatabase {
             ? error
             : new Error("Account database cleanup failed");
         if (options.onCleanupError) options.onCleanupError(failure);
-        else console.error("Account database cleanup failed");
+        else writeFailure("database-cleanup", "database.cleanup", error);
       }
     }, interval);
     this.cleanupTimer.unref();
@@ -245,7 +252,10 @@ export class AccountDatabase {
         version < 0 ||
         version > currentVersion
       ) {
-        throw new Error("Unsupported account database schema");
+        throw new ReasonedFailure(
+          "UNSUPPORTED_SCHEMA",
+          "Unsupported account database schema",
+        );
       }
       if (version === currentVersion) return;
       for (const step of schemaSteps.slice(version)) this.connection.exec(step);
@@ -385,9 +395,9 @@ export class AccountDatabase {
   // of it and stops every emailed link of it in the same transaction; already
   // blocked, it does so again.
   blockAccount(email: string): BlockOutcome {
-    return this.transaction(() => {
+    return this.transaction((): BlockOutcome => {
       const account = this.findAccountByEmail(email);
-      if (!account) return "unknown";
+      if (!account) return { outcome: "unknown" };
       this.connection
         .prepare("UPDATE accounts SET blocked = 1 WHERE id = ?")
         .run(account.id);
@@ -397,21 +407,25 @@ export class AccountDatabase {
       this.connection
         .prepare("UPDATE emailed_links SET spent = 1 WHERE account_id = ?")
         .run(account.id);
-      return account.blocked ? "already-blocked" : "blocked";
+      return {
+        outcome: account.blocked ? "already-blocked" : "blocked",
+        accountId: account.id,
+      };
     });
   }
 
   // Clears the blocked state only; the sessions deleted and the links stopped
   // by the block stay so.
   unblockAccount(email: string): UnblockOutcome {
-    return this.transaction(() => {
+    return this.transaction((): UnblockOutcome => {
       const account = this.findAccountByEmail(email);
-      if (!account) return "unknown";
-      if (!account.blocked) return "not-blocked";
+      if (!account) return { outcome: "unknown" };
+      if (!account.blocked)
+        return { outcome: "not-blocked", accountId: account.id };
       this.connection
         .prepare("UPDATE accounts SET blocked = 0 WHERE id = ?")
         .run(account.id);
-      return "unblocked";
+      return { outcome: "unblocked", accountId: account.id };
     });
   }
 
@@ -481,7 +495,7 @@ export class AccountDatabase {
   // read in the same transaction. Every refusal changes nothing. A confirmation
   // stops every confirmation link of the account, the one used included.
   confirmEmailAddress(tokenDigest: string): ConfirmOutcome {
-    return this.transaction(() => {
+    return this.transaction((): ConfirmOutcome => {
       const now = this.now();
       const link = this.connection
         .prepare(
@@ -493,7 +507,7 @@ export class AccountDatabase {
     `,
         )
         .get(tokenDigest, now);
-      if (!link) return "invalid";
+      if (!link) return { outcome: "invalid" };
       if (typeof link.account_id !== "string") {
         throw new Error("Invalid stored link");
       }
@@ -513,7 +527,7 @@ export class AccountDatabase {
     `,
         )
         .run(link.account_id);
-      return "confirmed";
+      return { outcome: "confirmed", accountId: link.account_id };
     });
   }
 
@@ -574,7 +588,7 @@ export class AccountDatabase {
     `,
         )
         .run(accountId);
-      return { outcome: "reset", email: account.email };
+      return { outcome: "reset", accountId, email: account.email };
     });
   }
 

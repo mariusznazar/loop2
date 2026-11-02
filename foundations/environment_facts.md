@@ -415,6 +415,18 @@ In OpenSSH portable 8.9p1, `ssh` with `KnownHostsCommand` set obtains host keys 
 
 - **Source:** https://raw.githubusercontent.com/openssh/openssh-portable/166456cedad3962b83b848b1e9caf80794831f0f/ssh_config.5 § KnownHostsCommand — "Specifies a command to use to obtain a list of host keys, in addition to those listed in UserKnownHostsFile and GlobalKnownHostsFile." · § VerifyHostKeyDNS — "If this option is set to yes, the client will implicitly trust keys that match a secure fingerprint from DNS." · "The default is no."; read 2026-10-31
 
+## node-uncaught-default-print
+
+Node.js 24.21.0, with no handler for an uncaught exception, prints its stack trace to standard error, the trace's first line holding the error's class name and message, and exits with code 1.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/process.md § Event: 'uncaughtException' — "By default, Node.js handles such exceptions by printing the stack trace to `stderr` and exiting with code 1" · https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/errors.md § error.stack — "The first line is formatted as `<error class name>: <error message>`"; read 2026-11-02
+
+## python-uncaught-default-print
+
+Python 3.14, for an uncaught exception other than `SystemExit`, by default prints its traceback and the exception to standard error just before the program exits.
+
+- **Source:** https://raw.githubusercontent.com/python/cpython/v3.14.3/Doc/library/sys.rst § sys.excepthook — "This function prints out a given traceback and exception to ``sys.stderr``." · "When an exception other than :exc:`SystemExit` is raised and uncaught, the interpreter calls ``sys.excepthook``" · "in a Python program this happens just before the program exits."; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

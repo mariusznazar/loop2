@@ -1,6 +1,8 @@
 import { rootCertificates } from "node:tls";
 import MailComposer from "nodemailer/lib/mail-composer";
 import SMTPConnection from "nodemailer/lib/smtp-connection";
+import { ReasonedFailure, writeFailure } from "./log-line.js";
+import type { LineFields } from "./log-line.js";
 
 // D-158: sender name, subject and the four paragraphs of the confirmation message.
 const senderName = "loop2";
@@ -27,7 +29,7 @@ const phaseTimeout = 5_000;
 // Whitespace, control characters and the characters that separate, quote or
 // group addresses in a header; D-99 accepts them at registration.
 const unsafeAddressCharacter = /[\s\p{Cc},;<>()[\]"\\:]/u;
-const libraryErrorCode = /^[A-Z][A-Z0-9_]*$/;
+const failurePlace = "account-mail.send";
 
 export type AccountMessage = {
   readonly to: string;
@@ -38,8 +40,12 @@ export type AccountMessage = {
 export type SendOutcome = "sent" | "failed";
 
 export interface Mailer {
-  send(message: AccountMessage): Promise<SendOutcome>;
+  // `fields` name the case for a failure's log line; nothing reads them else.
+  send(message: AccountMessage, fields?: LineFields): Promise<SendOutcome>;
 }
+
+// A failure always carries what caused it, a library's error or a reason.
+type Finish = (...result: ["sent"] | ["failed", unknown]) => void;
 
 export type MailSettings = {
   readonly from: string;
@@ -95,17 +101,6 @@ function plainAddress(value: string): boolean {
   );
 }
 
-function reportFailure(error: unknown): void {
-  const code =
-    error instanceof Error &&
-    "code" in error &&
-    typeof error.code === "string" &&
-    libraryErrorCode.test(error.code)
-      ? error.code
-      : "unknown";
-  console.error(`Account mail failed: ${code}`);
-}
-
 export class SmtpMailer implements Mailer {
   readonly #settings: MailSettings;
   readonly #deadline: number;
@@ -120,27 +115,35 @@ export class SmtpMailer implements Mailer {
         : [...rootCertificates, options.trustedCertificate];
   }
 
-  send(message: AccountMessage): Promise<SendOutcome> {
+  send(message: AccountMessage, fields: LineFields = {}): Promise<SendOutcome> {
     if (!plainAddress(message.to)) {
-      reportFailure(undefined);
+      writeFailure(
+        "mail",
+        failurePlace,
+        new ReasonedFailure("UNSAFE_RECIPIENT"),
+        fields,
+      );
       return Promise.resolve("failed");
     }
     return new Promise((resolve) => {
       let connection: SMTPConnection | undefined;
       let settled = false;
-      const finish = (outcome: SendOutcome, error?: unknown): void => {
+      const finish: Finish = (outcome, error?) => {
         if (settled) return;
         settled = true;
         clearTimeout(deadline);
         if (outcome === "failed") {
-          reportFailure(error);
+          writeFailure("mail", failurePlace, error, fields);
           connection?.close();
         } else {
           connection?.quit();
         }
         resolve(outcome);
       };
-      const deadline = setTimeout(() => finish("failed"), this.#deadline);
+      const deadline = setTimeout(
+        () => finish("failed", new ReasonedFailure("DEADLINE")),
+        this.#deadline,
+      );
       try {
         connection = this.#connection();
         this.#submit(connection, message, finish);
@@ -176,7 +179,7 @@ export class SmtpMailer implements Mailer {
   #submit(
     connection: SMTPConnection,
     message: AccountMessage,
-    finish: (outcome: SendOutcome, error?: unknown) => void,
+    finish: Finish,
   ): void {
     const { from, user, password } = this.#settings;
     const composed = new MailComposer({
@@ -188,12 +191,15 @@ export class SmtpMailer implements Mailer {
       disableUrlAccess: true,
     }).compile();
     connection.on("error", (error) => finish("failed", error));
-    connection.on("end", () => finish("failed"));
+    connection.on("end", () =>
+      finish("failed", new ReasonedFailure("CONNECTION_ENDED")),
+    );
     connection.connect((connectError) => {
       if (connectError) return finish("failed", connectError);
       // requireTLS already refuses a connection without STARTTLS; the mailer
       // checks the upgrade itself before it sends the password.
-      if (!connection.secure) return finish("failed");
+      if (!connection.secure)
+        return finish("failed", new ReasonedFailure("NOT_ENCRYPTED"));
       connection.login(
         { credentials: { user, pass: password } },
         (loginError) => {
