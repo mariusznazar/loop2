@@ -192,7 +192,10 @@ test("a button locked with its text is the same element in both forms", async ()
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
-      createElement(ReactButton, { text: "Nie pamiętam hasła", disabled: true }),
+      createElement(ReactButton, {
+        text: "Nie pamiętam hasła",
+        disabled: true,
+      }),
     );
     const expected = createButton("Nie pamiętam hasła");
     expected.disabled = true;
