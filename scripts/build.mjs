@@ -40,7 +40,8 @@ if (!checkOnly) {
     platform: "browser",
     target: "es2022",
     minify: true,
-    // Without it esbuild can leave React in its development mode.
+    // React's packages choose their production build by this value, which esbuild
+    // sets by itself only while all of its minifying stays on.
     define: { "process.env.NODE_ENV": '"production"' },
   });
   await copyFile(
