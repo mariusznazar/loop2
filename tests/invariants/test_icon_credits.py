@@ -53,7 +53,7 @@ import loop2_invariant_support as support
 
 ICON_DIRECTORY = "assets/icons/"
 FOOTER_MODULE = "dist/browser/view/footer.js"
-VIEW_DIRECTORY = "dist/public"
+VIEW_DIRECTORY = "dist/browser"
 LICENCE = "CC BY 3.0"
 PAGE = re.compile(r"https://game-icons\.net/1x1/([\w-]+)/([\w-]+)\.html")
 # Stems of a statement that a file was changed: zmienione, zmodyfikowane, przerobione; changed,

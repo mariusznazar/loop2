@@ -470,7 +470,8 @@ test("setProgram accepts every resource of the map data list, in conditions and 
 });
 
 test("setProgram accepts the empty program, both actions without a resource and the ends of the range", async () => {
-  const { newGame, setProgram } = await import("../../dist/browser/sim/game.js");
+  const { newGame, setProgram } =
+    await import("../../dist/browser/sim/game.js");
   const [resource] = firstMap.resources.map(({ id }) => id);
   const { min, max } = CONDITIONS.hereBelow;
   for (const program of [
@@ -523,7 +524,8 @@ test("setProgram rejects a resource id outside the map data list", async () => {
 });
 
 test("setProgram rejects kinds outside the closed list and values outside the data range", async () => {
-  const { newGame, setProgram } = await import("../../dist/browser/sim/game.js");
+  const { newGame, setProgram } =
+    await import("../../dist/browser/sim/game.js");
   const [resource] = firstMap.resources.map(({ id }) => id);
   const { min, max } = CONDITIONS.hereBelow;
   const invalid = [
@@ -550,7 +552,8 @@ test("setProgram rejects kinds outside the closed list and values outside the da
 });
 
 test("a refused program leaves the game unchanged", async () => {
-  const { newGame, setProgram } = await import("../../dist/browser/sim/game.js");
+  const { newGame, setProgram } =
+    await import("../../dist/browser/sim/game.js");
   const state = setProgram(
     newGame(),
     programFromRules(rule(ALWAYS, EXPLORE)),

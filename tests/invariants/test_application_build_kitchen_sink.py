@@ -107,7 +107,7 @@ class BuildHoldsNoKitchenSinkPage(unittest.TestCase):
             handle.write(PROBE)
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails with {PROBE_FILE}:\n{output}")
-        self.assertIn("dist/public/kitchen-sink/kitchen-sink.js", files_with_marker(copy, OUTPUT),
+        self.assertIn("dist/browser/kitchen-sink/kitchen-sink.js", files_with_marker(copy, OUTPUT),
                       "the search does not find the page's entry the game's source pulled "
                       "into the build")
 

@@ -63,7 +63,7 @@ from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 GAME_MODULE = "dist/browser/sim/game.js"
 PANEL_MODULE = "dist/browser/view/terrain-panel.js"
-VIEW_DIRECTORY = "dist/public"
+VIEW_DIRECTORY = "dist/browser"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
 SENT = {"mapId": "forest", "characterId": 1}
