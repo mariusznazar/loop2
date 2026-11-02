@@ -7,18 +7,19 @@ import { text } from "node:stream/consumers";
 
 const directory = join(".playwright-cli", "frames");
 const source = process.argv[2];
+// A file that cannot be read ends here, on the runtime's own print of the cause.
+const input = source ? readFileSync(source, "utf8") : await text(process.stdin);
 let frames;
 try {
-  frames = JSON.parse(
-    source ? readFileSync(source, "utf8") : await text(process.stdin),
+  frames = JSON.parse(input);
+} catch (error) {
+  console.error(
+    `The input is no JSON of frames (${error.name}): did the command fail?`,
   );
-} catch {
-  frames = [];
+  process.exit(1);
 }
 if (!Array.isArray(frames) || frames.length === 0) {
-  console.error(
-    "No frames came: the page did not change, or playwright-cli failed.",
-  );
+  console.error("No frames came: the page did not change.");
   process.exit(1);
 }
 rmSync(directory, { recursive: true, force: true });

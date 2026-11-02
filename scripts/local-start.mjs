@@ -17,14 +17,19 @@
 // A directory's name says who can prove the start still runs: its process number,
 // its HTTPS port and a mark of its certificate. The proxy listens before the
 // directory exists, so a start on its way up can prove it from the first moment.
-// A number or a port another program took over proves nothing: only the running
-// start shows that certificate.
+// A number, or a port another program took over and answers on, proves nothing:
+// only the running start shows that certificate. A port that takes a connection
+// and stays silent proves nothing either way, so it counts as running.
+//
+// Failures go through the server's own log-line writer, as JSON lines; the lines
+// a person reads to find the game and what `npm run local:stop` did are plain.
 //
 // Exit codes: 0 stopped, 1 the start failed or a start did not stop, 2 refused.
 import { execFileSync } from "node:child_process";
 import { X509Certificate, randomBytes } from "node:crypto";
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   rmSync,
@@ -50,6 +55,30 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const startsDirectory = join(root, ".runs", "local-start");
 const startDirectoryName = /^(\d{1,10})-(\d{1,5})-([0-9a-f]{16})$/;
 const stopFileName = "stop";
+
+// A failure of this command's own, with no other error behind it.
+class StartFailure extends Error {
+  constructor(code, sentence) {
+    super(sentence);
+    this.code = code;
+  }
+}
+
+function logLine() {
+  return import(
+    pathToFileURL(join(root, "dist", "server", "log-line.js")).href
+  );
+}
+
+async function recordFailure(failure, place, error) {
+  const { writeFailure } = await logLine();
+  writeFailure(failure, place, error);
+}
+
+async function recordReason(code, sentence, place) {
+  const { ReasonedFailure, writeFailure } = await logLine();
+  writeFailure(sentence, place, new ReasonedFailure(code));
+}
 
 // A port of this computer where nothing answers: a message fails at once, the
 // account stays unconfirmed and the registration does not wait for its deadline.
@@ -94,7 +123,10 @@ function findOpenssl() {
       // Try the next candidate.
     }
   }
-  throw new Error("openssl was found neither on PATH nor beside Git");
+  throw new StartFailure(
+    "OPENSSL_NOT_FOUND",
+    "openssl was found neither on PATH nor beside Git",
+  );
 }
 
 // The key and the certificate, one after the other in one text: openssl writes
@@ -126,6 +158,7 @@ function makeCertificate() {
 }
 
 function proxyRequest(serverPort, incoming, outgoing) {
+  let browserLeft = false;
   const upstream = httpRequest(
     {
       host: HOST,
@@ -139,11 +172,16 @@ function proxyRequest(serverPort, incoming, outgoing) {
       response.pipe(outgoing);
     },
   );
-  upstream.once("error", () => {
+  upstream.once("error", (error) => {
+    if (browserLeft) return;
+    void recordFailure("local-proxy", "local-start.proxy", error);
     if (!outgoing.headersSent) outgoing.writeHead(502);
     outgoing.end();
   });
-  outgoing.once("close", () => upstream.destroy());
+  outgoing.once("close", () => {
+    browserLeft = true;
+    upstream.destroy();
+  });
   incoming.pipe(upstream);
 }
 
@@ -243,6 +281,7 @@ function startDirectories() {
     const name = startDirectoryName.exec(entry.name);
     if (entry.isDirectory() && name)
       found.push({
+        name: entry.name,
         path: join(startsDirectory, entry.name),
         pid: Number(name[1]),
         port: Number(name[2]),
@@ -257,8 +296,12 @@ async function removeEndedStarts() {
     if (await isRunning(start)) continue;
     try {
       rmSync(start.path, { recursive: true, force: true, maxRetries: 3 });
-    } catch {
-      console.error(`Could not remove an earlier start's files: ${start.path}`);
+    } catch (error) {
+      await recordFailure(
+        `could not remove the earlier start ${start.name}`,
+        "local-start.removeEndedStarts",
+        error,
+      );
     }
   }
 }
@@ -310,8 +353,14 @@ async function start() {
 
   Object.assign(process.env, serverSettings(directory, origin, serverPort));
   await import(pathToFileURL(join(root, "dist", "server", "main.js")).href);
-  if (!(await waitForServer(serverPort)))
-    throw new Error("the built server did not start");
+  if (!(await waitForServer(serverPort))) {
+    // A server that gave up has written its own line and set the exit code.
+    if (process.exitCode !== undefined) process.exit(process.exitCode);
+    throw new StartFailure(
+      "SERVER_NOT_READY",
+      "the built server did not start in time",
+    );
+  }
 
   const stopFile = join(directory, stopFileName);
   setInterval(() => {
@@ -320,17 +369,43 @@ async function start() {
   console.log(`Local game: ${origin} (Ctrl+C or npm run local:stop ends it)`);
 }
 
+// The file is made new, so a link or a directory planted under its name is
+// refused and nothing is written through it. A plain file means the start was
+// told before.
+function tellToStop({ path }) {
+  const stopFile = join(path, stopFileName);
+  try {
+    writeFileSync(stopFile, "", { flag: "wx" });
+  } catch (error) {
+    if (error.code !== "EEXIST" || !lstatSync(stopFile).isFile()) throw error;
+  }
+}
+
 async function stop() {
   const running = await runningStarts(startDirectories());
-  for (const { path } of running) writeFileSync(join(path, stopFileName), "");
+  for (const start of running) {
+    try {
+      tellToStop(start);
+    } catch (error) {
+      await recordFailure(
+        `could not tell the start ${start.name} to stop`,
+        "local-start.stop",
+        error,
+      );
+    }
+  }
   const deadline = Date.now() + STOP_TIMEOUT_MS;
   let left = running;
   while (left.length > 0 && Date.now() < deadline) {
     await sleep(STOP_CHECK_MS);
     left = await runningStarts(left);
   }
-  for (const { pid } of left)
-    console.error(`The local start of process ${pid} did not stop.`);
+  for (const { name } of left)
+    await recordReason(
+      "START_STILL_RUNNING",
+      `the local start ${name} did not stop`,
+      "local-start.stop",
+    );
   console.log(`Local starts stopped: ${running.length - left.length}`);
   return left.length === 0 ? 0 : EXIT_FAILED;
 }
@@ -344,6 +419,10 @@ try {
   if (options.length === 1) process.exit(await stop());
   await start();
 } catch (error) {
-  console.error(`The local start failed: ${error.message}`);
+  // Of any other error the line takes only its kind and code: its message may
+  // quote a value.
+  if (error instanceof StartFailure)
+    await recordReason(error.code, error.message, "local-start.start");
+  else await recordFailure("local-start", "local-start.start", error);
   process.exit(EXIT_FAILED);
 }

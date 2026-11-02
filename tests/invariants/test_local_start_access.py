@@ -44,6 +44,16 @@ createServer((request, response) => {
 }).listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
 """
 
+# A server that drops the connection of a request, as a server that fails does.
+DROPPING_SERVER = """\
+import { createServer } from "node:http";
+
+const host = process.env.LOOP2_LISTEN_HOST;
+const port = Number(process.env.LOOP2_LISTEN_PORT);
+createServer((request) => request.socket.destroy())
+  .listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
+"""
+
 # A server that holds its whole process, as a start busy on its way up does.
 BUSY_SERVER = STAND_IN_SERVER + """
 Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4000);
@@ -149,8 +159,13 @@ class Start:
             output = self.output()
             address = ADDRESS_LINE.search(output)
             if address:
+                server = SERVER_LINE.search(output)
+                if server is None:
+                    self.close()
+                    raise AssertionError("no line `Loop: http://127.0.0.1:<port>` before the "
+                                         f"address:\n{output}")
                 self.port = int(address.group(1))
-                self.server_port = int(SERVER_LINE.search(output).group(1))
+                self.server_port = int(server.group(1))
                 return
             if self.process.poll() is not None or time.monotonic() > deadline:
                 self.close()
@@ -178,7 +193,7 @@ def directories(copy):
 
 
 def write_stand_in(copy, server):
-    os.makedirs(copy.file("dist/server"))
+    os.makedirs(copy.file("dist/server"), exist_ok=True)
     with open(copy.file("dist/server/main.js"), "w", encoding="utf-8") as handle:
         handle.write(server)
 
@@ -368,6 +383,44 @@ class LocalStart(unittest.TestCase):
         self.assertIn(early[0], directories(self.copy))
         self.assertEqual(len(directories(self.copy)), 2)
 
+    def silent_port(self):
+        """A port of this computer that takes a connection and says nothing."""
+        listener = socket.create_server(("127.0.0.1", 0))
+        self.addCleanup(listener.close)
+        return listener.getsockname()[1]
+
+    def stop_with_a_silent_directory(self):
+        """`npm run local:stop` with a planted directory that passes for a running start, its
+        name sorted first by the zeros before a live number; its stop file is the case's."""
+        return support.run([support.npm(), "run", "local:stop"], self.copy.path,
+                           timeout=STOP_TIMEOUT)
+
+    def planted_name(self):
+        return f"0000{os.getpid()}-{self.silent_port()}-abcdefabcdefabcd"
+
+    def test_a_planted_directory_keeps_stop_from_telling_no_other_start(self):
+        start = self.local()
+        os.makedirs(self.copy.file(f".runs/local-start/{self.planted_name()}/stop"))
+        code, output = self.stop_with_a_silent_directory()
+        self.assertEqual(code, 1, output)
+        self.assertIn("START_STILL_RUNNING", output)
+        self.assertFalse(accepts_connections("127.0.0.1", start.port), output)
+
+    def test_stop_writes_through_no_planted_link(self):
+        outside = self.copy.file("outside.txt")
+        with open(outside, "w", encoding="utf-8") as handle:
+            handle.write("kept")
+        folder = self.copy.file(f".runs/local-start/{self.planted_name()}")
+        os.makedirs(folder)
+        try:
+            os.symlink(outside, os.path.join(folder, "stop"))
+        except OSError as error:
+            self.skipTest(f"this computer makes no link: {error}")
+        code, output = self.stop_with_a_silent_directory()
+        self.assertEqual(code, 1, output)
+        with open(outside, encoding="utf-8") as handle:
+            self.assertEqual(handle.read(), "kept")
+
     def test_stop_ends_every_running_start_and_their_ports(self):
         first = self.local()
         second = self.local()
@@ -409,6 +462,22 @@ class LocalStart(unittest.TestCase):
             support.kill_tree(process)
         self.assertEqual(process.returncode, 1, output)
         self.assertNotIn(b"Local game:", output)
+        self.assertEqual(output.count(b'"failure":'), 1, "the server's own line, and no second")
+
+    def test_a_request_the_server_drops_gets_502_and_leaves_one_line_with_its_cause(self):
+        code, output = self.copy.npm("run", "build")
+        self.assertEqual(code, 0, output)
+        write_stand_in(self.copy, DROPPING_SERVER)
+        start = Start(self.copy, ["node", "scripts/local-start.mjs"])
+        self.starts.append(start)
+        status, _, _ = exchange(start.port, request_bytes(start.port, "GET", "/"))
+        self.assertEqual(status, 502)
+        deadline = time.monotonic() + support.HTTP_TIMEOUT
+        while '"failure":"local-proxy"' not in start.output() and time.monotonic() < deadline:
+            time.sleep(0.1)
+        lines = [line for line in start.output().splitlines() if "local-proxy" in line]
+        self.assertEqual(len(lines), 1, start.output())
+        self.assertEqual(json.loads(lines[0])["code"], "ECONNRESET")
 
 
 if __name__ == "__main__":

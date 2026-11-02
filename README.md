@@ -16,7 +16,7 @@ Zakończ przez Ctrl+C albo `npm run local:stop`. To drugie polecenie kończy ka�
 
 Tej drogi używa się do sprawdzania, nie do grania na stałe, bo gra się na serwerze testowym:
 
-- **Konto przepada przy następnym starcie.** Każdy start ma własną bazę w `.runs/local-start/` i usuwa bazy startów, które się skończyły. Dwa starty działające obok siebie sobie nie przeszkadzają.
+- **Konto przepada przy następnym starcie.** Każdy start ma własną bazę w `.runs/local-start/` i usuwa bazy startów, których nie zastaje działających; start, którego port przyjmuje połączenie i milczy, liczy się jako działający. Dwa starty działające obok siebie nie przeszkadzają sobie w dwóch przeglądarkach albo sesjach; w jednej dzielą ciasteczko sesji, więc logowanie na jednym wylogowuje z drugiego.
 - **Poczta nigdzie nie dochodzi.** Ustawienia poczty wskazują adres, pod którym nic nie odpowiada, więc po rejestracji strona mówi, że nie udało się wysłać wiadomości, a adres zostaje niepotwierdzony. Potwierdzenie adresu i ustawienie nowego hasła przechodzi się na serwerze testowym.
 - **Certyfikat powstaje przez `openssl`** z `PATH` albo z instalacji Git for Windows. Klucz żyje tylko w pamięci polecenia.
 

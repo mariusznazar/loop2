@@ -26,12 +26,14 @@ Local game: https://127.0.0.1:53211 (Ctrl+C or npm run local:stop ends it)
 
 That address is the game, and the system picks its port at each start, so read it from the line.
 The line above it, `Loop: http://127.0.0.1:…`, is the server behind the address; a browser cannot
-sign in there. `Account mail failed: ESOCKET` in the output is expected: mail goes to an address
-where nothing answers.
+sign in there. A line with `"failure":"mail"` and `"code":"ESOCKET"` in the output is expected:
+mail goes to an address where nothing answers.
 
-Each start has a database of its own under `.runs/local-start/` and removes those of the starts
-that have ended, so an account lives until the next start. Two starts side by side do not touch
-each other. Every account is made through the form, with a made-up address at `example.test`.
+Each start has a database of its own under `.runs/local-start/` and removes those of the starts it
+does not find running, so an account lives until the next start; a start whose port takes a
+connection and stays silent counts as running. Two starts side by side stay apart in two browsers
+or sessions: in one, they share the session cookie, so signing in on one signs you out of the other.
+Every account is made through the form, with a made-up address at `example.test`.
 
 ## Operate the game with Playwright CLI
 
@@ -123,7 +125,8 @@ The frames wait in the page, because in an answer each would cost tokens as text
 node .claude/skills/loop2-play/save-frames.mjs .playwright-mcp/frames.json
 ```
 
-The images stand in `.playwright-cli/frames/`, as above. The MCP server takes a file only under the
+The images stand in `.playwright-cli/frames/`, as above. The viewport stays on that tab, so a layout
+judged after this is the one at 1280×720. The MCP server takes a file only under the
 directory it started in, so `browser_run_code_unsafe` gets this code as text, not as a file of a
 worktree, and where the server started elsewhere the path of `frames.json` is that directory's.
 

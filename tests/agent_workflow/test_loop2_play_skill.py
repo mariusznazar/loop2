@@ -80,6 +80,28 @@ class Loop2PlaySkill(unittest.TestCase):
             folder = os.path.join(directory, ".playwright-cli", "frames")
             self.assertEqual(read_bytes(folder, "000.jpeg"), b"from a file")
 
+    def test_a_file_that_cannot_be_read_says_so_and_keeps_the_frames_of_the_run_before(self):
+        frame = [{"timestamp": 1.0, "data": base64.b64encode(b"kept").decode()}]
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(save_frames(frame, directory).returncode, 0)
+            result = subprocess.run(["node", SAVE_FRAMES, "missing.json"], cwd=directory,
+                                    stdin=subprocess.DEVNULL, capture_output=True, timeout=30,
+                                    check=False)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(b"ENOENT", result.stderr)
+            self.assertNotIn(b"No frames came", result.stderr)
+            folder = os.path.join(directory, ".playwright-cli", "frames")
+            self.assertEqual(read_bytes(folder, "000.jpeg"), b"kept")
+
+    def test_the_skill_reads_frames_on_mcp_as_frames_js_does_on_the_cli(self):
+        # The server of MCP takes no file of a worktree, so the skill holds that code as text. They
+        # differ before and after this part: MCP sets a viewport first and keeps the frames in the
+        # page, the CLI returns them.
+        code = read_bytes(CLAUDE_COPY, "frames.js").decode("utf-8")
+        shared = code[code.index("  const frames = [];"):code.index("  return frames;")]
+        self.assertIn("await page.screencast.stop();", shared, "precondition: the stream's lines")
+        self.assertIn(shared, read_bytes(CLAUDE_COPY, "SKILL.md").decode("utf-8"))
+
     def test_a_run_with_no_frames_fails_and_keeps_the_frames_of_the_run_before(self):
         frame = [{"timestamp": 1.0, "data": base64.b64encode(b"kept").decode()}]
         with tempfile.TemporaryDirectory() as directory:
