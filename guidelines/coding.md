@@ -167,8 +167,8 @@ czyli z pierwotnym błędem, a nie z samym napisem, raz, tam gdzie kod ją
 obsługuje. W kodzie Node.js robi to `writeFailure` z `src/server/log-line.ts`,
 a porażkę bez pierwotnego błędu nazywa kodem `ReasonedFailure`.
 
-Każdy osobno działający program ma jedną obsługę ostatniej szansy, która zapisuje
-to, czego nie obsłużył żaden kod (D-253). Programy dotykające danych kont —
+Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która zapisuje
+to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
 serwer, `account-block` i `account-backup` — mają własną, `installLastResort`,
 bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręcznie
 albo przez bramkę testów regułę spełnia domyślny wypis Node i Pythona, bo
@@ -204,7 +204,7 @@ Node.js stałe pola wiersza to `event` albo `failure`, `kind`, `code`, `place`
 i identyfikatory z listy; dalsze pole, takie jak `linkPurpose`, jest polem,
 a nie pozycją listy. W konsoli przeglądarki wiersz jest zwykłym tekstem,
 a skrypty Bash zostają przy swoim tekście. Wiersz spoza przebiegu sprawy, taki
-jak wiersz przy starcie programu albo skryptu budowania, nie niesie żadnego
+jak wiersz przy starcie procesu albo skryptu budowania, nie niesie żadnego
 identyfikatora. Wiersz obsługi ostatniej szansy nie musi nieść żadnego, bo ta
 obsługa zwykle nie wie, jaka to była sprawa.
 

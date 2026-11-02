@@ -5101,7 +5101,7 @@ Loop2 adopts all six rules on failures and logs of the coding template of its pi
 departs from none of them. A log line of its Node.js code is one JSON object on one line, written
 through `console` with no library and under fixed field names, while its Bash scripts keep their own
 text and a line in the browser's console is plain text. The product logs changes of a player's
-account and of access to it and operations that change what runs on the server or its copy, and no
+account and of access to it and operations that change what runs on the server or its backup, and no
 progress of a game and no housekeeping, and an agent adds alone an item that fits this principle, an
 identifier of a thing included, while anything that points to a person takes the human's consent.
 
@@ -5112,7 +5112,7 @@ identifier of a thing included, while anything that points to a person takes the
   - complies: a failure the server handled written as one line with `failure`, `kind`, `code` and
     `place` and the `accountId` of its case; an operation on the server added to the list of the
     logging scope in the change that brings it; the readiness line `Loop: <address>` as plain text,
-    since the six rules call for failure and event lines and this line is neither: it is a program's
+    since the six rules call for failure and event lines and this line is neither: it is a process's
     announcement to what launches it, in the exact form the invariants
     `account-server-occupied-address` and `account-server-default-address` fix
   - violates: a line of `field=value` text in Node.js code; an error's message written where it may
@@ -5131,25 +5131,27 @@ departure from all the rules — at the first failure of the server neither a hu
 its cause, and new code logs as it happens to; text of `field=value` — reads more pleasantly, but a
 value with a space or a new line breaks a search.
 
-### D-253 — Which programs of loop2 have a last-resort handler of their own?
+### D-253 — Which processes of loop2 have a last-resort handler of their own?
 
-Each program that touches the data of accounts — the server, `account-block` and `account-backup` —
+Each process that touches the data of accounts — the server, `account-block` and `account-backup` —
 has one last-resort handler of its own, which writes the kind, the code and the place of what no code
 handled, because the runtime's default print could quote values. A script run by hand or by the test
 gate meets the rule on the last resort through the default print of Node.js or Python, which writes
 what nothing handled.
 
-- **Scope:** account-server · build-tools
-- **Based on:** none
+- **Scope:** account-server · build-tools · deployment
+- **Based on:** node-uncaught-default-print · python-uncaught-default-print
 - **Relations:** derives from D-252
 - **Verification:** an agent compares a change with the decision:
   - complies: a new command that opens the account database installing the handler before its work;
-    a script of the test gate that ends on an uncaught error with its runtime's default print
-  - violates: the message or the stack of an uncaught error printed by a program that touches the
+    a script of the test gate that ends on an uncaught error with its runtime's default print;
+    `account-database-check`, `measure-passwords`, `deploy/loop2-backup` and
+    `scripts/restore-trial.mjs` keeping the handling of the last resort they already have
+  - violates: the message or the stack of an uncaught error printed by a process that touches the
     data of accounts; a handler of its own added to a script that touches none
 - **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
 
-*Rationale:* a program that reads accounts can fail on an error that quotes an address or a stored
+*Rationale:* a process that reads accounts can fail on an error that quotes an address or a stored
 value, and its default print would write it. A person at a terminal reads the default print of a
 script that touches no account, and it already says what went wrong.
 *Rejected:* a handler of its own in every script — it does what the default print does and only adds
