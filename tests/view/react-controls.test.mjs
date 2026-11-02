@@ -19,12 +19,10 @@ import {
   createPasswordField,
   createTextField,
 } from "../../dist/browser/view/controls/text-field.js";
+import { ReactButton } from "../../dist/browser/view/controls/react-button.js";
 import {
-  ReactButton,
   ReactFormNote,
   ReactFormWarning,
-} from "../../dist/browser/view/controls/react-button.js";
-import {
   ReactPasswordField,
   ReactTextField,
 } from "../../dist/browser/view/controls/react-text-field.js";

@@ -1,5 +1,6 @@
 /**
- * The shared text field and password field in their React form (D-44): the element tree
+ * The shared text field and password field, and the two sentences under a form, in their React
+ * form (D-44): the element tree
  * `createInputField` in `text-field.ts` builds, with the same classes and attributes, so
  * `styles.css` stays the one place of the look; `tests/view/react-controls.test.mjs` keeps the
  * two forms alike. The field is controlled by the screen that holds its value. Nothing here runs
@@ -78,4 +79,30 @@ export function ReactTextField(props: ReactFieldProps) {
 /** A password field named `label`: what is typed is masked by the browser. */
 export function ReactPasswordField(props: ReactFieldProps) {
   return <ReactInputField type="password" {...props} />;
+}
+
+export type ReactFormSentenceProps = {
+  /** The sentence to show; the element stays, hidden, while there is none. */
+  sentence: string | null;
+};
+
+/**
+ * The one sentence under a form that tells of a server refusal or a lost connection, announced to
+ * assistive technology when it appears.
+ */
+export function ReactFormWarning({ sentence }: ReactFormSentenceProps) {
+  return (
+    <p className="form-warning" role="alert" hidden={sentence === null}>
+      {sentence ?? ""}
+    </p>
+  );
+}
+
+/** The one sentence under a form that tells of an answer which refuses nothing. */
+export function ReactFormNote({ sentence }: ReactFormSentenceProps) {
+  return (
+    <p className="form-note" role="status" hidden={sentence === null}>
+      {sentence ?? ""}
+    </p>
+  );
 }
