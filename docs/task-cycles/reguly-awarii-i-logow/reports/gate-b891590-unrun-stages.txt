@@ -1,0 +1,35 @@
+b891590cf5a2c3bae0079cdf6dd03b888800ba6e
+== tests/agent_workflow
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.010s
+
+OK
+== tests/deploy
+Production image sha256:b202dc1fee9250b6899cd389ce78da7329177c0c112f19207fca6db6682656cb; container loop2-backup-stream-d7368d99fafe; data volume loop2-account-data-check-0126e0213a104f2eace5f396cf173a2a; secret volume loop2-account-secret-check-0126e0213a104f2eace5f396cf173a2a; uid/gid 1000; memory 536870912; resources verified
+.Production image sha256:48700c899bf08e02415628099bf7318f5018e50df083b69e6359aaf127084954; container loop2-account-storage-first-ae41a92bc649; data volume loop2-account-data-check-d79e0390a7634fe6916d0851677e6cdf; secret volume loop2-account-secret-check-d79e0390a7634fe6916d0851677e6cdf; uid/gid 1000; memory 536870912; resources verified
+Production image sha256:48700c899bf08e02415628099bf7318f5018e50df083b69e6359aaf127084954; container loop2-account-storage-second-ae41a92bc649; data volume loop2-account-data-check-d79e0390a7634fe6916d0851677e6cdf; secret volume loop2-account-secret-check-d79e0390a7634fe6916d0851677e6cdf; uid/gid 1000; memory 536870912; resources verified
+.............................................................................................Production image sha256:b11416ed2ac00f0b14d1a411054cd7b42fc54f4ecabdc5049d217e71f2cc01e4; container loop2-image-icons-check-6cc68abd6e11; data volume loop2-account-data-check-34a797c2135941a4843cad229a41ce0a; secret volume loop2-account-secret-check-34a797c2135941a4843cad229a41ce0a; uid/gid 1000; memory 536870912; resources verified
+.....................
+----------------------------------------------------------------------
+Ran 115 tests in 185.066s
+
+OK
+== tests/invariants
+.....................................................................................Production image sha256:d85a78748b7cd427a6bdd454b9d32ff8f8a75338401c95520a64a8849f5cea2f; container loop2-invariant-check-72e69416fcfa; data volume loop2-account-data-check-f0af311ef9ef4d75804b698a0a0f48ef; secret volume loop2-account-secret-check-f0af311ef9ef4d75804b698a0a0f48ef; uid/gid 1000; memory 536870912; resources verified
+......................................................Production image sha256:15901cbb83d49b707bc3061cab445604aea921bec7f524c9f2422463ccbff0f3; container loop2-invariant-check-2062160efba1; data volume loop2-account-data-check-0f5e4a61830341d9b7c2288f22a0a167; secret volume loop2-account-secret-check-0f5e4a61830341d9b7c2288f22a0a167; uid/gid 1000; memory 536870912; resources verified
+..............................................................................
+----------------------------------------------------------------------
+Ran 217 tests in 435.728s
+
+OK
+== tests/quality
+........................................
+----------------------------------------------------------------------
+Ran 40 tests in 28.476s
+
+OK
+377 tests in 4 directories; every directory passed
+run_tests exit=0
+0 errors
+foundation_check exit=0

@@ -1,0 +1,360 @@
+[32m01:33:32 (17964) INFO ProjectReader[39m Found 2 of 332 file(s) to be mutated.
+[32m01:33:32 (17964) INFO Instrumenter[39m Instrumented 2 source file(s) with 257 mutant(s)
+[32m01:33:33 (17964) INFO ConcurrencyTokenProvider[39m Creating 4 test runner process(es).
+[32m01:33:33 (17964) INFO Sandbox[39m Running build command "node ../../node_modules/typescript-compiler/bin/tsc -p tsconfig.browser.json" in "C:\Storage\repos\loop2-wt\reguly-awarii-i-logow\.runs\task-cycles\reguly-awarii-i-logow\review-scratch\wt\.stryker-tmp\sandbox-RrdwAJ".
+[32m01:33:34 (17964) INFO DryRunExecutor[39m Starting initial test run (tap test runner with "perTest" coverage analysis). This may take a while.
+[32m01:33:51 (17964) INFO DryRunExecutor[39m Initial test run succeeded. Ran 33 tests in 16 seconds (net 14054.9569 ms, overhead 2694.043100000001 ms).
+
+All tests
+  acceptance.test.mjs
+    ✓ tests/sim/acceptance.test.mjs (killed 84)
+  actions.test.mjs
+    ✘ tests/sim/actions.test.mjs (covered 0)
+  body.test.mjs
+    ~ tests/sim/body.test.mjs (covered 81)
+  campfire.test.mjs
+    ✓ tests/sim/campfire.test.mjs (killed 1)
+  catch-up.test.mjs
+    ✓ tests/sim/catch-up.test.mjs (killed 29)
+  combat.test.mjs
+    ✘ tests/sim/combat.test.mjs (covered 0)
+  completion.test.mjs
+    ~ tests/sim/completion.test.mjs (covered 73)
+  conditions.test.mjs
+    ✓ tests/sim/conditions.test.mjs (killed 22)
+  copy-actions.test.mjs
+    ✓ tests/sim/copy-actions.test.mjs (killed 3)
+  copy.test.mjs
+    ~ tests/sim/copy.test.mjs (covered 73)
+  data.test.mjs
+    ✓ tests/sim/data.test.mjs (killed 4)
+  death.test.mjs
+    ~ tests/sim/death.test.mjs (covered 127)
+  discovery.test.mjs
+    ~ tests/sim/discovery.test.mjs (covered 105)
+  encounters.test.mjs
+    ~ tests/sim/encounters.test.mjs (covered 109)
+  flow.test.mjs
+    ~ tests/sim/flow.test.mjs (covered 73)
+  gather.test.mjs
+    ~ tests/sim/gather.test.mjs (covered 84)
+  hex.test.mjs
+    ✘ tests/sim/hex.test.mjs (covered 0)
+  layout.test.mjs
+    ✘ tests/sim/layout.test.mjs (covered 0)
+  loop.test.mjs
+    ✓ tests/sim/loop.test.mjs (killed 6)
+  program-counts.test.mjs
+    ~ tests/sim/program-counts.test.mjs (covered 140)
+  program-list.test.mjs
+    ✓ tests/sim/program-list.test.mjs (killed 1)
+  program.test.mjs
+    ✓ tests/sim/program.test.mjs (killed 13)
+  purity.test.mjs
+    ~ tests/sim/purity.test.mjs (covered 114)
+  random.test.mjs
+    ✘ tests/sim/random.test.mjs (covered 0)
+  repertoire.test.mjs
+    ~ tests/sim/repertoire.test.mjs (covered 115)
+  saved-game.test.mjs
+    ✓ tests/sim/saved-game.test.mjs (killed 65)
+  skills.test.mjs
+    ~ tests/sim/skills.test.mjs (covered 81)
+  streak.test.mjs
+    ~ tests/sim/streak.test.mjs (covered 73)
+  team.test.mjs
+    ~ tests/sim/team.test.mjs (covered 73)
+  time.test.mjs
+    ~ tests/sim/time.test.mjs (covered 73)
+  traits.test.mjs
+    ✘ tests/sim/traits.test.mjs (covered 0)
+  trip.test.mjs
+    ✓ tests/sim/trip.test.mjs (killed 1)
+  world.test.mjs
+    ✘ tests/sim/world.test.mjs (covered 0)
+
+[NoCoverage] StringLiteral
+src/browser/sim/programs.ts:82:7
+-         `program: condition kind ${kind} takes no number`,
++         ``,
+
+[Survived] BlockStatement
+src/browser/sim/programs.ts:34:40
+-   function shown(value: unknown): string {
+-     return isObject(value) ? "an object" : String(value);
+-   }
++   function shown(value: unknown): string {}
+Tests ran:
+    tests/sim/conditions.test.mjs
+    tests/sim/data.test.mjs
+    tests/sim/gather.test.mjs
+  and 4 more tests!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:35:28
+-     return isObject(value) ? "an object" : String(value);
++     return isObject(value) ? "" : String(value);
+Tests ran:
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/programs.ts:50:7
+-     if (typeof value !== "string" || !allowed.has(value)) {
++     if (false || !allowed.has(value)) {
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/conditions.test.mjs
+  and 10 more tests!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:62:7
+-         `program: item ${shown(value)} is not an item of the data`,
++         ``,
+Tests ran:
+    tests/sim/conditions.test.mjs
+    tests/sim/program.test.mjs
+    tests/sim/saved-game.test.mjs
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/programs.ts:80:7
+-     if (!number)
++     if (false)
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/conditions.test.mjs
+    tests/sim/data.test.mjs
+  and 9 more tests!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/programs.ts:86:5
+-       typeof value !== "number" ||
++       false ||
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/conditions.test.mjs
+    tests/sim/data.test.mjs
+  and 9 more tests!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:92:7
+-         `program: ${shown(value)} is not a number from ${min} to ${max}`,
++         ``,
+Tests ran:
+    tests/sim/conditions.test.mjs
+    tests/sim/data.test.mjs
+    tests/sim/program.test.mjs
+  and 1 more test!
+
+
+[Survived] EqualityOperator
+src/browser/sim/programs.ts:96:7
+-     if (Math.abs(value - held) > step * STEP_TOLERANCE) {
++     if (Math.abs(value - held) >= step * STEP_TOLERANCE) {
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/conditions.test.mjs
+    tests/sim/data.test.mjs
+  and 9 more tests!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:98:7
+-         `program: ${shown(value)} does not lie on the step ${step} from ${min}`,
++         ``,
+Tests ran:
+    tests/sim/conditions.test.mjs
+    tests/sim/data.test.mjs
+    tests/sim/program.test.mjs
+  and 1 more test!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:109:33
+-       throw new ProgramCheckError("program: a rule has no condition");
++       throw new ProgramCheckError("");
+Tests ran:
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:139:9
+-           `program: condition kind ${shown(value.kind)} is not on the closed list`,
++           ``,
+Tests ran:
+    tests/sim/data.test.mjs
+    tests/sim/program.test.mjs
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:208:7
+-         "program: an identity is duplicated or reaches its next counter",
++         "",
+Tests ran:
+    tests/sim/program.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:194:7
+-         "program: an identity is not a positive safe integer",
++         "",
+Tests ran:
+    tests/sim/program.test.mjs
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/programs.ts:192:7
+-     if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1)
++     if (false || !Number.isSafeInteger(value) || value < 1)
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/campfire.test.mjs
+  and 23 more tests!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:217:33
+-       throw new ProgramCheckError("program: no trip list");
++       throw new ProgramCheckError("");
+Tests ran:
+    tests/sim/saved-game.test.mjs
+    tests/sim/trip.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:220:55
+-       if (!isObject(entry)) throw new ProgramCheckError("program: no trip entry");
++       if (!isObject(entry)) throw new ProgramCheckError("");
+Tests ran:
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/programs.ts:225:7
+-         typeof count !== "number" ||
++         false ||
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/loop.test.mjs
+    tests/sim/saved-game.test.mjs
+  and 1 more test!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:230:9
+-           "program: duplicate trip item or invalid count",
++           "",
+Tests ran:
+    tests/sim/saved-game.test.mjs
+    tests/sim/trip.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:240:33
+-       throw new ProgramCheckError("program: no list of groups");
++       throw new ProgramCheckError("");
+Tests ran:
+    tests/sim/data.test.mjs
+    tests/sim/program.test.mjs
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:254:9
+-           "program: a group must hold a name and a list of rules at one level",
++           "",
+Tests ran:
+    tests/sim/data.test.mjs
+    tests/sim/program.test.mjs
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/programs.ts:249:7
+-         typeof group.name !== "string" ||
++         false ||
+Tests ran:
+    tests/sim/acceptance.test.mjs
+    tests/sim/body.test.mjs
+    tests/sim/campfire.test.mjs
+  and 23 more tests!
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:261:11
+-             "program: a rule is not a pair of a condition and an action",
++             "",
+Tests ran:
+    tests/sim/data.test.mjs
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/programs.ts:272:33
+-       throw new ProgramCheckError("program: no trip plan");
++       throw new ProgramCheckError("");
+Tests ran:
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] StringLiteral
+src/browser/sim/saved-game.ts:104:21
+-     throw new Refused("saved game: not admitted");
++     throw new Refused("");
+Tests ran:
+    tests/sim/loop.test.mjs
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/saved-game.ts:258:9
+-       if (error instanceof ProgramCheckError) refuse();
++       if (true) refuse();
+Tests ran:
+    tests/sim/saved-game.test.mjs
+
+
+[Survived] ConditionalExpression
+src/browser/sim/saved-game.ts:1257:12
+-       return typeof version === "number" && Number.isSafeInteger(version)
++       return true && Number.isSafeInteger(version)
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/death.test.mjs
+    tests/sim/loop.test.mjs
+  and 1 more test!
+
+
+[Survived] ConditionalExpression
+src/browser/sim/saved-game.ts:1273:9
+-           typeof character === "object" && character !== null
++           true && character !== null
+Tests ran:
+    tests/sim/catch-up.test.mjs
+    tests/sim/death.test.mjs
+    tests/sim/loop.test.mjs
+  and 1 more test!
+
+
+Ran 3.80 tests per mutant on average.
+---------------|------------------|----------|-----------|------------|----------|----------|
+               | % Mutation score |          |           |            |          |          |
+File           |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+All files      |  89.11 |   89.45 |      229 |         0 |         27 |        1 |        0 |
+ programs.ts   |  86.89 |   87.36 |      159 |         0 |         23 |        1 |        0 |
+ saved-game.ts |  94.59 |   94.59 |       70 |         0 |          4 |        0 |        0 |
+---------------|--------|---------|----------|-----------|------------|----------|----------|
+[32m01:39:58 (17964) INFO JsonReporter[39m Your report can be found at: file:///C:/Storage/repos/loop2-wt/reguly-awarii-i-logow/.runs/task-cycles/reguly-awarii-i-logow/review-scratch/wt/.runs/stryker/mutation.json
+[32m01:39:58 (17964) INFO MutationTestExecutor[39m Done in 6 minutes and 26 seconds.
+exit=0
