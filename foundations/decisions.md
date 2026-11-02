@@ -5111,7 +5111,10 @@ identifier of a thing included, while anything that points to a person takes the
 - **Verification:** an agent compares a change with the decision:
   - complies: a failure the server handled written as one line with `failure`, `kind`, `code` and
     `place` and the `accountId` of its case; an operation on the server added to the list of the
-    logging scope in the change that brings it
+    logging scope in the change that brings it; the readiness line `Loop: <address>` as plain text,
+    since the six rules call for failure and event lines and this line is neither: it is a program's
+    announcement to what launches it, in the exact form the invariants
+    `account-server-occupied-address` and `account-server-default-address` fix
   - violates: a line of `field=value` text in Node.js code; an error's message written where it may
     quote a value; an email address added to the list without the human's consent; a line for each
     save of a game
