@@ -9,14 +9,20 @@
 // killed from outside leaves no server behind it holding a port or the database.
 //
 // The certificate and its key are made at each start and live only in memory.
-// Each start works in a directory of its own under .runs/local-start/, named by
-// its process id, and removes the directories of the starts that have ended, the
-// databases in them included. That path comes from this file's place alone: no
-// argument and no environment value leads the removal anywhere else.
+// Each start works in a directory of its own under .runs/local-start/ and removes
+// the directories of the starts that have ended, the databases in them included.
+// That path comes from this file's place alone: no argument and no environment
+// value leads the removal anywhere else, and no file in a directory is read.
+//
+// A directory's name says who can prove the start still runs: its process number,
+// its HTTPS port and a mark of its certificate. The proxy listens before the
+// directory exists, so a start on its way up can prove it from the first moment.
+// A number or a port another program took over proves nothing: only the running
+// start shows that certificate.
 //
 // Exit codes: 0 stopped, 1 the start failed or a start did not stop, 2 refused.
 import { execFileSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
+import { X509Certificate, randomBytes } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -28,6 +34,7 @@ import { request as httpRequest } from "node:http";
 import { createServer as createHttpsServer } from "node:https";
 import { connect, createServer as createNetServer } from "node:net";
 import { join } from "node:path";
+import { connect as connectTls } from "node:tls";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const USAGE = "usage: npm run local | npm run local:stop";
@@ -35,12 +42,13 @@ const HOST = "127.0.0.1";
 const READY_TIMEOUT_MS = 30_000;
 const STOP_TIMEOUT_MS = 10_000;
 const STOP_CHECK_MS = 200;
+const PROOF_TIMEOUT_MS = 2_000;
 const EXIT_FAILED = 1;
 const EXIT_REFUSED = 2;
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const startsDirectory = join(root, ".runs", "local-start");
-const startDirectoryName = /^(\d+)-[0-9a-f]{12}$/;
+const startDirectoryName = /^(\d{1,10})-(\d{1,5})-([0-9a-f]{16})$/;
 const stopFileName = "stop";
 
 // A port of this computer where nothing answers: a message fails at once, the
@@ -179,7 +187,11 @@ async function waitForServer(port) {
   return false;
 }
 
-function isRunning(pid) {
+function certificateMark(fingerprint) {
+  return fingerprint.replaceAll(":", "").toLowerCase().slice(0, 16);
+}
+
+function processExists(pid) {
   try {
     process.kill(pid, 0);
     return true;
@@ -188,8 +200,42 @@ function isRunning(pid) {
   }
 }
 
-// The directories this command made, each with the process that made it. A
-// directory of any other name is not this command's and stays untouched.
+// Whether the port of a directory's name shows that directory's certificate. The
+// port comes from a name anyone could plant, so it is only ever a port of this
+// computer and only a TLS greeting goes to it. A port that takes the connection
+// and stays silent may be a start busy on its way up, so it counts as running.
+function showsItsCertificate({ port, mark }) {
+  if (port < 1 || port > 65535) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const socket = connectTls({ host: HOST, port, rejectUnauthorized: false });
+    const answer = (result) => {
+      clearTimeout(timer);
+      socket.destroy();
+      resolve(result);
+    };
+    const timer = setTimeout(() => answer(true), PROOF_TIMEOUT_MS);
+    socket.once("secureConnect", () =>
+      answer(
+        certificateMark(socket.getPeerCertificate().fingerprint256) === mark,
+      ),
+    );
+    socket.once("error", () => answer(false));
+    socket.once("close", () => answer(false));
+  });
+}
+
+async function isRunning(start) {
+  return processExists(start.pid) && (await showsItsCertificate(start));
+}
+
+async function runningStarts(starts) {
+  const running = [];
+  for (const start of starts) if (await isRunning(start)) running.push(start);
+  return running;
+}
+
+// The directories this command made, each with what its name says. A directory of
+// any other name is not this command's and stays untouched.
 function startDirectories() {
   if (!existsSync(startsDirectory)) return [];
   const found = [];
@@ -199,18 +245,20 @@ function startDirectories() {
       found.push({
         path: join(startsDirectory, entry.name),
         pid: Number(name[1]),
+        port: Number(name[2]),
+        mark: name[3],
       });
   }
   return found;
 }
 
-function removeEndedStarts() {
-  for (const { path, pid } of startDirectories()) {
-    if (isRunning(pid)) continue;
+async function removeEndedStarts() {
+  for (const start of startDirectories()) {
+    if (await isRunning(start)) continue;
     try {
-      rmSync(path, { recursive: true, force: true, maxRetries: 3 });
+      rmSync(start.path, { recursive: true, force: true, maxRetries: 3 });
     } catch {
-      console.error(`Could not remove an earlier start's files: ${path}`);
+      console.error(`Could not remove an earlier start's files: ${start.path}`);
     }
   }
 }
@@ -241,18 +289,20 @@ function serverSettings(directory, origin, serverPort) {
 
 async function start() {
   const pair = makeCertificate();
-  removeEndedStarts();
-  const directory = join(
-    startsDirectory,
-    `${process.pid}-${randomBytes(6).toString("hex")}`,
-  );
-  mkdirSync(directory, { recursive: true, mode: 0o700 });
-
   const serverPort = await freePort();
   const proxy = createHttpsServer({ key: pair, cert: pair }, (request, reply) =>
     proxyRequest(serverPort, request, reply),
   );
-  const origin = `https://${HOST}:${await listenOnFreePort(proxy)}`;
+  const proxyPort = await listenOnFreePort(proxy);
+  const origin = `https://${HOST}:${proxyPort}`;
+
+  await removeEndedStarts();
+  const mark = certificateMark(new X509Certificate(pair).fingerprint256);
+  const directory = join(
+    startsDirectory,
+    `${process.pid}-${proxyPort}-${mark}`,
+  );
+  mkdirSync(directory, { recursive: true, mode: 0o700 });
 
   // Registered before the server's own handlers, so the process ends at once.
   for (const signal of ["SIGINT", "SIGTERM"])
@@ -271,13 +321,13 @@ async function start() {
 }
 
 async function stop() {
-  const running = startDirectories().filter(({ pid }) => isRunning(pid));
+  const running = await runningStarts(startDirectories());
   for (const { path } of running) writeFileSync(join(path, stopFileName), "");
   const deadline = Date.now() + STOP_TIMEOUT_MS;
   let left = running;
   while (left.length > 0 && Date.now() < deadline) {
     await sleep(STOP_CHECK_MS);
-    left = left.filter(({ pid }) => isRunning(pid));
+    left = await runningStarts(left);
   }
   for (const { pid } of left)
     console.error(`The local start of process ${pid} did not stop.`);

@@ -5,9 +5,10 @@ The file also checks the rest of what `npm run local` promises: a browser reache
 it, every start has a database of its own, and neither an argument nor an environment value leads
 the removal of earlier databases anywhere else (D-253, D-254, D-255, D-256).
 
-Each start runs in a temporary copy of the working tree. The cases of the invariant replace the
-built server by a stand-in that reports the raw headers it receives, since the real server ignores
-most of them and its answer would show nothing; the other cases run the real server."""
+Each start runs in a temporary copy of the working tree. The case of the headers replaces the built
+server by a stand-in that reports the raw headers it receives, since the real server ignores most of
+them and its answer would show nothing; so does the case of a start on its way up, which needs a
+server that takes its time. The other cases run the real server."""
 
 import json
 import os
@@ -41,6 +42,11 @@ createServer((request, response) => {
   response.setHeader("content-type", "application/json");
   response.end(JSON.stringify(request.rawHeaders));
 }).listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
+"""
+
+# A server that holds its whole process, as a start busy on its way up does.
+BUSY_SERVER = STAND_IN_SERVER + """
+Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4000);
 """
 
 PASSWORD = "synthetic-local-password"
@@ -129,11 +135,15 @@ class Start:
     """One running start in a copy of the tree, its output in a file; `port` is the HTTPS port and
     `server_port` the built server's."""
 
-    def __init__(self, copy, command, env=None):
+    def __init__(self, copy, command, env=None, wait=True):
         descriptor, self.log_path = tempfile.mkstemp(dir=copy.path)
         with os.fdopen(descriptor, "wb") as log:
             self.process = support.popen(command, copy.path, env={**os.environ, **(env or {})},
                                          stdout=log, stderr=subprocess.STDOUT)
+        if wait:
+            self.wait()
+
+    def wait(self):
         deadline = time.monotonic() + START_TIMEOUT
         while True:
             output = self.output()
@@ -167,6 +177,12 @@ def directories(copy):
     return sorted(os.listdir(base)) if os.path.isdir(base) else []
 
 
+def write_stand_in(copy, server):
+    os.makedirs(copy.file("dist/server"))
+    with open(copy.file("dist/server/main.js"), "w", encoding="utf-8") as handle:
+        handle.write(server)
+
+
 class Accounts:
     """Account requests through a start's proxy, as a browser at its address sends them."""
 
@@ -194,9 +210,7 @@ class LocalStartBoundary(unittest.TestCase):
     def setUpClass(cls):
         cls.copy = support.TreeCopy()
         cls.addClassCleanup(cls.copy.remove)
-        os.makedirs(cls.copy.file("dist/server"))
-        with open(cls.copy.file("dist/server/main.js"), "w", encoding="utf-8") as handle:
-            handle.write(STAND_IN_SERVER)
+        write_stand_in(cls.copy, STAND_IN_SERVER)
         cls.start = Start(cls.copy, ["node", "scripts/local-start.mjs"])
         cls.addClassCleanup(cls.start.close)
 
@@ -222,14 +236,6 @@ class LocalStartBoundary(unittest.TestCase):
     def test_the_proxy_says_https_also_when_no_browser_header_came(self):
         self.assertIn(("x-forwarded-proto", "https"), self.received_headers(()))
 
-    def test_both_ports_listen_on_this_computer_alone(self):
-        # invariant: local-start-access
-        for port in (self.start.port, self.start.server_port):
-            self.assertTrue(accepts_connections("127.0.0.1", port),
-                            "precondition: the port answers on 127.0.0.1")
-            for address in own_addresses():
-                self.assertFalse(accepts_connections(address, port), f"{address}:{port}")
-
 
 class LocalStart(unittest.TestCase):
     """The real command on the real built server."""
@@ -248,6 +254,21 @@ class LocalStart(unittest.TestCase):
         start = Start(self.copy, [support.npm(), "run", "local"], env)
         self.starts.append(start)
         return start
+
+    def plant_directory(self, name):
+        path = self.copy.file(f".runs/local-start/{name}/accounts.sqlite")
+        os.makedirs(os.path.dirname(path))
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write("planted")
+
+    def test_both_ports_listen_on_this_computer_alone(self):
+        # invariant: local-start-access
+        start = self.local()
+        for port in (start.port, start.server_port):
+            self.assertTrue(accepts_connections("127.0.0.1", port),
+                            "precondition: the port answers on 127.0.0.1")
+            for address in own_addresses():
+                self.assertFalse(accepts_connections(address, port), f"{address}:{port}")
 
     def test_a_browser_signs_up_over_https_though_no_mail_can_leave(self):
         start = self.local()
@@ -315,6 +336,37 @@ class LocalStart(unittest.TestCase):
         self.local()
         self.assertEqual(len(directories(self.copy)), 1)
         self.assertNotEqual(directories(self.copy), earlier)
+
+    def test_a_number_another_program_holds_keeps_no_directory_of_an_ended_start(self):
+        foreign = os.getpid()
+        mark = "abcdefabcdefabcd"
+        for port in (support.free_port(), 99999, 0):
+            self.plant_directory(f"{foreign}-{port}-{mark}")
+        self.assertIn("stopped: 0", local_stop(self.copy), "a directory is no running start")
+        start = self.local()
+        self.assertEqual(len(directories(self.copy)), 1, "the next start removes all three")
+
+        # A running start's port under a certificate that is not its own.
+        self.plant_directory(f"{foreign}-{start.port}-{mark}")
+        self.assertIn("stopped: 1", local_stop(self.copy))
+        self.local()
+        self.assertEqual(len(directories(self.copy)), 1)
+
+    def test_a_start_on_its_way_up_is_not_taken_for_ended(self):
+        write_stand_in(self.copy, BUSY_SERVER)
+        command = ["node", "scripts/local-start.mjs"]
+        first = Start(self.copy, command, wait=False)
+        self.starts.append(first)
+        deadline = time.monotonic() + START_TIMEOUT
+        while not directories(self.copy) and time.monotonic() < deadline:
+            time.sleep(0.02)
+        early = directories(self.copy)
+        self.assertEqual(len(early), 1, "precondition: the first start's directory stands")
+
+        self.starts.append(Start(self.copy, command))
+        first.wait()
+        self.assertIn(early[0], directories(self.copy))
+        self.assertEqual(len(directories(self.copy)), 2)
 
     def test_stop_ends_every_running_start_and_their_ports(self):
         first = self.local()
