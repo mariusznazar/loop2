@@ -11,6 +11,7 @@ The part draws the game's screens in the browser, sends the browser's requests t
   src/browser/kitchen-sink/**
   assets/icons/**
   assets/fonts/**
+  assets/sprites/**
   tests/view/**
   tests/account-api.test.mjs
   tests/invariants/test_browser_view_framework.py
@@ -24,6 +25,7 @@ The part draws the game's screens in the browser, sends the browser's requests t
 - **Depends on:** simulation · account-server
 - **Trust boundary:** assets/icons/**
   assets/fonts/**
+  assets/sprites/**
 
 ## simulation
 
@@ -179,6 +181,7 @@ host and which encrypt the database backup and send it off the server.
 | the GitHub repository the server fetches over its read-only key | them → us | trusted |
 | game-icons.net | them → us | untrusted |
 | github.com/vercel/geist-font | them → us | untrusted |
+| the Pixel Crawler pack of Anokolisa | them → us | untrusted |
 | Mikrus Outsider | both | untrusted |
 | Mikrus Strych | both | untrusted |
 | the `pusher` service of Mikrus | both | untrusted |

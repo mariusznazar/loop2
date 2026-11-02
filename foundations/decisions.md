@@ -1408,7 +1408,7 @@ A character crafts a campfire and lights a stick on a revealed tile, as it gathe
 
 ### D-73 — Which testing discipline does loop2 adopt?
 
-Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79, D-163 and D-235. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
+Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79, D-163, D-235 and D-273. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
@@ -1772,7 +1772,7 @@ If the dependency audit reports an advisory in a package introduced by StrykerJS
 
 ### D-96 — What does a player see before and after signing in?
 
-A signed-out visitor sees one card: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry. Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
+A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry. Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
@@ -1782,7 +1782,7 @@ A signed-out visitor sees one card: the game's name, one sentence about the game
   - violates: the sentence about the game written in the code of the view; a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands
 - **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-96
 
-*Rationale:* An account provides the entry to the game and the headquarters provides its starting place. The first screen says what the game is in one sentence, and one card holds every state, so a visitor sees one form at a time; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on another state of the card, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
+*Rationale:* An account provides the entry to the game and the headquarters provides its starting place. The first screen says what the game is in one sentence and shows a picture of it, and one card holds every state, so a visitor sees one form at a time; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on another state of the card, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
 *Rejected:* Two wide forms side by side — a page of paperwork that says nothing of the game; anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; a third form standing for good beside the other two — the entry screen of every visitor holds three forms, and a mistake between them is easier; the headquarters after signing in with a way back to a waiting manual map run — a new state of the screen, with its own question of what the player may do in the headquarters while the map run waits; a new game when the saved game state cannot be downloaded — the first save of that new game overwrites the saved game state on the server, so the player loses progress through a passing outage, against what this decision does at the session check; discarding a saved game state without a word — the player sees an empty team with no explanation and may take it for a fault; the sentence of another version for a damaged saved game state too — the player is given an untrue reason and, reporting the problem, speaks of a version where a fault is at stake; closing an ended map run at loading as „Zakończ” does, so the player lands in the headquarters — changes of D-62, D-132 and D-173, code closing the map run at loading, and after each reload following a death or a completion the loss of the copy's unsaved changes without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the same seed.
 
 ### D-97 — What does the player's logout do?
@@ -5611,3 +5611,86 @@ dependency on `react` stands outside this decision.
 *Rejected:* a list of component libraries by name — none stands in the product, and a list misses
 the next one; leaving libraries on React outside the check and saying so — the likely way in stays
 open while the screens move to React.
+
+### D-271 — Where do the scene's pictures come from?
+
+The scene's pictures and the picture of the game behind the login card are sprites of the pack
+Pixel Crawler, kept in `assets/sprites/` outside the directory the account and save server serves
+and copied into it when the application is built. A sprite file holds pixels alone.
+
+- **Scope:** browser-view · build-tools · deployment
+- **Based on:** pixel-crawler-terms
+- **Relations:** none
+- **Verification:** invariants: sprite-file-content. An agent compares a change with the decision:
+  - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
+    PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes
+  - violates: a picture placed straight in the directory the server serves; a sprite file in
+    another format, or a PNG file carrying text or metadata chunks; a picture drawn from another pack
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
+  rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
+  the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
+  come from?”
+
+*Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
+fire and trees the game's pictures show. Kept apart from what the server serves, as the icons and
+the fonts are, a picture reaches the player only through the build; it comes from outside the
+product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
+credit and allow its arts to be altered, so a picture made from them may be dimmed and composed.
+*Rejected:* the hooded figure of loop — it is a rogue, though the game calls it a mage; generated
+pictures as the main way — frames drift apart; new packs — another palette and scale, new licences.
+
+### D-272 — Where may a picture of the game stand?
+
+A picture of the game stands behind the login card, and text stands on a solid background, never
+on a picture.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96
+- **Verification:** an agent compares a change with the decision:
+  - complies: the screen of the login card with the picture over the whole window and every sentence
+    of the page inside the card, on its solid `panel`; the waiting screens and the game with no
+    picture
+  - violates: a sentence of the page standing on the picture outside the card; the card's background
+    made half-transparent over the picture
+- **Origin:** rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), part C.2 ·
+  rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
+  the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where may a picture of the game
+  stand?”
+
+*Rationale:* the game stops looking like a form through a picture where there is nothing to read,
+and contrast stays what its check measures, since that check knows colours and not what lies under
+text.
+*Rejected:* a half-transparent card over a picture — the check of contrast reads colour values, not
+the picture beneath; a pattern on the page's background — a form with wallpaper.
+
+### D-273 — When do the files of `assets/sprites/` gain a refusal test?
+
+A permanent refusal test for the files the build copies from `assets/sprites/` is deferred until
+the first task changing that boundary, which introduces its refusal test and changes the method of
+sprite-file-content to test; what changes the boundary is read as D-76 reads it, so a further PNG
+file does not. Until then, review checks that the build copies from `assets/sprites/` only PNG
+files holding pixels alone, and only into what `npm run build` writes.
+
+- **Scope:** browser-view · build-tools
+- **Based on:** none
+- **Relations:** narrows D-73 · derives from D-76
+- **Verification:** an agent compares a change with the decision:
+  - complies: a task adding a further PNG picture to `assets/sprites/` with no refusal test, its
+    review checking that the file holds pixels alone
+  - violates: a change making the build copy SVG files from `assets/sprites/`, or copy the
+    directory into the kitchen-sink page, with no refusal test and sprite-file-content still checked
+    by review
+- **Origin:** logowanie_na_tle_gry_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania),
+  Questions to settle, questions 3 and 4, and § Settlements to record, row C1 · plan_mvp2_loop2.md in
+  the vault (Notes/Projects/(P) Loop), Open questions
+
+*Rationale:* the boundary of the pictures is kept as the fonts and the preview server are, by review
+until a change of its principle, so the tasks that add the scene's pictures bring no test files.
+Accepted with it: further files are kept by review alone, so the deferral may in practice last for
+good, and absence of a test proves no refusal.
+*Rejected:* a permanent refusal test, as the rule „Trust boundaries” of the testing guidelines asks
+— the plan records neither its cost nor the human's reason for it; every change of the files of the
+boundary ending the deferral — a test at the task that first adds a picture, a change of the answer
+that the tasks bring no test files, and a change of the plan; new files ending it, and a change of
+the build not — the same costs.

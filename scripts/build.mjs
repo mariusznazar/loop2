@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { copyFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
-import { copyStaticFiles } from "./static-files.mjs";
+import { copySpriteFiles, copyStaticFiles } from "./static-files.mjs";
 
 const root = new URL("../", import.meta.url);
 const compiler = fileURLToPath(
@@ -49,4 +49,5 @@ if (!checkOnly) {
     new URL("index.html", out),
   );
   await copyStaticFiles(root, out);
+  await copySpriteFiles(root, out);
 }

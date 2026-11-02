@@ -1196,6 +1196,16 @@ Under `tests/` only `tests/view/page-document.mjs` loads jsdom or happy-dom, a t
 - **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Violated:** no
 
+## sprite-file-content
+
+Every file the build copies from `assets/sprites/` is a PNG image.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-271
+- **Part:** browser-view
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

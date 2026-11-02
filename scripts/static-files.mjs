@@ -28,3 +28,18 @@ export async function copyStaticFiles(root, out) {
       );
   }
 }
+
+// Copies the pictures of the game, the PNG files directly in assets/sprites/, into sprites/ of
+// `out`. Only the application's build calls it: the kitchen-sink page takes no sprite, so
+// assets/sprites/ keeps one recipient. Only `.png` files go: a sprite file holds pixels alone.
+export async function copySpriteFiles(root, out) {
+  const spritesOut = new URL("sprites/", out);
+  await mkdir(spritesOut, { recursive: true });
+  for (const name of await readdir(new URL("assets/sprites/", root))) {
+    if (name.endsWith(".png"))
+      await copyFile(
+        new URL(`assets/sprites/${name}`, root),
+        new URL(name, spritesOut),
+      );
+  }
+}
