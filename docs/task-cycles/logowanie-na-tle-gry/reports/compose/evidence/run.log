@@ -1,0 +1,8 @@
+test_container_serves_each_icon_with_the_file_bytes (oneoff_container_sprites.ContainerServesIcons.test_container_serves_each_icon_with_the_file_bytes) ... Production image sha256:28b7be2d3f3168313c08ce3875e4dc8fd96cf4fb3cd3113e707868068e405ad0; container loop2-invariant-check-4ec61df33c49; data volume loop2-account-data-check-0aca2851a21e44d0a4627e1bf7827373; secret volume loop2-account-secret-check-0aca2851a21e44d0a4627e1bf7827373; uid/gid 1000; memory 536870912; resources verified
+ok
+
+----------------------------------------------------------------------
+Ran 1 test in 19.431s
+
+OK
+exit=0
