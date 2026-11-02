@@ -1,0 +1,64 @@
+{
+ "waiting-session-check": {
+  "card": false,
+  "withPicture": [],
+  "notice": null,
+  "noticeInCard": false,
+  "visibleText": "Loop\n\nSprawdzanie logowania…\n\npatyk: „Wood stick icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)\njagoda: „Berry bush icon”, Delap"
+ },
+ "refused-link-signed-out": {
+  "card": true,
+  "withPicture": [
+   "account-card-screen"
+  ],
+  "notice": "Odnośnik jest nieważny albo wygasł.",
+  "noticeInCard": true,
+  "visibleText": "Loop\n\nNapisz postaci program i sprawdź, jak długo przeżyje bez ciebie.\n\nOdnośnik jest nieważny albo wygasł.\n\nZaloguj się\nZałóż konto\nAdres e-mail\nHasło\nZaloguj "
+ },
+ "refused-link-after-switch": {
+  "card": true,
+  "withPicture": [
+   "account-card-screen"
+  ],
+  "notice": "Odnośnik jest nieważny albo wygasł.",
+  "noticeInCard": true,
+  "visibleText": "Loop\n\nNapisz postaci program i sprawdź, jak długo przeżyje bez ciebie.\n\nOdnośnik jest nieważny albo wygasł.\n\nZaloguj się\nZałóż konto\nAdres e-mail\nHasło\nPowtórz "
+ },
+ "game-signed-in": {
+  "card": false,
+  "withPicture": [],
+  "notice": null,
+  "noticeInCard": false,
+  "visibleText": "Loop\nWyloguj\n\nNie udało się wysłać wiadomości. Spróbuj ponownie później.\n\nWyślij ponownie\nProgram:\nProgram\nNowy program\nZmień nazwę\nUsuń\n↑\n↓\nUsuń\nZawsze\nDodaj r"
+ },
+ "reset-signed-in": {
+  "card": true,
+  "withPicture": [
+   "account-card-screen"
+  ],
+  "notice": null,
+  "noticeInCard": false,
+  "visibleText": "Loop\n\nNapisz postaci program i sprawdź, jak długo przeżyje bez ciebie.\n\nUstaw nowe hasło\nNowe hasło\nPowtórz hasło\nUstaw hasło\nAnuluj\nAutorzy grafiki"
+ },
+ "refused-link-signed-in": {
+  "card": false,
+  "withPicture": [],
+  "notice": "Odnośnik jest nieważny albo wygasł.",
+  "noticeInCard": false,
+  "visibleText": "Loop\nWyloguj\n\nAdres e-mail niepotwierdzony.\n\nWyślij ponownie\n\nOdnośnik jest nieważny albo wygasł.\n\nProgram:\nProgram\nNowy program\nZmień nazwę\nUsuń\n↑\n↓\nUsuń\nZawsz"
+ },
+ "waiting-confirmation": {
+  "card": false,
+  "withPicture": [],
+  "notice": null,
+  "noticeInCard": false,
+  "visibleText": "Loop\n\nPotwierdzanie adresu…\n\npatyk: „Wood stick icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)\njagoda: „Berry bush icon”, Delapo"
+ },
+ "waiting-retry-warning": {
+  "card": false,
+  "withPicture": [],
+  "notice": null,
+  "noticeInCard": false,
+  "visibleText": "Loop\n\nBrak połączenia z serwerem. Spróbuj ponownie.\n\nSpróbuj ponownie\npatyk: „Wood stick icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny"
+ }
+}
