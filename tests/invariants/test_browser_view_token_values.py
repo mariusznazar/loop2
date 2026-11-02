@@ -64,7 +64,8 @@ passes.
 Does NOT cover: a colour a module builds from numbers and writes into a style (review, D-43);
 presentation attributes such as `fill` on an SVG element of an HTML file; a family named by
 identifiers in a `font` value; colour functions outside CSS Color 4 § 4.1 (such as
-`color-mix()`); a value that only a browser's reading of malformed CSS would see.
+`color-mix()`); a value that only a browser's reading of malformed CSS would see; JSX text
+holding `//` other than right after `:`, which the reader takes for a comment.
 """
 
 import html
@@ -308,14 +309,17 @@ REGEX_AFTER_WORD = re.compile(
 
 def literal_texts(text):
     """(line, text) of each string literal and each text part of a template literal of a
-    TypeScript text, outside comments; the code inside `${...}` is read as code."""
+    TypeScript text, outside comments; the code inside `${...}` is read as code. JSX is not
+    parsed: a `/>` after `}` and a `//` right after `:` are read as JSX, and a `//` elsewhere in
+    JSX text as a comment."""
     found, holes = [], []
     depth, last, i, n = 0, "", 0, len(text)
     while i < n:
         c = text[i]
         if c.isspace():
             i += 1
-        elif text.startswith("//", i):
+        elif text.startswith("//", i) and text[i - 1:i] != ":":
+            # A `//` right after `:` is the address in JSX text such as `<p>https://x</p>`.
             end = text.find("\n", i)
             i = n if end < 0 else end
         elif text.startswith("/*", i):
@@ -350,6 +354,9 @@ def literal_texts(text):
             i, last = j, "`"
         elif c == "/" and text[i - 1:i] == "<":
             # The `/` of a JSX closing tag such as `</p>` or `</>`: no regex starts here.
+            i, last = i + 1, c
+        elif c == "/" and last == "}" and text[i + 1:i + 2] == ">":
+            # The `/>` closing a JSX tag whose last attribute stands in braces: no regex starts here.
             i, last = i + 1, c
         elif c == "/" and (last == "" or last in REGEX_AFTER or REGEX_AFTER_WORD.search(text[:i])):
             j, in_class = i + 1, False
@@ -479,6 +486,14 @@ FLAGGED = {
             'const a = <p>x</p>; const c = "rgb(1, 2, 3)";',
         "a colour in a literal after the closing tag of a fragment on its line":
             'const a = <>x</>; const c = "#fff";',
+        "a colour after a self-closing tag with an attribute in braces, in a ternary":
+            'const a = b ? <X y={1} /> : <X style={{ color: "red" }} />;',
+        "a colour after a self-closing tag with an attribute in braces, in an array":
+            'const b = [<X y={1} />, <X style={{ color: "#fff" }} />];',
+        "a colour in an assignment after a self-closing tag with an attribute in braces":
+            'const a = <input value={x} />; const c = "#fff";',
+        "a colour in an assignment after `//` in JSX text":
+            'const a = <p>https://x</p>; const c = "#fff";',
     },
 }
 CLEAN = {
@@ -542,6 +557,12 @@ CLEAN = {
         "const red = field;\n"
         'const a = <p style={{ color: "var(--text)" }} className="highlight">red #fff</p>;\n'
         'const b = <p>{red ? "revealed" : "hidden"}</p>;\n'
+        'const c = <X y={1} />;\n'
+        'function f() {}\n'
+        '/"#fff"/.test(c);\n'
+        'const t = a < /"#fff"/.lastIndex;\n'
+        'const u = b ? c : d; // "#fff"\n'
+        'const v = <X y={1} />; // "#fff"\n'
     ),
 }
 
