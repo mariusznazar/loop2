@@ -1,0 +1,16 @@
+# Findings of the review of the correction
+
+Blocking finding of `reports/review-correction.md`, reviewed head 0c8b97c083013cb61dc9f195a7105d0d41c121be, in the reviewer's words. The fix's range runs from that head.
+
+## Important
+
+**1. D-256 says a start whose port stays silent counts as running, and the code counts it so only while its process number lives; the report says the sentence now matches.**
+
+- **Place:** `C:\Storage\repos\loop2-wt\lokalny-start\foundations\decisions.md:5220`–`:5221`, against `C:\Storage\repos\loop2-wt\lokalny-start\scripts\local-start.mjs:265`–`:267`. The same clause: `C:\Storage\repos\loop2-wt\lokalny-start\README.md:19`, `C:\Storage\repos\loop2-wt\lokalny-start\.claude\skills\loop2-play\SKILL.md:33`–`:34` and its copy under `.agents`, `C:\Storage\repos\loop2-wt\lokalny-start\scripts\local-start.mjs:21`–`:22`. The claim: `C:\Storage\repos\loop2-wt\lokalny-start\.runs\task-cycles\lokalny-start\reports\correction.md:105`.
+- **To paste:** D-256 says a start whose port takes a connection and stays silent counts as running, and a start of `npm run local` removes such a directory when no process holds its number. Add the condition to the clause, or say the sentence stands as it is.
+- **What it protects:** the clause exists to say the one case in which an ended start's database stays. It is the limit the human chose, and task 5 reads it first.
+- **The mechanism:** `isRunning` is `processExists(start.pid) && (await showsItsCertificate(start))`. The silence decides only after the number proved alive. The clause leaves the number out, so it covers a directory the code removes. The request described the case with another program on the old number, and the proposed clause, which I did not write but which this cycle's reviewer did, dropped that condition; the human approved the clause as shown.
+- **Measured at the head, on a real start:** two directories planted, each with an `accounts.sqlite`, both naming a port held by a listener that accepts and says nothing. `4000001-<port>-abcdefabcdefabcd`, a number no process holds: **removed** by the next start. `<number of the listener>-<port>-abcdefabcdefabc0`: **stayed**, and `--stop` wrote `START_STILL_RUNNING` for it.
+- **Why this grade:** the code removes what the entry says counts as running, so it does what the entry forbids; README and the skill repeat the wider form. WAY-263 grades that Important and names grading it Minor for its smallness as the violation. `review-fix-2.md` held the same line on the same sentence.
+- **How small it is:** nothing goes wrong. The code is right, the directory it removes is an ended start's, and that is closer to To do 2 than the sentence is. No live start is at risk, because a live start's number is alive. I ask for no change of code.
+- **Fix, a proposal, on the branch for the human's word by WAY-30:** "a start whose process number is in use and whose port takes a connection and stays silent counts as running". The same few words go to `README.md:19`, both copies of the skill and the comment at `scripts/local-start.mjs:21`–`:22`. `scripts/local-start.mjs:12`–`:13` still says "the starts that have ended": the limit stands nine lines below it in one comment, so I do not count that as a clause dropped, but a word there costs nothing while the file is open.

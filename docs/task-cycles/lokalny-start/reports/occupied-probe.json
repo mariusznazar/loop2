@@ -1,0 +1,51 @@
+{
+  "cores": 20,
+  "idle": {
+    "name": "idle",
+    "runs": 25,
+    "min": 241,
+    "median": 270,
+    "max": 344,
+    "over5s": 0,
+    "timedOut": 0,
+    "readyPrinted": 0,
+    "wrongCode": 0
+  },
+  "loaded": {
+    "name": "load x40",
+    "runs": 25,
+    "min": 1905,
+    "median": 2394,
+    "max": 2992,
+    "over5s": 0,
+    "timedOut": 0,
+    "readyPrinted": 0,
+    "wrongCode": 0
+  },
+  "slowest": [
+    {
+      "ms": 2992,
+      "firstOutputMs": 2893,
+      "code": 1,
+      "signal": null,
+      "out": "",
+      "err": "{\"failure\":\"server-listen\",\"kind\":\"Error\",\"code\":\"EADDRINUSE\",\"place\":\"main.listen\",\"listen\":\"127.0.0.1:56525\"}\n"
+    },
+    {
+      "ms": 2929,
+      "firstOutputMs": 2741,
+      "code": 1,
+      "signal": null,
+      "out": "",
+      "err": "{\"failure\":\"server-listen\",\"kind\":\"Error\",\"code\":\"EADDRINUSE\",\"place\":\"main.listen\",\"listen\":\"127.0.0.1:59026\"}\n"
+    },
+    {
+      "ms": 2878,
+      "firstOutputMs": 2580,
+      "code": 1,
+      "signal": null,
+      "out": "",
+      "err": "{\"failure\":\"server-listen\",\"kind\":\"Error\",\"code\":\"EADDRINUSE\",\"place\":\"main.listen\",\"listen\":\"127.0.0.1:65027\"}\n"
+    }
+  ]
+}
