@@ -443,7 +443,7 @@ Playwright CLI reads its configuration from `.playwright/cli.config.json` by def
 
 The configuration file of Playwright CLI takes options of the browser context under `browser.contextOptions`.
 
-- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file, Configuration file schema — "Context options for the browser context." · "contextOptions?: playwright.BrowserContextOptions;"; read 2026-11-02
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file, Configuration file schema — "browser?: {" · "Context options for the browser context." · "contextOptions?: playwright.BrowserContextOptions;"; read 2026-11-02
 
 ## playwright-screencast-frames
 
@@ -456,6 +456,12 @@ Playwright's screencast of a page delivers JPEG-encoded frames to a callback.
 The Chrome DevTools Protocol's command `Security.setIgnoreCertificateErrors` turns the ignoring of all certificate errors on or off.
 
 - **Source:** https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/92be9c279a8ff3af17009705bb357241932128e4/json/browser_protocol.json § domain Security, command setIgnoreCertificateErrors — "Enable/disable whether all certificate errors should be ignored."; read 2026-11-02
+
+## git-for-windows-openssl
+
+Git for Windows comes with OpenSSL.
+
+- **Source:** https://raw.githubusercontent.com/git-for-windows/build-extra/2f63027cca82e0bd0d6aa9d79d52f5a0d7dea8cc/ReleaseNotes.md § Changes since Git for Windows v2.56.0 (September 28th 2026), New Features — "Comes with OpenSSL v3.5.9."; read 2026-11-02
 
 ## Withdrawn identifiers
 

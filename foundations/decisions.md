@@ -5183,8 +5183,8 @@ version is below 1.0 and leans on an alpha of Playwright, a session with no wind
 after an hour, the text of a page shows no motion, and images cost tokens. Risks taken, each a
 hypothesis: a drag may catch a select list instead of a handle; an agent judging motion from a few
 frames may report that a scene works while a person sees it jerk at 16×.
-*Rejected:* Playwright MCP as the first way — more tokens and a setting outside the repository;
-Chrome DevTools MCP and agent-browser — no clock, and their frames unchecked; Puppeteer, Selenium,
+*Rejected:* Playwright MCP as the first way — more tokens and a command sent at each tab where the
+CLI reads one file of the repository; Chrome DevTools MCP and agent-browser — no clock, and their frames unchecked; Puppeteer, Selenium,
 WebdriverIO, Cypress and Stagehand — nothing above Playwright; computer use, direct calls to the
 API, a document model and a person clicking — an agent does not check the running product this way.
 
@@ -5217,8 +5217,9 @@ on a server — much work for the owner; the test server itself — it rests on 
 ### D-256 — Does the local start keep an account between its starts?
 
 The local start keeps no account and no saved game state for a person between its starts: each start
-of the command makes a database of its own and removes the databases of the starts that have ended.
-A person plays on the test server.
+of the command makes a database of its own and removes the databases of the starts it does not find
+running; a start whose port takes a connection and stays silent counts as running. A person plays on
+the test server.
 
 - **Scope:** build-tools · agent-workflow
 - **Based on:** none
@@ -5263,7 +5264,7 @@ grows, the server may have to change, and the variable that would spare that cha
 The local start makes its own certificate, and a person clicks through the browser's warning.
 
 - **Scope:** build-tools · agent-workflow
-- **Based on:** none
+- **Based on:** git-for-windows-openssl
 - **Relations:** derives from D-255
 - **Verification:** an agent compares a change with the decision:
   - complies: a certificate made by the command, and a warning a person passes in the browser
