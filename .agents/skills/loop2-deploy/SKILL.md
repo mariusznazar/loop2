@@ -222,7 +222,7 @@ docker exec loop2 node dist/server/account-block.js unblock <email>
 ```
 
 - **`block`** marks the account blocked and ends its sessions in every browser in the same
-  step. A blocked player who reloads the page sees the forms again; a login with the right
+  step. A blocked player who reloads the page sees the login card again; a login with the right
   password shows `To konto jest zablokowane.`, and a wrong password still shows
   `Nieprawidłowy adres e-mail lub hasło.`. A game already open in a browser plays on until the
   page is reloaded or the player logs out.
