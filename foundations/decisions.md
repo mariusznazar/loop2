@@ -5218,8 +5218,8 @@ on a server — much work for the owner; the test server itself — it rests on 
 
 The local start keeps no account and no saved game state for a person between its starts: each start
 of the command makes a database of its own and removes the databases of the starts it does not find
-running; a start whose port takes a connection and stays silent counts as running. A person plays on
-the test server.
+running; a start whose process number is in use and whose port takes a connection and stays silent
+counts as running. A person plays on the test server.
 
 - **Scope:** build-tools · agent-workflow
 - **Based on:** none

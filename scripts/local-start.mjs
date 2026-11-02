@@ -10,16 +10,18 @@
 //
 // The certificate and its key are made at each start and live only in memory.
 // Each start works in a directory of its own under .runs/local-start/ and removes
-// the directories of the starts that have ended, the databases in them included.
-// That path comes from this file's place alone: no argument and no environment
-// value leads the removal anywhere else, and no file in a directory is read.
+// the directories of the starts it does not find running, their databases
+// included. That path comes from this file's place alone: no argument and no
+// environment value leads the removal anywhere else, and no file in a directory
+// is read.
 //
 // A directory's name says who can prove the start still runs: its process number,
 // its HTTPS port and a mark of its certificate. The proxy listens before the
 // directory exists, so a start on its way up can prove it from the first moment.
 // A number, or a port another program took over and answers on, proves nothing:
-// only the running start shows that certificate. A port that takes a connection
-// and stays silent proves nothing either way, so it counts as running.
+// only the running start shows that certificate. A start whose process number is
+// in use and whose port takes a connection and stays silent counts as running,
+// since silence proves nothing either way.
 //
 // Failures go through the server's own log-line writer, as JSON lines; the lines
 // a person reads to find the game and what `npm run local:stop` did are plain.
