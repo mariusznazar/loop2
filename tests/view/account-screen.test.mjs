@@ -1,9 +1,10 @@
 // The page before and after signing in (task konta-graczy-i-logowanie, To do 1, 3, 4, 5 and 15;
 // spec section 7; D-96, D-97) and with its saved game state (task zapis-stanu-na-serwerze, To do
-// 5–10; spec sections 7 and 8; D-96, D-97, D-208, D-209, D-210, D-211, D-212). These tests run the
-// page's logic on jsdom through tests/view/page-document.mjs (D-264): they prove which elements it
-// builds and what it does with the client's answers, never real events, focus or rendering, which
-// the browser check covers (D-88).
+// 5–10; spec sections 7 and 8; D-96, D-97, D-208, D-209, D-210, D-211, D-212), holding the login
+// card (task logowanie-w-react, To do 2–8; spec decision 3; D-259, D-260, D-261, D-262). These tests
+// run the page's logic on jsdom through tests/view/page-document.mjs (D-264): they prove which
+// elements it builds and what it does with the client's answers, never real events, focus or
+// rendering, which the browser check covers (D-88).
 import { assert, inAct, settle, typeInto, withPage } from "./page-document.mjs";
 import { mock, test } from "node:test";
 import {
@@ -39,7 +40,6 @@ import {
   passwordProblems,
   registrationProblems,
 } from "../../dist/browser/view/account-rules.js";
-import { createAccountScreen } from "../../dist/browser/view/account-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- the page on jsdom --------------------------------------------------------------------------
@@ -103,8 +103,43 @@ function fire(target, type) {
   target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
 }
 
+/** Clicks `target` inside act; React's work on an event shows only through act. */
+function press(target) {
+  assert.ok(target, "what the case presses stands");
+  return inAct(() => fire(target, "click"));
+}
+
+/** Sends `form` inside act, as a browser does; true when the card stopped the page's navigation. */
+function sendForm(form) {
+  assert.ok(form, "the form the case sends stands");
+  return inAct(() => {
+    const { Event } = globalThis.window;
+    const submit = new Event("submit", { bubbles: true, cancelable: true });
+    return !form.dispatchEvent(submit);
+  });
+}
+
 function byClass(root, name) {
   return all(root).filter((element) => element.classList.contains(name));
+}
+
+/** The elements of `tag` under `root`, in the order they stand. */
+const tagged = (root, tag) =>
+  all(root).filter((element) => element.localName === tag);
+
+const inputsIn = (root) => tagged(root, "input");
+
+const formIn = (root) => tagged(root, "form")[0];
+
+/** The card in the page; the page holds one at most. */
+const cardOf = (root) => byClass(root, "account-card")[0];
+
+/** Types into the fields of the form that stands, in their order. */
+async function fillIn(root, ...texts) {
+  const inputs = inputsIn(root);
+  assert.equal(inputs.length, texts.length, "as many fields as texts");
+  for (const [index, text] of texts.entries())
+    await typeInto(inputs[index], text);
 }
 
 /** Whether an element and every ancestor up to the page's body are shown. */
@@ -128,6 +163,30 @@ function shownAlerts(root) {
   );
 }
 
+/** The texts of the page's sentences in `confirmation-notice`, on the card or above the game. */
+const noticeTexts = (root) =>
+  byClass(root, "confirmation-notice")
+    .filter(shown)
+    .map((notice) => notice.textContent);
+
+function assertInOrder(root, elements) {
+  const order = all(root);
+  const places = elements.map((element) => order.indexOf(element));
+  assert.ok(
+    places.every(
+      (place, index) =>
+        place !== -1 && (index === 0 || place > places[index - 1]),
+    ),
+    `in the order asked for: ${places.join(", ")}`,
+  );
+}
+
+/** Every field and button under `root` with whether it is locked, as plain data. */
+const lockOf = (root) =>
+  [...tagged(root, "input"), ...tagged(root, "button")].map(
+    (control) => control.disabled,
+  );
+
 /** The game in the page: its program panel and its headquarters. */
 function gameShown(root) {
   return (
@@ -136,16 +195,22 @@ function gameShown(root) {
   );
 }
 
-/** The two forms by their headings: each form with its inputs, button and warning. */
+/**
+ * The form the card stands in, under the name of its state: its heading, or the selected button of
+ * the switch where it has none (D-259); with its inputs, button and warning.
+ */
 function forms(root) {
   return Object.fromEntries(
     byClass(root, "account-form").map((section) => {
       const heading = childrenOf(section).find(
         (child) => child.localName === "h2",
       );
+      const selected = all(section.parentElement).find(
+        (element) => element.getAttribute("aria-pressed") === "true",
+      );
       const form = all(section).find((element) => element.localName === "form");
       return [
-        heading.textContent,
+        (heading ?? selected).textContent,
         {
           form,
           inputs: all(form).filter((element) => element.localName === "input"),
@@ -239,7 +304,8 @@ function fakeAddress(hash = "") {
 
 async function startPage(held, address = fakeAddress()) {
   const { startApp } = await import("../../dist/browser/view/app.js");
-  startApp(pageDocument().body, held.client, address);
+  // A page opened by a reset link places the card as it starts, and a mount goes through act.
+  await inAct(() => startApp(pageDocument().body, held.client, address));
   await settle();
 }
 
@@ -247,6 +313,13 @@ async function signedOutPage(held) {
   await startPage(held);
   await held.answer("currentAccount", NO_SESSION);
   return forms(pageDocument().body);
+}
+
+/** The signed-out page with „Załóż konto” opened by the switch. */
+async function registerPage(held) {
+  await signedOutPage(held);
+  await press(buttonNamed(pageDocument().body, "Załóż konto"));
+  return forms(pageDocument().body)["Załóż konto"];
 }
 
 // --- the session check ----------------------------------------------------------------------
@@ -279,26 +352,33 @@ test("until the server names an account the page has neither the game nor a runn
   });
 });
 
-test("an answer of no session shows the two forms with visible labels, and no game", async () => {
+// To do 2 and 3, D-259: one form at a time, the card opening on „Zaloguj się” with „Załóż konto”
+// behind the switch.
+test("an answer of no session shows the card on „Zaloguj się”, and the switch „Załóż konto”, each with visible labels, and no game", async () => {
   await onPage(async ({ root, intervals }) => {
     const shownForms = await signedOutPage(heldClient());
-    assert.deepEqual(Object.keys(shownForms), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(shownForms), ["Zaloguj się"]);
     const login = shownForms["Zaloguj się"];
-    const register = shownForms["Załóż konto"];
     assert.deepEqual(
       login.inputs.map((input) => input.type),
       ["text", "password"],
     );
     assert.deepEqual(
+      login.labels.map((label) => label.htmlFor),
+      login.inputs.map((input) => input.id),
+    );
+    await press(buttonNamed(root, "Załóż konto"));
+    const afterSwitch = forms(root);
+    assert.deepEqual(Object.keys(afterSwitch), ["Załóż konto"]);
+    const register = afterSwitch["Załóż konto"];
+    assert.deepEqual(
       register.inputs.map((input) => input.type),
       ["text", "password", "password"],
     );
-    for (const { inputs, labels } of [login, register]) {
-      assert.deepEqual(
-        labels.map((label) => label.htmlFor),
-        inputs.map((input) => input.id),
-      );
-    }
+    assert.deepEqual(
+      register.labels.map((label) => label.htmlFor),
+      register.inputs.map((input) => input.id),
+    );
     assert.equal(gameShown(root), false);
     assert.equal(intervals.size, 0);
     assert.ok(!shown(buttonNamed(root, "Wyloguj")));
@@ -364,35 +444,28 @@ test("an answer that names no account and is not a refusal of the session shows 
 
 // --- the forms ------------------------------------------------------------------------------
 
-test("a sent login waits with both forms locked, and a refusal leaves one warning under it and focus where the player sent it from", async () => {
+// To do 3 and 5: one form stands, so the lock of the whole card holds its field, its button and the
+// switch, where it held two forms.
+test("a sent login waits with the whole card locked, and a refusal leaves one warning under it and focus where the player sent it from", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
-    const { "Zaloguj się": login, "Załóż konto": register } =
-      await signedOutPage(held);
-    const [email, password] = login.inputs;
-    email.value = "ala@example.com";
-    password.value = "dwanaście znaków";
+    const { "Zaloguj się": login } = await signedOutPage(held);
+    const [, password] = login.inputs;
+    await fillIn(root, "ala@example.com", "dwanaście znaków");
     password.focus();
-    fire(login.form, "submit");
-    await settle();
+    await sendForm(login.form);
 
     assert.deepEqual(
       held.calls.map(({ name, args }) => [name, ...args]),
       [["login", "ala@example.com", "dwanaście znaków"]],
     );
     assert.equal(login.button.textContent, "Logowanie…");
-    for (const control of [
-      ...login.inputs,
-      ...register.inputs,
-      login.button,
-      register.button,
-    ])
-      assert.equal(control.disabled, true);
-    // The other form sends nothing while one waits.
-    fire(register.form, "submit");
-    fire(login.form, "submit");
-    await settle();
+    assert.deepEqual(lockOf(cardOf(root)), Array(6).fill(true));
+    // Neither the form nor the switch does anything while it waits.
+    await press(buttonNamed(root, "Załóż konto"));
+    await sendForm(login.form);
     assert.equal(held.calls.length, 1);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
 
     const refusal = {
       ok: false,
@@ -410,13 +483,7 @@ test("a sent login waits with both forms locked, and a refusal leaves one warnin
     );
     assert.ok(shown(login.warning));
     assert.equal(login.button.textContent, "Zaloguj się");
-    for (const control of [
-      ...login.inputs,
-      ...register.inputs,
-      login.button,
-      register.button,
-    ])
-      assert.equal(control.disabled, false);
+    assert.deepEqual(lockOf(cardOf(root)), Array(6).fill(false));
     assert.equal(pageDocument().activeElement, password);
     assert.equal(gameShown(root), false);
   });
@@ -425,14 +492,15 @@ test("a sent login waits with both forms locked, and a refusal leaves one warnin
 test("a lost connection on registration leaves one warning under that form and focus on its button", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
-    const { "Załóż konto": register } = await signedOutPage(held);
-    const [email, password, confirmation] = register.inputs;
-    email.value = "ala@example.com";
-    password.value = "dwanaście znaków";
-    confirmation.value = "dwanaście znaków";
+    const register = await registerPage(held);
+    await fillIn(
+      root,
+      "ala@example.com",
+      "dwanaście znaków",
+      "dwanaście znaków",
+    );
     register.button.focus();
-    fire(register.form, "submit");
-    await settle();
+    await sendForm(register.form);
     assert.equal(register.button.textContent, "Zakładanie konta…");
     await held.answer("register", NO_CONNECTION);
     assert.ok(shown(register.warning));
@@ -443,18 +511,19 @@ test("a lost connection on registration leaves one warning under that form and f
   });
 });
 
-test("a created account enters the game at once, and the forms keep no password", async () => {
+// Spec decision 3: no state outlives dispose(), so a typed password leaves with the card, where it
+// used to stay in an emptied form behind the game; the next card opens with empty fields.
+test("a created account enters the game at once, and the page keeps no password", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
-    const { "Zaloguj się": login, "Załóż konto": register } =
-      await signedOutPage(held);
-    login.inputs[1].value = "stare hasło z logowania";
-    const [email, password, confirmation] = register.inputs;
-    email.value = " Ala@Example.com ";
-    password.value = "dwanaście znaków";
-    confirmation.value = "dwanaście znaków";
-    fire(register.form, "submit");
-    await settle();
+    const register = await registerPage(held);
+    await fillIn(
+      root,
+      " Ala@Example.com ",
+      "dwanaście znaków",
+      "dwanaście znaków",
+    );
+    await sendForm(register.form);
     assert.deepEqual(held.calls[0].args, [
       " Ala@Example.com ",
       "dwanaście znaków",
@@ -465,21 +534,29 @@ test("a created account enters the game at once, and the forms keep no password"
     assert.equal(gameShown(root), true);
     assert.equal(intervals.size, GAME_INTERVALS);
     assert.deepEqual(forms(root), {});
-    for (const input of [...login.inputs, ...register.inputs])
-      if (input.type === "password") assert.equal(input.value, "");
+    assert.equal(
+      inputsIn(root).some((input) => input.type === "password"),
+      false,
+    );
+
+    fire(buttonNamed(root, "Wyloguj"), "click");
+    await settle();
+    await held.answer("saveGame", { kind: "saved", revision: 1 });
+    await held.answer("logout", { ok: true, value: null });
+    assert.deepEqual(
+      inputsIn(root).map((input) => input.value),
+      ["", ""],
+    );
   });
 });
 
 test("a registration the server would refuse sends nothing and marks the field at fault", async () => {
-  await onPage(async () => {
+  await onPage(async ({ root }) => {
     const held = heldClient();
-    const { "Załóż konto": register } = await signedOutPage(held);
-    const [email, password, confirmation] = register.inputs;
-    email.value = "ala@example.com";
-    password.value = "za krótkie";
-    confirmation.value = "za krótkie";
-    fire(register.form, "submit");
-    await settle();
+    const register = await registerPage(held);
+    const [email, password] = register.inputs;
+    await fillIn(root, "ala@example.com", "za krótkie", "za krótkie");
+    await sendForm(register.form);
     assert.equal(held.calls.length, 0);
     assert.equal(password.getAttribute("aria-invalid"), "true");
     assert.equal(email.getAttribute("aria-invalid"), null);
@@ -556,26 +633,24 @@ const noteShown = (form) => form.note !== undefined && shown(form.note);
 /** The signed-out page with the request form opened by its button. */
 async function requestPage(held) {
   await signedOutPage(held);
-  fire(buttonNamed(pageDocument().body, "Nie pamiętam hasła"), "click");
-  await settle();
+  await press(buttonNamed(pageDocument().body, "Nie pamiętam hasła"));
   return forms(pageDocument().body)["Nie pamiętam hasła"];
 }
 
-test("the button under „Zaloguj się” puts one form with an empty address, „Wyślij odnośnik” and „Wróć do logowania” in place of both forms", async () => {
+// To do 2, D-96: the button puts the form in the card, in place of the one form that stands.
+test("the button under „Zaloguj się” puts in its place one form with an empty address, „Wyślij odnośnik” and „Wróć do logowania”", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     const before = await signedOutPage(held);
-    assert.deepEqual(Object.keys(before), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(before), ["Zaloguj się"]);
     const opener = buttonNamed(root, "Nie pamiętam hasła");
     assert.ok(opener, "the button stands under „Zaloguj się”");
     assert.ok(before["Zaloguj się"].form.parentElement.contains(opener));
     assert.equal(before["Zaloguj się"].form.contains(opener), false);
-    // What was typed in the two forms must not come back in the new state.
-    before["Zaloguj się"].inputs[0].value = "ala@example.com";
-    before["Załóż konto"].inputs[1].value = "dwanaście znaków";
+    // What was typed in the form must not come back in the new state.
+    await fillIn(root, "ala@example.com", "dwanaście znaków");
 
-    fire(opener, "click");
-    await settle();
+    await press(opener);
     const after = forms(root);
     assert.deepEqual(Object.keys(after), ["Nie pamiętam hasła"]);
     const request = after["Nie pamiętam hasła"];
@@ -595,13 +670,12 @@ test("the button under „Zaloguj się” puts one form with an empty address, �
 });
 
 test("a request waits with its field and every button of the screen locked, and sends nothing twice", async () => {
-  await onPage(async () => {
+  await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
-    request.inputs[0].value = "ala@example.com";
+    await fillIn(root, "ala@example.com");
     request.inputs[0].focus();
-    fire(request.form, "submit");
-    await settle();
+    await sendForm(request.form);
 
     assert.deepEqual(
       held.calls.map(({ name, args }) => [name, ...args]),
@@ -614,25 +688,22 @@ test("a request waits with its field and every button of the screen locked, and 
       buttonNamed(pageDocument().body, "Wróć do logowania").disabled,
       true,
     );
-    fire(request.form, "submit");
-    await settle();
+    await sendForm(request.form);
     assert.equal(held.calls.length, 1);
   });
 });
 
-test("while a login waits, the button „Nie pamiętam hasła” is locked with the two forms and opens nothing", async () => {
+// To do 3: one form stands, so the button locks with it.
+test("while a login waits, the button „Nie pamiętam hasła” is locked with the form and opens nothing", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { "Zaloguj się": login } = await signedOutPage(held);
-    login.inputs[0].value = "ala@example.com";
-    login.inputs[1].value = "dwanaście znaków";
-    fire(login.form, "submit");
-    await settle();
+    await fillIn(root, "ala@example.com", "dwanaście znaków");
+    await sendForm(login.form);
     const opener = buttonNamed(root, "Nie pamiętam hasła");
     assert.equal(opener.disabled, true);
-    fire(opener, "click");
-    await settle();
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    await press(opener);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
 
     await held.answer("login", NO_CONNECTION);
     assert.equal(opener.disabled, false);
@@ -640,14 +711,13 @@ test("while a login waits, the button „Nie pamiętam hasła” is locked with 
 });
 
 test("an address not written as name@domain gets its sentence under the field, nothing is sent and the field takes focus", async () => {
-  await onPage(async () => {
+  await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
     const [email] = request.inputs;
-    email.value = "ala.example.com";
+    await fillIn(root, "ala.example.com");
     request.button.focus();
-    fire(request.form, "submit");
-    await settle();
+    await sendForm(request.form);
 
     assert.equal(held.calls.length, 0);
     assert.equal(email.getAttribute("aria-invalid"), "true");
@@ -668,10 +738,9 @@ test("a well-formed address gets the one sentence of the reset under the form in
     const held = heldClient();
     const request = await requestPage(held);
     const [email] = request.inputs;
-    email.value = "  nieznany@example.com ";
+    await fillIn(root, "  nieznany@example.com ");
     email.focus();
-    fire(request.form, "submit");
-    await settle();
+    await sendForm(request.form);
     await held.answer("requestPasswordReset", REQUESTED);
 
     assert.ok(request.note, "the note stands in the form");
@@ -689,9 +758,8 @@ test("a well-formed address gets the one sentence of the reset under the form in
     assert.equal(pageDocument().activeElement, email);
 
     // Asking again removes the sentence while the new request is under way.
-    email.value = "ala@example.com";
-    fire(request.form, "submit");
-    await settle();
+    await fillIn(root, "ala@example.com");
+    await sendForm(request.form);
     assert.equal(noteShown(request), false);
   });
 });
@@ -701,10 +769,9 @@ test("a refusal or a lost connection on a request stands as the form's warning, 
     const held = heldClient();
     const request = await requestPage(held);
     const [email] = request.inputs;
-    email.value = "ala@example.com";
+    await fillIn(root, "ala@example.com");
     email.focus();
-    fire(request.form, "submit");
-    await settle();
+    await sendForm(request.form);
     await held.answer("requestPasswordReset", REQUEST_REFUSED);
     assert.ok(shown(request.warning));
     assert.equal(request.warning.textContent, REQUEST_REFUSED.failure.message);
@@ -715,8 +782,7 @@ test("a refusal or a lost connection on a request stands as the form's warning, 
     assert.equal(pageDocument().activeElement, email);
 
     request.button.focus();
-    fire(request.form, "submit");
-    await settle();
+    await sendForm(request.form);
     assert.equal(shown(request.warning), false);
     await held.answer("requestPasswordReset", NO_CONNECTION);
     assert.equal(request.warning.textContent, NO_CONNECTION.failure.message);
@@ -726,77 +792,32 @@ test("a refusal or a lost connection on a request stands as the form's warning, 
   });
 });
 
-test("„Wróć do logowania” brings back both forms, and nothing typed, no sentence and no warning survives a second visit", async () => {
+// To do 2, D-96: „Wróć do logowania” brings back „Zaloguj się”, the one form that goes back to it.
+test("„Wróć do logowania” brings back „Zaloguj się”, and nothing typed, no sentence and no warning survives a second visit", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
-    request.inputs[0].value = "ala@example.com";
-    fire(request.form, "submit");
-    await settle();
+    await fillIn(root, "ala@example.com");
+    await sendForm(request.form);
     await held.answer("requestPasswordReset", REQUESTED);
-    request.inputs[0].value = "druga@example.com";
-    fire(request.form, "submit");
-    await settle();
+    await fillIn(root, "druga@example.com");
+    await sendForm(request.form);
     await held.answer("requestPasswordReset", REQUEST_REFUSED);
-    request.inputs[0].value = "trzecia@example.com";
+    await fillIn(root, "trzecia@example.com");
     assert.ok(shown(request.warning));
 
-    fire(buttonNamed(root, "Wróć do logowania"), "click");
-    await settle();
+    await press(buttonNamed(root, "Wróć do logowania"));
     const back = forms(root);
-    assert.deepEqual(Object.keys(back), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(back), ["Zaloguj się"]);
     assert.equal(pageDocument().activeElement, back["Zaloguj się"].inputs[0]);
-    for (const input of [
-      ...back["Zaloguj się"].inputs,
-      ...back["Załóż konto"].inputs,
-    ])
+    for (const input of back["Zaloguj się"].inputs)
       assert.equal(input.value, "");
 
-    fire(buttonNamed(root, "Nie pamiętam hasła"), "click");
-    await settle();
+    await press(buttonNamed(root, "Nie pamiętam hasła"));
     const again = forms(root)["Nie pamiętam hasła"];
     assert.equal(again.inputs[0].value, "");
     assert.equal(shown(again.warning), false);
     assert.equal(noteShown(again), false);
-  });
-});
-
-test("reset from outside empties the request form, removes its sentence and shows the two forms, and a request answered afterwards is ignored", async () => {
-  await onPage(async ({ root }) => {
-    const held = heldClient();
-    const screen = createAccountScreen(held.client, () =>
-      assert.fail("no account was signed in"),
-    );
-    root.append(screen.element);
-    const opener = buttonNamed(root, "Nie pamiętam hasła");
-    fire(opener, "click");
-    const request = forms(root)["Nie pamiętam hasła"];
-    request.inputs[0].value = "ala@example.com";
-    fire(request.form, "submit");
-    await settle();
-    assert.equal(request.button.textContent, "Wysyłanie…");
-
-    screen.reset();
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
-    assert.equal(request.inputs[0].value, "");
-    assert.equal(request.button.textContent, "Wyślij odnośnik");
-    assert.equal(request.inputs[0].disabled, false);
-
-    await held.answer("requestPasswordReset", REQUESTED);
-    assert.equal(noteShown(request), false);
-    assert.equal(request.inputs[0].value, "");
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
-
-    // The sentence of a finished request goes with a reset too.
-    fire(opener, "click");
-    request.inputs[0].value = "ala@example.com";
-    fire(request.form, "submit");
-    await settle();
-    await held.answer("requestPasswordReset", REQUESTED);
-    assert.equal(noteShown(request), true);
-    screen.reset();
-    assert.equal(noteShown(request), false);
-    assert.equal(request.note.textContent, "");
   });
 });
 
@@ -829,7 +850,8 @@ async function signedInPage(held) {
   return buttonNamed(pageDocument().body, "Wyloguj");
 }
 
-test("a confirmed logout or an expired session removes the game and its clock and brings back the forms", async () => {
+// To do 3 and 8; the page calls focus() here, as it called it on the forms (spec decision 3).
+test("a confirmed logout or an expired session removes the game and its clock and brings back the card, with focus in its first field", async () => {
   for (const [name, answer] of Object.entries({
     "a confirmed logout": { ok: true, value: null },
     "an expired session": NO_SESSION,
@@ -852,9 +874,11 @@ test("a confirmed logout or an expired session removes the game and its clock an
       await held.answer("logout", answer);
       assert.equal(gameShown(root), false, name);
       assert.equal(intervals.size, 0, name);
-      assert.deepEqual(
-        Object.keys(forms(root)),
-        ["Zaloguj się", "Załóż konto"],
+      const shownForms = forms(root);
+      assert.deepEqual(Object.keys(shownForms), ["Zaloguj się"], name);
+      assert.equal(
+        pageDocument().activeElement,
+        shownForms["Zaloguj się"].inputs[0],
         name,
       );
       assert.ok(!shown(logout), name);
@@ -895,40 +919,11 @@ test("signing in and out again and again keeps at most one clock running", async
       await held.answer("saveGame", { kind: "saved", revision: round + 1 });
       await held.answer("logout", { ok: true, value: null });
       assert.equal(intervals.size, 0);
-      const { "Zaloguj się": login } = forms(root);
-      login.inputs[0].value = "ala@example.com";
-      login.inputs[1].value = "dwanaście znaków";
-      fire(login.form, "submit");
-      await settle();
-      await held.answer("login", ACCOUNT);
+      await signIn(held, ACCOUNT);
       await held.answer("loadSavedGame", NO_SAVE);
     }
     assert.equal(intervals.size, GAME_INTERVALS);
     assert.equal(byClass(root, "columns").length, 1);
-  });
-});
-
-test("an answer that comes after the screen was left is ignored", async () => {
-  await onPage(async () => {
-    const { createAccountScreen } =
-      await import("../../dist/browser/view/account-screen.js");
-    const held = heldClient();
-    const signedIn = [];
-    const screen = createAccountScreen(held.client, (account) =>
-      signedIn.push(account),
-    );
-    pageDocument().body.append(screen.element);
-    const { "Zaloguj się": login } = forms(pageDocument().body);
-    login.inputs[0].value = "ala@example.com";
-    login.inputs[1].value = "dwanaście znaków";
-    fire(login.form, "submit");
-    await settle();
-    screen.reset();
-    assert.equal(login.inputs[1].value, "");
-    assert.equal(login.button.disabled, false);
-    await held.answer("login", ACCOUNT);
-    assert.deepEqual(signedIn, []);
-    assert.equal(login.button.textContent, "Zaloguj się");
   });
 });
 
@@ -970,12 +965,7 @@ test("a reload or sign-in with an unconfirmed address shows the row after the ti
     assert.equal(childrenOf(header).includes(row), false);
 
     // Signing in again with the same account brings the row back, once.
-    const { "Zaloguj się": login } = forms(root);
-    login.inputs[0].value = "ala@example.com";
-    login.inputs[1].value = "dwanaście znaków";
-    fire(login.form, "submit");
-    await settle();
-    await held.answer("login", UNCONFIRMED_ACCOUNT);
+    await signIn(held, UNCONFIRMED_ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
     assert.equal(byClass(header, "email-status").length, 1);
     assert.equal(
@@ -1004,13 +994,14 @@ test("a created account starts the row with the outcome of its first message", a
   for (const [message, sentence] of Object.entries(outcomes)) {
     await onPage(async ({ root }) => {
       const held = heldClient();
-      const { "Załóż konto": register } = await signedOutPage(held);
-      const [email, password, confirmation] = register.inputs;
-      email.value = "ala@example.com";
-      password.value = "dwanaście znaków";
-      confirmation.value = "dwanaście znaków";
-      fire(register.form, "submit");
-      await settle();
+      const register = await registerPage(held);
+      await fillIn(
+        root,
+        "ala@example.com",
+        "dwanaście znaków",
+        "dwanaście znaków",
+      );
+      await sendForm(register.form);
       await held.answer("register", {
         ok: true,
         value: {
@@ -1069,6 +1060,13 @@ function noticeOf(root) {
   return byClass(root, "confirmation-notice").filter(shown);
 }
 
+/** The page's sentence in the card, above its switch and form (To do 6, D-261). */
+function assertAboveTheForm(root, notice) {
+  const card = cardOf(root);
+  assert.ok(card?.contains(notice), "the sentence stands in the card");
+  assertInOrder(card, [notice, tagged(card, "button")[0], formIn(card)]);
+}
+
 test("with a token in the address the page confirms first, saying so, and checks the session only after the answer", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -1115,11 +1113,12 @@ test("the result stands as one sentence above the game for a signed-in player an
     await held.answer("saveGame", { kind: "saved", revision: 1 });
     await held.answer("logout", CONFIRMED);
     assert.equal(noticeOf(root).length, 0);
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
   });
 });
 
-test("a refused link stands in warning above the forms for a player who is not signed in, and the fragment goes", async () => {
+// To do 6, D-261: the sentence stands in the card, above the switch.
+test("a refused link stands in warning above the form in the card for a player who is not signed in, and the fragment goes", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -1130,8 +1129,8 @@ test("a refused link stands in warning above the forms for a player who is not s
     assert.equal(noticeOf(root).length, 1);
     assert.equal(notice.textContent, "Odnośnik jest nieważny albo wygasł.");
     assert.equal(notice.classList.contains("warning"), true);
-    assert.equal(childrenOf(notice.parentElement).indexOf(notice), 0);
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assertAboveTheForm(root, notice);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
     assert.equal(address.cleared, 1);
   });
 });
@@ -1247,9 +1246,9 @@ function resetAddress(root) {
 const resetFormOf = (root) => forms(root)["Ustaw nowe hasło"];
 
 /** Types the new password twice into the form. */
-function fillReset(form, password = NEW_PASSWORD, repeated = password) {
-  form.inputs[0].value = password;
-  form.inputs[1].value = repeated;
+async function fillReset(form, password = NEW_PASSWORD, repeated = password) {
+  await typeInto(form.inputs[0], password);
+  await typeInto(form.inputs[1], repeated);
 }
 
 /** The sentences the page puts above its screen, in order, with their roles. */
@@ -1326,10 +1325,9 @@ test("a sent form waits with its fields and „Anuluj” locked, sends the token
     const address = fakeAddress(RESET_LINK);
     await startPage(held, address);
     const form = resetFormOf(root);
-    fillReset(form);
+    await fillReset(form);
     form.inputs[0].focus();
-    fire(form.form, "submit");
-    await settle();
+    await sendForm(form.form);
 
     assert.deepEqual(
       held.calls.map(({ name, args }) => [name, ...args]),
@@ -1344,9 +1342,8 @@ test("a sent form waits with its fields and „Anuluj” locked, sends the token
     const cancel = buttonNamed(root, "Anuluj");
     assert.equal(cancel.disabled, true);
     // A second send and a click on the locked „Anuluj” do nothing.
-    fire(form.form, "submit");
-    fire(cancel, "click");
-    await settle();
+    await sendForm(form.form);
+    await press(cancel);
     assert.equal(held.calls.length, 1);
     assert.equal(address.cleared, 0);
     assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"]);
@@ -1360,9 +1357,8 @@ test("a password the server would refuse sends nothing, marks the field at fault
     await startPage(held, address);
     const form = resetFormOf(root);
 
-    fillReset(form, "krótkie", "krótkie");
-    fire(form.form, "submit");
-    await settle();
+    await fillReset(form, "krótkie", "krótkie");
+    await sendForm(form.form);
     assert.equal(
       fieldMessage(form.inputs[0]),
       "Hasło musi mieć od 12 do 128 znaków.",
@@ -1370,9 +1366,8 @@ test("a password the server would refuse sends nothing, marks the field at fault
     assert.equal(fieldMessage(form.inputs[1]), null);
     assert.equal(pageDocument().activeElement, form.inputs[0]);
 
-    fillReset(form, NEW_PASSWORD, "inne hasło 123");
-    fire(form.form, "submit");
-    await settle();
+    await fillReset(form, NEW_PASSWORD, "inne hasło 123");
+    await sendForm(form.form);
     assert.equal(fieldMessage(form.inputs[0]), null);
     assert.equal(
       fieldMessage(form.inputs[1]),
@@ -1388,28 +1383,30 @@ test("a password the server would refuse sends nothing, marks the field at fault
   });
 });
 
-test("a change clears the fragment first, then shows the forms with the sentence in positive above them, asks about no session and focuses the address field", async () => {
+// To do 6 and 3, D-261, spec decision 3: the card of the link closes and one new card opens on
+// „Zaloguj się” with the sentence in it, above its switch.
+test("a change clears the fragment first, then shows a new card with the sentence in positive above its form, asks about no session and focuses the address field", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const address = resetAddress(root);
     await startPage(held, address);
     const form = resetFormOf(root);
-    fillReset(form);
-    fire(form.form, "submit");
-    await settle();
+    await fillReset(form);
+    await sendForm(form.form);
     await held.answer("setPassword", CHANGED);
 
     assert.deepEqual(address.formAtClear, [true]);
     assert.equal(address.cleared, 1);
     assert.equal(address.hash(), "");
     assert.deepEqual(held.calls, []);
+    assert.equal(byClass(root, "account-card").length, 1, "one card stands");
     const shownForms = forms(root);
-    assert.deepEqual(Object.keys(shownForms), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(shownForms), ["Zaloguj się"]);
     assert.deepEqual(pageSentences(root), [
       ["Hasło zmienione. Zaloguj się nowym hasłem.", "positive"],
     ]);
     const [notice] = noticeOf(root);
-    assert.equal(childrenOf(notice.parentElement).indexOf(notice), 0);
+    assertAboveTheForm(root, notice);
     assert.equal(
       pageDocument().activeElement,
       shownForms["Zaloguj się"].inputs[0],
@@ -1419,7 +1416,8 @@ test("a change clears the fragment first, then shows the forms with the sentence
   });
 });
 
-test("a refused link, whatever its reason, clears the fragment first and then checks the session: the forms or the game with the sentence in warning above them", async () => {
+// To do 6, D-261: where the check leads to the forms, the sentence stands in the card.
+test("a refused link, whatever its reason, clears the fragment first and then checks the session: the card or the game with the sentence in warning above the form or the game", async () => {
   const reasons = {
     "an unknown or spent link": "Odnośnik jest nieważny albo wygasł.",
     "a link of a blocked account": "Konto jest zablokowane.",
@@ -1434,9 +1432,8 @@ test("a refused link, whatever its reason, clears the fragment first and then ch
       const address = resetAddress(root);
       await startPage(held, address);
       const form = resetFormOf(root);
-      fillReset(form);
-      fire(form.form, "submit");
-      await settle();
+      await fillReset(form);
+      await sendForm(form.form);
       await held.answer("setPassword", refused);
       assert.deepEqual(address.formAtClear, [true], name);
       assert.equal(address.hash(), "", name);
@@ -1446,25 +1443,21 @@ test("a refused link, whatever its reason, clears the fragment first and then ch
         name,
       );
       await held.answer("currentAccount", NO_SESSION);
-      assert.deepEqual(Object.keys(forms(root)), [
-        "Zaloguj się",
-        "Załóż konto",
-      ]);
+      assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
       assert.deepEqual(
         pageSentences(root),
         [["Odnośnik jest nieważny albo wygasł.", "warning"]],
         name,
       );
       const [notice] = noticeOf(root);
-      assert.equal(childrenOf(notice.parentElement).indexOf(notice), 0, name);
+      assertAboveTheForm(root, notice);
     });
     await onPage(async ({ root }) => {
       const held = heldClient();
       await startPage(held, fakeAddress(RESET_LINK));
       const form = resetFormOf(root);
-      fillReset(form);
-      fire(form.form, "submit");
-      await settle();
+      await fillReset(form);
+      await sendForm(form.form);
       await held.answer("setPassword", refused);
       await held.answer("currentAccount", ACCOUNT);
       await held.answer("loadSavedGame", NO_SAVE);
@@ -1485,8 +1478,7 @@ test("„Anuluj” clears the fragment first and opens the page as usual with th
     const held = heldClient();
     const address = resetAddress(root);
     await startPage(held, address);
-    fire(buttonNamed(root, "Anuluj"), "click");
-    await settle();
+    await press(buttonNamed(root, "Anuluj"));
     assert.deepEqual(address.formAtClear, [true]);
     assert.equal(address.hash(), "");
     assert.deepEqual(
@@ -1494,14 +1486,13 @@ test("„Anuluj” clears the fragment first and opens the page as usual with th
       ["currentAccount"],
     );
     await held.answer("currentAccount", NO_SESSION);
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
     assert.deepEqual(pageSentences(root), []);
   });
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(RESET_LINK));
-    fire(buttonNamed(root, "Anuluj"), "click");
-    await settle();
+    await press(buttonNamed(root, "Anuluj"));
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
     assert.equal(gameShown(root), true);
@@ -1516,10 +1507,9 @@ test("a failure that is no change and no refused link keeps the form, the fragme
       const address = fakeAddress(RESET_LINK);
       await startPage(held, address);
       const form = resetFormOf(root);
-      fillReset(form);
+      await fillReset(form);
       form.inputs[1].focus();
-      fire(form.form, "submit");
-      await settle();
+      await sendForm(form.form);
       await held.answer("setPassword", failure);
 
       assert.deepEqual(Object.keys(forms(root)), ["Ustaw nowe hasło"], name);
@@ -1543,8 +1533,7 @@ test("a failure that is no change and no refused link keeps the form, the fragme
 
       // The link still works: the same token goes out again, from the button this time.
       form.button.focus();
-      fire(form.form, "submit");
-      await settle();
+      await sendForm(form.form);
       assert.deepEqual(
         held.calls.map(({ name: call, args }) => [call, ...args]),
         [["setPassword", RESET_TOKEN, NEW_PASSWORD, NEW_PASSWORD]],
@@ -1607,11 +1596,9 @@ function argsOf(held, name) {
 }
 
 async function signIn(held, account) {
-  const { "Zaloguj się": login } = forms(pageDocument().body);
-  login.inputs[0].value = account.value.email;
-  login.inputs[1].value = "dwanaście znaków";
-  fire(login.form, "submit");
-  await settle();
+  const page = pageDocument().body;
+  await fillIn(page, account.value.email, "dwanaście znaków");
+  await sendForm(forms(page)["Zaloguj się"].form);
   await held.answer("login", account);
 }
 
@@ -1642,7 +1629,7 @@ test("a 401 on a save keeps the state, and a sign-in to the same account sends i
     const kept = await expiredPage(held);
     assert.equal(gameShown(root), false);
     assert.equal(intervals.size, 0, "the game's time stops");
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
     assert.deepEqual(
       shownAlerts(root).map((alert) => alert.textContent),
       [EXPIRED],
@@ -2739,7 +2726,7 @@ test("a failed or uncertain answer for the saved game state shows the warning wi
     await startPage(held);
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", NO_SESSION);
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
     assert.equal(gameShown(root), false);
   });
 });
@@ -2911,7 +2898,8 @@ async function loggingOutPage(held) {
 }
 
 // To do 10; D-97. Catches a session ended after a failed save, a logout held back by a refusal
-// that is for good, the update sentence missing, and the expiry path skipped at logout.
+// that is for good, the update sentence missing, and the expiry path skipped at logout. To do 3 and
+// 6, D-261: one form stands, and the sentence stands in the card, in `confirmation-notice`.
 test("„Wyloguj” saves first and goes on, stays or ends each way its save's outcome gives", async () => {
   const outcomes = [
     ["saved", { kind: "saved", revision: 5 }, null],
@@ -2930,15 +2918,11 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
       assert.equal(gameShown(root), false, name);
       assert.equal(intervals.size, 0, name);
       assert.deepEqual(
-        pageNotices(root),
+        noticeTexts(root),
         sentence === null ? [] : [sentence],
         name,
       );
-      assert.deepEqual(
-        Object.keys(forms(root)),
-        ["Zaloguj się", "Załóż konto"],
-        name,
-      );
+      assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"], name);
     });
   }
 
@@ -2966,7 +2950,7 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
     await loggingOutPage(held);
     await held.answer("saveGame", { kind: "signed-out" });
     assert.deepEqual(waitingCalls(held), [], "no logout without a session");
-    assert.deepEqual(pageNotices(root), [EXPIRED]);
+    assert.deepEqual(noticeTexts(root), [EXPIRED]);
     await signIn(held, ACCOUNT);
     assert.deepEqual(argsOf(held, "saveGame"), [
       submission({ ...passing(), paused: true }, 4),
@@ -2975,8 +2959,8 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
 });
 
 // D-97, D-210. Catches a stopped tab trying to save before logout, and the forms without the
-// sentence of the update.
-test("a tab that stopped saving as outdated logs out without a save and shows the update sentence above the forms", async () => {
+// sentence of the update. To do 6, D-261: the sentence stands in the card.
+test("a tab that stopped saving as outdated logs out without a save and shows the update sentence above the form in the card", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -2992,13 +2976,15 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
     await settle();
     assert.deepEqual(waitingCalls(held), ["logout"]);
     await held.answer("logout", { ok: true, value: null });
-    assert.deepEqual(pageNotices(root), [OUTDATED]);
-    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się", "Załóż konto"]);
+    assert.deepEqual(noticeTexts(root), [OUTDATED]);
+    assertAboveTheForm(root, noticeOf(root)[0]);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
   });
 });
 
 // D-97, D-211; the concern of slice 5. Catches the expiry path started while the logout's request
-// is under way, and a logout that does not happen leaving the save's 401 unanswered.
+// is under way, and a logout that does not happen leaving the save's 401 unanswered. To do 6, D-261:
+// the sentence stands in the card.
 test("a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, an uncertain one then takes the expiry path", async () => {
   for (const [name, answer] of [
     ["a confirmed logout", { ok: true, value: null }],
@@ -3022,11 +3008,11 @@ test("a save that finds no session while the logout's request is under way waits
       await held.answer("logout", answer);
       assert.equal(gameShown(root), false, name);
       if (answer.ok) {
-        assert.deepEqual(pageNotices(root), [], name);
+        assert.deepEqual(noticeTexts(root), [], name);
         await signIn(held, ACCOUNT);
         assert.deepEqual(waitingCalls(held), ["loadSavedGame"], name);
       } else {
-        assert.deepEqual(pageNotices(root), [EXPIRED], name);
+        assert.deepEqual(noticeTexts(root), [EXPIRED], name);
         await signIn(held, ACCOUNT);
         assert.deepEqual(
           argsOf(held, "saveGame"),
@@ -3228,10 +3214,172 @@ test("a manual map run hides the report with the headquarters, and „Zakończ�
   });
 });
 
+// --- the page around the card -------------------------------------------------------------------
+// Task logowanie-w-react, To do 6 and 8; spec decision 3; D-261, D-262.
+
+/** The page's own three parts, in the body beside the card. */
+function pageParts(root) {
+  const child = (name) =>
+    childrenOf(root).find((element) => element.localName === name);
+  return [child("header"), child("main"), child("footer")];
+}
+
+/** Whether the header, the place of the screen and the footer show, as the same word for each. */
+const partsShown = (root) => pageParts(root).map(shown);
+
+/** The waiting text that shows, or undefined. */
+const waitingText = (root) =>
+  byClass(root, "session-check-text").find(shown)?.textContent;
+
+// To do 8, D-262. Catches the card inside `main` or under the header, the footer left beside the
+// card, and a waiting screen that loses the header and the footer.
+test("the card stands alone in the page's body, and the screens before and after it keep the header and the footer", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    assert.equal(waitingText(root), "Sprawdzanie logowania…");
+    assert.deepEqual(partsShown(root), [true, true, true]);
+
+    await held.answer("currentAccount", NO_SESSION);
+    const card = byClass(root, "account-card-screen")[0];
+    assert.ok(card, "the card stands");
+    assert.equal(card.parentElement, root);
+    assert.ok(shown(card));
+    assert.deepEqual(partsShown(root), [false, false, false]);
+    assert.equal(tagged(root, "h1").filter(shown).length, 1, "one name shows");
+
+    await signIn(held, ACCOUNT);
+    assert.equal(cardOf(root), undefined);
+    assert.equal(card.parentElement, null);
+    assert.equal(waitingText(root), "Sprawdzanie logowania…");
+    assert.deepEqual(partsShown(root), [true, true, true]);
+
+    await held.answer("loadSavedGame", NO_SAVE);
+    assert.equal(gameShown(root), true);
+    assert.deepEqual(partsShown(root), [true, true, true]);
+  });
+});
+
+// To do 2 and 8, D-96, D-225, D-262; spec decision 3, on what closes a card. Catches a card left
+// standing over a waiting screen, or under it the page still hidden.
+test("the card of a reset link stands alone at once, and each way out of it shows the page again", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(RESET_LINK));
+    assert.deepEqual(partsShown(root), [false, false, false]);
+    assert.ok(shown(cardOf(root)));
+
+    await press(buttonNamed(root, "Anuluj"));
+    assert.equal(cardOf(root), undefined);
+    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.equal(waitingText(root), "Sprawdzanie logowania…");
+
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", NO_SAVE);
+    assert.equal(gameShown(root), true);
+    assert.deepEqual(partsShown(root), [true, true, true]);
+  });
+
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(RESET_LINK));
+    const form = resetFormOf(root);
+    await fillReset(form);
+    await sendForm(form.form);
+    await held.answer("setPassword", INVALID_LINK);
+    assert.equal(cardOf(root), undefined);
+    assert.equal(waitingText(root), "Sprawdzanie logowania…");
+    assert.deepEqual(partsShown(root), [true, true, true]);
+  });
+});
+
+// D-96, D-213; spec decision 3. Catches a failed load of the kept state that leaves the card
+// standing, its sentence and „Spróbuj ponownie” out of sight, since no waiting screen comes first.
+test("an error of the code in the load of the kept state closes the card, so its warning and retry show", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await expiredPage(held);
+    const fault = faultInLoad("the-quoted-value");
+    try {
+      await signIn(held, ACCOUNT);
+    } finally {
+      fault.end();
+    }
+    assert.equal(cardOf(root), undefined);
+    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.ok(shown(buttonNamed(root, "Spróbuj ponownie")));
+  });
+});
+
+// D-211; spec decision 3. Catches a sign-in with a kept state, the one that shows the game with no
+// waiting screen before it, leaving the card over the game.
+test("a sign-in that goes straight back to the kept game closes the card", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await expiredPage(held);
+    await signIn(held, ACCOUNT);
+    assert.equal(cardOf(root), undefined);
+    assert.equal(gameShown(root), true);
+    assert.deepEqual(partsShown(root), [true, true, true]);
+  });
+});
+
+// Spec decision 3: focus() is called after a confirmed logout and after a password was set, and no
+// other opening of the card moves focus. Catches a call of focus() added to `showForms` itself.
+test("a card opened by the session check or by an expired save takes no focus", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    await signedOutPage(held);
+    assert.equal(pageDocument().activeElement, pageDocument().body);
+  });
+  await onPage(async () => {
+    const held = heldClient();
+    await expiredPage(held);
+    assert.equal(pageDocument().activeElement, pageDocument().body);
+  });
+});
+
+// To do 6, D-261: „Gra została zaktualizowana. Odśwież stronę.” stays when the visitor switches, and
+// a sentence leaves at a change between the card and the game. Catches a warning in another role,
+// a sentence lost at a press, and a pending sentence that also comes back above the game.
+test("the page's sentence stays in the card through a press of the switch, in warning as an alert, and leaves when the game comes", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await loggingOutPage(held);
+    await held.answer("saveGame", { kind: "outdated" });
+    await held.answer("logout", { ok: true, value: null });
+    const [notice] = noticeOf(root);
+    assert.equal(notice.textContent, OUTDATED);
+    assert.equal(notice.getAttribute("role"), "alert");
+    assert.equal(notice.classList.contains("warning"), true);
+
+    await press(buttonNamed(root, "Załóż konto"));
+    assert.deepEqual(noticeTexts(root), [OUTDATED]);
+    assertAboveTheForm(root, noticeOf(root)[0]);
+
+    await press(buttonNamed(root, "Zaloguj się"));
+    await signIn(held, ACCOUNT);
+    assert.deepEqual(noticeTexts(root), []);
+    await held.answer("loadSavedGame", NO_SAVE);
+    assert.deepEqual(pageSentences(root), []);
+  });
+
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(LINK));
+    await held.answer("confirmEmail", CONFIRMED);
+    await held.answer("currentAccount", NO_SESSION);
+    assert.deepEqual(noticeTexts(root), ["Adres e-mail potwierdzony."]);
+    await signIn(held, ACCOUNT);
+    await held.answer("loadSavedGame", NO_SAVE);
+    assert.equal(gameShown(root), true);
+    assert.deepEqual(pageSentences(root), []);
+  });
+});
+
 // --- the login card -----------------------------------------------------------------------------
 // Task logowanie-w-react, To do 1–7; spec decisions 3 and 8; D-96, D-222, D-225, D-259, D-260,
-// D-261. These cases drive the card through createAccountCard alone, as the page will. React's work
-// on an event shows only through act, so a press and a send go through inAct here.
+// D-261. These cases drive the card through createAccountCard alone, as the page does.
 
 const GAME_NAME = "Loop";
 // The task, To do 1.
@@ -3267,30 +3415,6 @@ const REGISTERED = {
   ok: true,
   value: { ...UNCONFIRMED_ACCOUNT.value, confirmationMessage: "limited" },
 };
-
-/** Clicks `target` inside act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
-}
-
-/** Sends `form` inside act, as a browser does; true when the card stopped the page's navigation. */
-function sendForm(form) {
-  assert.ok(form, "the form the case sends stands");
-  return inAct(() => {
-    const { Event } = globalThis.window;
-    const submit = new Event("submit", { bubbles: true, cancelable: true });
-    return !form.dispatchEvent(submit);
-  });
-}
-
-/** The elements of `tag` under `root`, in the order they stand. */
-const tagged = (root, tag) =>
-  all(root).filter((element) => element.localName === tag);
-
-const inputsIn = (root) => tagged(root, "input");
-
-const formIn = (root) => tagged(root, "form")[0];
 
 const submitIn = (root) =>
   tagged(root, "button").find((button) => button.type === "submit");
@@ -3328,29 +3452,6 @@ const shownMessages = (root) =>
     )
     .map((element) => element.textContent);
 
-const noticeTexts = (root) =>
-  byClass(root, "confirmation-notice")
-    .filter(shown)
-    .map((notice) => notice.textContent);
-
-function assertInOrder(root, elements) {
-  const order = all(root);
-  const places = elements.map((element) => order.indexOf(element));
-  assert.ok(
-    places.every(
-      (place, index) =>
-        place !== -1 && (index === 0 || place > places[index - 1]),
-    ),
-    `in the order asked for: ${places.join(", ")}`,
-  );
-}
-
-/** Every field and button of the card with whether it is locked, as plain data. */
-const lockOf = (root) =>
-  [...tagged(root, "input"), ...tagged(root, "button")].map(
-    (control) => control.disabled,
-  );
-
 /** Puts a new card in the page; `entered` holds each call of `signedIn`. */
 async function openCard(root, client, options = {}) {
   const entered = [];
@@ -3385,14 +3486,6 @@ function resetLink() {
       finished: (ending) => steps.push(ending),
     },
   };
-}
-
-/** Types into the fields of the form that stands, in their order. */
-async function fillIn(root, ...texts) {
-  const inputs = inputsIn(root);
-  assert.equal(inputs.length, texts.length, "as many fields as texts");
-  for (const [index, text] of texts.entries())
-    await typeInto(inputs[index], text);
 }
 
 /** The card with a login sent and waiting for its answer. */
@@ -4218,7 +4311,7 @@ test("a change and a refused link, whatever its reason, clear the fragment first
   }
 });
 
-// To do 5, D-225; createResetScreen's `ended`. Catches „Anuluj” that leaves the fragment, and a form
+// To do 5, D-225; the form's own `ended`. Catches „Anuluj” that leaves the fragment, and a form
 // that ends twice or sends after its end while the page has not yet closed the card.
 test("„Anuluj” clears the fragment first and ends the form, which then ends no second time and sends nothing", async () => {
   await onPage(async ({ root }) => {
