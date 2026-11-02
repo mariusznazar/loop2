@@ -5669,15 +5669,15 @@ the picture beneath; a pattern on the page's background — a form with wallpape
 A permanent refusal test for the files the build copies from `assets/sprites/` is deferred until
 the first task changing that boundary, which introduces its refusal test and changes the method of
 sprite-file-content to test; what changes the boundary is read as D-76 reads it, so a further PNG
-file of the pack does not. Until then, review checks that the build copies from `assets/sprites/`
-only PNG files holding pixels alone, and only into what `npm run build` writes.
+file does not. Until then, review checks that the build copies from `assets/sprites/` only PNG
+files holding pixels alone, and only into what `npm run build` writes.
 
 - **Scope:** browser-view · build-tools
 - **Based on:** none
 - **Relations:** narrows D-73 · derives from D-76
 - **Verification:** an agent compares a change with the decision:
-  - complies: a task adding a further PNG picture of the pack to `assets/sprites/` with no refusal
-    test, its review checking that the file holds pixels alone
+  - complies: a task adding a further PNG picture to `assets/sprites/` with no refusal test, its
+    review checking that the file holds pixels alone
   - violates: a change making the build copy SVG files from `assets/sprites/`, or copy the
     directory into the kitchen-sink page, with no refusal test and sprite-file-content still checked
     by review
