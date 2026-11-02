@@ -137,10 +137,11 @@ z plikiem `.ts` obok) i funkcję DOM. Obie rysują to samo drzewo elementów z t
 samymi klasami i atrybutami; wygląd stoi tylko w `src/browser/styles.css`.
 Komponent jest napisany po reactowemu, z polami kontrolowanymi i stanem
 w komponencie, nie owija funkcji DOM. Ekran, którego żadne zadanie nie przeniosło
-do Reacta, zostaje przy postaci DOM, także jego nowa sekcja. Test
-`tests/view/react-controls.test.mjs` rysuje obie postaci dla każdego rodzaju
-i stanu, których używa ekran w Reactcie, i porównuje znacznik, atrybuty i tekst,
-z atrybutem `value` pola poza porównaniem; nowa postać dostaje w nim przypadek.
+do Reacta, zostaje przy postaci DOM, a jego nową sekcję wolno zbudować w DOM
+(reguła *Nowy ekran i moduły w DOM*). Test `tests/view/react-controls.test.mjs`
+rysuje obie postaci dla każdego rodzaju i stanu, których używa ekran w Reactcie,
+i porównuje znacznik, atrybuty i tekst, z atrybutem `value` pola poza
+porównaniem; nowa postać dostaje w nim przypadek.
 
 ### Nowy ekran i moduły w DOM
 
