@@ -352,7 +352,7 @@ test("until the server names an account the page has neither the game nor a runn
   });
 });
 
-// To do 2 and 3, D-259: one form at a time, the card opening on „Zaloguj się” with „Załóż konto”
+// Task logowanie-w-react, To do 2 and 3, D-259: one form at a time, the card opening on „Zaloguj się” with „Załóż konto”
 // behind the switch.
 test("an answer of no session shows the card on „Zaloguj się”, and the switch „Załóż konto”, each with visible labels, and no game", async () => {
   await onPage(async ({ root, intervals }) => {
@@ -444,7 +444,7 @@ test("an answer that names no account and is not a refusal of the session shows 
 
 // --- the forms ------------------------------------------------------------------------------
 
-// To do 3 and 5: one form stands, so the lock of the whole card holds its field, its button and the
+// Task logowanie-w-react, To do 3 and 5: one form stands, so the lock of the whole card holds its field, its button and the
 // switch, where it held two forms.
 test("a sent login waits with the whole card locked, and a refusal leaves one warning under it and focus where the player sent it from", async () => {
   await onPage(async ({ root }) => {
@@ -511,7 +511,7 @@ test("a lost connection on registration leaves one warning under that form and f
   });
 });
 
-// Spec decision 3: no state outlives dispose(), so a typed password leaves with the card, where it
+// Task logowanie-w-react, spec decision 3: no state outlives dispose(), so a typed password leaves with the card, where it
 // used to stay in an emptied form behind the game; the next card opens with empty fields.
 test("a created account enters the game at once, and the page keeps no password", async () => {
   await onPage(async ({ root, intervals }) => {
@@ -637,7 +637,7 @@ async function requestPage(held) {
   return forms(pageDocument().body)["Nie pamiętam hasła"];
 }
 
-// To do 2, D-96: the button puts the form in the card, in place of the one form that stands.
+// Task logowanie-w-react, To do 2, D-96: the button puts the form in the card, in place of the one form that stands.
 test("the button under „Zaloguj się” puts in its place one form with an empty address, „Wyślij odnośnik” and „Wróć do logowania”", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -693,7 +693,7 @@ test("a request waits with its field and every button of the screen locked, and 
   });
 });
 
-// To do 3: one form stands, so the button locks with it.
+// Task logowanie-w-react, To do 3: one form stands, so the button locks with it.
 test("while a login waits, the button „Nie pamiętam hasła” is locked with the form and opens nothing", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -792,7 +792,7 @@ test("a refusal or a lost connection on a request stands as the form's warning, 
   });
 });
 
-// To do 2, D-96: „Wróć do logowania” brings back „Zaloguj się”, the one form that goes back to it.
+// Task logowanie-w-react, To do 2, D-96: „Wróć do logowania” brings back „Zaloguj się”, the one form that goes back to it.
 test("„Wróć do logowania” brings back „Zaloguj się”, and nothing typed, no sentence and no warning survives a second visit", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -850,7 +850,7 @@ async function signedInPage(held) {
   return buttonNamed(pageDocument().body, "Wyloguj");
 }
 
-// To do 3 and 8; the page calls focus() here, as it called it on the forms (spec decision 3).
+// Task logowanie-w-react, To do 3 and 8; the page calls focus() here, as it called it on the forms (spec decision 3).
 test("a confirmed logout or an expired session removes the game and its clock and brings back the card, with focus in its first field", async () => {
   for (const [name, answer] of Object.entries({
     "a confirmed logout": { ok: true, value: null },
@@ -1093,6 +1093,7 @@ test("with a token in the address the page confirms first, saying so, and checks
   });
 });
 
+// Task logowanie-w-react, To do 3: the card shows one form.
 test("the result stands as one sentence above the game for a signed-in player and leaves at the next change between forms and game", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -1117,7 +1118,7 @@ test("the result stands as one sentence above the game for a signed-in player an
   });
 });
 
-// To do 6, D-261: the sentence stands in the card, above the switch.
+// Task logowanie-w-react, To do 6, D-261: the sentence stands in the card, above the switch.
 test("a refused link stands in warning above the form in the card for a player who is not signed in, and the fragment goes", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -1383,7 +1384,7 @@ test("a password the server would refuse sends nothing, marks the field at fault
   });
 });
 
-// To do 6 and 3, D-261, spec decision 3: the card of the link closes and one new card opens on
+// Task logowanie-w-react, To do 3 and 6, D-261, spec decision 3: the card of the link closes and one new card opens on
 // „Zaloguj się” with the sentence in it, above its switch.
 test("a change clears the fragment first, then shows a new card with the sentence in positive above its form, asks about no session and focuses the address field", async () => {
   await onPage(async ({ root, intervals }) => {
@@ -1416,7 +1417,7 @@ test("a change clears the fragment first, then shows a new card with the sentenc
   });
 });
 
-// To do 6, D-261: where the check leads to the forms, the sentence stands in the card.
+// Task logowanie-w-react, To do 6, D-261: where the check leads to the forms, the sentence stands in the card.
 test("a refused link, whatever its reason, clears the fragment first and then checks the session: the card or the game with the sentence in warning above the form or the game", async () => {
   const reasons = {
     "an unknown or spent link": "Odnośnik jest nieważny albo wygasł.",
@@ -1473,6 +1474,7 @@ test("a refused link, whatever its reason, clears the fragment first and then ch
   }
 });
 
+// Task logowanie-w-react, To do 3: the card shows one form.
 test("„Anuluj” clears the fragment first and opens the page as usual with the session check and no sentence", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -1622,7 +1624,8 @@ async function expiredPage(held) {
 // invariant: expired-session-unsaved-progress
 // Task zapis-stanu-na-serwerze, To do 9; D-203, D-211. Catches the state lost at the 401, the game
 // left running beside the forms, the save asked for again instead of the kept state sent, and the
-// kept state sent on another basis than the revision last seen.
+// kept state sent on another basis than the revision last seen. Task logowanie-w-react, To do 3:
+// the card shows one form.
 test("a 401 on a save keeps the state, and a sign-in to the same account sends it and returns to the game from it", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
@@ -2680,7 +2683,8 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
 });
 
 // To do 6; D-96. Catches a new game built when the saved game state cannot be had, a retry that
-// asks for the save alone, and a 401 read as a failure.
+// asks for the save alone, and a 401 read as a failure. Task logowanie-w-react, To do 3: the card
+// shows one form.
 test("a failed or uncertain answer for the saved game state shows the warning with retry, which asks both again; no session shows the forms", async () => {
   const answers = {
     "no connection": NO_CONNECTION,
@@ -2898,8 +2902,8 @@ async function loggingOutPage(held) {
 }
 
 // To do 10; D-97. Catches a session ended after a failed save, a logout held back by a refusal
-// that is for good, the update sentence missing, and the expiry path skipped at logout. To do 3 and
-// 6, D-261: one form stands, and the sentence stands in the card, in `confirmation-notice`.
+// that is for good, the update sentence missing, and the expiry path skipped at logout. Task
+// logowanie-w-react, To do 3 and 6, D-261: one form stands, and the sentence stands in the card, in `confirmation-notice`.
 test("„Wyloguj” saves first and goes on, stays or ends each way its save's outcome gives", async () => {
   const outcomes = [
     ["saved", { kind: "saved", revision: 5 }, null],
@@ -2959,7 +2963,7 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
 });
 
 // D-97, D-210. Catches a stopped tab trying to save before logout, and the forms without the
-// sentence of the update. To do 6, D-261: the sentence stands in the card.
+// sentence of the update. Task logowanie-w-react, To do 6, D-261: the sentence stands in the card.
 test("a tab that stopped saving as outdated logs out without a save and shows the update sentence above the form in the card", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -2983,8 +2987,8 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
 });
 
 // D-97, D-211; the concern of slice 5. Catches the expiry path started while the logout's request
-// is under way, and a logout that does not happen leaving the save's 401 unanswered. To do 6, D-261:
-// the sentence stands in the card.
+// is under way, and a logout that does not happen leaving the save's 401 unanswered. Task logowanie-w-react, To do 6,
+// D-261: the sentence stands in the card.
 test("a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, an uncertain one then takes the expiry path", async () => {
   for (const [name, answer] of [
     ["a confirmed logout", { ok: true, value: null }],
