@@ -15,7 +15,8 @@ Covers, in the working tree being checked:
   package.json `dependencies` or in any package-lock.json entry not marked `dev` — or is imported
   or loaded by the browser source, by package name or by URL;
 - what `npm run build` places in `dist/public` imports only its own files (relative or
-  root-relative specifiers, no bare package and no URL), loads no script from another origin, and
+  root-relative specifiers, no bare package and no URL), also in the minified form `import"x"`
+  of the bundle, loads no script from another origin, and
   holds none of the global markers the listed frameworks leave in their built code (React's
   markers are not among them: the bundle holds React).
 
@@ -71,7 +72,7 @@ DOM_RENDERING_CALL = re.compile(
     r"\bdocument\s*\.\s*(?:" + "|".join(DOM_RENDERING_MEMBERS) + r")\b")
 
 IMPORT_SPECIFIER = re.compile(
-    r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']""")
+    r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s*)["']([^"']+)["']""")
 SCRIPT_SOURCE = re.compile(r"""<script\b[^>]*\bsrc\s*=\s*["']?([^"'\s>]+)""", re.IGNORECASE)
 
 
@@ -127,6 +128,25 @@ def text_files(directory, root):
     for relative in support.files_under(directory, root):
         if relative.lower().endswith(TEXT_EXTENSIONS):
             yield relative, support.read_text(os.path.join(root, *relative.split("/")))
+
+
+def built_file_problems(relative, text):
+    """What a file of the built output does that the guard refuses, as (file, problem)."""
+    problems = []
+    # An HTML script source is a URL: its own when it names no scheme and no host.
+    for source in SCRIPT_SOURCE.findall(text):
+        if re.match(r"^(?:[a-z][a-z0-9+.-]*:|//)", source, re.IGNORECASE):
+            problems.append((relative, "loads script " + source))
+    # A module specifier is its own only when relative or root-relative; a bare one
+    # names a package. Inline module scripts of an HTML file are read the same way.
+    if relative.endswith((".js", ".mjs", ".html", ".htm")):
+        for specifier in IMPORT_SPECIFIER.findall(text):
+            own = specifier.startswith(("./", "../")) or (
+                specifier.startswith("/") and not specifier.startswith("//"))
+            if not own:
+                problems.append((relative, "imports " + specifier))
+    problems += [(relative, "holds marker " + m) for m in FRAMEWORK_MARKERS if m in text]
+    return problems
 
 
 class BrowserSourceIsTypeScript(unittest.TestCase):
@@ -190,20 +210,23 @@ class NoUiFramework(unittest.TestCase):
                         f"`npm run build` places no HTML in {BUILT_PAGE}")
         problems = []
         for relative, text in built:
-            # An HTML script source is a URL: its own when it names no scheme and no host.
-            for source in SCRIPT_SOURCE.findall(text):
-                if re.match(r"^(?:[a-z][a-z0-9+.-]*:|//)", source, re.IGNORECASE):
-                    problems.append((relative, "loads script " + source))
-            # A module specifier is its own only when relative or root-relative; a bare one
-            # names a package. Inline module scripts of an HTML file are read the same way.
-            if relative.endswith((".js", ".mjs", ".html", ".htm")):
-                for specifier in IMPORT_SPECIFIER.findall(text):
-                    own = specifier.startswith(("./", "../")) or (
-                        specifier.startswith("/") and not specifier.startswith("//"))
-                    if not own:
-                        problems.append((relative, "imports " + specifier))
-            problems += [(relative, "holds marker " + m) for m in FRAMEWORK_MARKERS if m in text]
+            problems += built_file_problems(relative, text)
         self.assertEqual(problems, [])
+
+    def test_control_the_built_file_check_reads_a_minified_bundle(self):
+        # invariant: browser-view-framework
+        # The bundle is minified: `import"x"` has no white space after `import`.
+        minified = {
+            "an import with no white space": 'var a=1;import"vue";a++;',
+            "an export from a package": 'var a=1;export{a as b}from"preact";',
+            "a dynamic import": 'var a=1;import("lit");a++;',
+            "an import of a URL": 'var a=1;import"https://cdn.example/x.js";',
+        }
+        for name, text in minified.items():
+            with self.subTest(case=name):
+                self.assertNotEqual(built_file_problems("dist/public/main.js", text), [])
+        own = 'var a=1;import"./chunk.js";import("/more.js");a++;'
+        self.assertEqual(built_file_problems("dist/public/main.js", own), [])
 
 
 if __name__ == "__main__":

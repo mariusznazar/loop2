@@ -9,7 +9,7 @@ Reading of the sentence:
 - the files of the part browser-view: the files git tracks or would track whose part, by the
   *Files* patterns of `foundations/part_map.md` resolved with git as
   `test_application_package_layout.py` resolves them, is browser-view, and whose name ends in
-  `.css`, `.html`, `.ts`, `.mts` or `.cts`, less `src/browser/tokens.css`;
+  `.css`, `.html`, `.ts`, `.mts`, `.cts` or `.tsx`, less `src/browser/tokens.css`;
 - the text of styles: a `.css` file, and in an HTML file the content of each `<style>` element and
   the value of each `style` attribute, HTML comments left out. Of it only the values of
   declarations are read, at any depth of blocks (`@media` blocks included) — never a selector, a
@@ -45,7 +45,8 @@ Reading of the sentence:
   `flood-opacity`, `stop-opacity` or `font-weight`, and in a value of `font` a number with no
   unit and no `%` that does not follow `/` (after `/` stands the line height, which D-43 does not
   count);
-- in TypeScript: only the text of string literals and the text parts of template literals is
+- in TypeScript (a `.tsx` file included; the colour in a `style` attribute of JSX stands in a
+  string literal, which is what is read): only the text of string literals and the text parts of template literals is
   read — never comments, identifiers or other code; the code inside `${...}` is code, and its own
   literals are read in their turn. In that text, a colour as above: a hexadecimal colour, a
   colour function, or a named, system or deprecated system colour as a whole word, never
@@ -76,8 +77,8 @@ from test_application_package_layout import file_owners
 
 PART = "browser-view"
 TOKEN_FILE = "src/browser/tokens.css"
-EXTENSIONS = (".css", ".html", ".ts", ".mts", ".cts")
-TYPESCRIPT = (".ts", ".mts", ".cts")
+EXTENSIONS = (".css", ".html", ".ts", ".mts", ".cts", ".tsx")
+TYPESCRIPT = (".ts", ".mts", ".cts", ".tsx")
 
 # CSS Color 4, https://www.w3.org/TR/2026/CRD-css-color-4-20261022/, read 2026-10-23.
 NAMED_COLOURS = (
@@ -464,6 +465,14 @@ FLAGGED = {
         "a colour in a string after a ${} closing a block":
             "const s = `${(() => { return 1; })()}`; const c = 'navy';",
     },
+    "a.tsx": {
+        "a named colour in a style attribute":
+            'const a = <p style={{ color: "red" }}>x</p>;',
+        "a hexadecimal colour in a style attribute":
+            "const a = <p style={{ background: '#fff' }}>x</p>;",
+        "a colour function in a literal on the line after a JSX element":
+            'const a = <p>x</p>;\nconst c = "rgb(1, 2, 3)";',
+    },
 }
 CLEAN = {
     "a.css": (
@@ -520,6 +529,12 @@ CLEAN = {
         'const e = /"#fff"/g;\n'
         "const f = a / b;\n"
         'const g = "var(--page)";\n'
+    ),
+    "a.tsx": (
+        "// #fff red rgb(0, 0, 0)\n"
+        "const red = field;\n"
+        'const a = <p style={{ color: "var(--text)" }} className="highlight">red #fff</p>;\n'
+        'const b = <p>{red ? "revealed" : "hidden"}</p>;\n'
     ),
 }
 

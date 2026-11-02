@@ -13,6 +13,10 @@ Covers:
 - on the unchanged copy, `npm run build` exits 0 and, for each configuration, emits a JavaScript
   file for every TypeScript file of its source, at the same relative path below its output
   directory, which `node --check` accepts;
+- made-up `.tsx` source written out below, with JSX, is compiled by `npm run build` into a
+  JavaScript file at the same relative path below `dist/browser` (the marker kept, the JSX gone,
+  `node --check` accepting it), and `npm run typecheck` fails, naming the file and TypeScript's
+  `TS2322`, on made-up `.tsx` source that holds a type error;
 - made-up source written out below, one file per configuration, that compiles only under that
   configuration's own settings — the browser file uses a DOM type and `document`, the server
   file uses Node's `process` — is compiled by `npm run build` into that configuration's output
@@ -53,7 +57,7 @@ CONFIGURATIONS = (
 # Directories of a configuration's source directory that are not its source: the kitchen-sink
 # page's sources, which tsconfig.browser.json excludes (D-45).
 LEFT_OUT = {"browser": ("src/browser/kitchen-sink/",), "server": ()}
-EMITTED_EXTENSION = {".ts": ".js", ".mts": ".mjs", ".cts": ".cjs"}
+EMITTED_EXTENSION = {".ts": ".js", ".mts": ".mjs", ".cts": ".cjs", ".tsx": ".js"}
 
 PROBE_NAME = "invariant_check_build_probe"
 
@@ -70,6 +74,19 @@ BROWSER_PROBE = (
     "}\n"
 )
 BROWSER_MARKER = "application-build-output-browser-probe"
+
+# Made-up source with JSX, which compiles only in a `.tsx` file, under the browser configuration.
+TSX_PROBE = (
+    "// Written by the invariant check application-build-output.\n"
+    "export const invariantCheckTsxProbe = "
+    "<p>application-build-output-tsx-probe</p>;\n"
+)
+TSX_MARKER = "application-build-output-tsx-probe"
+# Made-up `.tsx` source with a type error: a string where a number is declared.
+TSX_TYPE_ERROR = (
+    "// Written by the invariant check application-build-output.\n"
+    "export const invariantCheckTsxTypeError: number = \"not a number\";\n"
+)
 
 # Made-up source that compiles under the server configuration only: Node's `process`.
 SERVER_PROBE = (
@@ -135,8 +152,8 @@ def configuration(name):
     return next(c for c in CONFIGURATIONS if c[0] == name)
 
 
-def write_probe(copy, source_directory, text):
-    relative = f"{source_directory}/{PROBE_NAME}.ts"
+def write_probe(copy, source_directory, text, extension=".ts"):
+    relative = f"{source_directory}/{PROBE_NAME}{extension}"
     with open(copy.file(relative), "w", encoding="utf-8", newline="\n") as handle:
         handle.write(text)
     return relative
@@ -204,6 +221,33 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
                 self.assertIn(marker, text, f"{emitted} does not hold the probe's marker")
                 self.assertNotIn(TYPESCRIPT_ONLY, text,
                                  f"{emitted} still holds TypeScript, so it was not compiled")
+
+    def test_build_compiles_made_up_tsx_source_into_javascript(self):
+        # invariant: application-build-output
+        copy = self.fresh_copy()
+        placed = write_probe(copy, "src/browser", TSX_PROBE, ".tsx")
+        code, output = copy.npm("run", "build")
+        self.assertEqual(code, 0, f"`npm run build` fails with {placed}, which compiles under "
+                                  f"the browser configuration:\n{output}")
+        emitted = emitted_path(placed, "src/browser", "dist/browser")
+        self.assertEqual(emitted, f"dist/browser/{PROBE_NAME}.js")
+        self.assert_javascript(copy, emitted)
+        text = support.read_text(copy.file(emitted))
+        self.assertIn(TSX_MARKER, text, f"{emitted} does not hold the probe's marker")
+        self.assertNotIn("<p>", text, f"{emitted} still holds JSX, so it was not compiled")
+
+    def test_typecheck_fails_on_a_type_error_in_a_tsx_file(self):
+        # invariant: application-build-output
+        copy = self.fresh_copy()
+        placed = write_probe(copy, "src/browser", TSX_TYPE_ERROR, ".tsx")
+        code, output = copy.npm("run", "typecheck")
+        self.assertNotEqual(code, 0, f"`npm run typecheck` exits 0 although {placed} holds a "
+                                     f"type error:\n{output}")
+        plain = ANSI_ESCAPE.sub("", output).replace("\\", "/")
+        self.assertIn(placed, plain, f"the failed check does not name {placed}, so it may have "
+                                     f"failed for another reason:\n{output}")
+        self.assertIn("TS2322", plain,
+                      f"the failed check does not report the type error:\n{output}")
 
     def test_each_configuration_rejects_source_only_the_other_accepts(self):
         # invariant: application-build-output
