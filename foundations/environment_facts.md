@@ -535,6 +535,12 @@ npm copies the `peerDependencies` of a package's `package.json` into that packag
 
 - **Source:** https://raw.githubusercontent.com/npm/cli/v12.2.1/workspaces/arborist/lib/shrinkwrap.js § pkgMetaKeys — "const pkgMetaKeys = [" · "'peerDependencies'," · § metaFromNode — "for (const key of pkgMetaKeys) {" · "const val = metaFieldFromPkg(node.package, key)" · "meta[key.replace(/^_/, '')] = val"; read 2026-11-02
 
+## pixel-crawler-terms
+
+The terms of the Pixel Crawler pack ask for no credit, allow its arts to be altered and used in commercial products, and forbid selling them as a final product.
+
+- **Source:** https://github.com/mariusznazar/loop/blob/8072ce6c02ad58d64f3eedc5a4b1e71c556b58e7/assets/pixel-crawler/Terms.txt § points 1, 2, 3 and 4 — "It is not necessary to credit the author for any use of the arts, but if it is done it is appreciated." · "The arts present can be altered in any shape, color or pattern" · "These arts cannot be sold as a final product, only the author can sell the assets" · "You can use these assets in creating commercial products, study or any other project where they are functional"; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
