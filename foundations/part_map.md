@@ -81,7 +81,7 @@ The part is the account and save server: it serves the built game, handles the H
 
 ## build-tools
 
-The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the owner's computer, and builds and serves the browser view's kitchen-sink page on the developer's machine.
+The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the owner's computer, starts the game on the developer's machine over HTTPS with a database made for that start, and builds and serves the browser view's kitchen-sink page on the developer's machine.
 
 - **Files:** /package.json
   /package-lock.json
@@ -105,11 +105,13 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
   tests/invariants/test_application_build_kitchen_sink.py
+  tests/invariants/test_local_start_access.py
   tests/password-measurement.test.mjs
 - **Depends on:** browser-view · simulation · account-server · product-foundation
 - **Trust boundary:** package-lock.json
   scripts/audit_dependencies.py
   scripts/kitchen-sink.mjs
+  scripts/local-start.mjs
 
 ## agent-workflow
 
@@ -119,12 +121,13 @@ The part directs and records the work performed on this repository.
   CLAUDE.md
   .agents/**
   .claude/**
+  .playwright/**
   .gitmodules
   .the-way
   tests/agent_workflow/**
   guidelines/**
   src/browser/AGENTS.md
-- **Depends on:** product-foundation · deployment
+- **Depends on:** product-foundation · deployment · build-tools
 - **Trust boundary:** none
 
 ## product-foundation

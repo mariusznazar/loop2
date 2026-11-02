@@ -427,6 +427,42 @@ Python 3.14, for an uncaught exception other than `SystemExit`, by default print
 
 - **Source:** https://raw.githubusercontent.com/python/cpython/v3.14.3/Doc/library/sys.rst § sys.excepthook — "This function prints out a given traceback and exception to ``sys.stderr``." · "When an exception other than :exc:`SystemExit` is raised and uncaught, the interpreter calls ``sys.excepthook``" · "in a Python program this happens just before the program exits."; read 2026-11-02
 
+## playwright-cli-token-use
+
+The maker of Playwright CLI says that CLI invocations are more token-efficient for coding agents than MCP.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Playwright CLI vs Playwright MCP — "Modern coding agents increasingly favor CLI–based workflows exposed as SKILLs over MCP because CLI invocations are more token-efficient: they avoid loading large tool schemas and verbose accessibility trees into the model context, allowing agents to act through concise, purpose-built commands."; read 2026-11-02
+
+## playwright-cli-config-path
+
+Playwright CLI reads its configuration from `.playwright/cli.config.json` by default.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file — "Playwright CLI will load config from `.playwright/cli.config.json` by default so that you did not need to specify it every time."; read 2026-11-02
+
+## playwright-cli-context-options
+
+The configuration file of Playwright CLI takes options of the browser context under `browser.contextOptions`.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file, Configuration file schema — "browser?: {" · "Context options for the browser context." · "contextOptions?: playwright.BrowserContextOptions;"; read 2026-11-02
+
+## playwright-screencast-frames
+
+Playwright's screencast of a page delivers JPEG-encoded frames to a callback.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright/cfe490d941f992655948eee8fd4fd94e1c4234bf/docs/src/api/class-screencast.md § Screencast.start — "delivers JPEG-encoded frames to the callback."; read 2026-11-02
+
+## chrome-devtools-ignore-certificate-errors
+
+The Chrome DevTools Protocol's command `Security.setIgnoreCertificateErrors` turns the ignoring of all certificate errors on or off.
+
+- **Source:** https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/92be9c279a8ff3af17009705bb357241932128e4/json/browser_protocol.json § domain Security, command setIgnoreCertificateErrors — "Enable/disable whether all certificate errors should be ignored."; read 2026-11-02
+
+## git-for-windows-openssl
+
+Git for Windows comes with OpenSSL.
+
+- **Source:** https://raw.githubusercontent.com/git-for-windows/build-extra/2f63027cca82e0bd0d6aa9d79d52f5a0d7dea8cc/ReleaseNotes.md § Changes since Git for Windows v2.56.0 (September 28th 2026), New Features — "Comes with OpenSSL v3.5.9."; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
