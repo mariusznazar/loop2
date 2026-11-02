@@ -182,19 +182,20 @@ private note. The agent reads the file's metadata only and never its content.
   sends mail through Outsider: it does not log in to the SMTP server and does not create an
   account or press "Wyślij ponownie" or "Wyślij odnośnik" on the test server, since each of these sends a real
   message from a monthly allowance of 1000.
-- **What an agent may read:** the mailer's failure line in the bounded service logs,
-  `Account mail failed: <code>`, with the error code only (never an address, link or
-  password). Read the code like this:
+- **What an agent may read:** the mailer's failure line in the bounded service logs, one JSON
+  object with `"failure":"mail"`, the error's `kind` and `code`, the `place` in the code and the
+  account's number (never an address, link or password). Read `code` like this:
   - `EAUTH`: Outsider refused the login or the password.
   - `ECONNECTION`, `ETIMEDOUT`, `ESOCKET`, `EDNS`, `ETLS`, `EREQUIRETLS`: a connection, name
     lookup or TLS failure towards Outsider on port 587.
   - `EENVELOPE`, `EMESSAGE`: Outsider accepted the login but refused the sender, the recipient
     or the message, for example because the monthly allowance is used up; the human checks
     Outsider's panel.
-  - `unknown`: the library gave no code: the send ran out of its 10 seconds, the connection
-    ended or was not upgraded to TLS, or the mailer refused the address before connecting.
-    The line `Account mail missed its deadline` is the same 10-second limit seen from the
-    route.
+  - `DEADLINE`: the send ran out of its 10 seconds; with the `place`
+    `account-routes.boundedSending` it is the same limit seen from the route.
+  - `CONNECTION_ENDED`, `NOT_ENCRYPTED`: the connection ended, or was not upgraded to TLS.
+  - `UNSAFE_RECIPIENT`: the mailer refused the address before connecting.
+  - `none`: the error has no code; report its `kind`.
   - Any other code (for example `EPROTOCOL`): report it as it is.
 
   In every case the agent reports the code; the human changes the login in `compose.yaml` or
@@ -227,15 +228,18 @@ docker exec loop2 node dist/server/account-block.js unblock <email>
   page is reloaded or the player logs out.
 - **`unblock`** lets the account log in again. The sessions the block ended stay ended, so the
   player logs in anew.
-- **What it prints.** One line. Exit 0 means the account is now in the state asked for: blocked,
+- **What it prints.** One line, after a change also a JSON line of the event with the account's
+  number, and at exit 1 also a JSON line of the error's kind and code. Exit 0 means the account
+  is now in the state asked for: blocked,
   already blocked, unblocked, or was not blocked. Every other exit changed nothing: 1 the
   database could not be opened or changed, for example because it stayed busy longer than the
   wait (run the command again); 2 wrong arguments, or an address without a single `@` with text
   on both sides; 3 `LOOP2_DATABASE_PATH` names no existing database file (the command never
   creates one); 4 no account has that address.
 - **What it touches.** It opens the account database beside the running application, makes one
-  short change and closes it; the application keeps serving. It prints no password hash,
-  session identifier or database error. The address stays in the server's shell history.
+  short change and closes it; the application keeps serving. It prints no password hash or
+  session identifier, and of a database error only its kind and code. The address stays in the
+  server's shell history.
 - **What it does not do.** The account stays in the database, so its address cannot be
   registered again; the person can still register with another address. A login of the
   blocked account does not count towards the limit of failed logins.

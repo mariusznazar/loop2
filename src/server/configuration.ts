@@ -47,8 +47,20 @@ const login = /^[^\s\p{Cc}]+$/u;
 const controlCharacter = /\p{Cc}/u;
 const passwordFileLimit = 1024;
 
-function invalid(setting: string): Error {
-  return new Error(`Invalid or unavailable account configuration: ${setting}`);
+// A start that failed, in a sentence of the code's own that holds no value; the
+// original error stands as its cause, for its kind and code alone.
+export class StartupFailure extends Error {
+  constructor(message: string, cause?: unknown) {
+    super(message, { cause });
+    this.name = "StartupFailure";
+  }
+}
+
+function invalid(setting: string, cause?: unknown): StartupFailure {
+  return new StartupFailure(
+    `Invalid or unavailable account configuration: ${setting}`,
+    cause,
+  );
 }
 
 async function readSecrets(path: string): Promise<string[]> {
@@ -90,8 +102,8 @@ async function readSecrets(path: string): Promise<string[]> {
     } finally {
       await file.close();
     }
-  } catch {
-    throw invalid("LOOP2_SESSION_SECRET_FILE");
+  } catch (error) {
+    throw invalid("LOOP2_SESSION_SECRET_FILE", error);
   }
 }
 
@@ -122,8 +134,8 @@ async function readSmtpPassword(path: string): Promise<string> {
     } finally {
       await file.close();
     }
-  } catch {
-    throw invalid("LOOP2_SMTP_PASSWORD_FILE");
+  } catch (error) {
+    throw invalid("LOOP2_SMTP_PASSWORD_FILE", error);
   }
 }
 
@@ -203,8 +215,8 @@ export async function openAccountRuntime(
   let database: AccountDatabase;
   try {
     database = new AccountDatabase(configuration.databasePath);
-  } catch {
-    throw invalid("LOOP2_DATABASE_PATH");
+  } catch (error) {
+    throw invalid("LOOP2_DATABASE_PATH", error);
   }
   try {
     const store = new SqliteSessionStore(database);
@@ -217,8 +229,8 @@ export async function openAccountRuntime(
       mailer: new SmtpMailer(configuration.mail),
       close: () => store.close(),
     };
-  } catch {
+  } catch (error) {
     database.close();
-    throw new Error("Account password readiness failed");
+    throw new StartupFailure("Account password readiness failed", error);
   }
 }

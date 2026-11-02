@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { access, mkdtemp, rm } from "node:fs/promises";
+import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -338,7 +338,7 @@ test("a version-1 database opens as version 4 with every account and session int
       expiresAt: session.expires,
     });
   // A migrated account takes the blocked state, and it outlasts a reopen.
-  assert.equal(database.blockAccount("b@example.test"), "blocked");
+  assert.equal(database.blockAccount("b@example.test").outcome, "blocked");
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
   assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
@@ -475,7 +475,10 @@ test("a version-2 database opens as version 4 with every account, blocked state 
     database.issueLink(confirmationLink("account-c", "blocked"), limits),
     "blocked",
   );
-  assert.equal(database.confirmEmailAddress(digest("moved")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("moved")).outcome,
+    "confirmed",
+  );
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
   assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
@@ -806,7 +809,7 @@ test("a block committed through another connection before a save makes it store 
 
   // The second connection stands in for the owner's command beside the server.
   const operator = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(operator.blockAccount("player@example.test"), "blocked");
+  assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
   assert.deepEqual(save(1, 1, '{"after":1}'), { outcome: "blocked" });
   // The block comes before the version and the revision.
   assert.deepEqual(save(1, 0, '{"stale":1}'), { outcome: "blocked" });
@@ -816,7 +819,10 @@ test("a block committed through another connection before a save makes it store 
     game: '{"kept":1}',
   });
 
-  assert.equal(operator.unblockAccount("player@example.test"), "unblocked");
+  assert.equal(
+    operator.unblockAccount("player@example.test").outcome,
+    "unblocked",
+  );
   assert.deepEqual(database.readSavedGame(account.id), {
     version: 1,
     revision: 1,
@@ -829,7 +835,7 @@ test("a block committed through another connection before a save makes it store 
 
   // A blocked account without a saved game state gets none either.
   const fresh = database.createAccount("fresh@example.test", "hash");
-  assert.equal(operator.blockAccount("fresh@example.test"), "blocked");
+  assert.equal(operator.blockAccount("fresh@example.test").outcome, "blocked");
   assert.deepEqual(
     database.writeSavedGame(fresh.id, { version: 1, basedOn: 0, game: "{}" }),
     { outcome: "blocked" },
@@ -1054,7 +1060,10 @@ test("a confirmation link confirms its account once, stops the account's other c
     .run(digest("stray"), account.id, 1000 + DAY);
 
   advance(5000);
-  assert.equal(database.confirmEmailAddress(digest("mine")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("mine")).outcome,
+    "confirmed",
+  );
   assert.equal(database.findAccountById(account.id).emailConfirmed, true);
   assert.equal(
     raw
@@ -1066,8 +1075,11 @@ test("a confirmation link confirms its account once, stops the account's other c
   assert.equal(storedLink(raw, "reset").spent, 0);
 
   advance(6000);
-  assert.equal(database.confirmEmailAddress(digest("mine")), "invalid");
-  assert.equal(database.confirmEmailAddress(digest("stray")), "invalid");
+  assert.equal(database.confirmEmailAddress(digest("mine")).outcome, "invalid");
+  assert.equal(
+    database.confirmEmailAddress(digest("stray")).outcome,
+    "invalid",
+  );
   assert.equal(
     raw
       .prepare("SELECT email_confirmed_at FROM accounts WHERE id = ?")
@@ -1076,7 +1088,10 @@ test("a confirmation link confirms its account once, stops the account's other c
     "a refused link changes nothing",
   );
   assert.equal(database.findAccountById(other.id).emailConfirmed, false);
-  assert.equal(database.confirmEmailAddress(digest("theirs")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("theirs")).outcome,
+    "confirmed",
+  );
 });
 
 // invariant: email-confirmation-link
@@ -1085,12 +1100,19 @@ test("an unknown link or a link of another kind confirms nothing and changes not
   database.issueLink(confirmationLink(account.id, "confirm"), limits);
   database.issueLink(resetLink(account.id, "reset"), limits);
   for (const token of ["unknown", "reset"])
-    assert.equal(database.confirmEmailAddress(digest(token)), "invalid", token);
-  assert.equal(database.confirmEmailAddress(""), "invalid");
+    assert.equal(
+      database.confirmEmailAddress(digest(token)).outcome,
+      "invalid",
+      token,
+    );
+  assert.equal(database.confirmEmailAddress("").outcome, "invalid");
   assert.equal(database.findAccountById(account.id).emailConfirmed, false);
   assert.equal(storedLink(raw, "reset").spent, 0);
   assert.equal(storedLink(raw, "confirm").spent, 0);
-  assert.equal(database.confirmEmailAddress(digest("confirm")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("confirm")).outcome,
+    "confirmed",
+  );
 });
 
 // invariant: email-confirmation-link
@@ -1100,9 +1122,15 @@ test("a confirmation link works until the millisecond before its expiry and not 
   database.issueLink(confirmationLink(account.id, "in-time"), limits);
   database.issueLink(confirmationLink(other.id, "too-late"), limits);
   advance(1000 + DAY - 1);
-  assert.equal(database.confirmEmailAddress(digest("in-time")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("in-time")).outcome,
+    "confirmed",
+  );
   advance(1000 + DAY);
-  assert.equal(database.confirmEmailAddress(digest("too-late")), "invalid");
+  assert.equal(
+    database.confirmEmailAddress(digest("too-late")).outcome,
+    "invalid",
+  );
   assert.equal(database.findAccountById(other.id).emailConfirmed, false);
 });
 
@@ -1119,13 +1147,22 @@ test("issuing a confirmation link stops the account's earlier one at once, befor
   // The database learns nothing of how the later message's sending went:
   // whatever its outcome, the earlier link is already stopped.
   assert.equal(storedLink(raw, "earlier").spent, 1);
-  assert.equal(database.confirmEmailAddress(digest("earlier")), "invalid");
+  assert.equal(
+    database.confirmEmailAddress(digest("earlier")).outcome,
+    "invalid",
+  );
   assert.equal(database.findAccountById(account.id).emailConfirmed, false);
-  assert.equal(database.confirmEmailAddress(digest("later")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("later")).outcome,
+    "confirmed",
+  );
 
   // Another account's link and a link of the other kind are not stopped.
   database.issueLink(resetLink(other.id, "reset"), limits);
-  assert.equal(database.confirmEmailAddress(digest("neighbour")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("neighbour")).outcome,
+    "confirmed",
+  );
 });
 
 // invariant: email-confirmation-link
@@ -1135,11 +1172,14 @@ test("a confirmation link of a blocked account changes nothing, also one the blo
   // Blocked without blockAccount, so the link stays unstopped and only the
   // confirmation's own reading of the block can refuse it.
   raw.prepare("UPDATE accounts SET blocked = 1 WHERE id = ?").run(account.id);
-  assert.equal(database.confirmEmailAddress(digest("link")), "invalid");
+  assert.equal(database.confirmEmailAddress(digest("link")).outcome, "invalid");
   assert.equal(storedLink(raw, "link").spent, 0);
   assert.equal(database.findAccountById(account.id).emailConfirmed, false);
   raw.prepare("UPDATE accounts SET blocked = 0 WHERE id = ?").run(account.id);
-  assert.equal(database.confirmEmailAddress(digest("link")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("link")).outcome,
+    "confirmed",
+  );
 });
 
 // invariant: unblock-restores-no-link
@@ -1152,11 +1192,14 @@ test("a block committed through another connection stops every link issued befor
   database.issueLink(confirmationLink(other.id, "theirs"), limits);
   // The second connection stands in for the owner's command beside the server.
   const operator = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(operator.blockAccount("player@example.test"), "blocked");
+  assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
   assert.equal(storedLink(raw, "before").spent, 1);
   assert.equal(storedLink(raw, "reset").spent, 1);
   assert.equal(storedLink(raw, "theirs").spent, 0);
-  assert.equal(database.confirmEmailAddress(digest("before")), "invalid");
+  assert.equal(
+    database.confirmEmailAddress(digest("before")).outcome,
+    "invalid",
+  );
 
   assert.equal(
     database.issueLink(confirmationLink(account.id, "during"), limits),
@@ -1164,8 +1207,14 @@ test("a block committed through another connection stops every link issued befor
   );
   assert.equal(storedLink(raw, "during"), undefined);
 
-  assert.equal(operator.unblockAccount("player@example.test"), "unblocked");
-  assert.equal(database.confirmEmailAddress(digest("before")), "invalid");
+  assert.equal(
+    operator.unblockAccount("player@example.test").outcome,
+    "unblocked",
+  );
+  assert.equal(
+    database.confirmEmailAddress(digest("before")).outcome,
+    "invalid",
+  );
   assert.equal(storedLink(raw, "reset").spent, 1);
   assert.equal(database.findAccountById(account.id).emailConfirmed, false);
   // Signed in again, the player asks for a new message, whose link works.
@@ -1173,7 +1222,10 @@ test("a block committed through another connection stops every link issued befor
     database.issueLink(confirmationLink(account.id, "after"), limits),
     "issued",
   );
-  assert.equal(database.confirmEmailAddress(digest("after")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("after")).outcome,
+    "confirmed",
+  );
 });
 
 // Everything a password reset may change, read straight from the file so a
@@ -1216,6 +1268,7 @@ test("a working reset link replaces the password, deletes every session of its a
   advance(5000);
   assert.deepEqual(database.resetPassword(digest("reset"), "new-hash"), {
     outcome: "reset",
+    accountId: account.id,
     email: "player@example.test",
   });
 
@@ -1248,6 +1301,7 @@ test("a working reset link replaces the password, deletes every session of its a
   assert.deepEqual(resetState(raw), after);
   assert.deepEqual(database.resetPassword(digest("theirs"), "theirs-hash"), {
     outcome: "reset",
+    accountId: other.id,
     email: "other@example.test",
   });
 });
@@ -1301,6 +1355,7 @@ test("a reset link works until the millisecond before its expiry and not at it, 
   assert.equal(database.resetLinkWorks(digest("too-late")), true);
   assert.deepEqual(database.resetPassword(digest("in-time"), "new-hash"), {
     outcome: "reset",
+    accountId: account.id,
     email: "player@example.test",
   });
 
@@ -1324,7 +1379,7 @@ test("a block committed through another connection between the check and the res
   const operator = track(new AccountDatabase(path, { now: () => 1000 }));
 
   assert.equal(database.resetLinkWorks(digest("link")), true);
-  assert.equal(operator.blockAccount("player@example.test"), "blocked");
+  assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
   const blocked = resetState(raw);
   assert.deepEqual(database.resetPassword(digest("link"), "new-hash"), {
     outcome: "invalid",
@@ -1335,7 +1390,10 @@ test("a block committed through another connection between the check and the res
     "encoded-hash",
   );
 
-  assert.equal(operator.unblockAccount("player@example.test"), "unblocked");
+  assert.equal(
+    operator.unblockAccount("player@example.test").outcome,
+    "unblocked",
+  );
   assert.equal(database.resetLinkWorks(digest("link")), false);
   const unblocked = resetState(raw);
   assert.deepEqual(database.resetPassword(digest("link"), "new-hash"), {
@@ -1351,6 +1409,7 @@ test("a block committed through another connection between the check and the res
   );
   assert.deepEqual(database.resetPassword(digest("after"), "new-hash"), {
     outcome: "reset",
+    accountId: account.id,
     email: "player@example.test",
   });
   assert.equal(await call(store, "get", "one"), null);
@@ -1376,6 +1435,7 @@ test("a later reset link recorded between the check and the reset stops the earl
   );
   assert.deepEqual(database.resetPassword(digest("second"), "new-hash"), {
     outcome: "reset",
+    accountId: account.id,
     email: "player@example.test",
   });
 });
@@ -1464,14 +1524,20 @@ test("blocking deletes every session of that account and no other, and unblockin
       .get(id).n;
   assert.equal(sessionsOf(account.id), 2, "precondition: two browsers");
 
-  assert.equal(database.blockAccount("player@example.test"), "blocked");
+  assert.equal(database.blockAccount("player@example.test").outcome, "blocked");
   assert.equal(sessionsOf(account.id), 0);
   assert.equal(database.findAccountById(account.id).blocked, true);
   assert.equal((await call(store, "get", "other")).accountId, other.id);
   assert.equal(database.findAccountById(other.id).blocked, false);
-  assert.equal(database.blockAccount("player@example.test"), "already-blocked");
+  assert.equal(
+    database.blockAccount("player@example.test").outcome,
+    "already-blocked",
+  );
 
-  assert.equal(database.unblockAccount("player@example.test"), "unblocked");
+  assert.equal(
+    database.unblockAccount("player@example.test").outcome,
+    "unblocked",
+  );
   assert.deepEqual(database.findAccountById(account.id), {
     ...account,
     blocked: false,
@@ -1479,10 +1545,16 @@ test("blocking deletes every session of that account and no other, and unblockin
   for (const id of ["one", "two"])
     assert.equal(await call(store, "get", id), null, id);
   assert.equal(sessionsOf(account.id), 0);
-  assert.equal(database.unblockAccount("player@example.test"), "not-blocked");
+  assert.equal(
+    database.unblockAccount("player@example.test").outcome,
+    "not-blocked",
+  );
 
-  assert.equal(database.blockAccount("nobody@example.test"), "unknown");
-  assert.equal(database.unblockAccount("nobody@example.test"), "unknown");
+  assert.equal(database.blockAccount("nobody@example.test").outcome, "unknown");
+  assert.equal(
+    database.unblockAccount("nobody@example.test").outcome,
+    "unknown",
+  );
   assert.equal(sessionsOf(other.id), 1);
 });
 
@@ -1547,6 +1619,7 @@ test("a session write whose expected password hash no longer holds stores nothin
   // the library then stores the same object a second time.
   assert.deepEqual(database.resetPassword(digest("reset"), "new-hash"), {
     outcome: "reset",
+    accountId: account.id,
     email: "player@example.test",
   });
   assert.equal(raw.prepare("SELECT count(*) AS n FROM sessions").get().n, 0);
@@ -2054,13 +2127,19 @@ const blockCommand = fileURLToPath(
 );
 
 // Runs the owner's command as `docker exec loop2 node dist/server/account-block.js`
-// does: its own process, with the database path its only setting.
-function runBlockCommand(args, databasePath) {
+// does: its own process, with the database path its only setting. `mode` runs
+// it under the stand-in for `node:sqlite`, which acts as the mode says.
+function runBlockCommand(args, databasePath, mode) {
   const env = { ...process.env };
   for (const name of Object.keys(env))
     if (name.startsWith("LOOP2_")) delete env[name];
   if (databasePath !== undefined) env.LOOP2_DATABASE_PATH = databasePath;
-  const child = spawn(process.execPath, [blockCommand, ...args], {
+  const command = [blockCommand, ...args];
+  if (mode !== undefined) {
+    env.LOOP2_CHECK_STANDIN = mode;
+    command.unshift("--import", standin);
+  }
+  const child = spawn(process.execPath, command, {
     env,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -2087,6 +2166,9 @@ function runBlockCommand(args, databasePath) {
     });
   });
 }
+
+const standin = new URL("./account-database-check-standin.mjs", import.meta.url)
+  .href;
 
 // The command opens its own connection and prunes by the real clock, so its
 // sessions expire a day from now.
@@ -2146,6 +2228,125 @@ test("the owner's command blocks and unblocks by address beside an open connecti
     assert.doesNotMatch(run.output, /encoded-hash|\bone\b|\btwo\b/);
 });
 
+// D-252, business events of the guidelines' list, kept from the task's
+// question 11. Faults: no line for a change, a line for a command that changed
+// nothing, the wrong account's number, the address in the line.
+test("the owner's command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
+  const { path, database, account } = await fixture(t);
+  database.createAccount("other@example.test", "hash");
+  const eventsOf = (run) =>
+    run.stdout
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith("{"))
+      .map((line) => {
+        assert.doesNotMatch(line, /example\.test/);
+        return JSON.parse(line);
+      });
+  const run = (action) =>
+    runBlockCommand([action, "player@example.test"], path);
+
+  assert.deepEqual(eventsOf(await run("block")), [
+    { event: "account-blocked", accountId: account.id },
+  ]);
+  assert.deepEqual(eventsOf(await run("block")), []);
+  assert.deepEqual(eventsOf(await run("unblock")), [
+    { event: "account-unblocked", accountId: account.id },
+  ]);
+  assert.deepEqual(eventsOf(await run("unblock")), []);
+  assert.deepEqual(
+    eventsOf(await runBlockCommand(["block", "nobody@example.test"], path)),
+    [],
+  );
+});
+
+// To do 6, cause 4. Faults: the failure's reason left out, so the owner only
+// hears to try again; SQLite's message or the file's path in the output; a
+// sentence dropped, so the owner no longer reads what happened.
+test("a database failure of the owner's command adds the error's kind and code and nothing of its text", async (t) => {
+  const { path } = await fixture(t);
+  const garbage = join(path, "..", "garbage-secret-name.sqlite");
+  await writeFile(garbage, "this is not an SQLite database at all, padding");
+
+  const run = await runBlockCommand(["block", "player@example.test"], garbage);
+
+  assert.equal(run.code, 1, run.output);
+  assert.match(run.stderr, /Nothing changed; run the command again\./);
+  const [line] = run.stderr.split(/\r?\n/).filter((text) => text[0] === "{");
+  const { failure, kind, code, errcode, place } = JSON.parse(line);
+  assert.deepEqual(
+    { failure, kind, code, errcode, place },
+    {
+      failure: "account-block",
+      kind: "Error",
+      code: "ERR_SQLITE_ERROR",
+      errcode: 26,
+      place: "account-block.change",
+    },
+    "SQLite's number 26 says the file is no database",
+  );
+  assert.doesNotMatch(run.output, /garbage-secret-name|not a database/i);
+});
+
+// To do 8, cause 7, D-253. Faults: no handler, so the default print writes the
+// message and the stack; a handler that goes on after what no code handled.
+test("what no code of the owner's command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
+  const { path } = await fixture(t);
+  const run = await runBlockCommand(
+    ["block", "player@example.test"],
+    path,
+    "uncaught",
+  );
+  assert.equal(run.code, 1, run.output);
+  assert.deepEqual(JSON.parse(run.stderr.trim()), {
+    failure: "uncaught",
+    kind: "RangeError",
+    code: "ERR_STANDIN_FAULT",
+    place: "account-block",
+  });
+});
+
+// D-112's cleanup runs in a timer, so no caller could ever see its failure. The
+// fault: the failure's reason dropped from the line (cause 1).
+test("a cleanup that fails in the background writes one line of its kind and code, and nothing of its text", async (t) => {
+  const { path, raw, account } = await fixture(t);
+  const logged = t.mock.method(console, "error", () => {});
+  // Opened first: the opening prunes too, and its failure is the caller's.
+  const database = new AccountDatabase(path, {
+    now: () => 1000,
+    cleanupIntervalMs: 5,
+  });
+  t.after(() => database.close());
+  raw.exec(`
+    CREATE TRIGGER refuse_cleanup BEFORE DELETE ON sessions
+    BEGIN SELECT RAISE(ABORT, 'synthetic player@example.test'); END;
+  `);
+  raw
+    .prepare("INSERT INTO sessions VALUES ('old', ?, '{}', 1)")
+    .run(account.id);
+  await new Promise((resolve, reject) => {
+    const deadline = setTimeout(() => {
+      clearInterval(poll);
+      reject(new Error("cleanup failure deadline"));
+    }, 2000);
+    const poll = setInterval(() => {
+      if (logged.mock.callCount() > 0) {
+        clearInterval(poll);
+        clearTimeout(deadline);
+        resolve();
+      }
+    }, 2);
+  });
+  database.close();
+  const line = String(logged.mock.calls[0].arguments[0]);
+  assert.deepEqual(JSON.parse(line), {
+    failure: "database-cleanup",
+    kind: "Error",
+    code: "ERR_SQLITE_ERROR",
+    errcode: 1811,
+    place: "database.cleanup",
+  });
+});
+
 // invariant: unblock-restores-no-link
 test("the owner's command stops every emailed link of the account it blocks, and its unblock brings none back", async (t) => {
   // The command prunes by the real clock, so the server's connection uses it
@@ -2169,10 +2370,16 @@ test("the owner's command stops every emailed link of the account it blocks, and
     path,
   );
   assert.equal(unblocked.code, 0, unblocked.output);
-  assert.equal(database.confirmEmailAddress(digest("confirm")), "invalid");
+  assert.equal(
+    database.confirmEmailAddress(digest("confirm")).outcome,
+    "invalid",
+  );
   assert.equal(storedLink(raw, "reset").spent, 1);
   assert.equal(database.findAccountById(account.id).emailConfirmed, false);
-  assert.equal(database.confirmEmailAddress(digest("theirs")), "confirmed");
+  assert.equal(
+    database.confirmEmailAddress(digest("theirs")).outcome,
+    "confirmed",
+  );
 });
 
 test("the owner's command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
@@ -2237,7 +2444,7 @@ test("the owner's command changes nothing on a usage error, an unknown address o
   for (const run of refusals)
     assert.doesNotMatch(
       run.output,
-      /encoded-hash|\bone\b|database is locked|SQLITE_|errcode/i,
+      /encoded-hash|\bone\b|database is locked/i,
       "no hash, session identifier or database error detail",
     );
 });

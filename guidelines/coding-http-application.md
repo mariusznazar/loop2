@@ -13,6 +13,7 @@ Czytaj również ogólne wytyczne kodowania.
 | File | Status | Decision |
 |---|---|---|
 | `src/server/app.ts` | exemplar | D-37 |
+| `src/server/account-routes.ts` | copy | — |
 
 ## Rules
 

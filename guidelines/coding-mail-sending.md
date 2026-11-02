@@ -61,12 +61,12 @@ porównuje wysyłkę z tą zasadą.
 
 - **Decision:** D-162
 - **Invariant:** none
-- **Good:** Przy porażce plik zapisuje jeden stały wiersz z kodem błędu biblioteki albo słowem „unknown”.
+- **Good:** Przy porażce plik zapisuje jeden wiersz z rodzajem i kodem błędu biblioteki, a gdy błędu biblioteki nie ma, z kodem nazywającym powód.
 - **Bad:** Dziennik dostaje komunikat błędu, odpowiedź serwera poczty, treść wiadomości, odnośnik, token, login albo hasło.
 
-Plik wysyłki niczego, co pochodzi od serwera poczty albo z wiadomości, nie
-zapisuje do dziennika, bo mogłoby zawierać dane uwierzytelniające lub odnośnik
-z tokenem. Przegląd każdej zmiany porównuje dziennik pliku z tą zasadą.
+Z błędu biblioteki plik wysyłki zapisuje tylko jego rodzaj i kod. Niczego
+innego, co pochodzi od serwera poczty albo z wiadomości, nie zapisuje do
+dziennika, bo mogłoby zawierać dane uwierzytelniające lub odnośnik z tokenem. Przegląd każdej zmiany porównuje dziennik pliku z tą zasadą.
 
 ### Składanie wiadomości poza trasą
 
@@ -113,8 +113,11 @@ plików i adresów URL przy składaniu treści.
 
 ### Dziennik porażki
 
-Wiersz porażki ma stały tekst i kod błędu biblioteki, jeśli ten jest słowem
-z wielkich liter, albo „unknown”.
+Wiersz porażki pisze `writeFailure`, z rodzajem i kodem błędu biblioteki.
+Porażka bez błędu biblioteki nazywa swój powód kodem `ReasonedFailure`:
+`UNSAFE_RECIPIENT`, `DEADLINE`, `CONNECTION_ENDED` albo `NOT_ENCRYPTED`. Trasa
+podaje nadawcy pola swojej sprawy, `accountId` i `linkPurpose`, a plik wysyłki
+tylko przenosi je do wiersza.
 
 ### Dodatkowy certyfikat w testach
 

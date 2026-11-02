@@ -10,12 +10,31 @@ import { registerHooks } from "node:module";
 // unchanged. The stand-in re-exports the real `DatabaseSync` and makes the real
 // backup, then spoils its result as LOOP2_CHECK_STANDIN says. It writes
 // "standin-reached" to standard error on every call, so that a test can tell
-// a stand-in that was used from one that was not.
+// a stand-in that was used from one that was not. With the mode "uncaught" or
+// "rejected", opening a database sets off an error no code of the program can
+// catch, its message quoting a value, for the last-resort handlers' tests.
 
 const role = "?standin";
 const sqlite = process.getBuiltinModule("node:sqlite");
 
-export const DatabaseSync = sqlite.DatabaseSync;
+function faultOutsideAnyHandler(mode) {
+  const fault = Object.assign(
+    new RangeError("a fault quoting player@example.test"),
+    { code: "ERR_STANDIN_FAULT" },
+  );
+  if (mode === "rejected") void Promise.reject(fault);
+  else if (mode === "uncaught")
+    setImmediate(() => {
+      throw fault;
+    });
+}
+
+export class DatabaseSync extends sqlite.DatabaseSync {
+  constructor(...args) {
+    super(...args);
+    faultOutsideAnyHandler(process.env.LOOP2_CHECK_STANDIN);
+  }
+}
 
 export async function backup(source, path, options) {
   const mode = process.env.LOOP2_CHECK_STANDIN;

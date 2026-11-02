@@ -1,13 +1,23 @@
 import { createApp } from "./app.js";
-import { openAccountRuntime } from "./configuration.js";
+import { openAccountRuntime, StartupFailure } from "./configuration.js";
+import {
+  installLastResort,
+  ReasonedFailure,
+  writeFailure,
+} from "./log-line.js";
+
+installLastResort("main");
 
 const host = process.env.LOOP2_LISTEN_HOST ?? "127.0.0.1";
 const rawPort = process.env.LOOP2_LISTEN_PORT ?? "3000";
 const port = /^\d+$/.test(rawPort) ? Number(rawPort) : NaN;
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
-  console.error(
-    `Loop could not start: LOOP2_LISTEN_PORT must be an integer from 1 to 65535, got ${JSON.stringify(rawPort)}`,
+  writeFailure(
+    "Loop could not start: LOOP2_LISTEN_PORT must be an integer from 1 to 65535",
+    "main.start",
+    new ReasonedFailure("INVALID_LISTEN_PORT"),
+    { listen: rawPort },
   );
   process.exit(1);
 }
@@ -21,9 +31,9 @@ try {
     });
     server.once("error", (error: NodeJS.ErrnoException) => {
       runtime?.close();
-      console.error(
-        `Loop could not start on ${host}:${port}: ${error.code ?? ""}`,
-      );
+      writeFailure("server-listen", "main.listen", error, {
+        listen: `${host}:${port}`,
+      });
       process.exitCode = 1;
     });
     server.once("close", () => runtime?.close());
@@ -42,8 +52,10 @@ try {
     throw error;
   }
 } catch (error) {
-  console.error(
-    `Loop could not start: ${error instanceof Error ? error.message : "Account startup failed"}`,
-  );
+  // Only a sentence of the code's own stands in the line: any other error's
+  // message may quote a value.
+  if (error instanceof StartupFailure)
+    writeFailure(error.message, "main.start", error.cause ?? error);
+  else writeFailure("server-start", "main.start", error);
   process.exitCode = 1;
 }
