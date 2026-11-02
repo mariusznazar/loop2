@@ -5,6 +5,7 @@ import {
   type BlockOutcome,
   type UnblockOutcome,
 } from "./database.js";
+import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 
 // The owner blocks or unblocks one player account, named by its email address,
 // from a shell in the loop2 container:
@@ -15,7 +16,7 @@ import {
 // It opens the existing account database of LOOP2_DATABASE_PATH beside the
 // running server, with the server's own opening rules, makes one change in one
 // transaction and closes it. It reads no other setting and prints no password
-// hash, session identifier or database error.
+// hash or session identifier, and of a database error its kind and code alone.
 
 const usage =
   "Usage: node dist/server/account-block.js block|unblock <email address>";
@@ -25,6 +26,8 @@ const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
 const exitNoAccount = 4;
+
+installLastResort("account-block");
 
 function stop(code: number, message: string): never {
   console.error(message);
@@ -61,30 +64,35 @@ if (path === null)
     "LOOP2_DATABASE_PATH names no existing account database file. Nothing changed.",
   );
 
-let outcome: BlockOutcome | UnblockOutcome;
+let result: BlockOutcome | UnblockOutcome;
 try {
   const database = new AccountDatabase(path);
   try {
-    outcome =
+    result =
       action === "block"
         ? database.blockAccount(email)
         : database.unblockAccount(email);
   } finally {
     database.close();
   }
-} catch {
+} catch (error) {
+  writeFailure("account-block", "account-block.change", error);
   stop(
     exitDatabaseFailure,
     "The account database could not be opened or changed, for example while it was busy for longer than the wait allows. Nothing changed; run the command again.",
   );
 }
 
-const reports: Record<Exclude<typeof outcome, "unknown">, string> = {
+if (result.outcome === "unknown")
+  stop(exitNoAccount, `No account has the address ${email}. Nothing changed.`);
+const reports: Record<typeof result.outcome, string> = {
   blocked: `Blocked ${email}: it cannot sign in, its sessions in every browser have ended and its emailed links no longer work.`,
   "already-blocked": `${email} was already blocked; it has no session and no working emailed link left.`,
   unblocked: `Unblocked ${email}: it can sign in again; its earlier sessions and emailed links stay ended.`,
   "not-blocked": `${email} was not blocked; nothing changed.`,
 };
-if (outcome === "unknown")
-  stop(exitNoAccount, `No account has the address ${email}. Nothing changed.`);
-console.log(reports[outcome]);
+if (result.outcome === "blocked")
+  writeEvent("account-blocked", { accountId: result.accountId });
+if (result.outcome === "unblocked")
+  writeEvent("account-unblocked", { accountId: result.accountId });
+console.log(reports[result.outcome]);

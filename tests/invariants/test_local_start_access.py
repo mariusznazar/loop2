@@ -3,7 +3,7 @@ none of the proxy headers a browser sent.
 
 The file also checks the rest of what `npm run local` promises: a browser reaches accounts through
 it, every start has a database of its own, and neither an argument nor an environment value leads
-the removal of earlier databases anywhere else (D-253, D-254, D-255, D-256).
+the removal of earlier databases anywhere else (D-255, D-256, D-257, D-258).
 
 Each start runs in a temporary copy of the working tree. The case of the headers replaces the built
 server by a stand-in that reports the raw headers it receives, since the real server ignores most of

@@ -1,5 +1,5 @@
 import express from "express";
-import type { Express, ErrorRequestHandler } from "express";
+import type { Express, ErrorRequestHandler, Request } from "express";
 import { fileURLToPath } from "node:url";
 import session from "express-session";
 import type { AccountPolicy } from "./account-policy.js";
@@ -9,11 +9,19 @@ import {
   sessionCookieScope,
 } from "./account-routes.js";
 import type { AccountRuntime } from "./configuration.js";
+import { writeFailure } from "./log-line.js";
+import type { LineFields } from "./log-line.js";
 import { clientAddress, trustProxy } from "./transport.js";
 
 // The built game, found next to the compiled server (dist/server -> dist/public),
 // so the app serves the same files whatever the working directory is.
 const publicDirectory = fileURLToPath(new URL("../public/", import.meta.url));
+
+// Only the stored session names the account, and a request with none names none.
+function sessionFields(request: Request): LineFields {
+  const accountId: unknown = request.session?.accountId;
+  return typeof accountId === "string" ? { accountId } : {};
+}
 
 export function createApp(
   runtime: AccountRuntime | null = null,
@@ -45,7 +53,23 @@ export function createApp(
         return;
       }
       response.setHeader("Cache-Control", "no-store");
-      sessions(request, response, next);
+      // The library reports a store that failed as the response ends, through
+      // this `next`, wherever the request has got to. Past the last layer the
+      // error would reach Express's own handler, which prints its stack and
+      // message, so it stops here. An answer already ended stays whole.
+      sessions(request, response, (error?: unknown) => {
+        if (error && response.headersSent) {
+          writeFailure(
+            "session",
+            "app.sessions",
+            error,
+            sessionFields(request),
+          );
+          if (!response.writableEnded) response.destroy();
+          return;
+        }
+        next(error);
+      });
     });
   }
 
@@ -59,14 +83,10 @@ export function createApp(
 
   const errors: ErrorRequestHandler = (
     error: unknown,
-    _request,
+    request,
     response,
     next,
   ) => {
-    if (response.headersSent) {
-      next(error);
-      return;
-    }
     let status = 500;
     if (error && typeof error === "object" && "type" in error) {
       if (error.type === "entity.too.large") status = 413;
@@ -80,6 +100,16 @@ export function createApp(
         error.type === "entity.verify.failed"
       )
         status = 400;
+    }
+    // A refused body is an expected refusal.
+    if (status === 500)
+      writeFailure("request", "app.errors", error, sessionFields(request));
+    // A route's error after its answer began. Handed on with its error, Express
+    // would print the stack and message the line above leaves out.
+    if (response.headersSent) {
+      response.destroy();
+      next();
+      return;
     }
     response.setHeader("Cache-Control", "no-store");
     response.status(status).json({

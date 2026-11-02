@@ -1861,6 +1861,125 @@ test("a sign-in to another account after a 401 on a save drops the kept state an
   });
 });
 
+const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
+
+/**
+ * A fault of the code inside the real load, for as long as it lasts, its error quoting `quoted`: a
+ * language function fails on the saved document alone, which no value of a document can make it do.
+ * Returns what `console.error` got meanwhile and the way to end the fault.
+ */
+function faultInLoad(quoted) {
+  const ownKeys = Reflect.ownKeys;
+  const error = mock.method(console, "error", () => {});
+  Reflect.ownKeys = (value) => {
+    if (Object.hasOwn(value, "version") && Object.hasOwn(value, "game"))
+      throw new TypeError(`a fault of the code at ${quoted}`);
+    return ownKeys(value);
+  };
+  return {
+    lines: () => error.mock.calls.map((call) => call.arguments.join(" ")),
+    end() {
+      Reflect.ownKeys = ownKeys;
+      error.mock.restore();
+    },
+  };
+}
+
+// Question 16 of the task, D-213, D-96. Catches the error taken for a refusal, which starts a new
+// game and saves it over the player's save; a game built or a save sent while the sentence stands;
+// the error's text in the console, which may quote what the save holds. The sentence and the button
+// are the task's, and that the retry saves nothing is D-207's: nothing the player did changed.
+test("an error of the code in the load of a downloaded save keeps the save, builds no game, and the retry loads it", async () => {
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    await startPage(held);
+    await held.answer("currentAccount", ACCOUNT);
+    const fault = faultInLoad("the-quoted-value");
+    try {
+      await held.answer("loadSavedGame", saveOf(passing(), 4));
+    } finally {
+      fault.end();
+    }
+    assert.deepEqual(
+      shownAlerts(root).map((alert) => alert.textContent),
+      [LOAD_FAILED],
+    );
+    assert.equal(gameShown(root), false);
+    assert.equal(intervals.size, 0, "no game's time runs");
+    assert.deepEqual(waitingCalls(held), [], "nothing is saved");
+    const [line, ...others] = fault.lines();
+    assert.deepEqual(others, [], "one line");
+    assert.match(line, /TypeError/, "the kind of the error");
+    assert.match(line, /a1/, "the account");
+    assert.doesNotMatch(line, /the-quoted-value|a fault/);
+
+    buttonNamed(root, "Spróbuj ponownie").fire("click");
+    await settle();
+    assert.deepEqual(waitingCalls(held), ["currentAccount"], "both requests");
+    await held.answer("currentAccount", ACCOUNT);
+    assert.deepEqual(waitingCalls(held), ["loadSavedGame"]);
+    await held.answer("loadSavedGame", saveOf(passing(), 4));
+    assert.equal(gameShown(root), true);
+    assert.deepEqual(shownAlerts(root), []);
+    assert.deepEqual(waitingCalls(held), [], "the retry saves nothing");
+    assert.ok(shown(buttonNamed(root, "Wznów")), "it is the save's map run");
+  });
+});
+
+// Handoff question 1, D-211, D-213. Catches the kept state dropped before the load, so that the
+// retry finds no state and the next load brings the older save; the state left for another account.
+test("an error of the code in the load of the kept state keeps it for the retry, and only then is it sent", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const kept = await expiredPage(held);
+    const fault = faultInLoad("the-quoted-value");
+    try {
+      await signIn(held, ACCOUNT);
+    } finally {
+      fault.end();
+    }
+    assert.deepEqual(
+      shownAlerts(root).map((alert) => alert.textContent),
+      [LOAD_FAILED],
+    );
+    assert.equal(gameShown(root), false);
+    assert.deepEqual(forms(root), {}, "the forms leave for the sentence");
+    assert.deepEqual(waitingCalls(held), [], "nothing is saved or asked for");
+    assert.equal(fault.lines().length, 1);
+    assert.doesNotMatch(fault.lines()[0], /the-quoted-value|a fault/);
+
+    buttonNamed(root, "Spróbuj ponownie").fire("click");
+    await settle();
+    await held.answer("currentAccount", ACCOUNT);
+    assert.deepEqual(
+      waitingCalls(held),
+      ["saveGame"],
+      "the kept state, not the older save on the server",
+    );
+    assert.deepEqual(argsOf(held, "saveGame"), [submission(kept, 4)]);
+    assert.equal(gameShown(root), true);
+  });
+
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await expiredPage(held);
+    const fault = faultInLoad("the-quoted-value");
+    try {
+      await signIn(held, ACCOUNT);
+    } finally {
+      fault.end();
+    }
+    buttonNamed(root, "Spróbuj ponownie").fire("click");
+    await settle();
+    await held.answer("currentAccount", OTHER_ACCOUNT);
+    assert.deepEqual(
+      waitingCalls(held),
+      ["loadSavedGame"],
+      "another account's save, never the kept state",
+    );
+  });
+});
+
 /**
  * A game whose map run ended in Ala's death, the pause of each discovery lifted by the player, the
  * death settled as the game's clock settles it; the load refuses a death unsettled (spec, decision 9).

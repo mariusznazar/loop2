@@ -15,7 +15,7 @@ import {
 } from "./data/skills.js";
 import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
-import { checkProgram } from "./programs.js";
+import { checkProgram, ProgramCheckError } from "./programs.js";
 import { mapRunEnded } from "./run.js";
 import { skillProgress } from "./skills.js";
 import { pieceCount } from "./trip.js";
@@ -96,9 +96,12 @@ export function savedGame(state: GameState): SavedGame {
   };
 }
 
+/** What stops the reading of a document it does not admit; every other error is a fault of the code. */
+class Refused extends Error {}
+
 /** Stops the reading of a document it does not admit; the load catches it and refuses. */
 function refuse(): never {
-  throw new Error("saved game: not admitted");
+  throw new Refused("saved game: not admitted");
 }
 
 /** An object made by an object literal or JSON.parse: neither a list nor of another prototype. */
@@ -247,9 +250,14 @@ function matches(value: unknown, canonical: unknown): void {
  * those the check builds.
  */
 function program(value: unknown): Program {
-  const checked = checkProgram(value, null);
-  matches(value, checked);
-  return checked;
+  try {
+    const checked = checkProgram(value, null);
+    matches(value, checked);
+    return checked;
+  } catch (error) {
+    if (error instanceof ProgramCheckError) refuse();
+    throw error;
+  }
 }
 
 /** An action of the closed list, read by the program check as an action of a program rule. */
@@ -1249,8 +1257,9 @@ function versionOf(value: unknown): number | null {
     return typeof version === "number" && Number.isSafeInteger(version)
       ? version
       : null;
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof Refused) return null;
+    throw error;
   }
 }
 
@@ -1270,8 +1279,9 @@ function namesAbsentArchetype(value: unknown): boolean {
         !Object.hasOwn(ARCHETYPES, archetypeId)
       );
     });
-  } catch {
-    return false;
+  } catch (error) {
+    if (error instanceof Refused) return false;
+    throw error;
   }
 }
 
@@ -1293,8 +1303,9 @@ function savedDocument(value: unknown): Record<"version" | "game", unknown> {
  * another version than the current one is `version`; a readable team naming an archetype the data
  * lacks is `archetype`; anything else the game state's types, closed lists and data do not admit
  * is `shape`. A map run that goes on comes back paused at its game minute, pace and carried real
- * time, and one that ended as it ended; no real time enters the load. Never throws, changes nothing
- * passed to it and shares nothing with it.
+ * time, and one that ended as it ended; no real time enters the load. No value a document can hold
+ * makes it throw; an error of this code is no refusal and leaves it as the error it is (D-213). It
+ * changes nothing passed to it and shares nothing with it.
  */
 export function loadSavedGame(value: unknown): LoadedGame {
   const version = versionOf(value);
@@ -1303,7 +1314,8 @@ export function loadSavedGame(value: unknown): LoadedGame {
   if (namesAbsentArchetype(value)) return { ok: false, reason: "archetype" };
   try {
     return { ok: true, state: game(savedDocument(value).game) };
-  } catch {
-    return { ok: false, reason: "shape" };
+  } catch (error) {
+    if (error instanceof Refused) return { ok: false, reason: "shape" };
+    throw error;
   }
 }

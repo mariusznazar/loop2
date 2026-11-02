@@ -266,7 +266,7 @@ Expected: `root 1000 440`. Put the same value into the private note's copy and n
    the tunnel token. The application reads the file only at startup, so until it is recreated
    it keeps sending with the old password, which Outsider may already refuse.
 4. Check that the application is healthy. A later send shows in the bounded service logs
-   either nothing or the failure line `Account mail failed: <code>`; `EAUTH` means the login
+   either nothing or a JSON failure line with `"failure":"mail"`; the `code` `EAUTH` means the login
    or password is refused. The agent only reads that line.
 
 **A different login.** If Outsider wants a login other than the full sender address, the
@@ -277,7 +277,7 @@ credential moves.
 request's head with `loop2-deploy <sha>`, creates an account with an address on an external
 mailbox, receives the message and opens its link; the address is then confirmed. If the
 message does not come, the agent reads the failure line and reports its code (`EAUTH`, a connection
-code, `EENVELOPE`, `EMESSAGE` or `unknown`; see "Account mail" in `SKILL.md`). This deployment moves the database to schema version 3; if the request
+code, `EENVELOPE`, `EMESSAGE` or a reason such as `DEADLINE`; see "Account mail" in `SKILL.md`). This deployment moves the database to schema version 3; if the request
 is not merged, the code on `main` refuses that database and only the human repairs it (see
 "Rollback and the accounts" in `troubleshooting.md`).
 
