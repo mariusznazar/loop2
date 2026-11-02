@@ -1,5 +1,6 @@
 import type { AccountClient, AccountResult } from "../account-api.js";
-import { accountForm, passwordProblems } from "./account-screen.js";
+import { passwordProblems } from "./account-rules.js";
+import { accountForm } from "./account-screen.js";
 import { createButton, setButtonWaiting } from "./controls/button.js";
 import { createPasswordField } from "./controls/text-field.js";
 import type { PageAddress } from "./email-confirmation.js";

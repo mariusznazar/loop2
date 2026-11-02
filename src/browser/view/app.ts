@@ -5,6 +5,7 @@ import {
   type AccountFailure,
   type ConfirmationMessage,
 } from "../account-api.js";
+import { ABOUT } from "../sim/data/about.js";
 import { newGame } from "../sim/game.js";
 import { loadSavedGame, type SavedGameRefusal } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
@@ -131,7 +132,7 @@ export function startApp(
 ): void {
   const header = document.createElement("header");
   const title = document.createElement("h1");
-  title.textContent = "Loop";
+  title.textContent = ABOUT.name;
   const logoutButton = createButton("Wyloguj");
   logoutButton.hidden = true;
   const logoutWarning = createFormWarning();

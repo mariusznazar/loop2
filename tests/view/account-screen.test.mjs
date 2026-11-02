@@ -35,10 +35,10 @@ import { loadSavedGame } from "../../dist/browser/sim/saved-game.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import {
   addressProblem,
-  createAccountScreen,
   passwordProblems,
   registrationProblems,
-} from "../../dist/browser/view/account-screen.js";
+} from "../../dist/browser/view/account-rules.js";
+import { createAccountScreen } from "../../dist/browser/view/account-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- a document model with just what the page and the game build ---------------------------

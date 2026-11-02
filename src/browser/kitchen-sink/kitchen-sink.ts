@@ -19,7 +19,7 @@ import {
 } from "../view/controls/button.js";
 import { createNumberField } from "../view/controls/number-field.js";
 import { createSelectList } from "../view/controls/select-list.js";
-import { RESET_REQUESTED_SENTENCE } from "../view/account-screen.js";
+import { RESET_REQUESTED_SENTENCE } from "../view/account-rules.js";
 import {
   createFormNote,
   createFormWarning,
