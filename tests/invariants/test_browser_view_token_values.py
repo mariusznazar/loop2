@@ -348,6 +348,9 @@ def literal_texts(text):
             else:
                 found.append((line_at(text, start), text[start:]))
             i, last = j, "`"
+        elif c == "/" and text[i - 1:i] == "<":
+            # The `/` of a JSX closing tag such as `</p>` or `</>`: no regex starts here.
+            i, last = i + 1, c
         elif c == "/" and (last == "" or last in REGEX_AFTER or REGEX_AFTER_WORD.search(text[:i])):
             j, in_class = i + 1, False
             while j < n and text[j] != "\n":
@@ -472,6 +475,10 @@ FLAGGED = {
             "const a = <p style={{ background: '#fff' }}>x</p>;",
         "a colour function in a literal on the line after a JSX element":
             'const a = <p>x</p>;\nconst c = "rgb(1, 2, 3)";',
+        "a colour in a literal later on the line of a JSX closing tag":
+            'const a = <p>x</p>; const c = "rgb(1, 2, 3)";',
+        "a colour in a literal after the closing tag of a fragment on its line":
+            'const a = <>x</>; const c = "#fff";',
     },
 }
 CLEAN = {
