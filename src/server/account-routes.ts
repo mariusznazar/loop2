@@ -25,6 +25,8 @@ import {
   PasswordCapacityError,
   verifyPassword,
 } from "./passwords.js";
+import { ReasonedFailure, writeEvent, writeFailure } from "./log-line.js";
+import type { LineFields } from "./log-line.js";
 import { mutationGuards } from "./transport.js";
 
 export const sessionCookieName = "__Host-loop2.sid";
@@ -194,17 +196,24 @@ function establishSession(
   accountId: string,
   passwordHash: string,
 ): Promise<boolean> {
+  const place = "account-routes.establishSession";
   return new Promise((resolve) => {
-    const abandon = () => request.session.destroy(() => resolve(false));
+    const abandon = (cause: unknown) => {
+      writeFailure("session", place, cause, { accountId });
+      request.session.destroy((destroyed: unknown) => {
+        if (destroyed) writeFailure("session", place, destroyed, { accountId });
+        resolve(false);
+      });
+    };
     request.session.regenerate((regenerated: unknown) => {
       if (regenerated) {
-        abandon();
+        abandon(regenerated);
         return;
       }
       request.session.accountId = accountId;
       runtime.store.expectPasswordHash(request.session, passwordHash);
       request.session.save((saved: unknown) => {
-        if (saved) abandon();
+        if (saved) abandon(saved);
         else resolve(true);
       });
     });
@@ -219,8 +228,10 @@ async function signIn(
   account: Account,
   passwordHash: string,
 ): Promise<boolean> {
-  if (await establishSession(runtime, request, account.id, passwordHash))
+  if (await establishSession(runtime, request, account.id, passwordHash)) {
+    writeEvent("signed-in", { accountId: account.id });
     return true;
+  }
   refuse(
     response,
     503,
@@ -235,10 +246,12 @@ async function signIn(
 function boundedSending(
   sending: Promise<SendOutcome>,
   deadline: number,
+  fields: LineFields,
 ): Promise<SendOutcome> {
+  const place = "account-routes.boundedSending";
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
-      console.error("Account mail missed its deadline");
+      writeFailure("mail", place, new ReasonedFailure("DEADLINE"), fields);
       resolve("failed");
     }, deadline);
     timer.unref();
@@ -247,9 +260,9 @@ function boundedSending(
         clearTimeout(timer);
         resolve(outcome === "sent" ? "sent" : "failed");
       },
-      () => {
+      (error: unknown) => {
         clearTimeout(timer);
-        console.error("Account mail failed: unknown");
+        writeFailure("mail", place, error, fields);
         resolve("failed");
       },
     );
@@ -294,6 +307,8 @@ async function sendLinkMessage(
   kind: keyof typeof linkKinds,
 ): Promise<ConfirmationMessage | "blocked"> {
   const { purpose, lifetimeMs, fragment, compose }: LinkKind = linkKinds[kind];
+  const place = "account-routes.sendLinkMessage";
+  const fields = { accountId: account.id, linkPurpose: purpose };
   const token = createLinkToken();
   let issued: IssueOutcome;
   try {
@@ -306,21 +321,24 @@ async function sendLinkMessage(
       },
       accountMessageLimits,
     );
-  } catch {
+  } catch (error) {
     // A message whose link has no row could never work, so none is sent.
-    console.error(`Account ${purpose} link could not be recorded`);
+    writeFailure("link-record", place, error, fields);
     return "failed";
   }
   if (issued !== "issued") return issued;
+  writeEvent("link-issued", fields);
   const link = `${runtime.configuration.publicOrigin}/#${fragment}=${token}`;
   let sending: Promise<SendOutcome>;
   try {
-    sending = runtime.mailer.send(compose(account.email, link));
-  } catch {
-    console.error("Account mail failed: unknown");
+    sending = runtime.mailer.send(compose(account.email, link), fields);
+  } catch (error) {
+    writeFailure("mail", place, error, fields);
     return "failed";
   }
-  return boundedSending(sending, policy.sendingDeadline);
+  const outcome = await boundedSending(sending, policy.sendingDeadline, fields);
+  if (outcome === "sent") writeEvent("message-sent", fields);
+  return outcome;
 }
 
 // Runs after the request for a link was answered (spec decision 2), with no
@@ -338,8 +356,8 @@ async function sendResetMessage(
     const account = runtime.database.findAccountByEmail(email);
     if (!account?.emailConfirmed) return;
     await sendLinkMessage(runtime, policy, account, "reset");
-  } catch {
-    console.error("Password-reset request could not be served");
+  } catch (error) {
+    writeFailure("reset-request", "account-routes.sendResetMessage", error);
   }
 }
 
@@ -474,14 +492,14 @@ export function accountRoutes(
       invalidRequest(response);
       return;
     }
-    if (
-      !isLinkToken(input.token) ||
-      runtime.database.confirmEmailAddress(linkTokenDigest(input.token)) !==
-        "confirmed"
-    ) {
+    const confirmed = isLinkToken(input.token)
+      ? runtime.database.confirmEmailAddress(linkTokenDigest(input.token))
+      : null;
+    if (confirmed?.outcome !== "confirmed") {
       invalidLink(response);
       return;
     }
+    writeEvent("email-confirmed", { accountId: confirmed.accountId });
     response.status(204).end();
   });
 
@@ -601,6 +619,7 @@ export function accountRoutes(
       return;
     }
     policy.clearEmailAttempts(outcome.email);
+    writeEvent("password-set", { accountId: outcome.accountId });
     response.status(204).end();
   });
 
@@ -610,12 +629,15 @@ export function accountRoutes(
       refuse(response, 400, "invalid-request", "Nieprawidłowe żądanie.");
       return;
     }
-    if (!sessionAccount(runtime, request)) {
+    const account = sessionAccount(runtime, request);
+    if (!account) {
       unauthenticated(response);
       return;
     }
-    request.session.destroy((error) => {
+    const accountId = account.id;
+    request.session.destroy((error: unknown) => {
       if (error) {
+        writeFailure("logout", "account-routes.logout", error, { accountId });
         refuse(
           response,
           500,
@@ -625,6 +647,7 @@ export function accountRoutes(
         return;
       }
       response.clearCookie(sessionCookieName, sessionCookieScope);
+      writeEvent("signed-out", { accountId });
       response.status(204).end();
     });
   });
@@ -682,6 +705,7 @@ export function accountRoutes(
       return;
     }
     ticket.created();
+    writeEvent("account-created", { accountId: account.id });
     if (
       !(await signIn(runtime, request, response, account, account.passwordHash))
     )

@@ -98,6 +98,9 @@ function sha256(buffer) {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
+const standin = new URL("./account-database-check-standin.mjs", import.meta.url)
+  .href;
+
 function environment(databasePath, temporary) {
   const env = { ...process.env };
   for (const name of Object.keys(env))
@@ -391,6 +394,64 @@ test("a database that cannot be opened and a temporary directory that cannot be 
   assert.equal(result.code, 1, result.stderr);
   assert.equal(result.stdout.length, 0);
   assert.doesNotMatch(result.stderr, /no[\\/]such|accounts\.sqlite/);
+});
+
+// To do 6, cause 4. Faults: the failure's reason left out, so the owner reads
+// only that the night's copy failed; SQLite's message or the path in standard
+// error, which the backup script appends to its log (D-233).
+test("a failed backup adds the error's kind and code to standard error, and nothing of its text", async (t) => {
+  const box = await sandbox(t);
+  const garbage = join(box.directory, "garbage-secret-name.sqlite");
+  await writeFile(garbage, "this is not an SQLite database at all, padding");
+
+  const result = await runBackup([word], garbage, box.temporary);
+
+  assert.equal(result.code, 1, result.stderr);
+  assert.match(result.stderr, /No backup was made/);
+  const [line] = result.stderr
+    .split(/\r?\n/)
+    .filter((text) => text.startsWith("{"));
+  assert.deepEqual(JSON.parse(line), {
+    failure: "backup-database",
+    kind: "Error",
+    code: "ERR_SQLITE_ERROR",
+    errcode: 26,
+    place: "account-backup.run",
+  });
+  assert.doesNotMatch(result.stderr, /garbage-secret-name|not a database/i);
+});
+
+// To do 8, cause 7, D-253. Faults: no handler, so the default print writes the
+// message and the stack; a line on standard output, which carries the backup.
+test("what no code of the command handled ends it with one line of its kind, code and place on standard error", async (t) => {
+  const box = await sandbox(t);
+  seedDatabase(box);
+  const child = spawn(process.execPath, ["--import", standin, command, word], {
+    env: {
+      ...environment(box.path, box.temporary),
+      LOOP2_CHECK_STANDIN: "uncaught",
+    },
+    stdio: ["ignore", "ignore", "pipe"],
+  });
+  let stderr = "";
+  child.stderr.setEncoding("utf8").on("data", (chunk) => {
+    stderr += chunk;
+  });
+  const code = await new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("close", resolve);
+  });
+  assert.equal(code, 1, stderr);
+  // The stand-in's own "standin-reached" stands beside it.
+  const lines = stderr.split(/\r?\n/).filter((text) => text.startsWith("{"));
+  assert.equal(lines.length, 1, stderr);
+  assert.doesNotMatch(stderr, /player@example|at .*\.js/);
+  assert.deepEqual(JSON.parse(lines[0]), {
+    failure: "uncaught",
+    kind: "RangeError",
+    code: "ERR_STANDIN_FAULT",
+    place: "account-backup",
+  });
 });
 
 test("a reader that goes away ends the command with a non-zero code and nothing stays in the temporary directory", async (t) => {

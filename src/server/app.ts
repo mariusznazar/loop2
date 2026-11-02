@@ -9,6 +9,7 @@ import {
   sessionCookieScope,
 } from "./account-routes.js";
 import type { AccountRuntime } from "./configuration.js";
+import { writeFailure } from "./log-line.js";
 import { clientAddress, trustProxy } from "./transport.js";
 
 // The built game, found next to the compiled server (dist/server -> dist/public),
@@ -59,14 +60,10 @@ export function createApp(
 
   const errors: ErrorRequestHandler = (
     error: unknown,
-    _request,
+    request,
     response,
     next,
   ) => {
-    if (response.headersSent) {
-      next(error);
-      return;
-    }
     let status = 500;
     if (error && typeof error === "object" && "type" in error) {
       if (error.type === "entity.too.large") status = 413;
@@ -80,6 +77,24 @@ export function createApp(
         error.type === "entity.verify.failed"
       )
         status = 400;
+    }
+    // A refused body is an expected refusal; only the stored session names the
+    // account, and a request with no session writes none.
+    if (status === 500) {
+      const accountId: unknown = request.session?.accountId;
+      writeFailure(
+        "request",
+        "app.errors",
+        error,
+        typeof accountId === "string" ? { accountId } : {},
+      );
+    }
+    // Handed on with its error, Express would print the stack and message the
+    // line above leaves out, so the response ends here and `next` has no error.
+    if (response.headersSent) {
+      response.destroy();
+      next();
+      return;
     }
     response.setHeader("Cache-Control", "no-store");
     response.status(status).json({

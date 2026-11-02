@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { AccountDatabase } from "./database.js";
+import { installLastResort, writeFailure } from "./log-line.js";
 
 // The backup script, or the owner, writes one consistent backup of the account
 // database to standard output from a shell in the loop2 container:
@@ -17,8 +18,8 @@ import { AccountDatabase } from "./database.js";
 // private temporary directory, closes it, streams the finished file out and
 // removes the directory, also after a failure and after a reader that goes
 // away; a signal that kills the process leaves it. Standard output carries the
-// backup's bytes and nothing else; messages go to standard error and hold no
-// database error, path or address.
+// backup's bytes and nothing else; messages go to standard error and hold of a
+// database error its kind and code alone, and no path or address.
 
 const usage = "Usage: node dist/server/account-backup.js --to-standard-output";
 const fixedWord = "--to-standard-output";
@@ -29,6 +30,8 @@ const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
 const exitOutputFailure = 4;
+
+installLastResort("account-backup");
 
 // Opening a missing file would create an empty database instead of finding it.
 function existingFile(path: string | undefined): string | null {
@@ -79,7 +82,8 @@ async function run(): Promise<number> {
             error ? reject(error) : resolve(),
           );
         });
-      } catch {
+      } catch (error) {
+        writeFailure("backup-output", "account-backup.run", error);
         console.error("The backup could not be written out. It is not whole.");
         return exitOutputFailure;
       }
@@ -87,7 +91,8 @@ async function run(): Promise<number> {
       if (directory !== undefined)
         await rm(directory, { recursive: true, force: true });
     }
-  } catch {
+  } catch (error) {
+    writeFailure("backup-database", "account-backup.run", error);
     console.error(
       "The account database could not be opened or backed up, for example while it was busy for longer than the wait allows. No backup was made; run the command again.",
     );

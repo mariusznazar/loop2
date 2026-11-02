@@ -516,6 +516,99 @@ test(
   },
 );
 
+/** The one failure line of a start, parsed; a start writes no other line. */
+function startFailure(result) {
+  const lines = result.stderr.split(/\r?\n/).filter((line) => line !== "");
+  assert.equal(lines.length, 1, result.stderr);
+  return JSON.parse(lines[0]);
+}
+
+test(
+  "a start that fails names the setting and the original error's kind and code, so that two causes of one setting read apart",
+  { timeout: 20000 },
+  async (t) => {
+    // To do 4, cause 2. Faults: every failure of the database reading as one
+    // bad path, which sends the owner to look for a wrong setting; a value of
+    // the setting or of a secret file in the line.
+    const f = await configurationFixture(t);
+    const future = new DatabaseSync(f.environment.LOOP2_DATABASE_PATH);
+    future.exec("PRAGMA user_version = 99");
+    future.close();
+    const unsupported = startFailure(await refusedStart(f.environment));
+    assert.deepEqual(
+      {
+        failure: unsupported.failure,
+        kind: unsupported.kind,
+        code: unsupported.code,
+      },
+      {
+        failure:
+          "Invalid or unavailable account configuration: LOOP2_DATABASE_PATH",
+        kind: "ReasonedFailure",
+        code: "UNSUPPORTED_SCHEMA",
+      },
+    );
+
+    const absent = join(f.directory, "absent", "db.sqlite");
+    const unavailable = startFailure(
+      await refusedStart({ ...f.environment, LOOP2_DATABASE_PATH: absent }),
+    );
+    assert.equal(unavailable.failure, unsupported.failure);
+    assert.equal(unavailable.code, "ERR_SQLITE_ERROR");
+    assert.equal(unavailable.errcode, 14, "SQLite's number for a failed open");
+    assert.ok(!JSON.stringify(unavailable).includes("absent"));
+
+    await writeFile(f.keyFile, "not-json-private-sentinel");
+    const unreadable = await refusedStart({
+      ...f.environment,
+      LOOP2_DATABASE_PATH: join(f.directory, "other.sqlite"),
+    });
+    assert.equal(startFailure(unreadable).kind, "SyntaxError");
+    assert.ok(!unreadable.stderr.includes("not-json"), "the file's content");
+  },
+);
+
+for (const [mode, origin] of [
+  ["uncaught", "an exception"],
+  ["rejected", "a rejected promise"],
+]) {
+  test(
+    `${origin} no code of the server handled ends it with one line of its kind, code and place`,
+    { timeout: 20000 },
+    async (t) => {
+      // To do 8, cause 7, D-253. Faults: no handler, so the default print
+      // writes the message and the stack; a handler that keeps the process.
+      const f = await configurationFixture(t);
+      const standin = new URL(
+        "./account-database-check-standin.mjs",
+        import.meta.url,
+      ).href;
+      const result = spawnSync(
+        process.execPath,
+        ["--import", standin, entryPoint],
+        {
+          encoding: "utf8",
+          timeout: 15000,
+          env: {
+            ...f.environment,
+            LOOP2_CHECK_STANDIN: mode,
+            LOOP2_LISTEN_HOST: "127.0.0.1",
+            LOOP2_LISTEN_PORT: String(await freePort()),
+          },
+        },
+      );
+      assert.equal(result.error, undefined, result.error?.message);
+      assert.equal(result.status, 1, result.stderr);
+      assert.deepEqual(startFailure(result), {
+        failure: "uncaught",
+        kind: "RangeError",
+        code: "ERR_STANDIN_FAULT",
+        place: "main",
+      });
+    },
+  );
+}
+
 test(
   "configured process becomes ready with public health response and exits on shutdown",
   { timeout: 20000 },

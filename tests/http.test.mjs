@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { request } from "node:http";
-import { createHash, createHmac, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -1706,7 +1706,7 @@ test(
     for (const cookie of [first.cookie, second.cookie])
       assert.equal((await readAccount(f, cookie)).status, 200, "precondition");
 
-    assert.equal(f.runtime.database.blockAccount(email), "blocked");
+    assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
     for (const [label, session] of [
       ["first browser", first],
       ["second browser", second],
@@ -1747,7 +1747,7 @@ test(
       .prepare("DELETE FROM sessions WHERE id = 'blocked-late'")
       .run();
 
-    assert.equal(f.runtime.database.unblockAccount(email), "unblocked");
+    assert.equal(f.runtime.database.unblockAccount(email).outcome, "unblocked");
     for (const [label, session] of [
       ["first browser", first],
       ["second browser", second],
@@ -1787,7 +1787,7 @@ test(
       (await register(f, email, { address: "198.51.100.93" })).status,
       201,
     );
-    assert.equal(f.runtime.database.blockAccount(email), "blocked");
+    assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
     const right = () => login(f, email, password);
     const wrong = () => login(f, email, `${password}!`);
 
@@ -1809,7 +1809,7 @@ test(
     assert.equal(sessionCount(f), 0);
 
     f.clock.time += 15 * minute;
-    assert.equal(f.runtime.database.unblockAccount(email), "unblocked");
+    assert.equal(f.runtime.database.unblockAccount(email).outcome, "unblocked");
     const signedIn = await right();
     assert.equal(signedIn.status, 200, "unblocked, the password signs in");
     issuedSession(signedIn, "after unblocking");
@@ -1837,7 +1837,7 @@ test(
     // The account is read before the password work starts, in the same turn
     // that admits the attempt (as in the disconnected-login case above).
     await waitFor(() => f.policy.inFlight === 1, "login admitted");
-    assert.equal(f.runtime.database.blockAccount(email), "blocked");
+    assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
     assertMessage(await pending, 403, blockedMessage, "blocked meanwhile");
     assert.equal(sessionCount(f), 0, "no session is stored");
     assertLoginRefused(await login(f, email, `${password}!`), "fifth failure");
@@ -2188,7 +2188,7 @@ test(
 
     const blocked = seed(f, "resend-blocked", f.second);
     assert.equal(
-      f.runtime.database.blockAccount("second@example.test"),
+      f.runtime.database.blockAccount("second@example.test").outcome,
       "blocked",
     );
     assertRefusal(
@@ -2210,7 +2210,7 @@ test(
     assertRefusal(await resend(f, late), 401, "a row past the guard");
     f.inspection.prepare("DELETE FROM sessions WHERE id = 'resend-late'").run();
     assert.equal(
-      f.runtime.database.unblockAccount("second@example.test"),
+      f.runtime.database.unblockAccount("second@example.test").outcome,
       "unblocked",
     );
     assertRefusal(await resend(f, blocked), 401, "after unblocking");
@@ -2425,7 +2425,7 @@ test(
     try {
       await waitFor(() => f.mailer.held.length === 1, "message handed on");
       assert.equal(
-        asOwner(f, (owner) => owner.blockAccount(email)),
+        asOwner(f, (owner) => owner.blockAccount(email).outcome),
         "blocked",
       );
     } finally {
@@ -2435,7 +2435,7 @@ test(
     const token = lastToken(f);
     assertInvalidLink(await confirm(f, { token }), "blocked");
     assert.equal(
-      asOwner(f, (owner) => owner.unblockAccount(email)),
+      asOwner(f, (owner) => owner.unblockAccount(email).outcome),
       "unblocked",
     );
     assertInvalidLink(await confirm(f, { token }), "after unblocking");
@@ -2446,7 +2446,7 @@ test(
     let target = "blocked-before@example.test";
     const blocks = [];
     f.hooks.beforeIssue = () =>
-      blocks.push(asOwner(f, (owner) => owner.blockAccount(target)));
+      blocks.push(asOwner(f, (owner) => owner.blockAccount(target).outcome));
     const refused = await register(f, target, { address: "198.51.100.120" });
     assert.equal(outcomeOf(refused, 201, "registration"), "failed");
     assert.equal(linkCount(f, storedAccount(f, target).id), 0);
@@ -2593,6 +2593,20 @@ function shapeOf(response) {
   return { status: response.status, body: response.body, headers };
 }
 
+// A line of the log as its fields; a line that is no JSON object counts as a
+// failure with that text, so a default print of an error fails a case.
+function fieldsOf(line) {
+  try {
+    return JSON.parse(line);
+  } catch {
+    return { failure: line };
+  }
+}
+
+// The lines that record a failure; the others are business events (D-252).
+const failureLines = (logged) =>
+  logged.map(fieldsOf).filter((fields) => "failure" in fields);
+
 // Every line the server's log gets while the test runs.
 function captureLog(t) {
   const logged = [];
@@ -2675,7 +2689,7 @@ test(
     confirmedAccount(f, "reachable@example.test");
     const blocked = confirmedAccount(f, "blocked@example.test");
     assert.equal(
-      f.runtime.database.blockAccount("blocked@example.test"),
+      f.runtime.database.blockAccount("blocked@example.test").outcome,
       "blocked",
     );
     const full = confirmedAccount(f, "full@example.test");
@@ -2708,7 +2722,7 @@ test(
     }
     assert.equal(resetLinks(f, blocked.id).length, 0);
     assert.equal(resetLinks(f, full.id).length, 0);
-    assert.equal(logged.length, 0, "no case is a failure to log");
+    assert.equal(failureLines(logged).length, 0, "no case is a failure to log");
 
     const handed = f.mailer.messages.length;
     f.inspection.exec(`
@@ -2717,7 +2731,10 @@ test(
     `);
     const response = await askReset(f, "failing@example.test");
     assert.deepEqual(shapeOf(response), shapeOf(reference), "recording fails");
-    await waitFor(() => logged.length === 1, "the failure is logged");
+    await waitFor(
+      () => failureLines(logged).length === 1,
+      "the failure is logged",
+    );
     f.inspection.exec("DROP TRIGGER refuse_link");
     const control = await afterEarlierWork(f);
     assert.deepEqual(
@@ -2746,7 +2763,10 @@ test(
     const response = await askReset(f, "lookup@example.test");
     assert.equal(response.status, 204);
     assert.equal(response.body, "");
-    await waitFor(() => logged.length >= 1, "the failure is logged");
+    await waitFor(
+      () => failureLines(logged).length >= 1,
+      "the failure is logged",
+    );
     f.hooks.beforeFind = null;
     const control = await afterEarlierWork(f);
     assert.deepEqual(
@@ -2754,8 +2774,12 @@ test(
       [control],
       "the failed lookup handed nothing on",
     );
-    assert.equal(logged.length, 1, "one line");
-    assert.doesNotMatch(logged[0], /lookup@|synthetic|example\.test/);
+    const failures = failureLines(logged);
+    assert.equal(failures.length, 1, "one line");
+    assert.doesNotMatch(
+      JSON.stringify(failures[0]),
+      /lookup@|synthetic|example\.test/,
+    );
     assert.equal(
       (await askReset(f, "lookup@example.test")).status,
       204,
@@ -2990,10 +3014,15 @@ test(
         outcome,
       );
       if (outcome === "never")
-        await waitFor(() => logged.length >= 1, "the deadline passes");
+        await waitFor(
+          () => failureLines(logged).length >= 1,
+          "the deadline passes",
+        );
     }
-    await waitFor(() => logged.length >= 2, "the failures are logged");
-    assert.ok(logged.length > 0, "precondition: the failures were logged");
+    await waitFor(
+      () => failureLines(logged).length >= 2,
+      "the failures are logged",
+    );
     for (const token of f.mailer.messages.map(resetTokenOf)) {
       for (const response of responses)
         assert.ok(
@@ -3249,7 +3278,7 @@ test(
     const blocked = await resettable(f, "blocked-link@example.test");
     const blockedToken = recordLink(f, blocked);
     assert.equal(
-      asOwner(f, (owner) => owner.blockAccount(blocked.email)),
+      asOwner(f, (owner) => owner.blockAccount(blocked.email).outcome),
       "blocked",
     );
     named("of a blocked account", blocked.email, blockedToken);
@@ -3257,11 +3286,11 @@ test(
     const stopped = await resettable(f, "stopped-link@example.test");
     const stoppedToken = recordLink(f, stopped);
     assert.equal(
-      asOwner(f, (owner) => owner.blockAccount(stopped.email)),
+      asOwner(f, (owner) => owner.blockAccount(stopped.email).outcome),
       "blocked",
     );
     assert.equal(
-      asOwner(f, (owner) => owner.unblockAccount(stopped.email)),
+      asOwner(f, (owner) => owner.unblockAccount(stopped.email).outcome),
       "unblocked",
     );
     named("stopped by a block, after the unblock", stopped.email, stoppedToken);
@@ -3327,12 +3356,12 @@ test(
     const blocked = await resettable(f, "blocked-meanwhile@example.test");
     const blockedToken = recordLink(f, blocked);
     f.hooks.beforeReset = () =>
-      asOwner(f, (owner) => owner.blockAccount(blocked.email));
+      asOwner(f, (owner) => owner.blockAccount(blocked.email).outcome);
     const beforeBlocked = hashOf(f, blocked.email);
     assertInvalidLink(await setPassword(f, blockedToken), "blocked meanwhile");
     assert.equal(hashOf(f, blocked.email), beforeBlocked);
     assert.equal(
-      asOwner(f, (owner) => owner.unblockAccount(blocked.email)),
+      asOwner(f, (owner) => owner.unblockAccount(blocked.email).outcome),
       "unblocked",
     );
     f.hooks.beforeReset = null;
@@ -3780,7 +3809,7 @@ test(
     // The block deletes the account's sessions and keeps its saved game state.
     const blocked = seed(f, "save-401-blocked", f.first);
     assert.equal(
-      f.runtime.database.blockAccount("first@example.test"),
+      f.runtime.database.blockAccount("first@example.test").outcome,
       "blocked",
     );
     await refusedBy("blocked", blocked);
@@ -3797,7 +3826,7 @@ test(
       signedCookie("save-401-late", f.keys[0]),
     );
     assert.equal(
-      f.runtime.database.unblockAccount("first@example.test"),
+      f.runtime.database.unblockAccount("first@example.test").outcome,
       "unblocked",
     );
     await refusedBy("blocked, after unblocking", blocked);
@@ -4050,5 +4079,320 @@ test(
     assert.equal(storedSave(f, f.first.id).revision, 1);
     const read = JSON.parse((await getSave(f, cookie)).body);
     assert.deepEqual(read.save.game, gameOf(exactly.pad, exactly.count));
+  },
+);
+
+// The field names of a line (D-252): what a fault of the code or a crafted
+// request would add to a line stands outside them.
+const lineFields = new Set([
+  "event",
+  "failure",
+  "kind",
+  "code",
+  "errcode",
+  "place",
+  "accountId",
+  "linkPurpose",
+]);
+
+function assertPlainLines(logged, forbidden) {
+  assert.ok(logged.length > 0, "precondition: something was logged");
+  for (const line of logged) {
+    assert.doesNotMatch(line, /[\r\n]/, "one line");
+    for (const key of Object.keys(JSON.parse(line)))
+      assert.ok(lineFields.has(key), `the field ${key} in ${line}`);
+    for (const value of forbidden)
+      assert.ok(!line.includes(value), `${value} in ${line}`);
+  }
+}
+
+test(
+  "each business event of the server leaves one line with the account's number, and no line holds an address, a secret or a request's content",
+  { timeout: 30000 },
+  async (t) => {
+    // D-252, the events of the guidelines' list, kept from the task's question
+    // 11 and its acceptance criterion. Faults: an event with no line or two; a
+    // sign-in after a registration with none; a line under another account; an
+    // address, token, password or client address in a line.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const email = "events@example.test";
+    const clientAddress = "198.51.100.77";
+    const created = await register(f, email, { address: clientAddress });
+    assert.equal(created.status, 201);
+    const accountId = JSON.parse(created.body).id;
+    const confirmation = lastToken(f);
+    const confirmed = await post(f, "/api/email-confirmation", {
+      token: confirmation,
+    });
+    assert.equal(confirmed.status, 204);
+    const signedIn = await login(f, email, password, {
+      address: clientAddress,
+    });
+    assert.equal(signedIn.status, 200);
+    const { cookie } = issuedSession(signedIn, "login");
+    assert.equal((await logout(f, cookie)).status, 204);
+    assert.equal((await askReset(f, email)).status, 204);
+    await waitFor(() => f.mailer.messages.length === 2, "the reset message");
+    await waitFor(
+      () => logged.some((line) => line.includes("message-sent")),
+      "the message is sent",
+    );
+    const reset = resetTokenOf(f.mailer.messages.at(-1));
+    assert.equal((await setPassword(f, reset)).status, 204);
+
+    const confirmationLine = { accountId, linkPurpose: "email-confirmation" };
+    const resetLine = { accountId, linkPurpose: "password-reset" };
+    assert.deepEqual(logged.map(fieldsOf), [
+      { event: "account-created", accountId },
+      { event: "signed-in", accountId },
+      { event: "link-issued", ...confirmationLine },
+      { event: "message-sent", ...confirmationLine },
+      { event: "email-confirmed", accountId },
+      { event: "signed-in", accountId },
+      { event: "signed-out", accountId },
+      { event: "link-issued", ...resetLine },
+      { event: "message-sent", ...resetLine },
+      { event: "password-set", accountId },
+    ]);
+    assertPlainLines(logged, [
+      email,
+      clientAddress,
+      password,
+      newPassword,
+      confirmation,
+      reset,
+      cookie,
+    ]);
+  },
+);
+
+test(
+  "an expected refusal and a message that was not sent leave no line of success, and a refusal no line at all",
+  { timeout: 30000 },
+  async (t) => {
+    // The guidelines' rule on recording a failure: a refusal is an answer, not
+    // a failure. Faults: a refused login or link written as an event or as a
+    // failure; a message written as sent when its sending failed.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    assert.equal(
+      (await login(f, "first@example.test", "the wrong password")).status,
+      401,
+    );
+    assert.equal(
+      (
+        await post(f, "/api/email-confirmation", {
+          token: randomBytes(32).toString("base64url"),
+        })
+      ).status,
+      400,
+    );
+    assert.deepEqual(logged, []);
+
+    f.mailer.outcome = "failed";
+    const account = confirmedAccount(f, "unsent@example.test");
+    assert.equal((await askReset(f, account.email)).status, 204);
+    await waitFor(() => f.mailer.messages.length === 1, "the message");
+    await waitFor(() => logged.length >= 1, "the link's line");
+    await afterEarlierWork(f);
+    assert.deepEqual(
+      logged
+        .map(fieldsOf)
+        .filter((line) => line.accountId === account.id)
+        .map((line) => line.event),
+      ["link-issued"],
+    );
+  },
+);
+
+test(
+  "every failure the server handles leaves a line of its kind, code and place, with the account's number, and no text of the error or the request",
+  { timeout: 30000 },
+  async (t) => {
+    // To do 3, cause 1. The trust boundary too: the request of the first case
+    // is crafted to end a line and start another, which JSON keeps in its
+    // field. Faults: a failure with no line, as each of these had; a line
+    // without its cause; the error's message, which SQLite takes from the
+    // trigger, in the line.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const quoted = "synthetic first@example.test";
+    const refusing = (name, on) => `
+      CREATE TRIGGER ${name} BEFORE ${on}
+      BEGIN SELECT RAISE(ABORT, '${quoted}'); END;
+    `;
+    const failureAfter = async (act) => {
+      logged.length = 0;
+      await act();
+      await waitFor(() => failureLines(logged).length >= 1, "a failure line");
+      assertPlainLines(logged, [quoted, "crafted", "first@"]);
+      return failureLines(logged);
+    };
+    const cookie = seed(f, "failures", f.first);
+    const databaseFault = {
+      kind: "Error",
+      code: "ERR_SQLITE_ERROR",
+      errcode: 1811,
+    };
+
+    f.inspection.exec(refusing("refuse_save", "INSERT ON saved_games"));
+    const [request] = await failureAfter(async () => {
+      const response = await putSave(
+        f,
+        cookie,
+        { version: 1, basedOn: 0, game: {} },
+        { "X-Crafted": 'crafted"}{"event":"signed-in"}' },
+        `${savedGamePath}?crafted=%22%7D%0A%7B%22event%22`,
+      );
+      assert.equal(response.status, 500);
+      assert.deepEqual(JSON.parse(response.body), {
+        error: "Account service failed",
+      });
+    });
+    assert.deepEqual(request, {
+      failure: "request",
+      ...databaseFault,
+      place: "app.errors",
+      accountId: f.first.id,
+    });
+    f.inspection.exec("DROP TRIGGER refuse_save");
+
+    f.inspection.exec(refusing("refuse_logout", "DELETE ON sessions"));
+    const [ended] = await failureAfter(async () =>
+      assert.equal((await logout(f, cookie)).status, 500),
+    );
+    assert.deepEqual(ended, {
+      failure: "logout",
+      ...databaseFault,
+      place: "account-routes.logout",
+      accountId: f.first.id,
+    });
+    f.inspection.exec("DROP TRIGGER refuse_logout");
+
+    f.inspection.exec(refusing("refuse_session", "INSERT ON sessions"));
+    const password_ = "the password of the account";
+    const hashed = await hashPassword(password_);
+    const account = f.runtime.database.createAccount(
+      "stored@example.test",
+      hashed,
+    );
+    const [stored] = await failureAfter(async () =>
+      assert.equal(
+        (await login(f, "stored@example.test", password_)).status,
+        503,
+      ),
+    );
+    assert.deepEqual(stored, {
+      failure: "session",
+      ...databaseFault,
+      place: "account-routes.establishSession",
+      accountId: account.id,
+    });
+    f.inspection.exec("DROP TRIGGER refuse_session");
+
+    const link = { accountId: f.second.id, linkPurpose: "email-confirmation" };
+    const resend = async () => {
+      const response = await post(
+        f,
+        "/api/email-confirmation-message",
+        {},
+        { cookie: seed(f, randomUUID(), f.second) },
+      );
+      assert.equal(outcomeOf(response, 200, "resend"), "failed");
+    };
+    f.mailer.outcome = "reject";
+    assert.deepEqual((await failureAfter(resend))[0], {
+      failure: "mail",
+      kind: "Error",
+      code: "none",
+      place: "account-routes.boundedSending",
+      ...link,
+    });
+    f.mailer.outcome = "sent";
+
+    const send = f.mailer.send;
+    f.mailer.send = () => {
+      throw new TypeError(quoted);
+    };
+    t.after(() => {
+      f.mailer.send = send;
+    });
+    assert.deepEqual((await failureAfter(resend))[0], {
+      failure: "mail",
+      kind: "TypeError",
+      code: "none",
+      place: "account-routes.sendLinkMessage",
+      ...link,
+    });
+    f.mailer.send = send;
+
+    f.inspection.exec(refusing("refuse_link", "INSERT ON emailed_links"));
+    assert.deepEqual((await failureAfter(resend))[0], {
+      failure: "link-record",
+      ...databaseFault,
+      place: "account-routes.sendLinkMessage",
+      ...link,
+    });
+    f.inspection.exec("DROP TRIGGER refuse_link");
+  },
+);
+
+test(
+  "a route's deadline on a mailer that never answers writes the deadline as its reason",
+  { timeout: 20000 },
+  async (t) => {
+    // To do 5, cause 3: a failure with no error of the library names its reason.
+    const f = await accountFixture(t, { sendingDeadline: 100 });
+    const logged = captureLog(t);
+    f.mailer.outcome = "never";
+    const response = await post(
+      f,
+      "/api/email-confirmation-message",
+      {},
+      { cookie: seed(f, "deadline", f.second) },
+    );
+    assert.equal(outcomeOf(response, 200, "resend"), "failed");
+    assert.deepEqual(failureLines(logged), [
+      {
+        failure: "mail",
+        kind: "ReasonedFailure",
+        code: "DEADLINE",
+        place: "account-routes.boundedSending",
+        accountId: f.second.id,
+        linkPurpose: "email-confirmation",
+      },
+    ]);
+  },
+);
+
+test(
+  "a failure after the answer has left writes its one line, and Express prints no stack beside it",
+  { timeout: 20000 },
+  async (t) => {
+    // The session's renewal runs as the response ends, so its failure reaches
+    // the error handler with the headers sent. Fault: the error handed on to
+    // Express, whose own handler prints the stack and message, so that one
+    // failure gets two records and the second quotes values.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const cookie = seed(f, "renewal", f.first);
+    f.runtime.database.renewSession = () => {
+      throw new Error("synthetic renewal fault for first@example.test");
+    };
+    const response = await readAccount(f, cookie);
+    assert.equal(response.status, 200);
+    await waitFor(() => logged.length >= 1, "the failure is logged");
+    delete f.runtime.database.renewSession;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.deepEqual(logged.map(fieldsOf), [
+      {
+        failure: "request",
+        kind: "Error",
+        code: "none",
+        place: "app.errors",
+        accountId: f.first.id,
+      },
+    ]);
   },
 );

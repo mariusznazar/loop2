@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { generateKeyPairSync, randomBytes, sign } from "node:crypto";
+import { createServer } from "node:net";
 import { test } from "node:test";
 import { SMTPServer } from "smtp-server";
 import {
@@ -413,6 +414,50 @@ test("a crafted recipient fails without connecting, and a plain one is sent", as
   assert.equal(outcome, "sent");
   assert.equal(smtp.record.connections, 1);
   assert.equal(smtp.record.messages.length, 1);
+});
+
+// To do 5, cause 3. Fault: two of these failures reading alike, as all of them
+// once did, so that the owner cannot tell a refused address from a server that
+// went silent. The fields of the case come through unread (D-252).
+test("each failure with no error of the library names its reason, and the line carries the fields of its case", async (t) => {
+  const logged = t.mock.method(console, "error", () => {});
+  const fields = { accountId: "account-7", linkPurpose: "password-reset" };
+  const lastCode = () => {
+    const calls = logged.mock.calls;
+    const line = JSON.parse(calls.at(-1).arguments[0]);
+    assert.equal(line.accountId, "account-7");
+    assert.equal(line.linkPurpose, "password-reset");
+    return line.code;
+  };
+
+  const anySmtp = await smtpServer(t);
+  const mailer = new SmtpMailer(settings(anySmtp.port), trusting());
+  const crafted = composeConfirmationMessage("a,b@example.test", link);
+  assert.equal(await mailer.send(crafted, fields), "failed");
+  assert.equal(lastCode(), "UNSAFE_RECIPIENT");
+
+  const silent = await smtpServer(t, { holdData: true });
+  const shortened = new SmtpMailer(
+    settings(silent.port),
+    trusting(localCertificate, { deadline: 300 }),
+  );
+  const message = composeConfirmationMessage(recipient, link);
+  assert.equal(await shortened.send(message, fields), "failed");
+  assert.equal(lastCode(), "DEADLINE");
+
+  // Closing before the greeting is the library's own error: its code stands.
+  const closing = createServer((socket) => socket.destroy());
+  await new Promise((resolve) => closing.listen(0, "127.0.0.1", resolve));
+  t.after(() => new Promise((resolve) => closing.close(resolve)));
+  const dropped = new SmtpMailer(settings(closing.address().port), trusting());
+  assert.equal(await dropped.send(message, fields), "failed");
+  assert.equal(lastCode(), "ECONNECTION");
+
+  // The library's own error comes first here: its code is the reason.
+  const plain = await smtpServer(t, { offerStartTls: false });
+  const unencrypted = new SmtpMailer(settings(plain.port), trusting());
+  assert.equal(await unencrypted.send(message, fields), "failed");
+  assert.notEqual(lastCode(), "none");
 });
 
 test("the submitted message has one recipient, the fixed sender and subject and a text body with the link on its own line", async (t) => {
