@@ -250,13 +250,23 @@ header .save-line {
  * The screen of the login card, in the body in place of the header, the main and the footer, which
  * are hidden while it stands (D-262): all the height left, with the card in its middle. A card
  * taller than the window makes the page taller, so nothing of it is cut off.
+ *
+ * Behind the card stands the picture of the game, over the whole window: the body's side padding
+ * is undone, and the picture covers the screen, cut off where the window's shape differs from its
+ * own. The picture is dimmed in its file, and every text stands in the card on its solid panel.
+ * The fire and the mage stand at 17.5 % of the picture's width, which this position puts at 17.5 %
+ * of the window's, whatever the scale: from a 1280 px wide window that is the middle of the strip
+ * left of the 400 px card, so they stand beside it. The picture's pixels stay square when scaled.
  */
 .account-card-screen {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xl) 0;
+  margin: 0 calc(-1 * var(--space-l));
+  padding: var(--space-xl) var(--space-l);
+  background: url("/sprites/login-backdrop.png") 17.5% 50% / cover no-repeat;
+  image-rendering: pixelated;
 }
 
 /* The login card (D-96): one panel, 400 px wide, or as wide as a narrower window lets it. */
