@@ -427,11 +427,23 @@ Playwright CLI reads its configuration from `.playwright/cli.config.json` by def
 
 - **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file — "Playwright CLI will load config from `.playwright/cli.config.json` by default so that you did not need to specify it every time."; read 2026-11-02
 
+## playwright-cli-context-options
+
+The configuration file of Playwright CLI takes options of the browser context under `browser.contextOptions`.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file, Configuration file schema — "Context options for the browser context." · "contextOptions?: playwright.BrowserContextOptions;"; read 2026-11-02
+
 ## playwright-screencast-frames
 
 Playwright's screencast of a page delivers JPEG-encoded frames to a callback.
 
 - **Source:** https://raw.githubusercontent.com/microsoft/playwright/cfe490d941f992655948eee8fd4fd94e1c4234bf/docs/src/api/class-screencast.md § Screencast.start — "delivers JPEG-encoded frames to the callback."; read 2026-11-02
+
+## chrome-devtools-ignore-certificate-errors
+
+The Chrome DevTools Protocol's command `Security.setIgnoreCertificateErrors` turns the ignoring of all certificate errors on or off.
+
+- **Source:** https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/92be9c279a8ff3af17009705bb357241932128e4/json/browser_protocol.json § domain Security, command setIgnoreCertificateErrors — "Enable/disable whether all certificate errors should be ignored."; read 2026-11-02
 
 ## Withdrawn identifiers
 

@@ -1182,7 +1182,7 @@ A map run of an earning loop currently leaves the Understanding and the player's
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-253 · D-110
-- **Part:** build-tools
+- **Part:** build-tools · account-server
 - **Violated:** no
 
 ## Withdrawn identifiers

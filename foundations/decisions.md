@@ -5093,7 +5093,7 @@ where the CLI fails, and reads motion from a stream of frames. This inspection a
 D-75 and D-88 leave with a person and replaces none of them.
 
 - **Scope:** agent-workflow · browser-view
-- **Based on:** playwright-cli-token-use · playwright-cli-config-path · playwright-screencast-frames
+- **Based on:** playwright-cli-token-use · playwright-cli-config-path · playwright-cli-context-options · playwright-screencast-frames · chrome-devtools-ignore-certificate-errors
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: a changed screen operated once through Playwright CLI, the evidence in the request,
