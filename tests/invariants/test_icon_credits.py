@@ -1,6 +1,7 @@
 """Invariant icon-credits: For each SVG icon file directly in `assets/icons/`, the game's footer
-and the login card's section of credits each hold a credit that names the icon's title as its page on game-icons.net gives it, the icon's
-author, that page and the licence CC BY 3.0, and says how the icon file differs from its source.
+and the game's section of credits each hold a credit that names the icon's title as its page on
+game-icons.net gives it, the icon's author, that page and the licence CC BY 3.0, and says how the
+icon file differs from its source.
 
 The application is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory installs a small
@@ -15,7 +16,8 @@ with the extension `.svg` that git tracks or would track directly in `assets/ico
 
 Reading of the sentence:
 - the section of credits: the `<details>` that `CreditsSection` renders, folded, with the summary
-  "Autorzy grafiki"; the check does not yet see a card that draws it, as no card does so yet;
+  "Autorzy grafiki"; that the login card draws it is held by D-27 and by
+  `tests/view/account-screen.test.mjs`, not by this check;
 - the game's footer: the element `createFooter()` returns, which a built module of the game's view
   other than `footer.js` imports and calls (checked by a scan of the built modules' text);
 - shows: stands in the footer's text, or, for a page, as the target of a link (`href`) or in text;

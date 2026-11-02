@@ -529,6 +529,12 @@ Node.js's module `node:worker_threads` gives threads that execute JavaScript in 
 
 - **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/doc/api/process.md § process.memoryUsage.rss() — "The process.memoryUsage.rss() method returns an integer representing the Resident Set Size (RSS) in bytes." · "The Resident Set Size, is the amount of space occupied in the main memory device (that is a subset of the total allocated memory) for the process, including all C++ and JavaScript objects and code."; read 2026-11-02
 
+## npm-lock-peer-dependencies
+
+npm copies the `peerDependencies` of a package's `package.json` into that package's entry of `package-lock.json`.
+
+- **Source:** https://raw.githubusercontent.com/npm/cli/v12.2.1/workspaces/arborist/lib/shrinkwrap.js § pkgMetaKeys — "const pkgMetaKeys = [" · "'peerDependencies'," · § metaFromNode — "for (const key of pkgMetaKeys) {" · "const val = metaFieldFromPkg(node.package, key)" · "meta[key.replace(/^_/, '')] = val"; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

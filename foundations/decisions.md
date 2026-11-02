@@ -5592,7 +5592,7 @@ dependencies. A task that needs one names it in this decision and lets it throug
 browser-view-framework in the same change.
 
 - **Scope:** browser-view · build-tools
-- **Based on:** none
+- **Based on:** npm-lock-peer-dependencies
 - **Relations:** derives from D-03
 - **Verification:** invariants: browser-view-framework. An agent compares a change with the
   decision:

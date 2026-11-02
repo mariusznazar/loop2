@@ -14,9 +14,11 @@ Covers, in the working tree being checked:
 - no UI framework from the list below (React is not on it) is a runtime dependency — in
   package.json `dependencies`, in what an `npm:` alias there installs, or in any package-lock.json
   entry not marked `dev`, by its key and by its `name` — or is imported or loaded by the browser
-  source, by package name or by URL; nor is a library built on React: a package-lock.json entry
-  not marked `dev`, other than react and react-dom, whose `peerDependencies` name react, as a
-  runtime dependency or as an import of the browser source;
+  source, by package name or by URL; nor is a library built on React (D-270): a package-lock.json
+  entry, marked `dev` or not, other than react and react-dom, whose `peerDependencies` name react,
+  neither as a runtime dependency, which an entry marked `dev` is not, nor as an import of the
+  browser source, which reaches the bundle whatever the entry's mark; and the lock's entry of
+  react-dom names react there, so that the field the check reads stands in the lock;
 - what `npm run build` places in `dist/public` imports only its own files (relative or
   root-relative specifiers, no bare package and no URL), also in the minified form `import"x"`
   of the bundle, loads no script from another origin, and
@@ -134,13 +136,12 @@ def runtime_names(manifest, lock):
 
 
 def react_libraries(lock):
-    """Libraries built on React that are runtime dependencies: each lock entry not marked `dev`,
-    other than react and react-dom, whose `peerDependencies` name react."""
+    """Libraries built on React (D-270): each lock entry, marked `dev` or not, other than react
+    and react-dom, whose `peerDependencies` name react."""
     found = set()
     for key, entry in lock.get("packages", {}).items():
         name = entry.get("name") or key.rsplit("node_modules/", 1)[-1]
-        if (key and not entry.get("dev", False) and name not in REACT_ITSELF
-                and "react" in entry.get("peerDependencies", {})):
+        if key and name not in REACT_ITSELF and "react" in entry.get("peerDependencies", {}):
             found.add(name)
     return found
 
@@ -288,6 +289,17 @@ class NoUiFramework(unittest.TestCase):
         # A source import of a library on React found in the lock is refused.
         refused = refused_names(crafted["a component library on React"][1])
         self.assertEqual(names_in("@mui/material/Button") & refused, {"@mui/material"})
+        # So is one taken as a development dependency: esbuild bundles what the source imports,
+        # whatever the manifest calls it, while the entry stays no runtime dependency (above).
+        self.assertEqual(names_in("@mui/material/Button") & refused_names(lock), {"@mui/material"})
+
+    def test_control_the_lock_holds_the_field_the_library_check_reads(self):
+        # invariant: browser-view-framework
+        # npm writes this field (npm-lock-peer-dependencies). Were it gone, no library on React
+        # would be found, and every case above would still pass on its hand-written lock.
+        entry = load_json("package-lock.json")["packages"]["node_modules/react-dom"]
+        self.assertIn("react", entry.get("peerDependencies", {}),
+                      "the lock's entry of react-dom names no peer dependency on react")
 
     def test_built_page_loads_only_its_own_code_and_no_framework(self):
         # invariant: browser-view-framework
