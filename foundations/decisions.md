@@ -1773,17 +1773,17 @@ If the dependency audit reports an advisory in a package introduced by StrykerJS
 
 ### D-96 — What does a player see before and after signing in?
 
-A signed-out visitor sees the „Zaloguj się” form with email and password and under it the button „Nie pamiętam hasła”, and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible; that button puts in place of both forms the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings the two forms back, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in place of game and forms, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
+A signed-out visitor sees the „Zaloguj się” form with email and password and under it the button „Nie pamiętam hasła”, and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible; that button puts in place of both forms the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings the two forms back, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in place of game and forms, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry. Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-51 · derives from D-53
 - **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. An agent compares a change with the decision:
-  - complies: the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built
-  - violates: a new game built when the request for the saved game state fails or times out; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6
+  - complies: the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; an error of the code in the load showing its sentence and „Spróbuj ponownie”, with no game built and nothing saved; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built
+  - violates: a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3
 
-*Rationale:* An account provides the entry to the game and the headquarters provides its starting place; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on a third state of the screen, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
+*Rationale:* An account provides the entry to the game and the headquarters provides its starting place; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on a third state of the screen, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
 *Rejected:* Anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; a third form standing for good beside the other two — the entry screen of every visitor holds three forms, and a mistake between them is easier; the headquarters after signing in with a way back to a waiting manual map run — a new state of the screen, with its own question of what the player may do in the headquarters while the map run waits; a new game when the saved game state cannot be downloaded — the first save of that new game overwrites the saved game state on the server, so the player loses progress through a passing outage, against what this decision does at the session check; discarding a saved game state without a word — the player sees an empty team with no explanation and may take it for a fault; the sentence of another version for a damaged saved game state too — the player is given an untrue reason and, reporting the problem, speaks of a version where a fault is at stake; closing an ended map run at loading as „Zakończ” does, so the player lands in the headquarters — changes of D-62, D-132 and D-173, code closing the map run at loading, and after each reload following a death or a completion the loss of the copy's unsaved changes without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the same seed.
 
 ### D-97 — What does the player's logout do?
@@ -3930,25 +3930,35 @@ The exemplar for kind `saved-game` is `src/browser/sim/saved-game.ts`, and its k
 read before adding or changing a file of that kind. Saved-game code turns a game state into the
 saved document of the current version of its shape, and an unknown value — a saved game state
 downloaded from the server or kept in the page's memory (D-211) — into a game state or a refusal
-naming why, inside the simulation, never throwing and changing nothing passed to it.
+naming why, inside the simulation, no value a document can hold making it throw, and changing
+nothing passed to it. An error of its own code is no refusal: it leaves the load as a thrown error,
+which the browser view writes to the console without its text, and the saved game state stays as it
+stands, on the server and in the page's memory alike, while the player gets the sentence of D-96.
 
-- **Scope:** simulation, agent-workflow
+- **Scope:** simulation, browser-view, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-04 · derives from D-206
 - **Verification:** an agent compares a change with the decision:
   - complies: saved-game guidelines identify the first implementation as exemplar and draw the
     kind's boundary with simulation modules as the content-data guidelines draw theirs; a crafted
-    document of the current version answered with a refusal
-  - violates: a load that throws on a crafted document; a saved-game file that imports from the
-    browser view; a second exemplar for the kind
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 12
+    document of the current version answered with a refusal; a fault of the code in the load
+    reaching the view as a thrown error, the save on the server and the state kept in the page
+    left as they stand
+  - violates: a load that throws on a crafted document; a load that catches every error and answers
+    a fault of the code with a refusal; a saved-game file that imports from the browser view; a
+    second exemplar for the kind
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 12 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3
 
 *Rationale:* the first file that reads data from outside the simulation into the game state gives
 later saved-game work a concrete model of a strict load, its refusals and the version kept with the
-shape, apart from the functions that pass game time.
+shape, apart from the functions that pass game time. A refusal says something about the document and
+starts a new game over it; an error of the code says nothing about the document, so it may stand
+where a whole saved game state stands, and a player who meets it waits for a retry or a fix with the
+state intact, not playing meanwhile.
 *Rejected:* the load in the browser view, which then replaces the game state itself — the breach of
 D-04; a lenient load that fills missing keys — a migration by another name, against discarding
-another version whole.
+another version whole; an error of the code answered as a refusal, as it was, with a line in the
+console — the player plays on, but loses the saved game state.
 
 ### D-214 — When is a map run a manual run of a solved map?
 
@@ -5084,3 +5094,60 @@ where an earning loop, bound to the chest, goes cut, and the mark names that one
 player starts. It stands where the line of D-188 stands, in the same role.
 *Rejected:* the mark brought in before the earning loop — the game speaks of a loop it does not have
 yet; another text, given by the human — its cost was not named.
+
+### D-252 — How does loop2 write its failures to its logs, and what does it log?
+
+Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and
+departs from none of them. A log line of its Node.js code is one JSON object on one line, written
+through `console` with no library and under fixed field names, while its Bash scripts keep their own
+text and a line in the browser's console is plain text. The product logs changes of a player's
+account and of access to it and operations that change what runs on the server or its copy, and no
+progress of a game and no housekeeping, and an agent adds alone an item that fits this principle, an
+identifier of a thing included, while anything that points to a person takes the human's consent.
+
+- **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-28
+- **Verification:** an agent compares a change with the decision:
+  - complies: a failure the server handled written as one line with `failure`, `kind`, `code` and
+    `place` and the `accountId` of its case; an operation on the server added to the list of the
+    logging scope in the change that brings it
+  - violates: a line of `field=value` text in Node.js code; an error's message written where it may
+    quote a value; an email address added to the list without the human's consent; a line for each
+    save of a game
+- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 9 and 10, and § Settlements to record, row 1
+
+*Rationale:* when something fails, the owner and an agent see its cause and not only its effect, and
+new code starts from rules instead of logging as it happens to. One object on one line keeps a value
+with a space or a new line from breaking a search, at the price of a line less pleasant to read. A
+list written by hand can drift from the code, and an agent judges whether an item fits the principle;
+the review of each change holds both.
+*Rejected:* three of the rules, with a departure from the logging scope — a line of a failure does
+not say whose account it is, and nothing brings the rules back at the first outside player; a
+departure from all the rules — at the first failure of the server neither a human nor an agent sees
+its cause, and new code logs as it happens to; text of `field=value` — reads more pleasantly, but a
+value with a space or a new line breaks a search.
+
+### D-253 — Which programs of loop2 have a last-resort handler of their own?
+
+Each program that touches the data of accounts — the server, `account-block` and `account-backup` —
+has one last-resort handler of its own, which writes the kind, the code and the place of what no code
+handled, because the runtime's default print could quote values. A script run by hand or by the test
+gate meets the rule on the last resort through the default print of Node.js or Python, which writes
+what nothing handled.
+
+- **Scope:** account-server · build-tools
+- **Based on:** none
+- **Relations:** derives from D-252
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new command that opens the account database installing the handler before its work;
+    a script of the test gate that ends on an uncaught error with its runtime's default print
+  - violates: the message or the stack of an uncaught error printed by a program that touches the
+    data of accounts; a handler of its own added to a script that touches none
+- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
+
+*Rationale:* a program that reads accounts can fail on an error that quotes an address or a stored
+value, and its default print would write it. A person at a terminal reads the default print of a
+script that touches no account, and it already says what went wrong.
+*Rejected:* a handler of its own in every script — it does what the default print does and only adds
+code.

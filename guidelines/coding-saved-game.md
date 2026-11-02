@@ -72,10 +72,11 @@ export function copyDocument(document: { items: number[] }): { items: number[] }
 - **Decision:** D-213 · D-206
 - **Invariant:** save-version
 - **Good:** Spreparowany dokument bieżącej wersji dostaje odmowę z powodem `shape`, a dokument innej wersji powód `version`.
-- **Bad:** Wczytanie rzuca wyjątek na nieoczekiwanym kształcie albo uzupełnia brakujący klucz, zamiast odmówić.
+- **Bad:** Wczytanie rzuca wyjątek na nieoczekiwanym kształcie, uzupełnia brakujący klucz, zamiast odmówić, albo odpowiada odmową na błąd własnego kodu.
 
 Funkcja wczytująca przyjmuje wartość `unknown` i oddaje stan gry albo odmowę
-z jednym z powodów `version`, `archetype`, `shape`; nigdy nie rzuca. Kolejność
+z jednym z powodów `version`, `archetype`, `shape`; żadna wartość, jaką może
+zawierać dokument, nie powoduje wyjątku. Kolejność
 powodów: wartość bez całkowitej `version` to `shape`, inna wersja niż bieżąca to
 `version`, postać o archetypie spoza danych to `archetype`, a wszystko, czego nie
 dopuszczają typy stanu gry, listy zamknięte i dane, to `shape`. Czytaj dokument
@@ -83,6 +84,11 @@ dopuszczają typy stanu gry, listy zamknięte i dane, to `shape`. Czytaj dokumen
 swojego typu, identyfikatory z danych, odwołania, za którymi idzie symulacja,
 i brak luk w listach. Brakujących kluczy nie uzupełniaj. Wolno odmówić
 więcej, niewolno mniej. Przy błędzie nie zwracaj części stanu.
+
+Błąd kodu nie jest odmową. Wczytanie zamienia na odmowę tylko własne przerwanie
+czytania i odmowę sprawdzenia programów, a każdy inny błąd oddaje wywołującemu
+jako wyjątek. Zapis zostaje wtedy nietknięty, na serwerze i w pamięci strony;
+widok zapisuje błąd w konsoli bez jego treści i pokazuje zdanie z D-96.
 
 ### Wersja podnoszona razem z kształtem
 
@@ -125,8 +131,11 @@ inna wersja.
 każdą wartość sprawdzają i zwracają nową: `fields` wymaga dokładnie podanych
 własnych kluczy, `list` listy bez luk, `oneOf` klucza listy zamkniętej danych,
 a `finite`, `integer` i `count` liczby o swoim zakresie. Program czyta sprawdzenie programów
-z `programs.ts`. Każda odmowa przerywa czytanie wyjątkiem własnym tego pliku,
-który łapie jedna funkcja eksportowana, `loadSavedGame`, i zamienia na
+z `programs.ts`; jego odmowę, `ProgramCheckError`, `program` zamienia na odmowę
+tego pliku, a komunikat tej odmowy nie zamienia obiektu na tekst, bo obiekt
+z dokumentu może tego odmówić. Każda odmowa przerywa czytanie wyjątkiem
+`Refused`, własnym tego pliku, który łapie jedna funkcja eksportowana,
+`loadSavedGame`, i zamienia na
 `{ ok: false, reason }`. Dokument z serwera ma obok `version` i `game` klucz
 `revision`, którego stan gry nie zawiera; dokument zachowany w pamięci strony
 go nie ma, a wczytanie przyjmuje oba.

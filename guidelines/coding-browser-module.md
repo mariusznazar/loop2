@@ -13,16 +13,32 @@ Czytaj również ogólne wytyczne kodowania.
 | File | Status | Decision |
 |---|---|---|
 | `src/browser/view/status-row.ts` | exemplar | D-36 |
+| `src/browser/view/account-screen.ts` | copy | — |
 | `src/browser/view/app.ts` | copy | — |
+| `src/browser/view/away-report.ts` | copy | — |
+| `src/browser/view/body-row.ts` | copy | — |
+| `src/browser/view/character-skills.ts` | copy | — |
 | `src/browser/view/clock.ts` | copy | — |
+| `src/browser/view/combat-line.ts` | copy | — |
+| `src/browser/view/controls/button.ts` | copy | — |
+| `src/browser/view/controls/number-field.ts` | copy | — |
+| `src/browser/view/controls/select-list.ts` | copy | — |
+| `src/browser/view/controls/text-field.ts` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
+| `src/browser/view/email-confirmation.ts` | copy | — |
+| `src/browser/view/email-status.ts` | copy | — |
 | `src/browser/view/footer.ts` | copy | — |
+| `src/browser/view/game-saver.ts` | do not copy | — |
+| `src/browser/view/game-view.ts` | copy | — |
 | `src/browser/view/headquarters.ts` | copy | — |
+| `src/browser/view/password-reset.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | copy | — |
 | `src/browser/view/program-panel.ts` | copy | — |
 | `src/browser/view/terrain-panel.ts` | copy | — |
 | `src/browser/view/terrain-picture.ts` | copy | — |
 | `src/browser/view/tile-list.ts` | copy | — |
+| `src/browser/view/trip-editor.ts` | copy | — |
+| `src/browser/view/trip-lines.ts` | copy | — |
 
 ## Rules
 
@@ -100,7 +116,11 @@ po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
 konto, a potem odpowie o zapisanym stanie gry tego konta (D-96). Stan gry daje
 funkcja symulacji `loadSavedGame` z `saved-game.ts`; strona nie składa go sama.
 Gdy zapisu nie ma albo funkcja odmawia, strona buduje nową grę, a w drugim
-przypadku ze zdaniem odmowy nad nią. Grę usuwa, gdy serwer potwierdzi
+przypadku ze zdaniem odmowy nad nią. Wyjątek z tej funkcji to błąd kodu, nie
+odmowa: `startFrom` zapisuje wiersz w konsoli, strona nie buduje gry i pokazuje
+„Nie udało się wczytać gry. Spróbuj ponownie.” z ponowieniem jak po nieudanym
+żądaniu, a stan zachowany w pamięci strony zostaje do ponowienia (D-96, D-213).
+Grę usuwa, gdy serwer potwierdzi
 wylogowanie (D-97), gdy zapis dostanie 401 i gdy zapis przegra z zapisem z innej
 przeglądarki; po 401 stan gry zostaje w pamięci strony dla tego samego konta
 (D-211), a po konflikcie strona buduje grę od nowa z zapisu wczytanego z serwera
