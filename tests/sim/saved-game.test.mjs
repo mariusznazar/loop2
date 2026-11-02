@@ -1859,20 +1859,43 @@ function faultyAt(target, key) {
   });
 }
 
+/** A value whose read of `key` by property meets a fault of the code, as the program check reads. */
+function faultyOnRead(target, key) {
+  return new Proxy(target, {
+    get(object, name, receiver) {
+      if (name === key) throw new TypeError("a fault of the code");
+      return Reflect.get(object, name, receiver);
+    },
+  });
+}
+
 // Faults: a catch of the reading that takes every error for a refusal, so that
 // the page starts a new game over a whole save (D-213, D-96). A proxy is no
 // document: only a value JSON cannot hold reaches a fault here, each at a
-// different reading, the version, the archetypes and the rest of the game.
+// different reading: the version, the archetypes, the rest of the game, and
+// inside a program the check that reads it and the comparison that follows.
 test("an error of the code in the load is no refusal: it leaves the load as the error it is", () => {
   const atVersion = faultyAt(structuredClone(DOCUMENT), "version");
   const atTeam = structuredClone(DOCUMENT);
   atTeam.game = faultyAt(atTeam.game, "team");
   const atChest = structuredClone(DOCUMENT);
   atChest.game.team = faultyAt(atChest.game.team, "chest");
+  const atCheck = structuredClone(DOCUMENT);
+  atCheck.game.programs[0].program = faultyOnRead(
+    atCheck.game.programs[0].program,
+    "groups",
+  );
+  const atComparison = structuredClone(DOCUMENT);
+  atComparison.game.programs[0].program = faultyAt(
+    atComparison.game.programs[0].program,
+    "groups",
+  );
   for (const [name, document] of Object.entries({
     "the version": atVersion,
     "the archetypes": atTeam,
     "the rest of the game": atChest,
+    "the program check": atCheck,
+    "the comparison with the program checked": atComparison,
   }))
     assert.throws(
       () => loadSavedGame(document),
