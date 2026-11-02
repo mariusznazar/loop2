@@ -3,7 +3,7 @@
 // `odkrywanie_loop2.md` (D-82): To do 1 at line 14, To do 3 at line 20, To do 4 at line 21.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -13,7 +13,7 @@ import {
   send,
   setPaused,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   actionInRepertoire,
   conditionInRepertoire,
@@ -22,7 +22,7 @@ import {
   programInRepertoire,
   repertoireOf,
   ruleInRepertoire,
-} from "../../dist/public/sim/understanding.js";
+} from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
 
 const MAP_ID = Object.keys(MAPS)[0];

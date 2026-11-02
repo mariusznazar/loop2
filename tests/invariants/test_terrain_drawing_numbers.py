@@ -7,8 +7,8 @@ stand-in for the page's `document` (elements in their namespaces, text, attribut
 such as `className`, `dataset` and `scope` reflected to attributes, class lists, and the selectors
 `[attr]`, `[attr=value]`, `.class`, a tag and descendants of these, for `querySelectorAll` and
 `closest`), builds the terrain panel with `createTerrainPanel()` of the built
-`dist/public/view/terrain-panel.js`, as the game's view does, and drives the simulation of the
-built `dist/public/sim/game.js` (`newGame`, `createCharacter`, `setProgram`, `send`,
+`dist/browser/view/terrain-panel.js`, as the game's view does, and drives the simulation of the
+built `dist/browser/sim/game.js` (`newGame`, `createCharacter`, `setProgram`, `send`,
 `advanceMinutes`), starting from a game whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
 program stay what the check drives, and handing the panel each game state at the minutes below through its `update`.
@@ -61,9 +61,9 @@ import unittest
 import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules
 
-GAME_MODULE = "dist/public/sim/game.js"
-PANEL_MODULE = "dist/public/view/terrain-panel.js"
-VIEW_DIRECTORY = "dist/public"
+GAME_MODULE = "dist/browser/sim/game.js"
+PANEL_MODULE = "dist/browser/view/terrain-panel.js"
+VIEW_DIRECTORY = "dist/browser"
 # The map sent to, as the data files name it (D-18), and the character sent: the first one a
 # new game creates, which takes the id 1.
 SENT = {"mapId": "forest", "characterId": 1}

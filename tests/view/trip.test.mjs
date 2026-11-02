@@ -10,18 +10,18 @@ import {
   setPaused,
   settleDeath,
   withSaveTime,
-} from "../../dist/public/sim/game.js";
-import { emptyProgram } from "../../dist/public/sim/programs.js";
-import { tripCount, tripChoices } from "../../dist/public/view/trip-editor.js";
+} from "../../dist/browser/sim/game.js";
+import { emptyProgram } from "../../dist/browser/sim/programs.js";
+import { tripCount, tripChoices } from "../../dist/browser/view/trip-editor.js";
 import {
   deathSettlementLine,
   rehearsalMark,
   solvedRunText,
   tripTexts,
   tripWarning,
-} from "../../dist/public/view/trip-lines.js";
-import { loadSavedGame, savedGame } from "../../dist/public/sim/saved-game.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+} from "../../dist/browser/view/trip-lines.js";
+import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 
 const entry = (item, count) => ({ item, count });
 const plan = {

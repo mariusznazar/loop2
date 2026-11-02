@@ -1,10 +1,10 @@
-import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
-import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
-import { CREATURES } from "../../dist/public/sim/data/creatures.js";
-import { ITEMS } from "../../dist/public/sim/data/items.js";
-import { SKILLS } from "../../dist/public/sim/data/skills.js";
-import { newGame } from "../../dist/public/sim/game.js";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
+import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
+import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
+import { SKILLS } from "../../dist/browser/sim/data/skills.js";
+import { newGame } from "../../dist/browser/sim/game.js";
 
 /**
  * An Understanding that holds everything the data lists: every action, every condition, every

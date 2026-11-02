@@ -38,21 +38,16 @@ pass this project's documentation filter.
 
 ### D-03 — How is the browser view built?
 
-The browser view is built in TypeScript with the browser's DOM APIs, without an additional UI framework.
+The browser view is built in TypeScript with React, its screens written as `.tsx` components that draw from the game state, and no other UI framework stands in its code or its runtime dependencies.
 
 - **Scope:** browser-view, build-tools
-- **Based on:** TypeScript Handbook, "ships type definitions for the DOM API" (https://www.typescriptlang.org/docs/handbook/dom-manipulation.html, read 2026-10-04) · React documentation, "npm install react react-dom" (https://react.dev/learn/add-react-to-an-existing-project, read 2026-10-04) · Vue documentation, "npm create vue@latest" (https://vuejs.org/guide/quick-start.html, read 2026-10-04) · Svelte documentation, "using Vite" (https://svelte.dev/docs/svelte/typescript, read 2026-10-04)
+- **Based on:** Stack Overflow Developer Survey 2025, Technology, Web frameworks and technologies, All Respondents, "React 44.7%" (https://survey.stackoverflow.co/2025/technology, read 2026-11-02) · React documentation, React Versions, "When a new major is released, we archive the docs for the previous version as `x.react.dev`." (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/versions.md, read 2026-11-02) · React documentation, Versioning policy, Breaking changes, "Breaking changes are inconvenient for everyone, so we try to minimize the number of major releases" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/community/versioning-policy.md, read 2026-11-02) · React documentation, Using TypeScript, "you can get full React Web support by adding `@types/react` and `@types/react-dom` to your project" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/typescript.md, read 2026-11-02) · React 19 Upgrade Guide, UMD builds removed, "Starting with React 19, React will no longer produce UMD builds" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/blog/2024/04/25/react-19-upgrade-guide.md, read 2026-11-02)
 - **Relations:** derives from D-04
 - **Verification:** invariants: browser-view-framework
-- **Origin:** none
+- **Origin:** technologia_budowanie_ekranow.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
 
-*Rationale:* the MVP's view mostly reads the game state and needs no added UI framework to start.
-This keeps one dependency out of the browser view; the project accepts writing the updates of the
-program editor and its counters itself. The browser view draws the game only from the game state,
-the game's content data and the moment of the browser's clock and changes the game state only
-through functions of the simulation (D-04); the browser's DOM APIs serve that without a framework.
-*Rejected:* React, Vue and Svelte — each adds UI tooling and a dependency before this MVP has shown
-a benefit from one.
+*Rationale:* the screen of a map run changes up to five times a second beside fields in which the player types, so keeping focus and rows takes a mechanism rather than an author's discipline, and the program editor is what the project is judged by. A trial of the heaviest screen fitted in every option but one, so cost and upkeep decided: React has the widest use and the most documentation of the options, its major versions come rarely, and nothing in it asks for a way of loading code of the product's own. Lacks of the option chosen: its types stand in a separate package, it adds a bundler to the build and weight to the page, and the tests on the hand-made document model of the screens that move to it lose that model. Risks taken, each a hypothesis: a rebuilt node may restart a CSS animation and make the figure shake; a rule dragged between groups may leave the drop line on the screen; a number field whose value the game clips may lose its cursor.
+*Rejected:* the browser's DOM with no library — every screen written by hand and focus kept by discipline; Preact — it saves weight at the price of a way of loading it that nobody else uses and of a version changing fast; lit-html — its templates are not checked by types; Solid, Svelte, Vue and Angular — a compiler of their own and a second system of tests; Mithril, VanJS, Inferno, Alpine and idiomorph — small use or lacks, and idiomorph did not hold the extreme state.
 
 ### D-04 — What is the game built with?
 
@@ -141,21 +136,21 @@ and proxy routing but adds another process to start, monitor and update, plus it
 
 The browser and server share one npm package and lockfile, and have separate TypeScript
 compilation configurations and output directories. Building the application compiles both
-configurations.
+configurations and bundles the browser's code, React included, into the files the server hands out.
 
 - **Scope:** build-tools, browser-view, simulation, account-server
-- **Based on:** none
+- **Based on:** react-entry-format
 - **Relations:** none
 - **Verification:** invariants: application-package-layout · application-build-layout ·
   application-build-output
-- **Origin:** none
+- **Origin:** technologia_budowanie_ekranow.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
 
 *Rationale:* a shared installation keeps the local starting point small, while separate compiler
 environments keep browser and server types apart. The simulation is browser code, compiled by the
-browser's configuration and held in the shared package, so the decision applies to it as to the
-browser view.
-*Rejected:* separate packages — add installation coordination; a bundler — adds a build layer
-without a demonstrated need in the current application.
+browser's configuration and held in the shared package. The browser cannot load React's packages by
+itself, so the build takes one more build step, which also runs at each deployment.
+*Rejected:* separate packages — add installation coordination; a map of imports with no bundler —
+React's packages hold a format the browser does not load.
 
 ### D-07 — How is the work of the game split between the server and the browser?
 
@@ -645,9 +640,10 @@ the map run, and the campfires arise during it.
 
 The game's icons are SVG files from game-icons.net, kept in `assets/icons/` outside the directory
 the account and save server serves and copied into that directory when the application is built.
-An icon file holds nothing that runs and refers to nothing outside itself. The game's footer
-credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net
-and its licence, and says how the icon file differs from its source.
+An icon file holds nothing that runs and refers to nothing outside itself. The game's footer and a
+section of credits on the login card, folded and opened with one click, each credit each icon with
+its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and
+say how the icon file differs from its source.
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** game-icons-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
@@ -656,9 +652,10 @@ and its licence, and says how the icon file differs from its source.
   the icons come from and where their source files stand, an agent compares the change with the
   decision:
   - complies: a campfire icon taken from game-icons.net into `assets/icons/`, credited in the footer
+    and in the folded section of the login card
   - violates: an icon file placed straight in the directory the server serves; an icon drawn from
     an emoji, or loaded from another site while the game runs
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Grafika" · mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions carried to cycle", "Skąd biorą się ikony zasobów i czynności"
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Grafika" · mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions carried to cycle", "Skąd biorą się ikony zasobów i czynności" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-27
 
 *Rationale:* game-icons.net holds a large set of game icons drawn in one style, under a licence that
 allows their use in the game on condition of credit, so one source keeps the game's icons alike as
@@ -669,7 +666,9 @@ icons are changed to sit on the game's tiles, and the licence asks whoever distr
 work to include the licence or its address, to credit the work's original author, its title where
 one is supplied and the address the licensor gives for it, and to identify the use of the work in
 the changed work. game-icons.net supplies a title for each icon on its page. Saying how each icon
-file differs from its source goes beyond what the licence asks: it is the product's own choice.
+file differs from its source goes beyond what the licence asks: it is the product's own choice. A
+list of credits takes more room than the login card can give, and folded it stays one click away,
+which keeps what the licence asks.
 *Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
 thing costs drawing work; an icon package from npm — a dependency more for files the product can
 keep itself, entering through what the product already treats as untrusted.
@@ -792,7 +791,7 @@ The exemplar for kind `simulation-module` is `src/browser/sim/game.ts`, and its 
 
 ### D-36 — Which file is the exemplar for browser modules?
 
-The exemplar for kind `browser-module` is `src/browser/view/status-row.ts`, and its kind guidelines are read before adding or changing a file of that kind. Creating controls once, updating while preserving focus and passing user actions to the application remain examples alongside browser-view-framework and content-identifiers, without requiring `update()` in every module or forbidding the rebuilding of static elements.
+The exemplar for kind `browser-module` is `src/browser/view/account-card.tsx`, the first screen built with React, and its kind guidelines are read before adding or changing a file of that kind. Keeping focus and passing user actions to the application remain examples alongside browser-view-framework and content-identifiers, without requiring `update()` in every module or forbidding the rebuilding of static elements.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -802,7 +801,7 @@ The exemplar for kind `browser-module` is `src/browser/view/status-row.ts`, and 
   - violates: a different exemplar or a mandatory update method in every browser module
 - **Origin:** none
 
-*Rationale:* An existing small control shows stable editing behavior without forcing every view helper to own a control lifecycle.
+*Rationale:* The first screen built with React shows stable editing behavior without forcing every view helper to own a control lifecycle.
 *Rejected:* Mandatory update methods and a ban on static rebuilding — impose structure where no editable control needs it; no exemplar — leaves focus-preserving updates implicit.
 
 ### D-37 — Which file is the exemplar for the HTTP application?
@@ -1448,16 +1447,16 @@ Permanent tests of complete player journeys in a real browser are deferred, and 
 
 ### D-76 — When do fonts and the preview server gain refusal tests?
 
-Permanent refusal tests for font files and the local interface preview server are deferred until the first task changing the respective boundary, which introduces its refusal test and changes its invariant to method test. Until then, review checks font provenance and that the preview server serves only its own directory and only on the developer's machine.
+Permanent refusal tests for font files and the local interface preview server are deferred until the first task changing the respective boundary, which introduces its refusal test and changes its invariant to method test. Only a change of a boundary's principle — another kind of file, another way in, another recipient — changes that boundary, and a change of how the kitchen-sink page is built does not change the boundary of the preview server. Until then, review checks font provenance and that the preview server serves only its own directory and only on the developer's machine.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q6c and Q6g
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q6c and Q6g · logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row S5
 
-*Rationale:* Keeping the guideline work bounded leaves these boundaries dependent on review, which can miss a defect; absence of a test proves neither refusal nor a vulnerability.
-*Rejected:* Adding both refusal tests with the guidelines — expands the work and requires a choice of font verification.
+*Rationale:* Keeping the guideline work bounded leaves these boundaries dependent on review, which can miss a defect; absence of a test proves neither refusal nor a vulnerability. A change that leaves the principle of a boundary as it was gives a refusal test nothing new to refuse, at the cost of the server staying without a permanent test.
+*Rejected:* Adding both refusal tests with the guidelines — expands the work and requires a choice of font verification; every change of a file of the boundary ending the exception — a refusal test in tasks that change no principle, against the human's answer that they bring no test files, and a change of the project's plan; new files of the boundary ending it, and a change of the build not — the same costs.
 
 ### D-77 — How are tests selected and limited as a whole?
 
@@ -1606,16 +1605,16 @@ Whole screens are not preserved by pixel-by-pixel image comparison, while agreed
 
 ### D-88 — How are real browser events, focus and SVG checked?
 
-Real browser events, focus and SVG rendering are checked manually after a change and are not automated; tests using a hand-made document model prove only its modelled logic. Automation is reconsidered on a defect that the model missed or together with the player-journey automation of D-75, and this exclusion never covers a trust boundary.
+Real browser events, focus and SVG rendering are checked manually after a change and are not automated; tests on a hand-made document model or on a ready-made document imitation prove only the logic they run, never real events, focus or rendering. Automation is reconsidered on a defect that such a test missed or together with the player-journey automation of D-75, and this exclusion never covers a trust boundary.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10d
+- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10d · logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czym zastąpić ręczny model dokumentu w testach ekranów przechodzących na React?”
 
-*Rationale:* A document model provides quick logic checks but cannot establish the browser's behaviour; until automation is justified a person catches event and focus defects.
-*Rejected:* Treating a document model as real-browser evidence — claims protection the model cannot give.
+*Rationale:* A document model or a ready-made imitation provides quick logic checks but cannot establish the browser's behaviour; until automation is justified a person catches event and focus defects.
+*Rejected:* Treating a document model or a ready-made imitation as real-browser evidence — claims protection neither can give.
 
 ### D-89 — Who revisits a deliberate testing exclusion?
 
@@ -1773,18 +1772,18 @@ If the dependency audit reports an advisory in a package introduced by StrykerJS
 
 ### D-96 — What does a player see before and after signing in?
 
-A signed-out visitor sees the „Zaloguj się” form with email and password and under it the button „Nie pamiętam hasła”, and the „Załóż konto” form with email, password and repeated password, with neither headquarters nor program panel visible; that button puts in place of both forms the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings the two forms back, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in place of game and forms, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry. Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
+A signed-out visitor sees one card: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry. Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-51 · derives from D-53
 - **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. An agent compares a change with the decision:
-  - complies: the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; an error of the code in the load showing its sentence and „Spróbuj ponownie”, with no game built and nothing saved; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built
-  - violates: a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3
+  - complies: a signed-out visitor seeing one card with the game's name, the sentence read from the game's data, the switch, one form and the folded credits; the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; an error of the code in the load showing its sentence and „Spróbuj ponownie”, with no game built and nothing saved; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built
+  - violates: the sentence about the game written in the code of the view; a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-96
 
-*Rationale:* An account provides the entry to the game and the headquarters provides its starting place; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on a third state of the screen, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
-*Rejected:* Anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; a third form standing for good beside the other two — the entry screen of every visitor holds three forms, and a mistake between them is easier; the headquarters after signing in with a way back to a waiting manual map run — a new state of the screen, with its own question of what the player may do in the headquarters while the map run waits; a new game when the saved game state cannot be downloaded — the first save of that new game overwrites the saved game state on the server, so the player loses progress through a passing outage, against what this decision does at the session check; discarding a saved game state without a word — the player sees an empty team with no explanation and may take it for a fault; the sentence of another version for a damaged saved game state too — the player is given an untrue reason and, reporting the problem, speaks of a version where a fault is at stake; closing an ended map run at loading as „Zakończ” does, so the player lands in the headquarters — changes of D-62, D-132 and D-173, code closing the map run at loading, and after each reload following a death or a completion the loss of the copy's unsaved changes without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the same seed.
+*Rationale:* An account provides the entry to the game and the headquarters provides its starting place. The first screen says what the game is in one sentence, and one card holds every state, so a visitor sees one form at a time; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on another state of the card, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
+*Rejected:* Two wide forms side by side — a page of paperwork that says nothing of the game; anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; a third form standing for good beside the other two — the entry screen of every visitor holds three forms, and a mistake between them is easier; the headquarters after signing in with a way back to a waiting manual map run — a new state of the screen, with its own question of what the player may do in the headquarters while the map run waits; a new game when the saved game state cannot be downloaded — the first save of that new game overwrites the saved game state on the server, so the player loses progress through a passing outage, against what this decision does at the session check; discarding a saved game state without a word — the player sees an empty team with no explanation and may take it for a fault; the sentence of another version for a damaged saved game state too — the player is given an untrue reason and, reporting the problem, speaks of a version where a fault is at stake; closing an ended map run at loading as „Zakończ” does, so the player lands in the headquarters — changes of D-62, D-132 and D-173, code closing the map run at loading, and after each reload following a death or a completion the loss of the copy's unsaved changes without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the same seed.
 
 ### D-97 — What does the player's logout do?
 
@@ -5278,3 +5277,337 @@ hand where the computer's protection stops them, and where that protection block
 choice comes back.
 *Rejected:* a local certificate authority trusted by the system, through mkcert or Caddy — a new
 program, a lasting change of trust, a key on the disk and a step for a person before the work.
+
+### D-259 — Which state does the login card open on, and what stands above its fields in each state?
+
+The login card opens on „Zaloguj się”. The switch stands only in „Zaloguj się” and „Załóż konto”,
+where the form has no heading; „Nie pamiętam hasła” and „Ustaw nowe hasło” have a heading and no
+switch, and the ways out of them are „Wróć do logowania” and „Anuluj”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96 · derives from D-225
+- **Verification:** an agent compares a change with the decision:
+  - complies: a first visit showing „Zaloguj się” with the switch above the form and no heading; a
+    page opened by a password-reset link showing the heading „Ustaw nowe hasło”, no switch and
+    „Anuluj”
+  - violates: the switch in the form „Nie pamiętam hasła”; a heading „Załóż konto” under the switch
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row S1
+
+*Rationale:* the switch offers the two forms a visitor comes for, and a heading beside it would say
+what it says. The form of a password-reset link already ends through „Anuluj”, which removes the
+link from the address, so the switch stays out of it and out of the form that asks for a link.
+Accepted with it: those two states have one way out.
+*Rejected:* the switch in all four states — in „Ustaw nowe hasło” a press of the switch would have
+to do what „Anuluj” does and remove the link from the address, which D-225 does not foresee, so that
+decision would have to change; a heading beside the switch too — the same word three times on a
+small card.
+
+### D-260 — What does the switch of the login card do to what the visitor typed?
+
+A change of state at the switch of the login card empties every field and removes every message of
+the card's forms and moves focus to the address field of the form it opened, as the button „Nie
+pamiętam hasła” does, and the page's one sentence (D-261) stays.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96
+- **Verification:** an agent compares a change with the decision:
+  - complies: a visitor who typed an address under „Zaloguj się” and switched finding the address
+    field of „Załóż konto” empty, with focus in it
+  - violates: a password kept for the way back to the other state; a refusal under the form still
+    standing after the switch
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2, and § Settlements to record, row S2
+
+*Rationale:* one rule for every change between the card's forms leaves no password in a field nobody
+sees and no old message on the way back. Accepted with it: a visitor who typed an address under
+„Zaloguj się” and only then switched types it again.
+*Rejected:* the address going over to the other state while passwords and messages go — a rule of
+its own and its test cases; each state keeping its fields — a password lies in an unseen field, and
+a return shows old messages.
+
+### D-261 — Where does the page's one sentence stand on the login card?
+
+The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms
+stands in the login card, above the switch, and above the form where no switch stands. It stays
+while the card changes state and leaves only at a change between the card and the game.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96 · derives from D-97 · derives from D-156 · derives from D-160 ·
+  derives from D-211 · derives from D-225
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Gra została zaktualizowana. Odśwież stronę.” standing in the card above the switch and
+    still there after the visitor switches to „Załóż konto”
+  - violates: that sentence standing outside the card; a press of the switch removing it
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row S3
+
+*Rationale:* the sentence tells the visitor what happened to the page, so one click on another form
+does not take it away, and inside the card it needs no panel of its own. Accepted with it: the card
+grows by one row for a moment, and a visitor who changed a password and switches to „Załóż konto”
+reads „Zaloguj się nowym hasłem.” above the creation of an account.
+*Rejected:* the sentence above the card — once a picture stands behind the card it takes a second
+panel, since text stands on a solid background and never on a picture; the sentence going at a
+switch — one click removes „Gra została zaktualizowana. Odśwież stronę.”
+
+### D-262 — What stands on the screen of the login card, and where do the waiting screens stand?
+
+Nothing stands on the screen of the login card but the card, neither header nor footer. The waiting
+screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and
+the moment after a sign-in that succeeded — stand outside the card, with the header and the footer,
+for a signed-in player too.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96 · narrows D-156
+- **Verification:** an agent compares a change with the decision:
+  - complies: a reload showing „Sprawdzanie logowania…” with the header and the footer, and then the
+    card alone or the game
+  - violates: the card standing under the header; „Sprawdzanie logowania…” written inside the card
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row S4
+
+*Rationale:* a signed-in player passes through the waiting screens at every reload, and they say
+nothing about signing in, so they stay what they are. Accepted with it: at each entry a signed-out
+visitor sees the header and the footer for a moment before the card comes.
+*Rejected:* the waiting in the card — a signed-in player sees the login card at every reload, as if
+logged out; the header and the footer beside the card too — the visitor sees one card (D-96), with
+the credits in it (D-27).
+
+### D-263 — Which tool bundles the browser's code?
+
+esbuild bundles the browser's code when the application is built.
+
+- **Scope:** build-tools · browser-view
+- **Based on:** none
+- **Relations:** derives from D-06
+- **Verification:** an agent compares a change with the decision:
+  - complies: the build calling esbuild as a development dependency, its version pinned in the
+    lockfile
+  - violates: a second bundler for a part of the browser's code
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Którym narzędziem składać kod przeglądarki?”, and § Settlements to record, row S6 · plan_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Open questions
+
+*Rationale:* the browser cannot load React's packages by itself (D-06), so one tool has to join the
+browser's code. Accepted with it: esbuild counts as one package for each system, so a lockfile
+written on one system has to carry the package of the system the image is built on.
+*Rejected:* another tool — a trial of Vite, which nobody has made, would have to come before the
+work.
+
+### D-264 — What does a test of a screen built with React run on?
+
+A test of a screen built with React runs on jsdom, a development dependency pinned exactly, and only
+the test files of such screens leave their stand-ins for the document. One harness,
+`tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each
+case a fresh window, moves focus away from a control that becomes disabled, awaits React's work through
+`act`, types through the input's native value setter and a bubbling `input` event, and fails a case
+on a report of React's development build through `console.error`.
+
+- **Scope:** browser-view · build-tools
+- **Based on:** react-hook-order-report · react-entry-build
+- **Relations:** derives from D-03 · derives from D-88
+- **Verification:** an agent compares a change with the decision:
+  - complies: a case of a screen in React that imports the harness first and walks the page,
+    screens still in DOM included; a test of another screen keeping its own stand-in
+  - violates: a hand-made document model grown until React runs on it; a second harness for the next
+    screen; a test that passes while React's development build reports a changed order of hooks
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czym zastąpić ręczny model dokumentu w testach ekranów przechodzących na React?”
+
+*Rationale:* React cannot draw on a hand-made document model, and a ready-made imitation carries the
+whole page with the product's own calls left as they are. Each rule of the harness answers what
+such an imitation leaves out: with the window installed after React loads a controlled field's
+change never fires and nothing fails loudly, neither imitation takes focus from a control that
+becomes disabled, and a report of React's development build stands where a broken rule of hooks
+shows. Only the harness of one kind of test hangs on the choice, so a wrong one costs little. What
+the imitation does not prove stays with a person and an agent (D-88, D-254): pressing Enter in a
+field does not send a form, a click on a label does not move focus, and nothing computes layout.
+*Rejected:* happy-dom — faster and lighter, but a browser constructor the product calls has to be
+written by the test, on a path most cases walk, and it does not honour `hidden` in computed styles;
+extending the hand-made model until React runs on it — a browser imitation of the product's own to
+keep, where a ready one runs the same cases; real-browser tests — D-75 and D-88 defer them.
+
+### D-265 — How does a shared control stand in a screen built with React while other screens stay in DOM?
+
+Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen
+uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one
+tree of DOM elements with the same classes and attributes, and a screen no task has moved to React
+yet stays in those APIs on the DOM form. A test draws both forms for each kind and state the React
+screens use and compares their tag, attributes and text, the input's `value` attribute apart, and
+`src/browser/styles.css` stays the one place of the look of both.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-44 · narrows D-03
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new attribute of the button written in both forms in one change; a DOM screen left
+    on the DOM form by a change that moves another screen
+  - violates: a React component that wraps the DOM function; a class that only the React form sets;
+    a React form with no case in the test that compares the two
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Jak wspólne kontrolki z `src/browser/view/controls/` istnieją w ekranie React, skoro pozostałe ekrany dalej używają ich w DOM?”
+
+*Rationale:* the screens move to React one task at a time, so for a while both kinds stand on one
+page and have to look alike. Components written as React writes them give the next screens an
+exemplar with controlled fields and state in the component. Accepted with it: the two forms live
+until the last DOM screen moves, and a new attribute is written twice, with the test failing until
+both agree.
+*Rejected:* wrapping the DOM functions in a React component — one implementation, but fields become
+uncontrolled, the card's state lives in DOM elements and the waiting state runs in effects, which
+D-36 would then hold up to every later screen; moving the controls to React and mounting them in DOM
+screens — a React root for each control, a render that is not synchronous when a control waits, and
+it moves screens that stay in DOM; a shared function of class names under both forms — it changes
+the DOM controls for what the comparison already catches.
+
+### D-266 — Where does the output of the browser's compilation stand?
+
+The per-module output of the browser's compilation stands in `dist/browser/`, where tests import it
+and from where the bundle is made, and `dist/public/` holds only what the server hands out: that
+bundle, the page and the static files. A build that writes them first removes both directories.
+
+- **Scope:** build-tools · browser-view · simulation · account-server
+- **Based on:** none
+- **Relations:** derives from D-06
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test importing one module from `dist/browser/`; the page loading the one bundle from
+    `dist/public/`
+  - violates: a compiled module written into `dist/public/`; a test importing the bundle; a bundler
+    reading the sources
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Gdzie stoi wynik kompilacji po modułach, którego używają testy, skoro D-06 składa kod przeglądarki w pliki podawane przez serwer?”
+
+*Rationale:* what the server hands out is what a player can reach, so that directory holds nothing
+else. Bundling the compiler's output leaves one compiler reading the sources and the code tests
+import the code that is bundled. A module left from an earlier build would be served or imported
+silently, so a build starts from neither directory. Accepted with it: every path of a test that
+imports a module names the new directory.
+*Rejected:* keeping the compiler's output in `dist/public/` with the bundle beside it under another
+name — the server hands out modules no browser loads, each with an import it cannot resolve, and
+the check that the built page loads only its own code needs a hole for them; moving what the server
+serves, so that `dist/public/` keeps the modules — the name then lies, and the server and its rules
+move for it; the bundler reading the sources — a second compiler of the same files, and tests would
+not import what is bundled; tests importing the bundle — they import single modules.
+
+### D-267 — What keeps the rules of hooks and of effects in the browser view's code?
+
+No tool guards the rules of hooks and of effects: `guidelines/coding-browser-module.md` holds them,
+review keeps them, and they are that a Hook is called only at the top level of a function component
+or of a custom Hook, before any early return and never inside a loop, a condition, a nested function
+or a `try`/`catch`/`finally` block; that every reactive value an Effect's code uses is declared as a
+dependency; that an Effect connecting to a system outside React returns a cleanup function that
+disconnects from it; and that an Effect serves to synchronize with such a system, never to transform
+data for rendering or to handle a user event. A defect of these rules that passes tests and review
+reopens D-29 for the human.
+
+- **Scope:** browser-view · build-tools
+- **Based on:** react-hook-call-place · react-effect-dependencies · react-effect-cleanup · react-effect-use · react-hook-order-report
+- **Relations:** derives from D-03 · derives from D-29
+- **Verification:** an agent compares a change with the decision:
+  - complies: a reviewer refusing an Effect whose code reads a prop its dependency list leaves out
+  - violates: `eslint-plugin-react-hooks` added to `eslint.config.mjs` without a human-accepted change
+    of D-29; a Hook called inside a condition; a sign-in sent from an Effect in place of its event
+    handler
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czy reguł Reacta pilnuje narzędzie, skoro D-29 trzyma zestaw reguł ESLint bez zmian, czy tylko przewodnik i przegląd?”
+
+*Rationale:* the rule set of the linter changes only with a human-accepted change of D-29, which
+this decision does not ask for. The compiler, the linter's rules for types and, through D-264,
+React's development build on the paths a test walks reach `.tsx` files already, and a changed order
+of hooks fails there. Accepted with it: a dependency list left incomplete passes all of them and
+shows as a stale value.
+*Rejected:* adding the plugin — a human-accepted change of D-29 that nothing here asks for; a check
+written by the product — D-29 rejects such checks for the same reason.
+
+### D-268 — What keeps a test on a document imitation from taking the machine's memory?
+
+A test file under `tests/` loads a document imitation only through the harness
+`tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts
+no value on its error, never `node:assert`, and runs under the limit the harness starts first: 2 GiB
+of its process's memory, read every 100 ms by a worker thread that above it writes one sentence to
+standard error and kills the process. A file outside `tests/` that loads a document imitation
+imports `tests/view/memory-limit.mjs` first and starts that limit before it loads the imitation.
+More than ten test files on a document imitation, or memory running away in a test on none, reopens
+how the limit is held.
+
+- **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Based on:** node-assert-failure-inspect · node-worker-threads · node-sigkill-termination · node-process-rss
+- **Relations:** derives from D-264
+- **Verification:** invariants: document-test-memory-limit. An agent compares a change with the
+  decision:
+  - complies: a throwaway file that starts the limit before it loads jsdom; a failing comparison on
+    a DOM element that ends in a short message naming its case
+  - violates: a helper on jsdom that takes `assert` from `node:assert`; a file outside `tests/` that
+    loads jsdom with no limit
+- **Origin:** none
+
+*Rationale:* Node writes out both values of a failing comparison before it throws, and on a DOM
+element React has drawn that work grows faster than a limit of time can act; why it grows is read
+from Node's source and not proved. A thread of the same process keeps running while the main thread is
+stuck in one synchronous call, stays out of reach of the cases' mocked timers and needs no branch by
+system. The harness's `assert` keeps a failure small and names its case, and the thread answers what
+that does not foresee, so neither replaces the other. Files on an imitation run side by side and add
+up, so the limit stands low and not at the memory free. D-77 stands: this limits one process's
+memory, not the time of a whole run. Accepted with it: a printed diff worse than Node's; a kill
+names the file and no case; the reading is a working set, which a machine short of memory can trim,
+so the kill can come late; a file outside `tests/` stands on a written rule that no mechanism
+enforces; other test files have no limit.
+*Rejected:* a supervisor over the test stage reading the process tree from outside — a reader for
+each system, slower readings, a wrapper on two commands with a direct run of the test runner still
+bare, and a sum it cannot pin on one file, though it stays the way to go if tests not on an imitation
+need this; a limit from the system — a Windows job object needs native code or a new package, and
+`ulimit` and cgroups hold only on Linux; `--max-old-space-size` — it did not stop the growth;
+`timeout` — it reads time, and at that rate the machine's memory goes first; the same thread
+preloaded through `NODE_OPTIONS` — it covers tests nobody asked it to and misses a direct run; the
+limit with the rule on `assert` left a convention — a failing case then reports only that its file
+died; Node's `assert` with a message at each call — a rule to remember, and the error still carries
+its values to the runner; a file outside `tests/` left to an agent's recollection — one lapse takes
+the machine's memory.
+
+### D-269 — Does the kitchen-sink page hold React?
+
+The kitchen-sink page holds no React: it shows each shared control in its DOM form, and no module it
+imports, directly or through other modules, reaches a `.tsx` file while `scripts/kitchen-sink.mjs`
+bundles nothing. A task that needs React on the page makes that script bundle, by a change of its
+build step and never of its lines that serve files.
+
+- **Scope:** browser-view · build-tools
+- **Based on:** none
+- **Relations:** derives from D-45 · derives from D-76 · derives from D-265
+- **Verification:** an agent compares a change with the decision:
+  - complies: a constant the page needs moved into a module with no React, the page's samples left
+    on the DOM form of each control
+  - violates: a module the page imports that imports a `.tsx` file; a sample of the page drawn with
+    a React form while the page's command bundles nothing
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czy strona wszystkich stanów wstaje bez zmiany `scripts/kitchen-sink.mjs`, gdy stała `RESET_REQUESTED_SENTENCE` przejdzie do modułu bez Reacta?”
+
+*Rationale:* the page's own command compiles its modules one by one and the browser resolves no bare
+import, so a module that reaches React leaves a blank page while its build passes. The page needs no
+React: a test keeps the two forms of a control alike and the look stands in one stylesheet, so the
+DOM form shows what the React form looks like. Accepted with it: the page shows the React forms only
+through that likeness, and nothing fails when a module lets React in, so review keeps this decision.
+*Rejected:* bundling the kitchen-sink page and drawing the React forms on it — a changed script at a
+trust boundary, a second bundle and a second set of samples for nothing the comparison of the two
+forms leaves open.
+
+### D-270 — Which libraries built on React may the browser view take?
+
+A library built on React — a package other than `react` and `react-dom` whose entry in
+`package-lock.json` declares a peer dependency on `react` — counts as another UI framework under
+D-03, whether it draws anything or not, so none stands in the browser view's code or its runtime
+dependencies. A task that needs one names it in this decision and lets it through the check of
+browser-view-framework in the same change.
+
+- **Scope:** browser-view · build-tools
+- **Based on:** npm-lock-peer-dependencies
+- **Relations:** derives from D-03
+- **Verification:** invariants: browser-view-framework. An agent compares a change with the
+  decision:
+  - complies: a screen built with React and the browser's APIs alone; a library for dragging taken
+    in by a change that names it here and lets it through that check
+  - violates: a component library on React added to the runtime dependencies; a library on React
+    taken as a development dependency and imported by a screen
+- **Origin:** none
+
+*Rationale:* with React allowed, a library on React is the likely way another way of drawing comes
+in, and its peer dependency reads that whole class with no list of names to keep. Accepted with it:
+a helper that draws nothing — a router, a state library, a library for dragging — is refused until a
+task lets it in on purpose, which the program editor's dragging may be the first to meet; the
+refusal is loud, and its way out is a change of this decision. A library that declares no peer
+dependency on `react` stands outside this decision.
+*Rejected:* a list of component libraries by name — none stands in the product, and a list misses
+the next one; leaving libraries on React outside the check and saying so — the likely way in stays
+open while the screens move to React.

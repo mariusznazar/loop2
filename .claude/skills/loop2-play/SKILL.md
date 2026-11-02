@@ -1,6 +1,6 @@
 ---
 name: loop2-play
-description: How an agent runs the game on this computer and operates it in a real browser as a player does - npm run local over HTTPS, an account through the form, Playwright CLI with Playwright MCP where the CLI fails, reading motion from a stream of frames, ending the start. Use to check a screen or a change in the running game, or for any question about running the game locally.
+description: How an agent runs the game on this computer and operates it in a real browser as a player does - npm run local over HTTPS, an account through the login card, Playwright CLI with Playwright MCP where the CLI fails, reading motion from a stream of frames, ending the start. Use to check a screen or a change in the running game, or for any question about running the game locally.
 ---
 
 # loop2-play
@@ -33,7 +33,7 @@ Each start has a database of its own under `.runs/local-start/` and removes thos
 does not find running, so an account lives until the next start; a start whose process number is
 in use and whose port takes a connection and stays silent counts as running. Two starts side by side
 stay apart in two browsers or sessions: in one, they share the session cookie, so signing in on one signs you out of the other.
-Every account is made through the form, with a made-up address at `example.test`.
+Every account is made through the login card, with a made-up address at `example.test`.
 
 ## Operate the game with Playwright CLI
 
@@ -55,8 +55,9 @@ hour. Its working files go to `.playwright-cli/`, which git ignores.
 
 The way into a map run:
 
-1. Under „Załóż konto”, fill „Adres e-mail”, „Hasło” (at least 12 characters) and „Powtórz hasło”,
-   then click „Załóż konto”. „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” is
+1. The page opens on the login card, on „Zaloguj się”. Press „Załóż konto” in its switch first, then
+   fill „Adres e-mail”, „Hasło” (at least 12 characters) and „Powtórz hasło”, and click „Załóż konto”
+   under the fields. „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” is
    expected here.
 2. In „Drużyna”, fill „Imię nowej postaci” and click „Załóż”.
 3. Click „Wyślij” at the character. The line „Minuta …” appears and its number grows once a second

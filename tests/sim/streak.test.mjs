@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 import {
@@ -9,7 +9,7 @@ import {
   restart,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 
 // The streak counts the game minutes in which the character loses no health to cold or hunger.
 // On Las the body cools by 0.002 × (37 − 25) = 0.024 °C a minute and stays at or above 35.0 °C

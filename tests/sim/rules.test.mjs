@@ -4,9 +4,9 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { RESOURCES } from "../../dist/public/sim/data/resources.js";
+import { ARCHETYPES } from "../../dist/browser/sim/data/archetypes.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const SIM = join(ROOT, "src", "browser", "sim");

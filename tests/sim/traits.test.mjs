@@ -5,17 +5,17 @@ import {
   backpackCount,
   newBackpack,
   newTraits,
-} from "../../dist/public/sim/character.js";
-import { ITEMS } from "../../dist/public/sim/data/items.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { TRAITS } from "../../dist/public/sim/data/traits.js";
+} from "../../dist/browser/sim/character.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { TRAITS } from "../../dist/browser/sim/data/traits.js";
 import {
   createCharacter,
   newGame,
   restart,
   send,
-} from "../../dist/public/sim/game.js";
-import { newMapRun } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/game.js";
+import { newMapRun } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 
 // The numbers below are written out by hand: a new character carries carrying capacity 15 (D-64),

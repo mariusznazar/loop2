@@ -325,7 +325,7 @@ back by rollback. The window includes review and corrections; the human who merg
 5. **Public journey,** in a browser at `https://loop2.mariusznazar.com/`, with a test account:
    the address `<test account address from the private note>` and a password of 12 to 128
    characters from the same note.
-   - Signed out, the page shows the two forms and no game or Program panel.
+   - Signed out, the page shows the login card alone, on „Zaloguj się”, and no game or Program panel.
    - Create the account: the headquarters appears at once and the header shows the logout
      button.
    - Reload: the headquarters appears straight away; when the saved game holds a manual map run,
@@ -340,7 +340,7 @@ back by rollback. The window includes review and corrections; the human who merg
      back, not an empty team; an empty team means the save was lost. This is the check that
      saved game states survive container replacement.
    - A wrong password shows the single message `Nieprawidłowy adres e-mail lub hasło.`
-   - Logout shows the forms again and no game.
+   - Logout shows the login card again and no game.
    - An unknown `/api/` path still answers JSON 404, not HTML.
    - The limits are 5 failed logins per address in 15 minutes, 20 failed logins per client
      address in 15 minutes and 5 new accounts per client address in an hour; do not trip them

@@ -8,7 +8,7 @@ import {
   confirmFromAddress,
   confirmationOutcome,
   readConfirmationToken,
-} from "../../dist/public/view/email-confirmation.js";
+} from "../../dist/browser/view/email-confirmation.js";
 
 const TOKEN = "Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE";
 

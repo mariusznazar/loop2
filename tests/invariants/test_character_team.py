@@ -1,7 +1,7 @@
 """Invariant character-team: Every character belongs to exactly one team.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
-is never written) and driven through its public functions in `dist/public/sim/game.js` by a Node
+is never written) and driven through its public functions in `dist/browser/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send`, `advanceMinutes`, `restart` and `end`. After every input the script records the JSON of the
 whole game state, or, where the function threw, the error and the state as it stood before.
@@ -40,7 +40,7 @@ import unittest
 import loop2_invariant_support as support
 from program_fixture import KNOWING_GAME_JS, program_from_rules
 
-GAME_MODULE = "dist/public/sim/game.js"
+GAME_MODULE = "dist/browser/sim/game.js"
 T = 1760000000000
 T_OTHER = 1760000123456
 ALWAYS = {"kind": "always"}

@@ -463,6 +463,78 @@ Git for Windows comes with OpenSSL.
 
 - **Source:** https://raw.githubusercontent.com/git-for-windows/build-extra/2f63027cca82e0bd0d6aa9d79d52f5a0d7dea8cc/ReleaseNotes.md § Changes since Git for Windows v2.56.0 (September 28th 2026), New Features — "Comes with OpenSSL v3.5.9."; read 2026-11-02
 
+## node-assert-failure-inspect
+
+Node.js 24.17.0, while it builds the error of a failing comparison of `node:assert`, writes the compared values out by `inspect` with `customInspect: false`, `depth: 1000` and `getters: true`.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/lib/internal/assert/assertion_error.js § inspectValue — "return inspect(val, {" · "customInspect: false," · "depth: 1000," · "getters: true," · § createErrDiff — "const inspectedActual = inspectValue(actual);" · § AssertionError — "super(createErrDiff(actual, expected, operator, message, diff));"; read 2026-11-02
+
+## react-hook-call-place
+
+React's documentation says to call Hooks at the top level of a function component or of a custom Hook, before any early return, and not inside loops, conditions, nested functions or `try`/`catch`/`finally` blocks.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/reference/rules/rules-of-hooks.md § Only call Hooks at the top level — "Don’t call Hooks inside loops, conditions, nested functions, or try/catch/finally blocks. Instead, always use Hooks at the top level of your React function, before any early returns." · "Call them at the top level in the body of a function component." · "Call them at the top level in the body of a custom Hook."; read 2026-11-02
+
+## react-effect-dependencies
+
+React's documentation says that every reactive value an Effect's code uses must be declared as a dependency.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/reference/react/useEffect.md § Specifying reactive dependencies — "Every reactive value used by your Effect's code must be declared as a dependency."; read 2026-11-02
+
+## react-effect-cleanup
+
+React's documentation says that the setup function of an Effect connecting to an external system should return a cleanup function that disconnects from that system.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/reference/react/useEffect.md § Connecting to an external system — "A setup function with setup code that connects to that system." · "It should return a cleanup function with cleanup code that disconnects from that system."; read 2026-11-02
+
+## react-effect-use
+
+React's documentation says that Effects are not needed to transform data for rendering or to handle user events, and are needed to synchronize with external systems.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/you-might-not-need-an-effect.md § How to remove unnecessary Effects — "You don't need Effects to transform data for rendering." · "You don't need Effects to handle user events." · "You do need Effects to synchronize with external systems."; read 2026-11-02
+
+## react-hook-order-report
+
+React's development build reports a change in the order of the Hooks a component calls through `console.error`.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react-reconciler/src/ReactFiberHooks.js § warnOnHookMismatchInDev — "if (__DEV__) {" · "console.error(" · "'React has detected a change in the order of Hooks called by %s. ' +"; read 2026-11-02
+
+## react-entry-build
+
+The entry file of React's npm package loads its production build when `process.env.NODE_ENV` is `production`, and its development build otherwise.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react/npm/index.js § the whole file — "if (process.env.NODE_ENV === 'production') {" · "module.exports = require('./cjs/react.production.js');" · "module.exports = require('./cjs/react.development.js');"; read 2026-11-02
+
+## react-entry-format
+
+The entry file of React's npm package is a CommonJS module, which exports through `module.exports` what it loads through `require`.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react/npm/index.js § the whole file — "module.exports = require('./cjs/react.production.js');"; read 2026-11-02
+
+## node-worker-threads
+
+Node.js's module `node:worker_threads` gives threads that execute JavaScript in parallel.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/doc/api/worker_threads.md § Worker threads — "The node:worker_threads module enables the use of threads that execute JavaScript in parallel."; read 2026-11-02
+
+## node-sigkill-termination
+
+`SIGKILL` unconditionally terminates Node.js on all platforms, and on Windows, which has no signals, `process.kill()` emulates it by terminating the target process.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/doc/api/process.md § Signal events — "'SIGKILL' cannot have a listener installed, it will unconditionally terminate Node.js on all platforms." · "Windows does not support signals so has no equivalent to termination by signal, but Node.js offers some emulation with process.kill(), and subprocess.kill():" · "Sending SIGINT, SIGTERM, and SIGKILL will cause the unconditional termination of the target process, and afterwards, subprocess will report that the process was terminated by signal."; read 2026-11-02
+
+## node-process-rss
+
+`process.memoryUsage.rss()` returns the Resident Set Size in bytes, the amount of space the process occupies in the main memory device, which is a subset of its total allocated memory.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/doc/api/process.md § process.memoryUsage.rss() — "The process.memoryUsage.rss() method returns an integer representing the Resident Set Size (RSS) in bytes." · "The Resident Set Size, is the amount of space occupied in the main memory device (that is a subset of the total allocated memory) for the process, including all C++ and JavaScript objects and code."; read 2026-11-02
+
+## npm-lock-peer-dependencies
+
+npm copies the `peerDependencies` of a package's `package.json` into that package's entry of `package-lock.json`.
+
+- **Source:** https://raw.githubusercontent.com/npm/cli/v12.2.1/workspaces/arborist/lib/shrinkwrap.js § pkgMetaKeys — "const pkgMetaKeys = [" · "'peerDependencies'," · § metaFromNode — "for (const key of pkgMetaKeys) {" · "const val = metaFieldFromPkg(node.package, key)" · "meta[key.replace(/^_/, '')] = val"; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

@@ -8,7 +8,7 @@ import {
   end,
   setProgram,
   advanceMinutes,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import {
   emptyProgram,
   editProgram,
@@ -20,11 +20,11 @@ import {
   saveCopyIntoProgram,
   saveCopyAsNewProgram,
   programHasChangesCopyLacks,
-} from "../../dist/public/sim/programs.js";
+} from "../../dist/browser/sim/programs.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { fullUnderstanding } from "./understanding-fixture.mjs";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { buyBranch } from "../../dist/public/sim/skills.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { buyBranch } from "../../dist/browser/sim/skills.js";
 import {
   clipTrip,
   clippedTake,
@@ -32,7 +32,7 @@ import {
   takeTrip,
   tripLoot,
   tripEntryCut,
-} from "../../dist/public/sim/trip.js";
+} from "../../dist/browser/sim/trip.js";
 
 const entry = (item, count) => ({ item, count });
 

@@ -4,19 +4,19 @@ import {
   createCharacter,
   send,
   advanceMinutes,
-} from "../../dist/public/sim/game.js";
+} from "../../dist/browser/sim/game.js";
 import { programFromRules } from "./program-fixture.mjs";
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BALANCE } from "../../dist/public/sim/data/balance.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { sameHex } from "../../dist/public/sim/hex.js";
+import { BALANCE } from "../../dist/browser/sim/data/balance.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { sameHex } from "../../dist/browser/sim/hex.js";
 import {
   actionFeasible,
   chooseActivity,
   conditionHolds,
-} from "../../dist/public/sim/program.js";
-import { newMapRun } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/program.js";
+import { newMapRun } from "../../dist/browser/sim/run.js";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
 const [mapId, map] = Object.entries(MAPS)[0];

@@ -3,7 +3,7 @@ source other than the generator seeded from the map run's state.
 
 The files of the simulation are the files git tracks or would track under `src/browser/sim/` (the
 part `simulation`'s source) and, for the run, the modules `npm run build` places under
-`dist/public/sim/` in a temporary copy of the working tree (the real tree is never written).
+`dist/browser/sim/` in a temporary copy of the working tree (the real tree is never written).
 
 Covers:
 - static: every such source file, with its comments and the text of its string and template
@@ -18,7 +18,7 @@ Covers:
 - dynamic: a Node script replaces `Math.random`, `crypto.getRandomValues`, `crypto.randomUUID`
   and the random functions of `node:crypto` with functions that count their calls and throw,
   first proving each replacement fires on a direct call, then imports every module under
-  `dist/public/sim/` and drives the public functions of `game.js`, starting from a game whose
+  `dist/browser/sim/` and drives the public functions of `game.js`, starting from a game whose
   Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
   `program_fixture.py` gives it, so that the rules of the program stay what the check drives: a
   character created, a send,
@@ -49,8 +49,8 @@ from program_fixture import KNOWING_GAME_JS, program_from_rules
 
 SOURCE_DIRECTORY = "src/browser/sim/"
 GENERATOR_FILE = "src/browser/sim/random.ts"
-BUILT_DIRECTORY = "dist/public/sim"
-GAME_MODULE = "dist/public/sim/game.js"
+BUILT_DIRECTORY = "dist/browser/sim"
+GAME_MODULE = "dist/browser/sim/game.js"
 CODE_EXTENSIONS = (".ts", ".mts", ".cts", ".js", ".mjs", ".cjs")
 
 FORBIDDEN_NAMES = (

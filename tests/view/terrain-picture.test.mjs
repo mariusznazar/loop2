@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { RESOURCES } from "../../dist/public/sim/data/resources.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import {
   advanceMinutes,
   createCharacter,
   newGame,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { terrainPicture } from "../../dist/public/view/terrain-picture.js";
+} from "../../dist/browser/sim/game.js";
+import { terrainPicture } from "../../dist/browser/view/terrain-picture.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 

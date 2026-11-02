@@ -34,11 +34,11 @@ The account and save server handles its HTTP routes and responses through Expres
 
 ## browser-view-framework
 
-The browser view uses TypeScript and browser APIs to render its screens, with no UI framework in its code or runtime dependencies.
+The browser view renders its screens with React and browser APIs, with no other UI framework in its code or runtime dependencies.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-03
+- **Derives from:** D-03 · D-270
 - **Part:** every
 - **Violated:** no
 
@@ -64,7 +64,7 @@ One Express 5 process in the loop2 container serves both the built game and `/ap
 
 ## application-build-output
 
-Building the application compiles both the browser and the server TypeScript configurations.
+Building the application compiles both the browser and the server TypeScript configurations and bundles the browser's code into the file the page loads.
 
 - **Method:** test
 - **Rests on:** none
@@ -330,9 +330,10 @@ namespace declarations.
 
 ## icon-credits
 
-For each SVG icon file directly in `assets/icons/`, the game's footer shows a credit that names
-the icon's title as its page on game-icons.net gives it, the icon's author, that page and the
-licence CC BY 3.0, and says how the icon file differs from its source.
+For each SVG icon file directly in `assets/icons/`, the game's footer and the game's section of
+credits each hold a credit that names the icon's title as its page on game-icons.net gives it, the
+icon's author, that page and the licence CC BY 3.0, and says how the icon file differs from its
+source.
 
 - **Method:** test
 - **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title
@@ -1183,6 +1184,16 @@ A map run of an earning loop currently leaves the Understanding and the player's
 - **Rests on:** none
 - **Derives from:** D-255 · D-110
 - **Part:** build-tools · account-server
+- **Violated:** no
+
+## document-test-memory-limit
+
+Under `tests/` only `tests/view/page-document.mjs` loads jsdom or happy-dom, a test file that imports it imports no assertion module of Node, and a process of such a file whose memory, read every 100 ms as `process.memoryUsage.rss()` gives it, stands above 2 GiB is killed, which fails the run with a sentence saying so.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-268
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Violated:** no
 
 ## Withdrawn identifiers

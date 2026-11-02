@@ -13,6 +13,7 @@ Czytaj również ogólne wytyczne kodowania.
 | File | Status | Decision |
 |---|---|---|
 | `src/browser/sim/data/resources.ts` | exemplar | D-34 |
+| `src/browser/sim/data/about.ts` | copy | — |
 | `src/browser/sim/data/actions.ts` | copy | — |
 | `src/browser/sim/data/archetypes.ts` | copy | — |
 | `src/browser/sim/data/balance.ts` | copy | — |

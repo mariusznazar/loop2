@@ -1,13 +1,13 @@
 // The reset link in the page's address and the meaning of the server's answer to setting a
 // password (task reset-hasla, To do 4; spec decisions 10 and 11; D-224, D-225). The pure reading
 // of the fragment and the sorting of each answer; the screen and the page are proved in
-// account-screen.test.mjs on the hand-made document model (D-88).
+// account-screen.test.mjs on jsdom (D-264, D-88).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   readResetToken,
   resetOutcome,
-} from "../../dist/public/view/password-reset.js";
+} from "../../dist/browser/view/password-reset.js";
 
 const TOKEN = "Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE";
 

@@ -1,21 +1,21 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   hexDistance,
   neighbours,
   offsetToAxial,
   sameHex,
-} from "../../dist/public/sim/hex.js";
+} from "../../dist/browser/sim/hex.js";
 import {
   createCharacter,
   newGame,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { actionFeasible } from "../../dist/public/sim/program.js";
-import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/game.js";
+import { actionFeasible } from "../../dist/browser/sim/program.js";
+import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // The campfire, the burning stick and eating (task, To do 7–12; D-26, D-63, D-68, D-69, D-71,

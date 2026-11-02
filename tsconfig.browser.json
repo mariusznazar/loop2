@@ -7,9 +7,10 @@
     "types": [],
     "strict": true,
     "noEmitOnError": true,
+    "jsx": "react-jsx",
     "rootDir": "src/browser",
-    "outDir": "dist/public"
+    "outDir": "dist/browser"
   },
-  "include": ["src/browser/**/*.ts"],
+  "include": ["src/browser/**/*.ts", "src/browser/**/*.tsx"],
   "exclude": ["src/browser/kitchen-sink/**"]
 }

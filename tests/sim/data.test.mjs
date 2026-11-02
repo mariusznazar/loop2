@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { RESOURCES } from "../../dist/public/sim/data/resources.js";
-import { ACTIONS } from "../../dist/public/sim/data/actions.js";
-import { CONDITIONS } from "../../dist/public/sim/data/conditions.js";
-import { ARCHETYPES } from "../../dist/public/sim/data/archetypes.js";
-import { BALANCE, INITIAL_SEED } from "../../dist/public/sim/data/balance.js";
-import { ITEMS } from "../../dist/public/sim/data/items.js";
-import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
-import { SKILLS } from "../../dist/public/sim/data/skills.js";
-import { CREATURES } from "../../dist/public/sim/data/creatures.js";
-import { TRAITS } from "../../dist/public/sim/data/traits.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
+import { ARCHETYPES } from "../../dist/browser/sim/data/archetypes.js";
+import { BALANCE, INITIAL_SEED } from "../../dist/browser/sim/data/balance.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
+import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
+import { SKILLS } from "../../dist/browser/sim/data/skills.js";
+import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
+import { TRAITS } from "../../dist/browser/sim/data/traits.js";
 import { programFromRules, programWithRules } from "./program-fixture.mjs";
 
 test("the map Las has the size, entrance, step and resources of the task", () => {
@@ -454,7 +454,7 @@ function heldProgram(state) {
 
 test("setProgram accepts every resource of the map data list, in conditions and in walks", async () => {
   const { createCharacter, newGame, send, setProgram } =
-    await import("../../dist/public/sim/game.js");
+    await import("../../dist/browser/sim/game.js");
   const rules = firstMap.resources.flatMap(({ id }) => [
     rule(below(id, 3), EXPLORE),
     rule(ALWAYS, walkTo(id)),
@@ -470,7 +470,8 @@ test("setProgram accepts every resource of the map data list, in conditions and 
 });
 
 test("setProgram accepts the empty program, both actions without a resource and the ends of the range", async () => {
-  const { newGame, setProgram } = await import("../../dist/public/sim/game.js");
+  const { newGame, setProgram } =
+    await import("../../dist/browser/sim/game.js");
   const [resource] = firstMap.resources.map(({ id }) => id);
   const { min, max } = CONDITIONS.hereBelow;
   for (const program of [
@@ -495,7 +496,7 @@ test("setProgram accepts the empty program, both actions without a resource and 
 
 test("setProgram rejects a resource id outside the map data list", async () => {
   const { createCharacter, newGame, send, setProgram } =
-    await import("../../dist/public/sim/game.js");
+    await import("../../dist/browser/sim/game.js");
   const running = send(
     createCharacter(newGame(), "Ala").state,
     SENT,
@@ -523,7 +524,8 @@ test("setProgram rejects a resource id outside the map data list", async () => {
 });
 
 test("setProgram rejects kinds outside the closed list and values outside the data range", async () => {
-  const { newGame, setProgram } = await import("../../dist/public/sim/game.js");
+  const { newGame, setProgram } =
+    await import("../../dist/browser/sim/game.js");
   const [resource] = firstMap.resources.map(({ id }) => id);
   const { min, max } = CONDITIONS.hereBelow;
   const invalid = [
@@ -550,7 +552,8 @@ test("setProgram rejects kinds outside the closed list and values outside the da
 });
 
 test("a refused program leaves the game unchanged", async () => {
-  const { newGame, setProgram } = await import("../../dist/public/sim/game.js");
+  const { newGame, setProgram } =
+    await import("../../dist/browser/sim/game.js");
   const state = setProgram(
     newGame(),
     programFromRules(rule(ALWAYS, EXPLORE)),
@@ -563,7 +566,7 @@ test("a refused program leaves the game unchanged", async () => {
 
 test("send rejects a map id not in the data and a character id not in the team", async () => {
   const { createCharacter, newGame, send } =
-    await import("../../dist/public/sim/game.js");
+    await import("../../dist/browser/sim/game.js");
   const game = createCharacter(newGame(), "Ala").state;
   for (const ids of [
     { mapId: "nowhere", characterId: 1 },
@@ -603,7 +606,7 @@ test("every map step and every fixed action duration is a whole number of minute
 
 test("an activity of 0 minutes from faulty data still finishes in the next minute", async () => {
   const { newMapRun, stepMinute } =
-    await import("../../dist/public/sim/run.js");
+    await import("../../dist/browser/sim/run.js");
   const map = { ...firstMap, stepMinutes: 0 };
   const program = programFromRules(rule(ALWAYS, { kind: "wander" }));
   const started = newMapRun(map, 1, program, SENT).run;

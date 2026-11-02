@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { INITIAL_SEED } from "../../dist/public/sim/data/balance.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { INITIAL_SEED } from "../../dist/browser/sim/data/balance.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -13,8 +13,8 @@ import {
   setPace,
   setPaused,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { mixSeed } from "../../dist/public/sim/random.js";
+} from "../../dist/browser/sim/game.js";
+import { mixSeed } from "../../dist/browser/sim/random.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
 import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
 

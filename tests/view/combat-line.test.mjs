@@ -3,7 +3,7 @@ import { test } from "node:test";
 import {
   combatText,
   createCombatLine,
-} from "../../dist/public/view/combat-line.js";
+} from "../../dist/browser/view/combat-line.js";
 
 const creature = {
   creatureId: "wolf",

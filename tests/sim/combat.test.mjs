@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CREATURES } from "../../dist/public/sim/data/creatures.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { resolveCombat } from "../../dist/public/sim/combat.js";
-import { newMapRun } from "../../dist/public/sim/run.js";
+import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { resolveCombat } from "../../dist/browser/sim/combat.js";
+import { newMapRun } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 
 const [mapId, map] = Object.entries(MAPS)[0];

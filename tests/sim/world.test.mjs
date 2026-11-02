@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
-import { ITEMS } from "../../dist/public/sim/data/items.js";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
+import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
+import { ITEMS } from "../../dist/browser/sim/data/items.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   neighbours,
   offsetToAxial,
   tileAt,
-} from "../../dist/public/sim/hex.js";
-import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/hex.js";
+import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // Every expected number below is worked out by hand from the task's numbers: on Las the body

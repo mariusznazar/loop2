@@ -1,17 +1,17 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/public/sim/data/maps.js";
-import { offsetToAxial, sameHex, tileAt } from "../../dist/public/sim/hex.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { offsetToAxial, sameHex, tileAt } from "../../dist/browser/sim/hex.js";
 import {
   createCharacter,
   newGame,
   restart,
   send,
   setProgram,
-} from "../../dist/public/sim/game.js";
-import { actionFeasible } from "../../dist/public/sim/program.js";
-import { streamState } from "../../dist/public/sim/random.js";
-import { newMapRun, stepMinute } from "../../dist/public/sim/run.js";
+} from "../../dist/browser/sim/game.js";
+import { actionFeasible } from "../../dist/browser/sim/program.js";
+import { streamState } from "../../dist/browser/sim/random.js";
+import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // „Zbierz — <zasób mapy>” (task, To do 5; D-25, D-64 to D-66, D-71). The numbers below are written

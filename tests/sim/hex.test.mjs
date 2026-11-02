@@ -10,7 +10,7 @@ import {
   sameHex,
   tileAt,
   tileLabel,
-} from "../../dist/public/sim/hex.js";
+} from "../../dist/browser/sim/hex.js";
 
 const SIZE = 24;
 const WIDTH = Math.sqrt(3) * SIZE;

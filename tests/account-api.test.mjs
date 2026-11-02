@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { createServer } from "node:http";
-import { createAccountClient } from "../dist/public/account-api.js";
+import { createAccountClient } from "../dist/browser/account-api.js";
 
 const globalOrigin = Symbol.for("undici.globalOrigin.1");
 const deadlineMs = 5000;

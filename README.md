@@ -1,6 +1,6 @@
 # Loop
 
-Aplikacja TypeScript: gra w przeglądarce zbudowana na DOM oraz serwer Express 5, który podaje jej pliki.
+Aplikacja TypeScript: gra w przeglądarce zbudowana w React oraz serwer Express 5, który podaje jej pliki.
 
 Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w głównym katalogu repozytorium.
 
@@ -10,7 +10,7 @@ Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w g
 2. `npm run local` — zbudowanie gry i uruchomienie jej na tym komputerze przez HTTPS.
 3. Otwórz adres z wiersza `Local game: https://127.0.0.1:…`, który polecenie wypisuje na końcu. Port wybiera system przy każdym starcie.
 4. Przeglądarka ostrzega przed certyfikatem, bo polecenie robi własny przy każdym starcie. Wybierz w ostrzeżeniu przejście dalej.
-5. Załóż konto formularzem na stronie.
+5. Załóż konto na karcie logowania: przełącznik „Załóż konto”, potem formularz.
 
 Zakończ przez Ctrl+C albo `npm run local:stop`. To drugie polecenie kończy każdy działający start tego katalogu.
 
@@ -22,7 +22,7 @@ Tej drogi używa się do sprawdzania, nie do grania na stałe, bo gra się na se
 
 Sam serwer uruchamiają dwa polecenia, a `npm run typecheck` sprawdza typy przeglądarki i serwera bez emisji plików:
 
-1. `npm run build` — kompilacja obu części oraz skopiowanie do `dist/public` HTML-a, arkuszy stylów leżących bezpośrednio w `src/browser/`, ikon z `assets/icons/` i czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`).
+1. `npm run build` — kompilacja obu części do `dist/browser` i `dist/server`, zebranie kodu przeglądarki esbuildem do `dist/public` oraz skopiowanie tam HTML-a, arkuszy stylów leżących bezpośrednio w `src/browser/`, ikon z `assets/icons/` i czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`).
 2. `npm start` — uruchomienie zbudowanego serwera.
 
 `npm start` wymaga wcześniejszego builda. Serwer domyślnie nasłuchuje na 127.0.0.1:3000; adres zmienisz zmiennymi środowiska `LOOP2_LISTEN_HOST` i `LOOP2_LISTEN_PORT`. Zakończ go przez Ctrl+C. Bez ustawień kont strona się otwiera, ale serwer odpowiada na żądania kont kodem 503, więc nikt nie wejdzie do gry; do gry prowadzi `npm run local`.

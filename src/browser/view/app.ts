@@ -5,10 +5,15 @@ import {
   type AccountFailure,
   type ConfirmationMessage,
 } from "../account-api.js";
+import { ABOUT } from "../sim/data/about.js";
 import { newGame } from "../sim/game.js";
 import { loadSavedGame, type SavedGameRefusal } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
-import { createAccountScreen } from "./account-screen.js";
+import {
+  createAccountCard,
+  type AccountCard,
+  type AccountCardReset,
+} from "./account-card.js";
 import { createButton, setButtonWaiting } from "./controls/button.js";
 import { createFormWarning } from "./controls/text-field.js";
 import {
@@ -22,11 +27,7 @@ import {
 import { createEmailStatus, type EmailStatus } from "./email-status.js";
 import { createFooter } from "./footer.js";
 import { createGameView, type GameView, type KeptGame } from "./game-view.js";
-import {
-  createResetScreen,
-  readResetToken,
-  type ResetEnding,
-} from "./password-reset.js";
+import { readResetToken, type ResetEnding } from "./password-reset.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
 const PASSWORD_CHANGED = "Hasło zmienione. Zaloguj się nowym hasłem.";
@@ -107,20 +108,21 @@ function createPageNotice(sentence: string): HTMLElement {
  * The page first asks the server whom this browser is signed in as and shows only that it is
  * asking; once the server names an account, it goes on asking for the account's saved game state,
  * and only that answer builds the game: a new game where there is none, else the game the load
- * gives. The forms come only once the server says there is no session. Any other answer is a
- * warning with „Spróbuj ponownie”, which repeats both requests, never a guess, and so is a load
- * that meets an error of the code: it builds no game, so nothing is saved. „Wyloguj” beside
- * the title saves the game state, then ends this browser's session; the game leaves the page only
- * when the server confirms it, and stays with a warning when the outcome is uncertain (D-97). One
- * transition runs at a time, and an answer that comes after the page moved on is ignored.
+ * gives. The login card comes only once the server says there is no session, and while it stands
+ * nothing else does: it stands in `root` beside those three, which are hidden (D-262). Any other
+ * answer is a warning with „Spróbuj ponownie”, which repeats both requests, never a guess, and so
+ * is a load that meets an error of the code: it builds no game, so nothing is saved. „Wyloguj”
+ * beside the title saves the game state, then ends this browser's session; the game leaves the page
+ * only when the server confirms it, and stays with a warning when the outcome is uncertain (D-97).
+ * One transition runs at a time, and an answer that comes after the page moved on is ignored.
  *
  * Under the title and „Wyloguj”, on lines of their own, stand the line of saving (D-208) and, for
  * a signed-in player with an unconfirmed address, the row of `email-status.ts`. When the page's
  * address carries a confirmation token, the page first sends it — showing „Potwierdzanie adresu…”
  * where it shows the session check — and only then checks the session; the result stands as one
- * sentence above the first screen that check leads to, and leaves at the next change between forms
- * and game. When the address carries a password-reset token instead, the page places the form
- * „Ustaw nowe hasło” and stops: it asks nothing, builds no game and saves nothing, whoever is
+ * sentence on the first screen that check leads to, and leaves at the next change between card and
+ * game (D-261). When the address carries a password-reset token instead, the page places the card
+ * on „Ustaw nowe hasło” and stops: it asks nothing, builds no game and saves nothing, whoever is
  * signed in, until the form ends (D-225). A save answered with no session keeps the game state in
  * this page only, for a sign-in to the same account (D-211).
  */
@@ -131,7 +133,7 @@ export function startApp(
 ): void {
   const header = document.createElement("header");
   const title = document.createElement("h1");
-  title.textContent = "Loop";
+  title.textContent = ABOUT.name;
   const logoutButton = createButton("Wyloguj");
   logoutButton.hidden = true;
   const logoutWarning = createFormWarning();
@@ -139,6 +141,8 @@ export function startApp(
 
   const main = document.createElement("main");
   main.className = "app-main";
+
+  const footer = createFooter();
 
   // The session check: what the page says while it asks, and the warning with its retry.
   const check = document.createElement("section");
@@ -151,10 +155,7 @@ export function startApp(
   retryButton.hidden = true;
   check.append(checking, checkWarning.element, retryButton);
 
-  const accountScreen = createAccountScreen(client, (account, message) => {
-    pendingMessage = message;
-    enter(account);
-  });
+  let card: AccountCard | null = null;
   let game: GameView | null = null;
   /** The account whose game the page shows. */
   let account: Account | null = null;
@@ -174,11 +175,42 @@ export function startApp(
   // Each request of the page takes the next number; an answer counts only while it is the last.
   let latest = 0;
 
-  /** The notice to stand above the screen about to be shown, once; nothing after that. */
-  function noticeElements(): HTMLElement[] {
+  /** The notice to stand on the screen about to be shown, once; nothing after that. */
+  function takeNotice(): ConfirmationNotice | null {
     const notice = pendingNotice;
     pendingNotice = null;
-    return notice === null ? [] : [createConfirmationNotice(notice)];
+    return notice;
+  }
+
+  /** The one way to a screen that is no card: any card closes and the page shows `screen`. */
+  function showPage(...screen: HTMLElement[]): void {
+    card?.dispose();
+    card = null;
+    header.hidden = false;
+    main.hidden = false;
+    footer.hidden = false;
+    main.replaceChildren(...screen);
+  }
+
+  /** Puts a new card in place of the page, any card before it closed by `showPage` (D-262). */
+  function placeCard(
+    sentence: ConfirmationNotice | null,
+    reset: AccountCardReset | null,
+  ): void {
+    showPage();
+    card = createAccountCard({
+      client,
+      sentence,
+      reset,
+      signedIn(named, message): void {
+        pendingMessage = message;
+        enter(named);
+      },
+    });
+    header.hidden = true;
+    main.hidden = true;
+    footer.hidden = true;
+    root.append(card.element);
   }
 
   /** The waiting screen while the page asks the server, the warning of a retry cleared. */
@@ -189,7 +221,7 @@ export function startApp(
     } else {
       setButtonWaiting(retryButton, "Sprawdzanie…");
     }
-    main.replaceChildren(check);
+    showPage(check);
   }
 
   function askingFailed(message: string): void {
@@ -201,7 +233,7 @@ export function startApp(
 
   /** A load that met an error of the code: the waiting screen with its warning and its retry. */
   function loadFailed(): void {
-    main.replaceChildren(check);
+    showPage(check);
     askingFailed(LOAD_FAILED);
   }
 
@@ -254,17 +286,21 @@ export function startApp(
     view.saveLine.classList.add("save-line");
     header.append(view.saveLine, emailStatus.element);
     leaveWaiting();
-    const notices = noticeElements();
+    const notice = takeNotice();
+    const notices = notice === null ? [] : [createConfirmationNotice(notice)];
     if (start.refused !== null)
       notices.push(createPageNotice(REFUSED_LOAD[start.refused]));
-    main.replaceChildren(...notices, view.element);
+    showPage(...notices, view.element);
     logoutWarning.set(null);
     logoutButton.hidden = false;
     // A refused save is replaced at once, so its sentence does not come back (spec decision 7).
     if (saveAtOnce || start.refused !== null) view.saveNow();
   }
 
-  /** The account forms, with `sentence` in `warning` above them where one is given. */
+  /**
+   * The card, with one sentence in it: `sentence` in `warning` where one is given, else the notice
+   * that waits. Both never stand: a sentence comes only from a running game, which took the notice.
+   */
   function showForms(sentence: string | null): void {
     dropGame();
     afterConflict = false;
@@ -272,10 +308,11 @@ export function startApp(
     logoutButton.hidden = true;
     logoutWarning.set(null);
     leaveWaiting();
-    accountScreen.reset();
-    const notices = noticeElements();
-    if (sentence !== null) notices.push(createPageNotice(sentence));
-    main.replaceChildren(...notices, accountScreen.element);
+    const notice = takeNotice();
+    placeCard(
+      sentence === null ? notice : { text: sentence, role: "warning" },
+      null,
+    );
   }
 
   /** No session for a save: the current state stays in this page for the same account (D-211). */
@@ -386,7 +423,7 @@ export function startApp(
       setButtonWaiting(logoutButton, null);
       if (result.ok || signedOut(result.failure)) {
         showForms(save.kind === "outdated" ? OUTDATED : null);
-        accountScreen.focus();
+        card?.focus();
         return;
       }
       // The server may or may not have ended the session: the game stays, and so does „Wyloguj”.
@@ -399,30 +436,26 @@ export function startApp(
   });
 
   /**
-   * The form „Ustaw nowe hasło” in the place of the screen. Its ending says how the page goes on:
-   * after a change the forms with the sentence of success, without a session check; after a
-   * refused link the usual session check with the sentence of refusal; after „Anuluj” the usual
-   * session check alone.
+   * The card on the form „Ustaw nowe hasło”. Its ending says how the page goes on: after a change
+   * a new card with the sentence of success, without a session check; after a refused link the
+   * usual session check with the sentence of refusal; after „Anuluj” the usual session check alone.
    */
   function showReset(token: string): void {
-    main.replaceChildren(
-      createResetScreen({
-        client,
-        token,
-        address,
-        finished(ending: ResetEnding): void {
-          if (ending === "changed") {
-            pendingNotice = { text: PASSWORD_CHANGED, role: "positive" };
-            showForms(null);
-            accountScreen.focus();
-            return;
-          }
-          if (ending === "refused")
-            pendingNotice = { text: LINK_INVALID, role: "warning" };
-          void checkSession();
-        },
-      }),
-    );
+    placeCard(null, {
+      token,
+      address,
+      finished(ending: ResetEnding): void {
+        if (ending === "changed") {
+          pendingNotice = { text: PASSWORD_CHANGED, role: "positive" };
+          showForms(null);
+          card?.focus();
+          return;
+        }
+        if (ending === "refused")
+          pendingNotice = { text: LINK_INVALID, role: "warning" };
+        void checkSession();
+      },
+    });
   }
 
   /** The reset form or the confirmation from the address, where there is one, then the session check. */
@@ -434,7 +467,7 @@ export function startApp(
     }
     if (readConfirmationToken(address.hash()) !== null) {
       checking.textContent = "Potwierdzanie adresu…";
-      main.replaceChildren(check);
+      showPage(check);
       const notice = await confirmFromAddress(client, address);
       checking.textContent = "Sprawdzanie logowania…";
       pendingNotice = notice;
@@ -442,6 +475,6 @@ export function startApp(
     await checkSession();
   }
 
-  root.append(header, main, createFooter());
+  root.append(header, main, footer);
   void start();
 }

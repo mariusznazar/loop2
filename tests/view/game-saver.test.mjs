@@ -15,9 +15,9 @@ import {
   setPace,
   setPaused,
   withSaveTime,
-} from "../../dist/public/sim/game.js";
-import { loadSavedGame, savedGame } from "../../dist/public/sim/saved-game.js";
-import { createGameSaver } from "../../dist/public/view/game-saver.js";
+} from "../../dist/browser/sim/game.js";
+import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
+import { createGameSaver } from "../../dist/browser/view/game-saver.js";
 
 // --- a document model with just what the saver builds and listens to -----------------------
 

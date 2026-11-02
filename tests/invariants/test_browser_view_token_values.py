@@ -9,7 +9,7 @@ Reading of the sentence:
 - the files of the part browser-view: the files git tracks or would track whose part, by the
   *Files* patterns of `foundations/part_map.md` resolved with git as
   `test_application_package_layout.py` resolves them, is browser-view, and whose name ends in
-  `.css`, `.html`, `.ts`, `.mts` or `.cts`, less `src/browser/tokens.css`;
+  `.css`, `.html`, `.ts`, `.mts`, `.cts` or `.tsx`, less `src/browser/tokens.css`;
 - the text of styles: a `.css` file, and in an HTML file the content of each `<style>` element and
   the value of each `style` attribute, HTML comments left out. Of it only the values of
   declarations are read, at any depth of blocks (`@media` blocks included) — never a selector, a
@@ -45,7 +45,8 @@ Reading of the sentence:
   `flood-opacity`, `stop-opacity` or `font-weight`, and in a value of `font` a number with no
   unit and no `%` that does not follow `/` (after `/` stands the line height, which D-43 does not
   count);
-- in TypeScript: only the text of string literals and the text parts of template literals is
+- in TypeScript (a `.tsx` file included; the colour in a `style` attribute of JSX stands in a
+  string literal, which is what is read): only the text of string literals and the text parts of template literals is
   read — never comments, identifiers or other code; the code inside `${...}` is code, and its own
   literals are read in their turn. In that text, a colour as above: a hexadecimal colour, a
   colour function, or a named, system or deprecated system colour as a whole word, never
@@ -63,7 +64,8 @@ passes.
 Does NOT cover: a colour a module builds from numbers and writes into a style (review, D-43);
 presentation attributes such as `fill` on an SVG element of an HTML file; a family named by
 identifiers in a `font` value; colour functions outside CSS Color 4 § 4.1 (such as
-`color-mix()`); a value that only a browser's reading of malformed CSS would see.
+`color-mix()`); a value that only a browser's reading of malformed CSS would see; JSX text
+holding `//` other than right after `:`, which the reader takes for a comment.
 """
 
 import html
@@ -76,8 +78,8 @@ from test_application_package_layout import file_owners
 
 PART = "browser-view"
 TOKEN_FILE = "src/browser/tokens.css"
-EXTENSIONS = (".css", ".html", ".ts", ".mts", ".cts")
-TYPESCRIPT = (".ts", ".mts", ".cts")
+EXTENSIONS = (".css", ".html", ".ts", ".mts", ".cts", ".tsx")
+TYPESCRIPT = (".ts", ".mts", ".cts", ".tsx")
 
 # CSS Color 4, https://www.w3.org/TR/2026/CRD-css-color-4-20261022/, read 2026-10-23.
 NAMED_COLOURS = (
@@ -307,14 +309,17 @@ REGEX_AFTER_WORD = re.compile(
 
 def literal_texts(text):
     """(line, text) of each string literal and each text part of a template literal of a
-    TypeScript text, outside comments; the code inside `${...}` is read as code."""
+    TypeScript text, outside comments; the code inside `${...}` is read as code. JSX is not
+    parsed: a `/>` after `}` and a `//` right after `:` are read as JSX, and a `//` elsewhere in
+    JSX text as a comment."""
     found, holes = [], []
     depth, last, i, n = 0, "", 0, len(text)
     while i < n:
         c = text[i]
         if c.isspace():
             i += 1
-        elif text.startswith("//", i):
+        elif text.startswith("//", i) and text[i - 1:i] != ":":
+            # A `//` right after `:` is the address in JSX text such as `<p>https://x</p>`.
             end = text.find("\n", i)
             i = n if end < 0 else end
         elif text.startswith("/*", i):
@@ -347,6 +352,12 @@ def literal_texts(text):
             else:
                 found.append((line_at(text, start), text[start:]))
             i, last = j, "`"
+        elif c == "/" and text[i - 1:i] == "<":
+            # The `/` of a JSX closing tag such as `</p>` or `</>`: no regex starts here.
+            i, last = i + 1, c
+        elif c == "/" and last == "}" and text[i + 1:i + 2] == ">":
+            # The `/>` closing a JSX tag whose last attribute stands in braces: no regex starts here.
+            i, last = i + 1, c
         elif c == "/" and (last == "" or last in REGEX_AFTER or REGEX_AFTER_WORD.search(text[:i])):
             j, in_class = i + 1, False
             while j < n and text[j] != "\n":
@@ -464,6 +475,26 @@ FLAGGED = {
         "a colour in a string after a ${} closing a block":
             "const s = `${(() => { return 1; })()}`; const c = 'navy';",
     },
+    "a.tsx": {
+        "a named colour in a style attribute":
+            'const a = <p style={{ color: "red" }}>x</p>;',
+        "a hexadecimal colour in a style attribute":
+            "const a = <p style={{ background: '#fff' }}>x</p>;",
+        "a colour function in a literal on the line after a JSX element":
+            'const a = <p>x</p>;\nconst c = "rgb(1, 2, 3)";',
+        "a colour in a literal later on the line of a JSX closing tag":
+            'const a = <p>x</p>; const c = "rgb(1, 2, 3)";',
+        "a colour in a literal after the closing tag of a fragment on its line":
+            'const a = <>x</>; const c = "#fff";',
+        "a colour after a self-closing tag with an attribute in braces, in a ternary":
+            'const a = b ? <X y={1} /> : <X style={{ color: "red" }} />;',
+        "a colour after a self-closing tag with an attribute in braces, in an array":
+            'const b = [<X y={1} />, <X style={{ color: "#fff" }} />];',
+        "a colour in an assignment after a self-closing tag with an attribute in braces":
+            'const a = <input value={x} />; const c = "#fff";',
+        "a colour in an assignment after `//` in JSX text":
+            'const a = <p>https://x</p>; const c = "#fff";',
+    },
 }
 CLEAN = {
     "a.css": (
@@ -520,6 +551,18 @@ CLEAN = {
         'const e = /"#fff"/g;\n'
         "const f = a / b;\n"
         'const g = "var(--page)";\n'
+    ),
+    "a.tsx": (
+        "// #fff red rgb(0, 0, 0)\n"
+        "const red = field;\n"
+        'const a = <p style={{ color: "var(--text)" }} className="highlight">red #fff</p>;\n'
+        'const b = <p>{red ? "revealed" : "hidden"}</p>;\n'
+        'const c = <X y={1} />;\n'
+        'function f() {}\n'
+        '/"#fff"/.test(c);\n'
+        'const t = a < /"#fff"/.lastIndex;\n'
+        'const u = b ? c : d; // "#fff"\n'
+        'const v = <X y={1} />; // "#fff"\n'
     ),
 }
 

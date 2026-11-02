@@ -1,14 +1,14 @@
 // Accepted wprawa_i_drzewa_loop2.md Q9 and Q10: exact skill, branch and run labels.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createCharacter, newGame, send } from "../../dist/public/sim/game.js";
-import { buyBranch } from "../../dist/public/sim/skills.js";
+import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
+import { buyBranch } from "../../dist/browser/sim/skills.js";
 import {
   branchText,
   createCharacterSkills,
   practiceText,
   skillText,
-} from "../../dist/public/view/character-skills.js";
+} from "../../dist/browser/view/character-skills.js";
 
 const character = (practice = 0, ranks = {}) => ({
   ...createCharacter(newGame(), "Ala").state.team.characters[0],

@@ -19,9 +19,9 @@ import {
   setProgram,
   settleDeath,
   withSaveTime,
-} from "../../dist/public/sim/game.js";
-import { loadSavedGame, savedGame } from "../../dist/public/sim/saved-game.js";
-import { branchRank, buyBranch } from "../../dist/public/sim/skills.js";
+} from "../../dist/browser/sim/game.js";
+import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
+import { branchRank, buyBranch } from "../../dist/browser/sim/skills.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 

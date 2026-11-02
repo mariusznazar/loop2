@@ -4,12 +4,15 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   ICON_CREDITS,
   ICON_SOURCE_COMMIT,
-} from "../../dist/public/view/credits.js";
-import { RESOURCES } from "../../dist/public/sim/data/resources.js";
-import { CAMPFIRE } from "../../dist/public/sim/data/campfire.js";
+} from "../../dist/browser/view/credits.js";
+import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
+import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
+import { CreditsSection } from "../../dist/browser/view/credits-section.js";
 
 const ICONS = fileURLToPath(new URL("../../assets/icons/", import.meta.url));
 
@@ -142,7 +145,7 @@ const textOf = (node) =>
 
 async function builtFooter() {
   const { createFooter, footerCredits } =
-    await import("../../dist/public/view/footer.js");
+    await import("../../dist/browser/view/footer.js");
   const saved = globalThis.document;
   globalThis.document = fakeDocument();
   try {
@@ -227,4 +230,56 @@ test("each icon file has a credit with an author and the source commit", () => {
   }
   for (const name of files)
     assert.ok(ICON_CREDITS[name.replace(/\.svg$/, "")], name);
+});
+
+// --- the folded credits: a React section, read as markup, which needs no document ---------------
+
+/** The section as markup; no `document` stands, as the section needs none. */
+const sectionMarkup = () => renderToStaticMarkup(createElement(CreditsSection));
+
+/** The text of a piece of markup: its tags dropped, its entities left as written. */
+const textOfMarkup = (markup) => markup.replace(/<[^>]*>/g, "");
+
+/** The `<li>` elements of the section's markup. */
+const itemsOf = (markup) =>
+  [...markup.matchAll(/<li>(.*?)<\/li>/g)].map((match) => match[1]);
+
+test("the section is a folded details whose summary reads Autorzy grafiki, with no state", () => {
+  assert.equal(globalThis.document, undefined);
+  const markup = sectionMarkup();
+  assert.match(
+    markup,
+    /^<details><summary>Autorzy grafiki<\/summary><ul class="credits">.*<\/ul><\/details>$/,
+  );
+  assert.doesNotMatch(markup, /<details[^>]*\sopen/, "folded by default");
+  assert.doesNotMatch(markup, /\son[a-z]+=|<script/i, "no script");
+});
+
+test("each line of the section is the footer's line: the icon's title, author, game-icons.net, CC BY 3.0 and the change", () => {
+  const items = itemsOf(sectionMarkup());
+  assert.equal(items.length, NAMED.length);
+  items.forEach((item, i) => {
+    assert.equal(
+      textOfMarkup(item),
+      `${NAMED[i].name}: „${TITLES[NAMED[i].icon]}”, ${ICON_CREDITS[NAMED[i].icon].author}, game-icons.net, CC BY 3.0, ${CHANGES}`,
+    );
+  });
+});
+
+test("the section links each icon's page and the licence, each opening in a new tab without opener or referrer", () => {
+  const items = itemsOf(sectionMarkup());
+  items.forEach((item, i) => {
+    const links = [...item.matchAll(/<a ([^>]*)>(.*?)<\/a>/g)];
+    assert.equal(links.length, 2, NAMED[i].icon);
+    assert.equal(
+      links[0][1],
+      `href="${ICON_CREDITS[NAMED[i].icon].sourceUrl}" target="_blank" rel="noopener noreferrer"`,
+    );
+    assert.equal(links[0][2], "game-icons.net");
+    assert.equal(
+      links[1][1],
+      'href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer"',
+    );
+    assert.equal(links[1][2], "CC BY 3.0");
+  });
 });

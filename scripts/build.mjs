@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { copyFile, mkdir } from "node:fs/promises";
+import { copyFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { build } from "esbuild";
 import { copyStaticFiles } from "./static-files.mjs";
 
 const root = new URL("../", import.meta.url);
@@ -8,6 +9,12 @@ const compiler = fileURLToPath(
   new URL("node_modules/typescript-compiler/bin/tsc", root),
 );
 const checkOnly = process.argv.includes("--check");
+
+// A module left by an earlier build would be served or imported silently (D-266).
+if (!checkOnly) {
+  for (const directory of ["dist/public/", "dist/browser/"])
+    await rm(new URL(directory, root), { recursive: true, force: true });
+}
 
 for (const config of ["tsconfig.browser.json", "tsconfig.server.json"]) {
   const result = spawnSync(
@@ -24,7 +31,19 @@ for (const config of ["tsconfig.browser.json", "tsconfig.server.json"]) {
 
 if (!checkOnly) {
   const out = new URL("dist/public/", root);
-  await mkdir(out, { recursive: true });
+  await build({
+    absWorkingDir: fileURLToPath(root),
+    entryPoints: ["dist/browser/main.js"],
+    outfile: "dist/public/main.js",
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: "es2022",
+    minify: true,
+    // React's packages choose their production build by this value, which esbuild
+    // sets by itself only while all of its minifying stays on.
+    define: { "process.env.NODE_ENV": '"production"' },
+  });
   await copyFile(
     new URL("src/browser/index.html", root),
     new URL("index.html", out),

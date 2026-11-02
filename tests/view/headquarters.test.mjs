@@ -2,8 +2,8 @@
 // the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createCharacter, newGame } from "../../dist/public/sim/game.js";
-import { rowProgram } from "../../dist/public/sim/programs.js";
+import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
+import { rowProgram } from "../../dist/browser/sim/programs.js";
 import {
   chestLines,
   generationLabel,
@@ -14,7 +14,7 @@ import {
   sendMaps,
   solvingSentence,
   stoppedLoopLine,
-} from "../../dist/public/view/headquarters.js";
+} from "../../dist/browser/view/headquarters.js";
 
 test("importing the headquarters touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");

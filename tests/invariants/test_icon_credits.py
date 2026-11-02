@@ -1,15 +1,23 @@
 """Invariant icon-credits: For each SVG icon file directly in `assets/icons/`, the game's footer
-shows a credit that names the icon's title as its page on game-icons.net gives it, the icon's
-author, that page and the licence CC BY 3.0, and says how the icon file differs from its source.
+and the game's section of credits each hold a credit that names the icon's title as its page on
+game-icons.net gives it, the icon's author, that page and the licence CC BY 3.0, and says how the
+icon file differs from its source.
 
 The application is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory installs a small
 stand-in for the page's `document` (elements, text, attributes, properties such as `href`, and
-`innerHTML` kept as written), calls `createFooter()` of the built `dist/public/view/footer.js` and
-writes the element it returns out as HTML, which the check parses. The SVG files are the files
+`innerHTML` kept as written), calls `createFooter()` of the built `dist/browser/view/footer.js` and
+writes the element it returns out as HTML, which the check parses. The section of credits is a
+React component, `CreditsSection` of the built `dist/browser/view/credits-section.js`; a second
+Node script, written to a temporary directory, loads `react` and `react-dom/server` from the
+built copy (not from where the script stands), renders the component with `renderToStaticMarkup`,
+which needs no document, and writes the HTML out for the same parsing. The SVG files are the files
 with the extension `.svg` that git tracks or would track directly in `assets/icons/`.
 
 Reading of the sentence:
+- the section of credits: the `<details>` that `CreditsSection` renders, folded, with the summary
+  "Autorzy grafiki"; that the login card draws it is held by D-27 and by
+  `tests/view/account-screen.test.mjs`, not by this check;
 - the game's footer: the element `createFooter()` returns, which a built module of the game's view
   other than `footer.js` imports and calls (checked by a scan of the built modules' text);
 - shows: stands in the footer's text, or, for a page, as the target of a link (`href`) or in text;
@@ -37,8 +45,12 @@ another title or the title in other letter case stands there), the author, the p
 (also when it stands once outside the credits) and the statement of change, and an icon file with
 no title written out, while a made-up footer holding all of them passes.
 
-Does NOT cover: whether the statement of change is true of the file; how the footer looks in a
-browser (it is not rendered); credits shown anywhere but the footer.
+The section is read by the same comparison; a made-up section built with `createElement` is
+rendered by the same script, and the comparison flags it when a credit of a file is taken out.
+
+Does NOT cover: whether the statement of change is true of the file; how the footer or the section
+looks in a browser (they are not rendered); credits shown anywhere but the footer and the section;
+whether the login card draws the section.
 """
 
 import html.parser
@@ -52,8 +64,10 @@ import unittest
 import loop2_invariant_support as support
 
 ICON_DIRECTORY = "assets/icons/"
-FOOTER_MODULE = "dist/public/view/footer.js"
-VIEW_DIRECTORY = "dist/public"
+FOOTER_MODULE = "dist/browser/view/footer.js"
+SECTION_MODULE = "dist/browser/view/credits-section.js"
+SECTION_SUMMARY = "Autorzy grafiki"
+VIEW_DIRECTORY = "dist/browser"
 LICENCE = "CC BY 3.0"
 PAGE = re.compile(r"https://game-icons\.net/1x1/([\w-]+)/([\w-]+)\.html")
 # Stems of a statement that a file was changed: zmienione, zmodyfikowane, przerobione; changed,
@@ -180,6 +194,44 @@ const module = await import(pathToFileURL(modulePath).href);
 const element = module[exportName]();
 writeFileSync(outPath, JSON.stringify({ html: element.toHTML() }));
 """
+)
+
+REACT_DRIVER = r"""
+import { createRequire } from 'node:module';
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const [modulePath, exportName, builtRoot, mode, outPath] = process.argv.slice(2);
+// react and react-dom/server are resolved from the built copy, not from where this script stands.
+const requireFromCopy = createRequire(pathToFileURL(join(builtRoot, 'package.json')).href);
+const { createElement } = requireFromCopy('react');
+const { renderToStaticMarkup } = requireFromCopy('react-dom/server');
+const module = await import(pathToFileURL(modulePath).href);
+const element = mode === 'component' ? createElement(module[exportName]) : module[exportName](createElement);
+writeFileSync(outPath, JSON.stringify({ html: renderToStaticMarkup(element), documentStood: typeof globalThis.document !== 'undefined' }));
+"""
+
+MADE_UP_SECTION = r"""
+export function made(createElement) {
+  const item = (stem, ...rest) => createElement('li', { key: stem }, ...rest);
+  return createElement('details', null,
+    createElement('summary', null, 'Autorzy grafiki'),
+    createElement('ul', null,
+      item('fern', 'Paproć: „Fern icon”, Delapouite, ',
+        createElement('a', { href: 'https://game-icons.net/1x1/delapouite/fern.html' }, 'game-icons.net'),
+        ', CC BY 3.0, zmienione'),
+      item('flax', 'Len: „Flax icon”, Delapouite, ',
+        createElement('a', { href: 'https://game-icons.net/1x1/delapouite/flax.html' }, 'game-icons.net'),
+        ', CC BY 3.0, zmienione')));
+}
+"""
+MADE_UP_SECTION_EXPECTED = (
+    '<details><summary>Autorzy grafiki</summary><ul><li>Paproć: „Fern icon”, Delapouite, '
+    '<a href="https://game-icons.net/1x1/delapouite/fern.html">game-icons.net</a>, CC BY 3.0, '
+    'zmienione</li><li>Len: „Flax icon”, Delapouite, '
+    '<a href="https://game-icons.net/1x1/delapouite/flax.html">game-icons.net</a>, CC BY 3.0, '
+    'zmienione</li></ul></details>'
 )
 
 MADE_UP_FOOTER = r"""
@@ -333,6 +385,27 @@ def render(module_path, export_name):
         shutil.rmtree(work, ignore_errors=True)
 
 
+def render_section(module_path, export_name, built_root, mode):
+    """The HTML a React export renders with `renderToStaticMarkup` from the built copy's react."""
+    work = tempfile.mkdtemp(prefix="loop2-icon-credits-section-")
+    try:
+        script = os.path.join(work, "driver.mjs")
+        out_path = os.path.join(work, "section.json")
+        with open(script, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(REACT_DRIVER)
+        code, output = support.run(
+            [node(), script, module_path, export_name, built_root, mode, out_path], work)
+        if code != 0:
+            raise AssertionError(f"the driver exited {code}:\n{output}")
+        with open(out_path, encoding="utf-8") as handle:
+            rendered = json.load(handle)
+        if rendered["documentStood"]:
+            raise AssertionError("a document stood while the section rendered")
+        return rendered["html"]
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def icon_files():
     return sorted(p[len(ICON_DIRECTORY):] for p in support.listed_files()
                   if p.startswith(ICON_DIRECTORY) and "/" not in p[len(ICON_DIRECTORY):]
@@ -369,6 +442,38 @@ class IconCredits(unittest.TestCase):
                                  "createFooter, so the footer is not the game's")
         markup = render(footer, "createFooter")
         self.assertEqual(violations(markup, files), [], f"the footer:\n{markup}")
+
+    def test_credits_section_credits_each_icon_file(self):
+        # invariant: icon-credits
+        files = icon_files()
+        self.assertTrue(files, f"the working tree holds no SVG file in {ICON_DIRECTORY}")
+        copy = support.built_copy()
+        section = copy.file(SECTION_MODULE)
+        self.assertTrue(os.path.isfile(section), f"`npm run build` placed no {SECTION_MODULE}")
+        markup = render_section(section, "CreditsSection", copy.path, "component")
+        root = parse(markup)
+        details = root["children"]
+        self.assertEqual([d["tag"] for d in details], ["details"], f"the section:\n{markup}")
+        self.assertNotIn("open", details[0]["attrs"], "the section is not folded")
+        summary = next(c for c in details[0]["children"] if not isinstance(c, str))
+        self.assertEqual((summary["tag"], text_of(summary)), ("summary", SECTION_SUMMARY))
+        self.assertEqual(violations(markup, files), [], f"the section:\n{markup}")
+
+    def test_control_the_section_script_renders_what_a_section_means(self):
+        # invariant: icon-credits
+        copy = support.built_copy()
+        work = tempfile.mkdtemp(prefix="loop2-icon-credits-made-")
+        try:
+            module = os.path.join(work, "made.mjs")
+            with open(module, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write(MADE_UP_SECTION)
+            markup = render_section(module, "made", copy.path, "factory")
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
+        self.assertEqual(markup, MADE_UP_SECTION_EXPECTED)
+        self.assertEqual(violations(markup, ["fern.svg", "flax.svg"]), [])
+        self.assertTrue(violations(markup.split("<li>Len")[0] + "</ul></details>", ["flax.svg"]),
+                        "a section without the credit of a file goes unseen")
 
     def test_control_the_stand_in_document_writes_what_a_footer_means(self):
         # invariant: icon-credits
