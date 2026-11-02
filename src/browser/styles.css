@@ -131,7 +131,9 @@ header .save-line {
  * under the pointer the background `highlight` with frame and text role unchanged; focus by the
  * one :focus-visible rule above; disabled text in `text-disabled`. Loading is the state of a
  * control that waits for a server: the button disabled under a changed text and the fields of its
- * form disabled, which the disabled rules below draw (D-44).
+ * form disabled, which the disabled rules below draw (D-44). The button has four looks beside the
+ * plain one: the destructive button, the button selected in its group, the secondary action and
+ * the tab, each below, and the main look of the button that sends a form.
  */
 .button,
 .select-list,
@@ -165,6 +167,70 @@ header .save-line {
   border-color: var(--selected);
 }
 
+/*
+ * The main look, of the button that sends its form, recognised by its type, one on a form: the
+ * background of the card, text in `text-strong` at the emphasis weight and a frame in the colour of
+ * that text, so the frame is part of the text (D-40). Under the pointer it gets the background
+ * `highlight` from the rule below, its frame and text unchanged. While it waits it looks as every
+ * disabled button does, which the rule after the disabled rule below draws.
+ */
+.button[type="submit"] {
+  color: var(--text-strong);
+  font-weight: var(--font-weight-emphasis);
+  border-color: currentColor;
+}
+
+/*
+ * The secondary action: an action that opens or leaves the state of a form and stands under it, as
+ * underlined text in `text-secondary`, without a frame and without padding at its sides, so it
+ * begins level with the fields. The top and the bottom keep the button's size, the frame's place
+ * kept by a transparent line. Under the pointer the text turns to `text`, the background stays.
+ */
+.button.secondary {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  border-color: transparent;
+  border-left-width: 0;
+  border-right-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.button.secondary:hover:not(:disabled) {
+  color: var(--text);
+  background: transparent;
+}
+
+/*
+ * The tab, a button of a group drawn without a frame, in the size of the body text: the one
+ * selected shows it by text in `text-strong` at the emphasis weight and a bottom line in `selected`
+ * of the bar's width, the others by text in `text-label`; the line's place is kept in the others by
+ * a transparent line. Under the pointer it gets the background `highlight`, while the form waits
+ * its text is in `text-disabled` and the line of the choice stays. The class `tabs`, which a screen
+ * sets on the container of its tabs, draws the thin line in `divider` under the whole group.
+ */
+.button.tab {
+  color: var(--text-label);
+  font-size: var(--font-size-body);
+  border-width: 0 0 var(--bar-width);
+  border-color: transparent;
+}
+
+.button.tab.selected {
+  color: var(--text-strong);
+  font-weight: var(--font-weight-emphasis);
+  border-color: var(--selected);
+}
+
+.tabs {
+  border-bottom: var(--frame-width) solid var(--divider);
+}
+
+/* The bottom line of the selected tab lies over the thin line of the group. */
+.tabs > .button.tab {
+  margin-bottom: calc(-1 * var(--frame-width));
+}
+
 .button:hover:not(:disabled),
 .select-list:hover:not(:disabled),
 .input-field input:hover:not(:disabled) {
@@ -176,6 +242,17 @@ header .save-line {
 .input-field input:disabled {
   color: var(--text-disabled);
   cursor: default;
+}
+
+/* The main button while it waits: text in `text-disabled` at the normal weight, frame in `control-border`. */
+.button[type="submit"]:disabled {
+  font-weight: var(--font-weight-body);
+  border-color: var(--control-border);
+}
+
+/* A tab while the form waits: the text in `text-disabled`; the line of the choice is kept. */
+.button.tab:disabled {
+  color: var(--text-disabled);
 }
 
 .select-list option {
@@ -227,10 +304,15 @@ header .save-line {
   color: var(--warning);
 }
 
-/* The sentence under a form of an answer that refuses nothing, in `text-secondary` (D-40, D-44). */
+/*
+ * The sentence under a form of an answer that refuses nothing, in `text` with a bar at its left in
+ * the colour of that text, so the bar is part of the text (D-40, D-44).
+ */
 .form-note {
   margin: 0;
-  color: var(--text-secondary);
+  padding-left: var(--space-s);
+  color: var(--text);
+  border-left: var(--bar-width) solid currentColor;
 }
 
 /* While the page asks the server whom this browser is signed in as (D-96). */

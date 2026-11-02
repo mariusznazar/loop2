@@ -126,8 +126,9 @@ export type FormNote = {
 
 /**
  * The one sentence under a form that tells of an answer which refuses nothing, such as the one to
- * a request for a password-reset link (D-44, D-222). It stands where the warning stands, in
- * `text-secondary`, and is announced politely to assistive technology when it appears.
+ * a request for a password-reset link (D-44, D-222). It stands where the warning stands, in `text`
+ * with a bar at its left. Its element has the role `status`, but nothing makes sure that the
+ * sentence is announced to assistive technology when it appears.
  */
 export function createFormNote(): FormNote {
   const element = document.createElement("p");
