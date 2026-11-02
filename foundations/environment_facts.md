@@ -463,6 +463,36 @@ Git for Windows comes with OpenSSL.
 
 - **Source:** https://raw.githubusercontent.com/git-for-windows/build-extra/2f63027cca82e0bd0d6aa9d79d52f5a0d7dea8cc/ReleaseNotes.md § Changes since Git for Windows v2.56.0 (September 28th 2026), New Features — "Comes with OpenSSL v3.5.9."; read 2026-11-02
 
+## node-assert-failure-inspect
+
+Node.js 24.17.0, while it builds the error of a failing comparison of `node:assert`, writes the compared values out by `inspect` with `customInspect: false`, `depth: 1000` and `getters: true`.
+
+- **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/lib/internal/assert/assertion_error.js § inspectValue — "return inspect(val, {" · "customInspect: false," · "depth: 1000," · "getters: true," · § createErrDiff — "const inspectedActual = inspectValue(actual);" · § AssertionError — "super(createErrDiff(actual, expected, operator, message, diff));"; read 2026-11-02
+
+## react-hook-call-place
+
+React's documentation says to call Hooks at the top level of a function component or of a custom Hook, before any early return, and not inside loops, conditions, nested functions or `try`/`catch`/`finally` blocks.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/reference/rules/rules-of-hooks.md § Only call Hooks at the top level — "Don’t call Hooks inside loops, conditions, nested functions, or try/catch/finally blocks. Instead, always use Hooks at the top level of your React function, before any early returns." · "Call them at the top level in the body of a function component." · "Call them at the top level in the body of a custom Hook."; read 2026-11-02
+
+## react-effect-dependencies
+
+React's documentation says that every reactive value an Effect's code uses must be declared as a dependency.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/reference/react/useEffect.md § Specifying reactive dependencies — "Every reactive value used by your Effect's code must be declared as a dependency."; read 2026-11-02
+
+## react-effect-cleanup
+
+React's documentation says that the setup function of an Effect connecting to an external system should return a cleanup function that disconnects from that system.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/reference/react/useEffect.md § Connecting to an external system — "A setup function with setup code that connects to that system." · "It should return a cleanup function with cleanup code that disconnects from that system."; read 2026-11-02
+
+## react-effect-use
+
+React's documentation says that Effects are not needed to transform data for rendering or to handle user events, and are needed to synchronize with external systems.
+
+- **Source:** https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/you-might-not-need-an-effect.md § How to remove unnecessary Effects — "You don't need Effects to transform data for rendering." · "You don't need Effects to handle user events." · "You do need Effects to synchronize with external systems."; read 2026-11-02
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
