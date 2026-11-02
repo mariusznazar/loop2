@@ -171,8 +171,8 @@ Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która z
 to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
 serwer, `account-block` i `account-backup` — mają własną, `installLastResort`,
 bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręcznie
-albo przez bramkę testów regułę spełnia domyślny wypis Node i Pythona, bo
-zapisuje to, czego nikt nie obsłużył. `account-database-check`,
+albo przez bramkę testów, które tych danych nie dotykają, regułę spełnia domyślny
+wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. `account-database-check`,
 `measure-passwords`, `deploy/loop2-backup` i `scripts/restore-trial.mjs` już ją
 mają. Reguła obowiązuje też przeglądarkę, gdzie tej obsługi jeszcze nie ma, oraz
 `deploy/loop2-deploy`, który nie zostawia wiersza końcowego, gdy zostanie zabity.

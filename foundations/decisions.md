@@ -5136,17 +5136,18 @@ value with a space or a new line breaks a search.
 Each process that touches the data of accounts — the server, `account-block` and `account-backup` —
 has one last-resort handler of its own, which writes the kind, the code and the place of what no code
 handled, because the runtime's default print could quote values. A script run by hand or by the test
-gate meets the rule on the last resort through the default print of Node.js or Python, which writes
-what nothing handled.
+gate that touches none of those data meets the rule on the last resort through the default print of
+Node.js or Python, which writes what nothing handled. `account-database-check`, `measure-passwords`,
+`deploy/loop2-backup` and `scripts/restore-trial.mjs` already have a last-resort handling of their
+own, and the two sentences above ask no more of them, though the last two touch those data and write
+no kind or code.
 
 - **Scope:** account-server · build-tools · deployment
 - **Based on:** node-uncaught-default-print · python-uncaught-default-print
 - **Relations:** derives from D-252
 - **Verification:** an agent compares a change with the decision:
   - complies: a new command that opens the account database installing the handler before its work;
-    a script of the test gate that ends on an uncaught error with its runtime's default print;
-    `account-database-check`, `measure-passwords`, `deploy/loop2-backup` and
-    `scripts/restore-trial.mjs` keeping the handling of the last resort they already have
+    a script of the test gate that ends on an uncaught error with its runtime's default print
   - violates: the message or the stack of an uncaught error printed by a process that touches the
     data of accounts; a handler of its own added to a script that touches none
 - **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
