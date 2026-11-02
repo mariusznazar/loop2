@@ -330,8 +330,10 @@ header .save-line {
 
 /*
  * The screen of the login card, in the body in place of the header, the main and the footer, which
- * are hidden while it stands (D-262): all the height left, with the card in its middle. A card
- * taller than the window makes the page taller, so nothing of it is cut off.
+ * are hidden while it stands (D-262): all the height left, with the card centred across and its
+ * top edge fixed at 15 % of the window's height, so unfolding the credits, switching a tab and the
+ * sentence appearing under a form move nothing above them. A card taller than the window makes the
+ * page taller, so nothing of it is cut off.
  *
  * Behind the card stands the picture of the game, over the whole window: the body's side padding
  * is undone, and the picture covers the screen, cut off where the window's shape differs from its
@@ -343,10 +345,10 @@ header .save-line {
 .account-card-screen {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   margin: 0 calc(-1 * var(--space-l));
-  padding: var(--space-xl) var(--space-l);
+  padding: 15vh var(--space-l) var(--space-xl);
   background: url("/sprites/login-backdrop.png") 17.5% 50% / cover no-repeat;
   image-rendering: pixelated;
 }
@@ -375,7 +377,10 @@ header .save-line {
   color: var(--text-secondary);
 }
 
-/* The switch between „Zaloguj się” and „Załóż konto”: two buttons selected in their group. */
+/*
+ * The switch between „Zaloguj się” and „Załóż konto”: two tabs, buttons selected in their group,
+ * in a container of the class `tabs`, which draws the thin line under them.
+ */
 .account-card-switch {
   display: flex;
   gap: var(--space-s);
@@ -399,7 +404,7 @@ header .save-line {
   min-width: 0;
 }
 
-/* A button under a form that opens or leaves a state of the card sits with a gap below the form. */
+/* The secondary action under a form, which opens or leaves a state of the card, sits with a gap below the form. */
 .account-form-switch {
   margin-top: var(--space-m);
 }
