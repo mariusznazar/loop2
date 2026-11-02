@@ -11,6 +11,8 @@ Before changing a file of the part `browser-view`, read `guidelines/styleguide-b
 
 When working in `src/browser/`, read `src/browser/AGENTS.md`.
 
+To run the game on this computer or operate it in a real browser, read `.claude/skills/loop2-play/SKILL.md`.
+
 Every test of this repository runs with `npm test`.
 
 <!-- the-way:begin -->
