@@ -5837,3 +5837,101 @@ gives none a new meaning.
 *Rejected:* recording nothing — the question comes up in the review of the change and can stop it;
 a change of D-40 — D-40 joins the divergence from the project definition, and the plan gains one
 more entry the task that writes that decision has to keep in mind.
+
+### D-280 — Which screens does the game have, and how does the player move between them?
+
+The game has the screens Siedziba, Postać, Programy and Przejście, all of one content width under
+one menu bar: at most 1344 px, and the full width of a narrower window. The menu bar holds at its
+left the game's name, which stands alone on the waiting screens (D-262), and over the game the
+items Siedziba and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and
+outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or
+„Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of
+that map run, its minute being the map run's game minute as the status row writes it. The name of a
+character on its card on Siedziba leads to the screen Postać of that character, on which the menu
+bar marks Siedziba, and on the screen of a map run the menu bar marks no item.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-277
+- **Verification:** an agent compares a change with the decision:
+  - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide and as
+    wide as a window 1000 px wide; after the player leaves a map run of Las at game minute 212,
+    „Wróć do przejścia · Las · minuta 212” on Siedziba, Postać and Programy, still there after the
+    character's death until „Restart” or „Zakończ”, and none on the screen of that map run;
+    „Sprawdzanie logowania…” under a menu bar holding the game's name alone; on the screen Postać
+    the item Siedziba marked
+  - violates: an item of the menu bar with an icon; an inactive item Mapy on the menu bar;
+    „Wróć do przejścia” gone after a death before „Zakończ”; an item marked on the screen of a map
+    run; the clock of „Wróć do przejścia” written as „03:32”; content wider on Programy than on
+    Siedziba
+- **Origin:** zakres_mvp2_loop2.md and rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), parts A.3 and A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 7, 9 and 11, and § Settlements to record, rows 2, 3, 4, 6 and 9
+
+*Rationale:* the player reads the game by where things stand: one page holding the program, the
+character, the map, the trees and the chest is what makes the game unreadable. The division follows
+the predecessor game, loop, which the player already finds readable, and improves on it where it was
+weak. A player who leaves a map run keeps one way back to it, and a map run that has ended stays
+until „Restart” or „Zakończ”, so the way back stays after its end too. The minute beside „Wróć do
+przejścia” stands still, since the map run waits in its pause, and it reads as the status row does.
+*Rejected:* one page holding everything — unreadable; the width of the content changing between
+screens, as in loop — the logo and the menu jump; another largest width — it changes that one
+dimension alone; the skill trees shown on two screens, as in loop; Mapy and Wiedza standing on the
+menu bar at once, inactive — two items with no content; „Wróć do przejścia” on the screen of a map
+run too — a link to the place the player already stands in; a menu that stops working after the end
+of a map run — a new state of the bar, while the copy can be fixed on the screen after the end
+anyway; „Wróć do przejścia” only while the map run goes on — after leaving an ended map run only the
+browser's back button leads back to it; the clock of „Wróć do przejścia” written as „03:32” — a
+notation of time the game does not have.
+
+### D-281 — How does an address name a screen?
+
+An address names a screen in the fragment after `#`: `#/`, `#/postac/{n}`, `#/programy`,
+`#/programy/{n}` and `#/postac/{n}/przejscie`, {n} being the number of a character (D-56) or of a
+program (D-165) and the last address naming a map run by the number of its character, and an
+address that leads to no existing screen silently opens the nearest one: `#/postac/{n}/przejscie`
+with no map run the screen Postać of that character, `#/programy/{n}` with no such program
+`#/programy`, and any other Siedziba. The screen of a map run takes its map run as a parameter and
+reads no map run of the game state by itself. The fragments of emailed links (D-156, D-224) stand
+apart from these, and after them the page opens Siedziba.
+
+- **Scope:** browser-view
+- **Based on:** uri-fragment-in-requests
+- **Relations:** derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: a reload at `#/programy/3` opening Programy with program 3 picked;
+    `#/postac/2/przejscie` with no map run of character 2 opening the screen Postać of character 2;
+    `#/programy/9` with no program 9 opening `#/programy`; `#/nieznany` opening Siedziba; a page
+    opened at `#confirm-email=…` confirming as D-156 gives and opening Siedziba for a signed-in
+    player
+  - violates: an address in the path, such as `/programy`; a screen „Nie ma takiego miejsca”; the
+    screen of a map run reading the map run from the game state rather than from its parameter
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Questions to settle, question 8
+
+*Rationale:* the server hands out files, so a screen reached by the fragment survives a refresh, and
+the fragments of emailed links keep prefixes of their own. A number in the address and a map run as
+a parameter cost a decision now, while a map run for each character and looking into an earning
+loop's map run become additions rather than rebuilds.
+*Rejected:* addresses in the path — a refresh of a screen ends in an error from the server, which
+hands out files alone; an address of a map run without the character's number — a rebuild once each
+character has its own map run; a screen „Nie ma takiego miejsca” — the back button lands on it after
+„Zakończ”.
+
+### D-282 — What do the screens leave room for from the start?
+
+Each column of a screen is an area of its own that a narrower layout can rearrange, and Siedziba
+draws the team as a section with a heading.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: the program panel and the column of the map run on the screen of a map run each an
+    area of its own, which a narrower layout can place one above the other; the team on Siedziba
+    under the heading „Drużyna”
+  - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
+    the characters of Siedziba as a bare list with no heading
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 13
+
+*Rationale:* a layout for a phone and several teams come later, and these two shapes make each of
+them an addition. They cost a decision and no code.
+*Rejected:* rigid columns and a plain list of characters — each of the later additions becomes a
+rebuild of a screen.
