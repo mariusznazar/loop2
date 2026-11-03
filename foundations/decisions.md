@@ -5432,10 +5432,10 @@ uses has two forms in `src/browser/view/controls/`, a React component and a DOM 
 one tree of DOM elements with the same classes and attributes, and a screen no task has moved to
 React yet stays in those APIs on the DOM form, where a new section of such a screen may be built
 too, moving to React with that screen. A new screen is never written after the pattern of a module
-that builds its elements through the DOM APIs, though it may import that module's pure functions. A
-test draws both forms for each kind and state the React screens use and compares their tag,
-attributes and text, the input's `value` attribute apart, and `src/browser/styles.css` stays the one
-place of the look of both.
+that builds its DOM elements through the DOM APIs, though it may import that module's pure
+functions. A test draws both forms for each kind and state the React screens use and compares their
+tag, attributes and text, the input's `value` attribute apart, and `src/browser/styles.css` stays
+the one place of the look of both.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -5446,13 +5446,13 @@ place of the look of both.
     in DOM; a new screen in React that imports a pure function of a DOM module
   - violates: a React component that wraps the DOM function; a class that only the React form sets;
     a React form with no case in the test that compares the two; a new screen that builds its
-    elements with `document.createElement` after the pattern of a DOM module
+    DOM elements with `document.createElement` after the pattern of a DOM module
 - **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Jak wspólne kontrolki z `src/browser/view/controls/` istnieją w ekranie React, skoro pozostałe ekrany dalej używają ich w DOM?” · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 5 and 5b, and § Settlements to record, row 7
 
 *Rationale:* the screens move to React one task at a time, so for a while both kinds stand on one
 page and have to look alike. Components written as React writes them give the next screens an
-exemplar with controlled fields and state in the component, and a module that builds its elements
-in DOM stands beside that exemplar as if it were one, so a new screen could follow it; its pure
+exemplar with controlled fields and state in the component, and a module that builds its DOM
+elements stands beside that exemplar as if it were one, so a new screen could follow it; its pure
 functions draw nothing and serve both kinds. A new section of a screen in DOM may stay in DOM, since
 React on part of a screen takes a mounting place of its own in DOM and makes small additions dear.
 Accepted with it: the two forms live until the last DOM screen moves, and a new attribute is written
@@ -5772,8 +5772,8 @@ the screens drift apart, and „Usuń” or „Zakończ” could look like a har
 ### D-276 — What is a tab of the browser view?
 
 A tab is a button selected in its group drawn without a frame, the chosen one with its text in
-`text-strong` and a line in `selected` at its bottom. A tab keeps the element, `aria-pressed` and
-keyboard of the button selected in its group — Tab reaches each, Enter or Space switches — with
+`text-strong` and a line in `selected` at its bottom. A tab keeps the HTML element, `aria-pressed`
+and keyboard of the button selected in its group — Tab reaches each, Enter or Space switches — with
 neither arrow keys nor the roles of tabs. The switch of the login card stands as tabs, and the pace
 buttons of D-130 keep the look of the button selected in its group.
 
@@ -5847,8 +5847,8 @@ nothing above them.
 with it, and a second click on the credits or on the switch misses. Accepted with it: on a tall
 window the card stands clearly above the middle.
 *Rejected:* leaving the card in the middle — the credits and the switch jump whenever the card
-grows; unfolding the credits outside the card — a new element with its own background, while the
-jumps of the switch and of the form stay.
+grows; unfolding the credits outside the card — a new HTML element with its own background, while
+the jumps of the switch and of the form stay.
 
 ### D-279 — What colour does a frame or a bar that sets a text apart take?
 
