@@ -93,10 +93,11 @@ export type ResurrectionLine = {
 };
 
 /**
- * The resurrection line of a character at the real moment `nowMs`: „Wskrzeszenie gotowe” once
- * ready, else a warning with the time left. The time left is rounded up to whole minutes first,
- * then divided into hours and minutes, and below an hour only the minutes stand, so the line never
- * promises sooner than the real time. A clock set back gives more time left. Pure.
+ * The resurrection line of a character at the real moment `nowMs` (D-217): „Wskrzeszenie gotowe”
+ * once ready, else a warning with the time left, „za {g} godz. {m} min czasu realnego” and below an
+ * hour „za {m} min czasu realnego”. The time left is rounded up to whole minutes first, then divided
+ * into hours and minutes, so the line never promises sooner than the real time. A clock set back
+ * gives more time left. Pure.
  */
 export function resurrectionLine(
   character: Character,
@@ -110,10 +111,10 @@ export function resurrectionLine(
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
   const left =
     hours === 0
-      ? `${minutes} min`
-      : `${hours} godz. ${minutes % MINUTES_PER_HOUR} min`;
+      ? `za ${minutes} min czasu realnego`
+      : `za ${hours} godz. ${minutes % MINUTES_PER_HOUR} min czasu realnego`;
   return {
-    text: `Wskrzeszenie za ${left} — śmierć zabierze wprawę i wykupione stopnie`,
+    text: `Wskrzeszenie ${left} — śmierć zabierze wprawę i wykupione stopnie`,
     danger: true,
   };
 }

@@ -995,3 +995,96 @@ footer {
 .credits a {
   color: inherit;
 }
+
+/*
+ * The screen Postać (D-199, D-217, D-244, D-245): the name in `text-strong`, the generation and the
+ * archetype in `text-secondary` (D-40, D-218), the resurrection line ready in `text-secondary` and not
+ * ready in `danger` (D-217), the loop's line in `text` (D-244), the stopped line in `text-secondary`
+ * (D-245) and the section „Umiejętności” with its name in `text-label`. As wide as the content under
+ * the menu bar, at most 1344 px (D-280).
+ */
+.character-screen {
+  box-sizing: border-box;
+  max-width: 1344px;
+  margin: 0 auto;
+  color: var(--text);
+}
+
+.character-screen h2 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.character-screen-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-s);
+  margin: 0 0 var(--space-xs);
+}
+
+.character-screen-generation,
+.character-screen-archetype {
+  color: var(--text-secondary);
+}
+
+.character-screen-resurrection {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
+}
+
+.character-screen-resurrection.danger {
+  color: var(--danger);
+}
+
+.character-screen-loop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.character-screen-loop-line {
+  margin: 0;
+  color: var(--text);
+}
+
+.character-screen-stopped {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
+}
+
+.character-screen-skills {
+  margin-top: var(--space-m);
+}
+
+.character-screen-skills h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.character-screen-skills-note {
+  margin: 0 0 var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.character-screen-tree {
+  margin-bottom: var(--space-m);
+}
+
+.character-screen-tree-summary {
+  margin: 0 0 var(--space-xs);
+  color: var(--text-strong);
+}
+
+.character-screen-branch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-xs);
+}
