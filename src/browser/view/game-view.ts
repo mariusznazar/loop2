@@ -140,7 +140,8 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * The view shows one screen at a time, the one the address names (D-280, D-281): Siedziba, the
  * headquarters alone; Postać, built on entering it and disposed on leaving; Programy, the list of
  * programs beside a program panel that shows the saved program the address names, never the copy
- * (D-166); and Przejście, a program panel that shows the copy beside the column of the map run. The
+ * (D-166), and with no number the program the copy belonged to after „Zakończ” (D-173); and
+ * Przejście, a program panel that shows the copy beside the column of the map run. The
  * DOM screens are built once and hidden while another shows. The two program panels are two, so the
  * program each shows stays its own: a panel that moved between the screens would carry the program
  * shown on one into the other. The first screen is the entry's (D-96, D-212,
@@ -378,12 +379,16 @@ export function createGameView(options: GameViewOptions): GameView {
   let current: Screen = firstScreen();
 
   /**
-   * The saved program Programy shows for `screen`: the one its address names, the first of the list
-   * for `#/programy` and where the one named is gone (D-281).
+   * The saved program Programy shows for `screen`: the one its address names; for `#/programy` the
+   * program the copy of the last map run belonged to, which the counts stand beside from „Zakończ”
+   * to the next send (D-173, D-93), or the first of the list where none does; and the first where
+   * the one named is gone (D-281).
    */
   function programShownOn(screen: Screen): ProgramId {
     const named =
-      screen.kind === "program" ? screen.programId : state.programs[0].id;
+      screen.kind === "program"
+        ? screen.programId
+        : (state.countsProgram ?? state.programs[0].id);
     return programById(state.programs, named) ? named : state.programs[0].id;
   }
 

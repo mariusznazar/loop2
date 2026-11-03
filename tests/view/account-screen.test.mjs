@@ -1971,8 +1971,9 @@ test("an error of the code in the load of the kept state keeps it for the retry,
  * A game whose map run ended in Ala's death, the pause of each discovery lifted by the player, the
  * death settled as the game's clock settles it; the load refuses a death unsettled (spec, decision 9).
  */
-function ended() {
-  let state = passing();
+/** The map run of `start`, Ala's passing one unless given, ended in a death, settled. */
+function ended(start = passing()) {
+  let state = start;
   for (let round = 0; round < 50 && !mapRunEnded(state.run); round += 1)
     state = advanceMinutes(setPaused(state, false).state, 5000).state;
   assert.ok(state.run.death, "precondition: the map run ended in a death");
@@ -4206,6 +4207,123 @@ test("deleting the program shown opens the nearest screen, Programy with the fir
     assert.deepEqual(address.entries, ["#/programy"]);
     assert.equal(shownScreen(root), "programs");
     assert.deepEqual(programItems(root), [["Program", "#/programy/1", "page"]]);
+  });
+});
+
+/**
+ * Ala's map run of the forest on the copy of „Program 2”, which holds „Zawsze → Eksploruj”, ended
+ * in a death, beside „Program 3”.
+ */
+const endedOnSecondProgram = () =>
+  ended(
+    send(
+      editProgram(
+        createProgram(twoPrograms()).state,
+        2,
+        programFromRules({
+          condition: { kind: "always" },
+          action: { kind: "explore" },
+        }),
+      ).state,
+      { mapId: "forest", characterId: 1, programId: 2 },
+      0,
+    ).state,
+  );
+
+/** The counts the player sees beside the rules of the program Programy shows. */
+const countsOnProgramy = (root) =>
+  byClass(programsScreenOf(root), "rule-count")
+    .filter(shown)
+    .map((count) => count.textContent);
+
+/** The name of each program on the list of Programy with whether it is the one shown. */
+const programsShown = (root) =>
+  programItems(root).map(([name, , current]) => [name, current === "page"]);
+
+// D-173 („after „Zakończ” the program panel shows the program the copy belongs to”), D-93, question
+// 15, the review of the whole change (B1). „Zakończ” opens Postać, which has no panel, so the panel
+// the player reaches next is the bar's „Programy”. Catches `#/programy` showing the first program
+// while the counts stand beside „Program 2”, and `#/programy/{n}` no longer showing program n.
+test("after „Zakończ” the bar's „Programy” shows the program the copy belonged to, and `#/programy/{n}` still shows program n", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const game = endedOnSecondProgram();
+    const address = await reloadedAt(held, RUN_ADDRESS, game);
+    await press(buttonNamed(root, "Zakończ"));
+    assert.equal(shownScreen(root), "character", "precondition: Postać opens");
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+
+    await follow(address, "#/programy");
+    assert.equal(address.hash(), "#/programy", "the address has no number");
+    assert.deepEqual(programsShown(root), [
+      ["Program", false],
+      ["Program 2", true],
+      ["Program 3", false],
+    ]);
+    // The own-work check, D-93: the counts of the map run stand beside the rules of that program —
+    // each rule the program holds at the end, those the map run added to it included — and the
+    // rule „Zawsze → Eksploruj” it set out with fired.
+    const rules = game.programs[1].program.groups[0].rules.length;
+    assert.equal(countsOnProgramy(root).length, rules, "a count at each rule");
+    assert.match(countsOnProgramy(root)[0], /^[1-9][0-9]*×$/);
+    await press(buttonNamed(programsScreenOf(root), "Dodaj grupę"));
+    await settle();
+    const [edited] = argsOf(held, "saveGame");
+    assert.equal(groupsOf(edited, 2), 2, "the panel edits „Program 2”");
+    assert.equal(groupsOf(edited, 1), 1);
+    await held.answer("saveGame", { kind: "saved", revision: 6 });
+
+    await follow(address, "#/programy/1");
+    assert.deepEqual(programsShown(root), [
+      ["Program", true],
+      ["Program 2", false],
+      ["Program 3", false],
+    ]);
+    assert.deepEqual(countsOnProgramy(root), [], "no count beside „Program”");
+  });
+});
+
+// D-173 with D-168 and D-281: the program the copy belonged to may be gone, deleted during the map
+// run or on Programy after „Zakończ”; `#/programy` then shows the first program. Catches a program
+// gone from the list kept as the one shown, or „Program 3” shown in its place.
+test("after „Zakończ” `#/programy` shows the first program once the copy's program is deleted, during the map run or on Programy", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(
+      held,
+      RUN_ADDRESS,
+      deleteProgram(endedOnSecondProgram(), 2).state,
+    );
+    await press(buttonNamed(root, "Zakończ"));
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+    await follow(address, "#/programy");
+    assert.deepEqual(programsShown(root), [
+      ["Program", true],
+      ["Program 3", false],
+    ]);
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, RUN_ADDRESS, endedOnSecondProgram());
+    await press(buttonNamed(root, "Zakończ"));
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+    await follow(address, "#/programy");
+    assert.deepEqual(
+      programsShown(root)[1],
+      ["Program 2", true],
+      "precondition: the copy's program is shown",
+    );
+    const list = byClass(programsScreenOf(root), "program-list-view")[0];
+    await press(buttonNamed(list, "Usuń"));
+    assert.deepEqual(programsShown(root), [
+      ["Program", true],
+      ["Program 3", false],
+    ]);
+    assert.deepEqual(address.entries, [
+      RUN_ADDRESS,
+      "#/postac/1",
+      "#/programy",
+    ]);
   });
 });
 
