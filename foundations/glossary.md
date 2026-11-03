@@ -86,8 +86,7 @@ left, whether it has burnt out or has not been lit yet.
 
 ## headquarters
 
-The headquarters is the screen of the game outside a map run that shows the player's team with its
-characters and its chest.
+The headquarters is the screen Siedziba, which shows the player's team with its characters and its chest.
 
 - **Not:** none
 

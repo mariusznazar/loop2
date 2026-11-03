@@ -22,6 +22,11 @@ export type ButtonOptions = {
   label?: string;
   /** Makes the button the one that submits its form; any other button never does. */
   submit?: boolean;
+  /**
+   * Given, the button opens and closes a block below it and says whether the block stands open;
+   * left out, it says nothing of that.
+   */
+  expanded?: boolean;
 };
 
 /**
@@ -42,6 +47,8 @@ export function createButton(
   if (options.kind === "secondary") element.classList.add("secondary");
   if (options.kind === "tab") element.classList.add("tab");
   if (options.kind === "selected") setButtonSelected(element, true);
+  if (options.expanded !== undefined)
+    setButtonExpanded(element, options.expanded);
   return element;
 }
 
@@ -55,6 +62,17 @@ export function setButtonSelected(
 ): void {
   element.classList.toggle("selected", selected);
   element.setAttribute("aria-pressed", String(selected));
+}
+
+/**
+ * Says whether the block a button opens and closes stands open, as `aria-expanded`; the state has
+ * no look of its own, so the screen draws the block itself.
+ */
+export function setButtonExpanded(
+  element: HTMLButtonElement,
+  expanded: boolean,
+): void {
+  element.setAttribute("aria-expanded", String(expanded));
 }
 
 /** The text each waiting button showed before it began to wait. */

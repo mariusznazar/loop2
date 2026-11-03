@@ -6,8 +6,7 @@ import { MAPS } from "../sim/data/maps.js";
 import { ITEMS } from "../sim/data/items.js";
 import { canSendMap, characterName, resurrectionReady } from "../sim/game.js";
 import { rowProgram } from "../sim/programs.js";
-import { SKILLS, type BranchId, type SkillId } from "../sim/data/skills.js";
-import { createCharacterSkills } from "./character-skills.js";
+import { SKILLS, type SkillId } from "../sim/data/skills.js";
 import type {
   Character,
   CharacterId,
@@ -22,6 +21,7 @@ import type {
   Team,
 } from "../sim/types.js";
 import { createAwayReport } from "./away-report.js";
+import { screenAddress } from "./screen-address.js";
 import { createButton } from "./controls/button.js";
 import { createSelectList, type SelectOption } from "./controls/select-list.js";
 import { createTextField } from "./controls/text-field.js";
@@ -45,6 +45,14 @@ export function mapLabel(mapId: MapId, solved: boolean): string {
 /** The map's solving condition as a sentence: „{name} — {solvingText}”, both from the map's data. Pure. */
 export function solvingSentence(mapId: MapId): string {
   return `${MAPS[mapId].name} — ${MAPS[mapId].solvingText}`;
+}
+
+/**
+ * The sentence under a character's sending while a manual map run waits or has ended (To do 8,
+ * question 3): why „Wyślij” and „Puść w pętlę” are inactive, the map's name from the data. Pure.
+ */
+export function runWaitingSentence(mapId: MapId): string {
+  return `Przejście na mapie ${MAPS[mapId].name} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.`;
 }
 
 /**
@@ -93,10 +101,11 @@ export type ResurrectionLine = {
 };
 
 /**
- * The resurrection line of a character at the real moment `nowMs`: „Wskrzeszenie gotowe” once
- * ready, else a warning with the time left. The time left is rounded up to whole minutes first,
- * then divided into hours and minutes, and below an hour only the minutes stand, so the line never
- * promises sooner than the real time. A clock set back gives more time left. Pure.
+ * The resurrection line of a character at the real moment `nowMs` (D-217): „Wskrzeszenie gotowe”
+ * once ready, else a warning with the time left, „za {g} godz. {m} min czasu realnego” and below an
+ * hour „za {m} min czasu realnego”. The time left is rounded up to whole minutes first, then divided
+ * into hours and minutes, so the line never promises sooner than the real time. A clock set back
+ * gives more time left. Pure.
  */
 export function resurrectionLine(
   character: Character,
@@ -110,10 +119,10 @@ export function resurrectionLine(
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
   const left =
     hours === 0
-      ? `${minutes} min`
-      : `${hours} godz. ${minutes % MINUTES_PER_HOUR} min`;
+      ? `za ${minutes} min czasu realnego`
+      : `za ${hours} godz. ${minutes % MINUTES_PER_HOUR} min czasu realnego`;
   return {
-    text: `Wskrzeszenie za ${left} — śmierć zabierze wprawę i wykupione stopnie`,
+    text: `Wskrzeszenie ${left} — śmierć zabierze wprawę i wykupione stopnie`,
     danger: true,
   };
 }
@@ -138,7 +147,6 @@ export function stoppedLoopLine(practice: Practice): string {
 
 /** What the headquarters asks for; the app turns each into a simulation call. */
 export type HeadquartersControls = {
-  buy(characterId: CharacterId, branch: BranchId): void;
   /** Creates a character of the given name, already trimmed and not empty. */
   create(name: string): void;
   /** Picks the program of a character's row, kept until the character is sent. */
@@ -185,12 +193,14 @@ function emptyNote(text: string): HTMLElement {
 /**
  * Builds the headquarters: the section of the report on earning loops above it while the report
  * holds a line (D-246); the section „Drużyna” with the team's characters in the order they were
- * created, each with its name, its generation „pokolenie {n}” from 2 up, the name of its
- * archetype, the line of its resurrection on a row of its own, one list „Program:” and the button
- * „Wyślij” for each map, and the creation of a character; and the section „Skrzynka” with the team's chest. Every name of the
- * game's content comes from the data. The name field and its button are made once, so they keep
- * focus; the list of characters is rebuilt when the team, the solved maps or the programs' numbers
- * and names change, and the row's program list is only set to the program the row shows otherwise.
+ * created, each with its name as a link to its screen Postać, its generation „pokolenie {n}” from 2
+ * up, the name of its archetype, the line of its resurrection on a row of its own, one list
+ * „Program:” and the button „Wyślij” for each map, the sentence why the sending is inactive while a
+ * manual map run waits, and the creation of a character; and the section „Skrzynka” with the team's
+ * chest. Every name of the game's content comes from the data. The name field and its button are
+ * made once, so they keep focus; the list of characters is rebuilt when the team, the solved maps or
+ * the programs' numbers and names change, and the row's program list is only set to the program the
+ * row shows otherwise.
  */
 export function createHeadquarters(
   controls: HeadquartersControls,
@@ -269,7 +279,7 @@ export function createHeadquarters(
     stopped: HTMLElement;
   }[] = [];
   let programLists = new Map<CharacterId, HTMLSelectElement>();
-  let skills: ReturnType<typeof createCharacterSkills>[] = [];
+  let runNotes: HTMLElement[] = [];
   let resurrectionLines: {
     element: HTMLElement;
     characterId: CharacterId;
@@ -298,14 +308,19 @@ export function createHeadquarters(
     loopRows = [];
     marks = [];
     programLists = new Map();
-    skills = [];
+    runNotes = [];
     resurrectionLines = [];
     warnings = [];
     const rows = shown.characters.map((character) => {
       const row = document.createElement("li");
       row.className = "team-member";
-      const name = document.createElement("span");
+      // The name leads to the character's screen Postać (D-281, question 7).
+      const name = document.createElement("a");
       name.className = "team-member-name";
+      name.href = screenAddress({
+        kind: "character",
+        characterId: character.id,
+      });
       name.textContent = character.name;
       const generation = generationLabel(character.generation);
       const generationElement = document.createElement("span");
@@ -409,11 +424,12 @@ export function createHeadquarters(
         if (loopButton !== null) row.append(loopButton);
         row.append(warning, mark);
       }
-      const trees = createCharacterSkills(character.id, (id) =>
-        controls.buy(character.id, id),
-      );
-      skills.push(trees);
-      row.append(trees.element);
+      // One sentence per row, under its lines of sending, while a manual map run waits (To do 8).
+      const runNote = document.createElement("p");
+      runNote.className = "team-member-run-note";
+      runNote.hidden = true;
+      runNotes.push(runNote);
+      row.append(runNote);
       return row;
     });
     list.replaceChildren(...rows);
@@ -523,8 +539,14 @@ export function createHeadquarters(
       for (const { element, characterId } of loopButtons)
         element.disabled =
           state.run?.character.id === characterId || inLoop(characterId);
+      // While a manual map run waits or has ended, every row's sending is inactive, so each row says
+      // why (To do 8, question 3).
+      for (const note of runNotes)
+        setLine(
+          note,
+          state.run === null ? null : runWaitingSentence(state.run.mapId),
+        );
       drawLoops(state);
-      for (const panel of skills) panel.update(state);
       drawResurrectionLines(state, nowMs);
       for (const warning of warnings) {
         const text = tripWarning(

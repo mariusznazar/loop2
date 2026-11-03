@@ -269,8 +269,8 @@ test("restart and end take a map run ended in death as one in progress", () => {
   const ended = end(dead);
   assert.equal(ended.state.run, null);
   assert.deepEqual(ended.events, [{ kind: "mapRunEnded" }]);
-  // „Zakończ” after death leads to the headquarters (D-53, D-62): no map run, the team as it was,
-  // and the same character sent from there again.
+  // „Zakończ” after death leads to the screen Postać of that character (D-53, D-62): no map run,
+  // the team as it was, and the same character sent again.
   assert.deepEqual(ended.state.team, dead.team);
   const again = send(ended.state, SENT, REAL_MS + 1000).state;
   assert.equal(again.run.character.id, characterId);

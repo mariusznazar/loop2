@@ -6,8 +6,11 @@
  */
 import type { MouseEventHandler, Ref } from "react";
 
-/** „secondary” — the secondary action; „tab” — a button of a group drawn as a tab. */
-export type ReactButtonKind = "secondary" | "tab";
+/**
+ * „destructive” — its text in `danger`; „secondary” — the secondary action; „tab” — a button of a
+ * group drawn as a tab.
+ */
+export type ReactButtonKind = "destructive" | "secondary" | "tab";
 
 export type ReactButtonProps = {
   text: string;
@@ -17,6 +20,11 @@ export type ReactButtonProps = {
   label?: string;
   /** Makes the button the one that submits its form; any other button never does. */
   submit?: boolean;
+  /**
+   * Given, the button opens and closes a block below it and says whether the block stands open;
+   * left out, it says nothing of that.
+   */
+  expanded?: boolean;
   /**
    * Given, the button is one of a group and says whether it is the selected one; left out, it
    * belongs to no group and says nothing of selection.
@@ -40,6 +48,7 @@ export function ReactButton({
   kind,
   label,
   submit,
+  expanded,
   selected,
   waitingText,
   disabled,
@@ -55,6 +64,7 @@ export function ReactButton({
         .filter(Boolean)
         .join(" ")}
       aria-label={label}
+      aria-expanded={expanded}
       aria-pressed={selected === undefined ? undefined : selected}
       aria-busy={waiting ? "true" : undefined}
       disabled={waiting || disabled}

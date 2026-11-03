@@ -8,11 +8,23 @@ export type ConfirmationNotice = {
   role: NoticeRole;
 };
 
-/** Where the page reads and clears the fragment of its address; the browser's own, or a test's. */
+/**
+ * Where the page reads and writes the fragment of its address; the browser's own, or a test's. The
+ * fragment names a screen (D-281) or carries an emailed link's token (D-156, D-224).
+ */
 export type PageAddress = {
   hash(): string;
   /** Removes the fragment from the address without a navigation. */
   clearFragment(): void;
+  /** Goes to the fragment `hash`, `#` included, with a new entry of the browser's history. */
+  go(hash: string): void;
+  /** Replaces the fragment with `hash`, `#` included, with no new entry of the history. */
+  replace(hash: string): void;
+  /**
+   * Listens for a change of the fragment the page did not make through `go` or `replace`: the
+   * browser's back and forward, and a link followed. Returns the removal of the listener.
+   */
+  onChange(listener: () => void): () => void;
 };
 
 const FRAGMENT_PREFIX = "#confirm-email=";
@@ -59,14 +71,32 @@ export function confirmationOutcome(result: AccountResult<null>): {
   };
 }
 
-/** The page's real address; outside a browser it carries no fragment. */
+/**
+ * The page's real address: `location` for the fragment, `history` for writing it — `pushState` for
+ * a new entry and `replaceState` for none, neither of which fires `hashchange` — and the window's
+ * `hashchange` for what the page did not write itself, which the browser's back and forward and a
+ * followed link fire. Outside a browser it carries no fragment, writes nothing and hears nothing.
+ */
 export function browserAddress(): PageAddress {
+  const inBrowser = (): boolean =>
+    typeof location !== "undefined" &&
+    typeof history !== "undefined" &&
+    typeof window !== "undefined";
+  const write = (hash: string, how: "push" | "replace"): void => {
+    if (!inBrowser()) return;
+    const url = location.pathname + location.search + hash;
+    if (how === "push") history.pushState(null, "", url);
+    else history.replaceState(null, "", url);
+  };
   return {
     hash: () => (typeof location === "undefined" ? "" : location.hash),
-    clearFragment(): void {
-      if (typeof location === "undefined" || typeof history === "undefined")
-        return;
-      history.replaceState(null, "", location.pathname + location.search);
+    clearFragment: () => write("", "replace"),
+    go: (hash) => write(hash, "push"),
+    replace: (hash) => write(hash, "replace"),
+    onChange(listener): () => void {
+      if (!inBrowser()) return () => undefined;
+      window.addEventListener("hashchange", listener);
+      return () => window.removeEventListener("hashchange", listener);
     },
   };
 }

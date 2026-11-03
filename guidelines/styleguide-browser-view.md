@@ -154,7 +154,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-222 · D-274 · D-275 · D-276 · D-279
+- **Decision:** D-38 · D-44 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -179,8 +179,10 @@ stanów:
   konta…”, „Wysyłanie…” (przycisk „Wyślij odnośnik” formularza „Nie pamiętam
   hasła”) albo „Ustawianie…” (przycisk „Ustaw hasło” formularza „Ustaw nowe
   hasło”) zależnie od formularza, a pola tego formularza są wyłączone, więc
-  też mają tekst w `text-disabled`; przycisk „Wyślij ponownie” z nagłówka,
-  który nie wysyła formularza, zmienia napis na „Wysyłanie…”. Nie ma ruchomego wskaźnika. Odmowa
+  też mają tekst w `text-disabled`; przycisk „Wyślij ponownie” w menu „Konto”,
+  który nie wysyła formularza, zmienia napis na „Wysyłanie…”, a przycisk
+  „Wyloguj” w tym menu czekający na zapis i na koniec sesji — na
+  „Wylogowywanie…” (D-97); menu stoi wtedy otwarte (D-285). Nie ma ruchomego wskaźnika. Odmowa
   serwera i brak połączenia przy formularzu stoją jednym zdaniem pod
   formularzem w `warning` (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
@@ -292,7 +294,7 @@ prawdziwość ocenia przegląd zmiany pliku tokenów.
 
 ### The kitchen-sink page
 
-- **Decision:** D-38 · D-44 · D-45 · D-269 · D-274 · D-276
+- **Decision:** D-38 · D-44 · D-45 · D-157 · D-269 · D-274 · D-276
 - **Invariant:** application-build-kitchen-sink
 - **Good:** Strona zbudowana komendą `npm run kitchen-sink` i podawana tylko na komputerze dewelopera.
 - **Bad:** Strona rysuje panel terenu ze stanu gry złożonego ręcznie.
@@ -307,8 +309,9 @@ wybraną i niewybraną (D-276) — formularze
 logowania i zakładania konta, „Nie pamiętam hasła” i „Ustaw nowe hasło”
 czekające na serwer i ze zdaniem odmowy pod nimi oraz formularz „Nie pamiętam
 hasła” ze zdaniem odpowiedzi na prośbę w `text` z belką (D-44),
-wiersz nagłówka z niepotwierdzonym adresem z przyciskiem „Wyślij ponownie”
-czekającym na serwer („Wysyłanie…”) i ze zdaniem odmowy obok przycisku
+część menu „Konto” dla niepotwierdzonego adresu (D-157) z przyciskiem „Wyślij
+ponownie” czekającym na serwer („Wysyłanie…”) i ze zdaniem odmowy obok
+przycisku, zbudowaną na stronie z postaci DOM wspólnych kontrolek (D-269)
 (wszystko z wartościami zmyślonymi, bez stanu gry), każdą rolę
 z tabeli Roles i próbki wyglądu kafelków w każdym stanie, narysowane rolami —
 nigdy rysunek gry ze stanu gry (D-04, D-45). Nowa wspólna kontrolka, nowy stan
@@ -323,7 +326,7 @@ tylko jej zostaje w tym module, bo w `src/browser/view/` trafiłby do wyniku
 
 - **Decision:** D-274 · D-275 · D-276 · D-277
 - **Invariant:** none
-- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w nagłówku — zwykłym wspólnym przyciskiem.
+- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem.
 - **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie.
 
 Główny wygląd, akcja poboczna i zakładka to wyglądy wspólnego przycisku,
@@ -353,7 +356,9 @@ States of shared controls.
   wyglądzie przycisku wybranego w grupie.
 - Pasek menu znaczy pozycję, na której jest gracz, tak jak wybraną zakładkę:
   tekst w `text-strong` i ta sama linia w `selected` u dołu (D-277) — nigdy
-  zielenią, tłem ani ramką.
+  zielenią, tłem ani ramką. Wygląd pozycji paska, menu „Konto” i pozycji
+  listy programów podaje reguła Menu bar, the menu „Konto” and the list of
+  programs.
 
 ### A line at a text takes the colour of that text
 
@@ -368,9 +373,69 @@ w kolorze jego komunikatu — bierze kolor tego tekstu: w stylach
 `currentColor` albo tę samą rolę co tekst. Jest częścią tekstu, więc nie
 dostaje własnej roli i nie zmienia znaczenia roli tego tekstu (D-39, D-40).
 Linia, która znaczy wybrane w swojej grupie — ramka przycisku wybranego
-w grupie, linia wybranej zakładki i bieżącej pozycji paska menu — zostaje
-w `selected`. Przegląd zmiany czyta kolor każdej takiej ramki i belki wobec
+w grupie, linia wybranej zakładki i bieżącej pozycji paska menu oraz belka
+wybranej pozycji listy programów — zostaje w `selected`. Przegląd zmiany czyta kolor każdej takiej ramki i belki wobec
 tekstu, przy którym stoi.
+
+### Menu bar, the menu „Konto” and the list of programs
+
+- **Decision:** D-280 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47
+- **Invariant:** none
+- **Good:** Pozycja „Programy” na ekranie Programy w `text-strong` z linią w `selected` u dołu, a „Wyloguj” w menu „Konto”, które po odpowiedzi serwera stoi otwarte ze zdaniem wyniku.
+- **Bad:** Pozycja paska z ikoną, zaznaczona zielenią albo tłem; „Wróć do przejścia” zaznaczone na ekranie przejścia; menu „Konto” zamykające się samo po odpowiedzi serwera.
+
+Pasek menu stoi u góry każdego ekranu zalogowanego gracza. Treść pod nim ma
+najwyżej 1344 px szerokości, a w węższym oknie całą szerokość okna (D-280);
+szerokość z maksimum jest wymiarem układu, nie wartością wpisaną zamiast tokenu
+(D-43).
+
+Pasek:
+
+- po lewej stoi nazwa gry w `text-strong` (rola nazwy, D-40); na ekranach
+  oczekiwania (D-262) stoi sama, bez pozycji i bez menu „Konto” (D-280);
+- pozycje to „Siedziba”, „Programy” i, poza ekranem przejścia, „Wróć do
+  przejścia · {mapa} · minuta {m}”, bez ikon (D-280); każda jest odnośnikiem do
+  ekranu (D-281), nie przyciskiem — przeciwnie niż akcja poboczna, która adresu
+  nie ma (D-275);
+- pozycja jest narysowana jak zakładka (D-276, D-277), bez ramki: pozycja
+  miejsca, w którym jest gracz, ma tekst w `text-strong` i linię u dołu
+  w `selected` o grubości `--bar-width`, każda inna — tekst w `text-label`;
+  pod kursorem tło `highlight`, a rola tekstu zostaje; fokus rysuje reguła
+  Visible focus bez dodatku (D-47);
+- na ekranie Postać pasek znaczy Siedzibę, a na ekranie przejścia nie znaczy
+  żadnej pozycji (D-280);
+- pasek nie ma pozycji nieaktywnych (D-280), więc stan disabled nie dotyczy
+  pozycji; error, empty i loading też nie, bo pozycja nie ma wpisu, listy
+  i nie czeka na serwer;
+- ostrzeżenie o nieudanym zapisie stanu gry, także przed wylogowaniem, stoi
+  w wierszu pod paskiem, nie w menu „Konto” (D-97, D-208).
+
+Menu „Konto”:
+
+- „Konto” jest wspólnym zwykłym przyciskiem (D-44): ani głównym wyglądem, ani
+  akcją poboczną, ani zakładką; jego stany podaje reguła States of shared
+  controls;
+- otwarte menu stoi pod „Konto” jako blok na tle `panel` z tekstem w `text`
+  (D-40) i trzyma adres konta oraz „Wyloguj”; dla niepotwierdzonego adresu
+  także „Adres e-mail niepotwierdzony.” w `text-secondary` ze wspólnym
+  przyciskiem „Wyślij ponownie”, obie rzeczy znikają po potwierdzeniu adresu
+  (D-157);
+- zdanie o wyniku wysyłania stoi w tym miejscu, w kolorach z D-157 (w
+  `text-secondary` po wysłaniu, w `warning` przy odmowie i przy błędzie),
+  w zamkniętym menu bez znaku na pasku (D-157);
+- „Wyloguj” i „Wyślij ponownie” czekają na serwer jak każdy wspólny przycisk
+  (reguła States of shared controls);
+- menu otwiera się kliknięciem „Konto” i klawiaturą — Enter na „Konto” — a
+  zamyka klawiszem Escape, kliknięciem obok i drugim kliknięciem „Konto”,
+  fokus wraca wtedy na „Konto”; menu zostaje otwarte, gdy „Wyloguj” albo
+  „Wyślij ponownie” czeka na serwer, i po odpowiedzi stoi otwarte, aż gracz je
+  zamknie (D-285).
+
+Lista programów na ekranie Programy: pozycja jest odnośnikiem do programu
+(D-281); wybrana ma tekst w `text-strong` i belkę w `selected` o grubości
+`--bar-width` po lewej, każda inna — tekst w `text`; pod kursorem tło
+`highlight` (D-40, D-280). Przegląd zmiany czyta pozycje paska, menu i listy
+wobec tej reguły i wobec strony wszystkich stanów.
 
 ## Examples
 

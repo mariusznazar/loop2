@@ -32,14 +32,10 @@ body {
   outline-offset: var(--focus-offset);
 }
 
-/* The header: the title and, for a signed-in player, „Wyloguj” beside it with its warning. */
-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 var(--space-l);
-}
-
+/*
+ * The header: the menu bar and, under it, the line of saving (D-280, D-208). The kitchen-sink page
+ * keeps its title in the same element.
+ */
 header h1 {
   margin: var(--space-l) 0;
   font-size: var(--font-size-game-title);
@@ -48,34 +44,117 @@ header h1 {
 }
 
 /*
- * The line of saving the game state, on a line of its own after the title and „Wyloguj” and above
- * the row of an unconfirmed address, in `warning` (D-208, D-39); hidden while it says nothing.
+ * The line of saving the game state, on a line of its own under the menu bar, as wide as the content
+ * under it, in `warning` (D-208, D-39, D-280); hidden while it says nothing. It stands outside the
+ * menu „Konto”, which a closed menu would hide (D-97, D-208).
  */
 header .save-line {
-  flex-basis: 100%;
-  margin-bottom: var(--space-s);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto var(--space-s);
 }
 
 /*
- * The row of a signed-in player with an unconfirmed address, on a line of its own after the title
- * and „Wyloguj”: its sentence in `text-secondary`, in `warning` when the sentence tells of
- * something not carried out (D-39), and the shared button beside it.
+ * The menu bar (D-280, styleguide rule "Menu bar, the menu „Konto” and the list of programs"): the
+ * game's name at the left in `text-strong`, the items after it, „Konto” at the right edge; as wide
+ * as the content under it, at most 1344 px (D-280), with no line under the bar.
  */
-.email-status {
-  flex-basis: 100%;
+.menu-bar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-l);
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto;
+  padding: var(--space-s) 0;
+}
+
+.menu-bar-name {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.menu-bar-items {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-s);
+  gap: var(--space-xs);
 }
 
-.email-status-sentence {
+/*
+ * An item of the bar is drawn as a tab (D-276, D-277) and is a link, not a button: text in
+ * `text-label`, a transparent line at the bottom that keeps the line's place, the background
+ * `highlight` under the pointer with the role of the text unchanged. The item of the place the
+ * player is at, which the page marks with `aria-current`, has its text in `text-strong` at the
+ * emphasis weight and the line in `selected`. Focus is the one :focus-visible rule above.
+ */
+.menu-bar-item {
+  padding: var(--space-2xs) var(--space-s);
+  color: var(--text-label);
+  text-decoration: none;
+  border-bottom: var(--bar-width) solid transparent;
+}
+
+.menu-bar-item[aria-current="page"] {
+  color: var(--text-strong);
+  font-weight: var(--font-weight-emphasis);
+  border-bottom-color: var(--selected);
+}
+
+.menu-bar-item:hover {
+  background: var(--highlight);
+}
+
+/* „Konto” at the right edge of the bar, with the open menu hanging under it. */
+.account-menu {
+  position: relative;
+  margin-left: auto;
+}
+
+/*
+ * The open menu: a block on `panel` with text in `text` and the thin line of `divider` round it,
+ * under „Konto” and level with its right edge, over the content under the bar.
+ */
+.account-menu-block {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-m);
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--space-l));
+  padding: var(--space-m) var(--space-l);
+  background: var(--panel);
+  color: var(--text);
+  border: var(--frame-width) solid var(--divider);
+}
+
+.account-menu-address,
+.account-menu-sentence {
   margin: 0;
+}
+
+.account-menu-unconfirmed,
+.account-menu-logout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+/* The sentence about the address in `text-secondary`; in `warning` for something not carried out (D-157, D-39). */
+.account-menu-sentence {
   color: var(--text-secondary);
 }
 
-.email-status-sentence.warning {
+.account-menu-sentence.warning {
   color: var(--warning);
 }
 
@@ -98,26 +177,49 @@ header .save-line {
   color: var(--warning);
 }
 
-/* The place of the screen: the session check or the game; the login card stands beside it (D-262). */
+/*
+ * The place of the screen: the session check or the game, the login card standing beside it
+ * (D-262). One width for the content of every screen under the menu bar, at most 1344 px and the
+ * full width of a narrower window (D-280); a layout dimension, which D-43 leaves out.
+ */
 .app-main {
   flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto;
 }
 
-.columns {
+/*
+ * A screen of the game (D-280, D-282): a grid whose columns are areas of their own, each a block on
+ * `panel` with text in `text`, so a narrower layout places them one under the other. A screen with
+ * the class `columns` has two of them, the program panel and a column beside it; Programy has two
+ * too, the list of programs and the program panel, with the list the narrower; Siedziba holds the
+ * headquarters alone. The screens that do not show are hidden with `[hidden]`.
+ */
+.screen {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+  grid-template-columns: 1fr;
   gap: var(--space-xl);
   align-items: start;
 }
 
+.screen.columns {
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+}
+
+.screen.programs-screen {
+  grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
+}
+
 @media (max-width: 720px) {
-  .columns {
+  .screen.columns,
+  .screen.programs-screen {
     grid-template-columns: 1fr;
   }
 }
 
-.program-panel,
-.map-column {
+.screen-area {
   background: var(--panel);
   color: var(--text);
   border: var(--frame-width) solid var(--divider);
@@ -481,9 +583,47 @@ header .save-line {
   margin: 0;
 }
 
+/*
+ * The sentence above the editor of Programy: a map run waits, and a change made here does not reach
+ * it. An explanation, so `text-secondary` (the roles' table); `warning` is for what will not run.
+ */
+.program-run-note {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
+}
+
 /* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */
 .program-switch {
   margin-bottom: var(--space-s);
+}
+
+/*
+ * The list of programs on the screen Programy (styleguide rule "Menu bar, the menu „Konto” and the
+ * list of programs"): each program a link in `text`, the chosen one in `text-strong` with a bar in
+ * `selected` of `--bar-width` at its left, a row under the pointer on `highlight`. Focus is the one
+ * :focus-visible rule above.
+ */
+.program-list-items {
+  list-style: none;
+  margin: 0 0 var(--space-s);
+  padding: 0;
+}
+
+.program-list-item {
+  display: block;
+  padding: var(--space-2xs) var(--space-s);
+  color: var(--text);
+  text-decoration: none;
+  border-left: var(--bar-width) solid transparent;
+}
+
+.program-list-item[aria-current="page"] {
+  color: var(--text-strong);
+  border-left-color: var(--selected);
+}
+
+.program-list-item:hover {
+  background: var(--highlight);
 }
 
 .rule-group {
@@ -644,34 +784,6 @@ header .save-line {
   color: var(--text-strong);
 }
 
-.character-skills {
-  flex-basis: 100%;
-  color: var(--text);
-}
-
-.character-skills h4 {
-  margin: var(--space-s) 0;
-  font-size: inherit;
-  color: var(--text-label);
-}
-
-.skill-tree {
-  margin-bottom: var(--space-m);
-}
-
-.skill-summary {
-  margin: 0 0 var(--space-xs);
-  color: var(--text-strong);
-}
-
-.skill-branch {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-xs);
-}
-
 .run-practice {
   margin: var(--space-xs) 0 0;
   color: var(--text);
@@ -701,6 +813,13 @@ header .save-line {
 .team-member-loop {
   margin: 0;
   color: var(--text);
+}
+
+/* The sentence why the sending is inactive while a manual map run waits, under the row's sending, in `text-secondary`. */
+.team-member-run-note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-secondary);
 }
 
 /* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */
@@ -875,8 +994,12 @@ header .save-line {
   border-left-color: var(--link-highlight);
 }
 
+/* The footer stands as wide as the content above it, so its line and its text start where the content does. */
 footer {
-  margin-top: var(--space-xl);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1344px;
+  margin: var(--space-xl) auto 0;
   padding: var(--space-m) 0 var(--space-l);
   border-top: var(--frame-width) solid var(--divider);
   font-size: var(--font-size-detail);
@@ -891,4 +1014,97 @@ footer {
 
 .credits a {
   color: inherit;
+}
+
+/*
+ * The screen Postać (D-199, D-217, D-244, D-245): the name in `text-strong`, the generation and the
+ * archetype in `text-secondary` (D-40, D-218), the resurrection line ready in `text-secondary` and not
+ * ready in `danger` (D-217), the loop's line in `text` (D-244), the stopped line in `text-secondary`
+ * (D-245) and the section „Umiejętności” with its name in `text-label`. As wide as the content under
+ * the menu bar, at most 1344 px (D-280).
+ */
+.character-screen {
+  box-sizing: border-box;
+  max-width: 1344px;
+  margin: 0 auto;
+  color: var(--text);
+}
+
+.character-screen h2 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.character-screen-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-s);
+  margin: 0 0 var(--space-xs);
+}
+
+.character-screen-generation,
+.character-screen-archetype {
+  color: var(--text-secondary);
+}
+
+.character-screen-resurrection {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
+}
+
+.character-screen-resurrection.danger {
+  color: var(--danger);
+}
+
+.character-screen-loop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.character-screen-loop-line {
+  margin: 0;
+  color: var(--text);
+}
+
+.character-screen-stopped {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
+}
+
+.character-screen-skills {
+  margin-top: var(--space-m);
+}
+
+.character-screen-skills h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.character-screen-skills-note {
+  margin: 0 0 var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.character-screen-tree {
+  margin-bottom: var(--space-m);
+}
+
+.character-screen-tree-summary {
+  margin: 0 0 var(--space-xs);
+  color: var(--text-strong);
+}
+
+.character-screen-branch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-xs);
 }

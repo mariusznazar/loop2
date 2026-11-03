@@ -139,11 +139,15 @@
   color: var(--text-secondary);
 }
 
-/* The header's line for the row of an unconfirmed address, as `header` in styles.css lays it out. */
-.header-sample {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+/*
+ * The part of the open menu „Konto” for an unconfirmed address, as a block in the flow of the page
+ * that takes the width of its sample: styles.css hangs the real one under the button „Konto”, as wide
+ * as its text, which the sample does not have.
+ */
+.menu-sample .account-menu-block {
+  position: static;
+  width: auto;
+  max-width: none;
 }
 
 .tile-samples {

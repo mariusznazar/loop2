@@ -5,8 +5,8 @@ The simulation is built by `npm run build` in a temporary copy of the working tr
 is never written) and driven through its public functions in `dist/browser/sim/game.js` by a Node
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram` and
 `send`. The program the check reads is the one `setProgram` edits (`heldProgram` in
-`HELD_PROGRAMS_JS` of `program_fixture.py`): the copy of the map run during a map run, in the
-headquarters the program of the player's list the team goes with (D-164; the copy is the program
+`HELD_PROGRAMS_JS` of `program_fixture.py`): the copy of the map run during a map run, outside
+a map run the program of the player's list the team goes with (D-164; the copy is the program
 the map run carries out).
 The new game of each game with a map run is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
@@ -25,12 +25,12 @@ Reading of the sentence:
 - refuses: `setProgram`, the simulation's function that replaces the program, does not take the
   program in — it throws, or the state it returns holds the program the state had before,
   unchanged (written out below as BASE); the program the state holds is the copy of the map run
-  during a map run, and in the headquarters the program of the list the team goes with;
+  during a map run, and outside a map run the program of the list the team goes with;
 - a kind listed there is accepted with its fields valid: a program of rules of every listed kind,
   with valid fields, including all ten condition kinds on groups, is taken in as offered (the control
   that shows refusal is no blanket refusal).
 
-Every offer is made twice: in the headquarters (no map run) and during a map run of Las
+Every offer is made twice: outside a map run and during a map run of Las
 (`forest`) of a character created in a new game, of the archetype `elementalMage`, sent at the
 real time T. The unlisted kind stands
 in rule 1 of three, between two valid rules, and on a group between valid groups, once bare and
@@ -213,14 +213,14 @@ def taken_in(result):
 
 
 def refusal_findings(label, pairs):
-    return [f"{label} ({'during a map run' if with_run else 'in the headquarters'}): taken in "
+    return [f"{label} ({'during a map run' if with_run else 'outside a map run'}): taken in "
             f"as {json.dumps(result['program'])}"
             for with_run, result in pairs if taken_in(result)]
 
 
 def acceptance_findings(pairs, expected):
     return [f"the valid program was not taken in as offered "
-            f"({'during a map run' if with_run else 'in the headquarters'}): {json.dumps(result)}"
+            f"({'during a map run' if with_run else 'outside a map run'}): {json.dumps(result)}"
             for with_run, result in pairs
             if result["threw"] or result["program"] != expected]
 

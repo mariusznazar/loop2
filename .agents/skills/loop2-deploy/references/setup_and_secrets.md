@@ -326,10 +326,11 @@ back by rollback. The window includes review and corrections; the human who merg
    the address `<test account address from the private note>` and a password of 12 to 128
    characters from the same note.
    - Signed out, the page shows the login card alone, on „Zaloguj się”, and no game or Program panel.
-   - Create the account: the headquarters appears at once and the header shows the logout
-     button.
-   - Reload: the headquarters appears straight away; when the saved game holds a manual map run,
-     the page lands on it, paused while the run goes on and on its screen after the run has ended.
+   - Create the account: the headquarters appears at once, and the logout button „Wyloguj” stands
+     in the menu „Konto”.
+   - Reload at the address with no fragment: the headquarters appears straight away; when the
+     saved game holds a manual map run, the page lands on it, paused while the run goes on and on
+     its screen after the run has ended.
    - Persistence: run step 3 again for the same commit, then reload; the same session still
      reaches the headquarters. Log out, log in with the same address and password; it works.
      This shows that accounts and sessions survive container replacement.

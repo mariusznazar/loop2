@@ -11,6 +11,7 @@ import {
   mapLabel,
   programPositions,
   resurrectionLine,
+  runWaitingSentence,
   sendMaps,
   solvingSentence,
   stoppedLoopLine,
@@ -83,6 +84,7 @@ const NOW = 1_760_000_000_000;
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
+// D-217: the wording of the line, with the time reading „za {m} min czasu realnego” below an hour.
 const WARNING = " — śmierć zabierze wprawę i wykupione stopnie";
 
 /** The line of a character whose resurrection is ready `left` ms after `NOW`. */
@@ -93,15 +95,15 @@ const lineWhenLeft = (left, now = NOW) =>
 // time shown is never shorter than the real one.
 test("7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and exactly 59 min reads 59 min", () => {
   assert.deepEqual(lineWhenLeft(7 * HOUR + 59 * MINUTE + 30 * SECOND), {
-    text: `Wskrzeszenie za 8 godz. 0 min${WARNING}`,
+    text: `Wskrzeszenie za 8 godz. 0 min czasu realnego${WARNING}`,
     danger: true,
   });
   assert.deepEqual(lineWhenLeft(59 * MINUTE + 30 * SECOND), {
-    text: `Wskrzeszenie za 1 godz. 0 min${WARNING}`,
+    text: `Wskrzeszenie za 1 godz. 0 min czasu realnego${WARNING}`,
     danger: true,
   });
   assert.deepEqual(lineWhenLeft(59 * MINUTE), {
-    text: `Wskrzeszenie za 59 min${WARNING}`,
+    text: `Wskrzeszenie za 59 min czasu realnego${WARNING}`,
     danger: true,
   });
 });
@@ -109,27 +111,30 @@ test("7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and 
 test("hours and minutes split after the rounding up: 60 min is 1 godz. 0 min, 61 min is 1 godz. 1 min, 2 h 1 s is 2 godz. 1 min", () => {
   assert.equal(
     lineWhenLeft(60 * MINUTE).text,
-    `Wskrzeszenie za 1 godz. 0 min${WARNING}`,
+    `Wskrzeszenie za 1 godz. 0 min czasu realnego${WARNING}`,
   );
   assert.equal(
     lineWhenLeft(61 * MINUTE).text,
-    `Wskrzeszenie za 1 godz. 1 min${WARNING}`,
+    `Wskrzeszenie za 1 godz. 1 min czasu realnego${WARNING}`,
   );
   assert.equal(
     lineWhenLeft(2 * HOUR + SECOND).text,
-    `Wskrzeszenie za 2 godz. 1 min${WARNING}`,
+    `Wskrzeszenie za 2 godz. 1 min czasu realnego${WARNING}`,
   );
 });
 
 test("below an hour only minutes stand, and 1 ms or 30 s left still reads one whole minute, never 0 min", () => {
-  assert.equal(lineWhenLeft(1).text, `Wskrzeszenie za 1 min${WARNING}`);
+  assert.equal(
+    lineWhenLeft(1).text,
+    `Wskrzeszenie za 1 min czasu realnego${WARNING}`,
+  );
   assert.equal(
     lineWhenLeft(30 * SECOND).text,
-    `Wskrzeszenie za 1 min${WARNING}`,
+    `Wskrzeszenie za 1 min czasu realnego${WARNING}`,
   );
   assert.equal(
     lineWhenLeft(MINUTE + 1).text,
-    `Wskrzeszenie za 2 min${WARNING}`,
+    `Wskrzeszenie za 2 min czasu realnego${WARNING}`,
   );
 });
 
@@ -158,7 +163,7 @@ test("a clock set back lengthens the time left: the moment an hour earlier reads
   const readyAtMs = NOW + 8 * HOUR;
   assert.equal(
     resurrectionLine({ resurrectionReadyAtMs: readyAtMs }, NOW - HOUR).text,
-    `Wskrzeszenie za 9 godz. 0 min${WARNING}`,
+    `Wskrzeszenie za 9 godz. 0 min czasu realnego${WARNING}`,
   );
 });
 
@@ -201,5 +206,18 @@ test("the line after a stop lists the practice gathered in the skills' order, an
   assert.equal(
     stoppedLoopLine({ eating: 4, exploration: 12, kicking: 0 }),
     "Pętla zatrzymana · wprawa: Eksploracja +12, Jedzenie +4",
+  );
+});
+
+// To do 8, row 1; question 3. Catches a sentence that names the map by a typed name instead of the
+// data's, that drops the second sentence every inactive send shows, and a map other than the run's.
+test("the sentence beside an inactive send names the run's map from the data and tells the player to finish the run", () => {
+  assert.equal(
+    runWaitingSentence("forest"),
+    "Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.",
+  );
+  assert.equal(
+    runWaitingSentence("forestDeep"),
+    "Przejście na mapie Las — głębiej jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.",
   );
 });

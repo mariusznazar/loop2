@@ -911,7 +911,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the seven shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field and text field from the seven shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -1064,24 +1064,22 @@ a name keeping white space at its start or end — it looks on the list as the s
 
 ### D-53 — Where does the player send a character from, and where does „Zakończ” lead?
 
-The player sends a character to a game map from the headquarters, and „Zakończ” returns
-to the headquarters.
+The player sends a character to a game map from the headquarters, and „Zakończ” returns to the
+screen Postać of that character.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: the button „Wyślij” beside each character of the headquarters; „Zakończ” of a map
-    run bringing back the headquarters in the place the map run stood
+    run opening the screen Postać of the character that made it
   - violates: a panel for sending characters standing apart from the headquarters; „Zakończ”
-    leading to a screen other than the headquarters
-- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny"
+    leading to the headquarters or to any screen other than the screen Postać of that character
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-53 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6
 
-*Rationale:* the headquarters stands above the screen of a map run as the screen the game opens
-on when the saved game state holds no manual map run, so a character goes out to a game map from it
-and the player comes back to it. The
-headquarters and the map run share one place beside the program panel, and the other sections of
-the headquarters join it later.
+*Rationale:* the headquarters is the screen the game opens on when the saved game state holds no
+manual map run, so a character goes out to a game map from it. Coming back to the character leads on
+to what the map run gave it and to the next choice.
 *Rejected:* a screen for sending characters of its own beside the headquarters — the player would
 send from one screen and see the team on another.
 
@@ -1228,7 +1226,7 @@ A character dies in the game minute in which its health reaches zero, also durin
 
 ### D-62 — What does the screen show, and what can the player do, after a character's death?
 
-After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character. After a character's death the pace buttons are gone together with „Pauza”.
+After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives. After a character's death the pace buttons are gone together with „Pauza”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -1238,7 +1236,7 @@ After a character's death the screen stays on the state of the game minute of de
   - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20
 
-*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen from which the player sends the character, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
+*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen D-53 gives, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
 *Rejected:* going back to sending the character at once after death — the player loses the state that explains the death; the pace buttons kept active after death while gone after a completion, and the pace buttons shown inactive or active on both screens of an end — the screens of the two ends would differ, or show controls of a time that stands still.
 
 ### D-63 — How does a character light a campfire or a stick?
@@ -1772,22 +1770,22 @@ If the dependency audit reports an advisory in a package introduced by StrykerJS
 
 ### D-96 — What does a player see before and after signing in?
 
-A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters the headquarters signed in; signing in with email and password and reloading with a valid session, that form apart, also lead to the headquarters, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry. Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
+A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands. Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba. The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry. Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” for the last.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-51 · derives from D-53
 - **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. An agent compares a change with the decision:
-  - complies: a signed-out visitor seeing one card with the game's name, the sentence read from the game's data, the switch, one form and the folded credits; the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; an error of the code in the load showing its sentence and „Spróbuj ponownie”, with no game built and nothing saved; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built
-  - violates: the sentence about the game written in the code of the view; a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-96
+  - complies: a signed-out visitor seeing one card with the game's name, the sentence read from the game's data, the switch, one form and the folded credits; the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; an error of the code in the load showing its sentence and „Spróbuj ponownie”, with no game built and nothing saved; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built; a reload at `#/postac/2` while the saved game state holds a manual map run staying on the screen Postać of character 2; signing in with the form while the saved game state holds a paused manual map run of Las opening that map run's screen, paused
+  - violates: the sentence about the game written in the code of the view; a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands; a reload at `#/programy` leading to the manual map run the saved game state holds; signing in leading to the screen of the address another player left in the tab
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7, 8, 20, 21, 22 and 23, and § Settlements to record, row 7 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, rows 1 and 6 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-96 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 13
 
-*Rationale:* An account provides the entry to the game and the headquarters provides its starting place. The first screen says what the game is in one sentence and shows a picture of it, and one card holds every state, so a visitor sees one form at a time; repeating the password helps detect a registration typo, at the cost of another field and no anonymous preview. A player who forgot the password asks for a link on another state of the card, at the cost of that state and two more buttons. The form a password-reset link opens stands before anyone knows who is signed in, because the link alone authorizes it (D-109), and with no game built nothing runs or saves behind it. A player whose saved game state holds a manual map run comes back to that map run as it stood, so nothing the player was looking at is closed by signing in again. A game built before the server has answered about the saved game state would save itself over the real one at its first save, so a passing failure would cost the player's progress, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state; a player whose saved game state is discarded learns that it was and whether it came from another version or was damaged, at the cost of two messages more.
-*Rejected:* Two wide forms side by side — a page of paperwork that says nothing of the game; anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; a third form standing for good beside the other two — the entry screen of every visitor holds three forms, and a mistake between them is easier; the headquarters after signing in with a way back to a waiting manual map run — a new state of the screen, with its own question of what the player may do in the headquarters while the map run waits; a new game when the saved game state cannot be downloaded — the first save of that new game overwrites the saved game state on the server, so the player loses progress through a passing outage, against what this decision does at the session check; discarding a saved game state without a word — the player sees an empty team with no explanation and may take it for a fault; the sentence of another version for a damaged saved game state too — the player is given an untrue reason and, reporting the problem, speaks of a version where a fault is at stake; closing an ended map run at loading as „Zakończ” does, so the player lands in the headquarters — changes of D-62, D-132 and D-173, code closing the map run at loading, and after each reload following a death or a completion the loss of the copy's unsaved changes without the line „Niezapisane zmiany w kopii.” that warns before „Zakończ”, and of „Restart” on the same seed.
+*Rationale:* An account provides the entry to the game and Siedziba its starting place. The first screen says what the game is in one sentence and shows a picture of it, and one card holds every state, so a visitor sees one form at a time. A player who signs in again or opens the game at an address with no fragment comes back to a manual map run as it stood, and a reload keeps the screen its address leads to, since the map run waits safely in its pause and „Wróć do przejścia” leads back to it. A game built before the server has answered about the saved game state would save itself over the real one at its first save, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state. A player whose saved game state is discarded learns that it was and why.
+*Rejected:* two wide forms side by side — a page of paperwork that says nothing of the game; anonymous play before registration — adds a second entry and later reconciliation of local progress; waiting for email confirmation — blocks the accepted immediate entry; a third form standing for good beside the others; the headquarters after signing in with a way back to a waiting manual map run; every reload leading to the map run the saved game state holds — a player writing a program would lose the place at each reload; the address winning after signing in too — another account in the same tab would land at the previous player's address; a new game when the saved game state cannot be downloaded — its first save overwrites the saved state on the server; discarding a saved game state without a word; closing an ended map run at loading as „Zakończ” does — a reload would lose the copy's unsaved changes and „Restart” on the same seed.
 
 ### D-97 — What does the player's logout do?
 
-The shared „Wyloguj” button stands in the header beside the title, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving. When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives. A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it.
+The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving. When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives. A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
@@ -2475,7 +2473,8 @@ player has „Restart” and „Zakończ” as after a character's death.
 - **Verification:** an agent compares a change with the decision:
   - complies: after a completion in game minute 480 of Las the status row reads „Minuta 480 · Las
     rozwiązany” in `positive`, „Pauza” and the pace buttons are gone, the game minute stays at 480,
-    „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the headquarters
+    „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać of
+    that character
   - violates: the game going back to the headquarters with a message the moment the map run
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
     written in a role other than `positive`
@@ -2881,18 +2880,18 @@ The link of a confirmation message is the configured public origin followed by `
 
 ### D-157 — What does a signed-in player see of an unconfirmed address, and who may ask for another confirmation message?
 
-A signed-in player whose email address is unconfirmed sees on every screen, in the header on a line under the title and „Wyloguj”, „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, and both are gone once the address is confirmed. Only a signed-in player asks for another confirmation message, and it goes only to the address of that player's own account. Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”.
+A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed. Only a signed-in player asks for another confirmation message, and it goes only to the address of that player's own account. Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-152 · derives from D-105
 - **Verification:** an agent compares a change with the decision:
-  - complies: the answer to a registration carries the outcome of its sending, and the header row starts with that outcome's sentence
-  - violates: a field of the request for another message that names an address or an account; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after a sending that failed
-- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 3 and 8, and § Settlements to record, row K3
+  - complies: the answer to a registration carries the outcome of its sending, and the menu „Konto” holds that outcome's sentence above „Wyślij ponownie” with no mark on the menu bar
+  - violates: a field of the request for another message that names an address or an account; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after a sending that failed; „Adres e-mail niepotwierdzony.” on a line of its own under the menu bar
+- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 3 and 8, and § Settlements to record, row K3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-157 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11
 
-*Rationale:* the player learns where the message went and can ask for it again without help, and a limit or a failure is said instead of a message that never comes. The row stands in the header on every screen until the address is confirmed, and the answer to a registration waits for the outcome of its sending, so entering the headquarters takes a few seconds more while the mail service answers slowly. The sentence after a sending notes what happened while the address is still unconfirmed, so it reads as a note rather than as something in order.
-*Rejected:* „Wysłaliśmy odnośnik potwierdzający na <adres>.” after every registration, also when the sending failed — the player reads that a message went when it did not; no sentence about the sending — changes the sentence settled for right after registration; the sending in the background with the browser asking for its outcome — adds a state, a route and a loop of requests for a wait of a few seconds; `positive` for „Wysłaliśmy odnośnik potwierdzający na <adres>.” — reads as done while the address is unconfirmed.
+*Rationale:* the player learns where the message went and can ask for it again without help, and a limit or a failure is said instead of a message that never comes. The first line of the game is no place for a request about an address, which matters only for a reset of a password, so it stands where the account stands.
+*Rejected:* a line in the header of every screen — the first thing the player reads of the game is a request about an address; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after every registration, also when the sending failed; no sentence about the sending; the sending in the background with the browser asking for its outcome; `positive` for that sentence — reads as done while the address is unconfirmed.
 
 ### D-158 — From whom does the email confirmation message come, and what does it say?
 
@@ -3012,18 +3011,23 @@ Each program of the player carries a number the game gives it when the program i
 
 ### D-166 — Where does the player see the player's programs and pick the one to edit?
 
-The program panel holds at its top the select list „Program: {name}” with every program of the player, and the program editor below it shows the program picked there. During a map run the list holds „Kopia w przejściu” at its top and the player's saved programs below it.
+The screen Programy holds on the left the list of the player's programs and beside it the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: a new game's panel showing „Program: Program” above the editor of the program „Program”; during a map run the list reading „Kopia w przejściu”, „Program”, „Program 2”, and „Program 2” picked there showing that program in the editor
-  - violates: a section of the headquarters or a screen of its own listing the programs; a list during a map run on which the copy stands below the saved programs
-- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?"
+  - complies: „Program 2” picked on the list of Programy showing that program in the editor beside
+    it, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
+    saved program with „Zmiany tutaj nie dotykają przejścia na mapie Las.” above the editor; on the
+    screen of a map run the select list reading „Kopia w przejściu”, „Program”, „Program 2”
+  - violates: „Kopia w przejściu” on the list of Programy; „Przełącz postać na ten program” on
+    Programy; a list during a map run on which the copy stands below the saved programs; the program
+    panel standing beside Siedziba
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-166 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 5 and 15
 
-*Rationale:* the programs stand where the player edits them, in the panel that stands beside the headquarters and beside the map run, and one list reaches both the copy and the saved programs, the copy first as what the map run carries out.
-*Rejected:* a section of the headquarters or a screen of its own for the programs — the programs would stand apart from the editor that edits them.
+*Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero.
+*Rejected:* a panel standing beside every screen — the program mixes with everything else; a list during a map run on which the copy stands below the saved programs; „Kopia w przejściu” on the list of Programy — the list and the address would have to handle the copy; „Programy” leading to the screen of a waiting map run — the player could not write a saved program while a map run waits.
 
 ### D-167 — What can the player do with the list of programs?
 
@@ -3123,7 +3127,7 @@ On the screens after a character's death and after a completion, editing the cop
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: a fix made in the copy after a death and saved into „Program” with „Zapisz w programie” before „Zakończ”; „Zakończ” with unsaved changes returning to the headquarters at once, „Program” standing in the panel as it was saved
+  - complies: a fix made in the copy after a death and saved into „Program” with „Zapisz w programie” before „Zakończ”; „Zakończ” with unsaved changes returning to the screen Postać of that character at once, „Program” standing in the panel of Programy as it was saved
   - violates: the save buttons gone after a completion; „Zakończ” asking whether to save the copy; the copy's unsaved changes reaching the program at „Zakończ”
 - **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?"
 
@@ -3468,18 +3472,18 @@ A character skill tree with all its branches enters the Understanding in the gam
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
 
-Outside a map run the program editor currently offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches currently contribute no actions to that editor's offer. During a map run, both the copy editor and the saved-program editor use the running character’s repertoire, including its bought branches.
+Outside a map run the program editor currently offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches currently contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Obchód” offered in both editors during the run of its buyer and absent outside a run
-  - violates: a branch bought by any teammate opening that action in the headquarters editor
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3; accepted settlement 4
+  - complies: „Obchód” offered in both editors during the run of its buyer and absent outside a run; „Obchód” still offered in the editor of Programy after its buyer's death, until „Restart” or „Zakończ”
+  - violates: a branch bought by any teammate opening that action in the editor of Programy outside a map run; the editor of Programy turning to the archetype's offer when the player leaves the screen of a manual map run or when that map run ends
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3; accepted settlement 4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 15 and 17, and § Settlements to record, row 11
 
-*Rationale:* A program is shared, while a branch belongs to its buyer. Accepted with it: the headquarters editor cannot add a branch action; editing the copy's rules or rule groups resets progress, whereas editing a saved program prepares the next send.
-*Rejected:* offering outside a run every branch any teammate bought — the shared editor would imply availability without choosing its character
+*Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ”, as it does for „Kup” (D-200), so the offer does not change while it stands. Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress, whereas editing a saved program prepares the next send.
+*Rejected:* offering outside a run every branch any teammate bought — the shared editor would imply availability without choosing its character; the archetype's offer after the end of a map run, as this decision read word for word gave it — code to change, and on Programy after a death the offer changes while the map run still stands.
 
 ### D-197 — What does the gathering branch Obchód do?
 
@@ -3511,34 +3515,34 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 *Rationale:* Scouting changes the exploration program’s reach. Accepted with it: it can reveal much of the small map quickly.
 *Rejected:* only numerical branches, or only a selected subset of the non-numerical branches — omit the accepted changes to how programs work
 
-### D-199 — What does the headquarters show of character skills?
+### D-199 — What does the screen Postać show of character skills?
 
-At each character the headquarters currently shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
+The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
 - **Verification:** an agent compares a change with the decision:
   - complies: a fully bought numerical branch showing its current value with a disabled „Kup”; the whole section absent before any tree is known
-  - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q11; accepted settlement 8
+  - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch; „Umiejętności” drawn on Siedziba
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q11; accepted settlement 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-199
 
-*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: a longer headquarters and no preview of unknown trees.
-*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note
+*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: no preview of unknown trees.
+*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note.
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
-The player currently buys a branch rank with „Kup” in the headquarters outside a manual map run, at a character in an earning loop too, and the rank acts from that character’s next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game currently has no purchase in the map-run view and no undo of a purchase.
+The player currently buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game currently has no purchase in the map-run view and no undo of a purchase.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
 - **Verification:** an agent compares a change with the decision:
-  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run
-  - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4, and § Settlements to record, row 6
+  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run; „Kup” inactive on the screen Postać after a character's death until „Restart” or „Zakończ”
+  - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on; „Kup” active while the screen after a completion waits for „Restart” or „Zakończ”
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4, and § Settlements to record, row 6 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-200
 
-*Rationale:* Purchases belong beside the character’s skills in the headquarters, and a run keeps the skills with which it starts. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
+*Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
 *Rejected:* „Kup” inactive at a character in an earning loop — to spend its points the player loses the backpack of the map run going on.
 
 ### D-201 — What does the map-run view show of its practice?
@@ -3694,7 +3698,7 @@ as refused as too large (D-208).
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: an edit of a program rule followed at once by a save request; „Kup” of a branch rank
-    in the headquarters followed at once by a save request; a map run passing at 16×
+    on the screen Postać followed at once by a save request; a map run passing at 16×
     saved once every 30 real seconds; a tab hidden in the middle of a map run sending its latest
     game state as a `keepalive` request; a tab that has just loaded a saved game state with its map
     run paused and no earning loop passing sending nothing until the player acts in it; earning
@@ -3737,49 +3741,23 @@ Las, while closing the tab takes at most 30 game minutes at every pace.
 
 ### D-208 — What does the player see of saving the game state?
 
-A save of the game state that succeeds shows nothing. When one fails, the header shows on a line
-under the title and „Wyloguj”, above the line of D-157, „Nie udało się zapisać postępu. Gra spróbuje
-ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for
-that failure, and the game retries the save after 5, 10 and 20 real seconds and then every
-30 real seconds, each time with the game state of that moment and at once at a moment of saving of
-D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than
-its limit of D-104, the game does not retry that save but tries again at its next moment of saving,
-and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo
-usuń niepotrzebne programy.” in `warning` until a save succeeds; the game currently sets no limit on
-the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
+A save of the game state that succeeds shows nothing. When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.” in `warning` until a save succeeds; the game currently sets no limit on the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: a save with no answer within its time limit showing „Nie udało się zapisać postępu.
-    Gra spróbuje ponownie.” above „Adres e-mail niepotwierdzony.”, and the retry five real seconds
-    later clearing it when it succeeds; a too-large refusal followed by no request until the next
-    moment of saving
+    Gra spróbuje ponownie.” on the line under the menu bar, and the retry five real seconds later
+    clearing it when it succeeds; a too-large refusal followed by no request until the next moment
+    of saving
   - violates: a line „Zapisano o 12:31” after each save; a too-large refusal retried as a failed
-    save; a failed save shown nowhere; a start of an earning loop refused for the number of earning
-    loops
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 18, and § Settlements to record, row 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q12, and § Settlements to record, row 19
+    save; a failed save shown nowhere, or only inside the closed menu „Konto”; a start of an earning
+    loop refused for the number of earning loops
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 18, and § Settlements to record, row 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q12, and § Settlements to record, row 19 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-208
 
-*Rationale:* the player is told only when the progress is not being saved, at the cost of not
-seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage
-from costing a request every few seconds per tab. A save refused as too large fails again until the
-game state shrinks, so the game waits for a change instead of retrying, and the progress since the
-last successful save is lost at logout or when the tab closes; the earning loops and the programs
-are what the player can make smaller, with „Zatrzymaj” and with „Usuń” on the list of programs
-(D-167), the last program staying, so a player whose game state grows beyond them stays without a
-save until the limit changes. One state of the header more. Accepted with it: with several earning
-loops saving stops until the player stops one of them, the limit holding at most about 12 earning
-loops on Las or 10 on Las — głębiej, and in practice fewer.
-*Rejected:* a lasting line „Zapisano o 12:31” in `text-secondary` beside the warning — a line that
-changes every 30 seconds during a map run, and more text in the header beside the line of D-157;
-nothing shown, a failed save included — the player plays on believing the progress saved and loses
-it when the tab closes; the too-large refusal counted as a failed save — endless retries, a promise
-„Gra spróbuje ponownie.” that is not kept and a „Wyloguj” that does not work, leaving the player
-signed in at a shared computer; a limit of N earning loops at once — a rule the project definition
-does not have, and a new number to settle; a slimmer save of earning loops — a longer cycle, a more
-involved load and no guarantee of a threshold; a higher limit — the browser sends no more than 64 KiB
-when a tab closes, so the last save would be lost.
+*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them.
+*Rejected:* a lasting line „Zapisano o 12:31”; nothing shown, a failed save included — the player plays on believing the progress saved; the too-large refusal counted as a failed save — endless retries; a limit of N earning loops at once; a slimmer save of earning loops; a higher limit — the browser sends no more than 64 KiB when a tab closes.
 
 ### D-209 — Which browser's save of the game state does the server accept?
 
@@ -3889,9 +3867,10 @@ further progress is unsaved too, and a new layout of the screen with the form be
 
 A manual map run of a loaded saved game state that goes on comes back at the game minute of the
 save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a
-completion or in the character's death comes back on its screen after its end, with „Restart”,
-„Zakończ” and the copy open to editing as D-62, D-132 and D-173 give. No time that passed between the
-save and the load advances it, the computing of time away included.
+completion or in the character's death comes back with its screen after its end, with „Restart”,
+„Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and the screen the page opens
+on is the one D-96 gives. No time that passed between the save and the load advances it, the
+computing of time away included.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -3899,10 +3878,11 @@ save and the load advances it, the computing of time away included.
 - **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
   - complies: a map run of Las saved at game minute 212 at 8× loading an hour later at game minute
     212, paused, at 8×; a map run saved on the screen after a death loading on that screen with
-    „Restart” and „Zakończ”
+    „Restart” and „Zakończ”; a reload at `#/programy` with a map run saved after a death opening
+    Programy, the map run waiting with its screen after its end for „Restart” or „Zakończ”
   - violates: a loaded map run going on at once; a loaded map run moved on by the time away; loading
     that closes an ended map run as „Zakończ” does
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 8, 15 and 23, and § Settlements to record, row 8
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 8, 15 and 23, and § Settlements to record, row 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-212
 
 *Rationale:* a player who signs in on another device does not miss a discovery, an attack or the
 character's death in the first seconds, at the cost of one click after each load with a map run
@@ -4016,27 +3996,18 @@ game state remembers how each death was settled.
 nothing on this screen, the telling left to the headquarters — the player may press „Restart”
 unaware of the lost progress.
 
-### D-217 — What does the headquarters show of a character's resurrection?
+### D-217 — What does the game show of a character's resurrection?
 
-The headquarters shows at each character, from its creation, „Wskrzeszenie gotowe” in
-`text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min —
-śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min” below one
-hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
+The card and the screen of a character show, from its creation, „Wskrzeszenie gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-190 · derives from D-219
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-217
 
-*Rationale:* the player sees the stake before paying it and how long a renewal has left, and the
-minutes go up so that the game gives no time shorter than the real one. Accepted with it: the
-headquarters has to refresh as time passes, the text speaks of a full hour with some tens of seconds
-missing, and it can read „0 min”.
-*Rejected:* the line appearing after the first death — the player learns the stake once it has paid
-it; a bare ready or not ready — the player does not know how long to wait, and hardly any code goes;
-the split first and the rounding of the minutes after it, giving „za 7 godz. 60 min” and „za 60 min”
-— for one minute of each hour the text shows 60 minutes, which looks like a fault of the game.
+*Rationale:* the player sees the stake before paying it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. Accepted with it: the screens have to refresh as time passes.
+*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; a bare ready or not ready — the player does not know how long to wait; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes.
 
 ### D-218 — How does the headquarters show a character's generation number?
 
@@ -4220,8 +4191,8 @@ to whoever reads it, and a mail client or a spam filter that opens the link uses
 ### D-225 — What does the form „Ustaw nowe hasło” hold, and how does it end?
 
 The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw
-hasło” and „Anuluj”, which removes the fragment of the address and opens the page as usual, and the
-page shows it without asking the server about the link, so a player learns that a link does not work
+hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in
+player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work
 only after sending the form. After the password is set, „Hasło zmienione. Zaloguj się nowym hasłem.”
 stands in `positive` above the account forms and the fragment is gone; after a refusal of the link,
 whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest
@@ -4234,10 +4205,12 @@ connection or a full password gate leaves the form, one sentence under it and th
 - **Verification:** an agent compares a change with the decision:
   - complies: the fragment removed before the page goes on, with `history.replaceState`, so neither a
     reload nor the back button returns to the token; the sentence of a refused link above the game for
-    a signed-in player; „Anuluj” disabled while the form waits
+    a signed-in player; „Anuluj” disabled while the form waits; „Anuluj” of a signed-in player whose
+    saved game state holds a manual map run opening Siedziba
   - violates: a request sent when the page opens; the fragment kept after a refusal of the link; the
-    form closed by a 429 or by a lost connection
-- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 4 and 14, and § Settlements to record, rows 8, 9, 10, 11 and 13
+    form closed by a 429 or by a lost connection; „Anuluj” of a signed-in player opening the screen
+    of a manual map run
+- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 4 and 14, and § Settlements to record, rows 8, 9, 10, 11 and 13 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16
 
 *Rationale:* a form shown without a question to the server gives nobody a way of asking whether a
 token works. Accepted with it: a player with an expired link types the password twice in vain; a
@@ -4854,39 +4827,30 @@ place for sending characters and several times the view; „Wyślij” stopping 
 
 ### D-244 — What does the player see of an earning loop?
 
-A running earning loop currently shows in its character's row of the headquarters as one line in the
-role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button
-„Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view
-and the program panel show during a map run stands for a manual map run; the firing counts cover a
-manual map run, and the start of an earning loop leaves the counts a manual map run left as they
-were.
+A running earning loop currently shows on the card and the screen of its character as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-239 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
 - **Verification:** an agent compares a change with the decision:
-  - complies: a row reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2”, moving with each
-    game minute of the earning loop; the counts of the last manual map run staying as they were
-    after an earning loop starts; the program panel staying on the player's programs while earning
-    loops pass
+  - complies: a line reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2” on the
+    character's card on Siedziba and on its screen Postać, moving with each game minute of the
+    earning loop; the counts of the last manual map run staying as they were after an earning loop
+    starts; the program editor staying on the player's programs while earning loops pass
   - violates: a button that opens the map of an earning loop's map run; firing counts gathered in an
     earning loop's map run; the start of an earning loop clearing the counts
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-244
 
-*Rationale:* the player checks a program in a manual map run and reads an earning loop by what it
-brings, so one line says what it does and how far it has come, and a preview can come later with the
-earning loop as it stands. Accepted with it: the player sees neither what the character does nor why
-it died, and the rule that a map run counts its firings takes an exception.
-*Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of
-map-run screen and a large piece of work.
+*Rationale:* the player checks a program in a manual map run and reads an earning loop by what it brings, so one line says what it does and how far it has come. The screen of a map run takes its map run as a parameter, so a preview can come later as an addition. Accepted with it: the player sees neither what the character does nor why it died, and the rule that a map run counts its firings takes an exception.
+*Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of map-run screen and a large piece of work.
 
 ### D-245 — What does „Zatrzymaj” do?
 
 „Zatrzymaj” is a destructive button with its text in the role `danger` that acts at once on the
 click: the items carried in the map run going on are lost, its loot stays out of the chest, the
-practice D-189 gives enters the character skills, and the character returns to its ordinary row. In
-that row, until the next send or start of that character and after a load of the saved game state
-too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or
+practice D-189 gives enters the character skills, and the character returns to its ordinary state.
+On the character's card and screen, until the next send or start of that character and after a load
+of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or
 „Pętla zatrzymana” where the earning loop gathered no practice.
 
 - **Scope:** browser-view · simulation
@@ -4925,7 +4889,7 @@ of game minutes. An earning loop a death stops in the open game enters the same 
 pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to
 pokolenie {n}.”, the title reading
 „Pętle, które stanęły” where the section holds no line of a return, and a player returning to a
-manual map run reads the report in the headquarters after „Zakończ”.
+manual map run reads the report on reaching Siedziba.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -5754,7 +5718,7 @@ and has no address. Every other action of the browser view keeps the button D-44
 - **Relations:** derives from D-44
 - **Verification:** an agent compares a change with the decision:
   - complies: „Wróć do logowania” under the form „Nie pamiętam hasła” as underlined text without a
-    frame, a button the keyboard reaches; „Wyloguj” in the header kept a plain button
+    frame, a button the keyboard reaches; „Wyloguj” in the menu „Konto” kept a plain button
   - violates: „Usuń” of a program rule drawn as underlined text; „Nie pamiętam hasła” made a link
     with an address; a secondary action given a frame
 - **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 2
@@ -5873,3 +5837,211 @@ gives none a new meaning.
 *Rejected:* recording nothing — the question comes up in the review of the change and can stop it;
 a change of D-40 — D-40 joins the divergence from the project definition, and the plan gains one
 more entry the task that writes that decision has to keep in mind.
+
+### D-280 — Which screens does the game have, and how does the player move between them?
+
+The game has the screens Siedziba, Postać, Programy and Przejście, all of one content width under
+one menu bar: at most 1344 px, and the full width of a narrower window. The menu bar holds at its
+left the game's name, which stands alone on the waiting screens (D-262), and over the game the
+items Siedziba and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and
+outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or
+„Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of
+that map run, its minute being the map run's game minute as the status row writes it. The name of a
+character on its card on Siedziba leads to the screen Postać of that character, on which the menu
+bar marks Siedziba, and on the screen of a map run the menu bar marks no item.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-277
+- **Verification:** an agent compares a change with the decision:
+  - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide and as
+    wide as a window 1000 px wide; after the player leaves a map run of Las at game minute 212,
+    „Wróć do przejścia · Las · minuta 212” on Siedziba, Postać and Programy, still there after the
+    character's death until „Restart” or „Zakończ”, and none on the screen of that map run;
+    „Sprawdzanie logowania…” under a menu bar holding the game's name alone; on the screen Postać
+    the item Siedziba marked
+  - violates: an item of the menu bar with an icon; an inactive item Mapy on the menu bar;
+    „Wróć do przejścia” gone after a death before „Zakończ”; an item marked on the screen of a map
+    run; the clock of „Wróć do przejścia” written as „03:32”; content wider on Programy than on
+    Siedziba
+- **Origin:** zakres_mvp2_loop2.md and rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), parts A.3 and A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 7, 9 and 11, and § Settlements to record, rows 2, 3, 4, 6 and 9
+
+*Rationale:* the player reads the game by where things stand: one page holding the program, the
+character, the map, the trees and the chest is what makes the game unreadable. The division follows
+the predecessor game, loop, which the player already finds readable, and improves on it where it was
+weak. A player who leaves a map run keeps one way back to it, and a map run that has ended stays
+until „Restart” or „Zakończ”, so the way back stays after its end too. The minute beside „Wróć do
+przejścia” stands still, since the map run waits in its pause, and it reads as the status row does.
+*Rejected:* one page holding everything — unreadable; the width of the content changing between
+screens, as in loop — the logo and the menu jump; another largest width — it changes that one
+dimension alone; the skill trees shown on two screens, as in loop; Mapy and Wiedza standing on the
+menu bar at once, inactive — two items with no content; „Wróć do przejścia” on the screen of a map
+run too — a link to the place the player already stands in; a menu that stops working after the end
+of a map run — a new state of the bar, while the copy can be fixed on the screen after the end
+anyway; „Wróć do przejścia” only while the map run goes on — after leaving an ended map run only the
+browser's back button leads back to it; the clock of „Wróć do przejścia” written as „03:32” — a
+notation of time the game does not have.
+
+### D-281 — How does an address name a screen?
+
+An address names a screen in the fragment after `#`: `#/`, `#/postac/{n}`, `#/programy`,
+`#/programy/{n}` and `#/postac/{n}/przejscie`, {n} being the number of a character (D-56) or of a
+program (D-165) and the last address naming a map run by the number of its character, and an
+address that leads to no existing screen silently opens the nearest one: `#/postac/{n}/przejscie`
+with no map run the screen Postać of that character, `#/programy/{n}` with no such program
+`#/programy`, and any other Siedziba. The screen of a map run takes its map run as a parameter and
+reads no map run of the game state by itself. The fragments of emailed links (D-156, D-224) stand
+apart from these, and after them the page opens Siedziba.
+
+- **Scope:** browser-view
+- **Based on:** uri-fragment-in-requests
+- **Relations:** derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: a reload at `#/programy/3` opening Programy with program 3 picked;
+    `#/postac/2/przejscie` with no map run of character 2 opening the screen Postać of character 2;
+    `#/programy/9` with no program 9 opening `#/programy`; `#/nieznany` opening Siedziba; a page
+    opened at `#confirm-email=…` confirming as D-156 gives and opening Siedziba for a signed-in
+    player
+  - violates: an address in the path, such as `/programy`; a screen „Nie ma takiego miejsca”; the
+    screen of a map run reading the map run from the game state rather than from its parameter
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8
+
+*Rationale:* the server hands out files, so a screen reached by the fragment survives a refresh, and
+the fragments of emailed links keep prefixes of their own. A number in the address and a map run as
+a parameter cost a decision now, while a map run for each character and looking into an earning
+loop's map run become additions rather than rebuilds.
+*Rejected:* addresses in the path — a refresh of a screen ends in an error from the server, which
+hands out files alone; an address of a map run without the character's number — a rebuild once each
+character has its own map run; a screen „Nie ma takiego miejsca” — the back button lands on it after
+„Zakończ”.
+
+### D-282 — What do the screens leave room for from the start?
+
+Each column of a screen is an area of its own that a narrower layout can rearrange, and Siedziba
+draws the team as a section with a heading.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: the program panel and the column of the map run on the screen of a map run each an
+    area of its own, which a narrower layout can place one above the other; the team on Siedziba
+    under the heading „Drużyna”
+  - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
+    the characters of Siedziba as a bare list with no heading
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1
+
+*Rationale:* a layout for a phone and several teams come later, and these two shapes make each of
+them an addition. They cost a decision and no code.
+*Rejected:* rigid columns and a plain list of characters — each of the later additions becomes a
+rebuild of a screen.
+
+### D-283 — What happens to a manual map run when the player leaves its screen?
+
+Leaving the screen of a manual map run pauses it as „Pauza” does.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-21
+- **Verification:** an agent compares a change with the decision:
+  - complies: a map run of Las going on at 8× when the player opens Siedziba standing paused at the
+    same game minute, while the earning loop of another character passes its game minutes
+  - violates: a manual map run passing its game minutes while the player stands on Programy; leaving
+    the screen holding the map run in a state of its own other than the pause of „Pauza”
+- **Origin:** rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), part A.4
+
+*Rationale:* an earning loop goes on as D-250 gives. The player fast-forwards a map run in order to
+watch the program act, so a map run does not pass on a screen the player has left, and an earning
+loop passes apart from it.
+*Rejected:* none considered
+
+### D-284 — Does a return to the screen of a manual map run resume it?
+
+A return to the screen of a manual map run that waits in a pause leaves it in that pause until the
+player presses „Wznów”, whether or not it went on before the player left.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-21 · derives from D-283
+- **Verification:** an agent compares a change with the decision:
+  - complies: a map run of Las going on at 8× when the player opens Programy standing paused at the
+    same game minute when the player comes back to it, and going on only after „Wznów”
+  - violates: the map run going on by itself on the return because it went on before the player
+    left
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 14
+
+*Rationale:* one pause gives the player one way to hold a map run and one way to go on, so a map run
+that leaving its screen paused waits as one after „Pauza” does.
+*Rejected:* the map run resuming by itself on the return where it went on before the player left —
+the game would have to remember who paused it, and a reload loses that memory.
+
+### D-285 — How does the menu „Konto” open and close?
+
+The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it
+and on a second click on „Konto”, focus then returning to „Konto”. It stays open while „Wyloguj” or
+„Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the
+sentence of the outcome can be read.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: Enter on „Konto” opening the menu and Escape closing it with focus on „Konto”; the
+    menu standing open with „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” after the
+    answer to „Wyślij ponownie”, until the player clicks outside it
+  - violates: the menu closing at the click on „Wyloguj” or „Wyślij ponownie”; the menu closing by
+    itself after the server's answer; focus left on the page after Escape rather than on „Konto”
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, points 2 and 3, and § Settlements to record, rows 7 and 8
+
+*Rationale:* the player reads the outcome of what the menu sent without opening it again. Accepted
+with it: the accessibility requirements of the browser view (D-42) do not ask for the keyboard
+here, and the styleguide gains a new kind of control worked by the keyboard.
+*Rejected:* the menu opened and closed by a click on „Konto” alone; the menu closing at once at the
+click — the sentence of the outcome goes; the menu closing by itself after the server's answer, the
+outcome read on opening it again.
+
+### D-286 — How long does the page's sentence stand above the game?
+
+A sentence the page puts above the game, such as „Adres e-mail potwierdzony.” or the sentence of a
+discarded saved game state, stands above the first screen the game opens on and leaves at the first
+change of screen.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96 · derives from D-156 · derives from D-225
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Adres e-mail potwierdzony.” above Siedziba after a confirmation link, gone once the
+    player opens Programy and not back on the return to Siedziba
+  - violates: that sentence standing above Programy and Postać until a reload
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 12, and § Settlements to record, row 10
+
+*Rationale:* the sentence speaks of the moment the game opened, so it stands with the first screen.
+Accepted with it: a player who clicks in the menu at once may not read it.
+*Rejected:* the sentence standing above every screen until a reload — a sentence from the moment of
+entry hangs above Programy and Postać.
+
+### D-287 — What do Siedziba and the screen Postać allow, and say, while a manual map run waits or has ended?
+
+While the game state holds a manual map run that waits in a pause, or that has ended and waits for
+„Restart” or „Zakończ”, Siedziba and the screen Postać keep active what the simulation allows, while
+„Wyślij”, „Puść w pętlę” at that map run's character and „Kup” stand inactive. Beside the inactive
+buttons of Siedziba stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ,
+żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest
+niezakończone. Stopnie kupisz po jego zakończeniu.”
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-55 · derives from D-200
+- **Verification:** an agent compares a change with the decision:
+  - complies: after a death in a map run of Las, before „Zakończ”, „Puść w pętlę” of another
+    character starting its earning loop, while „Wyślij” stands inactive beside „Przejście na mapie
+    Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”
+  - violates: „Wyślij” or „Kup” inactive with no sentence beside it; „Puść w pętlę” of another
+    character inactive while a manual map run waits
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 3, and § Settlements to record, row 1
+
+*Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
+do not act and what the player does to free them, and what the simulation allows stays open.
+*Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba and the screen
+Postać for viewing alone — the player could not start the earning loop of another character, and
+the code would have to block what the simulation allows.

@@ -371,7 +371,7 @@ function sent() {
   return send(state, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
 }
 
-test("the editor shows the repertoire of the mage through the Understanding, in the headquarters and in a map run", () => {
+test("the editor shows the repertoire of the mage through the Understanding, outside a map run and in a map run", () => {
   const understanding = {
     actions: ["explore", "wander", "eat"],
     conditions: ["always"],

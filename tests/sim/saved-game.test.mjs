@@ -598,7 +598,7 @@ const DOCUMENT = {
 };
 
 /**
- * A document of the current version at the headquarters, its counts beside program 1, Ala in an
+ * A document of the current version with no manual map run, its counts beside program 1, Ala in an
  * earning loop whose map run is in a combat going on.
  */
 const HEADQUARTERS = {
@@ -2241,7 +2241,7 @@ test("a game state the simulation made loads back from its saved document", () =
       state: deleteProgram(played(), 1).state,
       goesOn: true,
     },
-    "the headquarters after „Zakończ”, the counts beside a program": {
+    "after „Zakończ” with no map run, the counts beside a program": {
       state: ended,
       goesOn: false,
     },
@@ -2264,7 +2264,7 @@ test("a game state the simulation made loads back from its saved document", () =
       state: lost,
       goesOn: false,
     },
-    "the headquarters after that death and „Zakończ”": {
+    "after that death and „Zakończ”, with no map run": {
       state: end(lost).state,
       goesOn: false,
     },
@@ -2280,7 +2280,7 @@ test("a game state the simulation made loads back from its saved document", () =
       state: done,
       goesOn: false,
     },
-    "the headquarters after that completion and „Zakończ”": {
+    "after that completion and „Zakończ”, with no map run": {
       state: end(done).state,
       goesOn: false,
     },
@@ -2319,8 +2319,8 @@ test("a game state the simulation made loads back from its saved document", () =
     null,
   );
   assert.equal(
-    states["the headquarters after „Zakończ”, the counts beside a program"]
-      .state.countsProgram,
+    states["after „Zakończ” with no map run, the counts beside a program"].state
+      .countsProgram,
     1,
   );
   assert.notEqual(states["an attack going on"].state.run.activeCombat, null);
