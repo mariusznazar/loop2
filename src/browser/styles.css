@@ -79,6 +79,109 @@ header .save-line {
   color: var(--warning);
 }
 
+/*
+ * The menu bar (D-280, styleguide rule "Menu bar, the menu „Konto” and the list of programs"): the
+ * game's name at the left in `text-strong`, the items after it, „Konto” at the right edge; as wide
+ * as the content under it, at most 1344 px (D-280), with no line under the bar.
+ */
+.menu-bar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-l);
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto;
+  padding: var(--space-s) 0;
+}
+
+.menu-bar-name {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.menu-bar-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/*
+ * An item of the bar is drawn as a tab (D-276, D-277) and is a link, not a button: text in
+ * `text-label`, a transparent line at the bottom that keeps the line's place, the background
+ * `highlight` under the pointer with the role of the text unchanged. The item of the place the
+ * player is at, which the page marks with `aria-current`, has its text in `text-strong` at the
+ * emphasis weight and the line in `selected`. Focus is the one :focus-visible rule above.
+ */
+.menu-bar-item {
+  padding: var(--space-2xs) var(--space-s);
+  color: var(--text-label);
+  text-decoration: none;
+  border-bottom: var(--bar-width) solid transparent;
+}
+
+.menu-bar-item[aria-current="page"] {
+  color: var(--text-strong);
+  font-weight: var(--font-weight-emphasis);
+  border-bottom-color: var(--selected);
+}
+
+.menu-bar-item:hover {
+  background: var(--highlight);
+}
+
+/* „Konto” at the right edge of the bar, with the open menu hanging under it. */
+.account-menu {
+  position: relative;
+  margin-left: auto;
+}
+
+/*
+ * The open menu: a block on `panel` with text in `text` and the thin line of `divider` round it,
+ * under „Konto” and level with its right edge, over the content under the bar.
+ */
+.account-menu-block {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-m);
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--space-l));
+  padding: var(--space-m) var(--space-l);
+  background: var(--panel);
+  color: var(--text);
+  border: var(--frame-width) solid var(--divider);
+}
+
+.account-menu-address,
+.account-menu-sentence {
+  margin: 0;
+}
+
+.account-menu-unconfirmed,
+.account-menu-logout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+/* The sentence about the address in `text-secondary`; in `warning` for something not carried out (D-157, D-39). */
+.account-menu-sentence {
+  color: var(--text-secondary);
+}
+
+.account-menu-sentence.warning {
+  color: var(--warning);
+}
+
 /* The page's one sentence, above the game or in the login card: `positive` or `warning` (D-39, D-261). */
 .confirmation-notice {
   margin: 0 0 var(--space-m);
