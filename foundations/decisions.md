@@ -1064,24 +1064,22 @@ a name keeping white space at its start or end — it looks on the list as the s
 
 ### D-53 — Where does the player send a character from, and where does „Zakończ” lead?
 
-The player sends a character to a game map from the headquarters, and „Zakończ” returns
-to the headquarters.
+The player sends a character to a game map from the headquarters, and „Zakończ” returns to the
+screen Postać of that character.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: the button „Wyślij” beside each character of the headquarters; „Zakończ” of a map
-    run bringing back the headquarters in the place the map run stood
+    run opening the screen Postać of the character that made it
   - violates: a panel for sending characters standing apart from the headquarters; „Zakończ”
-    leading to a screen other than the headquarters
-- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny"
+    leading to the headquarters or to any screen other than the screen Postać of that character
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-53 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6
 
-*Rationale:* the headquarters stands above the screen of a map run as the screen the game opens
-on when the saved game state holds no manual map run, so a character goes out to a game map from it
-and the player comes back to it. The
-headquarters and the map run share one place beside the program panel, and the other sections of
-the headquarters join it later.
+*Rationale:* the headquarters is the screen the game opens on when the saved game state holds no
+manual map run, so a character goes out to a game map from it. Coming back to the character leads on
+to what the map run gave it and to the next choice.
 *Rejected:* a screen for sending characters of its own beside the headquarters — the player would
 send from one screen and see the team on another.
 
@@ -1228,7 +1226,7 @@ A character dies in the game minute in which its health reaches zero, also durin
 
 ### D-62 — What does the screen show, and what can the player do, after a character's death?
 
-After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen from which the player sends the character. After a character's death the pace buttons are gone together with „Pauza”.
+After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives. After a character's death the pace buttons are gone together with „Pauza”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -1238,7 +1236,7 @@ After a character's death the screen stays on the state of the game minute of de
   - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20
 
-*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen from which the player sends the character, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
+*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen D-53 gives, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
 *Rejected:* going back to sending the character at once after death — the player loses the state that explains the death; the pace buttons kept active after death while gone after a completion, and the pace buttons shown inactive or active on both screens of an end — the screens of the two ends would differ, or show controls of a time that stands still.
 
 ### D-63 — How does a character light a campfire or a stick?
@@ -2475,7 +2473,8 @@ player has „Restart” and „Zakończ” as after a character's death.
 - **Verification:** an agent compares a change with the decision:
   - complies: after a completion in game minute 480 of Las the status row reads „Minuta 480 · Las
     rozwiązany” in `positive`, „Pauza” and the pace buttons are gone, the game minute stays at 480,
-    „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the headquarters
+    „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać of
+    that character
   - violates: the game going back to the headquarters with a message the moment the map run
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
     written in a role other than `positive`
@@ -3123,7 +3122,7 @@ On the screens after a character's death and after a completion, editing the cop
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: a fix made in the copy after a death and saved into „Program” with „Zapisz w programie” before „Zakończ”; „Zakończ” with unsaved changes returning to the headquarters at once, „Program” standing in the panel as it was saved
+  - complies: a fix made in the copy after a death and saved into „Program” with „Zapisz w programie” before „Zakończ”; „Zakończ” with unsaved changes returning to the screen Postać of that character at once, „Program” standing in the panel as it was saved
   - violates: the save buttons gone after a completion; „Zakończ” asking whether to save the copy; the copy's unsaved changes reaching the program at „Zakończ”
 - **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?"
 
@@ -3863,9 +3862,10 @@ further progress is unsaved too, and a new layout of the screen with the form be
 
 A manual map run of a loaded saved game state that goes on comes back at the game minute of the
 save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a
-completion or in the character's death comes back on its screen after its end, with „Restart”,
-„Zakończ” and the copy open to editing as D-62, D-132 and D-173 give. No time that passed between the
-save and the load advances it, the computing of time away included.
+completion or in the character's death comes back with its screen after its end, with „Restart”,
+„Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and the screen the page opens
+on is the one D-96 gives. No time that passed between the save and the load advances it, the
+computing of time away included.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -3873,10 +3873,11 @@ save and the load advances it, the computing of time away included.
 - **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
   - complies: a map run of Las saved at game minute 212 at 8× loading an hour later at game minute
     212, paused, at 8×; a map run saved on the screen after a death loading on that screen with
-    „Restart” and „Zakończ”
+    „Restart” and „Zakończ”; a reload at `#/programy` with a map run saved after a death opening
+    Programy, the map run waiting with its screen after its end for „Restart” or „Zakończ”
   - violates: a loaded map run going on at once; a loaded map run moved on by the time away; loading
     that closes an ended map run as „Zakończ” does
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 8, 15 and 23, and § Settlements to record, row 8
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 8, 15 and 23, and § Settlements to record, row 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-212
 
 *Rationale:* a player who signs in on another device does not miss a discovery, an attack or the
 character's death in the first seconds, at the cost of one click after each load with a map run
