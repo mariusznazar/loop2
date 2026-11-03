@@ -2204,8 +2204,10 @@ const solvedAla = () =>
  */
 const ACTS = [
   {
+    // The editor of the saved programs stands on Programy, beside the list of programs (D-166).
     name: "an edit of a program",
     start: twoPrograms,
+    hash: "#/programy",
     act: (root) => fire(buttonNamed(root, "Dodaj grupę"), "click"),
     check: (game, start) => {
       assert.equal(
@@ -2216,9 +2218,11 @@ const ACTS = [
     },
   },
   {
+    // Programy has an editor too, so the button is the one of the screen of the map run.
     name: "an edit of the copy",
     start: pausedRun,
-    act: (root) => fire(buttonNamed(root, "Dodaj grupę"), "click"),
+    act: (root) =>
+      fire(buttonNamed(byClass(root, "run-screen")[0], "Dodaj grupę"), "click"),
     check: (game, start) => {
       assert.equal(
         game.run.copy.program.groups.length,
@@ -2230,6 +2234,7 @@ const ACTS = [
   {
     name: "an edit of a program's trip plan",
     start: knowingSticks,
+    hash: "#/programy",
     act: (root) =>
       fire(buttonLabelled(root, "Zabierz: dodaj przedmiot"), "click"),
     check: (game, start) => {
@@ -2249,24 +2254,31 @@ const ACTS = [
     expected: (start) => buyBranch(start, 1, "quickMeal").state,
   },
   {
+    // The list of programs, with its actions, is a screen of its own: Programy (D-166, D-167).
     name: "„Nowy program”",
     start: twoPrograms,
+    hash: "#/programy",
     act: (root) => fire(buttonNamed(root, "Nowy program"), "click"),
     expected: (start) => createProgram(start).state,
   },
   {
+    // The name field of the list is a field of React: each step runs in an act of its own, since the
+    // typed name reaches the field's „Zapisz” only when the act that typed it has ended.
     name: "„Zmień nazwę”",
     start: twoPrograms,
-    act: (root) => {
-      fire(buttonNamed(root, "Zmień nazwę"), "click");
-      inputLabelled(root, "Nazwa programu").value = "Zbieranie";
-      fire(buttonNamed(root, "Zapisz"), "click");
+    hash: "#/programy",
+    ownActs: true,
+    act: async (root) => {
+      await press(buttonNamed(root, "Zmień nazwę"));
+      await typeInto(inputLabelled(root, "Nazwa programu"), "Zbieranie");
+      await press(buttonNamed(root, "Zapisz"));
     },
     expected: (start) => renameProgram(start, 1, "Zbieranie").state,
   },
   {
     name: "„Usuń”",
     start: twoPrograms,
+    hash: "#/programy",
     act: (root) => fire(buttonNamed(root, "Usuń"), "click"),
     expected: (start) => deleteProgram(start, 1).state,
   },
@@ -2385,17 +2397,20 @@ test("the document kept for the same account holds the moment of its reading and
       const { createGameView } =
         await import("../../dist/browser/view/game-view.js");
       const held = heldClient();
-      const view = createGameView({
-        client: held.client,
-        state: withCharacter(),
-        revision: 3,
-        address: fakeAddress(),
-        entry: "address",
-        onScreen: () => {},
-        onConflict: () => {},
-        onOutdated: () => {},
-        onSignedOut: () => {},
-      });
+      // Inside act: the game holds a React root, the list of programs on Programy.
+      const view = await inAct(() =>
+        createGameView({
+          client: held.client,
+          state: withCharacter(),
+          revision: 3,
+          address: fakeAddress(),
+          entry: "address",
+          onScreen: () => {},
+          onConflict: () => {},
+          onOutdated: () => {},
+          onSignedOut: () => {},
+        }),
+      );
       current = CLOCK_MS + 5_000;
       const kept = view.keep();
       assert.equal(kept.revision, 3);
@@ -2408,7 +2423,7 @@ test("the document kept for the same account holds the moment of its reading and
       mock.timers.tick(30_000);
       await settle();
       assert.deepEqual(waitingCalls(held), [], "keep() changes no state");
-      view.dispose();
+      await inAct(() => view.dispose());
     } finally {
       date.mock.restore();
     }
@@ -2425,7 +2440,7 @@ test("each act of the player that changes the game state is saved at once, and o
     value: handClock(() => 0),
   });
   try {
-    for (const { name, start, hash, act, expected, check } of ACTS) {
+    for (const { name, start, hash, ownActs, act, expected, check } of ACTS) {
       await onPage(async ({ root }) => {
         const held = heldClient();
         const begun = start();
@@ -2434,7 +2449,7 @@ test("each act of the player that changes the game state is saved at once, and o
         await held.answer("loadSavedGame", saveOf(begun, 4));
         assert.deepEqual(waitingCalls(held), [], `${name}: precondition`);
         // Inside act: a send and „Zakończ” change the screen, and the bar redraws with React.
-        await inAct(() => act(root));
+        await (ownActs ? act(root) : inAct(() => act(root)));
         await settle();
         assert.deepEqual(waitingCalls(held), ["saveGame"], name);
         const [sent] = argsOf(held, "saveGame");
@@ -2560,7 +2575,7 @@ test("a character in a loop shows its line and „Zatrzymaj”; its „Wyślij�
       1,
     );
     assert.equal(listLabelled(ala, "Program: Ala").disabled, false);
-    view.dispose();
+    await inAct(() => view.dispose());
     // „Kup” is not on Siedziba since Slice 9; the character in the loop buys on its screen Postać.
     const character = await viewOf(
       alaLoopingOlaFree(),
@@ -2595,7 +2610,7 @@ test("after the end of a map run every row's sending is inactive under the sente
         `${name}: the sentence stands under the lines of sending`,
       );
     }
-    siedziba.view.dispose();
+    await inAct(() => siedziba.view.dispose());
     // „Zakończ” stands on the run's screen; after it the sentence of every row goes.
     const run = await viewOf(endedWithOla, fakeAddress("#/postac/1/przejscie"));
     await inAct(() => fire(buttonNamed(root, "Zakończ"), "click"));
@@ -2616,7 +2631,7 @@ test("the name in a character's row is a link to its screen Postać, which then 
     assert.equal(name.localName, "a");
     assert.equal(name.getAttribute("href"), "#/postac/1");
     const href = name.getAttribute("href");
-    view.dispose();
+    await inAct(() => view.dispose());
     // The page opens the screen the link names, as a load at that address does.
     const opened = await viewOf(withCharacter(), fakeAddress(href));
     assert.equal(shownScreen(root), "character");
@@ -2646,7 +2661,7 @@ test("„Puść w pętlę” puts the character into a loop at once and the row 
       true,
     );
     assert.deepEqual(waitingCalls(held), ["saveGame"]);
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -2678,7 +2693,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
     // The next start clears the line.
     fire(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"), "click");
     assert.ok(!shown(stopped));
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 
   await onPage(async ({ root }) => {
@@ -2689,7 +2704,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
       byClass(ala, "team-member-stopped")[0].textContent,
       "Pętla zatrzymana",
     );
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -2708,7 +2723,7 @@ test("a game built from a state with a stopped loop shows the line of the stop i
       "Pętla zatrzymana · wprawa: Jedzenie +7",
     );
     assert.ok(!shown(byClass(rowOf(root, "Ola"), "team-member-stopped")[0]));
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -2752,7 +2767,7 @@ test("a change of the chest redraws the chest alone: the rows, their lists and t
     assert.equal(listLabelled(ala, "Program: Ala"), list);
     await settle();
     assert.equal(pageDocument().activeElement, stop, "the focus stays");
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -2787,12 +2802,12 @@ test("the mark of a rehearsal the loop cannot repeat stands under „Wyślij” 
         childrenOf(row).indexOf(buttonLabelled(row, "Wyślij: Ala, mapa Las")),
       "under „Wyślij”",
     );
-    view.dispose();
+    await inAct(() => view.dispose());
   });
   await onPage(async ({ root }) => {
     const { view } = await viewOf(holding(3));
     assert.ok(!shown(byClass(rowOf(root, "Ala"), "rehearsal-mark")[0]));
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -3360,7 +3375,7 @@ test("a game built from a state with a report shows the section above „Drużyn
     );
     assert.equal(sections[0], section, "above the team's section");
     assert.equal(sections[1].children[0].textContent, "Drużyna");
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -3392,12 +3407,12 @@ test("only stops in the open game give „Pętle, które stanęły”, and a ful
     const [full] = byClass(section, "away-report-full");
     assert.ok(shown(full));
     assert.equal(full.textContent, "Skrzynka jest pełna.");
-    view.dispose();
+    await inAct(() => view.dispose());
   });
   await onPage(async ({ root }) => {
     const { view } = await viewOf(reported());
     assert.ok(!shown(byClass(reportSection(root), "away-report-full")[0]));
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -3405,7 +3420,7 @@ test("a state with an empty report shows no section", async () => {
   await onPage(async ({ root }) => {
     const { view } = await viewOf(withCharacter());
     assert.ok(!shown(reportSection(root)));
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -3430,7 +3445,7 @@ test("„Zamknij” closes the whole section at once, saves, and focus stays on 
     );
     assert.ok(shown(focused), "focus is on something on the screen");
     assert.ok(byClass(root, "headquarters")[0].contains(focused));
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -3478,7 +3493,7 @@ test("a manual map run hides the report with Siedziba, „Zakończ” opens Post
     await follow(address, "#/");
     assert.equal(shownScreen(root), "headquarters");
     assert.ok(shown(reportSection(root)));
-    view.dispose();
+    await inAct(() => view.dispose());
   });
 });
 
@@ -3497,7 +3512,7 @@ function shownScreen(root) {
   if (shows("character-screen")) return "character";
   if (shows("run-panel")) return "run";
   if (shows("headquarters")) return "headquarters";
-  if (shows("program-panel")) return "programs";
+  if (shows("programs-screen")) return "programs";
   return null;
 }
 
@@ -3929,8 +3944,8 @@ test("a game built again after a conflict stays on the screen the address names,
     const held = heldClient();
     const address = await reloadedAt(held, "#/programy", passing());
     assert.equal(shownScreen(root), "programs", "precondition");
-    fire(buttonNamed(root, "Dodaj grupę"), "click");
-    await settle();
+    // Inside act: the edit changes a program, and the list of Programy redraws with React.
+    await press(buttonNamed(root, "Dodaj grupę"));
     await held.answer("saveGame", { kind: "conflict" });
     await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
     assert.equal(shownScreen(root), "programs");
@@ -3959,6 +3974,187 @@ test("a game built again after a conflict stays on the screen the address names,
   });
 });
 
+// --- Programy: the list of programs and the panel beside it ----------------------------------
+// Task ekrany-i-menu, To do 3 and 5, questions 5, 8 and 15; D-166, D-281. The list is a link to each
+// program's address, so a pick is the address changing, which these cases make by `follow`.
+
+/** The screen Programy, shown or not. */
+const programsScreenOf = (root) => byClass(root, "programs-screen")[0];
+
+/** The programs on the list of Programy as `[name, href, aria-current]`, in the order they stand. */
+const programItems = (root) =>
+  byClass(programsScreenOf(root), "program-list-item").map((item) => [
+    item.textContent,
+    item.getAttribute("href"),
+    item.getAttribute("aria-current"),
+  ]);
+
+/** The sentences about a map run that stand above the editor in `screen` and are shown. */
+const runNotes = (screen) =>
+  byClass(screen, "program-run-note")
+    .filter(shown)
+    .map((note) => note.textContent);
+
+const NOTE = "Zmiany tutaj nie dotykają przejścia na mapie Las.";
+
+/** The number of groups of the program numbered `id` in the saved game state `sent` holds. */
+const groupsOf = (sent, id) =>
+  sent.game.programs.find((saved) => saved.id === id).program.groups.length;
+
+// To do 3 and 5, D-166. Catches the program panel still standing beside Siedziba, Programy holding
+// the select list „Program:” or the copy beside its own list, the sentence missing above the editor
+// of Programy beside a waiting map run, and the sentence standing on the screen of the map run.
+test("Siedziba holds no program panel; Programy holds the list and a panel with the sentence; Przejście holds the select list with the copy first and no sentence", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await reloadedAt(held, "#/programy", pausedRun());
+    assert.equal(shownScreen(root), "programs");
+    assert.equal(
+      byClass(byClass(root, "headquarters-screen")[0], "program-panel").length,
+      0,
+      "Siedziba holds no panel",
+    );
+    const programs = programsScreenOf(root);
+    assert.deepEqual(programItems(root), [
+      ["Program", "#/programy/1", "page"],
+      ["Program 2", "#/programy/2", null],
+    ]);
+    assert.equal(
+      listLabelled(programs, "Program:"),
+      undefined,
+      "no select list",
+    );
+    assert.equal(byClass(programs, "program-switch").length, 0);
+    assert.equal(byClass(programs, "copy-section").length, 0);
+    assert.deepEqual(runNotes(programs), [NOTE]);
+
+    const run = byClass(root, "run-screen")[0];
+    const list = listLabelled(run, "Program:");
+    assert.deepEqual(
+      [...list.options].map((option) => option.textContent),
+      ["Kopia w przejściu", "Program", "Program 2"],
+    );
+    assert.equal(list.value, "copy");
+    assert.deepEqual(runNotes(run), []);
+  });
+});
+
+// To do 5, question 15, D-166; the invariant saved-program-edit. Catches a pick on the list that
+// changes the program edited only on the list and not under the panel, the address not picking on
+// the list, and an edit on Programy reaching the copy.
+test("the address picks the program on the list and in the panel, an edit on Programy lands in it and never in the copy, and `#/programy` shows the first", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/programy", pausedRun());
+    const programs = programsScreenOf(root);
+
+    await follow(address, "#/programy/2");
+    assert.deepEqual(
+      programItems(root).map(([name, , current]) => [name, current]),
+      [
+        ["Program", null],
+        ["Program 2", "page"],
+      ],
+    );
+    await press(buttonNamed(programs, "Dodaj grupę"));
+    await settle();
+    const [edited] = held.calls.filter((call) => call.name === "saveGame");
+    assert.equal(groupsOf(edited.args[0], 2), 2, "program 2 got the group");
+    assert.equal(groupsOf(edited.args[0], 1), 1);
+    assert.equal(
+      edited.args[0].game.run.copy.program.groups.length,
+      1,
+      "the copy is not edited",
+    );
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+
+    await follow(address, "#/programy");
+    assert.deepEqual(
+      programItems(root).map(([name, , current]) => [name, current]),
+      [
+        ["Program", "page"],
+        ["Program 2", null],
+      ],
+    );
+    await press(buttonNamed(programs, "Dodaj grupę"));
+    await settle();
+    const [again] = held.calls.filter((call) => call.name === "saveGame");
+    assert.equal(groupsOf(again.args[0], 1), 2, "`#/programy` is program 1");
+    assert.deepEqual(address.entries, [
+      "#/programy",
+      "#/programy/2",
+      "#/programy",
+    ]);
+  });
+});
+
+// To do 5, D-166. Catches the panel of Programy and the panel of Przejście sharing the program
+// shown: the one panel that moved between the screens would carry what a pick on one into the other.
+test("the program each panel shows stays its own: a pick on the select list of Przejście does not move Programy", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/programy/2", pausedRun());
+    await follow(address, RUN_ADDRESS);
+    const run = byClass(root, "run-screen")[0];
+    await inAct(() => pickOn(listLabelled(run, "Program:"), "1"));
+    await press(buttonNamed(run, "Dodaj grupę"));
+    await settle();
+    const [onRun] = held.calls.filter((call) => call.name === "saveGame");
+    assert.equal(groupsOf(onRun.args[0], 1), 2, "Przejście edits program 1");
+    assert.equal(groupsOf(onRun.args[0], 2), 1);
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+
+    await follow(address, "#/programy/2");
+    await press(buttonNamed(programsScreenOf(root), "Dodaj grupę"));
+    await settle();
+    const [onPrograms] = held.calls.filter((call) => call.name === "saveGame");
+    assert.equal(
+      groupsOf(onPrograms.args[0], 2),
+      2,
+      "Programy edits program 2",
+    );
+    assert.equal(groupsOf(onPrograms.args[0], 1), 2);
+    assert.equal(
+      listLabelled(run, "Program:").value,
+      "1",
+      "Przejście still shows the program it showed",
+    );
+  });
+});
+
+// To do 5, question 8. Catches „Nowy program” leaving the new program unshown, and without an entry
+// of the history.
+test("„Nowy program” of the list shows the new program with a new entry of the history", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/programy", twoPrograms());
+    await press(buttonNamed(programsScreenOf(root), "Nowy program"));
+    assert.deepEqual(address.entries, ["#/programy", "#/programy/3"]);
+    assert.deepEqual(
+      programItems(root).map(([name, , current]) => [name, current]),
+      [
+        ["Program", null],
+        ["Program 2", null],
+        ["Program 3", "page"],
+      ],
+    );
+  });
+});
+
+// To do 5, question 8, D-281. Catches the deletion of the program shown leaving the address at a
+// program that is gone, or adding an entry the back button would land on that names a gone program.
+test("deleting the program shown opens the nearest screen, Programy with the first program, in place of its entry", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/programy/2", twoPrograms());
+    const list = byClass(programsScreenOf(root), "program-list-view")[0];
+    await press(buttonNamed(list, "Usuń"));
+    assert.deepEqual(address.entries, ["#/programy"]);
+    assert.equal(shownScreen(root), "programs");
+    assert.deepEqual(programItems(root), [["Program", "#/programy/1", "page"]]);
+  });
+});
+
 // To do 11, question 12, D-286. Catches the sentence standing above Programy and Postać until a
 // reload, and one that comes back on the return to Siedziba.
 test("the page's sentence above the first screen leaves at the first change of screen and does not come back", async () => {
@@ -3977,8 +4173,10 @@ test("the page's sentence above the first screen leaves at the first change of s
       [OTHER_VERSION, "warning"],
     ]);
     await held.answer("saveGame", { kind: "saved", revision: 5 });
-    // An act that changes no screen leaves the sentences standing.
-    await press(buttonNamed(root, "Nowy program"));
+    // An act that changes no screen leaves the sentences standing; „Nowy program” now opens the new
+    // program on Programy, so the act is a new character.
+    await typeInto(inputLabelled(root, "Imię nowej postaci"), "Ola");
+    await press(buttonNamed(root, "Załóż"));
     await held.answer("saveGame", { kind: "saved", revision: 6 });
     assert.equal(pageSentences(root).length, 2);
 

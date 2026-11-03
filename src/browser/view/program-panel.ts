@@ -1,3 +1,4 @@
+import { MAPS } from "../sim/data/maps.js";
 import type { GameEvent } from "../sim/game.js";
 import {
   copyHasUnsavedChanges,
@@ -21,7 +22,7 @@ import {
   type SelectOption,
 } from "./controls/select-list.js";
 import { createTextField } from "./controls/text-field.js";
-import { createProgramEditor } from "./program-editor.js";
+import { createProgramEditor, type ProgramEditor } from "./program-editor.js";
 
 /** What the panel shows: the copy of the map run, or a saved program by its number (D-165). */
 export type ShownProgram =
@@ -49,14 +50,29 @@ export type ProgramPanelControls = {
   switchProgram(programId: ProgramId): void;
 };
 
+/**
+ * Which screen the panel serves (D-166). `run` is the screen of a map run: the select list „Program:”
+ * with „Kopia w przejściu” first, the copy with its buttons, the list's actions and „Przełącz postać
+ * na ten program”. `programs` is the screen Programy: the editor of the one saved program the page
+ * names, never the copy, under the sentence about a map run the game state holds; the list of
+ * programs and its actions stand beside the panel, on the screen.
+ */
+export type ProgramPanelMode = "run" | "programs";
+
 export type ProgramPanel = {
-  /** The left panel, for the page to place. */
+  /** The panel, for the page to place. */
   element: HTMLElement;
   /**
    * Shows the given game state. `events` are those of the simulation call that returned it: a map
-   * run started, by a send or „Restart”, shows the copy.
+   * run started, by a send or „Restart”, shows the copy, on the screen of a map run.
    */
   update(state: GameState, events: readonly GameEvent[]): void;
+  /**
+   * Shows the saved program numbered `programId`, as a pick on the list „Program:” does; one that
+   * is not on the list gives way to the first. Text typed into the editor and not yet committed goes
+   * to the program it was typed into first. Showing what is shown changes nothing.
+   */
+  showProgram(programId: ProgramId): void;
 };
 
 /** The value of the copy's position on the list; a saved program's value is its number. */
@@ -168,13 +184,67 @@ function shownValue(shown: ShownProgram): string {
   return shown.kind === "copy" ? COPY_VALUE : String(shown.programId);
 }
 
+type ShownContent = ReturnType<typeof shownContent>;
+
+/**
+ * Gives the editor what the panel shows. The editor's content is written only when the program
+ * shown, its content, the map or the Understanding changes; otherwise only its counts, so a field
+ * being typed into keeps focus.
+ */
+function createEditorDrawing(
+  editor: ProgramEditor,
+): (state: GameState, value: string, content: ShownContent) => void {
+  /** What the editor was last given, so time passing refreshes its counts alone. */
+  let drawn: {
+    value: string;
+    program: Program;
+    mapId: MapId | undefined;
+    understanding: GameState["understanding"];
+  } | null = null;
+  return (state, value, content) => {
+    const next = {
+      value,
+      program: content.program,
+      mapId: state.run?.mapId,
+      understanding: state.understanding,
+    };
+    if (
+      !drawn ||
+      next.value !== drawn.value ||
+      next.program !== drawn.program ||
+      next.mapId !== drawn.mapId ||
+      next.understanding !== drawn.understanding
+    ) {
+      editor.update(state, content.program, content.counts, value);
+      drawn = next;
+    } else {
+      editor.updateCounts(content.counts);
+    }
+  };
+}
+
+/** The saved program of the list the panel of Programy shows for `shown`: itself, or the first one. */
+function savedShown(
+  state: GameState,
+  shown: ShownProgram,
+): { kind: "saved"; programId: ProgramId } {
+  return shown.kind === "saved" && programById(state.programs, shown.programId)
+    ? shown
+    : { kind: "saved", programId: state.programs[0].id };
+}
+
+/** The sentence above the editor of Programy while the game state holds a map run (D-166). */
+function runNoteText(run: NonNullable<GameState["run"]>): string {
+  return `Zmiany tutaj nie dotykają przejścia na mapie ${MAPS[run.mapId].name}.`;
+}
+
 /** What the name field is open for: a rename of a saved program, or the save of the copy as a new one. */
 type NamePurpose =
   { kind: "rename"; programId: ProgramId } | { kind: "saveNew" };
 
 /**
- * Builds the program panel: the select list „Program:” with the player's programs and, during a
- * map run, „Kopia w przejściu” first; „Nowy program”, „Zmień nazwę” and the destructive „Usuń”,
+ * Builds the program panel of the screen of a map run: the select list „Program:” with the
+ * player's programs and, during a map run, „Kopia w przejściu” first; „Nowy program”, „Zmień nazwę” and the destructive „Usuń”,
  * the last two hidden while the copy is shown and „Usuń” disabled while the list holds one program;
  * while the copy is shown its heading, its line of unsaved changes, „Zapisz w programie”, „Zapisz
  * jako nowy program”, the destructive „Porzuć zmiany” and the line of a changed program; while a
@@ -185,9 +255,7 @@ type NamePurpose =
  * state. The controls are made once and updated in place, so a field being typed into keeps its
  * value and focus while time passes (D-36).
  */
-export function createProgramPanel(
-  controls: ProgramPanelControls,
-): ProgramPanel {
+function createRunPanel(controls: ProgramPanelControls): ProgramPanel {
   const element = document.createElement("section");
   element.className = "program-panel";
 
@@ -261,13 +329,7 @@ export function createProgramPanel(
   let shown: ShownProgram = { kind: "saved", programId: 1 };
   let namePurpose: NamePurpose | null = null;
   let listKey = "";
-  /** What the editor was last given, so time passing refreshes its counts alone. */
-  let drawn: {
-    value: string;
-    program: Program;
-    mapId: MapId | undefined;
-    understanding: GameState["understanding"];
-  } | null = null;
+  const drawEditor = createEditorDrawing(editor);
 
   /** The reason the name rule refuses the field's text for the purpose open, or null. */
   function nameRefusal(): ProgramNameRefusal | null {
@@ -307,9 +369,14 @@ export function createProgramPanel(
 
   function show(next: ShownProgram): void {
     // Text typed into an editor field and not yet committed goes to the program it was typed into:
-    // the field commits when it loses focus, before the editor shows another program.
+    // the field commits when it loses focus, before the editor shows another program. Showing what
+    // is shown leaves the field alone.
     const active = document.activeElement;
-    if (active && editor.element.contains(active))
+    if (
+      shownValue(next) !== shownValue(shown) &&
+      active &&
+      editor.element.contains(active)
+    )
       (active as HTMLElement).blur();
     setShown(next);
     if (state) render(state);
@@ -443,27 +510,7 @@ export function createProgramPanel(
     if (deleteButton.disabled !== lastProgram)
       deleteButton.disabled = lastProgram;
 
-    // The editor's content is written only when the program shown, its content, the map or the
-    // Understanding changes; otherwise only its counts, so a field being typed into keeps focus.
-    const content = shownContent(current, shown);
-    const next = {
-      value,
-      program: content.program,
-      mapId: current.run?.mapId,
-      understanding: current.understanding,
-    };
-    if (
-      !drawn ||
-      next.value !== drawn.value ||
-      next.program !== drawn.program ||
-      next.mapId !== drawn.mapId ||
-      next.understanding !== drawn.understanding
-    ) {
-      editor.update(current, content.program, content.counts, value);
-      drawn = next;
-    } else {
-      editor.updateCounts(content.counts);
-    }
+    drawEditor(current, value, shownContent(current, shown));
   }
 
   return {
@@ -474,5 +521,80 @@ export function createProgramPanel(
       setShown(nextShown(shown, previous, next, events));
       render(next);
     },
+    showProgram(programId: ProgramId): void {
+      show({ kind: "saved", programId });
+    },
   };
+}
+
+/**
+ * Builds the program panel of the screen Programy (D-166): the program editor with the saved
+ * program the page names through `showProgram` (the first of the list until it does, and where the
+ * one named is gone), never the copy, under the sentence „Zmiany tutaj nie dotykają przejścia na
+ * mapie {mapa}.” while the game state holds a map run, going on or ended (questions 15 and 17). The
+ * list of programs, its actions and the name field stand on the screen beside the panel, so the
+ * panel holds none of them, and „Przełącz postać na ten program” stands on the screen of a map run
+ * alone. The editor offers what the game state's map run's character gives, an ended map run's
+ * included (D-196). Which program it shows is view state; `update` never changes it but for a
+ * program gone from the list.
+ */
+function createProgramsPanel(controls: ProgramPanelControls): ProgramPanel {
+  const element = document.createElement("section");
+  element.className = "program-panel";
+  const runNote = document.createElement("p");
+  runNote.className = "program-run-note";
+  runNote.hidden = true;
+  const editor = createProgramEditor((program) => {
+    controls.editProgram(shown.programId, program);
+  });
+  element.append(runNote, editor.element);
+
+  let state: GameState | null = null;
+  let shown: { kind: "saved"; programId: ProgramId } = {
+    kind: "saved",
+    programId: 1,
+  };
+  const drawEditor = createEditorDrawing(editor);
+
+  function render(current: GameState): void {
+    shown = savedShown(current, shown);
+    const run = current.run;
+    runNote.hidden = run === null;
+    if (run) {
+      const text = runNoteText(run);
+      if (runNote.textContent !== text) runNote.textContent = text;
+    }
+    drawEditor(current, shownValue(shown), shownContent(current, shown));
+  }
+
+  return {
+    element,
+    update(next: GameState): void {
+      state = next;
+      render(next);
+    },
+    showProgram(programId: ProgramId): void {
+      const named = { kind: "saved" as const, programId };
+      if (state && savedShown(state, named).programId === shown.programId)
+        return;
+      if (!state && programId === shown.programId) return;
+      // Text typed into an editor field and not yet committed goes to the program it was typed into:
+      // the field commits when it loses focus, before the editor shows another program.
+      const active = document.activeElement;
+      if (active && editor.element.contains(active))
+        (active as HTMLElement).blur();
+      shown = named;
+      if (state) render(state);
+    },
+  };
+}
+
+/** Builds the program panel for the screen `mode` names; the screen of a map run unless told. */
+export function createProgramPanel(
+  controls: ProgramPanelControls,
+  mode: ProgramPanelMode = "run",
+): ProgramPanel {
+  return mode === "programs"
+    ? createProgramsPanel(controls)
+    : createRunPanel(controls);
 }

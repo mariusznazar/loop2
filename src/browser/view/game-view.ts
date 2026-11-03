@@ -16,6 +16,7 @@ import {
   discardCopyChanges,
   editProgram,
   pickProgram,
+  programById,
   renameProgram,
   saveCopyAsNewProgram,
   saveCopyIntoProgram,
@@ -23,7 +24,7 @@ import {
 } from "../sim/programs.js";
 import { closeAwayReport, stopLoop } from "../sim/loop.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
-import type { CharacterId, GameState } from "../sim/types.js";
+import type { CharacterId, GameState, ProgramId } from "../sim/types.js";
 import { buyBranch } from "../sim/skills.js";
 import {
   createCharacterScreen,
@@ -33,7 +34,11 @@ import { startClock, type GameStore } from "./clock.js";
 import type { PageAddress } from "./email-confirmation.js";
 import { createGameSaver, type LogoutSave } from "./game-saver.js";
 import { createHeadquarters } from "./headquarters.js";
-import { createProgramPanel } from "./program-panel.js";
+import { createProgramList } from "./program-list.js";
+import {
+  createProgramPanel,
+  type ProgramPanelControls,
+} from "./program-panel.js";
 import { createRunScreen } from "./run-screen.js";
 import {
   readScreenAddress,
@@ -132,10 +137,12 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * lines need and the state never holds.
  *
  * The view shows one screen at a time, the one the address names (D-280, D-281): Siedziba, the
- * program panel beside the headquarters; Postać, built on entering it and disposed on leaving;
- * Programy, the program panel alone; and Przejście, the program panel with the copy beside the
- * column of the map run. The DOM screens are built once and hidden while another shows, and the one
- * program panel moves into the screen that holds it. The first screen is the entry's (D-96, D-212,
+ * headquarters alone; Postać, built on entering it and disposed on leaving; Programy, the list of
+ * programs beside a program panel that shows the saved program the address names, never the copy
+ * (D-166); and Przejście, a program panel that shows the copy beside the column of the map run. The
+ * DOM screens are built once and hidden while another shows. The two program panels are two, so the
+ * program each shows stays its own: a panel that moved between the screens would carry the program
+ * shown on one into the other. The first screen is the entry's (D-96, D-212,
  * D-225): after the sign-in form and at a reload with no fragment Siedziba or the map run's screen
  * where the state holds one, at a reload at an address the screen it names, and after an emailed
  * link Siedziba; the view writes that screen's fragment into the address with no new entry of the
@@ -168,10 +175,10 @@ export function createGameView(options: GameViewOptions): GameView {
     if (state !== before) saver.moment();
   }
 
-  // The program panel, which Siedziba, Programy and Przejście hold in turn. Each of its acts goes
-  // to the simulation, which checks it; real time elapsed before the act is passed first, so it
-  // runs under the program it ran under.
-  const programPanel = createProgramPanel({
+  // What the program panels ask for, Programy's and Przejście's alike. Each act goes to the
+  // simulation, which checks it; real time elapsed before the act is passed first, so it runs under
+  // the program it ran under.
+  const panelControls: ProgramPanelControls = {
     editCopy(program) {
       clock.flush();
       if (state.run) act(setProgram(state, program));
@@ -208,8 +215,13 @@ export function createGameView(options: GameViewOptions): GameView {
       clock.flush();
       act(switchProgram(state, programId));
     },
-  });
-  programPanel.element.classList.add("screen-area");
+  };
+  // The panel of Przejście shows the copy and holds the select list of programs; the panel of
+  // Programy shows a saved program, which the list beside it and the address name.
+  const runPanel = createProgramPanel(panelControls, "run");
+  runPanel.element.classList.add("screen-area");
+  const programsPanel = createProgramPanel(panelControls, "programs");
+  programsPanel.element.classList.add("screen-area");
 
   const store: GameStore = {
     get: () => state,
@@ -224,8 +236,9 @@ export function createGameView(options: GameViewOptions): GameView {
         (event) => event.kind === "loopRunEnded",
       );
       state = result.state;
+      runPanel.update(state, result.events);
+      programsPanel.update(state, result.events);
       renderScreens();
-      programPanel.update(state, result.events);
       // A game minute that ends the map run in a death or a completion, and a result in which a
       // loop's map run ended, however many, is one moment of saving (D-207).
       if (ended || loopEnded) saver.moment();
@@ -294,17 +307,17 @@ export function createGameView(options: GameViewOptions): GameView {
     },
   });
   headquarters.element.classList.add("screen-area");
-  // Siedziba: the program panel beside the headquarters, until the programs get their screen.
+  // Siedziba: the headquarters alone.
   const headquartersScreen = document.createElement("section");
-  headquartersScreen.className = "screen columns headquarters-screen";
+  headquartersScreen.className = "screen headquarters-screen";
   headquartersScreen.tabIndex = -1;
   headquartersScreen.append(headquarters.element);
-  // Programy: the program panel alone, until the list of programs and the editor take the screen.
+  // Programy: the list of programs and the program panel, which the list and the address pick for.
   const programsScreen = document.createElement("section");
   programsScreen.className = "screen programs-screen";
   programsScreen.tabIndex = -1;
 
-  const runScreen = createRunScreen(programPanel.element, {
+  const runScreen = createRunScreen(runPanel.element, {
     togglePause() {
       clock.flush();
       act(setPaused(state, !state.paused));
@@ -362,6 +375,61 @@ export function createGameView(options: GameViewOptions): GameView {
 
   /** The screen the player is on. */
   let current: Screen = firstScreen();
+
+  /**
+   * The saved program Programy shows for `screen`: the one its address names, the first of the list
+   * for `#/programy` and where the one named is gone (D-281).
+   */
+  function programShownOn(screen: Screen): ProgramId {
+    const named =
+      screen.kind === "program" ? screen.programId : state.programs[0].id;
+    return programById(state.programs, named) ? named : state.programs[0].id;
+  }
+
+  // The list of programs on Programy. A pick is a link to the program's address, which the address
+  // listener below turns into the screen; the list's acts go to the simulation (D-166, D-167, D-169).
+  const programList = createProgramList({
+    onCreate() {
+      clock.flush();
+      const programId = state.nextProgramId;
+      act(createProgram(state));
+      if (programById(state.programs, programId))
+        show({ kind: "program", programId }, "go");
+    },
+    onRename(programId, name) {
+      clock.flush();
+      act(renameProgram(state, programId, name));
+    },
+    onDelete(programId) {
+      clock.flush();
+      act(deleteProgram(state, programId));
+      // The program shown may be the one gone: the nearest screen opens in its place (D-281).
+      const nearest = resolveScreen(current, state);
+      if (!sameScreen(nearest, current)) show(nearest, "replace");
+      focusShownScreen();
+    },
+    props: { programs: state.programs, chosenId: null },
+  });
+  programList.element.classList.add("screen-area");
+  programsScreen.append(programList.element, programsPanel.element);
+  /** What the list was last drawn from, so a game minute that changes no program redraws nothing. */
+  let drawnPrograms: {
+    programs: GameState["programs"];
+    chosenId: ProgramId;
+  } | null = null;
+
+  /** Gives the program panel and the list of Programy the program they show. */
+  function drawPrograms(): void {
+    const chosenId = programShownOn(current);
+    programsPanel.showProgram(chosenId);
+    if (
+      drawnPrograms?.programs === state.programs &&
+      drawnPrograms.chosenId === chosenId
+    )
+      return;
+    drawnPrograms = { programs: state.programs, chosenId };
+    programList.update({ programs: state.programs, chosenId });
+  }
   /** The place the page was last told. */
   let told: ScreenPlace | null = null;
   let disposed = false;
@@ -406,11 +474,14 @@ export function createGameView(options: GameViewOptions): GameView {
 
   /**
    * Shows `next`: the address gets its fragment with a new entry (`go`), in place of the current
-   * one (`replace`) or not at all, where the address already names it. The one program panel
-   * moves into the screen that holds it, Postać is built on entering and disposed on leaving, and
-   * leaving Przejście pauses its map run.
+   * one (`replace`) or not at all, where the address already names it. The screen that holds
+   * `next` shows and the others hide, Postać is built on entering and disposed on leaving, Programy
+   * shows the program `next` names, and leaving Przejście pauses its map run. Text typed on
+   * Programy and not yet committed goes to the program it was typed into before the screen or the
+   * program changes.
    */
   function show(next: Screen, how: "go" | "replace" | "none"): void {
+    if (!sameScreen(current, next)) commitProgramsScreen();
     if (current.kind === "run" && next.kind !== "run") pauseOnLeaving();
     const hash = screenAddress(next);
     if (how === "go") address.go(hash);
@@ -418,16 +489,26 @@ export function createGameView(options: GameViewOptions): GameView {
     current = next;
     if (next.kind === "character") openCharacterScreen(next.characterId);
     else closeCharacterScreen();
-    const holder = panelHolder(next);
-    holder?.prepend(programPanel.element);
+    const holder = screenHolder(next);
     headquartersScreen.hidden = holder !== headquartersScreen;
     programsScreen.hidden = holder !== programsScreen;
     runScreen.element.hidden = holder !== runScreen.element;
+    drawPrograms();
     tellPlace();
   }
 
-  /** The DOM screen that holds the program panel while `screen` shows; none for Postać. */
-  function panelHolder(screen: Screen): HTMLElement | null {
+  /**
+   * An editor field of Programy that has focus commits its text when it loses focus, to the program
+   * it was typed into; the commit is made before the screen or the program changes.
+   */
+  function commitProgramsScreen(): void {
+    const active = document.activeElement;
+    if (active && programsScreen.contains(active))
+      (active as HTMLElement).blur();
+  }
+
+  /** The DOM screen that shows for `screen`; none for Postać, which is built on entering. */
+  function screenHolder(screen: Screen): HTMLElement | null {
     switch (screen.kind) {
       case "headquarters":
         return headquartersScreen;
@@ -446,6 +527,7 @@ export function createGameView(options: GameViewOptions): GameView {
     headquarters.update(state, clock.moment());
     if (state.run !== null) runScreen.update(state, state.run);
     characterScreen?.update(characterProps(characterScreen.characterId));
+    drawPrograms();
     tellPlace();
   }
 
@@ -455,7 +537,7 @@ export function createGameView(options: GameViewOptions): GameView {
       ? (characterScreen?.element ?? null)
       : current.kind === "run"
         ? runScreen.element
-        : panelHolder(current);
+        : screenHolder(current);
   }
 
   /**
@@ -483,8 +565,9 @@ export function createGameView(options: GameViewOptions): GameView {
     focusShownScreen();
   });
 
+  runPanel.update(state, []);
+  programsPanel.update(state, []);
   renderScreens();
-  programPanel.update(state, []);
   show(current, "replace");
   // The catch-up is the last step of building, so every place of loading goes the same way (D-212).
   clock.catchUp();
@@ -508,6 +591,7 @@ export function createGameView(options: GameViewOptions): GameView {
       clock.dispose();
       saver.dispose();
       closeCharacterScreen();
+      programList.dispose();
       element.remove();
       saver.element.remove();
     },

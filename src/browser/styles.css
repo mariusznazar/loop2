@@ -193,8 +193,9 @@ header .save-line {
 /*
  * A screen of the game (D-280, D-282): a grid whose columns are areas of their own, each a block on
  * `panel` with text in `text`, so a narrower layout places them one under the other. A screen with
- * the class `columns` has two of them, the program panel and a column beside it; Programy holds
- * the program panel alone. The screens that do not show are hidden with `[hidden]`.
+ * the class `columns` has two of them, the program panel and a column beside it; Programy has two
+ * too, the list of programs and the program panel, with the list the narrower; Siedziba holds the
+ * headquarters alone. The screens that do not show are hidden with `[hidden]`.
  */
 .screen {
   display: grid;
@@ -207,8 +208,13 @@ header .save-line {
   grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
 }
 
+.screen.programs-screen {
+  grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
+}
+
 @media (max-width: 720px) {
-  .screen.columns {
+  .screen.columns,
+  .screen.programs-screen {
     grid-template-columns: 1fr;
   }
 }
@@ -575,6 +581,15 @@ header .save-line {
 
 .copy-save .copy-line {
   margin: 0;
+}
+
+/*
+ * The sentence above the editor of Programy: a map run waits, and a change made here does not reach
+ * it. An explanation, so `text-secondary` (the roles' table); `warning` is for what will not run.
+ */
+.program-run-note {
+  margin: 0 0 var(--space-s);
+  color: var(--text-secondary);
 }
 
 /* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */

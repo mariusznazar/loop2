@@ -9,6 +9,7 @@ import {
   newGame,
   restart,
   send,
+  setPaused,
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import {
@@ -21,6 +22,8 @@ import {
   saveCopyIntoProgram,
   switchProgram,
 } from "../../dist/browser/sim/programs.js";
+import { SKILLS } from "../../dist/browser/sim/data/skills.js";
+import { buyBranch } from "../../dist/browser/sim/skills.js";
 import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
@@ -144,10 +147,11 @@ const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000000;
 
 /**
- * The panel wired as the game view wires it: each control a real simulation call whose result
- * replaces the state and updates the panel with its events. `acts` records the calls.
+ * The panel of `mode` (the screen of a map run or Programy) wired as the game view wires it: each
+ * control a real simulation call whose result replaces the state and updates the panel with its
+ * events. `acts` records the calls.
  */
-function wiredPanel(start = newGame()) {
+function wiredPanel(start = newGame(), mode = "run") {
   const acts = [];
   let state = start;
   let panel = null;
@@ -155,44 +159,47 @@ function wiredPanel(start = newGame()) {
     state = result.state;
     panel.update(state, result.events);
   };
-  panel = createProgramPanel({
-    editCopy(program) {
-      acts.push(["editCopy"]);
-      apply(setProgram(state, program));
+  panel = createProgramPanel(
+    {
+      editCopy(program) {
+        acts.push(["editCopy"]);
+        apply(setProgram(state, program));
+      },
+      editProgram(programId, program) {
+        acts.push(["editProgram", programId]);
+        apply(editProgram(state, programId, program));
+      },
+      createProgram() {
+        acts.push(["createProgram"]);
+        apply(createProgram(state));
+      },
+      renameProgram(programId, name) {
+        acts.push(["renameProgram", programId, name]);
+        apply(renameProgram(state, programId, name));
+      },
+      deleteProgram(programId) {
+        acts.push(["deleteProgram", programId]);
+        apply(deleteProgram(state, programId));
+      },
+      saveCopy() {
+        acts.push(["saveCopy"]);
+        apply(saveCopyIntoProgram(state));
+      },
+      saveCopyAsNew(name) {
+        acts.push(["saveCopyAsNew", name]);
+        apply(saveCopyAsNewProgram(state, name));
+      },
+      discardCopy() {
+        acts.push(["discardCopy"]);
+        apply(discardCopyChanges(state));
+      },
+      switchProgram(programId) {
+        acts.push(["switchProgram", programId]);
+        apply(switchProgram(state, programId));
+      },
     },
-    editProgram(programId, program) {
-      acts.push(["editProgram", programId]);
-      apply(editProgram(state, programId, program));
-    },
-    createProgram() {
-      acts.push(["createProgram"]);
-      apply(createProgram(state));
-    },
-    renameProgram(programId, name) {
-      acts.push(["renameProgram", programId, name]);
-      apply(renameProgram(state, programId, name));
-    },
-    deleteProgram(programId) {
-      acts.push(["deleteProgram", programId]);
-      apply(deleteProgram(state, programId));
-    },
-    saveCopy() {
-      acts.push(["saveCopy"]);
-      apply(saveCopyIntoProgram(state));
-    },
-    saveCopyAsNew(name) {
-      acts.push(["saveCopyAsNew", name]);
-      apply(saveCopyAsNewProgram(state, name));
-    },
-    discardCopy() {
-      acts.push(["discardCopy"]);
-      apply(discardCopyChanges(state));
-    },
-    switchProgram(programId) {
-      acts.push(["switchProgram", programId]);
-      apply(switchProgram(state, programId));
-    },
-  });
+    mode,
+  );
   panel.update(state, []);
   return {
     panel,
@@ -824,5 +831,228 @@ test("after „Zakończ” with unsaved changes the copy's section is gone", () 
     game.apply(end(game.state));
     assert.deepEqual(copyTexts(game.panel), []);
     assert.equal(visibleButton(game.panel, "Zapisz w programie"), undefined);
+  });
+});
+
+// --- the panel on Programy ---------------------------------------------------------------------
+// Task ekrany-i-menu, To do 3 and 5, questions 5, 15 and 17, settlement row 11; D-166, D-196. The
+// list of programs on the left is the list of the screen (tests/view/program-list.test.mjs); the
+// panel beside it has the mode of its own.
+
+const NOTE = "Zmiany tutaj nie dotykają przejścia na mapie Las.";
+
+const hasClass = (element, name) =>
+  element.className === name || element.classes?.has(name) === true;
+
+/** The sentences „Zmiany tutaj nie dotykają przejścia …” the player sees. */
+const runNotes = (panel) =>
+  seen(panel.element)
+    .filter((element) => hasClass(element, "program-run-note"))
+    .map((element) => element.textContent);
+
+/** The parts of the panel of a map run's screen that the list of Programy and the address replace. */
+const LIST_PARTS = [
+  "program-list",
+  "program-actions",
+  "program-name",
+  "program-switch",
+  "copy-section",
+];
+const listParts = (panel) =>
+  descendants(panel.element).filter((element) =>
+    LIST_PARTS.some((name) => hasClass(element, name)),
+  );
+
+/** The map run of the state, going on, paused, or ended in a death or a completion. */
+const WAITING = [
+  ["going on", (state) => state],
+  ["paused", (state) => setPaused(state, true).state],
+  [
+    "ended in a death",
+    (state) => ({
+      ...state,
+      run: { ...state.run, death: { minute: 3, cause: "cold" } },
+    }),
+  ],
+  [
+    "ended in a completion",
+    (state) => ({ ...state, run: { ...state.run, completion: { minute: 3 } } }),
+  ],
+];
+
+// Catches the panel of Programy showing the copy beside a map run (D-166), the list "Program:" and
+// the copy's buttons still standing, the sentence missing, and an edit reaching the copy.
+for (const [stage, shape] of WAITING) {
+  test(`Programy beside a map run ${stage} shows the saved program, with the sentence above the editor and no list, copy or switch`, () => {
+    withPanelDocument(() => {
+      const started = send(gameWithRule(), SENT, REAL_MS).state;
+      const game = wiredPanel(shape(started), "programs");
+      assert.deepEqual(runNotes(game.panel), [NOTE]);
+      const inOrder = descendants(game.panel.element);
+      assert.ok(
+        inOrder.findIndex((element) => hasClass(element, "program-run-note")) <
+          inOrder.findIndex((element) => hasClass(element, "program-editor")),
+        "the sentence stands above the editor",
+      );
+      assert.equal(programList(game.panel), undefined);
+      assert.deepEqual(listParts(game.panel), []);
+      assert.equal(buttonNamed(game.panel, "Nowy program"), undefined);
+      assert.equal(buttonNamed(game.panel, "Zmień nazwę"), undefined);
+      assert.equal(
+        buttonNamed(game.panel, "Przełącz postać na ten program"),
+        undefined,
+      );
+      assert.deepEqual(copyTexts(game.panel), []);
+      // The counts stand beside the copy alone; a saved program shows none during a map run.
+      assert.deepEqual(counts(game.panel), [null]);
+
+      const copy = game.state.run.copy.program;
+      click(buttonNamed(game.panel, "Dodaj grupę"));
+      assert.deepEqual(game.acts.at(-1), ["editProgram", 1]);
+      assert.equal(game.state.run.copy.program, copy, "the copy is not edited");
+      assert.equal(groupCount(game.state.programs[0].program), 2);
+    });
+  });
+}
+
+// Catches the sentence standing with no map run to name, and standing on after „Zakończ”.
+test("the sentence stands only while the game state holds a map run: not before a send, gone after „Zakończ”", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(gameWithRule(), "programs");
+    assert.deepEqual(runNotes(game.panel), []);
+    game.apply(send(game.state, SENT, REAL_MS));
+    assert.deepEqual(runNotes(game.panel), [NOTE]);
+    game.apply(end(game.state));
+    assert.deepEqual(runNotes(game.panel), []);
+  });
+});
+
+// Catches the panel of a map run's screen losing the copy's section, or taking the sentence of
+// Programy: the sentence belongs to the other screen, where the copy is not shown.
+test("the panel of a map run's screen holds the sentence of Programy nowhere", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(gameWithRule());
+    game.apply(send(game.state, SENT, REAL_MS));
+    assert.deepEqual(runNotes(game.panel), []);
+    pick(game.panel, "1");
+    assert.deepEqual(runNotes(game.panel), []);
+    assert.ok(
+      visibleButton(game.panel, "Przełącz postać na ten program") === undefined,
+    );
+    assert.equal(programList(game.panel).value, "1");
+  });
+});
+
+// Catches a program shown that is not the one asked for, a pick that changes the game state, an
+// edit landing in another program, and a program gone from the list left shown.
+test("showProgram shows the saved program asked for and takes its edits; one gone from the list gives way to the first", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(
+      createProgram(createProgram(gameWithRule()).state).state,
+      "programs",
+    );
+    const before = game.state;
+    game.panel.showProgram(3);
+    assert.equal(game.state, before, "showing changes no game state");
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    assert.deepEqual(game.acts.at(-1), ["editProgram", 3]);
+    assert.equal(groupCount(game.state.programs[2].program), 2);
+    assert.equal(groupCount(game.state.programs[0].program), 1);
+
+    game.apply(deleteProgram(game.state, 3));
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    assert.deepEqual(game.acts.at(-1), ["editProgram", 1]);
+
+    game.panel.showProgram(9);
+    click(buttonNamed(game.panel, "Dodaj grupę"));
+    assert.deepEqual(game.acts.at(-1), ["editProgram", 1]);
+  });
+});
+
+// Slice 6's observed problem again, in the mode of Programy: text typed into an editor field and not
+// yet committed must land in the program it was typed into when another is shown with focus left
+// where it was; and showing the same program again, or time passing, must not take the focus.
+test("uncommitted text lands in the program it was typed into when Programy shows another, and showing the same one keeps the field", () => {
+  withPanelDocument((document) => {
+    const game = wiredPanel(createProgram(gameWithRule()).state, "programs");
+    const groupName = descendants(game.panel.element).find(
+      (element) =>
+        element.tag === "input" &&
+        element.attributes["aria-label"] === "Nazwa grupy",
+    );
+    groupName.focus();
+    groupName.value = "Wpisane w pierwszym";
+    game.panel.showProgram(1);
+    game.apply(advanceMinutes(game.state, 3));
+    assert.equal(document.activeElement, groupName);
+    assert.equal(groupName.value, "Wpisane w pierwszym");
+
+    game.panel.showProgram(2);
+    assert.equal(document.activeElement, null);
+    assert.equal(
+      game.state.programs[0].program.groups[0].name,
+      "Wpisane w pierwszym",
+    );
+    assert.equal(game.state.programs[1].program.groups[0].name, "Program");
+  });
+});
+
+/** Ala, who bought „Obchód”, and Ola, who did not, with the forest known and program 1 holding a rule. */
+function patrolBought() {
+  const withOla = createCharacter(gameWithRule(), "Ola").state;
+  const practised = {
+    ...withOla,
+    team: {
+      ...withOla.team,
+      characters: withOla.team.characters.map((character) => ({
+        ...character,
+        skills: Object.fromEntries(
+          Object.keys(SKILLS).map((id) => [id, { practice: 1000, ranks: {} }]),
+        ),
+      })),
+    },
+  };
+  return buyBranch(practised, 1, "patrol").state;
+}
+
+/** The actions the first select of actions in the editor offers, as the player reads them. */
+const offeredActions = (panel) =>
+  positions(
+    descendants(panel.element).find(
+      (element) =>
+        element.tag === "select" &&
+        element.attributes["aria-label"] === "Akcja",
+    ),
+  );
+
+// Settlement row 11, questions 15 and 17; D-196. Catches the editor of Programy turning to the
+// archetype's offer when the map run is paused or has ended and waits for „Restart” or „Zakończ”,
+// the offer following the player's choice of a saved program instead of the map run's character,
+// and a branch of a teammate who is not in the map run opening an action.
+test("the offer of Programy follows the character of the map run held by the game state, an ended one included, and goes with „Zakończ”", () => {
+  withPanelDocument(() => {
+    const game = wiredPanel(patrolBought(), "programs");
+    assert.ok(!offeredActions(game.panel).includes("Obchód"), "outside a run");
+
+    game.apply(send(game.state, SENT, REAL_MS));
+    assert.ok(offeredActions(game.panel).includes("Obchód"), "Ala's run");
+    game.apply(setPaused(game.state, true));
+    assert.ok(offeredActions(game.panel).includes("Obchód"), "paused");
+    game.apply({
+      state: {
+        ...game.state,
+        run: { ...game.state.run, death: { minute: 3, cause: "cold" } },
+      },
+      events: [],
+    });
+    assert.ok(offeredActions(game.panel).includes("Obchód"), "after a death");
+    game.apply(end(game.state));
+    assert.ok(
+      !offeredActions(game.panel).includes("Obchód"),
+      "after „Zakończ”",
+    );
+
+    game.apply(send(game.state, { mapId: "forest", characterId: 2 }, REAL_MS));
+    assert.ok(!offeredActions(game.panel).includes("Obchód"), "Ola's run");
   });
 });
