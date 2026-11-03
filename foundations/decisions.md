@@ -5904,7 +5904,7 @@ apart from these, and after them the page opens Siedziba.
     player
   - violates: an address in the path, such as `/programy`; a screen „Nie ma takiego miejsca”; the
     screen of a map run reading the map run from the game state rather than from its parameter
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Questions to settle, question 8
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8
 
 *Rationale:* the server hands out files, so a screen reached by the fragment survives a refresh, and
 the fragments of emailed links keep prefixes of their own. A number in the address and a map run as
@@ -5929,9 +5929,48 @@ draws the team as a section with a heading.
     under the heading „Drużyna”
   - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
     the characters of Siedziba as a bare list with no heading
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 13
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1
 
 *Rationale:* a layout for a phone and several teams come later, and these two shapes make each of
 them an addition. They cost a decision and no code.
 *Rejected:* rigid columns and a plain list of characters — each of the later additions becomes a
 rebuild of a screen.
+
+### D-283 — What happens to a manual map run when the player leaves its screen?
+
+Leaving the screen of a manual map run pauses it as „Pauza” does.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-21
+- **Verification:** an agent compares a change with the decision:
+  - complies: a map run of Las going on at 8× when the player opens Siedziba standing paused at the
+    same game minute, while the earning loop of another character passes its game minutes
+  - violates: a manual map run passing its game minutes while the player stands on Programy; leaving
+    the screen holding the map run in a state of its own other than the pause of „Pauza”
+- **Origin:** rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), part A.4
+
+*Rationale:* an earning loop goes on as D-250 gives. The player fast-forwards a map run in order to
+watch the program act, so a map run does not pass on a screen the player has left, and an earning
+loop passes apart from it.
+*Rejected:* none considered
+
+### D-284 — Does a return to the screen of a manual map run resume it?
+
+A return to the screen of a manual map run that waits in a pause leaves it in that pause until the
+player presses „Wznów”, whether or not it went on before the player left.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-21 · derives from D-283
+- **Verification:** an agent compares a change with the decision:
+  - complies: a map run of Las going on at 8× when the player opens Programy standing paused at the
+    same game minute when the player comes back to it, and going on only after „Wznów”
+  - violates: the map run going on by itself on the return because it went on before the player
+    left
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 14
+
+*Rationale:* one pause gives the player one way to hold a map run and one way to go on, so a map run
+that leaving its screen paused waits as one after „Pauza” does.
+*Rejected:* the map run resuming by itself on the return where it went on before the player left —
+the game would have to remember who paused it, and a reload loses that memory.
