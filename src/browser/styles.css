@@ -769,34 +769,6 @@ header .save-line {
   color: var(--text-strong);
 }
 
-.character-skills {
-  flex-basis: 100%;
-  color: var(--text);
-}
-
-.character-skills h4 {
-  margin: var(--space-s) 0;
-  font-size: inherit;
-  color: var(--text-label);
-}
-
-.skill-tree {
-  margin-bottom: var(--space-m);
-}
-
-.skill-summary {
-  margin: 0 0 var(--space-xs);
-  color: var(--text-strong);
-}
-
-.skill-branch {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-xs);
-}
-
 .run-practice {
   margin: var(--space-xs) 0 0;
   color: var(--text);
@@ -826,6 +798,13 @@ header .save-line {
 .team-member-loop {
   margin: 0;
   color: var(--text);
+}
+
+/* The sentence why the sending is inactive while a manual map run waits, under the row's sending, in `text-secondary`. */
+.team-member-run-note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-secondary);
 }
 
 /* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */

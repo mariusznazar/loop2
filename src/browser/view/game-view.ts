@@ -258,9 +258,6 @@ export function createGameView(options: GameViewOptions): GameView {
   });
 
   const headquarters = createHeadquarters({
-    buy(characterId, branch) {
-      act(buyBranch(state, characterId, branch));
-    },
     create(name) {
       act(createCharacter(state, name));
     },

@@ -11,6 +11,7 @@ import {
   mapLabel,
   programPositions,
   resurrectionLine,
+  runWaitingSentence,
   sendMaps,
   solvingSentence,
   stoppedLoopLine,
@@ -205,5 +206,18 @@ test("the line after a stop lists the practice gathered in the skills' order, an
   assert.equal(
     stoppedLoopLine({ eating: 4, exploration: 12, kicking: 0 }),
     "Pętla zatrzymana · wprawa: Eksploracja +12, Jedzenie +4",
+  );
+});
+
+// To do 8, row 1; question 3. Catches a sentence that names the map by a typed name instead of the
+// data's, that drops the second sentence every inactive send shows, and a map other than the run's.
+test("the sentence beside an inactive send names the run's map from the data and tells the player to finish the run", () => {
+  assert.equal(
+    runWaitingSentence("forest"),
+    "Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.",
+  );
+  assert.equal(
+    runWaitingSentence("forestDeep"),
+    "Przejście na mapie Las — głębiej jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.",
   );
 });

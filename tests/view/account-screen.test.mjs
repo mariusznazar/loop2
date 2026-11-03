@@ -2241,8 +2241,10 @@ const ACTS = [
     },
   },
   {
+    // The rank is bought on the screen Postać, where „Kup” stands since Slice 9 (D-199, D-200).
     name: "buying a branch rank",
     start: eatingPoint,
+    hash: "#/postac/1",
     act: (root) => fire(buttonLabelled(root, "Kup: Szybki posiłek"), "click"),
     expected: (start) => buyBranch(start, 1, "quickMeal").state,
   },
@@ -2423,11 +2425,11 @@ test("each act of the player that changes the game state is saved at once, and o
     value: handClock(() => 0),
   });
   try {
-    for (const { name, start, act, expected, check } of ACTS) {
+    for (const { name, start, hash, act, expected, check } of ACTS) {
       await onPage(async ({ root }) => {
         const held = heldClient();
         const begun = start();
-        await startPage(held);
+        await startPage(held, fakeAddress(hash ?? ""));
         await held.answer("currentAccount", ACCOUNT);
         await held.answer("loadSavedGame", saveOf(begun, 4));
         assert.deepEqual(waitingCalls(held), [], `${name}: precondition`);
@@ -2557,9 +2559,68 @@ test("a character in a loop shows its line and „Zatrzymaj”; its „Wyślij�
       ).length,
       1,
     );
-    assert.equal(buttonLabelled(ala, "Kup: Szybki posiłek").disabled, false);
     assert.equal(listLabelled(ala, "Program: Ala").disabled, false);
     view.dispose();
+    // „Kup” is not on Siedziba since Slice 9; the character in the loop buys on its screen Postać.
+    const character = await viewOf(
+      alaLoopingOlaFree(),
+      fakeAddress("#/postac/1"),
+    );
+    assert.equal(buttonLabelled(root, "Kup: Szybki posiłek").disabled, false);
+    await inAct(() => character.view.dispose());
+  });
+});
+
+// To do 8, row 1; question 3. Catches a row whose inactive „Wyślij” and „Puść w pętlę” say nothing
+// after the end of a map run, a sentence standing beside the buttons rather than under the lines of
+// sending, one sentence per map instead of one per row, and a sentence left on after „Zakończ”.
+test("after the end of a map run every row's sending is inactive under the sentence why, and „Zakończ” takes the sentence away", async () => {
+  await onPage(async ({ root }) => {
+    const endedWithOla = createCharacter(ended(), "Ola").state;
+    const sentence =
+      "Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.";
+    // Siedziba is the screen at its own address; the ended run's screen is the one a reload without
+    // a fragment opens.
+    const siedziba = await viewOf(endedWithOla, fakeAddress("#/"));
+    for (const name of ["Ala", "Ola"]) {
+      const row = rowOf(root, name);
+      const notes = byClass(row, "team-member-run-note");
+      assert.equal(notes.length, 1, `${name}: one sentence in the row`);
+      assert.equal(notes[0].textContent, sentence, name);
+      assert.ok(shown(notes[0]), `${name}: the sentence shows`);
+      const send = buttonLabelled(row, `Wyślij: ${name}, mapa Las`);
+      assert.equal(send.disabled, true, name);
+      assert.ok(
+        childrenOf(row).indexOf(notes[0]) > childrenOf(row).indexOf(send),
+        `${name}: the sentence stands under the lines of sending`,
+      );
+    }
+    siedziba.view.dispose();
+    // „Zakończ” stands on the run's screen; after it the sentence of every row goes.
+    const run = await viewOf(endedWithOla, fakeAddress("#/postac/1/przejscie"));
+    await inAct(() => fire(buttonNamed(root, "Zakończ"), "click"));
+    for (const name of ["Ala", "Ola"]) {
+      const [note] = byClass(rowOf(root, name), "team-member-run-note");
+      assert.equal(note.hidden, true, `${name}: no run, no sentence`);
+    }
+    await inAct(() => run.view.dispose());
+  });
+});
+
+// To do 2, row 3; question 7. Catches a name that is no link, a link to another address, and a link
+// that does not open the character's screen Postać.
+test("the name in a character's row is a link to its screen Postać, which then opens", async () => {
+  await onPage(async ({ root }) => {
+    const { view } = await viewOf(withCharacter());
+    const [name] = byClass(rowOf(root, "Ala"), "team-member-name");
+    assert.equal(name.localName, "a");
+    assert.equal(name.getAttribute("href"), "#/postac/1");
+    const href = name.getAttribute("href");
+    view.dispose();
+    // The page opens the screen the link names, as a load at that address does.
+    const opened = await viewOf(withCharacter(), fakeAddress(href));
+    assert.equal(shownScreen(root), "character");
+    await inAct(() => opened.view.dispose());
   });
 });
 
