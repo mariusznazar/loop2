@@ -5974,3 +5974,74 @@ player presses „Wznów”, whether or not it went on before the player left.
 that leaving its screen paused waits as one after „Pauza” does.
 *Rejected:* the map run resuming by itself on the return where it went on before the player left —
 the game would have to remember who paused it, and a reload loses that memory.
+
+### D-285 — How does the menu „Konto” open and close?
+
+The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it
+and on a second click on „Konto”, focus then returning to „Konto”. It stays open while „Wyloguj” or
+„Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the
+sentence of the outcome can be read.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: Enter on „Konto” opening the menu and Escape closing it with focus on „Konto”; the
+    menu standing open with „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” after the
+    answer to „Wyślij ponownie”, until the player clicks outside it
+  - violates: the menu closing at the click on „Wyloguj” or „Wyślij ponownie”; the menu closing by
+    itself after the server's answer; focus left on the page after Escape rather than on „Konto”
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, points 2 and 3, and § Settlements to record, rows 7 and 8
+
+*Rationale:* the player reads the outcome of what the menu sent without opening it again. Accepted
+with it: the accessibility requirements of the browser view (D-42) do not ask for the keyboard
+here, and the styleguide gains a new kind of control worked by the keyboard.
+*Rejected:* the menu opened and closed by a click on „Konto” alone; the menu closing at once at the
+click — the sentence of the outcome goes; the menu closing by itself after the server's answer, the
+outcome read on opening it again.
+
+### D-286 — How long does the page's sentence stand above the game?
+
+A sentence the page puts above the game, such as „Adres e-mail potwierdzony.” or the sentence of a
+discarded saved game state, stands above the first screen the game opens on and leaves at the first
+change of screen.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96 · derives from D-156 · derives from D-225
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Adres e-mail potwierdzony.” above Siedziba after a confirmation link, gone once the
+    player opens Programy and not back on the return to Siedziba
+  - violates: that sentence standing above Programy and Postać until a reload
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 12, and § Settlements to record, row 10
+
+*Rationale:* the sentence speaks of the moment the game opened, so it stands with the first screen.
+Accepted with it: a player who clicks in the menu at once may not read it.
+*Rejected:* the sentence standing above every screen until a reload — a sentence from the moment of
+entry hangs above Programy and Postać.
+
+### D-287 — What do Siedziba and the screen Postać allow, and say, while a manual map run waits or has ended?
+
+While the game state holds a manual map run that waits in a pause, or that has ended and waits for
+„Restart” or „Zakończ”, Siedziba and the screen Postać keep active what the simulation allows, while
+„Wyślij”, „Puść w pętlę” at that map run's character and „Kup” stand inactive. Beside the inactive
+buttons of Siedziba stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ,
+żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest
+niezakończone. Stopnie kupisz po jego zakończeniu.”
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-55 · derives from D-200
+- **Verification:** an agent compares a change with the decision:
+  - complies: after a death in a map run of Las, before „Zakończ”, „Puść w pętlę” of another
+    character starting its earning loop, while „Wyślij” stands inactive beside „Przejście na mapie
+    Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”
+  - violates: „Wyślij” or „Kup” inactive with no sentence beside it; „Puść w pętlę” of another
+    character inactive while a manual map run waits
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 3, and § Settlements to record, row 1
+
+*Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
+do not act and what the player does to free them, and what the simulation allows stays open.
+*Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba and the screen
+Postać for viewing alone — the player could not start the earning loop of another character, and
+the code would have to block what the simulation allows.
