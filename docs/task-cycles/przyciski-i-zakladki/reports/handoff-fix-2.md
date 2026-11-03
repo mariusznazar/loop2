@@ -1,8 +1,0 @@
-# Handoff — fix 2, task `przyciski-i-zakladki`
-
-- You are the author of the return step, resumed. Your variant under `.the-way/task-cycle/change/SKILL.md`: "the fix of a review's findings".
-- Findings file: `.runs/task-cycles/przyciski-i-zakladki/reports/findings-2.md`, one blocking finding (B1). The whole review, with what it judged without a finding: `.runs/task-cycles/przyciski-i-zakladki/reports/review-return-step.md`.
-- Work from `C:\Storage\repos\loop2\.runs\worktrees\przyciski-i-zakladki`, on branch `claude/lucid-ptolemy-jl068t`, from the reviewed head `9f4e5bb`; commit there, do not push. Add files by path, never `git add -A`. The commit message is in English and follows the product's history.
-- Write the entry through the glossary skill as the finding gives (`.the-way/elements/glossary/skill/SKILL.md` and the files it names, project skill `the-way-record-glossary-term`), or answer with evidence if you hold the finding wrong. A question for the human arises only as `foundation_step.md` allows.
-- Keep one sentence of each entry's meaning in Polish for the request. Update `.runs/task-cycles/przyciski-i-zakladki/reports/return-step.md` only by adding a section *Fix 2*; do not rewrite what stands. Reviewer's Minor findings M1 and M2 are not fixed; the line for the request is the orchestrator's.
-- Report path: `.runs/task-cycles/przyciski-i-zakladki/reports/fix-2.md`. Do not run the product's gate (`npm test` with no argument). Run `python -B .the-way/elements/common/foundation_check.py`, with command and exit code in the report. Return your status, commits, a one-line check result naming what failed or did not run, and the report's path. In the report keep each reach beyond this handoff and **Searches not found or unclear** (or `none`).
