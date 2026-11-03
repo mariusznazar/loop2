@@ -20,6 +20,7 @@ import {
   setProgram,
   settleDeath,
 } from "../../dist/browser/sim/game.js";
+import { ABOUT } from "../../dist/browser/sim/data/about.js";
 import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import {
   createProgram,
@@ -84,6 +85,17 @@ async function onPage(body) {
     }
   });
 }
+
+/**
+ * A stand-in for `performance` that a case moves by hand. The page's menu bar draws with React,
+ * whose development build measures its renders through `measure` and `clearMeasures` of the
+ * `performance` it finds, so the stand-in has both, and they do nothing.
+ */
+const handClock = (now) => ({
+  now,
+  measure: () => undefined,
+  clearMeasures: () => undefined,
+});
 
 /** The document of the window the running case has. */
 const pageDocument = () => globalThis.document;
@@ -155,6 +167,51 @@ function buttonNamed(root, text) {
   return all(root).find(
     (element) => element.localName === "button" && element.textContent === text,
   );
+}
+
+/** The button „Konto” of the menu bar, or undefined where the bar holds the game's name alone. */
+const accountButton = (root) => buttonNamed(root, "Konto");
+
+const menuIsOpen = (root) =>
+  accountButton(root)?.getAttribute("aria-expanded") === "true";
+
+/** Opens the menu „Konto” by a click if it stands closed; returns the button „Konto”. */
+async function openMenu(root) {
+  const button = accountButton(root);
+  assert.ok(button, "the bar holds „Konto”");
+  if (!menuIsOpen(root)) await press(button);
+  return button;
+}
+
+/** The button „Wyloguj”, which stands in the open menu „Konto” only: the menu is opened first. */
+async function logoutOf(root) {
+  await openMenu(root);
+  const button = buttonNamed(root, "Wyloguj");
+  assert.ok(button, "the open menu holds „Wyloguj”");
+  return button;
+}
+
+/** The sentences the menu „Konto” holds, in the order they stand; none while it is closed. */
+const menuSentences = (root) =>
+  byClass(root, "account-menu-sentence").map(
+    (sentence) => sentence.textContent,
+  );
+
+/**
+ * The bar holds the game's name alone: no item and no „Konto”, so no „Wyloguj” can stand anywhere
+ * (D-262, D-280).
+ */
+function assertNameAloneOnBar(root, reason) {
+  const bar = byClass(root, "menu-bar")[0];
+  assert.ok(bar, `${reason}: the bar stands`);
+  assert.deepEqual(
+    byClass(bar, "menu-bar-name").map((name) => name.textContent),
+    [ABOUT.name],
+    reason,
+  );
+  assert.equal(byClass(bar, "menu-bar-item").length, 0, reason);
+  assert.equal(accountButton(root), undefined, reason);
+  assert.equal(buttonNamed(root, "Wyloguj"), undefined, reason);
 }
 
 function shownAlerts(root) {
@@ -335,8 +392,9 @@ test("until the server names an account the page has neither the game nor a runn
     assert.equal(gameShown(root), false);
     assert.equal(intervals.size, 0);
     assert.deepEqual(forms(root), {});
-    const logout = buttonNamed(root, "Wyloguj");
-    assert.ok(!logout || !shown(logout), "„Wyloguj” is not shown");
+    // Changed with D-97 (task ekrany-i-menu, To do 9): „Wyloguj” stands in the menu „Konto”, so
+    // before the game the bar's name alone stands, with no „Konto” to hold it.
+    assertNameAloneOnBar(root, "while the page asks");
 
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
@@ -345,9 +403,15 @@ test("until the server names an account the page has neither the game nor a runn
     const header = childrenOf(root).find(
       (child) => child.localName === "header",
     );
+    assert.ok(shown(accountButton(header)), "„Konto” stands in the header");
+    assert.equal(
+      buttonNamed(header, "Wyloguj"),
+      undefined,
+      "the closed menu holds no „Wyloguj”",
+    );
     assert.ok(
-      shown(buttonNamed(header, "Wyloguj")),
-      "„Wyloguj” stands in the header",
+      shown(await logoutOf(root)),
+      "„Wyloguj” stands in the open menu „Konto”",
     );
   });
 });
@@ -381,7 +445,7 @@ test("an answer of no session shows the card on „Zaloguj się”, and the swit
     );
     assert.equal(gameShown(root), false);
     assert.equal(intervals.size, 0);
-    assert.ok(!shown(buttonNamed(root, "Wyloguj")));
+    assertNameAloneOnBar(root, "no game stands");
   });
 });
 
@@ -539,7 +603,7 @@ test("a created account enters the game at once, and the page keeps no password"
       false,
     );
 
-    fire(buttonNamed(root, "Wyloguj"), "click");
+    await press(await logoutOf(root));
     await settle();
     await held.answer("saveGame", { kind: "saved", revision: 1 });
     await held.answer("logout", { ok: true, value: null });
@@ -843,11 +907,12 @@ test("the address rule and the password rules each give registration's result al
 
 // --- logout ---------------------------------------------------------------------------------
 
+/** The page signed in; returns the button „Wyloguj”, which stands in the menu „Konto”, opened first. */
 async function signedInPage(held) {
   await startPage(held);
   await held.answer("currentAccount", ACCOUNT);
   await held.answer("loadSavedGame", NO_SAVE);
-  return buttonNamed(pageDocument().body, "Wyloguj");
+  return logoutOf(pageDocument().body);
 }
 
 // Task logowanie-w-react, To do 3 and 8; the page calls focus() here, as it called it on the forms (spec decision 3).
@@ -860,10 +925,10 @@ test("a confirmed logout or an expired session removes the game and its clock an
       const held = heldClient();
       const logout = await signedInPage(held);
       logout.focus();
-      fire(logout, "click");
-      await settle();
+      await press(logout);
       assert.equal(logout.disabled, true, name);
       assert.equal(logout.getAttribute("aria-busy"), "true", name);
+      assert.equal(menuIsOpen(root), true, `${name}: the menu stays open`);
       assert.equal(
         gameShown(root),
         true,
@@ -882,29 +947,42 @@ test("a confirmed logout or an expired session removes the game and its clock an
         name,
       );
       assert.ok(!shown(logout), name);
+      assertNameAloneOnBar(root, name);
     });
   }
 });
 
-test("a logout whose outcome is uncertain keeps the game with one warning, and „Wyloguj” stays usable", async () => {
+// Changed with D-97 and D-285 (task ekrany-i-menu, To do 9): the one warning stands as the sentence
+// of the menu „Konto”, which stays open, and no longer as an alert of the header.
+test("a logout whose outcome is uncertain keeps the game with its sentence in the open menu „Konto”, and „Wyloguj” stays usable", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const logout = await signedInPage(held);
     logout.focus();
-    fire(logout, "click");
-    await settle();
+    await press(logout);
     await held.answer("saveGame", { kind: "saved", revision: 1 });
     await held.answer("logout", NO_CONNECTION);
     assert.equal(gameShown(root), true);
     assert.equal(intervals.size, GAME_INTERVALS);
-    assert.deepEqual(
-      shownAlerts(root).map((alert) => alert.textContent),
-      [NO_CONNECTION.failure.message],
+    assert.equal(menuIsOpen(root), true, "the menu stays open");
+    assert.deepEqual(menuSentences(root), [NO_CONNECTION.failure.message]);
+    assert.equal(
+      byClass(root, "account-menu-sentence")[0].classList.contains("warning"),
+      true,
     );
+    assert.deepEqual(shownAlerts(root), [], "the header holds no alert");
     assert.equal(logout.disabled, false);
     assert.ok(shown(logout));
     assert.equal(pageDocument().activeElement, logout);
     assert.deepEqual(forms(root), {});
+
+    // A new request clears the sentence while it waits, and the page logs out when it ends.
+    await press(logout);
+    assert.deepEqual(menuSentences(root), []);
+    await held.answer("saveGame", { kind: "saved", revision: 2 });
+    await held.answer("logout", { ok: true, value: null });
+    assert.equal(gameShown(root), false);
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
   });
 });
 
@@ -914,8 +992,8 @@ test("signing in and out again and again keeps at most one clock running", async
     const logout = await signedInPage(held);
     for (let round = 0; round < 3; round += 1) {
       assert.equal(intervals.size, GAME_INTERVALS);
-      fire(logout, "click");
-      await settle();
+      // Each sign-in builds the bar's menu anew, closed, so the button is looked up again.
+      await press(round === 0 ? logout : await logoutOf(root));
       await held.answer("saveGame", { kind: "saved", revision: round + 1 });
       await held.answer("logout", { ok: true, value: null });
       assert.equal(intervals.size, 0);
@@ -927,65 +1005,83 @@ test("signing in and out again and again keeps at most one clock running", async
   });
 });
 
-// --- the row of an unconfirmed address ------------------------------------------------------
+// --- the sentence of an unconfirmed address, in the menu „Konto” ---------------------------
+// Changed with D-157 (task ekrany-i-menu, To do 9): the row under the header's title is gone, and the
+// sentence with „Wyślij ponownie” stands in the menu „Konto”, closed until the player opens it.
 
-/** The header row of the unconfirmed address and its parts, or null while the page shows none. */
-function statusRow(root) {
-  const header = childrenOf(root).find((child) => child.localName === "header");
-  const row = byClass(header, "email-status").find(shown);
-  if (!row) return null;
-  const [sentence, button] = row.children;
-  return { row, header, sentence, button };
+/** The sentence and the button of an unconfirmed address in the opened menu, or null where none stand. */
+async function unconfirmedPart(root) {
+  await openMenu(root);
+  const part = byClass(root, "account-menu-unconfirmed")[0];
+  if (!part) return null;
+  const [sentence, button] = part.children;
+  return { block: part.parentElement, sentence, button };
 }
 
-test("a reload or sign-in with an unconfirmed address shows the row after the title and Wyloguj, and leaves it at logout", async () => {
+/** What the closed bar holds: the name, the two items and „Konto”, with no mark of the address. */
+const barText = (root) => byClass(root, "menu-bar")[0].textContent;
+
+test("a reload or sign-in with an unconfirmed address shows the sentence and Wyślij ponownie in the open menu „Konto”, before Wyloguj, and leaves them at logout", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
     await held.answer("currentAccount", UNCONFIRMED_ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
-    const { header, row, sentence, button } = statusRow(root);
+    // The closed menu shows nothing of the address, and no row of it stands in the header.
+    assert.equal(barText(root), `${ABOUT.name}SiedzibaProgramyKonto`);
+    assert.deepEqual(menuSentences(root), []);
+    assert.equal(buttonNamed(root, "Wyślij ponownie"), undefined);
+    assert.equal(byClass(root, "email-status").length, 0);
+
+    const { block, sentence, button } = await unconfirmedPart(root);
     assert.equal(sentence.textContent, "Adres e-mail niepotwierdzony.");
     assert.equal(sentence.classList.contains("warning"), false);
     assert.equal(button.textContent, "Wyślij ponownie");
-    const logout = buttonNamed(header, "Wyloguj");
-    const order = childrenOf(header).filter(
-      (child) => child === row || child.localName === "h1" || child === logout,
+    const logout = buttonNamed(root, "Wyloguj");
+    assert.equal(
+      byClass(block, "account-menu-address")[0].textContent,
+      "ala@example.com",
     );
-    assert.deepEqual(
-      order.map((child) => child.localName),
-      ["h1", "button", "div"],
-    );
+    assertInOrder(block, [sentence, button, logout]);
 
-    fire(logout, "click");
-    await settle();
+    await press(logout);
     await held.answer("saveGame", { kind: "saved", revision: 1 });
     await held.answer("logout", { ok: true, value: null });
-    assert.equal(statusRow(root), null);
-    assert.equal(childrenOf(header).includes(row), false);
+    assert.equal(byClass(root, "account-menu-unconfirmed").length, 0);
+    assert.deepEqual(menuSentences(root), []);
 
-    // Signing in again with the same account brings the row back, once.
+    // Signing in again with the same account brings a menu of its own back: closed, one sentence.
     await signIn(held, UNCONFIRMED_ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
-    assert.equal(byClass(header, "email-status").length, 1);
+    assert.equal(byClass(root, "account-menu").length, 1);
+    assert.equal(menuIsOpen(root), false);
+    assert.deepEqual(menuSentences(root), []);
     assert.equal(
-      statusRow(root).sentence.textContent,
+      (await unconfirmedPart(root)).sentence.textContent,
       "Adres e-mail niepotwierdzony.",
     );
+    assert.equal(byClass(root, "account-menu-unconfirmed").length, 1);
   });
 });
 
-test("a confirmed address shows no row", async () => {
+test("a confirmed address shows no sentence and no Wyślij ponownie in the open menu, which holds the address and Wyloguj", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
-    assert.equal(statusRow(root), null);
+    assert.equal(await unconfirmedPart(root), null);
+    assert.equal(buttonNamed(root, "Wyślij ponownie"), undefined);
+    assert.deepEqual(menuSentences(root), []);
+    assert.equal(
+      byClass(root, "account-menu-address")[0].textContent,
+      "ala@example.com",
+    );
+    assert.ok(buttonNamed(root, "Wyloguj"));
   });
 });
 
-test("a created account starts the row with the outcome of its first message", async () => {
+test("a created account starts the sentence of its menu with the outcome of its first message, and the closed bar shows no mark of it", async () => {
   const outcomes = {
     sent: "Wysłaliśmy odnośnik potwierdzający na ala@example.com.",
     limited: "Za dużo wiadomości. Spróbuj ponownie za godzinę.",
@@ -1010,34 +1106,53 @@ test("a created account starts the row with the outcome of its first message", a
         },
       });
       await held.answer("loadSavedGame", NO_SAVE);
-      assert.equal(statusRow(root).sentence.textContent, sentence, message);
+      assert.equal(
+        barText(root),
+        `${ABOUT.name}SiedzibaProgramyKonto`,
+        message,
+      );
+      const opened = await unconfirmedPart(root);
+      assert.equal(opened.sentence.textContent, sentence, message);
+      assert.equal(
+        opened.sentence.classList.contains("warning"),
+        message !== "sent",
+        message,
+      );
     });
   }
 });
 
-test("Wyślij ponownie sends one request for the signed-in account and shows its outcome in the row", async () => {
+test("Wyślij ponownie sends one request for the signed-in account and shows its outcome in the menu, which stays open", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
     await held.answer("currentAccount", UNCONFIRMED_ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
-    const { button, sentence } = statusRow(root);
-    fire(button, "click");
-    await settle();
+    const { button } = await unconfirmedPart(root);
+    await press(button);
     assert.deepEqual(
       held.calls.map((entry) => entry.name),
       ["sendConfirmationMessage"],
     );
     assert.equal(button.textContent, "Wysyłanie…");
+    assert.equal(menuIsOpen(root), true);
     await held.answer("sendConfirmationMessage", {
       ok: true,
       value: "limited",
     });
+    const { sentence } = await unconfirmedPart(root);
     assert.equal(
       sentence.textContent,
       "Za dużo wiadomości. Spróbuj ponownie za godzinę.",
     );
     assert.equal(sentence.classList.contains("warning"), true);
+    assert.equal(
+      menuIsOpen(root),
+      true,
+      "the menu stays open after the answer",
+    );
+    assert.equal(button.textContent, "Wyślij ponownie");
+    assert.equal(pageDocument().activeElement, button);
   });
 });
 
@@ -1109,7 +1224,7 @@ test("the result stands as one sentence above the game for a signed-in player an
     assert.equal(childrenOf(main).indexOf(notice), 0);
     assert.equal(gameShown(main), true);
 
-    fire(buttonNamed(root, "Wyloguj"), "click");
+    await press(await logoutOf(root));
     await settle();
     await held.answer("saveGame", { kind: "saved", revision: 1 });
     await held.answer("logout", CONFIRMED);
@@ -1310,7 +1425,7 @@ test("with a reset token in the address the page shows the form at once, asking 
       false,
       "no session check is shown",
     );
-    assert.ok(!shown(buttonNamed(root, "Wyloguj")));
+    assertNameAloneOnBar(root, "no game stands");
     assert.equal(address.cleared, 0);
     assert.equal(address.hash(), RESET_LINK);
     // Time passing sends nothing either: no timer of a game or a saver exists.
@@ -1637,7 +1752,7 @@ test("a 401 on a save keeps the state, and a sign-in to the same account sends i
       shownAlerts(root).map((alert) => alert.textContent),
       [EXPIRED],
     );
-    assert.ok(!shown(buttonNamed(root, "Wyloguj")));
+    assertNameAloneOnBar(root, "no game stands");
 
     await signIn(held, ACCOUNT);
     assert.deepEqual(waitingCalls(held), ["saveGame"]);
@@ -1672,7 +1787,7 @@ test("a sign-in to another account after a 401 on a save drops the kept state an
       !buttonNamed(root, "Wznów") || !shown(buttonNamed(root, "Wznów")),
     );
 
-    fire(buttonNamed(root, "Wyloguj"), "click");
+    await press(await logoutOf(root));
     await settle();
     assert.deepEqual(argsOf(held, "saveGame"), [submission(newGame(), 0)]);
     await held.answer("saveGame", { kind: "saved", revision: 1 });
@@ -1844,7 +1959,7 @@ test("after the session check the page keeps „Sprawdzanie logowania…” unti
         .map((text) => text.textContent),
       ["Sprawdzanie logowania…"],
     );
-    assert.ok(!shown(buttonNamed(root, "Wyloguj")));
+    assertNameAloneOnBar(root, "no game stands");
 
     await held.answer("loadSavedGame", NO_SAVE);
     assert.ok(shown(byClass(root, "headquarters")[0]));
@@ -2257,7 +2372,7 @@ test("each act of the player that changes the game state is saved at once, and o
   // The clock reads no real time, so an act that starts the map run again leaves no carried time.
   Object.defineProperty(globalThis, "performance", {
     configurable: true,
-    value: { now: () => 0 },
+    value: handClock(() => 0),
   });
   try {
     for (const { name, start, act, expected, check } of ACTS) {
@@ -2583,7 +2698,7 @@ test("a game minute that ends the map run in a death is saved at once, settled",
     // The clock measures real time; this case moves it on by hand.
     Object.defineProperty(globalThis, "performance", {
       configurable: true,
-      value: { now: () => now },
+      value: handClock(() => now),
     });
     try {
       const held = heldClient();
@@ -2640,7 +2755,10 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       await held.answer("loadSavedGame", saveOf(renewing(T, 3_570_000), 4));
       const [line] = byClass(root, "team-member-resurrection");
       const warning = " — śmierć zabierze wprawę i wykupione stopnie";
-      assert.equal(line.textContent, `Wskrzeszenie za 1 godz. 0 min${warning}`);
+      assert.equal(
+        line.textContent,
+        `Wskrzeszenie za 1 godz. 0 min czasu realnego${warning}`,
+      );
       assert.ok(line.classList.contains("danger"));
       const [label] = byClass(root, "team-member-generation");
       assert.equal(label.textContent, "pokolenie 2");
@@ -2663,7 +2781,10 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       current = T + 31_000;
       mock.timers.tick(200);
       assert.equal(writes, 1);
-      assert.equal(line.textContent, `Wskrzeszenie za 59 min${warning}`);
+      assert.equal(
+        line.textContent,
+        `Wskrzeszenie za 59 min czasu realnego${warning}`,
+      );
       mock.timers.tick(200);
       assert.equal(writes, 1, "a tick in the same minute writes nothing");
       // At the moment of readiness the line turns ready, within one tick, and loses `danger`.
@@ -2788,9 +2909,10 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   }
 });
 
-// To do 7; D-208. Catches the failure shown nowhere or below the row of an unconfirmed address, no
+// To do 7; D-208; changed with To do 10 (task ekrany-i-menu): the line stands under the menu bar
+// and not in the menu „Konto”. Catches the failure shown nowhere or only in the closed menu, no
 // retry, and the sentence left after a save succeeds.
-test("a failed save shows its line under the title and „Wyloguj”, above the address row, and a retry that succeeds clears it", async () => {
+test("a failed save shows its line under the menu bar, outside the menu „Konto”, and a retry that succeeds clears it", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -2810,14 +2932,20 @@ test("a failed save shows its line under the title and „Wyloguj”, above the 
     );
     assert.equal(line.classList.contains("form-warning"), true);
     const header = line.parentElement;
-    const logout = buttonNamed(header, "Wyloguj");
-    const row = byClass(header, "email-status")[0];
-    const order = childrenOf(header).filter((child) =>
-      [logout, line, row].includes(child),
+    assert.equal(header.localName, "header");
+    const [bar] = childrenOf(header);
+    assert.ok(bar.classList.contains("menu-bar-host"), "the bar stands first");
+    assert.deepEqual(
+      childrenOf(header).map((child) => child.classList.contains("save-line")),
+      [false, true],
+      "the line stands under the bar",
     );
-    assert.equal(order[0], logout);
-    assert.equal(order[1], line);
-    assert.equal(order[2], row);
+    assert.equal(
+      byClass(bar, "account-menu").some((menu) => menu.contains(line)),
+      false,
+      "the line is no part of the menu",
+    );
+    assert.equal(menuIsOpen(root), false, "it shows with the menu closed");
 
     mock.timers.tick(5_000);
     await settle();
@@ -2845,7 +2973,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     assert.equal(intervals.size, 0);
     assert.deepEqual(waitingCalls(held), ["loadSavedGame"]);
     assert.ok(shown(byClass(root, "session-check-text")[0]));
-    assert.ok(!shown(buttonNamed(root, "Wyloguj")));
+    assertNameAloneOnBar(root, "no game stands");
 
     await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
     assert.equal(gameShown(root), true);
@@ -2886,14 +3014,13 @@ test("a conflict drops the game, asks for the server's save and builds from it w
   });
 });
 
-/** The page signed in with a loaded map run, „Wyloguj” clicked; returns the button. */
+/** The page signed in with a loaded map run, „Wyloguj” of the open menu clicked; returns the button. */
 async function loggingOutPage(held) {
   await startPage(held);
   await held.answer("currentAccount", ACCOUNT);
   await held.answer("loadSavedGame", saveOf(passing(), 4));
-  const logout = buttonNamed(pageDocument().body, "Wyloguj");
-  fire(logout, "click");
-  await settle();
+  const logout = await logoutOf(pageDocument().body);
+  await press(logout);
   assert.equal(logout.textContent, "Wylogowywanie…");
   assert.deepEqual(argsOf(held, "saveGame"), [
     submission({ ...passing(), paused: true }, 4),
@@ -2947,6 +3074,9 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
     assert.equal(logout.textContent, "Wyloguj");
     assert.equal(logout.disabled, false);
     assert.equal(pageDocument().activeElement, logout);
+    // D-97, D-208: the sentence of the failed save stands under the bar, not in the menu „Konto”.
+    assert.equal(menuIsOpen(root), true);
+    assert.deepEqual(menuSentences(root), []);
   });
 
   await onPage(async ({ root }) => {
@@ -2976,7 +3106,7 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
     assert.equal(gameShown(root), true, "the game stays");
     assert.equal(saveLine(root).textContent, OUTDATED);
 
-    fire(buttonNamed(root, "Wyloguj"), "click");
+    await press(await logoutOf(root));
     await settle();
     assert.deepEqual(waitingCalls(held), ["logout"]);
     await held.answer("logout", { ok: true, value: null });
@@ -2999,9 +3129,14 @@ test("a save that finds no session while the logout's request is under way waits
       await loggingOutPage(held);
       await held.answer("saveGame", { kind: "saved", revision: 5 });
       assert.deepEqual(waitingCalls(held), ["logout"], name);
-      // The player acts while the server ends the session; that save finds none.
-      fire(buttonNamed(root, "8×"), "click");
-      await settle();
+      // The player acts while the server ends the session; that save finds none. The click lies
+      // outside the menu „Konto”, which stood open, so it closes the menu too, and React sees it.
+      await press(buttonNamed(root, "8×"));
+      assert.equal(
+        menuIsOpen(root),
+        false,
+        `${name}: the click outside closes it`,
+      );
       assert.deepEqual(argsOf(held, "saveGame"), [
         submission({ ...passing(), paused: true, pace: 8 }, 5),
       ]);
@@ -3261,6 +3396,43 @@ test("the card stands alone in the page's body, and the screens before and after
     await held.answer("loadSavedGame", NO_SAVE);
     assert.equal(gameShown(root), true);
     assert.deepEqual(partsShown(root), [true, true, true]);
+  });
+});
+
+// To do 1, D-262, D-280. Catches the game's name left as a title of its own beside the bar, an item
+// or „Konto” on a waiting screen, and a bar over the game that lacks its items or its menu.
+test("the header holds the menu bar: the game's name alone on every waiting screen, the items and „Konto” over the game", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    assertNameAloneOnBar(root, "the session check");
+    await held.answer("currentAccount", NO_CONNECTION);
+    assertNameAloneOnBar(root, "the warning with its retry");
+    await press(buttonNamed(root, "Spróbuj ponownie"));
+    await held.answer("currentAccount", ACCOUNT);
+    assertNameAloneOnBar(root, "the wait for the saved game state");
+    await held.answer("loadSavedGame", NO_SAVE);
+
+    const header = pageParts(root)[0];
+    const bars = byClass(root, "menu-bar");
+    assert.equal(bars.length, 1, "one bar stands");
+    assert.ok(header.contains(bars[0]), "the bar stands in the header");
+    assert.equal(tagged(header, "h1").length, 0, "no title beside the bar");
+    const items = byClass(bars[0], "menu-bar-item");
+    assert.deepEqual(
+      items.map((item) => [item.textContent, item.getAttribute("href")]),
+      [
+        ["Siedziba", "#/"],
+        ["Programy", "#/programy"],
+      ],
+    );
+    assert.deepEqual(
+      items.map((item) => item.getAttribute("aria-current")),
+      ["page", null],
+      "the bar marks Siedziba",
+    );
+    assert.ok(accountButton(root), "„Konto” stands");
+    assert.equal(menuIsOpen(root), false, "the menu stands closed");
   });
 });
 

@@ -32,14 +32,10 @@ body {
   outline-offset: var(--focus-offset);
 }
 
-/* The header: the title and, for a signed-in player, „Wyloguj” beside it with its warning. */
-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 var(--space-l);
-}
-
+/*
+ * The header: the menu bar and, under it, the line of saving (D-280, D-208). The kitchen-sink page
+ * keeps its title in the same element.
+ */
 header h1 {
   margin: var(--space-l) 0;
   font-size: var(--font-size-game-title);
@@ -48,35 +44,15 @@ header h1 {
 }
 
 /*
- * The line of saving the game state, on a line of its own after the title and „Wyloguj” and above
- * the row of an unconfirmed address, in `warning` (D-208, D-39); hidden while it says nothing.
+ * The line of saving the game state, on a line of its own under the menu bar, as wide as the content
+ * under it, in `warning` (D-208, D-39, D-280); hidden while it says nothing. It stands outside the
+ * menu „Konto”, which a closed menu would hide (D-97, D-208).
  */
 header .save-line {
-  flex-basis: 100%;
-  margin-bottom: var(--space-s);
-}
-
-/*
- * The row of a signed-in player with an unconfirmed address, on a line of its own after the title
- * and „Wyloguj”: its sentence in `text-secondary`, in `warning` when the sentence tells of
- * something not carried out (D-39), and the shared button beside it.
- */
-.email-status {
-  flex-basis: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-xs) var(--space-s);
-  margin-bottom: var(--space-s);
-}
-
-.email-status-sentence {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.email-status-sentence.warning {
-  color: var(--warning);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto var(--space-s);
 }
 
 /*
@@ -201,9 +177,17 @@ header .save-line {
   color: var(--warning);
 }
 
-/* The place of the screen: the session check or the game; the login card stands beside it (D-262). */
+/*
+ * The place of the screen: the session check or the game, the login card standing beside it
+ * (D-262). One width for the content of every screen under the menu bar, at most 1344 px and the
+ * full width of a narrower window (D-280); a layout dimension, which D-43 leaves out.
+ */
 .app-main {
   flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto;
 }
 
 .columns {
@@ -1007,8 +991,12 @@ header .save-line {
   border-left-color: var(--link-highlight);
 }
 
+/* The footer stands as wide as the content above it, so its line and its text start where the content does. */
 footer {
-  margin-top: var(--space-xl);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1344px;
+  margin: var(--space-xl) auto 0;
   padding: var(--space-m) 0 var(--space-l);
   border-top: var(--frame-width) solid var(--divider);
   font-size: var(--font-size-detail);

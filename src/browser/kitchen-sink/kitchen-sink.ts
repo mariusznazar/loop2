@@ -3,13 +3,15 @@
  * states of the styleguide's rule "States of shared controls", or the reason a state does not
  * apply; every role of the styleguide's table Roles; and samples of tiles in each state, drawn
  * with the roles by the game's own stylesheet — never a drawing of the game from a game state
- * (D-04). Forms and the header row of an unconfirmed address are shown waiting for the server and
- * with a refusal sentence, and the form „Nie pamiętam hasła” with the sentence that answers its
- * request, with made-up values. Code only this page needs stays in this module: beyond it the page
- * imports only modules the game itself uses, so nothing of the page is compiled into what
- * `npm run build` writes.
+ * (D-04). Forms and the part of the menu „Konto” for an unconfirmed address are shown waiting for
+ * the server and with a refusal sentence, and the form „Nie pamiętam hasła” with the sentence that
+ * answers its request, with made-up values. The menu itself is a React screen and the page holds no
+ * React (D-269), so the part of it is built here from the DOM forms of the shared controls and the
+ * pure sentences of `email-status.ts`, which the menu uses too, and the page imports no `.tsx`
+ * file. Code only this page needs stays in this module: beyond it the page imports only modules the
+ * game itself uses, so nothing of the page is compiled into what `npm run build` writes.
  */
-import type { Account, ConfirmationMessage } from "../account-api.js";
+import type { ConfirmationMessage } from "../account-api.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import { hexCenter, hexCorners, tileLabel } from "../sim/hex.js";
 import type { Hex } from "../sim/types.js";
@@ -29,7 +31,7 @@ import {
   createTextField,
   type Field,
 } from "../view/controls/text-field.js";
-import { createEmailStatus } from "../view/email-status.js";
+import { messageSentence, UNCONFIRMED_SENTENCE } from "../view/email-status.js";
 
 /** The page's marker: it stands in this module and in the page's HTML, in no other file of src. */
 export const PAGE_MARKER = "loop2-kitchen-sink-page";
@@ -433,39 +435,53 @@ function formsSection(): HTMLElement {
   return section("Formularze czekające na serwer", list);
 }
 
-// --- header row of an unconfirmed address ---------------------------------------------------
+// --- part of the menu „Konto” for an unconfirmed address -----------------------------------
 
-/** A made-up account: the page names no real address and holds no game state. */
-const SAMPLE_ACCOUNT: Account = {
-  id: "sample",
-  email: "przyklad@example.com",
-  emailConfirmed: false,
-};
+/** A made-up address: the page names no real one and holds no game state. */
+const SAMPLE_ADDRESS = "przyklad@example.com";
 
 /**
- * The header row of the module `email-status.ts` as the page shows it, on a line of the header's
- * own kind: waiting for the answer to „Wyślij ponownie” (the button disabled and reading
- * „Wysyłanie…”), or starting with the sentence of a refused message beside the button. The request
- * of the waiting sample never ends and sends nothing.
+ * The part of the open menu „Konto” for an unconfirmed address (D-157), built from the DOM forms of
+ * the shared controls and the sentences of `email-status.ts`, with the classes the menu itself
+ * draws with: the address, the sentence, and „Wyślij ponownie” — waiting for the answer (the button
+ * disabled and reading „Wysyłanie…”), or beside the sentence of a message the limit or a failure
+ * kept from being sent. The menu is a React screen and this page holds none (D-269), so the part is
+ * made here; the button waits at once and sends nothing.
  */
-function headerRowSample(start: ConfirmationMessage | "waiting"): HTMLElement {
-  const row = createEmailStatus(
-    { sendConfirmationMessage: () => new Promise(() => undefined) },
-    SAMPLE_ACCOUNT,
-    start === "waiting" ? null : start,
-  );
-  if (start === "waiting") row.element.querySelector("button")?.click();
-  const header = document.createElement("div");
-  header.className = "header-sample";
-  header.append(row.element);
-  return header;
+function menuSample(state: ConfirmationMessage | "waiting"): HTMLElement {
+  const sentence =
+    state === "waiting"
+      ? UNCONFIRMED_SENTENCE
+      : messageSentence(state, SAMPLE_ADDRESS);
+  const address = document.createElement("p");
+  address.className = "account-menu-address";
+  address.textContent = SAMPLE_ADDRESS;
+  const said = document.createElement("p");
+  said.className =
+    sentence.role === "warning"
+      ? "account-menu-sentence warning"
+      : "account-menu-sentence";
+  said.setAttribute("aria-live", "polite");
+  said.textContent = sentence.text;
+  const button = createButton("Wyślij ponownie");
+  if (state === "waiting") setButtonWaiting(button, "Wysyłanie…");
+  const unconfirmed = document.createElement("div");
+  unconfirmed.className = "account-menu-unconfirmed";
+  unconfirmed.append(said, button);
+  const block = document.createElement("div");
+  block.className = "account-menu-block";
+  block.append(address, unconfirmed);
+  const sample = document.createElement("div");
+  sample.className = "menu-sample";
+  sample.append(block);
+  return sample;
 }
 
-function headerRowSection(): HTMLElement {
+function menuSection(): HTMLElement {
   const samples: readonly (readonly [string, HTMLElement])[] = [
-    ["Wyślij ponownie: oczekiwanie na serwer", headerRowSample("waiting")],
-    ["Wyślij ponownie: pułap wiadomości", headerRowSample("limited")],
-    ["Wyślij ponownie: wysyłka się nie udała", headerRowSample("failed")],
+    ["Wyślij ponownie: oczekiwanie na serwer", menuSample("waiting")],
+    ["Wyślij ponownie: pułap wiadomości", menuSample("limited")],
+    ["Wyślij ponownie: wysyłka się nie udała", menuSample("failed")],
   ];
   const list = document.createElement("div");
   list.className = "form-samples";
@@ -477,7 +493,10 @@ function headerRowSection(): HTMLElement {
     figure.append(row, caption);
     list.append(figure);
   }
-  return section("Wiersz nagłówka z niepotwierdzonym adresem", list);
+  return section(
+    "„Konto” z niepotwierdzonym adresem: część z postaci DOM kontrolek, bez Reacta",
+    list,
+  );
 }
 
 // --- roles ----------------------------------------------------------------------------------
@@ -762,7 +781,7 @@ document.body.append(
   header,
   controlsSection(),
   formsSection(),
-  headerRowSection(),
+  menuSection(),
   rolesSection(),
   tilesSection(),
 );

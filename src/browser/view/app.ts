@@ -5,7 +5,6 @@ import {
   type AccountFailure,
   type ConfirmationMessage,
 } from "../account-api.js";
-import { ABOUT } from "../sim/data/about.js";
 import { newGame } from "../sim/game.js";
 import { loadSavedGame, type SavedGameRefusal } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
@@ -24,9 +23,9 @@ import {
   type ConfirmationNotice,
   type PageAddress,
 } from "./email-confirmation.js";
-import { createEmailStatus, type EmailStatus } from "./email-status.js";
 import { createFooter } from "./footer.js";
 import { createGameView, type GameView, type KeptGame } from "./game-view.js";
+import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
@@ -94,6 +93,15 @@ function startFrom(
   }
 }
 
+/** What the bar holds while no game stands: the game's name alone (D-262, D-280). */
+const NAME_ALONE: MenuBarProps = {
+  account: null,
+  screen: null,
+  returnEntry: null,
+  registrationMessage: null,
+  logout: { waiting: false, sentence: null },
+};
+
 /** A sentence of the page in `warning`, standing once above the screen it opens. */
 function createPageNotice(sentence: string): HTMLElement {
   const element = document.createElement("p");
@@ -104,20 +112,24 @@ function createPageNotice(sentence: string): HTMLElement {
 }
 
 /**
- * Builds the page in `root`: the header with the title, the place of the screen, and the footer.
+ * Builds the page in `root`: the header with the menu bar, the place of the screen, and the footer.
  * The page first asks the server whom this browser is signed in as and shows only that it is
  * asking; once the server names an account, it goes on asking for the account's saved game state,
  * and only that answer builds the game: a new game where there is none, else the game the load
  * gives. The login card comes only once the server says there is no session, and while it stands
  * nothing else does: it stands in `root` beside those three, which are hidden (D-262). Any other
  * answer is a warning with „Spróbuj ponownie”, which repeats both requests, never a guess, and so
- * is a load that meets an error of the code: it builds no game, so nothing is saved. „Wyloguj”
- * beside the title saves the game state, then ends this browser's session; the game leaves the page
- * only when the server confirms it, and stays with a warning when the outcome is uncertain (D-97).
+ * is a load that meets an error of the code: it builds no game, so nothing is saved. The menu bar
+ * (D-280) holds the game's name alone while no game stands, and over the game the items and the menu
+ * „Konto”. „Wyloguj” in that menu saves the game state, then ends this browser's session; the game
+ * leaves the page only when the server confirms it, and stays with the sentence of the uncertain
+ * outcome in the menu, which stays open (D-97, D-285). The page runs that logout and gives the bar
+ * its waiting and its sentence; the bar sends „Wyślij ponownie” itself, starting with the outcome
+ * of the registration's message where the sign-in followed one (D-157).
  * One transition runs at a time, and an answer that comes after the page moved on is ignored.
  *
- * Under the title and „Wyloguj”, on lines of their own, stand the line of saving (D-208) and, for
- * a signed-in player with an unconfirmed address, the row of `email-status.ts`. When the page's
+ * Under the bar, on a line of its own, stands the line of saving (D-208), which shows only at a
+ * problem, the sentence of a failed save before a logout (D-97) included. When the page's
  * address carries a confirmation token, the page first sends it — showing „Potwierdzanie adresu…”
  * where it shows the session check — and only then checks the session; the result stands as one
  * sentence on the first screen that check leads to, and leaves at the next change between card and
@@ -132,12 +144,12 @@ export function startApp(
   address: PageAddress = browserAddress(),
 ): void {
   const header = document.createElement("header");
-  const title = document.createElement("h1");
-  title.textContent = ABOUT.name;
-  const logoutButton = createButton("Wyloguj");
-  logoutButton.hidden = true;
-  const logoutWarning = createFormWarning();
-  header.append(title, logoutButton, logoutWarning.element);
+  const bar = createMenuBar({
+    client,
+    onLogout: () => logOut(),
+    props: NAME_ALONE,
+  });
+  header.append(bar.element);
 
   const main = document.createElement("main");
   main.className = "app-main";
@@ -159,11 +171,15 @@ export function startApp(
   let game: GameView | null = null;
   /** The account whose game the page shows. */
   let account: Account | null = null;
-  let emailStatus: EmailStatus | null = null;
   // The result of a confirmation from the address, until the first screen shows it.
   let pendingNotice: ConfirmationNotice | null = null;
   // The outcome of a registration's first message, until the game it leads to is built.
   let pendingMessage: ConfirmationMessage | null = null;
+  // What the bar of the game now standing started its menu with, from that message.
+  let barMessage: ConfirmationMessage | null = null;
+  // The logout under way and the sentence of one whose outcome is uncertain, both shown in the menu.
+  let logoutWaiting = false;
+  let logoutSentence: string | null = null;
   // The game about to be built replaces one that lost a conflict to another browser (D-209).
   let afterConflict = false;
   // The game state a save answered with no session left, kept in this page only (D-211).
@@ -244,12 +260,30 @@ export function startApp(
     retryButton.hidden = true;
   }
 
+  /** Gives the bar what the page now holds: the name alone where no game stands. */
+  function drawBar(): void {
+    bar.update(
+      account === null
+        ? NAME_ALONE
+        : {
+            account,
+            screen: { kind: "headquarters" },
+            returnEntry: null,
+            registrationMessage: barMessage,
+            logout: { waiting: logoutWaiting, sentence: logoutSentence },
+          },
+    );
+  }
+
+  /** The game leaves with the menu of its player, its logout and its sentences (D-97). */
   function dropGame(): void {
     game?.dispose();
     game = null;
     account = null;
-    emailStatus?.dispose();
-    emailStatus = null;
+    barMessage = null;
+    logoutWaiting = false;
+    logoutSentence = null;
+    drawBar();
   }
 
   /** An outcome of the saver acts now, or after the answer to a logout under way. */
@@ -282,17 +316,16 @@ export function startApp(
     });
     game = view;
     account = owner;
-    emailStatus = createEmailStatus(client, owner, message);
+    barMessage = message;
     view.saveLine.classList.add("save-line");
-    header.append(view.saveLine, emailStatus.element);
+    header.append(view.saveLine);
     leaveWaiting();
     const notice = takeNotice();
     const notices = notice === null ? [] : [createConfirmationNotice(notice)];
     if (start.refused !== null)
       notices.push(createPageNotice(REFUSED_LOAD[start.refused]));
     showPage(...notices, view.element);
-    logoutWarning.set(null);
-    logoutButton.hidden = false;
+    drawBar();
     // A refused save is replaced at once, so its sentence does not come back (spec decision 7).
     if (saveAtOnce || start.refused !== null) view.saveNow();
   }
@@ -305,8 +338,6 @@ export function startApp(
     dropGame();
     afterConflict = false;
     pendingMessage = null;
-    logoutButton.hidden = true;
-    logoutWarning.set(null);
     leaveWaiting();
     const notice = takeNotice();
     placeCard(
@@ -327,7 +358,6 @@ export function startApp(
     const owner = account;
     if (owner === null) return;
     dropGame();
-    logoutButton.hidden = true;
     afterConflict = true;
     void loadGame(owner);
   }
@@ -394,23 +424,29 @@ export function startApp(
     void checkSession();
   });
 
-  logoutButton.addEventListener("click", () => {
+  /**
+   * „Wyloguj” of the menu: the page saves first, then ends the session. The bar shows the waiting
+   * and, after an uncertain end, the sentence; the failed save before a logout stays in the line of
+   * saving under the bar (D-97, D-208).
+   */
+  function logOut(): void {
     const view = game;
-    if (view === null || logoutButton.disabled) return;
+    if (view === null || logoutWaiting) return;
     void (async () => {
       const mine = ++latest;
-      logoutWarning.set(null);
-      setButtonWaiting(logoutButton, "Wylogowywanie…");
+      logoutSentence = null;
+      logoutWaiting = true;
+      drawBar();
       const save = await view.saveBeforeLogout();
       if (mine !== latest || game !== view) return;
       if (save.kind === "failed") {
         // The saver's line asks the player to log out again; its retries go on.
-        setButtonWaiting(logoutButton, null);
-        logoutButton.focus();
+        logoutWaiting = false;
+        drawBar();
         return;
       }
       if (save.kind === "signed-out") {
-        setButtonWaiting(logoutButton, null);
+        logoutWaiting = false;
         expire();
         return;
       }
@@ -420,20 +456,20 @@ export function startApp(
       const later = deferred;
       deferred = null;
       if (mine !== latest) return;
-      setButtonWaiting(logoutButton, null);
+      logoutWaiting = false;
       if (result.ok || signedOut(result.failure)) {
         showForms(save.kind === "outdated" ? OUTDATED : null);
         card?.focus();
         return;
       }
       // The server may or may not have ended the session: the game stays, and so does „Wyloguj”.
-      logoutWarning.set(result.failure.message);
-      logoutButton.focus();
+      logoutSentence = result.failure.message;
+      drawBar();
       // A save that lost to another browser leaves this game behind the server's save (D-209).
       if (save.kind === "conflict") reloadAfterConflict();
       else later?.();
     })();
-  });
+  }
 
   /**
    * The card on the form „Ustaw nowe hasło”. Its ending says how the page goes on: after a change
