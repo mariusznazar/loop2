@@ -117,7 +117,8 @@ test("the screen names the character and its archetype, and gives the generation
   });
 });
 
-// invariant: resurrection-renewal (the readiness boundary is the simulation's; the wording is D-217)
+// The readiness boundary is the simulation's; the wording is D-217.
+// invariant: resurrection-renewal
 test("the resurrection line reads the time left in danger, shows the minutes below an hour, turns ready at the moment and moves with each reading of the clock", async () => {
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
