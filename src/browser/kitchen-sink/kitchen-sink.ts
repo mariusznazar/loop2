@@ -5,8 +5,9 @@
  * with the roles by the game's own stylesheet — never a drawing of the game from a game state
  * (D-04). Forms and the header row of an unconfirmed address are shown waiting for the server and
  * with a refusal sentence, and the form „Nie pamiętam hasła” with the sentence that answers its
- * request, with made-up values. Code only this page needs stays in this module: beyond it the page imports only modules
- * the game itself uses, so nothing of the page is compiled into what `npm run build` writes.
+ * request, with made-up values. Code only this page needs stays in this module: beyond it the page
+ * imports only modules the game itself uses, so nothing of the page is compiled into what
+ * `npm run build` writes.
  */
 import type { Account, ConfirmationMessage } from "../account-api.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -14,8 +15,9 @@ import { hexCenter, hexCorners, tileLabel } from "../sim/hex.js";
 import type { Hex } from "../sim/types.js";
 import {
   createButton,
+  setButtonSelected,
   setButtonWaiting,
-  type ButtonKind,
+  type ButtonOptions,
 } from "../view/controls/button.js";
 import { createNumberField } from "../view/controls/number-field.js";
 import { createSelectList } from "../view/controls/select-list.js";
@@ -61,6 +63,10 @@ const NOT_APPLYING = {
   listError: "Nie dotyczy: lista podaje tylko poprawne pozycje.",
   buttonLoading:
     "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz (D-44).",
+  secondaryLoading:
+    "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz; akcja poboczna jest wtedy wyłączona (D-275).",
+  tabLoading:
+    "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz; zakładka jest wtedy wyłączona, z linią wyboru (D-276).",
   listLoading:
     "Nie dotyczy: żaden formularz, który czeka na serwer, nie ma listy wyboru (D-44).",
   numberLoading:
@@ -72,31 +78,57 @@ type Sample = HTMLElement | string;
 
 /**
  * Hover and focus cannot be held by the page, so their samples carry a class that
- * `kitchen-sink.css` draws as the game draws the state: hover from the role `highlight`, focus by
- * the one `:focus-visible` rule, repeated there with the sample's selector.
+ * `kitchen-sink.css` draws as the game draws the state: hover from the role `highlight` (the
+ * secondary action's hover by its own rule, in `text` on the background it has), focus by the one
+ * `:focus-visible` rule, repeated there with the sample's selector.
  */
 function forced(element: HTMLElement, state: State): void {
   if (state === "hover") element.classList.add("sample-hover");
   if (state === "focus") element.classList.add("sample-focus");
 }
 
-/** The button of a form waiting for the server, and the text it shows meanwhile. */
-const WAITING_BUTTON = ["Zaloguj się", "Logowanie…"] as const;
+/**
+ * What the loading state of a button shows: the reason the state does not apply to it, or the
+ * button's resting text and the text it shows while it waits for the server.
+ */
+type Loading = string | readonly [string, string];
 
-function buttonSample(text: string, kind: ButtonKind, waits = false) {
+/** The container of the tabs, as a screen sets it on its group: the thin line under the tabs. */
+function inTabs(tab: HTMLElement): HTMLElement {
+  const group = document.createElement("div");
+  group.className = "tabs";
+  group.append(tab);
+  return group;
+}
+
+/**
+ * A button of the given options in each state. A tab (`chosen` given) is shown as a group of its
+ * kind sets it, selected or not, inside the container of the class `tabs`.
+ */
+function buttonSample(
+  text: string,
+  options: ButtonOptions,
+  loading: Loading,
+  chosen?: boolean,
+) {
+  const make = (label: string): HTMLButtonElement => {
+    const button = createButton(label, options);
+    if (chosen !== undefined) setButtonSelected(button, chosen);
+    return button;
+  };
   return (state: State): Sample => {
     if (state === "error") return NOT_APPLYING.buttonError;
     if (state === "empty") return NOT_APPLYING.buttonEmpty;
     if (state === "loading") {
-      if (!waits) return NOT_APPLYING.buttonLoading;
-      const waiting = createButton(WAITING_BUTTON[0], { kind });
-      setButtonWaiting(waiting, WAITING_BUTTON[1]);
+      if (typeof loading === "string") return loading;
+      const waiting = createButton(loading[0], options);
+      setButtonWaiting(waiting, loading[1]);
       return waiting;
     }
-    const button = createButton(text, { kind });
+    const button = make(text);
     button.disabled = state === "disabled";
     forced(button, state);
-    return button;
+    return options.kind === "tab" ? inTabs(button) : button;
   };
 }
 
@@ -141,11 +173,57 @@ function fieldSample(
   };
 }
 
-/** The six shared controls of D-44, each with the maker of its samples. */
+/**
+ * The seven shared controls of D-44, each with the maker of its samples, and beside the button the
+ * two looks other kinds of it have: the main button of D-274, the one that sends a form, and the
+ * tab of D-276, which is the button selected in its group drawn as a tab. The password field is
+ * the text field with its entry hidden.
+ */
 const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
-  ["Przycisk", buttonSample("Wyślij", "plain", true)],
-  ["Przycisk niszczący", buttonSample("Zakończ", "destructive")],
-  ["Przycisk wybrany w grupie", buttonSample("Wybrany", "selected")],
+  [
+    "Przycisk",
+    buttonSample("Wyślij ponownie", {}, ["Wyślij ponownie", "Wysyłanie…"]),
+  ],
+  [
+    "Przycisk główny",
+    buttonSample("Zaloguj się", { submit: true }, [
+      "Zaloguj się",
+      "Logowanie…",
+    ]),
+  ],
+  [
+    "Przycisk niszczący",
+    buttonSample(
+      "Zakończ",
+      { kind: "destructive" },
+      NOT_APPLYING.buttonLoading,
+    ),
+  ],
+  [
+    "Przycisk wybrany w grupie",
+    buttonSample("Wybrany", { kind: "selected" }, NOT_APPLYING.buttonLoading),
+  ],
+  [
+    "Akcja poboczna",
+    buttonSample(
+      "Wróć do logowania",
+      { kind: "secondary" },
+      NOT_APPLYING.secondaryLoading,
+    ),
+  ],
+  [
+    "Zakładka niewybrana",
+    buttonSample(
+      "Załóż konto",
+      { kind: "tab" },
+      NOT_APPLYING.tabLoading,
+      false,
+    ),
+  ],
+  [
+    "Zakładka wybrana",
+    buttonSample("Zaloguj się", { kind: "tab" }, NOT_APPLYING.tabLoading, true),
+  ],
   ["Lista wyboru", selectListSample],
   [
     "Pole liczby",
@@ -245,7 +323,7 @@ type FormKind = keyof typeof FORM_KINDS;
  * sign-in form, the registration form, the form „Nie pamiętam hasła” or the form „Ustaw nowe
  * hasło”, waiting for the server (its fields locked and its button waiting), with the sentence of
  * a refusal under it, or, for the request form, with the sentence that answers a request (shown in
- * `text-secondary`, which refuses nothing).
+ * `text` with a bar at its left, which refuses nothing).
  */
 function formSample(
   kind: FormKind,

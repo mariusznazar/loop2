@@ -857,9 +857,9 @@ In the browser view the background `page` means that here is the game, `panel` a
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged;
+  - complies: the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged;
   - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b
 
 *Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename.
 *Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings.
@@ -911,18 +911,18 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the six shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text-secondary`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field and text field from the seven shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** an agent compares a change with the decision:
-  - complies: the button „Wyślij” of a new screen made with the shared button; the answer to a request for a password-reset link standing under its form in `text-secondary`;
-  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany”, „Przełącz postać na ten program” or „Zatrzymaj” made as a plain button; that answer written in `warning`, as if it refused something.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 4 and 13, and § Settlements to record, rows 1, 3 and 8 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7
+  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; the answer to a request for a password-reset link standing under its form in `text` with a bar on its left in the same colour;
+  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany”, „Przełącz postać na ten program” or „Zatrzymaj” made as a plain button; that answer written in `warning`, as if it refused something, or in `positive`, as if the message had left.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 4 and 13, and § Settlements to record, rows 1, 3 and 8 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7 · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 1b and 3, and § Settlements to record, rows 2 and 6
 
-*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, stops an earning loop, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, and a calm sentence in that place is new on the screen. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes.
-*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run.
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, stops an earning loop, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes; the answer stays in white and grey, and a bar can be overlooked on a dense page.
+*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
 
@@ -4122,12 +4122,13 @@ Every request for a password-reset link whose address is well formed under D-99 
 same answer, which leaves before any work on an account and without waiting for the mail server, so
 neither its content nor its time tells what became of the request; the page then shows „Jeśli to
 konto ma potwierdzony adres, wysłaliśmy na niego odnośnik. Gdy wiadomość nie przyjdzie, spróbuj
-ponownie później.” in `text-secondary` under the form „Nie pamiętam hasła”, which stays with its
-address field empty and with „Wróć do logowania”. An address not so written gets „Podaj adres e-mail
-w postaci nazwa@domena.” under the field and nothing is sent: the form holds that condition, and so
-does the server, which refuses such an address with that sentence. Only after the answer does the
-server record and send a link, and only for an account with a confirmed address that is not blocked
-and within the limits of D-105, and a failure of that work shows only in the server's log.
+ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the
+form stays with its address field empty and with „Wróć do logowania”. An address not so written gets
+„Podaj adres e-mail w postaci nazwa@domena.” under the field and nothing is sent: the form holds
+that condition, and so does the server, which refuses such an address with that sentence. Only after
+the answer does the server record and send a link, and only for an account with a confirmed address
+that is not blocked and within the limits of D-105, and a failure of that work shows only in the
+server's log.
 
 - **Scope:** account-server, browser-view
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Return a consistent message for both existent and non-existent accounts." · "Ensure that responses return in a consistent amount of time to prevent an attacker enumerating which accounts exist."; read 2026-10-30
@@ -5427,33 +5428,44 @@ keep, where a ready one runs the same cases; real-browser tests — D-75 and D-8
 ### D-265 — How does a shared control stand in a screen built with React while other screens stay in DOM?
 
 Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen
-uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one
-tree of DOM elements with the same classes and attributes, and a screen no task has moved to React
-yet stays in those APIs on the DOM form. A test draws both forms for each kind and state the React
-screens use and compares their tag, attributes and text, the input's `value` attribute apart, and
-`src/browser/styles.css` stays the one place of the look of both.
+uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing
+one tree of DOM elements with the same classes and attributes, and a screen no task has moved to
+React yet stays in those APIs on the DOM form, where a new section of such a screen may be built
+too, moving to React with that screen. A new screen is never written after the pattern of a module
+that builds its DOM elements through the DOM APIs, though it may import that module's pure
+functions. A test draws both forms for each kind and state the React screens use and compares their
+tag, attributes and text, the input's `value` attribute apart, and `src/browser/styles.css` stays
+the one place of the look of both.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · narrows D-03
 - **Verification:** an agent compares a change with the decision:
   - complies: a new attribute of the button written in both forms in one change; a DOM screen left
-    on the DOM form by a change that moves another screen
+    on the DOM form by a change that moves another screen; a new section of the headquarters built
+    in DOM; a new screen in React that imports a pure function of a DOM module
   - violates: a React component that wraps the DOM function; a class that only the React form sets;
-    a React form with no case in the test that compares the two
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Jak wspólne kontrolki z `src/browser/view/controls/` istnieją w ekranie React, skoro pozostałe ekrany dalej używają ich w DOM?”
+    a React form with no case in the test that compares the two; a new screen that builds its
+    DOM elements with `document.createElement` after the pattern of a DOM module
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Jak wspólne kontrolki z `src/browser/view/controls/` istnieją w ekranie React, skoro pozostałe ekrany dalej używają ich w DOM?” · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 5 and 5b, and § Settlements to record, row 7
 
 *Rationale:* the screens move to React one task at a time, so for a while both kinds stand on one
 page and have to look alike. Components written as React writes them give the next screens an
-exemplar with controlled fields and state in the component. Accepted with it: the two forms live
-until the last DOM screen moves, and a new attribute is written twice, with the test failing until
-both agree.
+exemplar with controlled fields and state in the component, and a module that builds its DOM
+elements stands beside that exemplar as if it were one, so a new screen could follow it; its pure
+functions draw nothing and serve both kinds. A new section of a screen in DOM may stay in DOM, since
+React on part of a screen takes a mounting place of its own in DOM and makes small additions dear.
+Accepted with it: the two forms live until the last DOM screen moves, and a new attribute is written
+twice, with the test failing until both agree; the screens in DOM may still grow, so moving them to
+React later grows too.
 *Rejected:* wrapping the DOM functions in a React component — one implementation, but fields become
 uncontrolled, the card's state lives in DOM elements and the waiting state runs in effects, which
 D-36 would then hold up to every later screen; moving the controls to React and mounting them in DOM
 screens — a React root for each control, a render that is not synchronous when a control waits, and
 it moves screens that stay in DOM; a shared function of class names under both forms — it changes
-the DOM controls for what the comparison already catches.
+the DOM controls for what the comparison already catches; the rule on a new screen covering a new
+section of a screen in DOM too — both kinds stand on one screen, and React takes a mounting place of
+its own in DOM, so small additions grow dear.
 
 ### D-266 — Where does the output of the browser's compilation stand?
 
@@ -5694,3 +5706,170 @@ good, and absence of a test proves no refusal.
 boundary ending the deferral — a test at the task that first adds a picture, a change of the answer
 that the tasks bring no test files, and a change of the plan; new files ending it, and a change of
 the build not — the same costs.
+
+### D-274 — What does the main button of a form look like?
+
+The button that sends a form, marked as its submit button, is that form's main button, one to a
+form: its text in `text-strong`, a frame in the colour of that text and no fill, with no role of
+colour of its own. The main look covers only a button that sends a form, and an action outside a
+form keeps the button D-44 gives it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-44 · derives from D-279
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zaloguj się” under the login form with its text in `text-strong`, framed in the same
+    colour and unfilled, on `highlight` under the pointer; an action of the headquarters made with
+    the plain shared button
+  - violates: a form with two buttons in the main look; a main button filled, or framed in
+    `selected` or in a colour other than its text's; a role of colour added for the main button
+- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 1
+
+*Rationale:* a visitor tells the button that sends a form from the ways around it, and the next
+screens take their layout from the login card. The look is that of the main button of loop, a light
+frame and strong text, and it needs no colour, so the roles and their contrast stay as they are; the
+frame takes the colour of its text rather than `selected`, which means only the one chosen in its
+group. The submit mark the shared button already carries tells which button is the main one, so the
+main button is no new control. Accepted with it: the difference from a plain button is smaller than
+a fill would give, and the main actions outside forms take their look in the tasks of their
+screens.
+*Rejected:* leaving every button as it is — four alike buttons, and the next screens repeat the
+layout; the main button unchanged and only the secondary actions as text — the form „Załóż konto”
+holds no secondary action, so nothing would change there; a light fill with dark text — the
+strongest difference, but three new colour entries, a change of the rules of colour and of the
+contrast test and a divergence from the project definition's entries, with GOV.UK alone as a model,
+on a dark part of a light page; a green fill with dark text — the cost of the light fill, green
+coming to mean two things, and a colour under the pointer the game does not hold; a frame in
+`selected` — `selected` means only the one chosen in its group.
+
+### D-275 — Which actions of the browser view stand as text rather than as buttons?
+
+An action that opens or leaves a state of a form and stands under that form — „Nie pamiętam
+hasła”, „Wróć do logowania” and „Anuluj” of the login card — is a secondary action: underlined text
+in `text-secondary` without a frame, and a button still, since it changes the state of the screen
+and has no address. Every other action of the browser view keeps the button D-44 gives it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-44
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Wróć do logowania” under the form „Nie pamiętam hasła” as underlined text without a
+    frame, a button the keyboard reaches; „Wyloguj” in the header kept a plain button
+  - violates: „Usuń” of a program rule drawn as underlined text; „Nie pamiętam hasła” made a link
+    with an address; a secondary action given a frame
+- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 2
+
+*Rationale:* a way into or out of a form's state, such as a forgotten password, is commonly made as
+clickable text, so beside the main button it reads as the lesser way; it stays a button because it
+changes the card and leads to no address. Its text is a note, as the credits on the same card are.
+Holding the text to the actions under a form leaves no screen to judge for itself what is
+secondary. Accepted with it: the hierarchy of actions outside forms stays with the plain buttons.
+*Rejected:* leaving every button as it is — four alike buttons, and the next screens repeat the
+layout; the secondary actions left as plain buttons — no new look, but the hierarchy rests on the
+main button alone; text wherever an action is secondary — each agent judges what is secondary, so
+the screens drift apart, and „Usuń” or „Zakończ” could look like a harmless link.
+
+### D-276 — What is a tab of the browser view?
+
+A tab is a button selected in its group drawn without a frame, the chosen one with its text in
+`text-strong` and a line in `selected` at its bottom. A tab keeps the HTML element, `aria-pressed`
+and keyboard of the button selected in its group — Tab reaches each, Enter or Space switches — with
+neither arrow keys nor the roles of tabs. The switch of the login card stands as tabs, and the pace
+buttons of D-130 keep the look of the button selected in its group.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-44 · derives from D-96
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Załóż konto” chosen in the switch with its text in `text-strong` and a line in
+    `selected` at its bottom, `aria-pressed="true"`, and Space on „Zaloguj się” switching and moving
+    focus to its address field
+  - violates: arrow keys moving between tabs, or `role="tab"`, with no change of this decision; the
+    chosen tab marked by a line in `positive`; a pace button drawn as a tab
+- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 2a and 2c, and § Settlements to record, row 3
+
+*Rationale:* the switch and the button that sends the form both read „Zaloguj się”, so the switch
+takes a look that says it chooses rather than sends. The line takes `selected`, which means the one
+chosen in its group, rather than green, which means that something works or is active now. A tab
+here names a look, not the tabs of WAI-ARIA: the requirements of accessibility the browser view
+keeps ask for no arrow keys, and a task that needs them adds them. Accepted with it: a reader who
+knows the tabs of WAI-ARIA finds pressed buttons under that name.
+*Rejected:* a green underline, as the current place of loop's menu has — green is a colour of text
+that means that something works or is active, not that it is chosen; a tab grown into the form — a
+frame inside a card that is a frame already, less room for the fields and another background for
+the tab not chosen; no tabs, with „Załóż konto” as text under the form — changes of D-96, D-259 and
+of the project definition's entry, a heading and a way back for the state „Załóż konto”, no tabs in
+the styleguide, and the visitor no longer sees the two ways side by side at once; leaving it — two
+„Zaloguj się” one above the other in one look; real tabs with arrow keys and activation by Enter —
+keyboard handling written by hand in both forms of the control (D-265) and its tests, which D-42
+does not ask for, while W3C and Carbon advise switching at once on an arrow for a quick panel,
+which here would empty what was typed; the nouns „Logowanie” and „Nowe konto” as the tabs' labels
+— changes of D-96, D-259 and of the project definition's entry, and „Logowanie” collides with the
+waiting text „Logowanie…”.
+
+### D-277 — How does the menu bar show where the player is?
+
+The menu bar marks the place the player is at as the chosen tab is marked (D-276): its text in
+`text-strong` and the same line in `selected` at its bottom.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-276
+- **Verification:** an agent compares a change with the decision:
+  - complies: the item of the menu bar for the screen the player is on with its text in
+    `text-strong` and a line in `selected` at its bottom
+  - violates: that item marked in green, by a background or by a frame
+- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2b, and § Settlements to record, row 4
+
+*Rationale:* one mark says where the player is, among tabs and on the menu bar alike, so the bar
+takes no look of its own for it. Accepted with it: the menu bar and the tabs look alike, though NN/g
+advises telling navigation from tabs by their look.
+*Rejected:* the task that builds the menu bar settling the mark once the bar can be seen — a second
+conversation about the look, and that task losing its main reason to wait for this one.
+
+### D-278 — Where does the login card stand in the height of the window?
+
+The top edge of the login card stands at 15% of the window's height, whatever the card holds, so
+the unfolding of the credits, a change at the switch and a sentence appearing under a form move
+nothing above them.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96
+- **Verification:** an agent compares a change with the decision:
+  - complies: the card's top edge at the same height of a window of 1280 × 800 with the credits
+    folded and unfolded, and after a switch to „Załóż konto”
+  - violates: the card centred in the window's height; a top edge computed from the card's own
+    height
+- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 5
+
+*Rationale:* a card in the exact middle grows both ways, so whatever stands above a change moves
+with it, and a second click on the credits or on the switch misses. Accepted with it: on a tall
+window the card stands clearly above the middle.
+*Rejected:* leaving the card in the middle — the credits and the switch jump whenever the card
+grows; unfolding the credits outside the card — a new HTML element with its own background, while
+the jumps of the switch and of the form stay.
+
+### D-279 — What colour does a frame or a bar that sets a text apart take?
+
+A frame or a bar drawn at a text to set it apart — the frame of a form's main button (D-274), the
+bar of the answer to a request for a password-reset link (D-44), the frame of a field in the colour
+of its message — takes the colour of that text and is part of it, so the text's role keeps the
+meaning D-39 and D-40 give it. A line that marks the one chosen in its group stays in `selected`.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-40
+- **Verification:** an agent compares a change with the decision:
+  - complies: the main button's frame drawn in `currentColor` beside its text in `text-strong`; the
+    bar of the answer in the colour of its sentence
+  - violates: the bar of the answer in `text-secondary` beside its sentence in `text`; the main
+    button's frame in `selected`
+- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3b, and § Settlements to record, row 8
+
+*Rationale:* every role of text stands as text, and a frame or a bar in the text's own colour reads
+with that text, as the frame of a field in error reads with its message, so it takes no role and
+gives none a new meaning.
+*Rejected:* recording nothing — the question comes up in the review of the change and can stop it;
+a change of D-40 — D-40 joins the divergence from the project definition, and the plan gains one
+more entry the task that writes that decision has to keep in mind.

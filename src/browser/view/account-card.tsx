@@ -311,6 +311,7 @@ function LoginForm({
       exit={
         <ReactButton
           text="Nie pamiętam hasła"
+          kind="secondary"
           disabled={lock.locked}
           onClick={onForgotten}
         />
@@ -443,6 +444,7 @@ function RequestForm({
       exit={
         <ReactButton
           text="Wróć do logowania"
+          kind="secondary"
           disabled={lock.locked}
           onClick={onBack}
         />
@@ -513,7 +515,12 @@ function ResetForm({
       warning={warning}
       onSend={send}
       exit={
-        <ReactButton text="Anuluj" disabled={lock.locked} onClick={cancel} />
+        <ReactButton
+          text="Anuluj"
+          kind="secondary"
+          disabled={lock.locked}
+          onClick={cancel}
+        />
       }
     >
       <ReactPasswordField
@@ -581,9 +588,10 @@ function Card({
       <p className="account-card-about">{ABOUT.sentence}</p>
       {sentence === null ? null : <PageSentence notice={sentence} />}
       {hasSwitch ? (
-        <div className="account-card-switch">
+        <div className="account-card-switch tabs">
           <ReactButton
             text="Zaloguj się"
+            kind="tab"
             selected={state === "login"}
             disabled={lock.locked}
             onClick={() => {
@@ -592,6 +600,7 @@ function Card({
           />
           <ReactButton
             text="Załóż konto"
+            kind="tab"
             selected={state === "register"}
             disabled={lock.locked}
             onClick={() => {

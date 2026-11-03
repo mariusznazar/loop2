@@ -22,6 +22,15 @@
   background: var(--highlight);
 }
 
+/*
+ * The sample of the secondary action under the pointer: its text in `text` and its background
+ * unchanged, as styles.css draws `.button.secondary:hover`, not the `highlight` of the rule above.
+ */
+.button.secondary.sample-hover {
+  color: var(--text);
+  background: transparent;
+}
+
 /* A section may be narrower than its table, which then scrolls inside its panel. */
 .sample-section {
   min-width: 0;

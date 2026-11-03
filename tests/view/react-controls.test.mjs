@@ -168,6 +168,117 @@ test("a button not selected in its group is the same element in both forms", asy
   });
 });
 
+// The secondary action (pytania 1 and 1a of the task przyciski-i-zakladki): a further kind of the
+// button, a plain `<button>` with the class `secondary`. The class is written out in each case,
+// since two forms that both leave it out would agree and show a plain button.
+test("a secondary action is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        text: "Nie pamiętam hasła",
+        kind: "secondary",
+      }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("class"), "button secondary");
+    assert.equal(button.getAttribute("type"), "button");
+    assert.equal(button.hasAttribute("aria-pressed"), false);
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(
+        document,
+        createButton("Nie pamiętam hasła", { kind: "secondary" }),
+      ),
+    );
+  });
+});
+
+test("a secondary action locked with its text is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        text: "Wróć do logowania",
+        kind: "secondary",
+        disabled: true,
+      }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("class"), "button secondary");
+    assert.equal(button.disabled, true);
+    const expected = createButton("Wróć do logowania", { kind: "secondary" });
+    expected.disabled = true;
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+// The tab (pytania 2 and 2c): the button selected in its group, kept as the same element with
+// `aria-pressed`, with the class `tab` beside `selected`.
+test("a tab selected in its group is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        text: "Zaloguj się",
+        kind: "tab",
+        selected: true,
+      }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("class"), "button tab selected");
+    assert.equal(button.getAttribute("aria-pressed"), "true");
+    const expected = createButton("Zaloguj się", { kind: "tab" });
+    setButtonSelected(expected, true);
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+test("a tab not selected in its group is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        text: "Załóż konto",
+        kind: "tab",
+        selected: false,
+      }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("class"), "button tab");
+    assert.equal(button.getAttribute("aria-pressed"), "false");
+    const expected = createButton("Załóż konto", { kind: "tab" });
+    setButtonSelected(expected, false);
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+test("a tab locked with its text, selected or not, is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    for (const selected of [true, false]) {
+      const drawing = await drawn(
+        document,
+        createElement(ReactButton, {
+          text: "Zaloguj się",
+          kind: "tab",
+          selected,
+          disabled: true,
+        }),
+      );
+      const { firstElementChild: button } = drawing.container;
+      assert.equal(
+        button.getAttribute("class"),
+        selected ? "button tab selected" : "button tab",
+      );
+      assert.equal(button.disabled, true);
+      const expected = createButton("Zaloguj się", { kind: "tab" });
+      setButtonSelected(expected, selected);
+      expected.disabled = true;
+      assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+    }
+  });
+});
+
 test("a waiting submit button is the same element in both forms", async () => {
   await withPage(async ({ document }) => {
     const drawing = await drawn(

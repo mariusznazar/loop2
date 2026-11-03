@@ -1,12 +1,20 @@
 /**
- * The shared button (D-44): the button, the destructive button and the button selected in its
- * group are one `<button>` with three looks, which `styles.css` draws from the class this module
- * sets. A button that sends a form to a server can wait for the answer (`setButtonWaiting`).
+ * The shared button (D-44): the button, the destructive button, the button selected in its group,
+ * the secondary action and the tab are one `<button>` of five kinds, which `styles.css` draws from
+ * the class this module sets. The button that sends a form has the main look on top of its kind,
+ * which `styles.css` draws from its `type="submit"`, so the main look needs no kind of its own.
+ * A button that sends a form to a server can wait for the answer (`setButtonWaiting`).
  * Nothing here runs when the module is imported.
  */
 
-/** „plain” — the button; „destructive” — its text in `danger`; „selected” — chosen in its group. */
-export type ButtonKind = "plain" | "destructive" | "selected";
+/**
+ * „plain” — the button; „destructive” — its text in `danger`; „selected” — chosen in its group;
+ * „secondary” — an underlined text without a frame, for an action that opens or leaves the state
+ * of a form and stands under it; „tab” — a button of a group drawn as a tab, whose group sets
+ * which one is selected with `setButtonSelected`.
+ */
+export type ButtonKind =
+  "plain" | "destructive" | "selected" | "secondary" | "tab";
 
 export type ButtonOptions = {
   kind?: ButtonKind;
@@ -31,6 +39,8 @@ export function createButton(
   element.textContent = text;
   if (options.label) element.setAttribute("aria-label", options.label);
   if (options.kind === "destructive") element.classList.add("destructive");
+  if (options.kind === "secondary") element.classList.add("secondary");
+  if (options.kind === "tab") element.classList.add("tab");
   if (options.kind === "selected") setButtonSelected(element, true);
   return element;
 }

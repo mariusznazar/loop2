@@ -6,8 +6,13 @@
  */
 import type { MouseEventHandler, Ref } from "react";
 
+/** „secondary” — the secondary action; „tab” — a button of a group drawn as a tab. */
+export type ReactButtonKind = "secondary" | "tab";
+
 export type ReactButtonProps = {
   text: string;
+  /** Left out, the button is the plain one or, given `selected`, the one selected in its group. */
+  kind?: ReactButtonKind;
   /** The accessible name, where the visible text alone does not say what the button does. */
   label?: string;
   /** Makes the button the one that submits its form; any other button never does. */
@@ -29,9 +34,10 @@ export type ReactButtonProps = {
   buttonRef?: Ref<HTMLButtonElement>;
 };
 
-/** A button of the shared look: plain, or selected in its group. */
+/** A button of the shared look: plain, secondary, selected in its group or a tab of it. */
 export function ReactButton({
   text,
+  kind,
   label,
   submit,
   selected,
@@ -45,7 +51,9 @@ export function ReactButton({
     <button
       ref={buttonRef}
       type={submit ? "submit" : "button"}
-      className={selected ? "button selected" : "button"}
+      className={["button", kind, selected ? "selected" : undefined]
+        .filter(Boolean)
+        .join(" ")}
       aria-label={label}
       aria-pressed={selected === undefined ? undefined : selected}
       aria-busy={waiting ? "true" : undefined}

@@ -238,3 +238,10 @@ The save time is the moment of the browser's clock at which a saved game state w
 The loop clock is the date, kept by the browser view apart from the game state, up to which the whole game minutes of the earning loops have been counted.
 
 - **Not:** none
+
+## secondary action
+
+A secondary action is an action of the browser view that opens or leaves a state of a form and
+stands under that form, a button drawn as underlined text without a frame.
+
+- **Not:** none

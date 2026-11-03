@@ -67,7 +67,7 @@
 
   /* Lines */
   --frame-width: 1px; /* Source: settled in the task, Q11: frames 1 px */
-  --bar-width: 2px; /* Source: settled in the task, Q11: bars, the vertical lines at the left edge of a row, 2 px */
+  --bar-width: 2px; /* Source: settled in the task, Q11: bars, the vertical lines at the left edge of a row, 2 px; also the bar at the left of the sentence under a form and the bottom line of the selected tab: Mariusz's choice from the preview of the variants of the card, 2026-11-02, in the task przyciski-i-zakladki (To do 7) */
   --character-outline-width: 4px; /* Source: settled in the task, Q19 C: the character's outline 4 px, as in the preview of Q10 */
   --step-target-width: 2px; /* Source: settled in the task, Q19 C: the step target 2 px, as in the preview of Q10 */
   --step-target-dash: 5 4; /* Source: settled in the task, Q19 C: the step target's dash pattern 5/4, as in the preview of Q10 */

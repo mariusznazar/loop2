@@ -14,12 +14,12 @@ Czytaj również ogólne wytyczne kodowania.
 |---|---|---|
 | `src/browser/view/account-card.tsx` | exemplar | D-36 |
 | `src/browser/view/account-rules.ts` | copy | — |
-| `src/browser/view/app.ts` | copy | — |
-| `src/browser/view/away-report.ts` | copy | — |
-| `src/browser/view/body-row.ts` | copy | — |
-| `src/browser/view/character-skills.ts` | copy | — |
+| `src/browser/view/app.ts` | do not copy | — |
+| `src/browser/view/away-report.ts` | do not copy | — |
+| `src/browser/view/body-row.ts` | do not copy | — |
+| `src/browser/view/character-skills.ts` | do not copy | — |
 | `src/browser/view/clock.ts` | copy | — |
-| `src/browser/view/combat-line.ts` | copy | — |
+| `src/browser/view/combat-line.ts` | do not copy | — |
 | `src/browser/view/controls/button.ts` | copy | — |
 | `src/browser/view/controls/number-field.ts` | copy | — |
 | `src/browser/view/controls/react-button.tsx` | copy | — |
@@ -28,21 +28,21 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/controls/text-field.ts` | copy | — |
 | `src/browser/view/credits-section.tsx` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
-| `src/browser/view/email-confirmation.ts` | copy | — |
-| `src/browser/view/email-status.ts` | copy | — |
-| `src/browser/view/footer.ts` | copy | — |
+| `src/browser/view/email-confirmation.ts` | do not copy | — |
+| `src/browser/view/email-status.ts` | do not copy | — |
+| `src/browser/view/footer.ts` | do not copy | — |
 | `src/browser/view/game-saver.ts` | do not copy | — |
-| `src/browser/view/game-view.ts` | copy | — |
-| `src/browser/view/headquarters.ts` | copy | — |
+| `src/browser/view/game-view.ts` | do not copy | — |
+| `src/browser/view/headquarters.ts` | do not copy | — |
 | `src/browser/view/password-reset.ts` | copy | — |
-| `src/browser/view/program-editor.ts` | copy | — |
-| `src/browser/view/program-panel.ts` | copy | — |
-| `src/browser/view/status-row.ts` | copy | — |
-| `src/browser/view/terrain-panel.ts` | copy | — |
+| `src/browser/view/program-editor.ts` | do not copy | — |
+| `src/browser/view/program-panel.ts` | do not copy | — |
+| `src/browser/view/status-row.ts` | do not copy | — |
+| `src/browser/view/terrain-panel.ts` | do not copy | — |
 | `src/browser/view/terrain-picture.ts` | copy | — |
-| `src/browser/view/tile-list.ts` | copy | — |
-| `src/browser/view/trip-editor.ts` | copy | — |
-| `src/browser/view/trip-lines.ts` | copy | — |
+| `src/browser/view/tile-list.ts` | do not copy | — |
+| `src/browser/view/trip-editor.ts` | do not copy | — |
+| `src/browser/view/trip-lines.ts` | do not copy | — |
 
 ## Rules
 
@@ -137,10 +137,30 @@ z plikiem `.ts` obok) i funkcję DOM. Obie rysują to samo drzewo elementów z t
 samymi klasami i atrybutami; wygląd stoi tylko w `src/browser/styles.css`.
 Komponent jest napisany po reactowemu, z polami kontrolowanymi i stanem
 w komponencie, nie owija funkcji DOM. Ekran, którego żadne zadanie nie przeniosło
-do Reacta, zostaje przy postaci DOM. Test `tests/view/react-controls.test.mjs`
+do Reacta, zostaje przy postaci DOM, a jego nową sekcję wolno zbudować w DOM
+(reguła *Nowy ekran i moduły w DOM*). Test `tests/view/react-controls.test.mjs`
 rysuje obie postaci dla każdego rodzaju i stanu, których używa ekran w Reactcie,
 i porównuje znacznik, atrybuty i tekst, z atrybutem `value` pola poza
 porównaniem; nowa postać dostaje w nim przypadek.
+
+### Nowy ekran i moduły w DOM
+
+- **Decision:** D-265
+- **Invariant:** none
+- **Good:** Nowy ekran w Reactcie importuje czystą funkcję modułu ze statusem `do not copy`; nowa sekcja ekranu, który jeszcze jest w DOM, powstaje w DOM.
+- **Bad:** Nowy ekran buduje elementy przez `document.createElement` na wzór modułu ze statusem `do not copy`.
+
+Nowy ekran nie powstaje na wzór pliku ze statusem `do not copy` w tabeli
+*Files of this kind*: te pliki budują elementy przez API DOM i stoją w tabeli,
+bo ekran, którego żadne zadanie nie przeniosło do Reacta, zostaje przy API DOM.
+Nowy ekran powstaje po wzorze pliku ze statusem `exemplar`. Plik budujący
+elementy przez API DOM, dodany po ostatnim audycie tabeli, nie ma w niej wiersza
+i też nie jest wzorem. Status nie zakazuje importowania czystych funkcji tych
+plików, bo takie funkcje niczego nie rysują. Reguła dotyczy tylko nowych
+ekranów: nowa sekcja ekranu, który jeszcze jest w DOM, może powstać w DOM,
+a w Reactcie przepisze ją zadanie tego ekranu. Status `copy` przy pliku
+w `src/browser/view/controls/` oznacza, że nową kontrolkę pisze się w obu
+postaciach według reguły wyżej.
 
 ### Strona wszystkich stanów bez Reacta
 
@@ -175,6 +195,9 @@ nie Efekt.
 
 ### Kontrolki w DOM i ich aktualizacja
 
+Ten akapit o `status-row.ts` dotyczy utrzymania ekranu, który zostaje w DOM,
+nie budowy nowego ekranu (D-265).
+
 `src/browser/view/status-row.ts` tworzy przyciski raz, a przy zmianie stanu
 aktualizuje tekst istniejących elementów. Dzięki temu przycisk zachowuje fokus.
 Obsługa kliknięć przekazuje działania do aplikacji przez `StatusRowControls`;
@@ -189,13 +212,16 @@ oczekiwania, a wywołana z `null` przywraca tekst; pola formularza blokuje się
 przez `input.disabled`, a zdanie odmowy albo braku połączenia pokazuje
 `createFormWarning` z `text-field.ts`, a zdanie spokojne, które nie jest odmową,
 `createFormNote` z tego samego pliku. Pole hasła to `createPasswordField`,
-a przycisk, który wysyła formularz, dostaje `submit: true`. Postacie Reacta
-to `ReactButton` (`waitingText`, `selected`, `submit`) oraz `ReactTextField`,
-`ReactPasswordField`, `ReactFormWarning` i `ReactFormNote`. Wyłączony przycisk
-traci fokus, więc ekran po odpowiedzi ustawia go na kontrolce, od której gracz
-zaczął.
+a przycisk, który wysyła formularz, dostaje `submit: true`. Rodzaj przycisku
+ustawia `kind` w obu postaciach, a akcja poboczna i zakładka to rodzaje `secondary`
+i `tab`. Postacie Reacta to `ReactButton` (`kind`, `waitingText`, `selected`,
+`submit`) oraz `ReactTextField`, `ReactPasswordField`, `ReactFormWarning`
+i `ReactFormNote`. Wyłączony przycisk traci fokus, więc ekran po odpowiedzi
+ustawia go na kontrolce, od której gracz zaczął.
 
 ### Gra na stronie i odpowiedzi serwera
+
+Ten przykład dotyczy ekranu gry, który zostaje w DOM, nie nowego ekranu (D-265).
 
 `src/browser/view/app.ts` buduje grę dopiero wtedy, gdy serwer potwierdzi
 konto, a potem odpowie o zapisanym stanie gry tego konta (D-96). Stan gry daje

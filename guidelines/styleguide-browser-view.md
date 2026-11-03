@@ -154,9 +154,9 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-222
+- **Decision:** D-38 · D-44 · D-222 · D-274 · D-275 · D-276 · D-279
 - **Invariant:** none
-- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text-secondary`.
+- **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
 
 Wspólne kontrolki stoją w `src/browser/view/controls/`, a ekrany budują z nich
@@ -186,12 +186,14 @@ stanów:
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
   gracz zaczął. Odpowiedź na prośbę o odnośnik do zmiany hasła niczego nie
   odmawia, więc stoi w tym samym miejscu pod formularzem „Nie pamiętam hasła”
-  jednym zdaniem w `text-secondary`, nie w `warning` (D-44, D-222).
+  jednym zdaniem w `text`, z belką po lewej w kolorze tego zdania
+  (`currentColor`) o grubości `--bar-width`, bez własnego koloru — nie
+  w `warning` i nigdy w `positive` (D-44, D-222, D-279).
 
 Pole hasła to pole tekstowe z ukrytym wpisem (przeglądarka maskuje znaki)
 i ma te same stany co ono. Pole z widoczną etykietą stawia jej tekst nad polem
-w `text-label`. Formularz stawia pod swoim przyciskiem jedno zdanie w `warning` (formularz „Nie pamiętam hasła” po prośbie — zdanie w `text-secondary`), a przycisk,
-który go wysyła, jest przyciskiem zatwierdzającym.
+w `text-label`. Formularz stawia pod swoim przyciskiem jedno zdanie w `warning` (formularz „Nie pamiętam hasła” po prośbie — zdanie w `text` z belką), a przycisk,
+który go wysyła, jest przyciskiem zatwierdzającym i ma główny wygląd (D-274).
 
 Kontrolki odstępujące od tej listy stanów:
 
@@ -200,9 +202,33 @@ Kontrolki odstępujące od tej listy stanów:
   niepoprawnej wartości; empty nie dotyczy, bo przycisk nie ma pozycji ani
   wpisu. Przycisk niszczący ma tekst w `danger`; są nim „Zakończ”, „Usuń”,
   „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” i „Zatrzymaj” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
-  w `text-strong` (D-40). Loading dotyczy tylko zwykłego przycisku, który
-  czeka na odpowiedź serwera; przycisk niszczący i przycisk wybrany w grupie
-  nie czekają na serwer.
+  w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
+  Loading dotyczy tylko zwykłego przycisku, który czeka na odpowiedź
+  serwera, także w głównym wyglądzie; przycisk niszczący i przycisk wybrany
+  w grupie nie czekają na serwer. Przycisk, który wysyła formularz, ma na
+  swoim rodzaju główny wygląd (D-274): tekst w `text-strong` o wadze
+  `--font-weight-emphasis` i ramka w kolorze tego tekstu (`currentColor`),
+  bez wypełnienia, więc widać tło pod nim; pod kursorem tło `highlight`,
+  ramka i tekst bez zmiany; czekając na serwer wygląda jak każdy wyłączony
+  przycisk — tekst w `text-disabled` o wadze `--font-weight-body`, ramka
+  w `control-border`.
+- `src/browser/view/controls/button.ts` — akcja poboczna (D-275): error
+  i empty nie dotyczą, jak przycisku; loading nie dotyczy, bo na serwer czeka
+  tylko przycisk, który wysyła formularz, a akcja poboczna jest wtedy
+  wyłączona. Spoczynek: podkreślony tekst w `text-secondary`, bez ramki i bez
+  odstępów po bokach, więc zaczyna się równo z polami; pod kursorem tekst
+  w `text`, a tło zostaje bez zmiany, bez `highlight`; wyłączona — tekst
+  w `text-disabled`.
+- `src/browser/view/controls/button.ts` — zakładka, czyli przycisk wybrany
+  w grupie narysowany jako zakładka (D-276): error i empty nie dotyczą, jak
+  przycisku; loading nie dotyczy, bo na serwer czeka tylko przycisk, który
+  wysyła formularz, a zakładka jest wtedy wyłączona, z linią wyboru. Zakładka
+  nie ma ramki, a jej tekst stoi w rozmiarze `--font-size-body`; wybrana ma
+  tekst w `text-strong` o wadze `--font-weight-emphasis` i linię u dołu
+  w `selected` o grubości `--bar-width`, niewybrana — tekst w `text-label`;
+  pod kursorem tło `highlight`; wyłączona, gdy formularz czeka na serwer —
+  tekst w `text-disabled`, a linia wyboru zostaje. Pod całą grupą stoi cienka
+  linia w `divider`, którą rysuje klasa `tabs` kontenera zakładek.
 - `src/browser/view/controls/select-list.ts` — lista wyboru: error nie
   dotyczy, bo lista podaje tylko poprawne pozycje; loading nie dotyczy, bo
   żaden formularz czekający na serwer jej nie ma.
@@ -266,7 +292,7 @@ prawdziwość ocenia przegląd zmiany pliku tokenów.
 
 ### The kitchen-sink page
 
-- **Decision:** D-38 · D-45
+- **Decision:** D-38 · D-44 · D-45 · D-269 · D-274 · D-276
 - **Invariant:** application-build-kitchen-sink
 - **Good:** Strona zbudowana komendą `npm run kitchen-sink` i podawana tylko na komputerze dewelopera.
 - **Bad:** Strona rysuje panel terenu ze stanu gry złożonego ręcznie.
@@ -275,10 +301,12 @@ Strona wszystkich stanów to `src/browser/kitchen-sink/index.html` — kod
 produktu, nie część tekstu styleguide'u. Buduje ją i otwiera lokalnie osobna
 komenda `npm run kitchen-sink`; nic, co pisze `npm run build`, a to trafia na
 serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontrolkę
-w każdym stanie albo z powodem, dla którego stan nie dotyczy, formularze
+w jej postaci DOM (D-269), w każdym stanie albo z powodem, dla którego stan
+nie dotyczy — przycisk także w głównym wyglądzie (D-274) i jako zakładkę
+wybraną i niewybraną (D-276) — formularze
 logowania i zakładania konta, „Nie pamiętam hasła” i „Ustaw nowe hasło”
 czekające na serwer i ze zdaniem odmowy pod nimi oraz formularz „Nie pamiętam
-hasła” ze zdaniem odpowiedzi na prośbę w `text-secondary`,
+hasła” ze zdaniem odpowiedzi na prośbę w `text` z belką (D-44),
 wiersz nagłówka z niepotwierdzonym adresem z przyciskiem „Wyślij ponownie”
 czekającym na serwer („Wysyłanie…”) i ze zdaniem odmowy obok przycisku
 (wszystko z wartościami zmyślonymi, bez stanu gry), każdą rolę
@@ -290,6 +318,59 @@ albo nowa rola trafia na stronę w tej samej zmianie.
 wejściowym strona importuje tylko moduły, których używa gra; kod potrzebny
 tylko jej zostaje w tym module, bo w `src/browser/view/` trafiłby do wyniku
 `npm run build`.
+
+### Main button, secondary action and tab
+
+- **Decision:** D-274 · D-275 · D-276 · D-277
+- **Invariant:** none
+- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w nagłówku — zwykłym wspólnym przyciskiem.
+- **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie.
+
+Główny wygląd, akcja poboczna i zakładka to wyglądy wspólnego przycisku,
+każdy na swoim miejscu, które podaje ta reguła; ich stany podaje reguła
+States of shared controls.
+
+- Główny wygląd ma tylko przycisk, który wysyła formularz, jeden na
+  formularz (D-274). Wygląd bierze się z samego wysyłania formularza
+  (`createButton(text, { submit: true })`, w React `<ReactButton submit>`),
+  więc ekran nie daje mu rodzaju ani klasy. Działanie poza formularzem
+  zostaje przy przycisku, który daje mu D-44; o wyglądzie głównych działań
+  poza formularzami, jak „Wejdź”, rozstrzyga zadanie ich ekranu.
+- Akcją poboczną (`kind: "secondary"`) jest tylko działanie, które otwiera
+  albo opuszcza stan formularza i stoi pod tym formularzem — dziś „Nie
+  pamiętam hasła”, „Wróć do logowania” i „Anuluj” karty logowania (D-275).
+  Zostaje przyciskiem, bo zmienia stan ekranu i nie ma adresu, nigdy
+  odnośnikiem. Każde inne działanie, choćby poboczne, zostaje przy
+  przycisku, który daje mu D-44.
+- Zakładka (`kind: "tab"`) to przycisk wybrany w grupie narysowany bez
+  ramki — dziś przełącznik „Zaloguj się” i „Załóż konto” karty logowania
+  (D-276). „Zakładka” znaczy w wytycznych wygląd: element, atrybut
+  `aria-pressed` i klawiatura zostają jak przy przycisku wybranym w grupie —
+  Tab przechodzi przez każdą, Enter albo Spacja przełącza — bez strzałek
+  i bez ról zakładek (`role="tab"`). Grupa zaznacza wybraną zakładkę jak
+  wybrany przycisk (`setButtonSelected`, w React `selected`), a kontener
+  zakładek dostaje klasę `tabs`. Przyciski tempa (D-130) zostają przy
+  wyglądzie przycisku wybranego w grupie.
+- Pasek menu znaczy pozycję, na której jest gracz, tak jak wybraną zakładkę:
+  tekst w `text-strong` i ta sama linia w `selected` u dołu (D-277) — nigdy
+  zielenią, tłem ani ramką.
+
+### A line at a text takes the colour of that text
+
+- **Decision:** D-279 · D-39 · D-40
+- **Invariant:** none
+- **Good:** Ramka głównego przycisku w `currentColor` obok jego tekstu w `text-strong`; belka zdania po prośbie o odnośnik w kolorze tego zdania.
+- **Bad:** Belka zdania po prośbie o odnośnik w `text-secondary` obok zdania w `text` albo ramka głównego przycisku w `selected`.
+
+Ramka albo belka, którą ekran rysuje przy tekście, żeby go wyróżnić — ramka
+głównego przycisku, belka zdania po prośbie o odnośnik, ramka pola z błędem
+w kolorze jego komunikatu — bierze kolor tego tekstu: w stylach
+`currentColor` albo tę samą rolę co tekst. Jest częścią tekstu, więc nie
+dostaje własnej roli i nie zmienia znaczenia roli tego tekstu (D-39, D-40).
+Linia, która znaczy wybrane w swojej grupie — ramka przycisku wybranego
+w grupie, linia wybranej zakładki i bieżącej pozycji paska menu — zostaje
+w `selected`. Przegląd zmiany czyta kolor każdej takiej ramki i belki wobec
+tekstu, przy którym stoi.
 
 ## Examples
 
