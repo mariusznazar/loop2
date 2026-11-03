@@ -911,7 +911,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the seven shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the header's button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field and text field from the seven shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -1787,7 +1787,7 @@ A signed-out visitor sees one card on a picture of the game: the game's name, on
 
 ### D-97 — What does the player's logout do?
 
-The shared „Wyloguj” button stands in the header beside the title, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving. When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives. A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it.
+The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving. When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives. A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
@@ -2881,18 +2881,18 @@ The link of a confirmation message is the configured public origin followed by `
 
 ### D-157 — What does a signed-in player see of an unconfirmed address, and who may ask for another confirmation message?
 
-A signed-in player whose email address is unconfirmed sees on every screen, in the header on a line under the title and „Wyloguj”, „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, and both are gone once the address is confirmed. Only a signed-in player asks for another confirmation message, and it goes only to the address of that player's own account. Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”.
+A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed. Only a signed-in player asks for another confirmation message, and it goes only to the address of that player's own account. Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości. Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”.
 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-152 · derives from D-105
 - **Verification:** an agent compares a change with the decision:
-  - complies: the answer to a registration carries the outcome of its sending, and the header row starts with that outcome's sentence
-  - violates: a field of the request for another message that names an address or an account; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after a sending that failed
-- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 3 and 8, and § Settlements to record, row K3
+  - complies: the answer to a registration carries the outcome of its sending, and the menu „Konto” holds that outcome's sentence above „Wyślij ponownie” with no mark on the menu bar
+  - violates: a field of the request for another message that names an address or an account; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after a sending that failed; „Adres e-mail niepotwierdzony.” on a line of its own under the menu bar
+- **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 3 and 8, and § Settlements to record, row K3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-157 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11
 
-*Rationale:* the player learns where the message went and can ask for it again without help, and a limit or a failure is said instead of a message that never comes. The row stands in the header on every screen until the address is confirmed, and the answer to a registration waits for the outcome of its sending, so entering the headquarters takes a few seconds more while the mail service answers slowly. The sentence after a sending notes what happened while the address is still unconfirmed, so it reads as a note rather than as something in order.
-*Rejected:* „Wysłaliśmy odnośnik potwierdzający na <adres>.” after every registration, also when the sending failed — the player reads that a message went when it did not; no sentence about the sending — changes the sentence settled for right after registration; the sending in the background with the browser asking for its outcome — adds a state, a route and a loop of requests for a wait of a few seconds; `positive` for „Wysłaliśmy odnośnik potwierdzający na <adres>.” — reads as done while the address is unconfirmed.
+*Rationale:* the player learns where the message went and can ask for it again without help, and a limit or a failure is said instead of a message that never comes. The first line of the game is no place for a request about an address, which matters only for a reset of a password, so it stands where the account stands.
+*Rejected:* a line in the header of every screen — the first thing the player reads of the game is a request about an address; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after every registration, also when the sending failed; no sentence about the sending; the sending in the background with the browser asking for its outcome; `positive` for that sentence — reads as done while the address is unconfirmed.
 
 ### D-158 — From whom does the email confirmation message come, and what does it say?
 
@@ -3737,49 +3737,23 @@ Las, while closing the tab takes at most 30 game minutes at every pace.
 
 ### D-208 — What does the player see of saving the game state?
 
-A save of the game state that succeeds shows nothing. When one fails, the header shows on a line
-under the title and „Wyloguj”, above the line of D-157, „Nie udało się zapisać postępu. Gra spróbuje
-ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for
-that failure, and the game retries the save after 5, 10 and 20 real seconds and then every
-30 real seconds, each time with the game state of that moment and at once at a moment of saving of
-D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than
-its limit of D-104, the game does not retry that save but tries again at its next moment of saving,
-and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo
-usuń niepotrzebne programy.” in `warning` until a save succeeds; the game currently sets no limit on
-the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
+A save of the game state that succeeds shows nothing. When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.” in `warning` until a save succeeds; the game currently sets no limit on the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: a save with no answer within its time limit showing „Nie udało się zapisać postępu.
-    Gra spróbuje ponownie.” above „Adres e-mail niepotwierdzony.”, and the retry five real seconds
-    later clearing it when it succeeds; a too-large refusal followed by no request until the next
-    moment of saving
+    Gra spróbuje ponownie.” on the line under the menu bar, and the retry five real seconds later
+    clearing it when it succeeds; a too-large refusal followed by no request until the next moment
+    of saving
   - violates: a line „Zapisano o 12:31” after each save; a too-large refusal retried as a failed
-    save; a failed save shown nowhere; a start of an earning loop refused for the number of earning
-    loops
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 18, and § Settlements to record, row 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q12, and § Settlements to record, row 19
+    save; a failed save shown nowhere, or only inside the closed menu „Konto”; a start of an earning
+    loop refused for the number of earning loops
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 18, and § Settlements to record, row 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q12, and § Settlements to record, row 19 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-208
 
-*Rationale:* the player is told only when the progress is not being saved, at the cost of not
-seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage
-from costing a request every few seconds per tab. A save refused as too large fails again until the
-game state shrinks, so the game waits for a change instead of retrying, and the progress since the
-last successful save is lost at logout or when the tab closes; the earning loops and the programs
-are what the player can make smaller, with „Zatrzymaj” and with „Usuń” on the list of programs
-(D-167), the last program staying, so a player whose game state grows beyond them stays without a
-save until the limit changes. One state of the header more. Accepted with it: with several earning
-loops saving stops until the player stops one of them, the limit holding at most about 12 earning
-loops on Las or 10 on Las — głębiej, and in practice fewer.
-*Rejected:* a lasting line „Zapisano o 12:31” in `text-secondary` beside the warning — a line that
-changes every 30 seconds during a map run, and more text in the header beside the line of D-157;
-nothing shown, a failed save included — the player plays on believing the progress saved and loses
-it when the tab closes; the too-large refusal counted as a failed save — endless retries, a promise
-„Gra spróbuje ponownie.” that is not kept and a „Wyloguj” that does not work, leaving the player
-signed in at a shared computer; a limit of N earning loops at once — a rule the project definition
-does not have, and a new number to settle; a slimmer save of earning loops — a longer cycle, a more
-involved load and no guarantee of a threshold; a higher limit — the browser sends no more than 64 KiB
-when a tab closes, so the last save would be lost.
+*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them.
+*Rejected:* a lasting line „Zapisano o 12:31”; nothing shown, a failed save included — the player plays on believing the progress saved; the too-large refusal counted as a failed save — endless retries; a limit of N earning loops at once; a slimmer save of earning loops; a higher limit — the browser sends no more than 64 KiB when a tab closes.
 
 ### D-209 — Which browser's save of the game state does the server accept?
 
@@ -5756,7 +5730,7 @@ and has no address. Every other action of the browser view keeps the button D-44
 - **Relations:** derives from D-44
 - **Verification:** an agent compares a change with the decision:
   - complies: „Wróć do logowania” under the form „Nie pamiętam hasła” as underlined text without a
-    frame, a button the keyboard reaches; „Wyloguj” in the header kept a plain button
+    frame, a button the keyboard reaches; „Wyloguj” in the menu „Konto” kept a plain button
   - violates: „Usuń” of a program rule drawn as underlined text; „Nie pamiętam hasła” made a link
     with an address; a secondary action given a frame
 - **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 2
