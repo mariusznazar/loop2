@@ -10,6 +10,7 @@ import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import {
   createButton,
+  setButtonExpanded,
   setButtonSelected,
   setButtonWaiting,
 } from "../../dist/browser/view/controls/button.js";
@@ -209,6 +210,109 @@ test("a secondary action locked with its text is the same element in both forms"
     assert.equal(button.disabled, true);
     const expected = createButton("Wróć do logowania", { kind: "secondary" });
     expected.disabled = true;
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+// The destructive button (D-44): „Usuń”, „Zatrzymaj” and the rest draw the class `destructive`
+// beside `button`, in both forms.
+test("a destructive button is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Usuń", kind: "destructive" }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("class"), "button destructive");
+    assert.equal(button.getAttribute("type"), "button");
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createButton("Usuń", { kind: "destructive" })),
+    );
+  });
+});
+
+test("a destructive button with an accessible name is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        text: "Usuń",
+        kind: "destructive",
+        label: "Usuń regułę programu",
+      }),
+    );
+    const expected = createButton("Usuń", {
+      kind: "destructive",
+      label: "Usuń regułę programu",
+    });
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+    assert.equal(
+      drawing.container.firstElementChild.getAttribute("aria-label"),
+      "Usuń regułę programu",
+    );
+  });
+});
+
+// The open state (D-44): a button that opens and closes the block below it, the menu „Konto”
+// first, carries `aria-expanded` with the value given; left out, it carries none, and the state
+// has no look of its own, so the class stays `button` in both cases.
+test("a button with aria-expanded true is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Konto", expanded: true }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("aria-expanded"), "true");
+    assert.equal(button.getAttribute("class"), "button");
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createButton("Konto", { expanded: true })),
+    );
+  });
+});
+
+test("a button with aria-expanded false is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Konto", expanded: false }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("aria-expanded"), "false");
+    assert.equal(button.getAttribute("class"), "button");
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createButton("Konto", { expanded: false })),
+    );
+  });
+});
+
+test("a button given no expanded state carries no aria-expanded in either form", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Konto" }),
+    );
+    assert.equal(
+      drawing.container.firstElementChild.hasAttribute("aria-expanded"),
+      false,
+    );
+    const expected = createButton("Konto");
+    assert.equal(expected.hasAttribute("aria-expanded"), false);
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+test("a button whose open state is set on the DOM form is the same element as the React form", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Konto", expanded: true }),
+    );
+    const expected = createButton("Konto");
+    setButtonExpanded(expected, true);
     assert.deepEqual(drawnTree(drawing), domTree(document, expected));
   });
 });
