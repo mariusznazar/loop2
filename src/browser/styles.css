@@ -589,6 +589,35 @@ header .save-line {
   margin-bottom: var(--space-s);
 }
 
+/*
+ * The list of programs on the screen Programy (styleguide rule "Menu bar, the menu „Konto” and the
+ * list of programs"): each program a link in `text`, the chosen one in `text-strong` with a bar in
+ * `selected` of `--bar-width` at its left, a row under the pointer on `highlight`. Focus is the one
+ * :focus-visible rule above.
+ */
+.program-list-items {
+  list-style: none;
+  margin: 0 0 var(--space-s);
+  padding: 0;
+}
+
+.program-list-item {
+  display: block;
+  padding: var(--space-2xs) var(--space-s);
+  color: var(--text);
+  text-decoration: none;
+  border-left: var(--bar-width) solid transparent;
+}
+
+.program-list-item[aria-current="page"] {
+  color: var(--text-strong);
+  border-left-color: var(--selected);
+}
+
+.program-list-item:hover {
+  background: var(--highlight);
+}
+
 .rule-group {
   border-top: var(--frame-width) solid var(--divider);
   padding: var(--space-m) 0;

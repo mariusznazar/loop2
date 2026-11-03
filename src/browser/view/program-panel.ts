@@ -64,7 +64,7 @@ const COPY_VALUE = "copy";
 const COPY_TEXT = "Kopia w przejściu";
 
 /** The message under the name field for each name the name rule refuses (spec decision 7). */
-const NAME_MESSAGES: Record<ProgramNameRefusal, string> = {
+export const NAME_MESSAGES: Record<ProgramNameRefusal, string> = {
   empty: "Wpisz nazwę programu.",
   taken: "Program o tej nazwie już istnieje.",
 };
