@@ -23,18 +23,40 @@ import {
 } from "../sim/programs.js";
 import { closeAwayReport, stopLoop } from "../sim/loop.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
-import type { GameState } from "../sim/types.js";
+import type { CharacterId, GameState } from "../sim/types.js";
 import { buyBranch } from "../sim/skills.js";
-import { practiceText } from "./character-skills.js";
-import { createBodyRow } from "./body-row.js";
+import {
+  createCharacterScreen,
+  type CharacterScreen,
+} from "./character-screen.js";
 import { startClock, type GameStore } from "./clock.js";
+import type { PageAddress } from "./email-confirmation.js";
 import { createGameSaver, type LogoutSave } from "./game-saver.js";
 import { createHeadquarters } from "./headquarters.js";
-import { createCombatLine } from "./combat-line.js";
 import { createProgramPanel } from "./program-panel.js";
-import { createStatusRow } from "./status-row.js";
-import { createTerrainPanel } from "./terrain-panel.js";
-import { createTripLines } from "./trip-lines.js";
+import { createRunScreen } from "./run-screen.js";
+import {
+  readScreenAddress,
+  resolveScreen,
+  returnToRunEntry,
+  screenAddress,
+  type ReturnEntry,
+  type Screen,
+} from "./screen-address.js";
+
+/**
+ * How the page came to build the game, which picks its first screen (D-96, D-212, D-225, D-281):
+ * `sign-in` — the sign-in form or a registration; `link` — an emailed link, a confirmation or the
+ * form „Ustaw nowe hasło” ended by „Anuluj” or a refused link; `address` — the page opened or built
+ * again at its address: a reload, a retry of the session check, a game built again after a conflict.
+ */
+export type GameEntry = "sign-in" | "link" | "address";
+
+/** Where the player is: the screen, and the bar's way back to a map run the player left. */
+export type ScreenPlace = {
+  readonly screen: Screen;
+  readonly returnEntry: ReturnEntry | null;
+};
 
 export type GameViewOptions = {
   /** The account client the game's saver saves through. */
@@ -45,6 +67,12 @@ export type GameViewOptions = {
   readonly revision: number;
   /** The game was built from the server's save after a conflict (D-209). */
   readonly afterConflict?: boolean;
+  /** The page's address, which the view reads its screen from and writes it to (D-281). */
+  readonly address: PageAddress;
+  /** How the page came to build the game. */
+  readonly entry: GameEntry;
+  /** The screen the view shows and its way back to the map run, at the first screen and each change. */
+  onScreen(place: ScreenPlace): void;
   /** Another browser saved first: the page drops this game and loads the server's save. */
   onConflict(): void;
   /** The server holds a newer version: the saver has stopped for good; the game stays. */
@@ -60,9 +88,9 @@ export type KeptGame = {
 };
 
 export type GameView = {
-  /** The program panel and the map column, for the page to place. */
+  /** The game with its screens, one shown at a time, for the page to place. */
   element: HTMLElement;
-  /** The header line of saving, for the page to place under the title and „Wyloguj” (D-208). */
+  /** The header line of saving, for the page to place under the menu bar (D-208). */
   saveLine: HTMLElement;
   /** A moment of saving the page calls itself: the current state goes at once. */
   saveNow(): void;
@@ -71,37 +99,67 @@ export type GameView = {
   /** The current game state, real time passed first, as a document to keep in the page (D-211). */
   keep(): KeptGame;
   /**
-   * Ends this game in the page: its clock and its saver stop and its elements leave the page,
-   * taking their event handlers with them. Calling it again does nothing.
+   * Ends this game in the page: its clock and its saver stop, it stops listening to the address,
+   * and its elements leave the page, taking their event handlers with them. It changes no screen
+   * and pauses nothing. Calling it again does nothing.
    */
   dispose(): void;
 };
 
+/** The screen of the map run of `state`, or Siedziba where it holds none (D-96). */
+function landing(state: GameState): Screen {
+  return state.run === null
+    ? { kind: "headquarters" }
+    : { kind: "run", characterId: state.run.character.id };
+}
+
+function sameScreen(one: Screen, other: Screen): boolean {
+  return screenAddress(one) === screenAddress(other);
+}
+
+function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
+  return (
+    sameScreen(one.screen, other.screen) &&
+    one.returnEntry?.text === other.returnEntry?.text &&
+    one.returnEntry?.address === other.returnEntry?.address
+  );
+}
+
 /**
  * Builds the game from the state it starts from and starts its clock and its saver. The view holds
  * the one current game state; it replaces it only with the state a simulation function returned
- * and draws from it and from the real moment of the clock's latest reading, which the headquarters'
- * resurrection lines need and the state never holds. It lands where the state says: the headquarters, a map run (a loaded one
- * that goes on comes back paused by the load) or the screen after a map run's end. Every act of the
- * player whose result changed the state, every game minute that ends the map run in a death or
- * a completion and every result in which a loop's map run ended is a moment of saving (D-207). The
- * clock catches up the earning loops of a loaded state as the last step of building (D-247).
- * Nothing here runs when the module is imported.
+ * and draws from it and from the real moment of the clock's latest reading, which the resurrection
+ * lines need and the state never holds.
+ *
+ * The view shows one screen at a time, the one the address names (D-280, D-281): Siedziba, the
+ * program panel beside the headquarters; Postać, built on entering it and disposed on leaving;
+ * Programy, the program panel alone; and Przejście, the program panel with the copy beside the
+ * column of the map run. The DOM screens are built once and hidden while another shows, and the one
+ * program panel moves into the screen that holds it. The first screen is the entry's (D-96, D-212,
+ * D-225): after the sign-in form and at a reload with no fragment Siedziba or the map run's screen
+ * where the state holds one, at a reload at an address the screen it names, and after an emailed
+ * link Siedziba; the view writes that screen's fragment into the address with no new entry of the
+ * history. A fragment that names no existing screen opens the nearest one and is replaced the same
+ * way. A send leads to Przejście and „Zakończ” to Postać of that character, each with a new entry
+ * (D-53); the browser's back and forward and the bar's links reach the view through the address's
+ * listener. Leaving Przejście by any change of screen pauses a map run that goes on as „Pauza” does,
+ * a moment of saving (D-283, D-207); coming back resumes nothing (D-284). The view tells the page its
+ * place through `onScreen`, at the first screen and at each change, with the bar's „Wróć do
+ * przejścia” where a map run waits outside its screen.
+ *
+ * Every act of the player whose result changed the state, every game minute that ends the map run
+ * in a death or a completion and every result in which a loop's map run ended is a moment of saving
+ * (D-207). Each reading of the clock rewrites the resurrection lines of the screen that shows,
+ * Siedziba's or Postać's, also while a map run waits (D-217). The clock catches up the earning
+ * loops of a loaded state as the last step of building (D-247). Nothing here runs when the module
+ * is imported.
  */
 export function createGameView(options: GameViewOptions): GameView {
+  const { address } = options;
   let state: GameState = options.state;
 
   const element = document.createElement("div");
-  element.className = "columns";
-  // Right column: the headquarters without a map run; during one the status row, the row of the
-  // body and the backpack under it, and the terrain panel.
-  const mapColumn = document.createElement("section");
-  mapColumn.className = "map-column";
-  const runPanel = document.createElement("div");
-  runPanel.className = "run-panel";
-  // The terrain panel draws the map run and lists its revealed tiles.
-  const terrainPanel = createTerrainPanel();
-  const combatLine = createCombatLine();
+  element.className = "game-view";
 
   /** An act of the player: its result replaces the state, and a changed state is saved. */
   function act(result: GameResult): void {
@@ -110,9 +168,9 @@ export function createGameView(options: GameViewOptions): GameView {
     if (state !== before) saver.moment();
   }
 
-  // Left column: the program panel, always visible. Each of its acts goes to the simulation, which
-  // checks it; real time elapsed before the act is passed first, so it runs under the program it
-  // ran under.
+  // The program panel, which Siedziba, Programy and Przejście hold in turn. Each of its acts goes
+  // to the simulation, which checks it; real time elapsed before the act is passed first, so it
+  // runs under the program it ran under.
   const programPanel = createProgramPanel({
     editCopy(program) {
       clock.flush();
@@ -151,7 +209,7 @@ export function createGameView(options: GameViewOptions): GameView {
       act(switchProgram(state, programId));
     },
   });
-  element.append(programPanel.element, mapColumn);
+  programPanel.element.classList.add("screen-area");
 
   const store: GameStore = {
     get: () => state,
@@ -166,18 +224,20 @@ export function createGameView(options: GameViewOptions): GameView {
         (event) => event.kind === "loopRunEnded",
       );
       state = result.state;
-      renderMapColumn();
+      renderScreens();
       programPanel.update(state, result.events);
       // A game minute that ends the map run in a death or a completion, and a result in which a
       // loop's map run ended, however many, is one moment of saving (D-207).
       if (ended || loopEnded) saver.moment();
     },
   };
-  // After each reading of the clock the headquarters, while it shows, rewrites its resurrection
-  // lines at the moment read: real time passes there with no change of the game state, so nothing
-  // is applied to the store and nothing is saved by a tick.
+  // After each reading of the clock the screen that shows rewrites its resurrection lines at the
+  // moment read, Siedziba's or Postać's, also while a map run waits: real time passes there with no
+  // change of the game state, so nothing is applied to the store and nothing is saved by a tick.
   const clock = startClock(store, () => {
-    if (state.run === null) headquarters.tick(state, clock.moment());
+    if (current.kind === "headquarters")
+      headquarters.tick(state, clock.moment());
+    characterScreen?.update(characterProps(characterScreen.characterId));
   });
   const saver = createGameSaver({
     client: options.client,
@@ -208,11 +268,18 @@ export function createGameView(options: GameViewOptions): GameView {
       clock.flush();
       act(pickProgram(state, characterId, programId));
     },
+    // A send leads to the screen of the map run, with a new entry of the history (D-53, D-281).
     send(characterId, mapId, programId) {
       if (state.run) return;
       const before = state;
       clock.send({ mapId, characterId, programId });
       if (state !== before) saver.moment();
+      // The send replaced the state through the store, which `state` read again shows.
+      const started = store.get().run;
+      if (started !== null) {
+        show({ kind: "run", characterId: started.character.id }, "go");
+        runScreen.focus();
+      }
     },
     // An act of the player like a send: the reading is made first, and a changed state is saved (D-207).
     startLoop(characterId, mapId, programId) {
@@ -229,7 +296,18 @@ export function createGameView(options: GameViewOptions): GameView {
       act(closeAwayReport(state));
     },
   });
-  const statusRow = createStatusRow({
+  headquarters.element.classList.add("screen-area");
+  // Siedziba: the program panel beside the headquarters, until the programs get their screen.
+  const headquartersScreen = document.createElement("section");
+  headquartersScreen.className = "screen columns headquarters-screen";
+  headquartersScreen.tabIndex = -1;
+  headquartersScreen.append(headquarters.element);
+  // Programy: the program panel alone, until the list of programs and the editor take the screen.
+  const programsScreen = document.createElement("section");
+  programsScreen.className = "screen programs-screen";
+  programsScreen.tabIndex = -1;
+
+  const runScreen = createRunScreen(programPanel.element, {
     togglePause() {
       clock.flush();
       act(setPaused(state, !state.paused));
@@ -243,48 +321,177 @@ export function createGameView(options: GameViewOptions): GameView {
       clock.flush();
       if (state.run) act(restart(state));
     },
+    // „Zakończ” leads to the screen Postać of the character, with a new entry (D-53, D-62, D-132).
     end() {
       clock.flush();
-      if (state.run) act(end(state));
+      if (state.run === null) return;
+      const characterId = state.run.character.id;
+      act(end(state));
+      show({ kind: "character", characterId }, "go");
+      characterScreen?.focus();
     },
   });
-  const bodyRow = createBodyRow();
-  const practice = document.createElement("p");
-  practice.className = "run-practice";
-  const tripLines = createTripLines();
-  runPanel.append(
-    statusRow.element,
-    statusRow.discovery,
-    combatLine.element,
-    tripLines.deposited,
-    tripLines.settlement,
-    bodyRow.element,
-    tripLines.solved,
-    practice,
-    tripLines.preview,
-    terrainPanel.element,
-  );
-  mapColumn.append(headquarters.element, runPanel);
+  element.append(headquartersScreen, programsScreen, runScreen.element);
 
-  function renderMapColumn(): void {
-    headquarters.element.hidden = state.run !== null;
-    runPanel.hidden = state.run === null;
-    headquarters.update(state, clock.moment());
-    statusRow.update(state);
-    combatLine.update(state.run?.lastCombat ?? null);
-    bodyRow.update(state);
-    practice.textContent = practiceText(state.run?.practice ?? {});
-    practice.hidden = practice.textContent === "";
-    tripLines.update(state);
-    terrainPanel.update(state);
+  /** The screen Postać, which stands only while the player is on it, with its character's number. */
+  let characterScreen: (CharacterScreen & { characterId: CharacterId }) | null =
+    null;
+
+  function characterProps(characterId: CharacterId) {
+    return { state, nowMs: clock.moment(), characterId };
   }
 
-  renderMapColumn();
+  function openCharacterScreen(characterId: CharacterId): void {
+    if (characterScreen?.characterId === characterId) return;
+    characterScreen?.dispose();
+    const screen = createCharacterScreen({
+      onBuy(branch) {
+        act(buyBranch(state, characterId, branch));
+      },
+      onStop() {
+        clock.flush();
+        act(stopLoop(state, characterId));
+      },
+      props: characterProps(characterId),
+    });
+    characterScreen = { ...screen, characterId };
+    element.append(screen.element);
+  }
+
+  function closeCharacterScreen(): void {
+    characterScreen?.dispose();
+    characterScreen = null;
+  }
+
+  /** The screen the player is on. */
+  let current: Screen = firstScreen();
+  /** The place the page was last told. */
+  let told: ScreenPlace | null = null;
+  let disposed = false;
+
+  /** The first screen, by how the page came to build the game (D-96, D-212, D-225, D-281). */
+  function firstScreen(): Screen {
+    switch (options.entry) {
+      case "sign-in":
+        return landing(state);
+      case "link":
+        return { kind: "headquarters" };
+      case "address": {
+        const hash = address.hash();
+        return hash === ""
+          ? landing(state)
+          : resolveScreen(readScreenAddress(hash), state);
+      }
+    }
+  }
+
+  /**
+   * Leaving the screen of a map run that goes on pauses it as „Pauza” does, a moment of saving
+   * (D-283, D-207); a paused or an ended map run is left as it is.
+   */
+  function pauseOnLeaving(): void {
+    clock.flush();
+    if (state.run !== null && !mapRunEnded(state.run) && !state.paused)
+      act(setPaused(state, true));
+  }
+
+  /** Tells the page where the player is, when that changed. */
+  function tellPlace(): void {
+    if (disposed) return;
+    const place: ScreenPlace = {
+      screen: current,
+      returnEntry: current.kind === "run" ? null : returnToRunEntry(state),
+    };
+    if (told !== null && samePlace(told, place)) return;
+    told = place;
+    options.onScreen(place);
+  }
+
+  /**
+   * Shows `next`: the address gets its fragment with a new entry (`go`), in place of the current
+   * one (`replace`) or not at all, where the address already names it. The one program panel
+   * moves into the screen that holds it, Postać is built on entering and disposed on leaving, and
+   * leaving Przejście pauses its map run.
+   */
+  function show(next: Screen, how: "go" | "replace" | "none"): void {
+    if (current.kind === "run" && next.kind !== "run") pauseOnLeaving();
+    const hash = screenAddress(next);
+    if (how === "go") address.go(hash);
+    else if (how === "replace") address.replace(hash);
+    current = next;
+    if (next.kind === "character") openCharacterScreen(next.characterId);
+    else closeCharacterScreen();
+    const holder = panelHolder(next);
+    holder?.prepend(programPanel.element);
+    headquartersScreen.hidden = holder !== headquartersScreen;
+    programsScreen.hidden = holder !== programsScreen;
+    runScreen.element.hidden = holder !== runScreen.element;
+    tellPlace();
+  }
+
+  /** The DOM screen that holds the program panel while `screen` shows; none for Postać. */
+  function panelHolder(screen: Screen): HTMLElement | null {
+    switch (screen.kind) {
+      case "headquarters":
+        return headquartersScreen;
+      case "programs":
+      case "program":
+        return programsScreen;
+      case "run":
+        return runScreen.element;
+      case "character":
+        return null;
+    }
+  }
+
+  /** Draws every screen from the state; a hidden one is current when it shows. */
+  function renderScreens(): void {
+    headquarters.update(state, clock.moment());
+    if (state.run !== null) runScreen.update(state, state.run);
+    characterScreen?.update(characterProps(characterScreen.characterId));
+    tellPlace();
+  }
+
+  /** The element of the screen that shows. */
+  function shownElement(): HTMLElement | null {
+    return current.kind === "character"
+      ? (characterScreen?.element ?? null)
+      : current.kind === "run"
+        ? runScreen.element
+        : panelHolder(current);
+  }
+
+  /**
+   * Moves keyboard focus to the screen that shows where it stands nowhere useful: on the body —
+   * the link followed left the bar, or the browser's button moved nothing — or on a screen of the
+   * game that is hidden now, so the keyboard goes on from the screen the player sees.
+   */
+  function focusShownScreen(): void {
+    const active = document.activeElement;
+    const shown = shownElement();
+    const lost =
+      active === null ||
+      active === document.body ||
+      (element.contains(active) && shown?.contains(active) !== true);
+    if (lost) shown?.focus();
+  }
+
+  // The browser's back and forward, and a link of the bar: the address names the screen; one that
+  // names no existing screen opens the nearest and is replaced with its address (D-281).
+  const stopListening = address.onChange(() => {
+    if (disposed) return;
+    const hash = address.hash();
+    const screen = resolveScreen(readScreenAddress(hash), state);
+    show(screen, screenAddress(screen) === hash ? "none" : "replace");
+    focusShownScreen();
+  });
+
+  renderScreens();
   programPanel.update(state, []);
+  show(current, "replace");
   // The catch-up is the last step of building, so every place of loading goes the same way (D-212).
   clock.catchUp();
 
-  let disposed = false;
   return {
     element,
     saveLine: saver.element,
@@ -300,8 +507,10 @@ export function createGameView(options: GameViewOptions): GameView {
     dispose(): void {
       if (disposed) return;
       disposed = true;
+      stopListening();
       clock.dispose();
       saver.dispose();
+      closeCharacterScreen();
       element.remove();
       saver.element.remove();
     },

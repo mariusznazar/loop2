@@ -190,21 +190,30 @@ header .save-line {
   margin: 0 auto;
 }
 
-.columns {
+/*
+ * A screen of the game (D-280, D-282): a grid whose columns are areas of their own, each a block on
+ * `panel` with text in `text`, so a narrower layout places them one under the other. A screen with
+ * the class `columns` has two of them, the program panel and a column beside it; Programy holds
+ * the program panel alone. The screens that do not show are hidden with `[hidden]`.
+ */
+.screen {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+  grid-template-columns: 1fr;
   gap: var(--space-xl);
   align-items: start;
 }
 
+.screen.columns {
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+}
+
 @media (max-width: 720px) {
-  .columns {
+  .screen.columns {
     grid-template-columns: 1fr;
   }
 }
 
-.program-panel,
-.map-column {
+.screen-area {
   background: var(--panel);
   color: var(--text);
   border: var(--frame-width) solid var(--divider);

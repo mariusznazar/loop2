@@ -52,6 +52,8 @@ export type CharacterScreen = {
   element: HTMLElement;
   /** Draws the screen anew from what the page gives. */
   update(props: CharacterScreenProps): void;
+  /** Moves keyboard focus to the screen, for the page to call when „Zakończ” opens it. */
+  focus(): void;
   /** Unmounts the screen and takes it out of the page. */
   dispose(): void;
 };
@@ -164,13 +166,15 @@ function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
 /**
  * Builds the screen in an element of its own, for the page to place. The render is synchronous, so
  * the screen stands in the element when this returns. Each screen is a new root: nothing it holds
- * outlives `dispose()`.
+ * outlives `dispose()`. The element takes focus when the page gives it, as the screen a change of
+ * screen opens, and stands outside the keyboard's order otherwise.
  */
 export function createCharacterScreen(
   options: CharacterScreenOptions,
 ): CharacterScreen {
   const element = document.createElement("div");
   element.className = "character-screen-host";
+  element.tabIndex = -1;
   const root = createRoot(element);
   let disposed = false;
   function draw(props: CharacterScreenProps): void {
@@ -189,6 +193,9 @@ export function createCharacterScreen(
     element,
     update(props: CharacterScreenProps): void {
       if (!disposed) draw(props);
+    },
+    focus(): void {
+      element.focus();
     },
     dispose(): void {
       disposed = true;

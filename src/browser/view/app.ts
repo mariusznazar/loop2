@@ -24,9 +24,16 @@ import {
   type PageAddress,
 } from "./email-confirmation.js";
 import { createFooter } from "./footer.js";
-import { createGameView, type GameView, type KeptGame } from "./game-view.js";
+import {
+  createGameView,
+  type GameEntry,
+  type GameView,
+  type KeptGame,
+  type ScreenPlace,
+} from "./game-view.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
+import { screenAddress } from "./screen-address.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
 const PASSWORD_CHANGED = "Hasło zmienione. Zaloguj się nowym hasłem.";
@@ -128,15 +135,21 @@ function createPageNotice(sentence: string): HTMLElement {
  * of the registration's message where the sign-in followed one (D-157).
  * One transition runs at a time, and an answer that comes after the page moved on is ignored.
  *
+ * The game shows one screen at a time, the one its address names (D-280, D-281); the page tells it
+ * which entry built it — the sign-in form, an emailed link or the address itself — which picks the
+ * first screen (D-96, D-225), and the game tells the page its place, which the page gives the bar
+ * to mark, with „Wróć do przejścia” where a map run waits.
+ *
  * Under the bar, on a line of its own, stands the line of saving (D-208), which shows only at a
  * problem, the sentence of a failed save before a logout (D-97) included. When the page's
  * address carries a confirmation token, the page first sends it — showing „Potwierdzanie adresu…”
  * where it shows the session check — and only then checks the session; the result stands as one
  * sentence on the first screen that check leads to, and leaves at the next change between card and
- * game (D-261). When the address carries a password-reset token instead, the page places the card
- * on „Ustaw nowe hasło” and stops: it asks nothing, builds no game and saves nothing, whoever is
- * signed in, until the form ends (D-225). A save answered with no session keeps the game state in
- * this page only, for a sign-in to the same account (D-211).
+ * game (D-261) or at the game's first change of screen (D-286). When the address carries a
+ * password-reset token instead, the page places the card on „Ustaw nowe hasło” and stops: it asks
+ * nothing, builds no game and saves nothing, whoever is signed in, until the form ends (D-225). A
+ * save answered with no session keeps the game state in this page only, for a sign-in to the same
+ * account (D-211).
  */
 export function startApp(
   root: HTMLElement,
@@ -182,6 +195,13 @@ export function startApp(
   let logoutSentence: string | null = null;
   // The game about to be built replaces one that lost a conflict to another browser (D-209).
   let afterConflict = false;
+  // How the page comes to build the next game, which picks its first screen; the page opens at its
+  // address, and a retry of the session check keeps the entry it had.
+  let entry: GameEntry = "address";
+  // Where the player is in the game that stands, as the game last told; the bar marks it.
+  let place: ScreenPlace | null = null;
+  // The page's sentences above the game's first screen; they leave at its first change of screen.
+  let notices: HTMLElement[] = [];
   // The game state a save answered with no session left, kept in this page only (D-211).
   let kept: (KeptGame & { readonly accountId: string }) | null = null;
   // While „Wyloguj” waits for the server to end the session, the logout's answer decides what the
@@ -220,6 +240,7 @@ export function startApp(
       reset,
       signedIn(named, message): void {
         pendingMessage = message;
+        entry = "sign-in";
         enter(named);
       },
     });
@@ -263,16 +284,33 @@ export function startApp(
   /** Gives the bar what the page now holds: the name alone where no game stands. */
   function drawBar(): void {
     bar.update(
-      account === null
+      account === null || place === null
         ? NAME_ALONE
         : {
             account,
-            screen: { kind: "headquarters" },
-            returnEntry: null,
+            screen: place.screen,
+            returnEntry: place.returnEntry,
             registrationMessage: barMessage,
             logout: { waiting: logoutWaiting, sentence: logoutSentence },
           },
     );
+  }
+
+  /**
+   * The game's place: at its first screen, while the game is being built, the page only keeps it;
+   * at a change of screen the sentences above the first screen leave (D-286), and the bar redraws.
+   */
+  function onScreen(next: ScreenPlace): void {
+    const changed =
+      place !== null &&
+      screenAddress(place.screen) !== screenAddress(next.screen);
+    place = next;
+    if (game === null) return;
+    if (changed) {
+      for (const notice of notices) notice.remove();
+      notices = [];
+    }
+    drawBar();
   }
 
   /** The game leaves with the menu of its player, its logout and its sentences (D-97). */
@@ -280,6 +318,8 @@ export function startApp(
     game?.dispose();
     game = null;
     account = null;
+    place = null;
+    notices = [];
     barMessage = null;
     logoutWaiting = false;
     logoutSentence = null;
@@ -310,6 +350,9 @@ export function startApp(
       state: start.state,
       revision: start.revision,
       afterConflict: conflict,
+      address,
+      entry,
+      onScreen,
       onConflict: () => whenNotLoggingOut(view, () => reloadAfterConflict()),
       onOutdated: () => {},
       onSignedOut: () => whenNotLoggingOut(view, () => expire()),
@@ -321,7 +364,7 @@ export function startApp(
     header.append(view.saveLine);
     leaveWaiting();
     const notice = takeNotice();
-    const notices = notice === null ? [] : [createConfirmationNotice(notice)];
+    notices = notice === null ? [] : [createConfirmationNotice(notice)];
     if (start.refused !== null)
       notices.push(createPageNotice(REFUSED_LOAD[start.refused]));
     showPage(...notices, view.element);
@@ -353,12 +396,16 @@ export function startApp(
     showForms(EXPIRED);
   }
 
-  /** Another browser saved first: this game goes and the server's save is loaded (D-209). */
+  /**
+   * Another browser saved first: this game goes and the server's save is loaded (D-209); the game
+   * built from it stays on the screen the address names.
+   */
   function reloadAfterConflict(): void {
     const owner = account;
     if (owner === null) return;
     dropGame();
     afterConflict = true;
+    entry = "address";
     void loadGame(owner);
   }
 
@@ -475,6 +522,7 @@ export function startApp(
    * The card on the form „Ustaw nowe hasło”. Its ending says how the page goes on: after a change
    * a new card with the sentence of success, without a session check; after a refused link the
    * usual session check with the sentence of refusal; after „Anuluj” the usual session check alone.
+   * Both of the last open Siedziba for a signed-in player, as an emailed link does (D-225, D-96).
    */
   function showReset(token: string): void {
     placeCard(null, {
@@ -489,6 +537,7 @@ export function startApp(
         }
         if (ending === "refused")
           pendingNotice = { text: LINK_INVALID, role: "warning" };
+        entry = "link";
         void checkSession();
       },
     });
@@ -507,6 +556,7 @@ export function startApp(
       const notice = await confirmFromAddress(client, address);
       checking.textContent = "Sprawdzanie logowania…";
       pendingNotice = notice;
+      entry = "link";
     }
     await checkSession();
   }

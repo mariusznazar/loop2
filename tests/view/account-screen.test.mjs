@@ -1,10 +1,11 @@
 // The page before and after signing in (task konta-graczy-i-logowanie, To do 1, 3, 4, 5 and 15;
 // spec section 7; D-96, D-97) and with its saved game state (task zapis-stanu-na-serwerze, To do
 // 5–10; spec sections 7 and 8; D-96, D-97, D-208, D-209, D-210, D-211, D-212), holding the login
-// card (task logowanie-w-react, To do 2–8; spec decision 3; D-259, D-260, D-261, D-262). These tests
-// run the page's logic on jsdom through tests/view/page-document.mjs (D-264): they prove which
-// elements it builds and what it does with the client's answers, never real events, focus or
-// rendering, which the browser check covers (D-88).
+// card (task logowanie-w-react, To do 2–8; spec decision 3; D-259, D-260, D-261, D-262) and its
+// screens by address (task ekrany-i-menu, To do 2, 3, 6, 7, 11 and 12; D-280, D-281, D-283, D-284,
+// D-286). These tests run the page's logic on jsdom through tests/view/page-document.mjs (D-264):
+// they prove which elements it builds and what it does with the client's answers, never real
+// events, focus or rendering, which the browser check covers (D-88).
 import { assert, inAct, settle, typeInto, withPage } from "./page-document.mjs";
 import { mock, test } from "node:test";
 import {
@@ -345,15 +346,57 @@ const NO_CONNECTION = {
 /** The server's answer that the account has no saved game state. */
 const NO_SAVE = { ok: true, value: null };
 
-/** The page address with a fragment the test sets, counting how often it is cleared. */
+/**
+ * The page address with a fragment the test sets, counting how often it is cleared, and with a
+ * history of its own: `go` adds an entry after the current one and drops those after it, as a
+ * browser does, `replace` changes the current entry, and `back` and `forward` move along it and
+ * tell every listener, as the browser's back and forward buttons do through `hashchange`.
+ */
 function fakeAddress(hash = "") {
+  const listeners = new Set();
   const address = {
-    current: hash,
+    entries: [hash],
+    index: 0,
     cleared: 0,
+    get current() {
+      return address.entries[address.index];
+    },
     hash: () => address.current,
     clearFragment() {
       address.cleared += 1;
-      address.current = "";
+      address.entries[address.index] = "";
+    },
+    go(next) {
+      address.entries.splice(address.index + 1);
+      address.entries.push(next);
+      address.index += 1;
+    },
+    replace(next) {
+      address.entries[address.index] = next;
+    },
+    onChange(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    /** How many listeners the page keeps on the address. */
+    listening: () => listeners.size,
+    /** A click on a link to `next`: a new entry, and every listener told, as `hashchange` does. */
+    follow(next) {
+      address.go(next);
+      for (const listener of listeners) listener();
+    },
+    back() {
+      assert.ok(address.index > 0, "there is an entry to go back to");
+      address.index -= 1;
+      for (const listener of listeners) listener();
+    },
+    forward() {
+      assert.ok(
+        address.index < address.entries.length - 1,
+        "there is an entry to go forward to",
+      );
+      address.index += 1;
+      for (const listener of listeners) listener();
     },
   };
   return address;
@@ -1001,7 +1044,9 @@ test("signing in and out again and again keeps at most one clock running", async
       await held.answer("loadSavedGame", NO_SAVE);
     }
     assert.equal(intervals.size, GAME_INTERVALS);
-    assert.equal(byClass(root, "columns").length, 1);
+    // Changed with the screens by address (task ekrany-i-menu, To do 2): the game holds several
+    // screens, so one game is one element of the game, not one `columns`.
+    assert.equal(byClass(root, "game-view").length, 1);
   });
 });
 
@@ -2342,6 +2387,9 @@ test("the document kept for the same account holds the moment of its reading and
         client: held.client,
         state: withCharacter(),
         revision: 3,
+        address: fakeAddress(),
+        entry: "address",
+        onScreen: () => {},
         onConflict: () => {},
         onOutdated: () => {},
         onSignedOut: () => {},
@@ -2383,7 +2431,8 @@ test("each act of the player that changes the game state is saved at once, and o
         await held.answer("currentAccount", ACCOUNT);
         await held.answer("loadSavedGame", saveOf(begun, 4));
         assert.deepEqual(waitingCalls(held), [], `${name}: precondition`);
-        act(root);
+        // Inside act: a send and „Zakończ” change the screen, and the bar redraws with React.
+        await inAct(() => act(root));
         await settle();
         assert.deepEqual(waitingCalls(held), ["saveGame"], name);
         const [sent] = argsOf(held, "saveGame");
@@ -2430,19 +2479,27 @@ function rowOf(root, name) {
   return row;
 }
 
-/** The game of `state` built in the page without the account page around it; its element stands in the body. */
-async function viewOf(state) {
+/**
+ * The game of `state` built in the page without the account page around it, as a reload at
+ * `address` builds it; its element stands in the body.
+ */
+async function viewOf(state, address = fakeAddress()) {
   const { createGameView } =
     await import("../../dist/browser/view/game-view.js");
   const held = heldClient();
-  const view = createGameView({
-    client: held.client,
-    state,
-    revision: 1,
-    onConflict: () => {},
-    onOutdated: () => {},
-    onSignedOut: () => {},
-  });
+  const view = await inAct(() =>
+    createGameView({
+      client: held.client,
+      state,
+      revision: 1,
+      address,
+      entry: "address",
+      onScreen: () => {},
+      onConflict: () => {},
+      onOutdated: () => {},
+      onSignedOut: () => {},
+    }),
+  );
   pageDocument().body.append(view.element);
   return { view, held };
 }
@@ -2887,7 +2944,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
       await held.answer("currentAccount", ACCOUNT);
       await held.answer("loadSavedGame", save);
       const main = childrenOf(root).find((child) => child.localName === "main");
-      const [confirmation, refusal, columns] = main.children;
+      const [confirmation, refusal, game] = main.children;
       assert.equal(
         confirmation.textContent,
         "Adres e-mail potwierdzony.",
@@ -2895,7 +2952,8 @@ test("a refused save starts a new game with its one-time sentence above it, afte
       );
       assert.equal(refusal.textContent, sentence, name);
       assert.equal(refusal.classList.contains("page-notice"), true, name);
-      assert.equal(columns.className, "columns", name);
+      // Changed with the screens by address (To do 2): the game's element holds its screens.
+      assert.equal(game.className, "game-view", name);
       assert.ok(shown(byClass(root, "headquarters")[0]), name);
       assert.deepEqual(
         argsOf(held, "saveGame"),
@@ -3341,15 +3399,697 @@ test("the report survives a reload, and a closed report stays closed after one",
   });
 });
 
-// Catches the report drawn on the screen of a manual map run (D-246, row 26): it hides with the
-// headquarters and shows when „Zakończ” brings the headquarters back.
-test("a manual map run hides the report with the headquarters, and „Zakończ” shows it", async () => {
+// Changed with D-246 and D-53 (task ekrany-i-menu, To do 3 and 6): „Zakończ” leads to the screen
+// Postać, so the report is read on reaching Siedziba, not after „Zakończ”. Catches the report drawn
+// on the screen of a manual map run or on Postać, and one not shown when Siedziba is reached.
+test("a manual map run hides the report with Siedziba, „Zakończ” opens Postać without it, and Siedziba shows it on being reached", async () => {
   await onPage(async ({ root }) => {
-    const { view } = await viewOf({ ...reported(), run: passing().run });
+    const address = fakeAddress();
+    const { view } = await viewOf(
+      { ...reported(), run: passing().run },
+      address,
+    );
+    assert.equal(shownScreen(root), "run");
     assert.ok(!shown(reportSection(root)));
-    fire(buttonNamed(root, "Zakończ"), "click");
+    await press(buttonNamed(root, "Zakończ"));
+    assert.equal(shownScreen(root), "character");
+    assert.ok(!shown(reportSection(root)));
+    await follow(address, "#/");
+    assert.equal(shownScreen(root), "headquarters");
     assert.ok(shown(reportSection(root)));
     view.dispose();
+  });
+});
+
+// --- the screens by address -----------------------------------------------------------------------
+// Task ekrany-i-menu, To do 2, 3, 6, 7, 11 and 12, questions 1, 6, 8, 9, 10, 12 and 16; D-96,
+// D-212, D-225, D-280, D-281, D-283, D-284, D-286. The address is the test's own, so these cases
+// prove what the page reads and writes of it and which screen it shows, never the browser's history
+// (D-88); the real `browserAddress` has its own cases below, on jsdom's history.
+
+/** The one screen of the game that shows, by what stands on it; null while none does. */
+function shownScreen(root) {
+  const shows = (name) => {
+    const element = byClass(root, name)[0];
+    return element !== undefined && shown(element);
+  };
+  if (shows("character-screen")) return "character";
+  if (shows("run-panel")) return "run";
+  if (shows("headquarters")) return "headquarters";
+  if (shows("program-panel")) return "programs";
+  return null;
+}
+
+/** The items of the bar as `[text, href, aria-current]`, in the order they stand. */
+const barItems = (root) =>
+  byClass(root, "menu-bar-item").map((item) => [
+    item.textContent,
+    item.getAttribute("href"),
+    item.getAttribute("aria-current"),
+  ]);
+
+/** The item „Wróć do przejścia …” of the bar as `[text, href]`, or null where none stands. */
+function returnItem(root) {
+  const item = byClass(root, "menu-bar-item").find((candidate) =>
+    candidate.textContent.startsWith("Wróć do przejścia"),
+  );
+  return item ? [item.textContent, item.getAttribute("href")] : null;
+}
+
+const statusTextOf = (root) => byClass(root, "status-text")[0]?.textContent;
+
+/** A click on the link to `hash`, inside act: the bar redraws at a change of screen. */
+const follow = (address, hash) => inAct(() => address.follow(hash));
+const goBack = (address) => inAct(() => address.back());
+const goForward = (address) => inAct(() => address.forward());
+
+/** Runs `body` with the clock reading no real time, so a run going on passes no game minute. */
+async function withStillClock(body) {
+  const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
+  Object.defineProperty(globalThis, "performance", {
+    configurable: true,
+    value: handClock(() => 0),
+  });
+  try {
+    await body();
+  } finally {
+    Object.defineProperty(globalThis, "performance", saved);
+  }
+}
+
+/** The page signed in by a reload at `hash`, with `game` as the account's save at revision 4. */
+async function reloadedAt(held, hash, game) {
+  const address = fakeAddress(hash);
+  await startPage(held, address);
+  await held.answer("currentAccount", ACCOUNT);
+  await held.answer("loadSavedGame", saveOf(game, 4));
+  return address;
+}
+
+/** Ala with the forest run going on (unpaused once loaded), a second program and a second character. */
+const fullGame = () => {
+  const team = createCharacter(twoPrograms(), "Ola").state;
+  return send(team, { mapId: "forest", characterId: 1, programId: 1 }, 0).state;
+};
+
+const RUN_ADDRESS = "#/postac/1/przejscie";
+
+// To do 2, question 1, D-96, D-212, D-283. Catches the first screen read from the address after the
+// sign-in form (another account in the same tab would land at the previous player's address), the
+// manual map run of the save not opened after a sign-in or a reload with no fragment, and a reload
+// at an address taken to the map run.
+test("the first screen of each entry: the sign-in form and a reload with no fragment lead to Siedziba or to the save's map run, a reload at an address to its screen", async () => {
+  // After the sign-in form, whatever the tab's address was.
+  for (const [name, game, screen, hash] of [
+    ["a save with a map run going on", passing(), "run", RUN_ADDRESS],
+    ["a save with a map run ended", ended(), "run", RUN_ADDRESS],
+    ["a save with no map run", withCharacter(), "headquarters", "#/"],
+  ]) {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = fakeAddress("#/programy");
+      await startPage(held, address);
+      await held.answer("currentAccount", NO_SESSION);
+      await signIn(held, ACCOUNT);
+      await held.answer("loadSavedGame", saveOf(game, 4));
+      assert.equal(shownScreen(root), screen, name);
+      assert.equal(address.hash(), hash, `${name}: the address is written`);
+      assert.equal(address.entries.length, 1, `${name}: with no new entry`);
+      if (screen === "run")
+        assert.ok(shown(buttonNamed(root, "Restart")), `${name}: its screen`);
+    });
+  }
+  // At a reload with no fragment.
+  for (const [name, game, screen, hash] of [
+    ["a save with a map run going on", passing(), "run", RUN_ADDRESS],
+    ["a save with no map run", withCharacter(), "headquarters", "#/"],
+  ]) {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, "", game);
+      assert.equal(shownScreen(root), screen, name);
+      assert.equal(address.hash(), hash, name);
+      assert.equal(address.entries.length, 1, name);
+    });
+  }
+  // At a reload at an address, while the save holds a map run: the address wins (question 1).
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/programy", passing());
+    assert.equal(shownScreen(root), "programs");
+    assert.equal(address.hash(), "#/programy");
+    assert.ok(
+      !shown(buttonNamed(root, "Wznów")),
+      "the map run's screen is not shown",
+    );
+  });
+});
+
+// The slice's first failing case. To do 2, question 1, D-96: „a reload at `#/postac/2` while the
+// saved game state holds a manual map run staying on the screen Postać of character 2”. Catches
+// the save's map run winning over the address, and the screen Postać not built for the address.
+test("a reload at #/postac/1 while the save holds a map run opens the screen Postać of Ala, with the bar marking Siedziba and „Wróć do przejścia”", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/postac/1", passing());
+    assert.equal(shownScreen(root), "character");
+    assert.equal(byClass(root, "character-screen-name")[0]?.textContent, "Ala");
+    assert.equal(address.hash(), "#/postac/1");
+    assert.equal(address.entries.length, 1);
+    assert.deepEqual(barItems(root), [
+      ["Siedziba", "#/", "page"],
+      ["Programy", "#/programy", null],
+      ["Wróć do przejścia · Las · minuta 0", RUN_ADDRESS, null],
+    ]);
+    assert.deepEqual(waitingCalls(held), [], "nothing is saved by a reload");
+  });
+});
+
+// To do 2, D-281. Catches an address of the five that opens another screen, or one the page
+// rewrites although it names an existing screen.
+test("a reload at each of the five addresses opens its screen and leaves the address as it is", async () => {
+  for (const [hash, screen] of [
+    ["#/", "headquarters"],
+    ["#/postac/1", "character"],
+    ["#/programy", "programs"],
+    ["#/programy/2", "programs"],
+    [RUN_ADDRESS, "run"],
+  ]) {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, hash, fullGame());
+      assert.equal(shownScreen(root), screen, hash);
+      assert.equal(address.hash(), hash, hash);
+      assert.equal(address.entries.length, 1, hash);
+    });
+  }
+});
+
+// To do 2 (the browser's back and forward), D-280, D-281. Catches a link that opens no screen, a
+// back or forward that leaves the screen where it was, and a mark of the bar that lags behind.
+test("the items of the bar lead to their screens, and back and forward walk the screens the player visited, the bar marking each", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/", withCharacter());
+    const marked = () =>
+      barItems(root)
+        .filter(([, , current]) => current === "page")
+        .map(([text]) => text);
+    assert.equal(shownScreen(root), "headquarters");
+    assert.deepEqual(marked(), ["Siedziba"]);
+
+    await follow(address, "#/programy");
+    assert.equal(shownScreen(root), "programs");
+    assert.deepEqual(marked(), ["Programy"]);
+    assert.ok(
+      !shown(byClass(root, "headquarters")[0]),
+      "Siedziba is hidden while Programy shows",
+    );
+    // With focus on nothing — a link that left the bar, the browser's button — the screen takes it.
+    assert.equal(
+      pageDocument().activeElement,
+      byClass(root, "programs-screen")[0],
+    );
+
+    await follow(address, "#/postac/1");
+    assert.equal(shownScreen(root), "character");
+    assert.deepEqual(marked(), ["Siedziba"], "Postać marks Siedziba");
+
+    await goBack(address);
+    assert.equal(shownScreen(root), "programs");
+    assert.deepEqual(marked(), ["Programy"]);
+    await goBack(address);
+    assert.equal(shownScreen(root), "headquarters");
+    assert.deepEqual(marked(), ["Siedziba"]);
+    assert.equal(
+      pageDocument().activeElement,
+      byClass(root, "headquarters-screen")[0],
+    );
+    await goForward(address);
+    assert.equal(shownScreen(root), "programs");
+    assert.deepEqual(address.entries, ["#/", "#/programy", "#/postac/1"]);
+    assert.deepEqual(
+      waitingCalls(held),
+      [],
+      "a change of screen saves nothing",
+    );
+  });
+});
+
+// Question 8, D-281, trust: the fragment is the player's input. Catches a crafted fragment that
+// throws, opens no screen, or stays in the address; a replacement that adds an entry of the history;
+// and an emailed link's fragment read as a screen while the game stands.
+test("an address that leads to no existing screen opens the nearest one and has its fragment replaced, with no new entry, at a reload and through a link alike", async () => {
+  const CRAFTED = [
+    ["a character number with a letter", "#/postac/x", "headquarters", "#/"],
+    ["a program number below one", "#/programy/-1", "headquarters", "#/"],
+    ["a program nobody has", "#/programy/9", "programs", "#/programy"],
+    [
+      "a map run of a character with none",
+      RUN_ADDRESS,
+      "character",
+      "#/postac/1",
+    ],
+    [
+      "a map run of a character nobody has",
+      "#/postac/7/przejscie",
+      "headquarters",
+      "#/",
+    ],
+    ["a long fragment", `#/postac/${"1".repeat(5000)}`, "headquarters", "#/"],
+    ["a confirmation link's fragment", LINK, "headquarters", "#/"],
+    ["a reset link's fragment", RESET_LINK, "headquarters", "#/"],
+    [
+      "a screen's address with a link's fragment behind it",
+      `#/postac/1${LINK}`,
+      "headquarters",
+      "#/",
+    ],
+  ];
+  for (const [name, hash, screen, nearest] of CRAFTED) {
+    // At a reload: the emailed links' fragments are not here, since the page handles them first.
+    if (hash !== LINK && hash !== RESET_LINK) {
+      await onPage(async ({ root }) => {
+        const held = heldClient();
+        const address = await reloadedAt(held, hash, twoPrograms());
+        assert.equal(shownScreen(root), screen, name);
+        assert.deepEqual(address.entries, [nearest], name);
+      });
+    }
+    // Through a link while the game stands.
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, "#/programy", twoPrograms());
+      await follow(address, hash);
+      assert.equal(shownScreen(root), screen, name);
+      assert.deepEqual(address.entries, ["#/programy", nearest], name);
+      assert.equal(address.index, 1, name);
+    });
+  }
+});
+
+// To do 6, question 6, D-53, D-280. Catches a send that leaves the player on Siedziba, „Zakończ”
+// that leads to Siedziba, either without an entry of the history, and the back button after
+// „Zakończ” landing on a screen of a map run that is gone.
+test("a send leads to the screen of the map run and „Zakończ” to the screen Postać of that character, each with a new entry, and back after „Zakończ” lands on Postać", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/", twoPrograms());
+    await press(buttonLabelled(root, "Wyślij: Ala, mapa Las"));
+    assert.equal(shownScreen(root), "run");
+    assert.deepEqual(address.entries, ["#/", RUN_ADDRESS]);
+    // „Wyślij” left with Siedziba, so the screen opened takes the keyboard's focus.
+    assert.equal(pageDocument().activeElement, byClass(root, "run-screen")[0]);
+    assert.equal(
+      returnItem(root),
+      null,
+      "no „Wróć do przejścia” on its screen",
+    );
+    assert.deepEqual(
+      barItems(root).map(([, , current]) => current),
+      [null, null],
+      "no item marked on the screen of a map run",
+    );
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+
+    await press(buttonNamed(root, "Zakończ"));
+    assert.equal(shownScreen(root), "character");
+    assert.equal(byClass(root, "character-screen-name")[0]?.textContent, "Ala");
+    assert.deepEqual(address.entries, ["#/", RUN_ADDRESS, "#/postac/1"]);
+    assert.equal(
+      pageDocument().activeElement,
+      byClass(root, "character-screen-host")[0],
+      "„Zakończ” left with its screen, so Postać takes the focus",
+    );
+    assert.equal(returnItem(root), null, "the map run is gone");
+    await held.answer("saveGame", { kind: "saved", revision: 6 });
+
+    await goBack(address);
+    assert.equal(shownScreen(root), "character");
+    assert.deepEqual(
+      address.entries,
+      ["#/", "#/postac/1", "#/postac/1"],
+      "the entry of the map run gone is replaced with the nearest screen",
+    );
+    assert.deepEqual(waitingCalls(held), []);
+  });
+});
+
+// The slice's first failing case. To do 7, questions 10, D-283, D-284, D-207. Catches a map run
+// that passes its game minutes while the player stands on another screen, a leave that pauses
+// without saving, a leave of a paused or ended map run that saves although nothing changed, and a
+// return that resumes the map run by itself.
+test("leaving the screen of a map run that goes on pauses it as „Pauza” does and saves at once; a return resumes nothing, and leaving a paused or an ended map run saves nothing", async () => {
+  await withStillClock(async () => {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, "", passing());
+      // The loaded map run came back paused (D-212); the player goes on.
+      await press(buttonNamed(root, "Wznów"));
+      await held.answer("saveGame", { kind: "saved", revision: 5 });
+      assert.doesNotMatch(statusTextOf(root), / \(pauza\)$/);
+
+      await follow(address, "#/");
+      assert.equal(shownScreen(root), "headquarters");
+      assert.deepEqual(waitingCalls(held), ["saveGame"], "the pause is saved");
+      assert.deepEqual(argsOf(held, "saveGame"), [
+        submission({ ...passing(), paused: true }, 5),
+      ]);
+      await held.answer("saveGame", { kind: "saved", revision: 6 });
+      assert.deepEqual(returnItem(root), [
+        "Wróć do przejścia · Las · minuta 0",
+        RUN_ADDRESS,
+      ]);
+
+      // Real time passes: the map run stands at its minute, since it is paused.
+      mock.timers.tick(5_000);
+      await settle();
+      await goBack(address);
+      assert.equal(shownScreen(root), "run");
+      assert.match(statusTextOf(root), /^Minuta 0 .* \(pauza\)$/);
+      assert.ok(shown(buttonNamed(root, "Wznów")), "it waits for „Wznów”");
+      assert.deepEqual(waitingCalls(held), [], "the return changes nothing");
+
+      // The own-work check: the forward button leaves the screen as a link does, and pauses too.
+      await press(buttonNamed(root, "Wznów"));
+      await held.answer("saveGame", { kind: "saved", revision: 7 });
+      await goForward(address);
+      assert.equal(shownScreen(root), "headquarters");
+      assert.deepEqual(argsOf(held, "saveGame"), [
+        submission({ ...passing(), paused: true }, 7),
+      ]);
+    });
+  });
+
+  for (const [name, game] of [
+    ["a paused map run", passing()],
+    ["a map run ended in a death", ended()],
+  ]) {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, "", game);
+      assert.equal(shownScreen(root), "run", name);
+      await follow(address, "#/programy");
+      assert.equal(shownScreen(root), "programs", name);
+      assert.deepEqual(waitingCalls(held), [], `${name}: nothing changed`);
+      assert.ok(returnItem(root), `${name}: „Wróć do przejścia” stands`);
+    });
+  }
+});
+
+// D-283's rejected way and the plan: a logout or an expiry leaves the game with no change of screen
+// and pauses nothing. Catches a logout's save that pauses the map run, and a listener on the
+// address left behind by a game that has gone.
+test("„Wyloguj” on the screen of a map run going on saves it as it goes and pauses nothing, and the game that left listens to the address no more", async () => {
+  await withStillClock(async () => {
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, "", passing());
+      await press(buttonNamed(root, "Wznów"));
+      await held.answer("saveGame", { kind: "saved", revision: 5 });
+      assert.equal(address.listening(), 1, "the game listens to the address");
+      await press(await logoutOf(root));
+      assert.deepEqual(argsOf(held, "saveGame"), [submission(passing(), 5)]);
+      await held.answer("saveGame", { kind: "saved", revision: 6 });
+      await held.answer("logout", { ok: true, value: null });
+      assert.equal(gameShown(root), false);
+      assert.equal(address.listening(), 0);
+    });
+  });
+});
+
+// Question 16, D-225, D-96, D-281. Catches „Anuluj” or a refused link of a signed-in player
+// leading to the save's map run, and a confirmation link doing so.
+test("after an emailed link — a confirmation, „Anuluj” of „Ustaw nowe hasło” or a refused link — a signed-in player opens Siedziba, whatever the save holds", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(LINK);
+    await startPage(held, address);
+    await held.answer("confirmEmail", CONFIRMED);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(passing(), 4));
+    assert.equal(shownScreen(root), "headquarters");
+    assert.deepEqual(noticeTexts(root), ["Adres e-mail potwierdzony."]);
+    assert.equal(address.hash(), "#/");
+    assert.ok(returnItem(root), "the way back to the map run stands");
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    await press(buttonNamed(root, "Anuluj"));
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(passing(), 4));
+    assert.equal(shownScreen(root), "headquarters");
+    assert.equal(address.hash(), "#/");
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(RESET_LINK);
+    await startPage(held, address);
+    const form = resetFormOf(root);
+    await fillReset(form);
+    await sendForm(form.form);
+    await held.answer("setPassword", INVALID_LINK);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(passing(), 4));
+    assert.equal(shownScreen(root), "headquarters");
+    assert.deepEqual(noticeTexts(root), [
+      "Odnośnik jest nieważny albo wygasł.",
+    ]);
+    assert.equal(address.hash(), "#/");
+  });
+});
+
+// D-209 with the plan: a game built again after a conflict stays on the screen the address names.
+// Catches the rebuilt game opening the save's map run or Siedziba instead.
+test("a game built again after a conflict stays on the screen the address names, also when the game before it came from the sign-in form", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/programy", passing());
+    assert.equal(shownScreen(root), "programs", "precondition");
+    fire(buttonNamed(root, "Dodaj grupę"), "click");
+    await settle();
+    await held.answer("saveGame", { kind: "conflict" });
+    await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
+    assert.equal(shownScreen(root), "programs");
+    assert.equal(address.hash(), "#/programy");
+    assert.equal(saveLine(root).textContent, CONFLICT);
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress();
+    await startPage(held, address);
+    await held.answer("currentAccount", NO_SESSION);
+    await signIn(held, ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(passing(), 4));
+    assert.equal(
+      shownScreen(root),
+      "run",
+      "precondition: the sign-in's screen",
+    );
+    await follow(address, "#/postac/1");
+    // Inside act: the edit redraws Postać, a screen in React.
+    await press(buttonNamed(root, "Dodaj grupę"));
+    await held.answer("saveGame", { kind: "conflict" });
+    await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
+    assert.equal(shownScreen(root), "character", "not the sign-in's screen");
+    assert.equal(address.hash(), "#/postac/1");
+  });
+});
+
+// To do 11, question 12, D-286. Catches the sentence standing above Programy and Postać until a
+// reload, and one that comes back on the return to Siedziba.
+test("the page's sentence above the first screen leaves at the first change of screen and does not come back", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress(LINK);
+    await startPage(held, address);
+    await held.answer("confirmEmail", CONFIRMED);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer(
+      "loadSavedGame",
+      saveOf(withCharacter(), 4, OLDER_VERSION),
+    );
+    assert.deepEqual(pageSentences(root), [
+      ["Adres e-mail potwierdzony.", "positive"],
+      [OTHER_VERSION, "warning"],
+    ]);
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+    // An act that changes no screen leaves the sentences standing.
+    await press(buttonNamed(root, "Nowy program"));
+    await held.answer("saveGame", { kind: "saved", revision: 6 });
+    assert.equal(pageSentences(root).length, 2);
+
+    await follow(address, "#/programy");
+    assert.deepEqual(pageSentences(root), []);
+    await goBack(address);
+    assert.equal(shownScreen(root), "headquarters");
+    assert.deepEqual(pageSentences(root), []);
+  });
+});
+
+// Question 9, D-280, D-277. Catches „Wróć do przejścia” missing on a screen, standing on the map
+// run's own screen, gone after the character's death, with the clock written otherwise than the
+// status row writes it, or an item marked on the screen of a map run.
+test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Postać and Programy while a map run waits or has ended, leads to its screen and is gone there", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/", passing());
+    const entry = ["Wróć do przejścia · Las · minuta 0", RUN_ADDRESS];
+    assert.deepEqual(returnItem(root), entry);
+    await follow(address, "#/postac/1");
+    assert.deepEqual(returnItem(root), entry);
+    await follow(address, "#/programy");
+    assert.deepEqual(returnItem(root), entry);
+    assert.deepEqual(barItems(root)[1], ["Programy", "#/programy", "page"]);
+
+    await follow(address, entry[1]);
+    assert.equal(shownScreen(root), "run");
+    assert.deepEqual(barItems(root), [
+      ["Siedziba", "#/", null],
+      ["Programy", "#/programy", null],
+    ]);
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const game = ended();
+    const address = await reloadedAt(held, "#/", game);
+    assert.deepEqual(returnItem(root), [
+      `Wróć do przejścia · Las · minuta ${game.run.death.minute}`,
+      RUN_ADDRESS,
+    ]);
+    await follow(address, RUN_ADDRESS);
+    await press(buttonNamed(root, "Zakończ"));
+    assert.equal(shownScreen(root), "character");
+    assert.equal(returnItem(root), null);
+  });
+});
+
+// The orchestrator's ruling (record Q14), To do 12, D-217: a reading of the clock rewrites the
+// resurrection lines of Siedziba and of Postać whenever they show, also while a manual map run
+// waits. Catches the lines refreshed only without a map run, as before, and a tick that saves.
+test("a clock tick rewrites the resurrection line of Siedziba and of Postać while a manual map run waits, and saves nothing", async () => {
+  const T = 1_760_000_000_000;
+  const warning = " — śmierć zabierze wprawę i wykupione stopnie";
+  /** Ala at generation 2 with a paused map run, her resurrection 59 min 30 s away at `T`. */
+  const waiting = () => ({
+    ...passing(),
+    team: renewing(T, 3_570_000).team,
+  });
+  for (const [hash, lineClass] of [
+    ["#/", "team-member-resurrection"],
+    ["#/postac/1", "character-screen-resurrection"],
+  ]) {
+    await onPage(async ({ root }) => {
+      let current = T;
+      const date = mock.method(Date, "now", () => current);
+      try {
+        const held = heldClient();
+        await reloadedAt(held, hash, waiting());
+        assert.ok(returnItem(root), `${hash}: precondition, the map run waits`);
+        const [line] = byClass(root, lineClass);
+        assert.ok(shown(line), hash);
+        assert.equal(
+          line.textContent,
+          `Wskrzeszenie za 1 godz. 0 min czasu realnego${warning}`,
+          hash,
+        );
+        current = T + 31_000;
+        await inAct(() => mock.timers.tick(200));
+        assert.equal(
+          line.textContent,
+          `Wskrzeszenie za 59 min czasu realnego${warning}`,
+          hash,
+        );
+        current = T + 3_570_000;
+        await inAct(() => mock.timers.tick(200));
+        assert.equal(line.textContent, "Wskrzeszenie gotowe", hash);
+        assert.ok(!line.classList.contains("danger"), hash);
+        await inAct(() => mock.timers.tick(60_000));
+        assert.deepEqual(waitingCalls(held), [], `${hash}: nothing is saved`);
+      } finally {
+        date.mock.restore();
+      }
+    });
+  }
+});
+
+// The plan: Postać is created on entering it and disposed on leaving; the DOM screens are built
+// once. Catches a screen Postać left in the page after the player left it, or two of them.
+test("the screen Postać is built on entering it and gone on leaving, while Siedziba and Programy are built once and hidden", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/", withCharacter());
+    const hosts = () => byClass(root, "character-screen-host").length;
+    assert.equal(hosts(), 0);
+    const [headquarters] = byClass(root, "headquarters");
+    await follow(address, "#/postac/1");
+    assert.equal(hosts(), 1);
+    assert.ok(!shown(headquarters));
+    await follow(address, "#/programy");
+    assert.equal(hosts(), 0);
+    await goBack(address);
+    assert.equal(hosts(), 1);
+    await goBack(address);
+    assert.equal(hosts(), 0);
+    assert.equal(byClass(root, "headquarters")[0], headquarters, "the same");
+    assert.ok(shown(headquarters));
+  });
+});
+
+// The real address of the page (D-281), on jsdom's history: proof of which call of `history` each
+// way makes and that the listener hears the browser's traversal, never of a real address bar
+// (D-88). Catches `go` that replaces, `replace` that adds an entry, a listener deaf to `hashchange`
+// and a removal that leaves it.
+test("browserAddress goes to a fragment with a new entry, replaces one without, and its listener hears the browser's back and forward until removed", async () => {
+  await withPage(async ({ window }) => {
+    const { browserAddress } =
+      await import("../../dist/browser/view/email-confirmation.js");
+    const address = browserAddress();
+    const length = window.history.length;
+    assert.equal(address.hash(), "");
+
+    address.go("#/programy");
+    assert.equal(window.location.hash, "#/programy");
+    assert.equal(window.history.length, length + 1);
+    address.replace("#/postac/1");
+    assert.equal(window.location.hash, "#/postac/1");
+    assert.equal(window.history.length, length + 1, "replace adds no entry");
+    assert.equal(address.hash(), "#/postac/1");
+
+    const heard = [];
+    const remove = address.onChange(() => heard.push(address.hash()));
+    const nextChange = () =>
+      new Promise((resolve, reject) => {
+        const timer = setTimeout(
+          () => reject(new Error("no change of the address within 2 s")),
+          2_000,
+        );
+        window.addEventListener(
+          "hashchange",
+          () => {
+            clearTimeout(timer);
+            // The page's own listener was added first, so it has run by now.
+            resolve();
+          },
+          { once: true },
+        );
+      });
+    const back = nextChange();
+    window.history.back();
+    await back;
+    assert.deepEqual(heard, [""]);
+    const forward = nextChange();
+    window.history.forward();
+    await forward;
+    assert.deepEqual(heard, ["", "#/postac/1"]);
+
+    remove();
+    const again = nextChange();
+    window.history.back();
+    await again;
+    assert.deepEqual(heard, ["", "#/postac/1"], "removed, it hears nothing");
   });
 });
 
