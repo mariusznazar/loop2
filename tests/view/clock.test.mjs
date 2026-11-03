@@ -311,7 +311,7 @@ test("a death standing on the screen is settled once, at the first reading", () 
   });
 });
 
-// D-207: the saver finds a change by the state's identity, so real time at the headquarters may
+// D-207: the saver finds a change by the state's identity, so real time outside a map run may
 // make no new state.
 test("a flush of an unchanged game hands the store the very state it holds, with no events", () => {
   withBothClocks(({ pass }) => {

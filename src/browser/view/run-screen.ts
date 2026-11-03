@@ -30,10 +30,10 @@ export type RunScreen = {
 };
 
 /**
- * Builds the screen once: `panel` is the program panel, which the game view moves between the
- * screens that hold it, and the status row's controls go to the game view, which turns each into a
- * simulation call. The elements are made once and updated in place, so a button keeps focus
- * across clock ticks.
+ * Builds the screen once: `panel` is the program panel of this screen, which the game view places
+ * here alone (the game view holds a second program panel, for Programy), and the status row's
+ * controls go to the game view, which turns each into a simulation call. The elements are made once
+ * and updated in place, so a button keeps focus across clock ticks.
  */
 export function createRunScreen(
   panel: HTMLElement,

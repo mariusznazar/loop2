@@ -142,7 +142,7 @@ export function paidPractice(
   );
 }
 
-/** Refuses purchases outside headquarters, unknown trees, missing skills and unaffordable ranks. */
+/** Refuses purchases while a map run is in the state, unknown trees, missing skills and unaffordable ranks. */
 export function buyBranch(
   state: GameState,
   characterId: number,

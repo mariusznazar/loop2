@@ -395,7 +395,7 @@ export type GameState = {
   team: Team;
   /** The id the next created character takes. */
   nextCharacterId: CharacterId;
-  /** null = the headquarters. */
+  /** null = no map run. */
   run: GameMapRun | null;
   /** Seed of the latest send; INITIAL_SEED at start. */
   lastSeed: number;

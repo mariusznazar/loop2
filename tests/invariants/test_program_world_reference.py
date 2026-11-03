@@ -14,7 +14,7 @@ Reading of the sentence:
   `HELD_PROGRAMS_JS` of `program_fixture.py`) — the programs of the player's list and, during a map
   run, the copy the map run carries out (D-164) — after `setProgram` took one in, and as they stand
   after a send and after 30 game minutes of a map run; the program `setProgram` edits (`heldProgram`:
-  the copy during a map run, in the headquarters the list's program the team goes with) must hold the
+  the copy during a map run, outside a map run the list's program the team goes with) must hold the
   offer as offered;
 - a thing of the world: a tile, or a resource lying on one; its kind: the identifier of a resource
   as the data files give it — `stick`, `berry`, `moss`, `fiber`, written out below;
@@ -36,7 +36,7 @@ Reading of the sentence:
   throws, or the state keeps the program it had) or held without it — which the reading above
   checks of every program held.
 
-Offers, each made in the headquarters and during a map run of Las (`forest`) of a character
+Offers, each made outside a map run and during a map run of Las (`forest`) of a character
 created in a new game, of the archetype `elementalMage`, sent at the real time T, after the program
 BASE: the valid programs in LEGIT; and
 programs in NAMING, each of which names a tile or a resource by a number or a position — a
@@ -247,7 +247,7 @@ def naming(program):
 def findings(label, pair):
     found = []
     for result in pair:
-        where = "during a map run" if result["withRun"] else "in the headquarters"
+        where = "during a map run" if result["withRun"] else "outside a map run"
         for moment, held in zip(("taken in", "after a send", f"after {ADVANCE} minutes"),
                                 result["held"]):
             for index, program in enumerate(held["all"]):
