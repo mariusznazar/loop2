@@ -42,6 +42,8 @@ import {
   passwordProblems,
   registrationProblems,
 } from "../../dist/browser/view/account-rules.js";
+import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
+import { createRunScreen } from "../../dist/browser/view/run-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- the page on jsdom --------------------------------------------------------------------------
@@ -3971,6 +3973,58 @@ test("a game built again after a conflict stays on the screen the address names,
     await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
     assert.equal(shownScreen(root), "character", "not the sign-in's screen");
     assert.equal(address.hash(), "#/postac/1");
+  });
+});
+
+/** Controls of a screen or a panel that a case never presses. */
+const unpressed = (...names) =>
+  Object.fromEntries(names.map((name) => [name, () => undefined]));
+
+// To do 6, D-281, D-166, the review of the whole change (B2): the screen of a map run takes its
+// map run as a parameter and reads none of the game state by itself, its program panel with the
+// copy included. The screen is built here on its own, as the game view builds it, so the case can
+// give it a game state whose map run differs from the one it is given. Catches the panel drawing the
+// copy of the game state's map run beside the column of the map run the screen was given.
+test("the screen of a map run gives its program panel the map run it was given, with the copy of that map run, not the game state's", async () => {
+  await withPage(async ({ root }) => {
+    const panel = createProgramPanel(
+      unpressed(
+        "editCopy",
+        "editProgram",
+        "createProgram",
+        "renameProgram",
+        "deleteProgram",
+        "saveCopy",
+        "saveCopyAsNew",
+        "discardCopy",
+        "switchProgram",
+      ),
+      "run",
+    );
+    const screen = createRunScreen(
+      panel,
+      unpressed("togglePause", "setPace", "restart", "end"),
+    );
+    root.append(screen.element);
+    // The game state holds Ala's map run on the copy of „Program”; the screen is given her map run
+    // on the copy of „Program 2”, as a second map run of the game would be.
+    const state = pausedRun();
+    const given = send(
+      twoPrograms(),
+      { mapId: "forest", characterId: 1, programId: 2 },
+      0,
+    ).state.run;
+    assert.equal(state.run.copy.programId, 1, "precondition: the state's copy");
+    assert.equal(given.copy.programId, 2, "precondition: the given copy");
+
+    screen.update(state, given, []);
+    assert.equal(
+      byClass(root, "copy-heading")[0].textContent,
+      "Kopia: Program 2",
+      "the panel shows the copy of the map run the screen was given",
+    );
+    assert.equal(listLabelled(root, "Program:").value, "copy");
+    assert.match(statusTextOf(root), /^Minuta 0 /);
   });
 });
 

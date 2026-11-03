@@ -8,6 +8,7 @@ import {
   setPaused,
   setProgram,
   withSaveTime,
+  type GameEvent,
   type GameResult,
 } from "../sim/game.js";
 import {
@@ -216,8 +217,9 @@ export function createGameView(options: GameViewOptions): GameView {
       act(switchProgram(state, programId));
     },
   };
-  // The panel of Przejście shows the copy and holds the select list of programs; the panel of
-  // Programy shows a saved program, which the list beside it and the address name.
+  // The panel of Przejście shows the copy and holds the select list of programs; the screen of the
+  // map run updates it with the map run it is given (D-281). The panel of Programy shows a saved
+  // program, which the list beside it and the address name.
   const runPanel = createProgramPanel(panelControls, "run");
   runPanel.element.classList.add("screen-area");
   const programsPanel = createProgramPanel(panelControls, "programs");
@@ -236,9 +238,8 @@ export function createGameView(options: GameViewOptions): GameView {
         (event) => event.kind === "loopRunEnded",
       );
       state = result.state;
-      runPanel.update(state, result.events);
       programsPanel.update(state, result.events);
-      renderScreens();
+      renderScreens(result.events);
       // A game minute that ends the map run in a death or a completion, and a result in which a
       // loop's map run ended, however many, is one moment of saving (D-207).
       if (ended || loopEnded) saver.moment();
@@ -317,7 +318,7 @@ export function createGameView(options: GameViewOptions): GameView {
   programsScreen.className = "screen programs-screen";
   programsScreen.tabIndex = -1;
 
-  const runScreen = createRunScreen(runPanel.element, {
+  const runScreen = createRunScreen(runPanel, {
     togglePause() {
       clock.flush();
       act(setPaused(state, !state.paused));
@@ -522,10 +523,15 @@ export function createGameView(options: GameViewOptions): GameView {
     }
   }
 
-  /** Draws every screen from the state; a hidden one is current when it shows. */
-  function renderScreens(): void {
+  /**
+   * Draws every screen from the state; a hidden one is current when it shows. `events` are those
+   * of the simulation call that returned the state. Przejście, its program panel included, is
+   * given the state's map run while the state holds one (D-281); without one it keeps what it
+   * showed, hidden, until the next send.
+   */
+  function renderScreens(events: readonly GameEvent[]): void {
     headquarters.update(state, clock.moment());
-    if (state.run !== null) runScreen.update(state, state.run);
+    if (state.run !== null) runScreen.update(state, state.run, events);
     characterScreen?.update(characterProps(characterScreen.characterId));
     drawPrograms();
     tellPlace();
@@ -565,9 +571,8 @@ export function createGameView(options: GameViewOptions): GameView {
     focusShownScreen();
   });
 
-  runPanel.update(state, []);
   programsPanel.update(state, []);
-  renderScreens();
+  renderScreens([]);
   show(current, "replace");
   // The catch-up is the last step of building, so every place of loading goes the same way (D-212).
   clock.catchUp();
