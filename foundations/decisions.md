@@ -3511,34 +3511,34 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 *Rationale:* Scouting changes the exploration program’s reach. Accepted with it: it can reveal much of the small map quickly.
 *Rejected:* only numerical branches, or only a selected subset of the non-numerical branches — omit the accepted changes to how programs work
 
-### D-199 — What does the headquarters show of character skills?
+### D-199 — What does the screen Postać show of character skills?
 
-At each character the headquarters currently shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
+The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
 - **Verification:** an agent compares a change with the decision:
   - complies: a fully bought numerical branch showing its current value with a disabled „Kup”; the whole section absent before any tree is known
-  - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q11; accepted settlement 8
+  - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch; „Umiejętności” drawn on Siedziba
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q11; accepted settlement 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-199
 
-*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: a longer headquarters and no preview of unknown trees.
-*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note
+*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: no preview of unknown trees.
+*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note.
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
-The player currently buys a branch rank with „Kup” in the headquarters outside a manual map run, at a character in an earning loop too, and the rank acts from that character’s next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game currently has no purchase in the map-run view and no undo of a purchase.
+The player currently buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game currently has no purchase in the map-run view and no undo of a purchase.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
 - **Verification:** an agent compares a change with the decision:
-  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run
-  - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4, and § Settlements to record, row 6
+  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run; „Kup” inactive on the screen Postać after a character's death until „Restart” or „Zakończ”
+  - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on; „Kup” active while the screen after a completion waits for „Restart” or „Zakończ”
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4, and § Settlements to record, row 6 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-200
 
-*Rationale:* Purchases belong beside the character’s skills in the headquarters, and a run keeps the skills with which it starts. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
+*Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
 *Rejected:* „Kup” inactive at a character in an earning loop — to spend its points the player loses the backpack of the map run going on.
 
 ### D-201 — What does the map-run view show of its practice?
@@ -3694,7 +3694,7 @@ as refused as too large (D-208).
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: an edit of a program rule followed at once by a save request; „Kup” of a branch rank
-    in the headquarters followed at once by a save request; a map run passing at 16×
+    on the screen Postać followed at once by a save request; a map run passing at 16×
     saved once every 30 real seconds; a tab hidden in the middle of a map run sending its latest
     game state as a `keepalive` request; a tab that has just loaded a saved game state with its map
     run paused and no earning loop passing sending nothing until the player acts in it; earning
@@ -3990,27 +3990,18 @@ game state remembers how each death was settled.
 nothing on this screen, the telling left to the headquarters — the player may press „Restart”
 unaware of the lost progress.
 
-### D-217 — What does the headquarters show of a character's resurrection?
+### D-217 — What does the game show of a character's resurrection?
 
-The headquarters shows at each character, from its creation, „Wskrzeszenie gotowe” in
-`text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min —
-śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min” below one
-hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
+The card and the screen of a character show, from its creation, „Wskrzeszenie gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-190 · derives from D-219
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-217
 
-*Rationale:* the player sees the stake before paying it and how long a renewal has left, and the
-minutes go up so that the game gives no time shorter than the real one. Accepted with it: the
-headquarters has to refresh as time passes, the text speaks of a full hour with some tens of seconds
-missing, and it can read „0 min”.
-*Rejected:* the line appearing after the first death — the player learns the stake once it has paid
-it; a bare ready or not ready — the player does not know how long to wait, and hardly any code goes;
-the split first and the rounding of the minutes after it, giving „za 7 godz. 60 min” and „za 60 min”
-— for one minute of each hour the text shows 60 minutes, which looks like a fault of the game.
+*Rationale:* the player sees the stake before paying it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. Accepted with it: the screens have to refresh as time passes.
+*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; a bare ready or not ready — the player does not know how long to wait; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes.
 
 ### D-218 — How does the headquarters show a character's generation number?
 
@@ -4830,39 +4821,30 @@ place for sending characters and several times the view; „Wyślij” stopping 
 
 ### D-244 — What does the player see of an earning loop?
 
-A running earning loop currently shows in its character's row of the headquarters as one line in the
-role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button
-„Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view
-and the program panel show during a map run stands for a manual map run; the firing counts cover a
-manual map run, and the start of an earning loop leaves the counts a manual map run left as they
-were.
+A running earning loop currently shows on the card and the screen of its character as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-239 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
 - **Verification:** an agent compares a change with the decision:
-  - complies: a row reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2”, moving with each
-    game minute of the earning loop; the counts of the last manual map run staying as they were
-    after an earning loop starts; the program panel staying on the player's programs while earning
-    loops pass
+  - complies: a line reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2” on the
+    character's card on Siedziba and on its screen Postać, moving with each game minute of the
+    earning loop; the counts of the last manual map run staying as they were after an earning loop
+    starts; the program editor staying on the player's programs while earning loops pass
   - violates: a button that opens the map of an earning loop's map run; firing counts gathered in an
     earning loop's map run; the start of an earning loop clearing the counts
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-244
 
-*Rationale:* the player checks a program in a manual map run and reads an earning loop by what it
-brings, so one line says what it does and how far it has come, and a preview can come later with the
-earning loop as it stands. Accepted with it: the player sees neither what the character does nor why
-it died, and the rule that a map run counts its firings takes an exception.
-*Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of
-map-run screen and a large piece of work.
+*Rationale:* the player checks a program in a manual map run and reads an earning loop by what it brings, so one line says what it does and how far it has come. The screen of a map run takes its map run as a parameter, so a preview can come later as an addition. Accepted with it: the player sees neither what the character does nor why it died, and the rule that a map run counts its firings takes an exception.
+*Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of map-run screen and a large piece of work.
 
 ### D-245 — What does „Zatrzymaj” do?
 
 „Zatrzymaj” is a destructive button with its text in the role `danger` that acts at once on the
 click: the items carried in the map run going on are lost, its loot stays out of the chest, the
-practice D-189 gives enters the character skills, and the character returns to its ordinary row. In
-that row, until the next send or start of that character and after a load of the saved game state
-too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or
+practice D-189 gives enters the character skills, and the character returns to its ordinary state.
+On the character's card and screen, until the next send or start of that character and after a load
+of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or
 „Pętla zatrzymana” where the earning loop gathered no practice.
 
 - **Scope:** browser-view · simulation
@@ -4901,7 +4883,7 @@ of game minutes. An earning loop a death stops in the open game enters the same 
 pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to
 pokolenie {n}.”, the title reading
 „Pętle, które stanęły” where the section holds no line of a return, and a player returning to a
-manual map run reads the report in the headquarters after „Zakończ”.
+manual map run reads the report on reaching Siedziba.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
