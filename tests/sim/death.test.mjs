@@ -260,7 +260,7 @@ test("a death ends the map run, pays nothing and takes what it carried, a resurr
     assert.deepEqual(settled.team.chest, state.team.chest, name);
     if (kind === "resurrectionUsed")
       assert.deepEqual(ala(settled).skills, ala(state).skills, name);
-    // Nothing it carried comes back: at the headquarters the chest stands as the death left it.
+    // Nothing it carried comes back: the chest the screen Siedziba shows after the end stands as the death left it.
     assert.deepEqual(end(settled).state.team.chest, state.team.chest, name);
   }
 });
