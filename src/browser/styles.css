@@ -1336,6 +1336,26 @@ header .save-line {
   color: var(--discovery);
 }
 
+/*
+ * The band of a discovery above the program on the screen of a map run (D-122): its text in the role
+ * `discovery` (D-39) with a bar at its left in the colour of that text (D-279), then the two shared
+ * buttons.
+ */
+.discovery-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.discovery-band-text {
+  margin: 0;
+  margin-right: auto;
+  padding-left: var(--space-s);
+  border-left: var(--bar-width) solid currentColor;
+  color: var(--discovery);
+}
+
 .combat-line {
   margin: var(--space-xs) 0 0;
   color: var(--text);
