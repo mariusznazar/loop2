@@ -257,9 +257,13 @@ header .save-line {
   cursor: pointer;
 }
 
-/* The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
-   program”, „Zatrzymaj” (D-44). */
-.button.destructive {
+/*
+ * The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
+ * program”, „Zatrzymaj” (D-44). Neutral at rest, its text in `text`; under the pointer and at the
+ * visible focus its text in `danger` (D-39). One rule for both forms, which carry the class.
+ */
+.button.destructive:hover:not(:disabled),
+.button.destructive:focus-visible {
   color: var(--danger);
 }
 

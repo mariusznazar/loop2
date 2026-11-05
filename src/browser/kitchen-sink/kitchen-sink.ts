@@ -86,8 +86,9 @@ type Sample = HTMLElement | string;
 /**
  * Hover and focus cannot be held by the page, so their samples carry a class that
  * `kitchen-sink.css` draws as the game draws the state: hover from the role `highlight` (the
- * secondary action's hover by its own rule, in `text` on the background it has), focus by the one
- * `:focus-visible` rule, repeated there with the sample's selector.
+ * secondary action's hover by its own rule, in `text` on the background it has; the destructive
+ * button's hover and focus in `danger` by the rules of its own in `kitchen-sink.css`), focus by the
+ * one `:focus-visible` rule, repeated there with the sample's selector.
  */
 function forced(element: HTMLElement, state: State): void {
   if (state === "hover") element.classList.add("sample-hover");

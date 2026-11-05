@@ -7,8 +7,8 @@
 import type { MouseEventHandler, Ref } from "react";
 
 /**
- * „destructive” — its text in `danger`; „secondary” — the secondary action; „tab” — a button of a
- * group drawn as a tab.
+ * „destructive” — neutral at rest, its text in `danger` under the pointer and at the focus;
+ * „secondary” — the secondary action; „tab” — a button of a group drawn as a tab.
  */
 export type ReactButtonKind = "destructive" | "secondary" | "tab";
 
