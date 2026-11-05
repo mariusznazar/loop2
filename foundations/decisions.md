@@ -6174,7 +6174,7 @@ target.
 - **Based on:** none
 - **Relations:** derives from D-27 · derives from D-288
 - **Verification:** an agent compares a change with the decision:
-  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · patyk → Zbierz — patyk”, in the
+  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk”, in the
     cell „Zbierz” and over the head of the mage gathering; „Idź” and „Idź — ognisko” sharing one
     icon
   - violates: the icon of a stick in the row of „Zbierz — Patyk”; a greyed cell drawn with no icon
