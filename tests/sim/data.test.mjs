@@ -76,6 +76,7 @@ test("each resource's data gives its icon's title as the icon's page on game-ico
 test("actions carry their labels, status texts and the fixed explore duration", () => {
   assert.deepEqual(ACTIONS.explore, {
     label: "Eksploruj",
+    group: "move",
     status: "Eksploruje",
     minutes: 20,
     revealedBy: { kind: "chilled" },
@@ -84,6 +85,7 @@ test("actions carry their labels, status texts and the fixed explore duration", 
   });
   assert.deepEqual(ACTIONS.wander, {
     label: "Wędruj",
+    group: "move",
     status: "Wędruje",
     minutes: null,
     revealedBy: { kind: "chilled" },
@@ -92,6 +94,7 @@ test("actions carry their labels, status texts and the fixed explore duration", 
   });
   assert.deepEqual(ACTIONS.walkTo, {
     label: "Idź",
+    group: "move",
     status: "Idzie po",
     minutes: null,
     revealedBy: { kind: "explored" },
@@ -103,6 +106,7 @@ test("actions carry their labels, status texts and the fixed explore duration", 
 test("combat actions carry the accepted damage, item requirement and attack revelation", () => {
   assert.deepEqual(ACTIONS.strikeWithStick, {
     label: "Uderz — patyk",
+    group: "foodAndCombat",
     status: "Uderza patykiem",
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -112,6 +116,7 @@ test("combat actions carry the accepted damage, item requirement and attack reve
   });
   assert.deepEqual(ACTIONS.kick, {
     label: "Kopnij",
+    group: "foodAndCombat",
     status: "Kopie",
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -121,6 +126,7 @@ test("combat actions carry the accepted damage, item requirement and attack reve
   });
   assert.deepEqual(ACTIONS.dodge, {
     label: "Odskocz",
+    group: "foodAndCombat",
     status: "Odskakuje",
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -146,10 +152,57 @@ test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", (
   });
 });
 
+// D-290 (task edytor-programu, To do 4): the group of each action and the section and place of each
+// condition in the pick of the rule panel, written out from the task's order.
+test("each action names its group and each condition its section and place in the pick", () => {
+  assert.deepEqual(
+    Object.entries(ACTIONS).map(([id, action]) => [id, action.group]),
+    [
+      ["explore", "move"],
+      ["wander", "move"],
+      ["walkTo", "move"],
+      ["walkToCampfire", "move"],
+      ["gather", "gather"],
+      ["patrol", "gather"],
+      ["craftCampfire", "fire"],
+      ["lightCampfire", "fire"],
+      ["lightItem", "fire"],
+      ["feedCampfire", "fire"],
+      ["eat", "foodAndCombat"],
+      ["strikeWithStick", "foodAndCombat"],
+      ["kick", "foodAndCombat"],
+      ["dodge", "foodAndCombat"],
+    ],
+  );
+  const written = {
+    always: ["start", 1],
+    temperatureBelow: ["body", 1],
+    satietyBelow: ["body", 2],
+    healthBelow: ["body", 3],
+    natureEnergyBelow: ["body", 4],
+    itemBelow: ["world", 1],
+    hereBelow: ["world", 2],
+    campfireLeftBelow: ["world", 3],
+    awayFromCampfire: ["world", 4],
+    opponentHealthBelow: ["opponent", 1],
+  };
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(CONDITIONS).map(([id, def]) => [
+        id,
+        [def.section, def.place],
+      ]),
+    ),
+    written,
+  );
+});
+
 test("conditions carry labels and the value range of hereBelow", () => {
   assert.equal(CONDITIONS.always.label, "Zawsze");
   assert.deepEqual(CONDITIONS.hereBelow, {
     label: "Tu leży mniej niż",
+    section: "world",
+    place: 2,
     revealedBy: { kind: "explored" },
     unit: "szt.",
     defaultValue: 1,
@@ -162,6 +215,8 @@ test("conditions carry labels and the value range of hereBelow", () => {
 test("health conditions use the approved thresholds and are revealed by an attack", () => {
   assert.deepEqual(CONDITIONS.healthBelow, {
     label: "Zdrowie poniżej",
+    section: "body",
+    place: 3,
     revealedBy: { kind: "attacked", creature: "wolf" },
     unit: "pkt",
     defaultValue: 50,
@@ -171,6 +226,8 @@ test("health conditions use the approved thresholds and are revealed by an attac
   });
   assert.deepEqual(CONDITIONS.opponentHealthBelow, {
     label: "Przeciwnik ma poniżej",
+    section: "opponent",
+    place: 1,
     revealedBy: { kind: "attacked", creature: "wolf" },
     unit: "pkt",
     defaultValue: 10,

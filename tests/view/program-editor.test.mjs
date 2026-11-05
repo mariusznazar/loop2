@@ -2,8 +2,11 @@
 // tested without a browser. Importing the module must not touch the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
-import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
+import { ACTION_GROUPS, ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import {
+  CONDITION_SECTIONS,
+  CONDITIONS,
+} from "../../dist/browser/sim/data/conditions.js";
 import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
@@ -20,16 +23,34 @@ import {
   removeGroup,
   moveGroup,
   dropRule,
+  actionPick,
+  actionSentence,
+  actionTargetPick,
+  actionTime,
   addRule,
+  conditionFields,
+  conditionPick,
+  conditionSentence,
+  conditionTargetPick,
+  countText,
   createProgramEditor,
+  dropGroup,
+  fieldAfter,
   focusAfter,
+  groupNumber,
+  groupSummary,
   moveRule,
   offeredActionKinds,
   offeredConditionKinds,
   offeredItems,
   offeredResources,
+  PICK_REASONS,
   readNumberField,
   removeRule,
+  ruleArrows,
+  ruleFields,
+  ruleNumber,
+  ruleSentence,
   showFieldRange,
   withActionKind,
   withActionResource,
@@ -1283,8 +1304,19 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
   const moved = moveRule(input, 3, 0, 1);
   assert.deepEqual(moved.groups[0], first);
   assert.deepEqual(moved.groups[1].rules, [ALWAYS_WALK, BELOW_WANDER]);
-  assert.equal(moveRule(input, 8, 0, 1), null);
-  assert.equal(moveRule(input, 3, 0, -1), null);
+  // D-297 (task edytor-programu, To do 7): „↓” on the last rule of a group goes to the start of the
+  // next group, „↑” on the first to the end of the previous one; null only at the program's ends.
+  const down = moveRule(input, 8, 0, 1);
+  assert.deepEqual(down.groups[0].rules, []);
+  assert.deepEqual(down.groups[1].rules, [
+    ALWAYS_EXPLORE,
+    BELOW_WANDER,
+    ALWAYS_WALK,
+  ]);
+  const up = moveRule(input, 3, 0, -1);
+  assert.deepEqual(up.groups[0].rules, [ALWAYS_EXPLORE, BELOW_WANDER]);
+  assert.deepEqual(up.groups[1].rules, [ALWAYS_WALK]);
+  assert.equal(moveRule(input, 8, 0, -1), null);
   assert.equal(moveRule(input, 3, 1, 1), null);
   const changed = withConditionValue(input, 3, 0, 9);
   assert.deepEqual(changed.groups[0], first);
@@ -1306,4 +1338,588 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
       candidate,
     );
   }
+});
+
+// Task edytor-programu, To do 4–5, D-289 and D-290: what the pick of the rule panel offers.
+
+const NOT_BOUGHT = "gałąź niewykupiona";
+const NO_RUN = "wybierzesz w przejściu postaci, która ją kupiła";
+const NO_TARGET = "nie znasz jeszcze celu";
+const NOT_ON_MAP = "nie ma go na tej mapie";
+const EXPLORE = { kind: "explore" };
+const ALWAYS = { kind: "always" };
+
+/** A game in a map run whose Understanding holds everything and whose character bought no branch. */
+function runningGame() {
+  return send(
+    createCharacter(newKnowingGame(), "Ala").state,
+    SENT,
+    1760000000000,
+  ).state;
+}
+
+/** The state with the character of the map run holding the given purchased branches. */
+function withBought(state, ...branches) {
+  const ranks = Object.fromEntries(branches.map((branch) => [branch, 1]));
+  return {
+    ...state,
+    run: {
+      ...state.run,
+      character: {
+        ...state.run.character,
+        skills: {
+          smallItemGathering: { practice: 0, ranks },
+          campfireCrafting: { practice: 0, ranks },
+        },
+      },
+    },
+  };
+}
+
+/** The state with its Understanding replaced by the given parts of it. */
+function knowing(state, understanding) {
+  return {
+    ...state,
+    understanding: { ...state.understanding, ...understanding },
+  };
+}
+
+/** Every cell of a pick, flat, by its value. */
+function cellsOf(sections) {
+  return Object.fromEntries(
+    sections.flatMap((section) =>
+      section.cells.map((cell) => [cell.value, cell]),
+    ),
+  );
+}
+
+test("the actions of the pick stand in four named groups, in the order of the task, the combat ones picked outside combat", () => {
+  const sections = actionPick(newKnowingGame(), EXPLORE);
+  assert.deepEqual(
+    sections.map((section) => [
+      section.name,
+      section.cells.map((cell) => cell.label),
+    ]),
+    [
+      ["Ruch", ["Eksploruj", "Wędruj", "Idź", "Idź — ognisko"]],
+      ["Zbieranie", ["Zbierz", "Obchód"]],
+      [
+        "Ogień",
+        [
+          "Wytwórz — ognisko",
+          "Zapal — ognisko",
+          "Zapal — patyk",
+          "Zasil — ognisko",
+        ],
+      ],
+      [
+        "Żywność i walka",
+        ["Zjedz — jagoda", "Uderz — patyk", "Kopnij", "Odskocz"],
+      ],
+    ],
+  );
+  const cells = cellsOf(sections);
+  for (const kind of ["strikeWithStick", "kick", "dodge", "gather", "eat"])
+    assert.equal(cells[kind].greyed, false, kind);
+});
+
+test("the conditions of the pick stand in four sections with no names, in the order of the task", () => {
+  const sections = conditionPick(newKnowingGame(), ALWAYS);
+  assert.deepEqual(
+    sections.map((section) => [
+      section.name,
+      section.cells.map((cell) => cell.label),
+    ]),
+    [
+      [null, ["Zawsze"]],
+      [
+        null,
+        [
+          "Temperatura poniżej",
+          "Sytość poniżej",
+          "Zdrowie poniżej",
+          "Energia natury poniżej",
+        ],
+      ],
+      [
+        null,
+        [
+          "Zapas poniżej",
+          "Tu leży mniej niż",
+          "Zostało mniej niż — ognisko",
+          "Z dala od — ognisko",
+        ],
+      ],
+      [null, ["Przeciwnik ma poniżej"]],
+    ],
+  );
+  assert.deepEqual(
+    sections.map((section) => section.cells.some((cell) => cell.chosen)),
+    [true, false, false, false],
+  );
+});
+
+test("a section holds only what the Understanding holds: a new game's condition pick is „Zawsze” alone", () => {
+  const sections = conditionPick(newGame(), ALWAYS);
+  assert.deepEqual(
+    sections.map((section) => section.cells.map((cell) => cell.label)),
+    [["Zawsze"]],
+  );
+  // D-118: the action pick of a new game holds no action but the held one.
+  assert.deepEqual(
+    actionPick(newGame(), EXPLORE).flatMap((section) =>
+      section.cells.map((cell) => cell.value),
+    ),
+    ["explore"],
+  );
+});
+
+test("every action names a group and every condition a section of the data, with its own place in it", () => {
+  for (const [kind, def] of Object.entries(ACTIONS))
+    assert.ok(def.group in ACTION_GROUPS, `action ${kind}`);
+  const places = new Set();
+  for (const [kind, def] of Object.entries(CONDITIONS)) {
+    assert.ok(CONDITION_SECTIONS.includes(def.section), `condition ${kind}`);
+    const place = `${def.section}/${def.place}`;
+    assert.ok(!places.has(place), `condition ${kind} shares ${place}`);
+    places.add(place);
+  }
+});
+
+test("a branch action known and not bought stands greyed: „gałąź niewykupiona” in a map run, „wybierzesz w przejściu…” with none", () => {
+  const during = cellsOf(actionPick(runningGame(), EXPLORE));
+  assert.equal(during.patrol.greyed, true);
+  assert.equal(during.patrol.reason, NOT_BOUGHT);
+  assert.equal(during.gather.greyed, false);
+  assert.equal(during.gather.reason, null);
+  const outside = cellsOf(actionPick(newKnowingGame(), EXPLORE));
+  assert.equal(outside.patrol.greyed, true);
+  assert.equal(outside.patrol.reason, NO_RUN);
+  const bought = cellsOf(
+    actionPick(withBought(runningGame(), "patrol"), EXPLORE),
+  );
+  assert.equal(bought.patrol.greyed, false);
+  assert.equal(PICK_REASONS.branchNotBought, NOT_BOUGHT);
+  assert.equal(PICK_REASONS.branchWithoutRun, NO_RUN);
+});
+
+test("„Idź”, „Zbierz”, „Obchód”, „Tu leży mniej niż” and „Zapas poniżej” with no target to name stand greyed: „nie znasz jeszcze celu”", () => {
+  const bare = withBought(knowing(runningGame(), { items: [] }), "patrol");
+  const actions = cellsOf(actionPick(bare, EXPLORE));
+  for (const kind of ["walkTo", "gather", "patrol"]) {
+    assert.equal(actions[kind].greyed, true, kind);
+    assert.equal(actions[kind].reason, NO_TARGET, kind);
+  }
+  for (const kind of ["explore", "wander", "walkToCampfire", "eat", "kick"]) {
+    assert.equal(actions[kind].greyed, false, kind);
+  }
+  const conditions = cellsOf(conditionPick(bare, ALWAYS));
+  for (const kind of ["hereBelow", "itemBelow"]) {
+    assert.equal(conditions[kind].greyed, true, kind);
+    assert.equal(conditions[kind].reason, NO_TARGET, kind);
+  }
+  assert.equal(conditions.temperatureBelow.greyed, false);
+  // Outside a map run the same: nothing known to point at.
+  const outside = knowing(newKnowingGame(), { items: [] });
+  assert.equal(cellsOf(actionPick(outside, EXPLORE)).gather.reason, NO_TARGET);
+  // One known item is a target: both stand open again.
+  const one = knowing(newKnowingGame(), { items: ["stick"] });
+  assert.equal(cellsOf(actionPick(one, EXPLORE)).gather.greyed, false);
+  assert.equal(cellsOf(conditionPick(one, ALWAYS)).itemBelow.greyed, false);
+});
+
+test("a known resource the map of the map run lacks stands greyed: „nie ma go na tej mapie”; with no map run every known resource may be picked", () => {
+  const map = MAPS[SENT.mapId];
+  const resources = map.resources;
+  map.resources = resources.filter((resource) => resource.id !== "fiber");
+  try {
+    const during = runningGame();
+    const gather = actionTargetPick(during, {
+      kind: "gather",
+      resource: "stick",
+    });
+    assert.deepEqual(
+      gather.map((cell) => [cell.label, cell.greyed, cell.reason]),
+      [
+        ["Patyk", false, null],
+        ["Jagoda", false, null],
+        ["Mech", false, null],
+        ["Włókno", true, NOT_ON_MAP],
+      ],
+    );
+    const here = conditionTargetPick(during, {
+      kind: "hereBelow",
+      resource: "fiber",
+      value: 1,
+    });
+    assert.deepEqual(
+      here.map((cell) => [cell.label, cell.chosen, cell.greyed, cell.reason]),
+      [
+        ["Patyk", false, false, null],
+        ["Jagoda", false, false, null],
+        ["Mech", false, false, null],
+        ["Włókno", true, true, NOT_ON_MAP],
+      ],
+    );
+    // „Zapas poniżej” stays bound to no map: the backpack can be filled elsewhere.
+    const stock = conditionTargetPick(during, {
+      kind: "itemBelow",
+      item: "stick",
+      value: 8,
+    });
+    assert.deepEqual(
+      stock.map((cell) => [cell.label, cell.greyed, cell.reason]),
+      [
+        ["Patyk", false, null],
+        ["Jagoda", false, null],
+        ["Mech", false, null],
+        ["Włókno", false, null],
+      ],
+    );
+    const outside = actionTargetPick(newKnowingGame(), {
+      kind: "gather",
+      resource: "stick",
+    });
+    assert.deepEqual(
+      outside.map((cell) => [cell.label, cell.greyed]),
+      [
+        ["Patyk", false],
+        ["Jagoda", false],
+        ["Mech", false],
+        ["Włókno", false],
+      ],
+    );
+  } finally {
+    map.resources = resources;
+  }
+});
+
+test("a target is picked from the resources of the Understanding alone, and an action with no target has no target field", () => {
+  const state = knowing(newKnowingGame(), { items: ["berry", "stick"] });
+  assert.deepEqual(
+    actionTargetPick(state, { kind: "gather", resource: "berry" }).map(
+      (cell) => [cell.label, cell.chosen],
+    ),
+    [
+      ["Patyk", false],
+      ["Jagoda", true],
+    ],
+  );
+  assert.equal(actionTargetPick(state, EXPLORE), null);
+  assert.equal(actionTargetPick(state, { kind: "kick" }), null);
+  assert.equal(conditionTargetPick(state, ALWAYS), null);
+  assert.equal(
+    conditionTargetPick(state, { kind: "healthBelow", value: 5 }),
+    null,
+  );
+});
+
+test("a value the rule holds outside the pick stands chosen and greyed: with its reason where one fits, with none where none does", () => {
+  // Fits „nie ma go na tej mapie”: shown above. Fits „gałąź niewykupiona”: a held „Obchód”.
+  const held = actionPick(runningGame(), { kind: "patrol", resource: "stick" });
+  const patrol = cellsOf(held).patrol;
+  assert.deepEqual(
+    [patrol.chosen, patrol.greyed, patrol.reason],
+    [true, true, NOT_BOUGHT],
+  );
+  // No reason fits what the Understanding does not hold: the cell is shown, picked and greyed, with
+  // no reason made up (the slice's report names the case).
+  const unknown = knowing(newKnowingGame(), {
+    actions: ["explore"],
+    conditions: ["always"],
+    items: ["stick"],
+  });
+  const kick = cellsOf(actionPick(unknown, { kind: "kick" })).kick;
+  assert.deepEqual([kick.chosen, kick.greyed, kick.reason], [true, true, null]);
+  const group = actionPick(unknown, { kind: "kick" }).find((section) =>
+    section.cells.some((cell) => cell.value === "kick"),
+  );
+  assert.equal(group.name, "Żywność i walka");
+  const condition = cellsOf(
+    conditionPick(unknown, { kind: "healthBelow", value: 5 }),
+  ).healthBelow;
+  assert.deepEqual(
+    [condition.chosen, condition.greyed, condition.reason],
+    [true, true, null],
+  );
+  const item = conditionTargetPick(unknown, {
+    kind: "itemBelow",
+    item: "berry",
+    value: 8,
+  }).find((cell) => cell.value === "berry");
+  assert.deepEqual([item.chosen, item.greyed, item.reason], [true, true, null]);
+  // What is not held stays out of the pick.
+  assert.deepEqual(Object.keys(cellsOf(actionPick(unknown, EXPLORE))), [
+    "explore",
+  ]);
+});
+
+test("the offer follows the character of the map run: a bought branch opens its action in the pick", () => {
+  const state = withBought(runningGame(), "patrol");
+  assert.equal(cellsOf(actionPick(state, EXPLORE)).patrol.greyed, false);
+  assert.equal(cellsOf(actionPick(runningGame(), EXPLORE)).patrol.greyed, true);
+});
+
+test("a „Obchód” with no target to name and its branch bought stands greyed „nie znasz jeszcze celu”", () => {
+  const state = withBought(knowing(runningGame(), { items: [] }), "patrol");
+  const patrol = cellsOf(actionPick(state, EXPLORE)).patrol;
+  assert.deepEqual([patrol.greyed, patrol.reason], [true, NO_TARGET]);
+});
+
+test("the fields of a rule: the number only where the condition takes one, a target only where one is named", () => {
+  const rule = (condition, action) => ({ id: 1, condition, action });
+  assert.deepEqual(ruleFields(rule(ALWAYS, EXPLORE)), ["condition", "action"]);
+  assert.deepEqual(
+    ruleFields(
+      rule(
+        { kind: "itemBelow", item: "stick", value: 8 },
+        { kind: "gather", resource: "stick" },
+      ),
+    ),
+    ["condition", "number", "conditionTarget", "action", "actionTarget"],
+  );
+  assert.deepEqual(
+    ruleFields(rule({ kind: "temperatureBelow", value: 36 }, { kind: "kick" })),
+    ["condition", "number", "action"],
+  );
+  assert.deepEqual(
+    ruleFields(
+      rule({ kind: "awayFromCampfire" }, { kind: "walkTo", resource: "moss" }),
+    ),
+    ["condition", "action", "actionTarget"],
+  );
+  assert.deepEqual(
+    ruleFields(
+      rule(
+        { kind: "hereBelow", resource: "moss", value: 1 },
+        { kind: "wander" },
+      ),
+    ),
+    ["condition", "number", "conditionTarget", "action"],
+  );
+  assert.deepEqual(conditionFields(ALWAYS), ["condition"]);
+  assert.deepEqual(conditionFields({ kind: "campfireLeftBelow", value: 3 }), [
+    "condition",
+    "number",
+  ]);
+});
+
+test("the field after a pick follows the order condition, number, target, action, target, and none follows the last", () => {
+  const written = [
+    "condition",
+    "number",
+    "conditionTarget",
+    "action",
+    "actionTarget",
+  ];
+  assert.equal(fieldAfter(written, "condition"), "number");
+  assert.equal(fieldAfter(written, "number"), "conditionTarget");
+  assert.equal(fieldAfter(written, "conditionTarget"), "action");
+  assert.equal(fieldAfter(written, "action"), "actionTarget");
+  assert.equal(fieldAfter(written, "actionTarget"), null);
+  // After „Zawsze” is picked the rule has no number: the action comes next.
+  assert.equal(fieldAfter(["condition", "action"], "condition"), "action");
+  assert.equal(fieldAfter(["condition", "action"], "number"), null);
+});
+
+test("the time of one execution: minutes from the data, „tura” in combat, a movement's step in a map run and nothing outside one", () => {
+  const outside = newKnowingGame();
+  assert.equal(actionTime(outside, "explore"), "20 min");
+  assert.equal(actionTime(outside, "gather"), "10 min");
+  assert.equal(actionTime(outside, "patrol"), "40 min");
+  assert.equal(actionTime(outside, "craftCampfire"), "20 min");
+  assert.equal(actionTime(outside, "lightCampfire"), "5 min");
+  for (const kind of ["kick", "dodge", "strikeWithStick"])
+    assert.equal(actionTime(outside, kind), "tura", kind);
+  for (const kind of ["wander", "walkTo", "walkToCampfire"])
+    assert.equal(actionTime(outside, kind), null, kind);
+  const during = runningGame();
+  assert.equal(actionTime(during, "gather"), "10 min");
+  assert.equal(actionTime(during, "kick"), "tura");
+  // The step of the first map is 5 minutes.
+  for (const kind of ["wander", "walkTo", "walkToCampfire"])
+    assert.equal(actionTime(during, kind), "5 min", kind);
+  // The branch „Zgrabna konstrukcja” takes 5 minutes off crafting a campfire: 20 − 5.
+  const bought = withBought(during, "neatConstruction");
+  assert.equal(actionTime(bought, "craftCampfire"), "15 min");
+  assert.equal(actionTime(bought, "gather"), "10 min");
+});
+
+test("a rule is numbered by its group and its place in it, a group by its place in the program", () => {
+  assert.equal(groupNumber(0), "1");
+  assert.equal(groupNumber(1), "2");
+  assert.equal(ruleNumber(0, 0), "1.1");
+  assert.equal(ruleNumber(1, 0), "2.1");
+  assert.equal(ruleNumber(1, 2), "2.3");
+});
+
+test("a row reads as a sentence: the condition with its number and target, then the action with its target", () => {
+  const rule = {
+    id: 1,
+    condition: { kind: "itemBelow", item: "stick", value: 8 },
+    action: { kind: "gather", resource: "stick" },
+  };
+  assert.deepEqual(ruleSentence(rule), {
+    condition: "Zapas poniżej 8 · Patyk",
+    action: "Zbierz — Patyk",
+  });
+  assert.deepEqual(
+    ruleSentence({ id: 2, condition: ALWAYS, action: EXPLORE }),
+    {
+      condition: "Zawsze",
+      action: "Eksploruj",
+    },
+  );
+  assert.equal(
+    conditionSentence({ kind: "hereBelow", resource: "berry", value: 4 }),
+    "Tu leży mniej niż 4 · Jagoda",
+  );
+  assert.equal(
+    conditionSentence({ kind: "campfireLeftBelow", value: 20 }),
+    "Zostało mniej niż — ognisko 20",
+  );
+  assert.equal(
+    conditionSentence({ kind: "awayFromCampfire" }),
+    "Z dala od — ognisko",
+  );
+  assert.equal(actionSentence({ kind: "kick" }), "Kopnij");
+  assert.equal(
+    actionSentence({ kind: "walkTo", resource: "moss" }),
+    "Idź — Mech",
+  );
+});
+
+test("a group's summary: its name, condition, number of rules and the sum of their counts where counts stand", () => {
+  const group = {
+    id: 2,
+    name: "Ogień",
+    condition: { kind: "temperatureBelow", value: 35 },
+    rules: [ALWAYS_EXPLORE, BELOW_WANDER, ALWAYS_WALK],
+  };
+  assert.deepEqual(groupSummary(group, { 1: 3, 3: 18 }), {
+    name: "Ogień",
+    condition: "Temperatura poniżej 35",
+    ruleCount: 3,
+    executed: 21,
+  });
+  assert.equal(groupSummary(group, null).executed, null);
+  assert.equal(groupSummary(group, {}).executed, 0);
+  assert.equal(groupSummary({ ...group, rules: [] }, { 1: 3 }).executed, 0);
+  assert.equal(countText(21), "Wykonano 21×");
+  assert.equal(countText(0), "Wykonano 0×");
+});
+
+test("the arrows are off only on the program's first and last rule, a group's edge being no end", () => {
+  const second = {
+    id: 2,
+    name: "Dwa",
+    condition: ALWAYS,
+    rules: [BELOW_WANDER, ALWAYS_WALK],
+  };
+  const first = {
+    id: 1,
+    name: "Jeden",
+    condition: ALWAYS,
+    rules: [ALWAYS_EXPLORE],
+  };
+  const program = { ...THREE, groups: [first, second], nextGroupId: 3 };
+  assert.deepEqual(ruleArrows(program, 1, 0), { up: false, down: true });
+  assert.deepEqual(ruleArrows(program, 2, 0), { up: true, down: true });
+  assert.deepEqual(ruleArrows(program, 2, 1), { up: true, down: false });
+  const single = { ...THREE, groups: [THREE.groups[0]] };
+  assert.deepEqual(ruleArrows(single, 1, 1), { up: true, down: true });
+  assert.deepEqual(ruleArrows(single, 1, 0), { up: false, down: true });
+  assert.deepEqual(ruleArrows(single, 1, 2), { up: true, down: false });
+});
+
+test("„↓” on the last rule of a group makes it the first of the next, „↑” on the first the last of the previous; an empty group takes it too", () => {
+  const rules = (program) =>
+    program.groups.map((group) => group.rules.map((rule) => rule.id));
+  const program = {
+    ...THREE,
+    groups: [
+      {
+        id: 1,
+        name: "A",
+        condition: ALWAYS,
+        rules: [ALWAYS_EXPLORE, BELOW_WANDER],
+      },
+      { id: 2, name: "B", condition: ALWAYS, rules: [] },
+      { id: 3, name: "C", condition: ALWAYS, rules: [ALWAYS_WALK] },
+    ],
+    nextGroupId: 4,
+  };
+  const before = copy(program);
+  assert.deepEqual(rules(moveRule(program, 1, 1, 1)), [[1], [2], [3]]);
+  assert.deepEqual(rules(moveRule(program, 3, 0, -1)), [[1, 2], [3], []]);
+  // Numbers follow the order: rule 2 of group 1 (1.2) becomes the first of group 2 (2.1).
+  assert.deepEqual(moveRule(program, 1, 1, 1).groups[1].rules, [BELOW_WANDER]);
+  // Within a group it still swaps with its neighbour.
+  assert.deepEqual(rules(moveRule(program, 1, 0, 1)), [[2, 1], [], [3]]);
+  // Past the program's ends, and for an unknown group or place, nothing.
+  assert.equal(moveRule(program, 1, 0, -1), null);
+  assert.equal(moveRule(program, 3, 0, 1), null);
+  assert.equal(moveRule(program, 9, 0, 1), null);
+  assert.equal(moveRule(program, 1, 5, 1), null);
+  assert.deepEqual(program, before);
+  // Counts and identities ride on the rule's identity: the program setProgram checks keeps them.
+  const state = {
+    ...setProgram(newGame(), program).state,
+    ruleCounts: { 1: 7, 2: 3, 3: 1 },
+    countsProgram: 1,
+  };
+  const checked = setProgram(state, moveRule(program, 1, 1, 1)).state;
+  assert.deepEqual(checked.ruleCounts, { 1: 7, 2: 3, 3: 1 });
+});
+
+test("a rule group is dropped before another group or at the end, and a drop that changes nothing commits nothing", () => {
+  const group = (id) => ({ id, name: `G${id}`, condition: ALWAYS, rules: [] });
+  const program = {
+    ...THREE,
+    groups: [group(1), group(2), group(3)],
+    nextGroupId: 4,
+  };
+  const order = (result) => result.groups.map((each) => each.id);
+  const before = copy(program);
+  assert.deepEqual(order(dropGroup(program, 3, 1)), [3, 1, 2]);
+  assert.deepEqual(order(dropGroup(program, 1, 3)), [2, 1, 3]);
+  assert.deepEqual(order(dropGroup(program, 1)), [2, 3, 1]);
+  assert.deepEqual(order(dropGroup(program, 3, 2)), [1, 3, 2]);
+  assert.equal(dropGroup(program, 2, 2), null);
+  assert.equal(dropGroup(program, 2, 3), null, "before its own next neighbour");
+  assert.equal(dropGroup(program, 3), null, "at the end from the end");
+  assert.equal(dropGroup(program, 9, 1), null);
+  assert.equal(dropGroup(program, 1, 9), null);
+  assert.deepEqual(program, before);
+  // A group keeps its rules, condition, name and the program's counters.
+  const moved = dropGroup(
+    {
+      ...program,
+      groups: [{ ...group(1), rules: [ALWAYS_EXPLORE] }, group(2)],
+    },
+    1,
+  );
+  assert.deepEqual(moved.groups[1].rules, [ALWAYS_EXPLORE]);
+  assert.equal(moved.nextGroupId, 4);
+});
+
+test("a rule dropped on a folded group, which shows no rule to go before, lands at the group's end", () => {
+  const program = {
+    ...THREE,
+    groups: [
+      { id: 1, name: "A", condition: ALWAYS, rules: [ALWAYS_EXPLORE] },
+      {
+        id: 2,
+        name: "B",
+        condition: ALWAYS,
+        rules: [BELOW_WANDER, ALWAYS_WALK],
+      },
+    ],
+    nextGroupId: 3,
+  };
+  const dropped = dropRule(program, 1, 2);
+  assert.deepEqual(
+    dropped.groups.map((group) => group.rules.map((rule) => rule.id)),
+    [[], [2, 3, 1]],
+  );
 });

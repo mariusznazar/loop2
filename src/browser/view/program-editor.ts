@@ -1,16 +1,24 @@
-import { ACTIONS } from "../sim/data/actions.js";
-import { CONDITIONS } from "../sim/data/conditions.js";
+import { ACTION_GROUPS, ACTIONS, type ActionDef } from "../sim/data/actions.js";
+import { ARCHETYPES, CREATED_ARCHETYPE } from "../sim/data/archetypes.js";
+import {
+  CONDITION_SECTIONS,
+  CONDITIONS,
+  type ConditionDef,
+} from "../sim/data/conditions.js";
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
+import { BRANCHES } from "../sim/data/skills.js";
 import {
   conditionNumber,
   onStep,
   type ConditionNumber,
 } from "../sim/program.js";
-import { editorRepertoire } from "../sim/understanding.js";
+import { actionMinutes } from "../sim/skills.js";
+import { editorRepertoire, repertoireOf } from "../sim/understanding.js";
 import type {
   Action,
+  CharacterSkills,
   Condition,
   GameState,
   GroupId,
@@ -316,26 +324,79 @@ export function removeRule(
   );
 }
 
-/** Swap with the neighbour in the same group; null past either end. */
+/**
+ * „↑” or „↓” on the rule at `index` of the named group: a swap with its neighbour in the group, and
+ * at the group's edge the move across it — „↓” on the last rule to the start of the next group, „↑”
+ * on the first to the end of the previous one (D-297). Null only where there is no group to move
+ * to: „↑” on the program's first rule and „↓” on its last.
+ */
 export function moveRule(
   program: Program,
   groupId: GroupId,
   index: number,
   offset: -1 | 1,
 ): Program | null {
-  const group = program.groups.find((each) => each.id === groupId);
+  const at = program.groups.findIndex((each) => each.id === groupId);
+  const group = program.groups[at];
+  if (!group || index < 0 || index >= group.rules.length) return null;
   const other = index + offset;
+  if (other >= 0 && other < group.rules.length) {
+    const rules = [...group.rules];
+    [rules[index], rules[other]] = [rules[other], rules[index]];
+    return replaceRules(program, groupId, rules);
+  }
+  const neighbour = program.groups[at + offset];
+  if (!neighbour) return null;
+  const rule = group.rules[index];
+  return replaceRules(
+    replaceRules(
+      program,
+      groupId,
+      group.rules.filter((_, each) => each !== index),
+    ),
+    neighbour.id,
+    offset === 1 ? [rule, ...neighbour.rules] : [...neighbour.rules, rule],
+  );
+}
+
+/** Whether „↑” and „↓” of the rule at `index` of the named group act: off only at the program's ends. */
+export function ruleArrows(
+  program: Program,
+  groupId: GroupId,
+  index: number,
+): { up: boolean; down: boolean } {
+  return {
+    up: moveRule(program, groupId, index, -1) !== null,
+    down: moveRule(program, groupId, index, 1) !== null,
+  };
+}
+
+/**
+ * A rule group dropped before another group, or at the end where `beforeId` is left out. Null where
+ * a group is unknown, dropped before itself, or where the order does not change.
+ */
+export function dropGroup(
+  program: Program,
+  id: GroupId,
+  beforeId?: GroupId,
+): Program | null {
+  const moved = program.groups.find((group) => group.id === id);
   if (
-    !group ||
-    index < 0 ||
-    other < 0 ||
-    index >= group.rules.length ||
-    other >= group.rules.length
+    !moved ||
+    beforeId === id ||
+    (beforeId !== undefined &&
+      !program.groups.some((group) => group.id === beforeId))
   )
     return null;
-  const rules = [...group.rules];
-  [rules[index], rules[other]] = [rules[other], rules[index]];
-  return replaceRules(program, groupId, rules);
+  const rest = program.groups.filter((group) => group.id !== id);
+  const at =
+    beforeId === undefined
+      ? rest.length
+      : rest.findIndex((group) => group.id === beforeId);
+  const groups = [...rest.slice(0, at), moved, ...rest.slice(at)];
+  return groups.every((group, each) => group === program.groups[each])
+    ? null
+    : { ...program, groups };
 }
 
 /**
@@ -529,6 +590,350 @@ export function focusAfter(
     case "add":
       return { groupId, row: index, control: "condition" };
   }
+}
+
+/** Why a cell of the rule panel's pick stands greyed (D-289); each is one sentence for the player. */
+export const PICK_REASONS = {
+  branchNotBought: "gałąź niewykupiona",
+  branchWithoutRun: "wybierzesz w przejściu postaci, która ją kupiła",
+  noTarget: "nie znasz jeszcze celu",
+  notOnMap: "nie ma go na tej mapie",
+} as const;
+
+/**
+ * One cell of a field's pick. `greyed` cells cannot be picked; `reason` says why, and is null only on
+ * a cell that may be picked and on a held value no reason of `PICK_REASONS` fits — the editor makes
+ * none up. A held value outside the pick is `chosen` and `greyed`.
+ */
+export type PickCell<Value> = {
+  value: Value;
+  label: string;
+  chosen: boolean;
+  greyed: boolean;
+  reason: string | null;
+};
+
+/** The cells of one group of actions, or one section of conditions (`name` null: a section bears none). */
+export type PickSection<Value> = {
+  name: string | null;
+  cells: PickCell<Value>[];
+};
+
+/** The fields of the rule panel, in the order the player moves through them (D-306). */
+export type RuleField =
+  "condition" | "number" | "conditionTarget" | "action" | "actionTarget";
+
+/** The branches all bought: what the Understanding knows of the actions, whatever a character bought. */
+function allBranchesBought(): CharacterSkills {
+  const skills: CharacterSkills = {};
+  for (const [id, branch] of Object.entries(BRANCHES)) {
+    const own = skills[branch.skill] ?? { practice: 0, ranks: {} };
+    skills[branch.skill] = { ...own, ranks: { ...own.ranks, [id]: 1 } };
+  }
+  return skills;
+}
+
+/**
+ * The actions the Understanding holds that the archetype of the character the editor is shown
+ * through teaches, bought or not: the knowledge, of which `editorRepertoire` is the part the
+ * character may carry out.
+ */
+function knownActions(state: GameState): readonly ActionKind[] {
+  const runner = state.run
+    ? state.team.characters.find(
+        (character) => character.id === state.run?.character.id,
+      )
+    : undefined;
+  const archetype = ARCHETYPES[runner?.archetypeId ?? CREATED_ARCHETYPE];
+  return repertoireOf(
+    state.understanding,
+    archetype.predispositions,
+    allBranchesBought(),
+  ).actions;
+}
+
+/** The resources the Understanding holds, in the data's order, each with whether the map of the map run holds it. */
+function knownResources(
+  state: GameState,
+): { id: ResourceId; onMap: boolean }[] {
+  const { items } = editorRepertoire(state);
+  const map = state.run ? MAPS[state.run.mapId] : undefined;
+  return (Object.keys(RESOURCES) as ResourceId[])
+    .filter((id) => items.includes(id))
+    .map((id) => ({
+      id,
+      onMap: !map || map.resources.some((resource) => resource.id === id),
+    }));
+}
+
+/** A resource or an item named in the player's words: its name from the data, capitalised. */
+function targetName(name: string): string {
+  return name.charAt(0).toLocaleUpperCase("pl") + name.slice(1);
+}
+
+/** A section of one group's cells, in a plan that parts what the data sets apart. */
+function sectionsOf<Value>(
+  names: readonly (string | null)[],
+  cells: readonly { at: number; cell: PickCell<Value> }[],
+): PickSection<Value>[] {
+  return names
+    .map((name, at) => ({
+      name,
+      cells: cells.filter((each) => each.at === at).map((each) => each.cell),
+    }))
+    .filter((section) => section.cells.length > 0);
+}
+
+/**
+ * The pick of the condition field, in the sections of the data: the conditions the Understanding
+ * holds, and the held condition's kind where the Understanding does not hold it. „Tu leży mniej niż”
+ * and „Zapas poniżej” with no target to name stand greyed, „nie znasz jeszcze celu”. Pure.
+ */
+export function conditionPick(
+  state: GameState,
+  held: Condition,
+): PickSection<ConditionKind>[] {
+  const known = editorRepertoire(state).conditions;
+  const named = {
+    hereBelow: knownResources(state).some((resource) => resource.onMap),
+    itemBelow: offeredItems(state).length > 0,
+  };
+  const cells = (Object.keys(CONDITIONS) as ConditionKind[])
+    .filter((kind) => known.includes(kind) || kind === held.kind)
+    .map((kind) => {
+      const def: ConditionDef = CONDITIONS[kind];
+      const reason =
+        (kind === "hereBelow" || kind === "itemBelow") && !named[kind]
+          ? PICK_REASONS.noTarget
+          : null;
+      return {
+        at: CONDITION_SECTIONS.indexOf(def.section),
+        place: def.place,
+        cell: {
+          value: kind,
+          label: def.label,
+          chosen: kind === held.kind,
+          greyed: reason !== null || !known.includes(kind),
+          reason,
+        },
+      };
+    })
+    .sort((a, b) => a.place - b.place);
+  return sectionsOf(
+    CONDITION_SECTIONS.map(() => null),
+    cells,
+  );
+}
+
+/**
+ * The pick of the action field, in the groups of the data: the actions the Understanding holds and
+ * the archetype teaches, and the held action's kind where they do not hold it. A branch action
+ * stands greyed — „gałąź niewykupiona” during a map run, „wybierzesz w przejściu postaci, która ją
+ * kupiła” with none; „Idź”, „Zbierz” and „Obchód” with no target to name, „nie znasz jeszcze celu”.
+ * The actions of combat stand picked outside combat too. Pure.
+ */
+export function actionPick(
+  state: GameState,
+  held: Action,
+): PickSection<ActionKind>[] {
+  const offered = editorRepertoire(state).actions;
+  const known = knownActions(state);
+  const named = knownResources(state).some((resource) => resource.onMap);
+  const groups = Object.keys(ACTION_GROUPS);
+  const cells = (Object.keys(ACTIONS) as ActionKind[])
+    .filter((kind) => known.includes(kind) || kind === held.kind)
+    .map((kind) => {
+      const def: ActionDef = ACTIONS[kind];
+      let reason: string | null = null;
+      if (known.includes(kind) && !offered.includes(kind))
+        reason = state.run
+          ? PICK_REASONS.branchNotBought
+          : PICK_REASONS.branchWithoutRun;
+      else if (takesResource(kind) && !named) reason = PICK_REASONS.noTarget;
+      return {
+        at: groups.indexOf(def.group),
+        cell: {
+          value: kind,
+          label: def.label,
+          chosen: kind === held.kind,
+          greyed: reason !== null || !known.includes(kind),
+          reason,
+        },
+      };
+    });
+  return sectionsOf(
+    Object.values(ACTION_GROUPS).map((group) => group.label),
+    cells,
+  );
+}
+
+/** The pick of a resource: every resource the Understanding holds, those the map of the map run lacks greyed. */
+function resourcePick(state: GameState, held: ResourceId): PickCell<ItemId>[] {
+  const known = knownResources(state);
+  return (Object.keys(RESOURCES) as ResourceId[])
+    .filter((id) => id === held || known.some((resource) => resource.id === id))
+    .map((id) => {
+      const found = known.find((resource) => resource.id === id);
+      const reason = found && !found.onMap ? PICK_REASONS.notOnMap : null;
+      return {
+        value: id,
+        label: targetName(RESOURCES[id].name),
+        chosen: id === held,
+        greyed: reason !== null || !found,
+        reason,
+      };
+    });
+}
+
+/**
+ * The pick of the condition's target: the resources for „Tu leży mniej niż”, the items of the
+ * backpack for „Zapas poniżej”; null for a condition that names none. Pure.
+ */
+export function conditionTargetPick(
+  state: GameState,
+  held: Condition,
+): PickCell<ItemId>[] | null {
+  if (held.kind === "hereBelow") return resourcePick(state, held.resource);
+  if (held.kind !== "itemBelow") return null;
+  const known = offeredItems(state);
+  return (Object.keys(ITEMS) as ItemId[])
+    .filter((id) => id === held.item || known.includes(id))
+    .map((id) => ({
+      value: id,
+      label: targetName(ITEMS[id].name),
+      chosen: id === held.item,
+      greyed: !known.includes(id),
+      reason: null,
+    }));
+}
+
+/** The pick of the action's target: the resources; null for an action that names none. Pure. */
+export function actionTargetPick(
+  state: GameState,
+  held: Action,
+): PickCell<ItemId>[] | null {
+  return namesResource(held) ? resourcePick(state, held.resource) : null;
+}
+
+/** The fields a condition stands in, in order: the number only where it takes one, a target only where it names one. */
+export function conditionFields(
+  condition: Condition,
+): ("condition" | "number" | "conditionTarget")[] {
+  return [
+    "condition",
+    ...(conditionNumber(condition.kind) ? (["number"] as const) : []),
+    ...(condition.kind === "hereBelow" || condition.kind === "itemBelow"
+      ? (["conditionTarget"] as const)
+      : []),
+  ];
+}
+
+/** The fields of the rule panel for a rule, in order (D-306). */
+export function ruleFields(rule: ProgramRule): RuleField[] {
+  return [
+    ...conditionFields(rule.condition),
+    "action",
+    ...(namesResource(rule.action) ? (["actionTarget"] as const) : []),
+  ];
+}
+
+/**
+ * The field the panel moves to after a pick: the one following `current` in `fields`, which are those
+ * of the rule or group as the pick left it; null after the last. A pick of the value already chosen
+ * moves on too.
+ */
+export function fieldAfter<Field>(
+  fields: readonly Field[],
+  current: Field,
+): Field | null {
+  const at = fields.indexOf(current);
+  return at < 0 ? null : (fields[at + 1] ?? null);
+}
+
+/**
+ * The time one carrying out of an action takes, as the editor shows it: its minutes from the data,
+ * during a map run as the simulation gives them for the character of the map run; „tura” for an
+ * action of combat; for a movement the step of the map of the map run, and nothing outside one.
+ */
+export function actionTime(state: GameState, kind: ActionKind): string | null {
+  const def: ActionDef = ACTIONS[kind];
+  if (def.combat) return "tura";
+  const run = state.run;
+  const base = def.minutes ?? (run ? MAPS[run.mapId].stepMinutes : null);
+  if (base === null) return null;
+  const minutes = run ? actionMinutes(base, kind, run.character.skills) : base;
+  return `${minutes} min`;
+}
+
+/** The number of the rule group at `groupIndex` of the program, counted from zero: „2” for the second. */
+export function groupNumber(groupIndex: number): string {
+  return String(groupIndex + 1);
+}
+
+/** The number of a rule: its group's and its own in the group, both counted from zero: „2.1”. */
+export function ruleNumber(groupIndex: number, ruleIndex: number): string {
+  return `${groupIndex + 1}.${ruleIndex + 1}`;
+}
+
+/** A condition as a part of a row's sentence: its name, its number and its target — „Zapas poniżej 8 · Patyk”. */
+export function conditionSentence(condition: Condition): string {
+  const head =
+    "value" in condition
+      ? `${CONDITIONS[condition.kind].label} ${condition.value}`
+      : CONDITIONS[condition.kind].label;
+  if (condition.kind === "hereBelow")
+    return `${head} · ${targetName(RESOURCES[condition.resource].name)}`;
+  if (condition.kind === "itemBelow")
+    return `${head} · ${targetName(ITEMS[condition.item].name)}`;
+  return head;
+}
+
+/** An action as a part of a row's sentence: its name and its target — „Zbierz — Patyk”. */
+export function actionSentence(action: Action): string {
+  const label = ACTIONS[action.kind].label;
+  return namesResource(action)
+    ? `${label} — ${targetName(RESOURCES[action.resource].name)}`
+    : label;
+}
+
+/** The two parts of a rule's row, the condition then the action; the row reads „{condition} → {action}”. */
+export function ruleSentence(rule: ProgramRule): {
+  condition: string;
+  action: string;
+} {
+  return {
+    condition: conditionSentence(rule.condition),
+    action: actionSentence(rule.action),
+  };
+}
+
+/** „Wykonano {n}×”, the form of a count beside a rule and, summed, beside its rule group (D-93). */
+export function countText(count: number): string {
+  return `Wykonano ${count}×`;
+}
+
+/**
+ * What a rule group's header says: its name, its condition, the number of its rules and, where
+ * counts stand, the sum of its rules' counts, a rule with no entry counting zero; null where none do.
+ */
+export function groupSummary(
+  group: RuleGroup,
+  counts: GameState["ruleCounts"],
+): {
+  name: string;
+  condition: string;
+  ruleCount: number;
+  executed: number | null;
+} {
+  return {
+    name: group.name,
+    condition: conditionSentence(group.condition),
+    ruleCount: group.rules.length,
+    executed:
+      counts === null
+        ? null
+        : group.rules.reduce((sum, rule) => sum + (counts[rule.id] ?? 0), 0),
+  };
 }
 
 type ConditionView = {
