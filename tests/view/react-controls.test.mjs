@@ -27,6 +27,15 @@ import {
   ReactPasswordField,
   ReactTextField,
 } from "../../dist/browser/view/controls/react-text-field.js";
+import {
+  createPickCell,
+  setPickCellChosen,
+} from "../../dist/browser/view/controls/pick-cell.js";
+import { ReactPickCell } from "../../dist/browser/view/controls/react-pick-cell.js";
+import { createSelectList } from "../../dist/browser/view/controls/select-list.js";
+import { createNumberField } from "../../dist/browser/view/controls/number-field.js";
+import { ReactSelectList } from "../../dist/browser/view/controls/react-select-list.js";
+import { ReactNumberField } from "../../dist/browser/view/controls/react-number-field.js";
 
 // --- the element tree as plain data ------------------------------------------------------------
 
@@ -734,5 +743,485 @@ test("a warning that was shown and then cleared is the same element as one never
     warning.set(SENTENCE);
     warning.set(null);
     assert.deepEqual(drawnTree(drawing), domTree(document, warning.element));
+  });
+});
+
+// --- the pick cell (D-265, D-288, D-289, D-291) -------------------------------------------------
+
+const PICK_TEXT = "Kopnij";
+const PICK_ICON = "boot-kick";
+const PICK_REASON = "nie znasz jeszcze celu";
+
+test("a pick cell available is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, { text: PICK_TEXT }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createPickCell({ text: PICK_TEXT })),
+    );
+  });
+});
+
+test("a pick cell chosen is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, { text: PICK_TEXT, chosen: true }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createPickCell({ text: PICK_TEXT, chosen: true })),
+    );
+  });
+});
+
+test("a greyed pick cell with its reason is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, {
+        text: PICK_TEXT,
+        greyed: true,
+        reason: PICK_REASON,
+      }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(
+        document,
+        createPickCell({ text: PICK_TEXT, greyed: true, reason: PICK_REASON }),
+      ),
+    );
+  });
+});
+
+test("a pick cell with its icon of an action is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, { text: PICK_TEXT, icon: PICK_ICON }),
+    );
+    const drawnIcon = drawing.container.querySelector(".action-icon");
+    assert.equal(
+      drawnIcon.getAttribute("style").includes(`/icons/${PICK_ICON}.svg`),
+      true,
+      "the React form draws the file of the action's icon",
+    );
+    const domCell = createPickCell({ text: PICK_TEXT, icon: PICK_ICON });
+    assert.equal(
+      domCell
+        .querySelector(".action-icon")
+        .getAttribute("style")
+        .includes(`/icons/${PICK_ICON}.svg`),
+      true,
+      "the DOM form draws the file of the action's icon",
+    );
+    assert.deepEqual(drawnTree(drawing), domTree(document, domCell));
+  });
+});
+
+test("a greyed pick cell with its icon and its reason is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, {
+        text: PICK_TEXT,
+        icon: PICK_ICON,
+        chosen: true,
+        greyed: true,
+        reason: PICK_REASON,
+      }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(
+        document,
+        createPickCell({
+          text: PICK_TEXT,
+          icon: PICK_ICON,
+          chosen: true,
+          greyed: true,
+          reason: PICK_REASON,
+        }),
+      ),
+    );
+  });
+});
+
+test("a pick cell chosen in place is the same element as one drawn chosen", async () => {
+  await withPage(async ({ document }) => {
+    const cell = createPickCell({ text: PICK_TEXT, icon: PICK_ICON });
+    setPickCellChosen(cell, true);
+    const actual = domTree(document, cell);
+    const expected = domTree(
+      document,
+      createPickCell({ text: PICK_TEXT, icon: PICK_ICON, chosen: true }),
+    );
+    assert.deepEqual(actual, expected);
+  });
+});
+
+test("a greyed pick cell is aria-disabled, not disabled, and a click on it reaches no handler in either form", async () => {
+  await withPage(async ({ document, window }) => {
+    const picks = [];
+    const onPick = () => picks.push("pick");
+    const click = (element) =>
+      inAct(() =>
+        element.dispatchEvent(new window.Event("click", { bubbles: true })),
+      );
+
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, {
+        text: PICK_TEXT,
+        greyed: true,
+        reason: PICK_REASON,
+        onPick,
+      }),
+    );
+    const reactGreyed = drawing.container.firstElementChild;
+    await click(reactGreyed);
+    assert.equal(reactGreyed.getAttribute("aria-disabled"), "true");
+    assert.equal(reactGreyed.hasAttribute("disabled"), false);
+    assert.deepEqual(picks, [], "React: a greyed cell gives no pick");
+
+    const domGreyed = createPickCell({
+      text: PICK_TEXT,
+      greyed: true,
+      reason: PICK_REASON,
+      onPick,
+    });
+    document.body.append(domGreyed);
+    await click(domGreyed);
+    assert.equal(domGreyed.getAttribute("aria-disabled"), "true");
+    assert.equal(domGreyed.hasAttribute("disabled"), false);
+    assert.deepEqual(picks, [], "DOM: a greyed cell gives no pick");
+
+    const domAvailable = createPickCell({ text: PICK_TEXT, onPick });
+    document.body.append(domAvailable);
+    await click(domAvailable);
+    assert.deepEqual(picks, ["pick"], "DOM: an available cell gives a pick");
+  });
+});
+
+// --- the select list and the number field (D-44, D-265) -----------------------------------------
+
+const SELECT_OPTIONS = [
+  ["alfa", "Program Alfa"],
+  ["beta", "Program Beta"],
+];
+
+// The range of a number field: the condition kind's number, which the commit rule reads too.
+const RANGE = { defaultValue: 1, min: 0, max: 10, step: 1 };
+// A trip count: a safe integer from 1 up (D-181).
+const TRIP_RANGE = {
+  defaultValue: 1,
+  min: 1,
+  max: Number.MAX_SAFE_INTEGER,
+  step: 1,
+};
+
+test("a select list with positions is the same element tree in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactSelectList, {
+        label: "Program:",
+        options: SELECT_OPTIONS,
+        value: "beta",
+        onChange: () => {},
+      }),
+    );
+    assert.equal(drawing.container.querySelector("select").value, "beta");
+    const expected = createSelectList("Program:", SELECT_OPTIONS);
+    expected.value = "beta";
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+test("a select list with no positions is the same element tree in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactSelectList, { label: "Program:", options: [] }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createSelectList("Program:")),
+    );
+  });
+});
+
+test("a disabled select list is the same element tree in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactSelectList, {
+        label: "Program:",
+        options: SELECT_OPTIONS,
+        value: "alfa",
+        disabled: true,
+        onChange: () => {},
+      }),
+    );
+    assert.equal(drawing.container.querySelector("select").disabled, true);
+    const expected = createSelectList("Program:", SELECT_OPTIONS);
+    expected.disabled = true;
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+// Breaks: a select that keeps its own value and ignores the screen's (uncontrolled) shows `beta`
+// here, and a handler that is not called on the change fails the first assertion.
+test("a choice in a select list reaches the screen's handler and a controlled list keeps the value the screen holds", async () => {
+  await withPage(async ({ document, window }) => {
+    const seen = [];
+    const drawing = await drawn(
+      document,
+      createElement(ReactSelectList, {
+        label: "Program:",
+        options: SELECT_OPTIONS,
+        value: "alfa",
+        onChange: (event) => seen.push(event.target.value),
+      }),
+    );
+    const select = drawing.container.querySelector("select");
+    await inAct(() => {
+      select.value = "beta";
+      select.dispatchEvent(new window.Event("change", { bubbles: true }));
+    });
+    assert.deepEqual(seen, ["beta"]);
+    assert.equal(
+      select.value,
+      "alfa",
+      "the list shows the value the screen holds",
+    );
+  });
+});
+
+test("a number field is the same element tree in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: RANGE,
+        value: 3,
+        onCommit: () => {},
+      }),
+    );
+    const expected = createNumberField({
+      label: "Liczba",
+      min: 0,
+      max: 10,
+      step: 1,
+    });
+    expected.input.value = "3";
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected.element));
+  });
+});
+
+test("a number field in the error state is the same element tree in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: RANGE,
+        value: 3,
+        error: "Liczba jest poza zakresem.",
+        onCommit: () => {},
+      }),
+    );
+    const expected = createNumberField({
+      label: "Liczba",
+      min: 0,
+      max: 10,
+      step: 1,
+    });
+    expected.setError("Liczba jest poza zakresem.");
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected.element));
+  });
+});
+
+test("a disabled number field is the same element tree in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: RANGE,
+        value: 3,
+        disabled: true,
+        onCommit: () => {},
+      }),
+    );
+    const expected = createNumberField({
+      label: "Liczba",
+      min: 0,
+      max: 10,
+      step: 1,
+    });
+    expected.input.disabled = true;
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected.element));
+  });
+});
+
+// The acceptance criterion of the screen that redraws five times a second (D-03): the text typed
+// into a number field, and its focus, stay while the screen renders other values. Breaks: a field
+// that takes `value` on every render shows `3` or `4` here, not `7.5`, and one that commits on
+// each keystroke makes `commits` longer than the one Enter gives. `7.5` is no whole value of the
+// ten renders, so a field that shows the value in place of the text fails too.
+test("a number field keeps the text typed into it through ten renders and commits it on Enter", async () => {
+  await withPage(async ({ document, window }) => {
+    const commits = [];
+    const render = (value) =>
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: RANGE,
+        value,
+        onCommit: (committed) => commits.push(committed),
+      });
+    const drawing = await drawn(document, render(1));
+    const input = drawing.container.querySelector("input");
+    await inAct(() => input.focus());
+    await typeInto(input, "7.5");
+    for (let round = 0; round < 10; round += 1) {
+      await inAct(() => drawing.root.render(render(round)));
+      assert.equal(input.value, "7.5", `render ${round} keeps the typed text`);
+      assert.equal(input.ownerDocument.activeElement, input, "the focus stays");
+    }
+    assert.deepEqual(commits, [], "typing alone commits nothing");
+    await inAct(() =>
+      input.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      ),
+    );
+    // 7.5 rounds up to 8 on the step, and 8 differs from the last value shown, 9.
+    assert.deepEqual(commits, [8]);
+    assert.equal(input.value, "8", "the field shows the number it committed");
+  });
+});
+
+test("a number field takes a new value from its props only while it has no focus", async () => {
+  await withPage(async ({ document, window }) => {
+    const commits = [];
+    const render = (value) =>
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: RANGE,
+        value,
+        onCommit: (committed) => commits.push(committed),
+      });
+    const drawing = await drawn(document, render(1));
+    const input = drawing.container.querySelector("input");
+    await inAct(() => drawing.root.render(render(4)));
+    assert.equal(
+      input.value,
+      "4",
+      "without the focus the field takes the value",
+    );
+    await inAct(() => input.focus());
+    await typeInto(input, "7.5");
+    await inAct(() => drawing.root.render(render(9)));
+    assert.equal(input.value, "7.5", "with the focus the typed text stays");
+    await inAct(() => input.blur());
+    assert.deepEqual(
+      commits,
+      [8],
+      "leaving the field commits the typed number",
+    );
+    await inAct(() => drawing.root.render(render(8)));
+    assert.equal(input.value, "8", "after leaving, the field takes the value");
+    assert.equal(window.document.activeElement, document.body);
+  });
+});
+
+test("a number field commits the clamped number when left after typing, and nothing when left untouched", async () => {
+  await withPage(async ({ document }) => {
+    const commits = [];
+    const render = (value) =>
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: RANGE,
+        value,
+        onCommit: (committed) => commits.push(committed),
+      });
+    const drawing = await drawn(document, render(3));
+    const input = drawing.container.querySelector("input");
+    await inAct(() => input.focus());
+    await inAct(() => input.blur());
+    assert.deepEqual(commits, [], "a field left untouched commits nothing");
+
+    await inAct(() => input.focus());
+    await typeInto(input, "42");
+    await inAct(() => input.blur());
+    assert.deepEqual(
+      commits,
+      [10],
+      "a number above the range commits the range's end",
+    );
+  });
+});
+
+// The trip count rule (D-181) of the opt-in `rule="trip"`: text that is no whole count from 1 commits
+// nothing, keeps the number shown and the draft in the field, and is reported through `onReject`, so
+// the screen can show its message. Breaks: the range rule rounds "2.4" to 2 and clamps "0" to 1, so
+// both commit here; a field that drops the draft on blur shows "3" in place of "0" and fails the
+// draft check; a field that reports a count equal to the number shown as a rejection fails too.
+test("a number field under the trip count rule commits nothing on text that is no whole count from 1, keeps its draft and reports it", async () => {
+  await withPage(async ({ document, window }) => {
+    const commits = [];
+    let rejects = 0;
+    const render = (value) =>
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: TRIP_RANGE,
+        value,
+        rule: "trip",
+        onCommit: (committed) => commits.push(committed),
+        onReject: () => {
+          rejects += 1;
+        },
+      });
+    const drawing = await drawn(document, render(3));
+    const input = drawing.container.querySelector("input");
+    await inAct(() => input.focus());
+    await typeInto(input, "0");
+    await inAct(() => input.blur());
+    assert.deepEqual(commits, [], "the zero commits nothing");
+    assert.equal(rejects, 1, "the zero is reported once");
+    assert.equal(input.value, "0", "the draft stays in the field");
+    await inAct(() => input.focus());
+    assert.equal(input.value, "0", "a new focus keeps the draft");
+    await typeInto(input, "2.4");
+    await inAct(() =>
+      input.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      ),
+    );
+    assert.deepEqual(commits, [], "a fraction commits nothing on Enter");
+    assert.equal(rejects, 2, "the fraction is reported on Enter");
+    await inAct(() => input.blur());
+    assert.equal(rejects, 2, "leaving the rejected draft reports it no more");
+    await inAct(() => input.focus());
+    await typeInto(input, "5");
+    await inAct(() => input.blur());
+    assert.deepEqual(commits, [5], "a whole count from 1 commits as typed");
+    assert.equal(rejects, 2);
+    await inAct(() => drawing.root.render(render(5)));
+    assert.equal(input.value, "5", "after the commit the field shows it");
+    await inAct(() => input.focus());
+    // "5.0" is a valid count that differs in text from the 5 shown, so the field sees a change.
+    await typeInto(input, "5.0");
+    await inAct(() => input.blur());
+    assert.deepEqual(
+      commits,
+      [5, 5],
+      "a valid count equal to the number shown is still reported",
+    );
   });
 });

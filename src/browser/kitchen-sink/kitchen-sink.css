@@ -31,6 +31,15 @@
   background: transparent;
 }
 
+/*
+ * The samples of the destructive button under the pointer and at the focus: its text in `danger`, as
+ * styles.css draws `.button.destructive:hover` and `:focus-visible`, which a class does not reach.
+ */
+.button.destructive.sample-hover,
+.button.destructive.sample-focus {
+  color: var(--danger);
+}
+
 /* A section may be narrower than its table, which then scrolls inside its panel. */
 .sample-section {
   min-width: 0;

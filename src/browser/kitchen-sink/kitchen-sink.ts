@@ -22,6 +22,7 @@ import {
   type ButtonOptions,
 } from "../view/controls/button.js";
 import { createNumberField } from "../view/controls/number-field.js";
+import { createPickCell } from "../view/controls/pick-cell.js";
 import { createSelectList } from "../view/controls/select-list.js";
 import { RESET_REQUESTED_SENTENCE } from "../view/account-rules.js";
 import {
@@ -71,6 +72,10 @@ const NOT_APPLYING = {
     "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz; zakładka jest wtedy wyłączona, z linią wyboru (D-276).",
   listLoading:
     "Nie dotyczy: żaden formularz, który czeka na serwer, nie ma listy wyboru (D-44).",
+  pickError: "Nie dotyczy: komórka nie ma wpisu, który mógłby być błędny.",
+  pickEmpty: "Nie dotyczy: komórka jest jedną pozycją, nie listą.",
+  pickLoading:
+    "Nie dotyczy: żaden formularz, który czeka na serwer, nie ma komórki wyboru (D-44).",
   numberLoading:
     "Nie dotyczy: żaden formularz, który czeka na serwer, nie ma pola liczby (D-44).",
 };
@@ -81,8 +86,9 @@ type Sample = HTMLElement | string;
 /**
  * Hover and focus cannot be held by the page, so their samples carry a class that
  * `kitchen-sink.css` draws as the game draws the state: hover from the role `highlight` (the
- * secondary action's hover by its own rule, in `text` on the background it has), focus by the one
- * `:focus-visible` rule, repeated there with the sample's selector.
+ * secondary action's hover by its own rule, in `text` on the background it has; the destructive
+ * button's hover and focus in `danger` by the rules of its own in `kitchen-sink.css`), focus by the
+ * one `:focus-visible` rule, repeated there with the sample's selector.
  */
 function forced(element: HTMLElement, state: State): void {
   if (state === "hover") element.classList.add("sample-hover");
@@ -134,6 +140,28 @@ function buttonSample(
   };
 }
 
+/**
+ * A pick cell of the rule panel in each state, chosen or not (D-288, D-289). Its action is a made-up
+ * sample; the greyed state carries a reason of the panel, and the icon greys with the cell.
+ */
+function pickCellSample(chosen: boolean) {
+  return (state: State): Sample => {
+    if (state === "error") return NOT_APPLYING.pickError;
+    if (state === "empty") return NOT_APPLYING.pickEmpty;
+    if (state === "loading") return NOT_APPLYING.pickLoading;
+    const greyed = state === "disabled";
+    const cell = createPickCell({
+      text: "Zbierz",
+      icon: "grab",
+      chosen,
+      greyed,
+      reason: greyed ? "nie znasz jeszcze celu" : null,
+    });
+    forced(cell, state);
+    return cell;
+  };
+}
+
 function selectListSample(state: State): Sample {
   if (state === "error") return NOT_APPLYING.listError;
   if (state === "loading") return NOT_APPLYING.listLoading;
@@ -176,8 +204,8 @@ function fieldSample(
 }
 
 /**
- * The seven shared controls of D-44, each with the maker of its samples, and beside the button the
- * two looks other kinds of it have: the main button of D-274, the one that sends a form, and the
+ * The shared controls of D-44 and the pick cell of D-288, each with the maker of its samples, and
+ * beside the button the two looks other kinds of it have: the main button of D-274, the one that sends a form, and the
  * tab of D-276, which is the button selected in its group drawn as a tab. The password field is
  * the text field with its entry hidden.
  */
@@ -226,6 +254,8 @@ const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
     "Zakładka wybrana",
     buttonSample("Zaloguj się", { kind: "tab" }, NOT_APPLYING.tabLoading, true),
   ],
+  ["Komórka wyboru", pickCellSample(false)],
+  ["Komórka wyboru wybrana", pickCellSample(true)],
   ["Lista wyboru", selectListSample],
   [
     "Pole liczby",

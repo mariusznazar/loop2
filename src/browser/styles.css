@@ -212,10 +212,34 @@ header .save-line {
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
+/*
+ * Programy while a rule or a group is open: the list, the editor and the rule panel are three areas
+ * side by side; a window under 1100 px sets the rule panel under the editor (D-282), and one under
+ * 720 px sets every area on its own line.
+ */
+.screen.programs-screen.with-rule-panel {
+  grid-template-columns: 1fr 3fr 2fr;
+}
+
+@media (max-width: 1100px) {
+  .screen.programs-screen.with-rule-panel {
+    grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
+  }
+
+  .screen.programs-screen.with-rule-panel > .rule-panel-area {
+    grid-column: 2;
+  }
+}
+
 @media (max-width: 720px) {
   .screen.columns,
-  .screen.programs-screen {
+  .screen.programs-screen,
+  .screen.programs-screen.with-rule-panel {
     grid-template-columns: 1fr;
+  }
+
+  .screen.programs-screen.with-rule-panel > .rule-panel-area {
+    grid-column: auto;
   }
 }
 
@@ -225,6 +249,14 @@ header .save-line {
   border: var(--frame-width) solid var(--divider);
   padding: var(--space-m) var(--space-l);
   min-height: 120px;
+}
+
+/* The rule panel draws its own frame, so the area that holds it draws none. */
+.screen-area.rule-panel-area {
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 0;
 }
 
 /*
@@ -257,9 +289,13 @@ header .save-line {
   cursor: pointer;
 }
 
-/* The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
-   program”, „Zatrzymaj” (D-44). */
-.button.destructive {
+/*
+ * The destructive button: „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten
+ * program”, „Zatrzymaj” (D-44). Neutral at rest, its text in `text`; under the pointer and at the
+ * visible focus its text in `danger` (D-39). One rule for both forms, which carry the class.
+ */
+.button.destructive:hover:not(:disabled),
+.button.destructive:focus-visible {
   color: var(--danger);
 }
 
@@ -355,6 +391,49 @@ header .save-line {
 /* A tab while the form waits: the text in `text-disabled`; the line of the choice is kept. */
 .button.tab:disabled {
   color: var(--text-disabled);
+}
+
+/*
+ * The pick cell, one position of a pick in the rule panel (D-288, D-289; styleguide "States of shared
+ * controls"): a button of its group with the frame in `control-border` and the text in `text`; the
+ * chosen one looks as the button selected in its group. A greyed one, which may not be picked now,
+ * has a dashed frame, its name in `text-disabled` and its reason in `text-secondary` under the name.
+ * It is `aria-disabled`, not `disabled`, so the keyboard still reaches it to read the reason. Focus is
+ * the one :focus-visible rule above.
+ */
+.button.pick-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  text-align: left;
+}
+
+.button.pick-cell.greyed {
+  color: var(--text-disabled);
+  border-style: dashed;
+  border-color: var(--text-disabled);
+  cursor: default;
+}
+
+.pick-cell-reason {
+  flex-basis: 100%;
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+/*
+ * The icon of an action, drawn as a mask in the colour of the text beside it, so it greys with a greyed
+ * cell (D-291, D-43). The file's URL is set on the element in `--icon`. The height is the line's, a
+ * layout dimension D-43 leaves out.
+ */
+.action-icon {
+  flex: none;
+  height: 1lh;
+  aspect-ratio: 1;
+  background-color: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
 }
 
 .select-list option {
@@ -592,6 +671,37 @@ header .save-line {
   color: var(--text-secondary);
 }
 
+/*
+ * The program's name above its trip plan and its rules on Programy: a name, so `text-strong` (D-40).
+ * The sentence of a waiting map run above it is the one `.program-run-note` draws.
+ */
+.program-title {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.program-panel .trip-plan {
+  margin-bottom: var(--space-m);
+}
+
+/*
+ * The rule list and, once a rule or a group is open, the rule panel at its right, each a block of its
+ * own that a narrower place sets one above the other (D-282): the columns of the layout are as wide as
+ * the place allows, and the rule list takes the whole line while no panel stands.
+ */
+.program-editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-m);
+  align-items: start;
+}
+
+.program-editor-layout.with-panel {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
 /* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */
 .program-switch {
   margin-bottom: var(--space-s);
@@ -682,6 +792,61 @@ header .save-line {
   color: var(--danger);
 }
 
+/*
+ * The trip plan of a program in React (task edytor-programu, Slice 11): the folding line and the
+ * lists under it. The lists take the look of the rows above (`trip-list`, `trip-entry`). The labels
+ * stand in `text-label` and the rest in the text's own role; the icons keep the colour of their files,
+ * so no colour is set for them.
+ */
+.trip-plan {
+  border-top: var(--frame-width) solid var(--divider);
+  margin-top: var(--space-m);
+  padding-top: var(--space-m);
+}
+
+.trip-plan-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-m);
+  cursor: pointer;
+}
+
+.trip-plan-side {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs) var(--space-s);
+}
+
+.trip-plan-label {
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+.trip-plan-position {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+/* An item's icon, as tall as the line it stands in. */
+.trip-plan-icon {
+  height: 1lh;
+  aspect-ratio: 1;
+}
+
+.trip-plan-list {
+  margin-bottom: var(--space-m);
+}
+
+.trip-plan-heading {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
 .rule-group-header,
 .group-condition {
   display: flex;
@@ -715,6 +880,221 @@ header .save-line {
 .rule input[type="number"],
 .group-condition input[type="number"] {
   width: 4em;
+}
+
+/*
+ * The rule list of the program editor (styleguide rule "Program editor", D-292, D-293, D-295, D-297,
+ * D-93, D-279): the heading „sprawdzane od góry” and „zwiń wszystkie” above the groups. In a row the
+ * condition stands in `text-secondary`, the action in `text-strong` and the number, the time and the
+ * count in `text-label`; in a header the name stands in `text-strong`, the condition in
+ * `text-secondary` and the number of rules and the sum in `text-label`. A row or a header that is open
+ * or under the pointer stands on `highlight` with its text in `text`, the roles of its parts kept.
+ * Only the handle drags, which the browser does by its own drag (D-270).
+ */
+.rule-list-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.rule-list-heading {
+  margin: 0;
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.rule-list-group {
+  border-top: var(--frame-width) solid var(--divider);
+  padding: var(--space-s) 0;
+}
+
+.rule-list-header,
+.rule-list-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  padding: var(--space-2xs) var(--space-xs);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.rule-list-header:hover,
+.rule-list-header.open,
+.rule-list-row:hover,
+.rule-list-row.open {
+  background: var(--highlight);
+  color: var(--text);
+}
+
+.rule-list-name {
+  color: var(--text-strong);
+  font-weight: var(--font-weight-emphasis);
+}
+
+.rule-list-condition,
+.rule-condition {
+  color: var(--text-secondary);
+}
+
+.rule-list-number,
+.rule-list-size,
+.rule-list-count,
+.rule-number,
+.rule-time,
+.rule-count {
+  color: var(--text-label);
+}
+
+.rule-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--text-strong);
+}
+
+/* The arrows and „Usuń” of a row, the fold and „✕” of a header, at the end of the line. */
+.rule-list-controls {
+  display: inline-flex;
+  gap: var(--space-xs);
+  margin-left: auto;
+}
+
+.rule-list-rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rule-list-empty {
+  margin: 0;
+  padding: var(--space-2xs) var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.rule-list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-s);
+  margin-top: var(--space-xs);
+}
+
+.drag-handle {
+  color: var(--text-label);
+  cursor: grab;
+  user-select: none;
+}
+
+/*
+ * The drop line, where the dragged rule or group would land: its text „tu wyląduje” in `text-strong`
+ * and the line itself in the colour of that text (D-279). It lets the pointer through, so it does not
+ * take the drag's events from the row under it.
+ */
+.drop-line {
+  list-style: none;
+  color: var(--text-strong);
+  font-size: var(--font-size-label);
+  border-top: var(--bar-width) solid currentColor;
+  pointer-events: none;
+}
+
+/*
+ * The rule panel (styleguide rule "Program editor", D-288, D-290, D-293, D-302, D-306): a block on
+ * `panel` with its text in `text` and a frame in `divider`; the heading, a name, in `text-strong`; the
+ * labels of its fields, the names of the groups of actions and the time beside an action in
+ * `text-label`; the sentence of the copy, an explanation, in `text-secondary`. One field at a time
+ * shows its pick: the cells of the pick cell control in a grid of four to a line, the conditions in
+ * two (`two-columns`, the number `columnsOf` in `rule-panel.tsx` moves by), the sections of the
+ * conditions parted by a line in `divider`. Focus is the one :focus-visible rule above.
+ */
+.rule-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding: var(--space-m);
+  color: var(--text);
+  background: var(--panel);
+  border: var(--frame-width) solid var(--divider);
+}
+
+.rule-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.rule-panel-heading {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.rule-panel-note {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.rule-panel-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.rule-panel-label,
+.rule-panel-section-name,
+.rule-panel-time {
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+.rule-panel-value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.rule-panel-pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  align-self: stretch;
+}
+
+.rule-panel-section-name {
+  margin: 0 0 var(--space-xs);
+  font-weight: var(--font-weight-body);
+}
+
+/* The sections of the conditions, which bear no names, parted by a line (D-290). */
+.rule-panel-pick.parted > .rule-panel-section + .rule-panel-section {
+  padding-top: var(--space-s);
+  border-top: var(--frame-width) solid var(--divider);
+}
+
+.rule-panel-cells {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.rule-panel-cells.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rule-panel-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.rule-panel-cell > .pick-cell {
+  width: 100%;
 }
 
 .headquarters h2 {
@@ -906,6 +1286,12 @@ header .save-line {
   align-items: flex-start;
   gap: var(--space-l);
   margin-top: var(--space-m);
+}
+
+/* The rule panel in the place of the table of revealed tiles, beside the drawing (D-282). */
+.rule-panel-host {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .terrain-drawing {

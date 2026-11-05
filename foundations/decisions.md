@@ -842,7 +842,7 @@ In the browser view the role `positive` means that something works, is in order 
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger`;
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer;
   - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B
 
@@ -896,33 +896,33 @@ For now every screen of the browser view keeps three success criteria of WCAG 2.
 
 ### D-43 — What counts in the browser view as a value written in place of a design token?
 
-In the files of the part browser-view other than its file of design tokens, a value written in place of a design token is a colour in any notation — hexadecimal, functional, a named colour or a system colour — in styles and in TypeScript and, in styles, a size or spacing in `px`, `rem` or `em`, a font name, or a unitless stroke width, dash pattern, opacity or font weight, those four unitless kinds being all. None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing computed in TypeScript, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, whose colour stands in the file and is changed by hand when the value of `text-strong` changes.
+In the files of the part browser-view other than its file of design tokens, a value written in place of a design token is a colour in any notation — hexadecimal, functional, a named colour or a system colour — in styles and in TypeScript and, in styles, a size or spacing in `px`, `rem` or `em`, a font name, or a unitless stroke width, dash pattern, opacity or font weight, those four unitless kinds being all. None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing computed in TypeScript, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/` — that of an icon of an action drawn as a mask, taking its colour from the text beside it, and that of any other icon holding its colour in the file, changed by hand when the value of `text-strong` changes.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** invariants: browser-view-token-values. For values the text of a file does not show, an agent compares a change with the decision:
-  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`;
+  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`; the icon of „Zbierz” drawn as a mask in the colour of the text beside it, dimmed with its greyed cell;
   - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Co liczy się jako wartość wpisana zamiast tokenu projektowego?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point D
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Co liczy się jako wartość wpisana zamiast tokenu projektowego?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point D · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5
 
-*Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, and the icon files, which hold their colour themselves, so a change of `text-strong` reaches them only by hand.
-*Rejected:* the icons coloured from a design token rather than in their files; a gentler check counting no more such values than before the change — the screens are moved onto the tokens at once.
+*Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, and the icon files. An icon of an action drawn as a mask takes the role of the text beside it, so it dims with a greyed cell, needs no file for each state, and a change of `text-strong` reaches it at once; the other icons hold their colour themselves, so a change of `text-strong` reaches them only by hand. Accepted with it: two ways of drawing an icon stand side by side.
+*Rejected:* the colour of an icon of an action standing in its file and changed by hand — every state of the icon takes a file; the icons of actions as pictures dimmed by opacity — a new value of appearance and a second way of drawing to remove later; a gentler check counting no more such values than before the change — the screens are moved onto the tokens at once.
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field and text field from the seven shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field and the text field — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj” are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** an agent compares a change with the decision:
-  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; the answer to a request for a password-reset link standing under its form in `text` with a bar on its left in the same colour;
-  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany”, „Przełącz postać na ten program” or „Zatrzymaj” made as a plain button; that answer written in `warning`, as if it refused something, or in `positive`, as if the message had left.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 4 and 13, and § Settlements to record, rows 1, 3 and 8 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7 · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 1b and 3, and § Settlements to record, rows 2 and 6
+  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ” and „Restart” neutral at rest and in `danger` under the pointer and at focus; the answer to a request for a password-reset link standing under its form in `text` with a bar on its left in the same colour;
+  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany”, „Przełącz postać na ten program” or „Zatrzymaj” made as a plain button; a destructive button in `danger` at rest; a cell of a pick drawn as a button of its own; that answer written in `warning`, as if it refused something, or in `positive`, as if the message had left.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q12. Jakie są wspólne kontrolki i ich stany?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?" and "Q16. Czy przycisk „Przełącz postać na ten program” jest przyciskiem zwykłym czy niszczącym (D-44)?" · potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row K4 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 4 and 13, and § Settlements to record, rows 1, 3 and 8 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7 · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 1, 1b and 3, and § Settlements to record, rows 2 and 6 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-44 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 12 and 14, Questions to settle, questions 9 and 15
 
-*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them; a destructive button that looks like a safe one hides that it ends a map run, stops an earning loop, deletes a program rule or a program, sets the progress on a map to zero or drops the copy's unsaved changes. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. Accepted with it: „Przełącz postać na ten program” is drawn as a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes; the answer stays in white and grey, and a bar can be overlooked on a dense page.
-*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed.
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. Red that stands on every button that may drop something is the loudest thing on the screen and speaks louder than the state of the character, so a destructive button shows what it is when the player reaches for it, and red at rest means a threat to a character. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes; the answer stays in white and grey, and a bar can be overlooked on a dense page.
+*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; red at rest on every destructive button — it drowns out the state of the character; the button in a rule's row alone neutral at rest — two looks of one control; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
 
@@ -1654,7 +1654,7 @@ A new game starts with one empty rule group named „Program”, whose condition
 - **Based on:** none
 - **Relations:** derives from D-90
 - **Verification:** an agent compares a change with the decision:
-  - complies: a new game showing the empty „Program” group with its „Dodaj regułę” control and the
+  - complies: a new game showing the empty „Program” group with its „+ reguła” control and the
     condition „Zawsze”
   - violates: a new game with no rule group, or a program rule already placed in its initial group
 - **Origin:** none
@@ -1688,39 +1688,47 @@ counting completed actions — a rule whose action was cut short by death would 
 
 ### D-93 — What does a program rule show the player?
 
-During a manual map run every program rule of the copy the map run carries out shows how many times
-it fired in that map run, written as a number followed by „×”, such as „3×”, while the rules of a
-saved program the program panel shows then show no count. The count starts from zero at the start of
-each manual map run, a map run restart included, at a switch of the character to another program, and when the
-program rule's condition or action changes; it survives reordering the rule, moving it to another
-rule group, changing its group's condition or name, and a save of the copy. Before the game's first
-manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain
-beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to,
-each rule there showing the count of the same rule of the copy where the two have the same condition
-and action and „0×” otherwise, and beside the rules of no other program, until the next send or map
-run restart, subject to the same reset on a change of a rule's content.
+On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od
+góry”, and during a manual map run every program rule of the copy the map run carries out shows how
+many times it fired in that map run, written as „Wykonano {n}×”, such as „Wykonano 3×”, wherever
+rules show counts the header of their rule group shows their sum in the same form, such as
+„Wykonano 21×”, and the rules of a saved program the program editor shows then show no count. The
+count starts from zero at the start of each manual map run, a map run restart included, at a switch
+of the character to another program, and when the program rule's condition or action changes; it
+survives reordering the rule, moving it to another rule group, changing its group's condition or
+name, and a save of the copy. Before the game's first manual map run the rules show no counts; after
+a manual map run ends in death or in a completion its counts remain beside the copy's rules, and
+after „Zakończ” beside the rules of the program the copy belongs to, each rule there showing the
+count of the same rule of the copy where the two have the same condition and action and „Wykonano
+0×” otherwise, and beside the rules of no other program, until the next send or map run restart,
+subject to the same reset on a change of a rule's content.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-92 · derives from D-164
 - **Verification:** invariants: saved-program-edit · trip-plan-progress. An agent compares a change with the decision:
-  - complies: a program rule moved up or into another group keeping its count; a changed group
+  - complies: „sprawdzane od góry” above the rules on Programy and on the screen of a map run; a
+    rule of the copy showing „Wykonano 3×” and the header of its rule group the sum of its rules,
+    folded or not; a program rule moved up or into another group keeping its count; a changed group
     condition leaving its rules' counts intact; a rule whose condition changed starting again
     from zero; counts retained after death, after a completion and after „Zakończ”, reset on the
     next send or restart; a switch to another program starting every count of the new copy's rules
-    from zero; after „Zakończ” the rules of the copy's program showing the copy's counts, and „0×”
-    beside a rule whose action there differs from the copy's; the start of an earning loop leaving
+    from zero; after „Zakończ” the rules of the copy's program showing the copy's counts, and „Wykonano
+    0×” beside a rule whose action there differs from the copy's; the start of an earning loop leaving
     the counts of the last manual map run as they were
-  - violates: counts kept per position in the list; a rename of a group resetting its rules'
+  - violates: a bare „3×” beside a rule; a header of a rule group with no sum while its rules
+    show counts; counts kept per position in the list; a rename of a group resetting its rules'
     counts; a count shown before the first map run; „Zakończ” hiding the ended run's counts; a
     completion clearing the counts of its map run; counts shown beside a saved program opened
     during a map run; the counts of the former copy kept after a switch; after „Zakończ” a count
     of the copy shown beside a rule of the program whose condition there differs; firing counts
     gathered in a map run of an earning loop
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14 · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "17. Co pokazują liczniki reguł programu po domknięciu przejścia — zostają przy regułach jak po śmierci i po „Zakończ”, aż do następnego wysłania albo „Restart”?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?" and "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2, and § Settlements to record, row 4
+- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a program rule show the player?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14 · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "17. Co pokazują liczniki reguł programu po domknięciu przejścia — zostają przy regułach jak po śmierci i po „Zakończ”, aż do następnego wysłania albo „Restart”?" · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?" and "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2, and § Settlements to record, row 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-93 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 9, Questions to settle, questions 6 and 14
 
 *Rationale:* The count is the sign that a program rule is dead — one standing too low is caught
-by one above it and stays silent for a whole map run. A program rule whose content changed is
+by one above it and stays silent for a whole map run. A bare „1×” reads as a limit of one, and
+nothing else on the screen says that rules are checked from the top, on Programy too, where the
+player writes them. A folded rule group says nothing without the sum of its rules. A program rule whose content changed is
 another program rule, so its count starts again, while its group and its place arrange when the
 same rule can act. Keeping the last run's counts lets the player inspect the program after that
 run ends, whichever way it ends, the run that solved a map included. Accepted with it: a count
@@ -1730,7 +1738,9 @@ nothing in the map run. After „Zakończ” the counts stand beside the program
 and a rule whose content differs there is not the rule that fired. The player watches a manual map
 run and reads an earning loop by what it brought (D-244), so the counts stand with the manual map
 run. Accepted with it: the rule that a map run counts its firings takes an exception.
-*Rejected:* counts per position — moving a rule would attach another rule's history to it;
+*Rejected:* a bare number with „×” — it reads as a limit; no sum in the header of a rule group — a
+folded rule group says nothing; the heading during a map run alone — Programy would not say it;
+counts per position — moving a rule would attach another rule's history to it;
 resetting on a move or group edit — arranging the same rules would erase their history; hiding
 the counts after „Zakończ” — the player would lose the ended run's evidence while editing; clearing
 the counts at a completion — the player could not see which rules worked in the run that solved the
@@ -2259,25 +2269,29 @@ player, who sees the rule in the program editor and can delete it.
 *Rejected:* the program left as the player wrote it at the first chill; the rule written into the
 copy alone, into the saved program alone or into every program of the list.
 
-### D-124 — What does „Dodaj regułę” do before the player has discovered an action?
+### D-124 — What does „+ reguła” do?
 
-„Dodaj regułę” is disabled while the Understanding holds no action, and once it holds one, it adds
-the program rule „Zawsze → Eksploruj” at the end of its rule group.
+„+ reguła” is disabled while the Understanding holds no action, and once it holds one, it adds the
+program rule „Zawsze → Eksploruj” at the end of its rule group and opens its rule panel on the
+condition, „Zawsze → Eksploruj” standing there until the player picks otherwise.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-118
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Dodaj regułę” of a new game's rule group „Program” disabled until the first chill,
-    and from then on adding „Zawsze → Eksploruj” at the end of the group
-  - violates: „Dodaj regułę” adding a program rule whose action the Understanding does not hold
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co robi „Dodaj regułę”, zanim gracz odkryje jakąkolwiek akcję?"
+  - complies: „+ reguła” of a new game's rule group „Program” disabled until the first chill, and
+    from then on adding „Zawsze → Eksploruj” at the end of the group, with its rule panel open on
+    the condition
+  - violates: „+ reguła” adding a program rule whose action the Understanding does not hold; the
+    rule added with no rule panel open, or with the panel open on the action
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co robi „Dodaj regułę”, zanim gracz odkryje jakąkolwiek akcję?" · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10, Questions to settle, question 12
 
 *Rationale:* a program rule needs an action, and before the first chill the Understanding holds
 none to offer; from the first chill on it holds „Eksploruj”, so the rule the button adds is one
-the program editor offers. Accepted with it: through the first game minutes of a new game the
-player sees a button that cannot be used.
-*Rejected:* „Dodaj regułę” adding „Zawsze → Eksploruj” before „Eksploruj” is discovered — the
+the program editor offers. The rule panel opens on the condition, where the player writes the
+rule next. Accepted with it: through the first game minutes of a new game the player sees a button
+that cannot be used.
+*Rejected:* „+ reguła” adding „Zawsze → Eksploruj” before „Eksploruj” is discovered — the
 program editor would offer an action the Understanding does not hold.
 
 ### D-125 — What do the body row, the backpack and the terrain panel show of what is not yet discovered?
@@ -3011,20 +3025,20 @@ Each program of the player carries a number the game gives it when the program i
 
 ### D-166 — Where does the player see the player's programs and pick the one to edit?
 
-The screen Programy holds on the left the list of the player's programs and beside it the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
+The screen Programy holds on the left the list of the player's programs and in the middle the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” picked on the list of Programy showing that program in the editor beside
-    it, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
+  - complies: „Program 2” picked on the list of Programy showing that program in the editor in the
+    middle of the screen, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
     saved program with „Zmiany tutaj nie dotykają przejścia na mapie Las.” above the editor; on the
     screen of a map run the select list reading „Kopia w przejściu”, „Program”, „Program 2”
   - violates: „Kopia w przejściu” on the list of Programy; „Przełącz postać na ten program” on
     Programy; a list during a map run on which the copy stands below the saved programs; the program
     panel standing beside Siedziba
-- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-166 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 5 and 15
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-166 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 5 and 15 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 4 and 13
 
 *Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero.
 *Rejected:* a panel standing beside every screen — the program mixes with everything else; a list during a map run on which the copy stands below the saved programs; „Kopia w przejściu” on the list of Programy — the list and the address would have to handle the copy; „Programy” leading to the screen of a waiting map run — the player could not write a saved program while a map run waits.
@@ -3250,16 +3264,16 @@ The trip plan is a field of the program, both its lists are bound at the start o
 
 ### D-180 — Where does the player arrange the trip plan?
 
-The program panel shows a section „Plan wyprawy” below the rule groups, with the lists „Zabierz” and „Wynieś”. Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list.
+The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”. Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-166 · derives from D-173 · derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2"
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-180 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 11
 
-*Rationale:* The plan stays with the program the player edits, at the cost of scrolling past a long program.
-*Rejected:* the section above the rule groups; the plan in the headquarters character row — the running copy could not be edited there.
+*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. Accepted with it: the plan of the copy is not changed during a map run.
+*Rejected:* the section under the rule groups on the screen of a map run — it takes the space of what the player watches; the plan in the headquarters character row.
 
 ### D-181 — Which entries does a trip list accept?
 
@@ -3478,9 +3492,9 @@ Outside a map run the program editor currently offers the repertoire computed fr
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Obchód” offered in both editors during the run of its buyer and absent outside a run; „Obchód” still offered in the editor of Programy after its buyer's death, until „Restart” or „Zakończ”
+  - complies: „Obchód” offered in both editors during the run of its buyer and, outside a run, standing greyed and not to be picked with „wybierzesz w przejściu postaci, która ją kupiła”; „Obchód” still offered in the editor of Programy after its buyer's death, until „Restart” or „Zakończ”
   - violates: a branch bought by any teammate opening that action in the editor of Programy outside a map run; the editor of Programy turning to the archetype's offer when the player leaves the screen of a manual map run or when that map run ends
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3; accepted settlement 4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 15 and 17, and § Settlements to record, row 11
+- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3; accepted settlement 4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 15 and 17, and § Settlements to record, row 11 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 18
 
 *Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ”, as it does for „Kup” (D-200), so the offer does not change while it stands. Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress, whereas editing a saved program prepares the next send.
 *Rejected:* offering outside a run every branch any teammate bought — the shared editor would imply availability without choosing its character; the archetype's offer after the end of a map run, as this decision read word for word gave it — code to change, and on Programy after a death the offer changes while the map run still stands.
@@ -4846,8 +4860,7 @@ A running earning loop currently shows on the card and the screen of its charact
 
 ### D-245 — What does „Zatrzymaj” do?
 
-„Zatrzymaj” is a destructive button with its text in the role `danger` that acts at once on the
-click: the items carried in the map run going on are lost, its loot stays out of the chest, the
+„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the
 practice D-189 gives enters the character skills, and the character returns to its ordinary state.
 On the character's card and screen, until the next send or start of that character and after a load
 of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or
@@ -4859,13 +4872,14 @@ of the saved game state too, stands in the role `text-secondary` „Pętla zatrz
 - **Verification:** invariants: trip-run-end. An agent compares a change with the decision:
   - complies: a stop in the middle of a map run leaving the chest as it stood and the character's
     skills grown by what the earning loop and that map run gathered; „Pętla zatrzymana” after a stop
-    with nothing gathered, standing after a reload and gone at the next send
-  - violates: a question before the stop; the stopped map run left on the screen; the line gone after
+    with nothing gathered, standing after a reload and gone at the next send; „Zatrzymaj” neutral
+    at rest and in `danger` under the pointer
+  - violates: a question before the stop; the text of „Zatrzymaj” in `danger` at rest; the stopped map run left on the screen; the line gone after
     a reload; the loot of the stopped map run reaching the chest
 - **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, Q5 and Q18, and § Settlements to record, row 7
 
 *Rationale:* a stop is the player's own act on a character it can see, so it acts at once, and the
-line says what the stop paid; the button looks destructive for the backpack it drops. Accepted with
+line says what the stop paid; the button is destructive for the backpack it drops. Accepted with
 it: the player does not see the map run it stopped.
 *Rejected:* the map run left on the screen to look at, as in the predecessor game — a third kind of
 end of a map run, and it takes the place of the one manual map run; no line after a stop that
@@ -5154,24 +5168,29 @@ API, a document model and a person clicking — an agent does not check the runn
 
 ### D-255 — Where does the data an agent checks the game on come from?
 
-An agent reaches the early states a check needs by playing, on a local server with a database made
-for that check. One command of the repository starts the game locally over HTTPS, and a check
+An agent builds the game state a check needs with functions of the simulation and sends it by the
+ordinary save request to a local server with a database made for that check, and it reaches early
+states by playing. One command of the repository starts the game locally over HTTPS, and a check
 touches neither the test server nor a player's save.
 
 - **Scope:** agent-workflow · build-tools
 - **Based on:** none
 - **Relations:** derives from D-12 · derives from D-110
 - **Verification:** invariants: local-start-access. An agent compares a change with the decision:
-  - complies: a check on an account made through the form of a game started by the command
+  - complies: a check on an account made through the form of a game started by the command; a game
+    state holding the verbs of combat and a bought branch, built with functions of the simulation
+    and sent by the save request of that account
   - violates: a check that signs in to the test server; a check that opens a copy of a player's
-    save
-- **Origin:** technologia_dane_do_sprawdzania.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
+    save; a game state written straight into the database of the local start
+- **Origin:** technologia_dane_do_sprawdzania.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2) · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 16
 
-*Rationale:* an early state reached by playing goes through the same signing in and saving as a
-player's, so a change of the save's version costs nothing here. Lacks of the option chosen: the late
-states of the game take too long to reach by playing, and the repository holds no program that
-solves a map. Risks taken, each a hypothesis: protection on a computer may block the script that
-makes a certificate.
+*Rationale:* the late states of the game take too long to reach by playing, and a state built by the
+simulation goes through the same load as any save, so a change of the save's version costs nothing
+here. Lacks of the option chosen: the repository holds no program that solves a map. Risks taken,
+each a hypothesis: a loaded save carries no events, so effects of the scene and the chronicle may
+stand empty until the game passes a stretch; a state built by the game's own code agrees with the
+game even where both are wrong; protection on a computer may block the script that makes a
+certificate.
 *Rejected:* swapping the server's answer in the browser — it passes over signing in and saving;
 writing straight into the database — it passes over the way of a save; ready files of saves — every
 change of version renews them; a developer screen like the old probe — much work and a new entry for
@@ -5917,24 +5936,28 @@ character has its own map run; a screen „Nie ma takiego miejsca” — the bac
 
 ### D-282 — What do the screens leave room for from the start?
 
-Each column of a screen is an area of its own that a narrower layout can rearrange, and Siedziba
-draws the team as a section with a heading.
+Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws
+the team as a section with a heading, and the rule panel offers its pick in steps, the action first
+and its target after it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280
 - **Verification:** an agent compares a change with the decision:
   - complies: the program panel and the column of the map run on the screen of a map run each an
-    area of its own, which a narrower layout can place one above the other; the team on Siedziba
-    under the heading „Drużyna”
+    area of its own, which a narrower layout can place one above the other; on Programy the list of
+    programs, the program editor and the rule panel each an area of its own; the team on Siedziba
+    under the heading „Drużyna”; the rule panel offering „Zbierz” and, once it is picked, the targets
+    of „Zbierz” in a field after it
   - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
-    the characters of Siedziba as a bare list with no heading
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1
+    the characters of Siedziba as a bare list with no heading; one flat pick holding „Zbierz —
+    patyk” and „Zbierz — jagoda” as cells of their own
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What do the screens leave room for from the start?"
 
-*Rationale:* a layout for a phone and several teams come later, and these two shapes make each of
-them an addition. They cost a decision and no code.
-*Rejected:* rigid columns and a plain list of characters — each of the later additions becomes a
-rebuild of a screen.
+*Rationale:* a layout for a phone, several teams and actions with targets of their own come later,
+and these three shapes make each of them an addition. They cost a decision and no code.
+*Rejected:* rigid columns, a plain list of characters and one flat pick — each of the three later
+additions becomes a rebuild of a screen.
 
 ### D-283 — What happens to a manual map run when the player leaves its screen?
 
@@ -6045,3 +6068,426 @@ do not act and what the player does to free them, and what the simulation allows
 *Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba and the screen
 Postać for viewing alone — the player could not start the earning loop of another character, and
 the code would have to block what the simulation allows.
+
+### D-288 — How does the player write a program rule?
+
+One program editor stands on Programy and on the screen of a map run. A rule's row reads as a
+sentence and a rule panel beside the rows changes it: each pick moves on to the next field,
+conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions
+in two columns, and what the player may not pick stands greyed with its reason. Rules move by a
+handle with a line showing where they land, by arrows, and between groups, and whole rule groups
+move by a handle with such a line, with no arrows in the header of a rule group.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-23 · derives from D-44
+- **Verification:** an agent compares a change with the decision:
+  - complies: one editor component drawing the program on Programy and the copy on the screen of a
+    map run; a click on the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” opening the rule panel
+    beside the rows; a program rule dragged by its handle into another rule group, a line showing
+    where it lands; a rule group dragged by its handle above another
+  - violates: a native select list in a rule's row; the rule panel opened over the rows; „↑” and
+    „↓” in the header of a rule group; a discovered action the player may not pick left out of the
+    pick rather than greyed with its reason
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P2 · rozpoznanie_projektant.md, part B.3 · research_edytor_programu_wow.md, „Pisanie” · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "How does the player write a program rule?" · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 8
+
+*Rationale:* the player writes while seeing the world, so the pick stands beside the program rather
+than over it, and a row is for reading while the panel is for changing. Writing a program without
+grimacing is what the project is judged by. Cells give a condition one click and keep one control
+for every pick. Arrows suit moving a single rule up or down, and they do not suit reordering groups.
+Accepted with it: the pickers need keyboard handling that native lists gave for free, long names of
+conditions wrap into two lines, and rule groups cannot be moved from the keyboard.
+*Rejected:* native select lists in each row — a form, the source of the game's look of paperwork;
+the pick in a window in the middle, as in loop — it covers the world and the program; hiding what
+may not be picked — the player asks where it went; a select list for conditions in the panel — two
+clicks and the look of a form; a list of conditions of its own, as in loop — a second control and a
+second keyboard handling; rule groups moved by arrows alone — reordering by arrows does not work; a
+way from the keyboard for rule groups with no arrows in the header, such as keys on the handle —
+keyboard handling of its own in the largest task.
+
+### D-289 — What does the rule panel show greyed, and with which reason?
+
+The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked
+stands greyed with its reason: a branch action the character of the map run has not bought,
+„gałąź niewykupiona”; such an action while the game holds no map run, „wybierzesz w przejściu
+postaci, która ją kupiła”; „Idź”, „Zbierz”, „Obchód”, „Tu leży mniej niż” and „Zapas poniżej” with no
+target to point at, „nie znasz jeszcze celu”; and a discovered target absent from the map of the map
+run, „nie ma go na tej mapie”. While the game holds no map run every discovered target may be
+picked, the actions of combat may be picked outside combat too, and a rule holding a value outside
+what may be picked shows it in the panel as picked and greyed, with its reason where one of those
+above fits and with none otherwise, and the player can change it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-118 · derives from D-196 · derives from D-288 · narrows D-119
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Obchód”, discovered and not bought by the character of a manual map run, greyed with
+    „gałąź niewykupiona”; with no map run in the game, „Zbierz” offering every discovered item;
+    „Kopnij” to be picked while no creature attacks; a rule whose target is absent from the map of
+    the map run showing that target picked and greyed with „nie ma go na tej mapie”, and a click on
+    another target changing it; a rule holding a value that none of the listed reasons fits showing
+    it picked and greyed with no reason, and a click on another value changing it
+  - violates: „Kopnij” in the pick before the first attack revealed it; a greyed cell with no
+    reason where one of the listed reasons fits; „Zbierz” left out of the pick while no target is
+    known; a rule's value outside the pick shown as if nothing were picked
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, questions 1 and 16, and § Settlements to record, row 1; the human's decision at the request of the task that wrote this entry, 2026-11-05, on the held value that no listed reason fits
+
+*Rationale:* the pick holds as many choices as the player has found, so it never starts
+overwhelming and the growing list is visible progress (D-118). What has been found and cannot be
+picked now stays in sight with its reason, since a choice that vanishes without a word leaves the
+player asking where it went; a branch not bought stands greyed as in the predecessor game, loop. A
+held value that none of the listed reasons fits shows with none, since no reason sentence for it has
+been set, and only a state composed by hand or an old save reaches it.
+*Rejected:* only branch actions greyed and everything else that may not be picked left out — the
+rest vanishes without a word, and moss and fibre would later vanish from Programy; hiding what may
+not be picked — the player asks where it went; a reason sentence for a held value that none of
+the listed reasons fits — wording not yet set, for a case that only a composed state or an old save
+reaches.
+
+### D-290 — How does the pick of the rule panel group its cells?
+
+The pick of the rule panel sets the actions in four named groups: Ruch — „Eksploruj”, „Wędruj”,
+„Idź”, „Idź — ognisko”; Zbieranie — „Zbierz”, „Obchód”; Ogień — „Wytwórz — ognisko”, „Zapal —
+ognisko”, „Zapal — patyk”, „Zasil — ognisko”; and Żywność i walka — „Zjedz — jagoda”, „Uderz —
+patyk”, „Kopnij”, „Odskocz”. It sets the conditions in two columns, in sections with no names set
+apart by a line: Zawsze; Temperatura, Sytość, Zdrowie, Energia natury; Zapas, Tu leży, Zostało mniej
+niż — ognisko, Z dala od — ognisko; Przeciwnik ma poniżej.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zbierz” and „Obchód” under the name Zbieranie; „Zawsze” alone in the first section of
+    the conditions, a line below it
+  - violates: the conditions in one column; „Kopnij” in a group of its own; a name above a section
+    of conditions
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 2, and § Settlements to record, row 2
+
+*Rationale:* cells give a condition one click and keep one control for every pick (D-288).
+Accepted with it: long names of conditions wrap into two lines.
+*Rejected:* a select list for conditions in the panel — two clicks and the look of a form, and in
+React a new control as well, though one needed anyway for programs and the trip plan; a list of
+conditions of its own, as in loop — a second control and a second keyboard handling.
+
+### D-291 — Which icon stands for an action?
+
+Each action has one icon, which stands for it in a program rule's row, in its cell of the pick and
+over the mage's head; an action with a target shows the icon of the action, never one of its
+target.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-27 · derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk”, in the
+    cell „Zbierz” and over the head of the mage gathering; „Idź” and „Idź — ognisko” sharing one
+    icon
+  - violates: the icon of a stick in the row of „Zbierz — Patyk”; a greyed cell drawn with no icon
+    while a cell that may be picked has one; cells drawn as text alone while the rows show icons
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5, and § Settlements to record, row 3
+
+*Rationale:* the sign of the action tells „Idź — patyk” from „Zbierz — patyk”, which a sign of the
+target would draw alike, and cells with icons give the pick what the pick of the predecessor game,
+loop, has. A greyed cell keeps its icon and so looks like the cell it would be.
+*Rejected:* icons in the rows alone, the cells as text — a pick poorer than loop's; icons in the
+cells that may be picked alone, a greyed cell with none — a greyed cell looks other than one that
+may be picked; over the mage's head the icon of the target where the action has one — „Idź —
+patyk” and „Zbierz — patyk” look alike.
+
+### D-292 — How does the program editor number rule groups and program rules?
+
+In the program editor each rule group bears its number in the program, such as „2”, and each
+program rule the number of its group and its own number in that group, such as „2.1”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-90 · derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: the first rule of the second group numbered „2.1”, and the numbers following the
+    order after a rule moves
+  - violates: rules numbered through the whole program as „1”, „2”, „3” across their groups; a
+    rule group with no number
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 6, and § Settlements to record, row 4
+
+*Rationale:* a number gives a reference to a rule something to point at, such as „reguła 2.1”
+beside „Teraz”.
+*Rejected:* rules with no numbers — „reguła 2.1” beside „Teraz” would refer to nothing.
+
+### D-293 — What time of an action does the program editor show?
+
+Beside a program rule's action, in its row and in the rule panel, stands the time one carrying out
+of the action takes, such as „10 min”, „tura” for an action of combat, for a movement during a map
+run the time of a step on that map, and nothing for a movement outside a map run.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zbierz — Patyk” with its time in its row and beside „Zbierz” in the rule panel;
+    „Kopnij” with „tura”; „Idź” on Programy with no map run in the game showing no time
+  - violates: a time in the row and none in the panel; a time beside „Idź” outside a map run
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, questions 6 and 17, and § Settlements to record, row 5
+
+*Rationale:* with the time the player compares actions without playing them, also in the panel,
+where the action is picked. Outside a map run no map gives a movement its step.
+*Rejected:* no time — the player cannot compare actions without playing; the time in the row alone
+— the time is not seen where the action is picked.
+
+### D-294 — Where does the program editor keep which rule groups are folded?
+
+Which rule groups are folded lasts in the page's memory while the player moves between screens and
+goes with a reload of the page, after which every rule group stands unfolded; the saved game state
+does not hold it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: a group folded on Programy still folded after a visit to Siedziba, and unfolded after
+    a reload; a save of the game state carrying nothing of folding
+  - violates: folding kept in the browser's storage; a field of folding in the saved game state
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 17, and § Settlements to record, row 6
+
+*Rationale:* folding arranges the player's view of a program and changes nothing the program does,
+so it takes no new storage and no new version of the saved game state.
+*Rejected:* folding kept in the browser — a new storage; folding kept in the saved game state — a
+new version of the save.
+
+### D-295 — What does a folded rule group show, and where does a rule dropped on it land?
+
+A folded rule group shows its name, its condition and the number of its program rules, and a
+program rule dropped on it lands at its end while the group stays folded.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: a folded group of three rules showing its name, its condition and the number three; a
+    rule dropped on it becoming its fourth while it stays folded
+  - violates: the group unfolding at the drop; the rule landing at the group's start
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 6, and § Settlements to record, row 7
+
+*Rationale:* a group that stays folded keeps the list where it stood under the pointer.
+*Rejected:* the group unfolding at the drop — the list runs from under the pointer.
+
+### D-296 — Where does the player change and delete a rule group?
+
+A click on the header of a rule group opens the rule panel with the group's name and condition, and
+the group's „✕” stands in its header.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: a click on the header of „Program” opening the rule panel on its name and „Zawsze”;
+    „✕” of the group in that header
+  - violates: a select list of conditions or a text field of the name in the header of a rule
+    group
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 8
+
+*Rationale:* one panel changes a rule and a group, so the header stays a line to read, as a rule's
+row does (D-288).
+*Rejected:* select lists in the header of a rule group — the look of a form stays.
+
+### D-297 — Where does an arrow move a program rule at the edge of its rule group?
+
+„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the
+first program rule of a group to the end of the previous one; „↑” is disabled only on the program's
+first rule and „↓” only on its last.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: „↓” on rule 1.3, the last of group 1, making it rule 2.1; „↑” on rule 2.1 making it the
+    last rule of group 1
+  - violates: „↓” disabled on the last rule of a group that has a next group; the rule landing at the
+    end of the next group
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 6 and 17, and § Settlements to record, row 9
+
+*Rationale:* arrows suit moving a single rule (D-288), and across the edge of a group the rule lands
+next to where it stood, so arrows move a rule between groups as the mouse does.
+*Rejected:* arrows within a group alone — only the mouse moves a rule between groups; the rule
+landing at the end of the next group — it jumps over the whole group.
+
+### D-298 — How does the player fold and unfold every rule group at once?
+
+Beside the rule groups of a program that holds more than one rule group stands a plain button,
+„zwiń wszystkie” or „rozwiń wszystkie”, that folds or unfolds every rule group of the program.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-275 · derives from D-294
+- **Verification:** an agent compares a change with the decision:
+  - complies: the button made with the shared button beside a program of two groups, and absent
+    beside a program of one
+  - violates: „zwiń wszystkie” drawn as underlined text; the button beside a program of one group
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 17, and § Settlements to record, row 10
+
+*Rationale:* folding five groups one by one takes five clicks. The button opens and leaves no state
+of a form, so it keeps the button D-44 gives it (D-275).
+*Rejected:* no such button — five clicks at five groups; the button standing beside every program.
+
+### D-299 — Does the pick of the rule panel hold a search or a row of recent picks?
+
+The pick of the rule panel holds no search field and no row of recent picks.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: the pick of a game with every action discovered standing whole without scrolling
+  - violates: a search field above the cells; a row „ostatnio” above the grid
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 11
+
+*Rationale:* every cell fits without scrolling, so neither a search nor a row of recent picks
+spares the player anything. Accepted with it: both come back once the game's content outgrows the
+pick.
+*Rejected:* a search field — it takes the keyboard from the grid; a row of recent picks — three
+cells above the grid.
+
+### D-300 — Does a condition show its current value in the program editor?
+
+The program editor shows no current value beside a condition, such as „teraz 3”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run
+  - violates: „teraz 3” beside a condition in a rule's row or in the rule panel
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 12
+
+*Rationale:* a current value takes another reading of the game state and an answer to what to show
+outside a map run.
+*Rejected:* the current value beside a condition, as in the designer's sketch — another reading and
+the question of what to show outside a map run.
+
+### D-301 — What does an empty rule group say?
+
+A rule group that holds no program rule shows „Pusta grupa — przepuszcza dalej.”
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-23
+- **Verification:** an agent compares a change with the decision:
+  - complies: the rule group „Program” of a new game showing „Pusta grupa — przepuszcza dalej.”
+  - violates: an empty rule group with nothing under its header
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 13
+
+*Rationale:* the sentence says what the character does with such a group: it passes on to the next.
+*Rejected:* an empty group with no sentence — it says nothing.
+
+### D-302 — What does the rule panel of the copy say of the streak?
+
+The rule panel of the copy a map run carries out reads „Zmiana zeruje passę tego przejścia.”, and
+it says nothing of the firing counts.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-131
+- **Verification:** an agent compares a change with the decision:
+  - complies: the sentence in the rule panel of the copy on the screen of a map run, and none in the
+    rule panel of a saved program on Programy
+  - violates: the sentence speaking of the counts too; the sentence in the rule panel of a saved
+    program
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 14
+
+*Rationale:* a change of the copy's rules sets the streak to zero (D-131), so the panel says so
+before the streak goes.
+*Rejected:* no sentence — the streak goes with no warning.
+
+### D-303 — Does deleting a program rule or a rule group ask first?
+
+A program rule and a rule group are deleted at once, at the click, with no question.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: „✕” of a rule group removing the group at the click
+  - violates: a window asking whether to delete a program rule
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 15
+
+*Rationale:* a question costs a click more at every deletion.
+*Rejected:* a question before a deletion — a click more.
+
+### D-304 — Where does the player add a rule group?
+
+The button that adds a rule group reads „+ dodaj grupę” and stands under the rule groups, in the notation of „+ reguła”, at the foot of
+the list.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-90 · derives from D-124
+- **Verification:** an agent compares a change with the decision:
+  - complies: „+ dodaj grupę” at the foot of the list, under the last rule group
+  - violates: „Dodaj grupę” at the foot of the list
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 16; the human's decision at the request of the task that wrote this entry, 2026-11-05, on where the button stands
+
+*Rationale:* the two buttons that add are written in one notation; „+ dodaj grupę” stands once under
+all the groups.
+*Rejected:* „Dodaj grupę” unchanged — two notations side by side; the two buttons on one line — when
+the last group is folded its „+ reguła” is hidden and nothing stands beside the button.
+
+### D-305 — Does the program editor mark a program rule that does not fire?
+
+The program editor shows no mark „⊘”, no count „N reguł nie zadziała” and no amber „0×” at a program
+rule or a rule group.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-93
+- **Verification:** an agent compares a change with the decision:
+  - complies: a rule that has not fired in the map run showing „Wykonano 0×” as any count does
+  - violates: „⊘” beside a rule; „2 reguły nie zadziała” in the header of a rule group; „0×” in
+    `warning`
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 17
+
+*Rationale:* these marks would double the state a program rule shows during a map run.
+*Rejected:* „⊘”, „N reguł nie zadziała” and an amber „0×”, as in loop — they double the state a
+program rule shows during a map run.
+
+### D-306 — How does the rule panel take the player through a rule?
+
+A click on a program rule's row opens the rule panel on the condition, and its fields follow as
+condition, number, target of the condition, action and target of the action, the number field and a
+field of a target standing only where the condition or the action has one; each pick changes the
+rule at once and moves to the next field, a pick of the value already picked included, and Enter or
+leaving the field confirms the number. In the grid of a field the arrow keys move between the cells,
+a greyed one included so that its reason can be read, and Enter picks, doing nothing on a greyed
+cell. After the last field the panel stays open, and „✕”, Escape or opening another rule closes it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288
+- **Verification:** an agent compares a change with the decision:
+  - complies: the rule „Zapas poniżej 8 · Patyk → Zbierz — Patyk” written from a click on its row
+    in six acts — the row, „Zapas poniżej”, 8 with Enter, „Patyk”, „Zbierz”, „Patyk” — and the
+    panel still open after the last of them; Escape closing it
+  - violates: the panel closing by itself after the target of the action; a pick waiting for a
+    button that confirms it; Enter on a greyed cell changing the rule; a number field standing for
+    „Zawsze”
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Acceptance criteria, Questions to settle, questions 7 and 17, and § Settlements to record, row 18
+
+*Rationale:* each pick moves on to the next field (D-288), so a rule is written in a few acts, and
+the panel stays open after the last field, so a fix takes no new opening. A greyed cell stays
+within the keyboard's reach so that its reason can be read.
+*Rejected:* the panel closing by itself after the last field — a fix takes opening it again; greyed
+cells out of the keyboard's reach.
+
+### D-307 — What does the line of an empty trip plan say?
+
+Where both lists of the trip plan are empty, its folded line on Programy reads „Plan wyprawy:
+pusty”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-180
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new program showing „Plan wyprawy: pusty” between its name and its rules
+  - violates: the heading „Plan wyprawy” alone above an empty plan
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 11, and § Settlements to record, row 19
+
+*Rationale:* an empty plan shown as its heading alone looks as though it has not loaded.
+*Rejected:* the heading alone — an empty plan looks as though it has not loaded.

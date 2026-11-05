@@ -8,7 +8,8 @@
  */
 
 /**
- * „plain” — the button; „destructive” — its text in `danger`; „selected” — chosen in its group;
+ * „plain” — the button; „destructive” — neutral at rest, its text in `danger` under the pointer and
+ * at the focus; „selected” — chosen in its group;
  * „secondary” — an underlined text without a frame, for an action that opens or leaves the state
  * of a form and stands under it; „tab” — a button of a group drawn as a tab, whose group sets
  * which one is selected with `setButtonSelected`.

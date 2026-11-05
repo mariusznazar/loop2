@@ -37,6 +37,7 @@ import { createGameSaver, type LogoutSave } from "./game-saver.js";
 import { createHeadquarters } from "./headquarters.js";
 import { createProgramList } from "./program-list.js";
 import {
+  createFolding,
   createProgramPanel,
   type ProgramPanelControls,
 } from "./program-panel.js";
@@ -221,9 +222,12 @@ export function createGameView(options: GameViewOptions): GameView {
   // The panel of Przejście shows the copy and holds the select list of programs; the screen of the
   // map run updates it with the map run it is given (D-281). The panel of Programy shows a saved
   // program, which the list beside it and the address name.
-  const runPanel = createProgramPanel(panelControls, "run");
+  // The folding of rule groups is one memory of the page, which both panels read and change; it is
+  // not part of the game state, so a reload forgets it (D-295).
+  const folding = createFolding();
+  const runPanel = createProgramPanel(panelControls, "run", folding);
   runPanel.element.classList.add("screen-area");
-  const programsPanel = createProgramPanel(panelControls, "programs");
+  const programsPanel = createProgramPanel(panelControls, "programs", folding);
   programsPanel.element.classList.add("screen-area");
 
   const store: GameStore = {
@@ -417,7 +421,16 @@ export function createGameView(options: GameViewOptions): GameView {
     props: { programs: state.programs, chosenId: null },
   });
   programList.element.classList.add("screen-area");
-  programsScreen.append(programList.element, programsPanel.element);
+  // The rule panel is the third area of Programy, at the right of the editor while a rule or a group is
+  // open, and nothing while none is; a narrower layout sets it under the editor (D-282).
+  const ruleArea = document.createElement("section");
+  ruleArea.className = "rule-panel-area screen-area";
+  ruleArea.hidden = true;
+  programsPanel.placeRulePanel(ruleArea, (open) => {
+    ruleArea.hidden = !open;
+    programsScreen.classList.toggle("with-rule-panel", open);
+  });
+  programsScreen.append(programList.element, programsPanel.element, ruleArea);
   /** What the list was last drawn from, so a game minute that changes no program redraws nothing. */
   let drawnPrograms: {
     programs: GameState["programs"];
@@ -602,6 +615,8 @@ export function createGameView(options: GameViewOptions): GameView {
       saver.dispose();
       closeCharacterScreen();
       programList.dispose();
+      runPanel.dispose();
+      programsPanel.dispose();
       element.remove();
       saver.element.remove();
     },
