@@ -510,9 +510,10 @@ test("an undiscovered condition or action is named by its label", () => {
 
 test("a group whose condition lies outside the repertoire shows dark with its rules, which give no reason though they lie outside it", () => {
   const known = fullUnderstanding();
-  const state = sentWith(
+  const cold = { kind: "temperatureBelow", value: 36 };
+  const sent = sentWith(
     [
-      group(1, { kind: "temperatureBelow", value: 36 }, [
+      group(1, cold, [
         rule(11, ALWAYS, act("explore")),
         rule(12, ALWAYS, resourceAction("patrol", "stick")),
       ]),
@@ -525,6 +526,17 @@ test("a group whose condition lies outside the repertoire shows dark with its ru
       ),
       actions: known.actions.filter((kind) => kind !== "explore"),
     },
+  );
+  // The body stands at 34 degrees, so the condition of group 1 holds: only the repertoire can
+  // make the group dark.
+  const state = {
+    ...sent,
+    run: { ...sent.run, body: { ...sent.run.body, temperature: 34 } },
+  };
+  assert.equal(
+    judgeProgram(state.run, map, state.run.copy.program).groups[1],
+    "go",
+    "precondition: without the repertoire the group goes",
   );
   const { judgement } = ruleSigns(state);
   assert.equal(judgement.groups[1], "unmet");

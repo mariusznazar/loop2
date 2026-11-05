@@ -2335,7 +2335,7 @@ carried out in that game minute, and the program rule stays in the program.
 *Rationale:* a program rule outside the repertoire is one the character cannot carry out yet, so
 the program goes past it as past an action that cannot be carried out, and the rest of the program
 acts; kept in the program, it acts once the repertoire holds what it names. Accepted with it: a
-program rule outside the repertoire stands in the program amber with the reason that it lies outside it (D-308).
+program rule outside the repertoire shows in the program what D-308 gives.
 *Rejected:* the simulation refusing a whole program that holds a program rule outside the
 character's repertoire — a program carried to another character or another archetype would stop
 whole.
