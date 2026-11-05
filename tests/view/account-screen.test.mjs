@@ -1774,7 +1774,7 @@ async function expiredPage(held) {
   await startPage(held);
   await held.answer("currentAccount", ACCOUNT);
   await held.answer("loadSavedGame", saveOf(passing(), 4));
-  fire(buttonNamed(pageDocument().body, "4×"), "click");
+  await press(buttonNamed(pageDocument().body, "4×"));
   await settle();
   // The map run came back paused (D-212), and the pace is the player's change.
   const kept = { ...passing(), paused: true, pace: 4 };
@@ -2211,7 +2211,7 @@ const ACTS = [
     name: "an edit of a program",
     start: twoPrograms,
     hash: "#/programy",
-    act: (root) => fire(buttonNamed(root, "Dodaj grupę"), "click"),
+    act: (root) => fire(buttonNamed(root, "+ dodaj grupę"), "click"),
     check: (game, start) => {
       assert.equal(
         game.programs[0].program.groups.length,
@@ -2225,7 +2225,10 @@ const ACTS = [
     name: "an edit of the copy",
     start: pausedRun,
     act: (root) =>
-      fire(buttonNamed(byClass(root, "run-screen")[0], "Dodaj grupę"), "click"),
+      fire(
+        buttonNamed(byClass(root, "run-screen")[0], "+ dodaj grupę"),
+        "click",
+      ),
     check: (game, start) => {
       assert.equal(
         game.run.copy.program.groups.length,
@@ -2235,11 +2238,20 @@ const ACTS = [
     },
   },
   {
+    // The plan stands folded to a line, and the line opens the lists; each step runs in an act of its
+    // own, as the lists draw only after the act that opened them has ended.
     name: "an edit of a program's trip plan",
     start: knowingSticks,
     hash: "#/programy",
-    act: (root) =>
-      fire(buttonLabelled(root, "Zabierz: dodaj przedmiot"), "click"),
+    ownActs: true,
+    act: async (root) => {
+      await press(
+        byClass(programsScreenOf(root), "trip-plan-line")[0].querySelector(
+          "button",
+        ),
+      );
+      await press(buttonLabelled(root, "Zabierz: dodaj przedmiot"));
+    },
     check: (game, start) => {
       assert.deepEqual(game.programs[0].program, {
         ...plain(start.programs[0].program),
@@ -2282,7 +2294,16 @@ const ACTS = [
     name: "„Usuń”",
     start: twoPrograms,
     hash: "#/programy",
-    act: (root) => fire(buttonNamed(root, "Usuń"), "click"),
+    // The list of programs holds the „Usuń” of the program; a rule's „Usuń” in the editor beside it
+    // is another button.
+    act: (root) =>
+      fire(
+        buttonNamed(
+          byClass(programsScreenOf(root), "program-list-view")[0],
+          "Usuń",
+        ),
+        "click",
+      ),
     expected: (start) => deleteProgram(start, 1).state,
   },
   {
@@ -2292,12 +2313,14 @@ const ACTS = [
     expected: (start) => saveCopyIntoProgram(start).state,
   },
   {
+    // The name field of the copy's save is a field of React: each step runs in an act of its own.
     name: "„Zapisz jako nowy program”",
     start: changedCopy,
-    act: (root) => {
-      fire(buttonNamed(root, "Zapisz jako nowy program"), "click");
-      inputLabelled(root, "Nazwa programu").value = "Las";
-      fire(buttonNamed(root, "Zapisz"), "click");
+    ownActs: true,
+    act: async (root) => {
+      await press(buttonNamed(root, "Zapisz jako nowy program"));
+      await typeInto(inputLabelled(root, "Nazwa programu"), "Las");
+      await press(buttonNamed(root, "Zapisz"));
     },
     expected: (start) => saveCopyAsNewProgram(start, "Las").state,
   },
@@ -2649,7 +2672,7 @@ test("„Puść w pętlę” puts the character into a loop at once and the row 
     const { view, held } = await viewOf(solvedAla());
     const ala = rowOf(root, "Ala");
     assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
-    fire(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"), "click");
+    await press(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"));
     assert.equal(
       byClass(ala, "team-member-loop")[0].textContent,
       "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
@@ -2681,7 +2704,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
     };
     const { view } = await viewOf(gathering);
     const ala = rowOf(root, "Ala");
-    fire(buttonNamed(ala, "Zatrzymaj"), "click");
+    await press(buttonNamed(ala, "Zatrzymaj"));
     assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
     assert.ok(!shown(buttonNamed(ala, "Zatrzymaj")));
     const [stopped] = byClass(ala, "team-member-stopped");
@@ -2694,7 +2717,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
     assert.ok(!shown(byClass(rowOf(root, "Ola"), "team-member-stopped")[0]));
 
     // The next start clears the line.
-    fire(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"), "click");
+    await press(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"));
     assert.ok(!shown(stopped));
     await inAct(() => view.dispose());
   });
@@ -2702,7 +2725,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
   await onPage(async ({ root }) => {
     const { view } = await viewOf(alaLoopingOlaFree());
     const ala = rowOf(root, "Ala");
-    fire(buttonNamed(ala, "Zatrzymaj"), "click");
+    await press(buttonNamed(ala, "Zatrzymaj"));
     assert.equal(
       byClass(ala, "team-member-stopped")[0].textContent,
       "Pętla zatrzymana",
@@ -2762,7 +2785,7 @@ test("a change of the chest redraws the chest alone: the rows, their lists and t
     assert.ok(heading().startsWith("Skrzynka 7/"));
 
     // Ola's start takes three sticks out of the chest.
-    fire(buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las"), "click");
+    await press(buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las"));
     assert.deepEqual(chestText(), ["patyk: 4"]);
     assert.ok(heading().startsWith("Skrzynka 4/"));
     assert.equal(rowOf(root, "Ala"), ala, "the row is the same element");
@@ -2841,14 +2864,14 @@ test("a game minute that ends the map run in a death is saved at once, settled",
       await startPage(held);
       await held.answer("currentAccount", ACCOUNT);
       await held.answer("loadSavedGame", saveOf(lastMinute(), 4));
-      fire(buttonNamed(root, "Wznów"), "click");
+      await press(buttonNamed(root, "Wznów"));
       await settle();
       await held.answer("saveGame", { kind: "saved", revision: 5 });
       assert.deepEqual(waitingCalls(held), []);
 
       // Five real seconds at 1× are five game minutes; the first of them ends in the death.
       now += 5_000;
-      mock.timers.tick(200);
+      await inAct(() => mock.timers.tick(200));
       await settle();
       const [sent] = argsOf(held, "saveGame");
       assert.equal(sent.basedOn, 5);
@@ -3056,7 +3079,7 @@ test("a failed save shows its line under the menu bar, outside the menu „Konto
     await held.answer("currentAccount", UNCONFIRMED_ACCOUNT);
     await held.answer("loadSavedGame", saveOf(passing(), 4));
     assert.equal(saveLine(root), null, "hidden while it says nothing");
-    fire(buttonNamed(root, "4×"), "click");
+    await press(buttonNamed(root, "4×"));
     await settle();
     await held.answer("saveGame", {
       kind: "failed",
@@ -3103,7 +3126,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     await startPage(held);
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", saveOf(passing(), 4));
-    fire(buttonNamed(root, "4×"), "click");
+    await press(buttonNamed(root, "4×"));
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
     assert.equal(gameShown(root), false);
@@ -3123,7 +3146,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
       "the loaded game waits for an act",
     );
 
-    fire(buttonNamed(root, "8×"), "click");
+    await press(buttonNamed(root, "8×"));
     await settle();
     assert.deepEqual(argsOf(held, "saveGame"), [
       submission({ ...passing(), paused: true, pace: 8 }, 6),
@@ -3137,7 +3160,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     await startPage(held);
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", saveOf(passing(), 4));
-    fire(buttonNamed(root, "4×"), "click");
+    await press(buttonNamed(root, "4×"));
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
     // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
@@ -3237,7 +3260,7 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
     await startPage(held);
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", saveOf(passing(), 4));
-    fire(buttonNamed(root, "4×"), "click");
+    await press(buttonNamed(root, "4×"));
     await settle();
     await held.answer("saveGame", { kind: "outdated" });
     assert.equal(gameShown(root), true, "the game stays");
@@ -3435,7 +3458,7 @@ test("„Zamknij” closes the whole section at once, saves, and focus stays on 
     const close = buttonNamed(reportSection(root), "Zamknij");
     close.focus();
     assert.equal(pageDocument().activeElement, close);
-    fire(close, "click");
+    await press(close);
     assert.ok(!shown(reportSection(root)));
     assert.deepEqual(waitingCalls(held), ["saveGame"]);
     assert.deepEqual(argsOf(held, "saveGame")[0].game.awayReport, []);
@@ -3461,7 +3484,7 @@ test("the report survives a reload, and a closed report stays closed after one",
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", saveOf(reported(), 3));
     assert.ok(shown(reportSection(root)));
-    fire(buttonNamed(reportSection(root), "Zamknij"), "click");
+    await press(buttonNamed(reportSection(root), "Zamknij"));
     const [sent] = argsOf(held, "saveGame");
     assert.deepEqual(sent.game.awayReport, []);
     const stored = { ok: true, value: { ...sent, revision: 4 } };
@@ -3948,7 +3971,7 @@ test("a game built again after a conflict stays on the screen the address names,
     const address = await reloadedAt(held, "#/programy", passing());
     assert.equal(shownScreen(root), "programs", "precondition");
     // Inside act: the edit changes a program, and the list of Programy redraws with React.
-    await press(buttonNamed(root, "Dodaj grupę"));
+    await press(buttonNamed(root, "+ dodaj grupę"));
     await held.answer("saveGame", { kind: "conflict" });
     await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
     assert.equal(shownScreen(root), "programs");
@@ -3969,7 +3992,7 @@ test("a game built again after a conflict stays on the screen the address names,
     );
     await follow(address, "#/postac/1");
     // Inside act: the edit redraws Postać, a screen in React.
-    await press(buttonNamed(root, "Dodaj grupę"));
+    await press(buttonNamed(root, "+ dodaj grupę"));
     await held.answer("saveGame", { kind: "conflict" });
     await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
     assert.equal(shownScreen(root), "character", "not the sign-in's screen");
@@ -4018,7 +4041,7 @@ test("the screen of a map run gives its program panel the map run it was given, 
     assert.equal(state.run.copy.programId, 1, "precondition: the state's copy");
     assert.equal(given.copy.programId, 2, "precondition: the given copy");
 
-    screen.update(state, given, []);
+    await inAct(() => screen.update(state, given, []));
     assert.equal(
       byClass(root, "copy-heading")[0].textContent,
       "Kopia: Program 2",
@@ -4111,7 +4134,7 @@ test("the address picks the program on the list and in the panel, an edit on Pro
         ["Program 2", "page"],
       ],
     );
-    await press(buttonNamed(programs, "Dodaj grupę"));
+    await press(buttonNamed(programs, "+ dodaj grupę"));
     await settle();
     const [edited] = held.calls.filter((call) => call.name === "saveGame");
     assert.equal(groupsOf(edited.args[0], 2), 2, "program 2 got the group");
@@ -4131,7 +4154,7 @@ test("the address picks the program on the list and in the panel, an edit on Pro
         ["Program 2", null],
       ],
     );
-    await press(buttonNamed(programs, "Dodaj grupę"));
+    await press(buttonNamed(programs, "+ dodaj grupę"));
     await settle();
     const [again] = held.calls.filter((call) => call.name === "saveGame");
     assert.equal(groupsOf(again.args[0], 1), 2, "`#/programy` is program 1");
@@ -4152,7 +4175,7 @@ test("the program each panel shows stays its own: a pick on the select list of P
     await follow(address, RUN_ADDRESS);
     const run = byClass(root, "run-screen")[0];
     await inAct(() => pickOn(listLabelled(run, "Program:"), "1"));
-    await press(buttonNamed(run, "Dodaj grupę"));
+    await press(buttonNamed(run, "+ dodaj grupę"));
     await settle();
     const [onRun] = held.calls.filter((call) => call.name === "saveGame");
     assert.equal(groupsOf(onRun.args[0], 1), 2, "Przejście edits program 1");
@@ -4160,7 +4183,7 @@ test("the program each panel shows stays its own: a pick on the select list of P
     await held.answer("saveGame", { kind: "saved", revision: 5 });
 
     await follow(address, "#/programy/2");
-    await press(buttonNamed(programsScreenOf(root), "Dodaj grupę"));
+    await press(buttonNamed(programsScreenOf(root), "+ dodaj grupę"));
     await settle();
     const [onPrograms] = held.calls.filter((call) => call.name === "saveGame");
     assert.equal(
@@ -4265,8 +4288,8 @@ test("after „Zakończ” the bar's „Programy” shows the program the copy b
     // rule „Zawsze → Eksploruj” it set out with fired.
     const rules = game.programs[1].program.groups[0].rules.length;
     assert.equal(countsOnProgramy(root).length, rules, "a count at each rule");
-    assert.match(countsOnProgramy(root)[0], /^[1-9][0-9]*×$/);
-    await press(buttonNamed(programsScreenOf(root), "Dodaj grupę"));
+    assert.match(countsOnProgramy(root)[0], /^Wykonano [1-9][0-9]*×$/);
+    await press(buttonNamed(programsScreenOf(root), "+ dodaj grupę"));
     await settle();
     const [edited] = argsOf(held, "saveGame");
     assert.equal(groupsOf(edited, 2), 2, "the panel edits „Program 2”");

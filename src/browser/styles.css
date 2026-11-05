@@ -639,6 +639,37 @@ header .save-line {
   color: var(--text-secondary);
 }
 
+/*
+ * The program's name above its trip plan and its rules on Programy: a name, so `text-strong` (D-40).
+ * The sentence of a waiting map run above it is the one `.program-run-note` draws.
+ */
+.program-title {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.program-panel .trip-plan {
+  margin-bottom: var(--space-m);
+}
+
+/*
+ * The rule list and, once a rule or a group is open, the rule panel at its right, each a block of its
+ * own that a narrower place sets one above the other (D-282): the columns of the layout are as wide as
+ * the place allows, and the rule list takes the whole line while no panel stands.
+ */
+.program-editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-m);
+  align-items: start;
+}
+
+.program-editor-layout.with-panel {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
 /* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */
 .program-switch {
   margin-bottom: var(--space-s);
