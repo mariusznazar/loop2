@@ -111,9 +111,10 @@ playwright-cli --raw run-code --filename .playwright-cli/send-state.js
 
    It answers `200 {"revision":…}`. On Playwright MCP, which takes no such file, give
    `browser_run_code_unsafe` the same function with the document pasted in as `saved`.
-5. `playwright-cli reload`. The team now holds „Agent”; click „Wyślij” at it and open the editor of
-   the map run: the action select list of „Dodaj regułę” holds „Uderz — patyk”, „Kopnij”, „Odskocz”
-   and „Obchód”.
+5. `playwright-cli reload`. The team now holds „Agent”; click „Wyślij” at it. The screen of the map
+   run stands, with the rule list; click „+ reguła” (or a rule's row) to open the rule panel, which
+   takes the place of the table of revealed tiles. Click the value of the field „Czynność”: its
+   pick holds the cells „Uderz — patyk”, „Kopnij”, „Odskocz” and „Obchód”.
 
 The page saves too, so send the document before the page does anything else to the save, and reload
 at once. A document the game refuses to load shows „Zapis był uszkodzony i nie dał się wczytać.” and
