@@ -83,6 +83,32 @@ export function tileList(state: GameState): TileList {
   return { columns, rows };
 }
 
+/**
+ * The line under the drawing of the game map (D-19, D-70): for the hovered tile, else the character's
+ * tile, „(col, row): patyk 12 · jagoda — · …” with the stock of each resource of the map as the tile's
+ * row of the table gives it. A tile not revealed gives its label alone, with nothing of its stock,
+ * and the state of a campfire stands in the table alone. A key that names no tile of the map run
+ * counts as none hovered. Null without a map run. Pure.
+ */
+export function tileLine(
+  state: GameState,
+  hovered: string | null,
+): string | null {
+  const run = state.run;
+  if (!run) return null;
+  const tile =
+    run.tiles.find((candidate) => tileKey(candidate) === hovered) ??
+    run.tiles.find((candidate) => sameHex(candidate.at, run.character.at));
+  if (!tile) return null;
+  const { columns, rows } = tileList(state);
+  const row = rows.find((candidate) => tileKey(candidate) === tileKey(tile));
+  if (!row) return tileLabel(tile);
+  const stock = columns.map(
+    (column, index) => `${column.name} ${row.cells[index]}`,
+  );
+  return `${row.label}: ${stock.join(SEPARATOR)}`;
+}
+
 /** The key that ties a tile of the drawing to its row in the list: „col,row”. */
 export function tileKey(tile: { col: number; row: number }): string {
   return `${tile.col},${tile.row}`;

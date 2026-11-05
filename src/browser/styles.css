@@ -1361,6 +1361,30 @@ header .save-line {
   color: var(--danger);
 }
 
+/*
+ * The world area of the screen of a map run (D-311): the scene at the top, a still picture drawn
+ * pixel-sharp at the size its width and height attributes give, with nothing drawn on it or over it
+ * (D-272); under the lines the drawing of the map and the line of a tile under it, in `text` as the
+ * numbers of a tile are content to read (D-19). The other parts keep the rules of their DOM modules.
+ */
+.scene {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.world-drawing {
+  margin-top: var(--space-m);
+}
+
+.tile-line {
+  margin: var(--space-xs) 0 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
 .terrain-panel {
   display: flex;
   flex-wrap: wrap;
