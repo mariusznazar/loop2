@@ -836,33 +836,33 @@ Loop2 adopts the styleguide template of its pinned the-way, with no departure, f
 
 ### D-39 — What do the signal colours of the browser view mean?
 
-In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel` and `highlight`.
+In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer;
-  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`;
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 10, Questions to settle, questions 2 and G
 
-*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision.
-*Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss.
+*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row.
+*Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss; a role of its own for each colour of the bar, two of them equal to colours of text — pairs of roles with equal values that drift apart when one of them changes.
 
 ### D-40 — What do the neutral roles of the browser view mean?
 
-In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, and `selected` that this is the one chosen in its group. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel` and `highlight`, and `text` is the text each of the three backgrounds is written with.
+In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged;
-  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b
+  - complies: the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`;
+  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 8 and 10, Questions to settle, questions 1 and 2
 
-*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename.
-*Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings.
+*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. Accepted with it: the backgrounds of the two rules are paler than loop's, so that the text on them keeps the contrast the product holds, and the dark bar is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar.
+*Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings; the rule that wins marked by `highlight` — that background already says that a row is marked or under the pointer; the backgrounds of the two rules in loop's colours on the page background — on the panel the row comes out darker than its surroundings, like a greenish hole; a dark bar of a value visible on every background, at least 3:1 — a clear grey bar at most rules, a busier program and a departure from loop.
 
 ### D-41 — What do the roles of the terrain grid and of keyboard focus mean?
 
@@ -881,7 +881,7 @@ In the browser view `character` means that here is the character and here it is 
 
 ### D-42 — Which accessibility requirements does the browser view keep?
 
-For now every screen of the browser view keeps three success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel` and `highlight`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so has `tile-revealed` against `tile-hidden`.
+For now every screen of the browser view keeps three success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so has `tile-revealed` against `tile-hidden`; `condition-unmet` has no threshold.
 
 - **Scope:** browser-view
 - **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-focus-visible
@@ -889,9 +889,9 @@ For now every screen of the browser view keeps three success criteria of WCAG 2.
 - **Verification:** invariants: design-token-contrast · browser-view-focus-outline. An agent compares a change with the decision:
   - complies: a review that judges a new screen's contrast and focus by the three criteria and nothing more of WCAG;
   - violates: a review that holds a change back for a success criterion of WCAG other than the three, without a change of this decision.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Czy prawo albo umowa wiąże dostępność interfejsu loop2?", "Q6. Jaki standard dostępności przyjmuje interfejs loop2?" and "Q8. Do jakiego kontrastu sprawdzenie trzyma każdą parę?"
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Czy prawo albo umowa wiąże dostępność interfejsu loop2?", "Q6. Jaki standard dostępności przyjmuje interfejs loop2?" and "Q8. Do jakiego kontrastu sprawdzenie trzyma każdą parę?" · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2, 8 and 10, Questions to settle, questions 1 and 2
 
-*Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component.
+*Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component. The dark bar of a program rule says that nothing is going on, so it is held to no threshold, while the green and the amber bar keep the threshold of the text roles they share a colour with.
 *Rejected:* the whole of WCAG 2.2 at level AA — more requirements than the product takes on for now.
 
 ### D-43 — What counts in the browser view as a value written in place of a design token?
@@ -2335,7 +2335,7 @@ carried out in that game minute, and the program rule stays in the program.
 *Rationale:* a program rule outside the repertoire is one the character cannot carry out yet, so
 the program goes past it as past an action that cannot be carried out, and the rest of the program
 acts; kept in the program, it acts once the repertoire holds what it names. Accepted with it: a
-program rule that does not act stands in the program with no sign of why.
+program rule outside the repertoire stands in the program amber with the reason that it lies outside it (D-308).
 *Rejected:* the simulation refusing a whole program that holds a program rule outside the
 character's repertoire — a program carried to another character or another archetype would stop
 whole.
@@ -6491,3 +6491,117 @@ pusty”.
 
 *Rationale:* an empty plan shown as its heading alone looks as though it has not loaded.
 *Rejected:* the heading alone — an empty plan looks as though it has not loaded.
+
+### D-308 — What state does a program rule show during a map run?
+
+During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the
+copy that wins now stands on the background `rule-winning` and the rule whose action is being carried
+out, where it is another rule, on the background `rule-running`, except that a row open to editing
+stands on `highlight` in their place, keeping its bar, and a row under the pointer keeps the background
+of its state. A rule whose condition holds and whose action cannot be carried out names the reason,
+such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning
+rule too, is green when the condition holds and it can start, a rule group when one of its rules can,
+amber when the condition holds and it cannot start, and dark when the condition does not hold. A rule
+outside the character's repertoire shows amber with that reason whether or not its condition holds,
+unless the condition of its rule group does not hold: the bar of a rule counts that condition too, so
+every rule of such a rule group shows dark, with no reason, and a rule group whose condition lies
+outside the repertoire counts as one whose condition does not hold.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-23 · derives from D-126 · derives from D-127
+- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
+  - complies: the rule that wins now on `rule-winning` with a green bar, and the same rule under the
+    pointer still on `rule-winning`; the same rule open to editing on `highlight` with its green
+    bar; a rule whose condition holds and which cannot start with an amber bar and „tu nie leży mech”
+    beside its action; the rules of a rule group whose condition does not hold with a dark bar and no
+    reason; a rule outside the repertoire amber with its reason though its own condition does not
+    hold; the same signs on the screen after a death, counted on the stopped minute
+  - violates: `highlight` under the pointer on the rule that wins; the background of its state kept on
+    an open row; a green bar at a rule that does not start now; a reason beside the dark bar of a rule
+    in a rule group that does not hold; signs beside a saved program opened during a map run, on
+    Programy or in an earning loop
+- **Origin:** stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 6, 8 and 10, Questions to settle, questions A, C, D, E, F, 5, 7 and 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, the entry „What state does a program rule show during a map run?”
+
+*Rationale:* the player does not know why rules the player expected to run do not run. The backgrounds
+say which rule goes next and which one runs, the bar says at a glance what can start in the whole
+program, as the game counts it, so green always means that a rule can start now and a rule that never
+starts shows at once, also where its condition lies outside the repertoire, and a rule the game did not
+reach shows by standing under the green one, so it needs no state of its own. The signs stay on the
+screen after the end, where the player asks why the map run ended, and a fix of the copy there shows at
+once whether a rule would start. Accepted with it: every action has to give a reason for refusing, the
+function that picks a rule has to judge the rules below the winner too, combat rules included, and to
+check the repertoire before the condition, a rule below the winner can show amber though the game did
+not reach it, amber keeps one exception, a rule outside the repertoire whose condition does not hold,
+and a rule group whose condition does not hold does not show which of its rules would start once it
+holds, unlike loop, a rule in a rule group that does not hold gives no warning of what will fail once
+the group holds, at the stopped minute after the end „wins now” names a rule that will not start, an
+open row shows no background of its state while it is open, and the pointer over a rule that wins or
+runs changes nothing in its look.
+*Rejected:* the count „0×” alone — it merges a rule not reached with a rule refused; four states with
+„not checked” below the winning rule — under the winning rule nothing shows what holds; the bar beside
+the word „nie sprawdzono” — two signs in one row, and a green bar beside that word reads as a
+contradiction; a rule outside the repertoire shown as any other, amber only when its condition holds —
+a rule that never starts looks like one waiting for its condition, and what „holds” means for a
+condition outside the repertoire needs settling; the bar of a rule counting its own condition alone, as
+in loop — a green bar at a rule that does not start now, and the function that picks a rule gives two
+answers; a reason beside the dark bar of a rule in a rule group that does not hold — a refusal at a
+rule the game does not reach, and a dark bar with an amber reason beside it; the signs gone at the end
+of a map run — after a death the program says nothing at the moment the player asks why; the state
+background kept on an open row and the opening marked by a frame — a new sign to be settled; the
+highlight winning under the pointer, as on an open row — the colours of state flicker as the pointer
+moves over the program, and in a map run it is not seen which rule wins when the pointer stands on it.
+
+### D-309 — What do the signs of a program rule show in the minutes of an attack?
+
+In the minutes of an attack, from the minute of the attack to the resolving of its turns, the signs of
+the copy show what the first combat turn would choose now, at the health of the mage and of the creature
+as they stand: the combat rule the turn would choose stands on the background `rule-winning`, no rule
+stands on `rule-running`, and an ordinary rule whose condition holds is amber with the reason „trwa
+walka”. Outside those minutes a combat rule whose condition holds is amber with the reason „tylko w
+walce”.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-308 · derives from D-140 · derives from D-141
+- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
+  - complies: in the minutes of an attack the combat rule „Kopnij” under „Zawsze” on `rule-winning`
+    and „Eksploruj” under „Zawsze” amber with „trwa walka”; outside them „Kopnij” under „Zawsze” amber
+    with „tylko w walce”
+  - violates: „Eksploruj” carrying a green bar in the minutes of an attack; no rule on `rule-winning`
+    in those minutes; a combat rule green outside combat
+- **Origin:** stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 3, and § Settlements to record, row 3
+
+*Rationale:* in a pause the player sees at once whether a rule just written would start the fight, and
+the words are those of loop. Accepted with it: the turns that follow may choose another rule, and
+outside a fight every combat rule whose condition holds shows amber.
+*Rejected:* no rule on the background of the rule that wins during the minutes of an attack — it is not
+seen what the mage will start the fight with, and the approved sentence gets an exception; the words
+„czynność walki — tylko przy napaści” and „trwa walka — działają tylko reguły walki” — a longer text in
+a narrow column.
+
+### D-310 — How does a program rule that cannot start name its reason?
+
+A program rule whose condition holds and whose action cannot be carried out names one reason: when
+there are several, the one of combat comes first, then the world and the backpack, and the nature
+energy last. The reason names the thing refused as the game writes it, in lower case and without a dot
+before the name, such as „tu nie leży mech”, „brakuje 4 × patyk”, „brak opału: patyk” and „brak energii
+natury: 7 z 10”, and the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed
+cell of the rule panel, or „jeszcze nieodkryte: {name}”.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-308 · derives from D-289
+- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
+  - complies: „Zbierz — Mech” on a tile with no moss reading „tu nie leży mech”; „Wytwórz — ognisko”
+    with two sticks in the backpack reading „brakuje 4 × patyk”; „Zapal — patyk” on a tile with
+    no revealed ground and with too little nature energy reading „kafelek nieodkryty”
+  - violates: two reasons beside one rule; „Tu nie leży · Mech”; „brak energii natury” given while the
+    tile is not revealed
+- **Origin:** stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 4 and 5, Questions to settle, question 4, and § Settlements to record, row 4
+
+*Rationale:* a rule that cannot start says why in the words of the game, one reason at a time, and the
+order is that of loop. Accepted with it: every new action needs a reason of its own later.
+*Rejected:* the reasons written by the cycle itself and judged by the human at the merge — corrections
+are a round of remarks before the merge, which the tasks that follow wait for; a table with the rows
+the human chooses to correct — the human corrected no row.
