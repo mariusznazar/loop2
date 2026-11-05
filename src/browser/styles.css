@@ -764,6 +764,125 @@ header .save-line {
   width: 4em;
 }
 
+/*
+ * The rule list of the program editor (styleguide rule "Program editor", D-292, D-293, D-295, D-297,
+ * D-93, D-279): the heading „sprawdzane od góry” and „zwiń wszystkie” above the groups. In a row the
+ * condition stands in `text-secondary`, the action in `text-strong` and the number, the time and the
+ * count in `text-label`; in a header the name stands in `text-strong`, the condition in
+ * `text-secondary` and the number of rules and the sum in `text-label`. A row or a header that is open
+ * or under the pointer stands on `highlight` with its text in `text`, the roles of its parts kept.
+ * Only the handle drags, which the browser does by its own drag (D-270).
+ */
+.rule-list-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.rule-list-heading {
+  margin: 0;
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.rule-list-group {
+  border-top: var(--frame-width) solid var(--divider);
+  padding: var(--space-s) 0;
+}
+
+.rule-list-header,
+.rule-list-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  padding: var(--space-2xs) var(--space-xs);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.rule-list-header:hover,
+.rule-list-header.open,
+.rule-list-row:hover,
+.rule-list-row.open {
+  background: var(--highlight);
+  color: var(--text);
+}
+
+.rule-list-name {
+  color: var(--text-strong);
+  font-weight: var(--font-weight-emphasis);
+}
+
+.rule-list-condition,
+.rule-condition {
+  color: var(--text-secondary);
+}
+
+.rule-list-number,
+.rule-list-size,
+.rule-list-count,
+.rule-number,
+.rule-time,
+.rule-count {
+  color: var(--text-label);
+}
+
+.rule-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--text-strong);
+}
+
+/* The arrows and „Usuń” of a row, the fold and „✕” of a header, at the end of the line. */
+.rule-list-controls {
+  display: inline-flex;
+  gap: var(--space-xs);
+  margin-left: auto;
+}
+
+.rule-list-rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rule-list-empty {
+  margin: 0;
+  padding: var(--space-2xs) var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.rule-list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-s);
+  margin-top: var(--space-xs);
+}
+
+.drag-handle {
+  color: var(--text-label);
+  cursor: grab;
+  user-select: none;
+}
+
+/*
+ * The drop line, where the dragged rule or group would land: its text „tu wyląduje” in `text-strong`
+ * and the line itself in the colour of that text (D-279). It lets the pointer through, so it does not
+ * take the drag's events from the row under it.
+ */
+.drop-line {
+  list-style: none;
+  color: var(--text-strong);
+  font-size: var(--font-size-label);
+  border-top: var(--bar-width) solid currentColor;
+  pointer-events: none;
+}
+
 .headquarters h2 {
   margin: 0 0 var(--space-s);
   font-size: var(--font-size-heading);
