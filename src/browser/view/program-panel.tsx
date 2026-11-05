@@ -1,12 +1,13 @@
 /**
- * The program panel in React (D-36, D-166 to D-174, D-180, D-282, D-288, D-295, D-302; task
- * edytor-programu, To do 1, 8 and 11). One panel serves the two screens that edit programs, behind the
- * boundary `createProgramPanel` that `createAccountCard` and `createProgramList` give the page: an
- * element of its own, a first render that is synchronous, `update(state, events)`, `showProgram` and
- * `dispose()`, called from an event handler or the continuation of an answer, never from render or an
- * effect. The panel holds the rule list and, beside it, the rule panel, the open rule a state of the
- * panel; where the screen places a host element for the rule panel (`placeRulePanel`), the panel draws it
- * there, through a portal of its own React tree, and tells the screen whether it stands. It asks the
+ * The program panel in React (D-36, D-166 to D-174, D-180, D-282, D-288, D-295, D-302, D-313; task
+ * edytor-programu, To do 1, 8 and 11; task ekran-przejscia, To do 7). One panel serves the two screens
+ * that edit programs, behind the boundary `createProgramPanel` that `createAccountCard` and
+ * `createProgramList` give the page: an element of its own, a first render that is synchronous,
+ * `update(state, events)`, `showProgram`, `addDiscoveredRule` and `dispose()`, called from an event
+ * handler or the continuation of an answer, never from render or an effect. The panel holds the rule
+ * list and, beside it, the rule panel, the open rule a state of the panel; where the screen places a
+ * host element for the rule panel (`placeRulePanel`), the panel draws it there, through a portal of
+ * its own React tree, and tells the screen whether it stands. It asks the
  * game for every change through `ProgramPanelControls` and never writes the game state. Which program it shows is the boundary's, changed by picking on the list and by the
  * operations of the game. The folding of rule groups is one memory of the page, `createFolding`, which
  * the page makes once and gives to both panels. Nothing runs when the module is imported.
@@ -35,9 +36,10 @@ import { ReactButton } from "./controls/react-button.js";
 import { ReactSelectList } from "./controls/react-select-list.js";
 import type { SelectOption } from "./controls/select-list.js";
 import { ReactTextField } from "./controls/react-text-field.js";
+import { discoveryRule } from "./discovery-rule.js";
 import { offeredItems } from "./program-editor.js";
 import { RuleListView, type RuleListTarget } from "./rule-list.js";
-import { RulePanelView } from "./rule-panel.js";
+import { RulePanelView, type RulePanelOpen } from "./rule-panel.js";
 import { TripPlanView } from "./trip-plan.js";
 
 /** What the panel shows: the copy of the map run, or a saved program by its number (D-165). */
@@ -135,6 +137,16 @@ export type ProgramPanel = {
    * unplaced, the panel draws the rule panel beside its rows.
    */
   placeRulePanel(host: HTMLElement, onOpen: (open: boolean) => void): void;
+  /**
+   * „Dodaj regułę z tym” (D-313), for the screen of a map run to call from an event handler: the rule
+   * the discovery held by the game state last given writes (`discoveryRule`) goes to the copy through
+   * `editCopy`, as every edit of the copy goes, so the streak goes to zero (D-131); the copy is shown
+   * where a saved program was, and the rule panel opens on the new rule and the field the discovery
+   * filled, in the host the screen placed, telling it through `onOpen`, with the focus on that field.
+   * Where the game holds no discovery or the copy no rule group, and in the panel of Programy, it does
+   * nothing.
+   */
+  addDiscoveredRule(): void;
   /** Unmounts the panel and takes it out of the page. */
   dispose(): void;
 };
@@ -261,8 +273,11 @@ type NamePurpose =
 /** The name field open: for what, the text in it, and the program shown it was opened under. */
 type Naming = { key: string; purpose: NamePurpose; value: string };
 
-/** The row or header whose rule panel stands open, with the program shown it was opened under. */
-type OpenRule = { key: string; target: RuleListTarget };
+/**
+ * The row or header whose rule panel stands open, with the program shown it was opened under; the
+ * field it opened on, where one other than the condition was asked for.
+ */
+type OpenRule = { key: string; target: RulePanelOpen };
 
 /** What the view asks of the boundary, which holds the program shown and the game state. */
 type PanelActions = {
@@ -289,6 +304,11 @@ type ProgramPanelViewProps = {
   ruleHost?: HTMLElement | null;
   /** Told, after each commit, whether a rule or a group stands open in the rule panel. */
   onRuleOpen?: (open: boolean) => void;
+  /**
+   * A rule the boundary asks to open, „Dodaj regułę z tym”'s; each request a new object, opened at
+   * the first draw that gives it, as a click on its row would open it.
+   */
+  opening?: RulePanelOpen | null;
 };
 
 /**
@@ -305,10 +325,12 @@ export function ProgramPanelView({
   folding,
   ruleHost = null,
   onRuleOpen,
+  opening = null,
 }: ProgramPanelViewProps) {
   const key = shownValue(shown);
   const [namingState, setNaming] = useState<Naming | null>(null);
   const [openState, setOpen] = useState<OpenRule | null>(null);
+  const [openingSeen, setOpeningSeen] = useState(opening);
   const memory = useSyncExternalStore(folding.subscribe, folding.snapshot);
   const list = useRef<HTMLSelectElement>(null);
   const renameButton = useRef<HTMLButtonElement>(null);
@@ -358,6 +380,14 @@ export function ProgramPanelView({
     setNaming(null);
   }
   let open = openState;
+  // A request of the boundary opens its rule under the program shown, once.
+  if (opening !== openingSeen) {
+    setOpeningSeen(opening);
+    if (opening !== null) {
+      open = { key, target: opening };
+      setOpen(open);
+    }
+  }
   if (open !== null && open.key !== key) {
     open = null;
     setOpen(null);
@@ -651,6 +681,8 @@ export function createProgramPanel(
   let disposed = false;
   let ruleHost: HTMLElement | null = null;
   let onRuleOpen: ((open: boolean) => void) | undefined;
+  // The rule „Dodaj regułę z tym” asked the view to open last; null until it asks.
+  let opening: RulePanelOpen | null = null;
 
   function draw(): void {
     if (disposed || state === null) return;
@@ -665,6 +697,7 @@ export function createProgramPanel(
           folding={folding}
           ruleHost={ruleHost}
           onRuleOpen={onRuleOpen}
+          opening={opening}
         />,
       );
     });
@@ -734,6 +767,19 @@ export function createProgramPanel(
     placeRulePanel(host: HTMLElement, onOpen: (open: boolean) => void): void {
       ruleHost = host;
       onRuleOpen = onOpen;
+      draw();
+    },
+    addDiscoveredRule(): void {
+      if (mode !== "run" || state === null) return;
+      // Text typed and not yet committed goes first to the program it was typed into, so the rule
+      // is built on the copy that holds it.
+      commitEditor();
+      const found = discoveryRule(state);
+      if (found === null) return;
+      shown = { kind: "copy" };
+      // A new object at each call, which the view opens once, at the draw that first gives it.
+      opening = found.open;
+      controls.editCopy(found.program);
       draw();
     },
     dispose(): void {
