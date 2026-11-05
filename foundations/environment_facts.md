@@ -38,10 +38,10 @@ The test server's host reports zero total swap in `/proc/meminfo`.
 
 ## game-icons-licence
 
-The game-icons/icons repository provides the icons of its contributors Delapouite and Lorc under
-Creative Commons 3.0 BY.
+The game-icons/icons repository provides the icons of its contributors Delapouite, Lorc, Felbrigg
+and Skoll under Creative Commons 3.0 BY.
 
-- **Source:** https://raw.githubusercontent.com/game-icons/icons/82d948812bfe3f269ef8f731dcdb07b08160edc4/license.txt § first line — "Icons provided under the Creative Commons 3.0 BY or CC0 if mentioned below." · § list of contributors — "Lorc, http://lorcblog.blogspot.com" · § list of contributors — "Delapouite, http://delapouite.com"; read 2026-10-24
+- **Source:** https://raw.githubusercontent.com/game-icons/icons/82d948812bfe3f269ef8f731dcdb07b08160edc4/license.txt § first line — "Icons provided under the Creative Commons 3.0 BY or CC0 if mentioned below." · § list of contributors — "Lorc, http://lorcblog.blogspot.com" · § list of contributors — "Delapouite, http://delapouite.com" · § list of contributors — "Felbrigg, http://blackdogofdoom.blogspot.co.uk" · § list of contributors — "Skoll"; read 2026-11-05
 
 ## cc-by-3-adaptation-credit
 
@@ -90,6 +90,72 @@ The page of Delapouite's icon `flax` on game-icons.net names the icon "Flax icon
 The page of Lorc's icon `campfire` on game-icons.net names the icon "Campfire icon".
 
 - **Source:** https://game-icons.net/1x1/lorc/campfire.html (archived: https://web.archive.org/web/20260621235751/https://game-icons.net/1x1/lorc/campfire.html, 2026-06-21) § heading — "Campfire icon"; read 2026-10-24
+
+## game-icons-binoculars-title
+
+The page of Delapouite's icon `binoculars` on game-icons.net names the icon "Binoculars icon".
+
+- **Source:** https://game-icons.net/1x1/delapouite/binoculars.html (archived: https://web.archive.org/web/20260801161155/https://game-icons.net/1x1/delapouite/binoculars.html, 2026-08-01) § heading — "Binoculars icon"; read 2026-11-05
+
+## game-icons-hiking-title
+
+The page of Delapouite's icon `hiking` on game-icons.net names the icon "Hiking icon".
+
+- **Source:** https://game-icons.net/1x1/delapouite/hiking.html (archived: https://web.archive.org/web/20260715194452/https://game-icons.net/1x1/delapouite/hiking.html, 2026-07-15) § heading — "Hiking icon"; read 2026-11-05
+
+## game-icons-direction-sign-title
+
+The page of Delapouite's icon `direction-sign` on game-icons.net names the icon "Direction sign icon".
+
+- **Source:** https://game-icons.net/1x1/delapouite/direction-sign.html (archived: https://web.archive.org/web/20250822190721/https://game-icons.net/1x1/delapouite/direction-sign.html, 2025-08-22) § heading — "Direction sign icon"; read 2026-11-05
+
+## game-icons-grab-title
+
+The page of Lorc's icon `grab` on game-icons.net names the icon "Grab icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/grab.html (archived: https://web.archive.org/web/20260705130601/https://game-icons.net/1x1/lorc/grab.html, 2026-07-05) § heading — "Grab icon"; read 2026-11-05
+
+## game-icons-claw-hammer-title
+
+The page of Lorc's icon `claw-hammer` on game-icons.net names the icon "Claw hammer icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/claw-hammer.html (archived: https://web.archive.org/web/20251002131642/https://game-icons.net/1x1/lorc/claw-hammer.html, 2025-10-02) § heading — "Claw hammer icon"; read 2026-11-05
+
+## game-icons-match-tip-title
+
+The page of Lorc's icon `match-tip` on game-icons.net names the icon "Match tip icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/match-tip.html (archived: https://web.archive.org/web/20251212064815/https://game-icons.net/1x1/lorc/match-tip.html, 2025-12-12) § heading — "Match tip icon"; read 2026-11-05
+
+## game-icons-logging-title
+
+The page of Skoll's icon `logging` on game-icons.net names the icon "Logging icon".
+
+- **Source:** https://game-icons.net/1x1/skoll/logging.html (archived: https://web.archive.org/web/20250418031239/https://game-icons.net/1x1/skoll/logging.html, 2025-04-18) § heading — "Logging icon"; read 2026-11-05
+
+## game-icons-meal-title
+
+The page of Delapouite's icon `meal` on game-icons.net names the icon "Meal icon".
+
+- **Source:** https://game-icons.net/1x1/delapouite/meal.html (archived: https://web.archive.org/web/20250808200257/https://game-icons.net/1x1/delapouite/meal.html, 2025-08-08) § heading — "Meal icon"; read 2026-11-05
+
+## game-icons-deadly-strike-title
+
+The page of Lorc's icon `deadly-strike` on game-icons.net names the icon "Deadly strike icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/deadly-strike.html (archived: https://web.archive.org/web/20260519184532/https://game-icons.net/1x1/lorc/deadly-strike.html, 2026-05-19) § heading — "Deadly strike icon"; read 2026-11-05
+
+## game-icons-boot-kick-title
+
+The page of Lorc's icon `boot-kick` on game-icons.net names the icon "Boot kick icon".
+
+- **Source:** https://game-icons.net/1x1/lorc/boot-kick.html (archived: https://web.archive.org/web/20260512011143/https://game-icons.net/1x1/lorc/boot-kick.html, 2026-05-12) § heading — "Boot kick icon"; read 2026-11-05
+
+## game-icons-dodge-title
+
+The page of Felbrigg's icon `dodge` on game-icons.net names the icon "Dodge icon".
+
+- **Source:** https://game-icons.net/1x1/felbrigg/dodge.html (archived: https://web.archive.org/web/20260121105032/https://game-icons.net/1x1/felbrigg/dodge.html, 2026-01-21) § heading — "Dodge icon"; read 2026-11-05
 
 ## eslint-recommended-rules
 
