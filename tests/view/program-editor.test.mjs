@@ -1,5 +1,7 @@
-// The program editor's commit rules (spec section 5, program panel; choice C12): pure functions,
-// tested without a browser. Importing the module must not touch the DOM.
+// The pure rules of the program editor (spec section 5, program panel; choice C12), tested without a
+// browser. Importing the module must not touch the DOM. The DOM editor that drew them is gone (task
+// edytor-programu, slice 13): the rule list, the rule panel and the program panel draw them now, and
+// their cases stand in rule-editor.test.mjs and program-panel.test.mjs.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ACTION_GROUPS, ACTIONS } from "../../dist/browser/sim/data/actions.js";
@@ -10,9 +12,7 @@ import {
 import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
-  advanceMinutes,
   createCharacter,
-  end,
   newGame,
   send,
   setProgram,
@@ -21,7 +21,6 @@ import {
   addGroup,
   renameGroup,
   removeGroup,
-  moveGroup,
   dropRule,
   actionPick,
   actionSentence,
@@ -33,7 +32,6 @@ import {
   conditionSentence,
   conditionTargetPick,
   countText,
-  createProgramEditor,
   dropGroup,
   fieldAfter,
   focusAfter,
@@ -41,7 +39,6 @@ import {
   groupSummary,
   moveRule,
   offeredActionKinds,
-  offeredConditionKinds,
   offeredItems,
   offeredResources,
   PICK_REASONS,
@@ -51,7 +48,6 @@ import {
   ruleFields,
   ruleNumber,
   ruleSentence,
-  showFieldRange,
   withActionKind,
   withActionResource,
   withConditionItem,
@@ -119,11 +115,6 @@ function heldProgram(state) {
     : state.run.copy.program;
 }
 
-/** Shows `program` (default: the only program of the list) with the state's counts, as the panel does outside a map run. */
-function show(editor, state, program = state.programs[0].program) {
-  editor.update(state, program, state.ruleCounts);
-}
-
 // Task grupy-regul-i-liczniki, To do 3–4 (Mariusz, 2026-10-24); D-90 and D-93.
 // Catches reused numbers, lost groups, insertion before removal and counts tied to position.
 test("groups append with monotonic numbers through rename and deletion, including the last group", () => {
@@ -156,23 +147,6 @@ test("groups append with monotonic numbers through rename and deletion, includin
     );
   }
   assert.deepEqual(initial, newGame().programs[0].program);
-});
-
-test("group arrows move the whole group and leave the edges unchanged", () => {
-  const input = addGroup(THREE);
-  const snapshot = copy(input);
-  const moved = moveGroup(input, 1, 1);
-  assert.ok(moved);
-  assert.deepEqual(
-    moved.groups.map((group) => group.id),
-    [2, 1],
-  );
-  assert.deepEqual(moved.groups[1].rules, THREE.groups[0].rules);
-  assert.deepEqual(moveGroup(moved, 1, -1), input);
-  assert.equal(moveGroup(input, 1, -1), null);
-  assert.equal(moveGroup(input, 2, 1), null);
-  assert.equal(moveGroup(input, 99, 1), null);
-  assert.deepEqual(input, snapshot);
 });
 
 test("group conditions offer the same kinds and editable fields while preserving rules and counts", () => {
@@ -299,132 +273,6 @@ test("importing the editor touches no DOM: Node has no document and the import s
   assert.equal(typeof addRule, "function");
 });
 
-/** Only the DOM operations used by the editor. Real events/focus are checked in the browser. */
-function editorDocument() {
-  return {
-    createElement(tag) {
-      return {
-        tag,
-        children: [],
-        value: "",
-        textContent: "",
-        hidden: false,
-        className: "",
-        classList: { add() {} },
-        attributes: {},
-        listeners: {},
-        setAttribute(name, value) {
-          this.attributes[name] = value;
-        },
-        addEventListener(type, listener) {
-          this.listeners[type] = listener;
-        },
-        focus() {},
-        append(...items) {
-          this.children.push(...items);
-        },
-        replaceChildren(...items) {
-          this.children = items;
-        },
-        get options() {
-          return this.children;
-        },
-      };
-    },
-  };
-}
-
-function descendants(element) {
-  return [element, ...element.children.flatMap(descendants)];
-}
-
-test("count-only refresh changes count text without writing field values or replacing controls", () => {
-  const savedDocument = globalThis.document;
-  const savedOption = globalThis.Option;
-  globalThis.document = editorDocument();
-  globalThis.Option = class {
-    constructor(text, value) {
-      this.textContent = text;
-      this.value = value;
-      this.children = [];
-    }
-  };
-  try {
-    const program = structuredClone(THREE);
-    program.groups[0].rules[1].condition = {
-      kind: "itemBelow",
-      item: "stick",
-      value: 2,
-    };
-    const state = createCharacter(
-      setProgram(newKnowingGame(), program).state,
-      "Ala",
-    ).state;
-    const editor = createProgramEditor(() =>
-      assert.fail("count update committed a program"),
-    );
-    show(editor, state);
-    const elements = descendants(editor.element);
-    const counts = elements.filter(
-      (element) => element.className === "rule-count",
-    );
-    assert.equal(counts.length, 3);
-    assert.ok(
-      counts.every((count) => count.hidden && count.textContent === ""),
-    );
-    const fields = elements.filter((element) =>
-      ["input", "select"].includes(element.tag),
-    );
-    const number = fields.filter((field) => field.type === "number")[2];
-    number.value = "3e";
-    const name = fields.find((field) => field.type === "text");
-    name.value = "Uncommitted group name";
-    const originalValues = fields.map((field) => field.value);
-    for (const field of fields) {
-      const value = field.value;
-      Object.defineProperty(field, "value", {
-        get: () => value,
-        set: () => {
-          assert.fail("count-only refresh wrote a field value");
-        },
-      });
-    }
-    for (const element of elements) {
-      element.replaceChildren = () =>
-        assert.fail("count-only refresh replaced children");
-      element.focus = () => assert.fail("count-only refresh changed focus");
-    }
-    const running = send(state, SENT, 1760000000000).state;
-    editor.updateCounts(running.ruleCounts);
-    assert.deepEqual(
-      counts.map((count) => count.textContent),
-      ["1×", "0×", "0×"],
-    );
-    assert.ok(counts.every((count) => !count.hidden));
-    const later = advanceMinutes(running, 20).state;
-    editor.updateCounts(later.ruleCounts);
-    assert.deepEqual(
-      counts.map((count) => count.textContent),
-      ["1×", "1×", "0×"],
-    );
-    editor.updateCounts(end(later).state.ruleCounts);
-    assert.deepEqual(
-      counts.map((count) => count.textContent),
-      ["1×", "1×", "0×"],
-    );
-    assert.deepEqual(
-      fields.map((field) => field.value),
-      originalValues,
-    );
-    assert.deepEqual(descendants(editor.element), elements);
-  } finally {
-    if (savedDocument === undefined) delete globalThis.document;
-    else globalThis.document = savedDocument;
-    if (savedOption === undefined) delete globalThis.Option;
-    else globalThis.Option = savedOption;
-  }
-});
-
 test("the number field: empty or not a number keeps the previous value and commits nothing", () => {
   for (const text of [
     "",
@@ -544,32 +392,6 @@ test("the number field: a temperature is clamped to 30.0–37.0", () => {
     value: 30,
     commit: false,
   });
-});
-
-test("the number field's range and step follow the condition kind; a kind with no number leaves them", () => {
-  const input = { min: "", max: "", step: "" };
-  showFieldRange(input, "temperatureBelow");
-  assert.deepEqual(input, { min: "30", max: "37", step: "0.1" });
-  showFieldRange(input, "hereBelow");
-  assert.deepEqual(input, { min: "0", max: "50", step: "1" });
-  showFieldRange(input, "satietyBelow");
-  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
-  showFieldRange(input, "campfireLeftBelow");
-  assert.deepEqual(input, { min: "0", max: "120", step: "1" });
-  // Task plomyk, To do 5: from 0 to 100 by 1.
-  showFieldRange(input, "natureEnergyBelow");
-  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
-  showFieldRange(input, "campfireLeftBelow");
-  assert.deepEqual(input, { min: "0", max: "120", step: "1" });
-  showFieldRange(input, "healthBelow");
-  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
-  showFieldRange(input, "opponentHealthBelow");
-  assert.deepEqual(input, { min: "0", max: "100", step: "1" });
-  showFieldRange(input, "itemBelow");
-  assert.deepEqual(input, { min: "0", max: "50", step: "1" });
-  showFieldRange(input, "always");
-  showFieldRange(input, "awayFromCampfire");
-  assert.deepEqual(input, { min: "0", max: "50", step: "1" });
 });
 
 test("„Dodaj regułę” appends a fresh „Zawsze → Eksploruj” to the named group", () => {
@@ -882,17 +704,12 @@ const AFTER_FIRST_CHILL = {
 };
 const gameKnowing = (understanding) => ({ ...newGame(), understanding });
 
-test("the editor's lists are the repertoire: a new game offers „Zawsze” alone and no action, the first chill adds three", () => {
+test("the offer is the repertoire: a new game offers no action, no resource and no item, the first chill adds two actions", () => {
   const fresh = newGame();
-  assert.deepEqual(offeredConditionKinds(fresh), ["always"]);
   assert.deepEqual(offeredActionKinds(fresh), []);
   assert.deepEqual(offeredResources(fresh), []);
   assert.deepEqual(offeredItems(fresh), []);
   const chilled = gameKnowing(AFTER_FIRST_CHILL);
-  assert.deepEqual(offeredConditionKinds(chilled), [
-    "always",
-    "temperatureBelow",
-  ]);
   assert.deepEqual(offeredActionKinds(chilled), ["explore", "wander"]);
 });
 
@@ -923,7 +740,6 @@ test("an Understanding that holds everything gives lists of every action and con
     offeredActionKinds(everything),
     Object.keys(ACTIONS).filter((kind) => kind !== "patrol"),
   );
-  assert.deepEqual(offeredConditionKinds(everything), Object.keys(CONDITIONS));
 });
 
 test("a condition switching to „Zapas poniżej” takes the first of the offered items; with none offered nothing is committed", () => {
@@ -940,156 +756,8 @@ test("a condition switching to „Zapas poniżej” takes the first of the offer
   );
 });
 
-/** Runs `body` with the editor's document model installed, restoring the globals after. */
-function withEditorDocument(body) {
-  const savedDocument = globalThis.document;
-  const savedOption = globalThis.Option;
-  globalThis.document = editorDocument();
-  globalThis.Option = class {
-    constructor(text, value) {
-      this.textContent = text;
-      this.value = value;
-      this.children = [];
-    }
-  };
-  try {
-    body();
-  } finally {
-    if (savedDocument === undefined) delete globalThis.document;
-    else globalThis.document = savedDocument;
-    if (savedOption === undefined) delete globalThis.Option;
-    else globalThis.Option = savedOption;
-  }
-}
-
-const selectsLabelled = (editor, label) =>
-  descendants(editor.element).filter(
-    (element) => element.attributes?.["aria-label"] === label,
-  );
-const optionValues = (select) => select.children.map((option) => option.value);
-
-test("the existing condition picker creates both combat health conditions with their defaults", () => {
-  withEditorDocument(() => {
-    const committed = [];
-    const known = gameKnowing({
-      actions: ["explore"],
-      conditions: ["always", "healthBelow", "opponentHealthBelow"],
-      items: [],
-      trees: [],
-      creatures: [],
-    });
-    const editor = createProgramEditor((program) => committed.push(program));
-    show(editor, known, THREE);
-
-    for (const [kind, expected] of [
-      ["healthBelow", { kind: "healthBelow", value: 50 }],
-      ["opponentHealthBelow", { kind: "opponentHealthBelow", value: 10 }],
-    ]) {
-      const [condition] = selectsLabelled(editor, "Warunek grupy");
-      assert.ok(optionValues(condition).includes(kind));
-      condition.value = kind;
-      condition.listeners.change();
-      assert.deepEqual(committed.at(-1).groups[0].condition, expected);
-      show(editor, known, committed.at(-1));
-    }
-  });
-});
-
-const addRuleButtons = (editor) =>
-  descendants(editor.element).filter(
-    (element) =>
-      element.tag === "button" && element.textContent === "Dodaj regułę",
-  );
-
-test("a new game's editor offers „Zawsze” alone and a disabled „Dodaj regułę”; after the first chill it offers the three and adds „Zawsze → Eksploruj”", () => {
-  withEditorDocument(() => {
-    const committed = [];
-    const editor = createProgramEditor((program) => committed.push(program));
-    show(editor, newGame());
-    const [groupCondition] = selectsLabelled(editor, "Warunek grupy");
-    assert.deepEqual(optionValues(groupCondition), ["always"]);
-    const [add] = addRuleButtons(editor);
-    assert.equal(add.disabled, true);
-
-    show(editor, gameKnowing(AFTER_FIRST_CHILL));
-    const [chilledCondition] = selectsLabelled(editor, "Warunek grupy");
-    assert.deepEqual(optionValues(chilledCondition), [
-      "always",
-      "temperatureBelow",
-    ]);
-    const [enabled] = addRuleButtons(editor);
-    assert.equal(enabled.disabled, false);
-    enabled.listeners.click();
-    assert.equal(committed.length, 1);
-    assert.deepEqual(committed[0].groups[0].rules, [ALWAYS_EXPLORE]);
-
-    show(editor, gameKnowing(AFTER_FIRST_CHILL), committed[0]);
-    const [action] = selectsLabelled(editor, "Akcja");
-    assert.deepEqual(optionValues(action), ["explore", "wander"]);
-    const [condition] = selectsLabelled(editor, "Warunek");
-    assert.deepEqual(optionValues(condition), ["always", "temperatureBelow"]);
-  });
-});
-
-test("a rule holding a kind or a target outside the lists still shows it, after the lists", () => {
-  withEditorDocument(() => {
-    const editor = createProgramEditor(() => assert.fail("committed"));
-    show(
-      editor,
-      gameKnowing({
-        actions: ["explore"],
-        conditions: ["always"],
-        items: ["stick"],
-        trees: [],
-        creatures: [],
-      }),
-      THREE,
-    );
-    const [first, second, third] = selectsLabelled(editor, "Warunek");
-    assert.deepEqual(optionValues(first), ["always"]);
-    assert.deepEqual(optionValues(second), ["always", "hereBelow"]);
-    assert.equal(second.value, "hereBelow");
-    assert.deepEqual(optionValues(third), ["always"]);
-    const [, wander, walk] = selectsLabelled(editor, "Akcja");
-    assert.deepEqual(optionValues(wander), ["explore", "wander"]);
-    assert.equal(wander.value, "wander");
-    assert.deepEqual(optionValues(walk), ["explore", "walkTo"]);
-    const [, berry] = selectsLabelled(editor, "Zasób warunku");
-    assert.deepEqual(optionValues(berry), ["stick", "berry"]);
-    assert.equal(berry.value, "berry");
-    const [, , moss] = selectsLabelled(editor, "Zasób akcji");
-    assert.deepEqual(optionValues(moss), ["stick", "moss"]);
-  });
-});
-
-test("the item list of „Zapas poniżej” offers the backpack items of the Understanding, and a held item outside it still shows", () => {
-  withEditorDocument(() => {
-    const editor = createProgramEditor(() => assert.fail("committed"));
-    const program = structuredClone(THREE);
-    program.groups[0].rules[0].condition = {
-      kind: "itemBelow",
-      item: "stick",
-      value: 2,
-    };
-    show(
-      editor,
-      gameKnowing({
-        actions: ["explore"],
-        conditions: ["always", "itemBelow"],
-        items: ["fiber", "campfire", "berry"],
-        trees: [],
-        creatures: [],
-      }),
-      program,
-    );
-    const [first] = selectsLabelled(editor, "Przedmiot warunku");
-    assert.deepEqual(optionValues(first), ["berry", "fiber", "stick"]);
-    assert.equal(first.value, "stick");
-  });
-});
-
-// Review finding I-1: a kind that names a target is no choice while no target is offered, since the
-// edit would commit nothing and the select would show a rule the program does not hold.
+// Review finding I-1: an action that names a resource is no choice while no resource is offered,
+// since the edit would commit nothing.
 const NO_TARGETS = {
   actions: ["explore", "wander", "walkTo", "gather"],
   conditions: ["always", "hereBelow", "itemBelow"],
@@ -1098,10 +766,9 @@ const NO_TARGETS = {
   creatures: [],
 };
 
-test("kinds that name a resource or an item are not offered while the Understanding holds no target for them", () => {
+test("actions that name a resource are not offered while the Understanding holds no resource for them", () => {
   const state = gameKnowing(NO_TARGETS);
   assert.deepEqual(offeredActionKinds(state), ["explore", "wander"]);
-  assert.deepEqual(offeredConditionKinds(state), ["always"]);
   const resourceOnly = gameKnowing({ ...NO_TARGETS, items: ["moss"] });
   assert.deepEqual(offeredActionKinds(resourceOnly), [
     "explore",
@@ -1109,22 +776,6 @@ test("kinds that name a resource or an item are not offered while the Understand
     "walkTo",
     "gather",
   ]);
-  assert.deepEqual(offeredConditionKinds(resourceOnly), [
-    "always",
-    "hereBelow",
-    "itemBelow",
-  ]);
-});
-
-test("with no target offered the selects list only choices that commit: the rule's kind stays the one shown", () => {
-  withEditorDocument(() => {
-    const editor = createProgramEditor(() => assert.fail("committed"));
-    show(editor, gameKnowing(NO_TARGETS), THREE);
-    const [, , action] = selectsLabelled(editor, "Akcja");
-    assert.deepEqual(optionValues(action), ["explore", "wander", "walkTo"]);
-    const [condition] = selectsLabelled(editor, "Warunek");
-    assert.deepEqual(optionValues(condition), ["always"]);
-  });
 });
 
 test("focus after a structural edit: same button in the moved rule's row, next „Usuń” or „Dodaj regułę”, new condition", () => {

@@ -10,6 +10,13 @@ export type TerrainPanel = {
   element: HTMLElement;
   /** Draws the game state's map run; skips the redraw while the map run is the same object. */
   update(state: GameState): void;
+  /**
+   * The place beside the drawing where the rule panel stands while a rule or a group is open, empty
+   * and hidden until `showRulePanel(true)`; the program panel draws the rule panel into it.
+   */
+  ruleHost: HTMLElement;
+  /** Shows `ruleHost` in the place of the table of revealed tiles, or the table again. */
+  showRulePanel(open: boolean): void;
 };
 
 function svgElement<K extends keyof SVGElementTagNameMap>(
@@ -23,7 +30,9 @@ function svgElement<K extends keyof SVGElementTagNameMap>(
 }
 
 /**
- * Builds the terrain panel: the drawing of the map run and, beside it, the list of revealed tiles.
+ * Builds the terrain panel: the drawing of the map run and, beside it, the list of revealed tiles,
+ * which gives its place to the rule panel's host while a rule or a group is open (D-166, task
+ * edytor-programu, question 3); the drawing stays.
  * The drawing is a picture, not a control: it has no click handling, and hovering is its only
  * interaction — a hovered tile highlights its row in the list and a hovered row its tile. The
  * hovered tile's key is the only state the view keeps, and it survives redraws. A campfire shows on
@@ -39,7 +48,10 @@ export function createTerrainPanel(): TerrainPanel {
   let tilePoints = new Map<string, string>();
   let hovered: string | null = null;
   const list = createTileListView((key) => setHovered(key));
-  element.append(drawing, list.element);
+  const ruleHost = document.createElement("div");
+  ruleHost.className = "rule-panel-host";
+  ruleHost.hidden = true;
+  element.append(drawing, list.element, ruleHost);
 
   drawing.addEventListener("pointerover", (event) => {
     const tile =
@@ -129,6 +141,11 @@ export function createTerrainPanel(): TerrainPanel {
   let drawnRun: MapRun | null | undefined;
   return {
     element,
+    ruleHost,
+    showRulePanel(open: boolean): void {
+      list.element.hidden = open;
+      ruleHost.hidden = !open;
+    },
     update(state: GameState): void {
       // A clock tick that passes no whole game minute keeps the map run as it was.
       if (state.run === drawnRun) return;

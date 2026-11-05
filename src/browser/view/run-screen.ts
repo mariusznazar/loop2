@@ -36,12 +36,13 @@ export type RunScreen = {
 
 /**
  * Builds the screen once: `panel` is the program panel of this screen, which the screen places
- * first and updates with its map run (the game view holds a second program panel, for Programy),
+ * first, gives the place of the table of revealed tiles for its rule panel while one is open, and
+ * updates with its map run (the game view holds a second program panel, for Programy),
  * and the status row's controls go to the game view, which turns each into a simulation call. The
  * elements are made once and updated in place, so a button keeps focus across clock ticks.
  */
 export function createRunScreen(
-  panel: Pick<ProgramPanel, "element" | "update">,
+  panel: Pick<ProgramPanel, "element" | "update" | "placeRulePanel">,
   controls: StatusRowControls,
 ): RunScreen {
   const element = document.createElement("section");
@@ -61,6 +62,10 @@ export function createRunScreen(
   const tripLines = createTripLines();
   // The terrain panel draws the map run and lists its revealed tiles.
   const terrainPanel = createTerrainPanel();
+  // While a rule or a group is open the rule panel stands beside the drawing, in the table's place.
+  panel.placeRulePanel(terrainPanel.ruleHost, (open) =>
+    terrainPanel.showRulePanel(open),
+  );
   runPanel.append(
     statusRow.element,
     statusRow.discovery,

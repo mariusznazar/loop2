@@ -4052,6 +4052,85 @@ test("the screen of a map run gives its program panel the map run it was given, 
   });
 });
 
+// Task edytor-programu, To do 3 and question 3, D-282. Catches the rule panel standing under the rows
+// of the map run's screen instead of in the place of the table of revealed tiles, the table standing
+// beside an open panel, the drawing leaving with the table, and the table not coming back at „✕”.
+test("on the screen of a map run an open rule panel stands in the place of the table of revealed tiles, beside the drawing, and the table comes back at „✕”", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await reloadedAt(held, RUN_ADDRESS, pausedRun());
+    const run = byClass(root, "run-screen")[0];
+    const terrain = byClass(run, "terrain-panel")[0];
+    const table = byClass(terrain, "tile-list")[0];
+    const host = byClass(terrain, "rule-panel-host")[0];
+    const drawing = byClass(terrain, "terrain-drawing")[0];
+    assert.ok(table && host && drawing, "the terrain panel holds the three");
+    assert.ok(shown(table), "the table stands while no rule is open");
+    assert.equal(shown(host), false, "the place of the panel is empty");
+    assert.equal(byClass(run, "rule-panel").length, 0);
+
+    await press(
+      byClass(run, "rule-list-header").find((element) => shown(element)),
+    );
+    const panels = byClass(run, "rule-panel");
+    assert.equal(panels.length, 1, "the panel is open");
+    assert.ok(host.contains(panels[0]), "in the place of the table");
+    assert.equal(terrain, host.parentElement, "beside the drawing");
+    assert.equal(shown(table), false, "the table is hidden meanwhile");
+    assert.ok(shown(drawing), "the drawing stays");
+    assert.equal(
+      byClass(byClass(run, "program-panel")[0], "rule-panel").length,
+      0,
+      "the panel does not stand under the rows",
+    );
+
+    await press(buttonLabelled(run, "Zamknij panel"));
+    assert.equal(byClass(run, "rule-panel").length, 0);
+    assert.ok(shown(table), "the table is back");
+    assert.equal(shown(host), false);
+    assert.ok(shown(drawing));
+  });
+});
+
+// Task edytor-programu, row E2, D-282. Catches the rule panel of Programy standing inside the
+// editor's area, where a narrower layout cannot set it apart, and its area standing empty while
+// nothing is open.
+test("on Programy the list, the editor and the open rule panel are three areas of the screen, and the area of the panel stands only while a rule is open", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await reloadedAt(held, "#/programy", twoPrograms());
+    const screen = programsScreenOf(root);
+    const area = byClass(screen, "rule-panel-area")[0];
+    assert.ok(area, "the screen holds the area of the panel");
+    assert.equal(shown(area), false, "nothing is open");
+    assert.equal(screen.classList.contains("with-rule-panel"), false);
+
+    await press(
+      byClass(screen, "rule-list-header").find((element) => shown(element)),
+    );
+    const panel = byClass(screen, "rule-panel")[0];
+    assert.ok(panel, "a rule opens the panel");
+    assert.equal(panel.parentElement, area, "in the area of its own");
+    assert.ok(shown(area));
+    assert.ok(screen.classList.contains("with-rule-panel"));
+    const areas = childrenOf(screen).filter((child) => shown(child));
+    assert.deepEqual(
+      areas.map((child) => child.classList.contains("screen-area")),
+      [true, true, true],
+      "three areas: the list, the editor, the panel",
+    );
+    assert.equal(
+      byClass(byClass(screen, "program-panel")[0], "rule-panel").length,
+      0,
+      "the panel is outside the editor's area",
+    );
+
+    await press(buttonLabelled(screen, "Zamknij panel"));
+    assert.equal(shown(area), false);
+    assert.equal(screen.classList.contains("with-rule-panel"), false);
+  });
+});
+
 // --- Programy: the list of programs and the panel beside it ----------------------------------
 // Task ekrany-i-menu, To do 3 and 5, questions 5, 8 and 15; D-166, D-281. The list is a link to each
 // program's address, so a pick is the address changing, which these cases make by `follow`.

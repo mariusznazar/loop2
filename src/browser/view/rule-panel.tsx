@@ -295,6 +295,9 @@ export function RulePanelView({
     if (target === null) return;
     pendingFocus.current = null;
     target.focus();
+    // The number the rule holds is selected, so the digits the player types replace it instead of
+    // standing beside it (a real browser keeps the old digits otherwise).
+    if (wanted === "number") numberInput.current?.select();
   });
 
   if (open === null || group === undefined || condition === undefined)

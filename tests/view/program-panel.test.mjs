@@ -842,6 +842,77 @@ test("Enter in the number field is consumed, so the press cannot reach the cell 
   });
 });
 
+/** Gives the panel of `game` a host for its rule panel on the page, as a screen does; `told` keeps what it is told. */
+async function withHost(page, game) {
+  const host = page.document.createElement("div");
+  page.root.append(host);
+  const told = [];
+  await inAct(() => game.panel.placeRulePanel(host, (open) => told.push(open)));
+  return { host, told };
+}
+
+// Task edytor-programu, To do 3, question 3, slice 13. Catches the rule panel drawn beside the rows
+// when the screen gave it a host, a screen not told that the panel opened or closed, and a panel
+// left in the host after it closed.
+test("a rule panel given a host stands in it and not beside the rows, and the screen is told when it opens and closes", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, runWithNumber());
+    const { host, told } = await withHost(page, game);
+    assert.deepEqual(told, [false], "nothing is open at the start");
+    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+    assert.deepEqual(told, [false, true]);
+    assert.ok(
+      host.querySelector(".rule-panel"),
+      "the panel stands in the host",
+    );
+    assert.equal(
+      game.root.querySelectorAll(".rule-panel").length,
+      0,
+      "none beside the rows",
+    );
+    assert.equal(game.root.querySelectorAll(".with-panel").length, 0);
+    await click(buttonNamed(host, "✕"));
+    assert.deepEqual(told, [false, true, false]);
+    assert.equal(host.querySelector(".rule-panel"), null, "the host is empty");
+    assert.equal(
+      page.document.activeElement,
+      rowOf(game.root, 1),
+      "the focus goes back to the row",
+    );
+    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+    await inAct(() => game.panel.dispose());
+    assert.equal(told.at(-1), false, "a panel taken out says nothing is open");
+  });
+});
+
+// Task edytor-programu, Acceptance criteria 1, slice 13: the number typed into the panel in the
+// host, which stands outside the panel's own element, keeps its text and focus at 16×.
+test("a number typed into the rule panel in its host keeps its text and the focus over three seconds of redraws at 16×", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, runWithNumber());
+    const { host } = await withHost(page, game);
+    await game.change(setPace(game.state, 16));
+    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+    const number = host.querySelector('input[aria-label="Liczba"]');
+    assert.ok(number, "the panel in the host holds the number");
+    await inAct(() => number.focus());
+    await typeInto(number, "12");
+    const minutes = game.state.run.minute;
+    for (let frame = 0; frame < 15; frame += 1)
+      await game.change(passRealTime(game.state, 200));
+    assert.ok(game.state.run.minute > minutes, "the game went on");
+    assert.equal(host.querySelector('input[aria-label="Liczba"]'), number);
+    assert.equal(number.value, "12");
+    assert.equal(page.document.activeElement, number);
+    await key(number, "Enter");
+    assert.deepEqual(game.state.run.copy.program.groups[0].rules[0].condition, {
+      kind: "itemBelow",
+      item: "stick",
+      value: 12,
+    });
+  });
+});
+
 /** The texts of the panel's lines and heading of the copy. */
 const copyTexts = (root) =>
   [...root.querySelectorAll(".copy-heading, .copy-line")].map(

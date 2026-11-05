@@ -1059,6 +1059,89 @@ test("a number typed in the panel keeps its text and the focus while the game at
   });
 });
 
+// Task edytor-programu, slice 13: the case of the DOM editor about the range and step of its number
+// field now stands on the number field of the panel. Catches a field drawn with another kind's range
+// or step, so the browser would offer a temperature 0 to 100 or a count in tenths.
+test("the number field of the panel takes the range and the step of the condition kind", async () => {
+  for (const [condition, range] of [
+    [
+      { kind: "temperatureBelow", value: 36.5 },
+      { min: "30", max: "37", step: "0.1" },
+    ],
+    [
+      { kind: "hereBelow", resource: "stick", value: 1 },
+      { min: "0", max: "50", step: "1" },
+    ],
+    [
+      { kind: "satietyBelow", value: 50 },
+      { min: "0", max: "100", step: "1" },
+    ],
+    [
+      { kind: "natureEnergyBelow", value: 30 },
+      { min: "0", max: "100", step: "1" },
+    ],
+    [
+      { kind: "itemBelow", item: "stick", value: 8 },
+      { min: "0", max: "50", step: "1" },
+    ],
+    [
+      { kind: "campfireLeftBelow", value: 20 },
+      { min: "0", max: "120", step: "1" },
+    ],
+    [
+      { kind: "healthBelow", value: 50 },
+      { min: "0", max: "100", step: "1" },
+    ],
+    [
+      { kind: "opponentHealthBelow", value: 10 },
+      { min: "0", max: "100", step: "1" },
+    ],
+  ]) {
+    await withPage(async (page) => {
+      await mountPanel(page, withFirstRule(condition, EXPLORE), {
+        groupId: 1,
+        ruleId: 1,
+        field: "number",
+      });
+      const number = numberIn(panelOf(page.root));
+      assert.deepEqual(
+        { min: number.min, max: number.max, step: number.step },
+        range,
+        condition.kind,
+      );
+    });
+  }
+});
+
+// Task edytor-programu, Acceptance criteria 3, found in the browser in slice 13: the number field took
+// the focus with its digits unselected, so the 8 typed beside the 8 the rule held made 88 and the
+// rule needed more than six actions. jsdom has no selection of a number field to read, so the case
+// holds the call that makes it: the field is selected when the focus goes to it.
+test("the number field is selected when the focus goes to it, so what is typed replaces the number held", async () => {
+  await withPage(async (page) => {
+    const selected = [];
+    const { prototype } = page.window.HTMLInputElement;
+    const original = prototype.select;
+    prototype.select = function select() {
+      selected.push(this);
+      return original.call(this);
+    };
+    try {
+      await mountPanel(page, withFirstRule(ZAPAS_8_PATYK, EXPLORE), {
+        groupId: 1,
+        ruleId: 1,
+        field: "number",
+      });
+      const number = numberIn(panelOf(page.root));
+      assert.equal(page.document.activeElement, number);
+      assert.equal(selected.length, 1);
+      assert.equal(selected[0], number);
+    } finally {
+      prototype.select = original;
+    }
+  });
+});
+
 test("the fields of a rule stand in the order condition, number, target of the condition, action, target of the action, each only where the rule has it", async () => {
   await withPage(async (page) => {
     await mountPanel(page, withFirstRule(ZAPAS_8_PATYK, ZBIERZ_PATYK), {

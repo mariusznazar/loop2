@@ -5,13 +5,14 @@
  * element of its own, a first render that is synchronous, `update(state, events)`, `showProgram` and
  * `dispose()`, called from an event handler or the continuation of an answer, never from render or an
  * effect. The panel holds the rule list and, beside it, the rule panel, the open rule a state of the
- * panel; it asks the game for every change through `ProgramPanelControls` and never writes the game
- * state. Which program it shows is the boundary's, changed by picking on the list and by the
+ * panel; where the screen places a host element for the rule panel (`placeRulePanel`), the panel draws it
+ * there, through a portal of its own React tree, and tells the screen whether it stands. It asks the
+ * game for every change through `ProgramPanelControls` and never writes the game state. Which program it shows is the boundary's, changed by picking on the list and by the
  * operations of the game. The folding of rule groups is one memory of the page, `createFolding`, which
  * the page makes once and gives to both panels. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
-import { flushSync } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
 import type { GameEvent } from "../sim/game.js";
@@ -126,6 +127,14 @@ export type ProgramPanel = {
    * to the program it was typed into first. Showing what is shown changes nothing.
    */
   showProgram(programId: ProgramId): void;
+  /**
+   * Places the rule panel in `host`, an element of the screen outside this panel, instead of beside
+   * the rows: the panel draws it there through a portal, so it stays in this panel's React tree.
+   * `onOpen(true)` is called when a rule or a group opens and `onOpen(false)` when none is open any
+   * more, so the screen can hide what the panel takes the place of and show `host` meanwhile. Left
+   * unplaced, the panel draws the rule panel beside its rows.
+   */
+  placeRulePanel(host: HTMLElement, onOpen: (open: boolean) => void): void;
   /** Unmounts the panel and takes it out of the page. */
   dispose(): void;
 };
@@ -276,6 +285,10 @@ type ProgramPanelViewProps = {
   shown: ShownProgram;
   actions: PanelActions;
   folding: Folding;
+  /** Where the rule panel stands when the screen gives it a place of its own; null beside the rows. */
+  ruleHost?: HTMLElement | null;
+  /** Told, after each commit, whether a rule or a group stands open in the rule panel. */
+  onRuleOpen?: (open: boolean) => void;
 };
 
 /**
@@ -290,6 +303,8 @@ export function ProgramPanelView({
   shown,
   actions,
   folding,
+  ruleHost = null,
+  onRuleOpen,
 }: ProgramPanelViewProps) {
   const key = shownValue(shown);
   const [namingState, setNaming] = useState<Naming | null>(null);
@@ -360,6 +375,12 @@ export function ProgramPanelView({
     (open.target.ruleId === null ||
       openGroup.rules.some((rule) => rule.id === open.target.ruleId));
   const folded = memory.get(key) ?? NO_GROUPS;
+
+  // The screen hides what the rule panel takes the place of while it stands. The effect only passes
+  // the fact on to the screen's elements, outside this tree, and runs again when the fact changes.
+  useLayoutEffect(() => {
+    onRuleOpen?.(panelStands);
+  }, [panelStands, onRuleOpen]);
 
   const checked =
     naming === null
@@ -433,6 +454,18 @@ export function ProgramPanelView({
     shown.kind === "saved"
       ? (programById(state.programs, shown.programId) ?? state.programs[0])
       : state.programs[0];
+
+  const rulePanel =
+    panelStands && open !== null ? (
+      <RulePanelView
+        state={state}
+        program={content.program}
+        open={open.target}
+        copy={copyShown}
+        onCommit={actions.edit}
+        onClose={closePanel}
+      />
+    ) : null;
 
   const runHead =
     mode === "run" ? (
@@ -567,7 +600,7 @@ export function ProgramPanelView({
         ) : null}
         <div
           className={
-            panelStands
+            panelStands && ruleHost === null
               ? "program-editor-layout with-panel"
               : "program-editor-layout"
           }
@@ -584,20 +617,14 @@ export function ProgramPanelView({
               onFoldedChange={(groups) => folding.set(key, groups)}
             />
           </div>
-          {panelStands && open !== null ? (
-            <div className="program-rule-panel">
-              <RulePanelView
-                state={state}
-                program={content.program}
-                open={open.target}
-                copy={copyShown}
-                onCommit={actions.edit}
-                onClose={closePanel}
-              />
-            </div>
+          {ruleHost === null && rulePanel !== null ? (
+            <div className="program-rule-panel">{rulePanel}</div>
           ) : null}
         </div>
       </div>
+      {ruleHost !== null && rulePanel !== null
+        ? createPortal(rulePanel, ruleHost)
+        : null}
     </>
   );
 }
@@ -621,6 +648,8 @@ export function createProgramPanel(
   let state: GameState | null = null;
   let shown: ShownProgram = { kind: "saved", programId: 1 };
   let disposed = false;
+  let ruleHost: HTMLElement | null = null;
+  let onRuleOpen: ((open: boolean) => void) | undefined;
 
   function draw(): void {
     if (disposed || state === null) return;
@@ -633,6 +662,8 @@ export function createProgramPanel(
           shown={shown}
           actions={actions}
           folding={folding}
+          ruleHost={ruleHost}
+          onRuleOpen={onRuleOpen}
         />,
       );
     });
@@ -645,7 +676,10 @@ export function createProgramPanel(
   function commitEditor(): void {
     const active = element.ownerDocument.activeElement;
     const area = element.querySelector(".program-editing");
-    if (active instanceof HTMLElement && area?.contains(active) === true)
+    if (
+      active instanceof HTMLElement &&
+      (area?.contains(active) === true || ruleHost?.contains(active) === true)
+    )
       active.blur();
   }
 
@@ -696,9 +730,15 @@ export function createProgramPanel(
       if (shownValue(resolved) === shownValue(shown)) return;
       show(resolved);
     },
+    placeRulePanel(host: HTMLElement, onOpen: (open: boolean) => void): void {
+      ruleHost = host;
+      onRuleOpen = onOpen;
+      draw();
+    },
     dispose(): void {
       disposed = true;
       root.unmount();
+      onRuleOpen?.(false);
       element.remove();
     },
   };
