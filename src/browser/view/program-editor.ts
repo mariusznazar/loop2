@@ -1,5 +1,4 @@
 import { ACTION_GROUPS, ACTIONS, type ActionDef } from "../sim/data/actions.js";
-import { ARCHETYPES, CREATED_ARCHETYPE } from "../sim/data/archetypes.js";
 import {
   CONDITION_SECTIONS,
   CONDITIONS,
@@ -8,17 +7,19 @@ import {
 import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
-import { BRANCHES } from "../sim/data/skills.js";
 import {
   conditionNumber,
   onStep,
   type ConditionNumber,
 } from "../sim/program.js";
 import { actionMinutes } from "../sim/skills.js";
-import { editorRepertoire, repertoireOf } from "../sim/understanding.js";
+import {
+  BRANCH_NOT_BOUGHT,
+  editorRepertoire,
+  knownRepertoire,
+} from "../sim/understanding.js";
 import type {
   Action,
-  CharacterSkills,
   Condition,
   GameState,
   GroupId,
@@ -533,7 +534,7 @@ export function focusAfter(
 
 /** Why a cell of the rule panel's pick stands greyed (D-289); each is one sentence for the player. */
 export const PICK_REASONS = {
-  branchNotBought: "gałąź niewykupiona",
+  branchNotBought: BRANCH_NOT_BOUGHT,
   branchWithoutRun: "wybierzesz w przejściu postaci, która ją kupiła",
   noTarget: "nie znasz jeszcze celu",
   notOnMap: "nie ma go na tej mapie",
@@ -562,33 +563,13 @@ export type PickSection<Value> = {
 export type RuleField =
   "condition" | "number" | "conditionTarget" | "action" | "actionTarget";
 
-/** The branches all bought: what the Understanding knows of the actions, whatever a character bought. */
-function allBranchesBought(): CharacterSkills {
-  const skills: CharacterSkills = {};
-  for (const [id, branch] of Object.entries(BRANCHES)) {
-    const own = skills[branch.skill] ?? { practice: 0, ranks: {} };
-    skills[branch.skill] = { ...own, ranks: { ...own.ranks, [id]: 1 } };
-  }
-  return skills;
-}
-
 /**
  * The actions the Understanding holds that the archetype of the character the editor is shown
  * through teaches, bought or not: the knowledge, of which `editorRepertoire` is the part the
  * character may carry out.
  */
 function knownActions(state: GameState): readonly ActionKind[] {
-  const runner = state.run
-    ? state.team.characters.find(
-        (character) => character.id === state.run?.character.id,
-      )
-    : undefined;
-  const archetype = ARCHETYPES[runner?.archetypeId ?? CREATED_ARCHETYPE];
-  return repertoireOf(
-    state.understanding,
-    archetype.predispositions,
-    allBranchesBought(),
-  ).actions;
+  return knownRepertoire(state).actions;
 }
 
 /** The resources the Understanding holds, in the data's order, each with whether the map of the map run holds it. */

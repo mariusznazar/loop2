@@ -6,7 +6,8 @@ import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
 import { CREATURES } from "./data/creatures.js";
 import { ITEMS } from "./data/items.js";
 import type { Revelation } from "./data/revelations.js";
-import { SKILLS, type SkillId } from "./data/skills.js";
+import { RESOURCES } from "./data/resources.js";
+import { BRANCHES, SKILLS, type SkillId } from "./data/skills.js";
 import { branchActionAvailable } from "./skills.js";
 import { tileAt } from "./hex.js";
 import type { GameEvent } from "./run.js";
@@ -147,6 +148,88 @@ export function editorRepertoire(state: GameState): Repertoire {
     archetype.predispositions,
     state.run?.character.skills,
   );
+}
+
+/** The branches all bought: what the Understanding knows of the actions, whatever a character bought. */
+function allBranchesBought(): CharacterSkills {
+  const skills: CharacterSkills = {};
+  for (const [id, branch] of Object.entries(BRANCHES)) {
+    const own = skills[branch.skill] ?? { practice: 0, ranks: {} };
+    skills[branch.skill] = { ...own, ranks: { ...own.ranks, [id]: 1 } };
+  }
+  return skills;
+}
+
+/**
+ * What the Understanding holds that the archetype of the character the editor is shown through
+ * teaches, bought or not: the knowledge, of which `editorRepertoire` is the part the character may
+ * carry out now.
+ */
+export function knownRepertoire(state: GameState): Repertoire {
+  const runner = state.run
+    ? state.team.characters.find(
+        (character) => character.id === state.run?.character.id,
+      )
+    : undefined;
+  const archetype = ARCHETYPES[runner?.archetypeId ?? CREATED_ARCHETYPE];
+  return repertoireOf(
+    state.understanding,
+    archetype.predispositions,
+    allBranchesBought(),
+  );
+}
+
+/** The reason a program rule shows for an action of a branch the character did not buy. */
+export const BRANCH_NOT_BOUGHT = "gałąź niewykupiona";
+
+/**
+ * The first thing of a rule the repertoire lacks, in the order the row reads: its condition, that
+ * condition's target, its action, that action's target — named as the player sees it, a kind by its
+ * label and a resource or an item by its name.
+ */
+function undiscoveredPart(repertoire: Repertoire, rule: ProgramRule): string {
+  const { condition, action } = rule;
+  if (!repertoire.conditions.includes(condition.kind))
+    return CONDITIONS[condition.kind].label;
+  if (
+    condition.kind === "hereBelow" &&
+    !repertoire.items.includes(condition.resource)
+  )
+    return RESOURCES[condition.resource].name;
+  if (
+    condition.kind === "itemBelow" &&
+    !repertoire.items.includes(condition.item)
+  )
+    return ITEMS[condition.item].name;
+  if (!repertoire.actions.includes(action.kind))
+    return ACTIONS[action.kind].label;
+  if (
+    (action.kind === "walkTo" ||
+      action.kind === "gather" ||
+      action.kind === "patrol") &&
+    !repertoire.items.includes(action.resource)
+  )
+    return RESOURCES[action.resource].name;
+  return ACTIONS[action.kind].label;
+}
+
+/**
+ * Why a program rule lies outside the repertoire, in the words of its row; null where it lies
+ * inside. An action the Understanding holds and the archetype teaches, but of a branch the
+ * character did not buy, gives `BRANCH_NOT_BOUGHT`; otherwise the first thing the rule names that
+ * the Understanding does not hold yet gives „jeszcze nieodkryte: {name}”. `known` is the knowledge
+ * of `knownRepertoire`.
+ */
+export function outsideReason(
+  repertoire: Repertoire,
+  known: Repertoire,
+  rule: ProgramRule,
+): string | null {
+  if (ruleInRepertoire(repertoire, rule)) return null;
+  const kind = rule.action.kind;
+  if (known.actions.includes(kind) && !repertoire.actions.includes(kind))
+    return BRANCH_NOT_BOUGHT;
+  return `jeszcze nieodkryte: ${undiscoveredPart(repertoire, rule)}`;
 }
 
 /** Whether two revealing events are the same event, including its named item or creature. */

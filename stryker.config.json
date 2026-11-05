@@ -38,6 +38,7 @@
       "tests/sim/purity.test.mjs",
       "tests/sim/random.test.mjs",
       "tests/sim/repertoire.test.mjs",
+      "tests/sim/rule-signs.test.mjs",
       "tests/sim/saved-game.test.mjs",
       "tests/sim/skills.test.mjs",
       "tests/sim/streak.test.mjs",

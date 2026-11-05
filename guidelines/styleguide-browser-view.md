@@ -16,16 +16,19 @@ bez odstępstw zgodnie z D-38.
 | `page` | background | Tu jest gra. | `text` | D-40 |
 | `panel` | background | To osobny, wydzielony blok. | `text` | D-40 |
 | `highlight` | background | Ten wiersz albo tor jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
+| `rule-winning` | background | Ta reguła programu wygrywa teraz. | `text` | D-40 |
+| `rule-running` | background | Czynność tej reguły programu trwa teraz. | `text` | D-40 |
 | `divider` | other | Tu kończy się jedna sekcja, a zaczyna następna. | — | D-40 |
 | `control-border` | other | To da się kliknąć albo wpisać. | — | D-40 |
 | `selected` | other | To jest wybrane w swojej grupie. | — | D-40 |
+| `condition-unmet` | other | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu. | — | D-40 |
 | `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw. | — | D-40 |
 | `text` | text | Treść do przeczytania. | — | D-40 |
 | `text-secondary` | text | Opis, wyjaśnienie albo dopisek. | — | D-40 |
 | `text-label` | text | Nazwa pola albo sekcji, albo data. | — | D-40 |
 | `text-disabled` | text | Tego teraz nie da się użyć. | — | D-40 |
-| `positive` | text | To działa, jest w porządku albo jest teraz aktywne. | — | D-39 |
-| `warning` | text | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu. | — | D-39 |
+| `positive` | text | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć. | — | D-39 |
+| `warning` | text | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć. | — | D-39 |
 | `danger` | text | Grozi utrata postaci, postępu albo danych. | — | D-39 |
 | `discovery` | text | Odkryto coś nowego. | — | D-39 |
 | `player-change` | text | To zrobił gracz. | — | D-39 |
@@ -63,12 +66,12 @@ zmiany plików `browser-view` czyta użyte role wobec ich decyzji.
 - **Bad:** Element dostaje tło `var(--highlight)`, a żadna jego reguła nie ustawia mu koloru tekstu z roli.
 
 Rolę rodzaju `background` zapisuj zawsze razem z rolą rodzaju `text`, która
-stoi na niej w tabeli Roles: element, któremu styl nadaje tło `page`, `panel`
-albo `highlight`, dostaje kolor tekstu `text`, chyba że ma już inną rolę
-tekstu. Element albo jego część z inną rolą tekstu zachowuje ją na każdym
-z tych trzech teł, bo każda rola rodzaju `text` stoi na wszystkich trzech
-(D-39, D-40): przycisk niszczący pod kursorem ma dalej tekst w `danger`,
-a przycisk wybrany w grupie — w `text-strong`. Wartości każdej pary trzyma
+stoi na niej w tabeli Roles: element, któremu styl nadaje tło `page`, `panel`,
+`highlight`, `rule-winning` albo `rule-running`, dostaje kolor tekstu `text`,
+chyba że ma już inną rolę tekstu. Element albo jego część z inną rolą tekstu
+zachowuje ją na każdym z tych pięciu teł, bo każda rola rodzaju `text` stoi
+na wszystkich pięciu (D-39, D-40): przycisk niszczący pod kursorem ma dalej
+tekst w `danger`, a przycisk wybrany w grupie — w `text-strong`. Wartości każdej pary trzyma
 w kodzie reguła Contrast of every pair. Przegląd zmiany tabeli Roles czyta
 każde tło z jego tekstem.
 
@@ -137,17 +140,21 @@ w nietypowy sposób łapie dopiero przegląd. Reguła trzyma kryterium WCAG 2.2
 
 - **Decision:** D-39 · D-40 · D-41 · D-42
 - **Invariant:** design-token-contrast
-- **Good:** Nowa wartość `text-label` w pliku tokenów ma co najmniej 4,5:1 na `page`, `panel` i `highlight`.
+- **Good:** Nowa wartość `text-label` w pliku tokenów ma co najmniej 4,5:1 na `page`, `panel`, `highlight`, `rule-winning` i `rule-running`.
 - **Bad:** Jaśniejsza wartość `tile-hidden`, przy której `tile-revealed` ma wobec niej mniej niż 3:1.
 
 Kontrast każdej pary liczy się z wartości pliku tokenów według definicji
 współczynnika kontrastu z WCAG 2.2 (D-42):
 
 - każda rola rodzaju `text` poza `text-disabled`, kolory sygnałowe także, ma
-  co najmniej 4,5:1 na `page`, `panel` i `highlight`;
+  co najmniej 4,5:1 na `page`, `panel`, `highlight`, `rule-winning`
+  i `rule-running`;
 - `text-disabled` nie ma progu;
-- `control-border` i `focus` mają co najmniej 3:1 na `page`, `panel`
-  i `highlight`;
+- `control-border` i `focus` mają co najmniej 3:1 na tych samych pięciu
+  tłach;
+- `condition-unmet`, pasek reguły, której warunek nie jest spełniony, nie ma
+  progu, a pasek w `positive` i w `warning` nie dokłada pary, bo te role
+  mają już próg 4,5:1 na pięciu tłach;
 - `character` ma co najmniej 3:1 na `tile-revealed` i na `tile-hidden`;
 - `tile-revealed` ma co najmniej 3:1 wobec `tile-hidden`.
 
@@ -394,8 +401,10 @@ w kolorze tego napisu — bierze kolor tego tekstu: w stylach
 dostaje własnej roli i nie zmienia znaczenia roli tego tekstu (D-39, D-40).
 Linia, która znaczy wybrane w swojej grupie — ramka przycisku wybranego
 w grupie, linia wybranej zakładki i bieżącej pozycji paska menu oraz belka
-wybranej pozycji listy programów — zostaje w `selected`. Przegląd zmiany czyta kolor każdej takiej ramki i belki wobec
-tekstu, przy którym stoi.
+wybranej pozycji listy programów — zostaje w `selected`. Pasek stanu reguły
+programu i grupy reguł (reguła Program editor) nie jest taką ramką ani belką:
+mówi o stanie reguły i nie bierze koloru tekstu obok (D-39). Przegląd zmiany
+czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
 ### Menu bar, the menu „Konto” and the list of programs
 
@@ -459,10 +468,10 @@ wobec tej reguły i wobec strony wszystkich stanów.
 
 ### Program editor
 
-- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-279 · D-39 · D-40 · D-43
+- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310
 - **Invariant:** none
-- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”.
-- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`.
+- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
+- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym.
 
 Edytor programu stoi na ekranie Programy i na ekranie przejścia (D-288).
 Wygląd jego części bierze się z istniejących ról; edytor nie dokłada żadnej
@@ -471,9 +480,21 @@ nowej barwy, roli ani wartości.
 - Wiersz reguły: warunek w `text-secondary`, czynność w `text-strong`, numer
   (D-292), czas wykonania (D-293) i licznik „Wykonano {n}×” (D-93) w
   `text-label`; ikona czynności stoi przy czynności i jest rysowana maską w
-  kolorze tekstu obok (D-291, D-43). Wiersz otwarty i wiersz pod kursorem stoją
-  na tle `highlight`, z tekstem w ich własnych rolach (reguła Every
-  background with its text).
+  kolorze tekstu obok (D-291, D-43). Wiersz otwarty stoi na tle `highlight`,
+  a wiersz pod kursorem też, o ile nie ma tła stanu, z tekstem w ich własnych
+  rolach (reguła Every background with its text).
+- Znaki stanu (D-308, D-309, D-310) stoją tylko przy kopii przejścia, w
+  przejściu ręcznym i na ekranie po jego końcu, nigdy przy programie
+  zapisanym, na ekranie Programy ani w pętli zarobkowej. Wiersz reguły, która
+  wygrywa teraz, stoi na tle `rule-winning`, a reguły, której czynność trwa,
+  gdy wygrywa inna, na tle `rule-running`; wiersz pod kursorem zachowuje
+  takie tło, a wiersz otwarty stoi na `highlight` w jego miejsce. Przy
+  każdym wierszu reguły i nagłówku grupy po lewej stoi pasek o grubości
+  `--bar-width`: w `positive`, gdy warunek jest spełniony i reguła może
+  ruszyć (grupa: któraś jej reguła), w `warning`, gdy warunek jest
+  spełniony, ale ruszyć nie może, w `condition-unmet`, gdy warunek nie jest
+  spełniony; pasek zostaje przy wierszu otwartym. Powód, jeden, stoi w
+  wierszu przy czynności w `warning`.
 - Nagłówek grupy reguł: nazwa w `text-strong`, warunek w `text-secondary`,
   liczba reguł i suma „Wykonano” w `text-label`.
 - Panel reguły stoi na tle `panel` z ramką w `divider`; podpisy jego pól są

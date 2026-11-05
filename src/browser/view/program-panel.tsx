@@ -15,7 +15,7 @@ import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
-import type { GameEvent } from "../sim/game.js";
+import { ruleSigns, type GameEvent } from "../sim/game.js";
 import {
   copyHasUnsavedChanges,
   programById,
@@ -612,6 +612,7 @@ export function ProgramPanelView({
               counts={content.counts}
               folded={folded}
               open={open === null ? null : open.target}
+              signs={copyShown ? ruleSigns(state) : null}
               onCommit={actions.edit}
               onOpen={(target) => setOpen({ key, target })}
               onFoldedChange={(groups) => folding.set(key, groups)}

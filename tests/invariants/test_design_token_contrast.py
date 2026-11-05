@@ -1,7 +1,8 @@
 """Invariant design-token-contrast: In `src/browser/tokens.css`, each of `text-strong`, `text`,
 `text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change`
-has a contrast ratio of at least 4.5:1 against each of `page`, `panel` and `highlight`,
-`control-border` and `focus` have at least 3:1 against each of those three, `character` has at
+has a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`,
+`rule-winning` and `rule-running`, `control-border` and `focus` have at least 3:1 against each of
+those five, `character` has at
 least 3:1 against `tile-revealed` and against `tile-hidden`, and `tile-revealed` has at least 3:1
 against `tile-hidden`, each ratio computed from the values of those roles as WCAG 2.2 defines the
 contrast ratio.
@@ -29,7 +30,8 @@ all pass, with `text-disabled` at a ratio of 1, and made-up token text failing e
 missing a role, declaring one only inside a comment, declaring one twice and giving one a value
 that is no `#rrggbb`.
 
-Does NOT cover: colours that touch on a screen without being a pair of the sentence; text sizes;
+Does NOT cover: colours that touch on a screen without being a pair of the sentence, the bar of
+a program rule (`condition-unmet`) among them, which has no threshold; text sizes;
 whether a style uses the roles where their meaning asks for them (review).
 """
 
@@ -41,7 +43,7 @@ import loop2_invariant_support as support
 
 TOKEN_FILE = "src/browser/tokens.css"
 
-BACKGROUNDS = ("page", "panel", "highlight")
+BACKGROUNDS = ("page", "panel", "highlight", "rule-winning", "rule-running")
 TEXT_ROLES = ("text-strong", "text", "text-secondary", "text-label", "positive", "warning",
               "danger", "discovery", "player-change")
 TEXT_THRESHOLD = 4.5
@@ -123,6 +125,7 @@ def tokens(values):
 # Made-up values whose pairs all pass: #808080 is 5.317:1 on black and 3.949:1 on white.
 PASSING = {
     "page": "#000000", "panel": "#000000", "highlight": "#000000",
+    "rule-winning": "#000000", "rule-running": "#000000",
     **dict.fromkeys(TEXT_ROLES, "#808080"),
     "text-disabled": "#000000",
     "control-border": "#808080", "focus": "#808080",
@@ -139,6 +142,7 @@ def without(role):
 
 
 WHITE_BACKGROUNDS = {"page": "#ffffff", "panel": "#ffffff", "highlight": "#ffffff",
+                     "rule-winning": "#ffffff", "rule-running": "#ffffff",
                      **dict.fromkeys(TEXT_ROLES, "#000000"), "focus": "#000000"}
 
 # Made-up token text, and a part of the finding it must give.
@@ -146,6 +150,21 @@ FLAGGED = {
     "text roles at 3.949:1 on page": (changed({"page": "#ffffff"}), "on --page #ffffff"),
     "text roles at 3.949:1 on highlight": (changed({"highlight": "#ffffff"}),
                                            "on --highlight #ffffff"),
+    "text roles at 3.949:1 on rule-winning": (changed({"rule-winning": "#ffffff"}),
+                                              "on --rule-winning #ffffff"),
+    "text roles at 3.949:1 on rule-running": (changed({"rule-running": "#ffffff"}),
+                                              "on --rule-running #ffffff"),
+    "a signal colour at 1:1 on rule-running": (changed({"rule-running": "#808080",
+                                                        "warning": "#808080"}),
+                                               "--warning #808080 on --rule-running"),
+    "control-border at 1:1 on rule-winning": (changed({"rule-winning": "#808080",
+                                                       **dict.fromkeys(TEXT_ROLES, "#ffffff")}),
+                                              "--control-border #808080 on --rule-winning"),
+    "focus at 1:1 on rule-running": (changed({"rule-running": "#808080",
+                                              **dict.fromkeys(TEXT_ROLES, "#ffffff")}),
+                                     "--focus #808080 on --rule-running"),
+    "a role of a new background missing": (without("rule-winning"),
+                                           "--rule-winning is declared 0 times"),
     "a signal colour at 1:1 on panel": (changed({"player-change": "#000000"}),
                                         "--player-change #000000 on --panel"),
     "control-border at 2.615:1": (changed({**WHITE_BACKGROUNDS, "control-border": "#a0a0a0"}),

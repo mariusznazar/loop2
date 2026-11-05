@@ -1,0 +1,759 @@
+// What the pick judges of a program rule and rule group: the bar, the reason and the winner, from
+// the one function that picks the rule (task stan-i-powod-przy-regule, To do 2 to 6 and questions
+// 3 to 5). The reasons are those of the table of question 4, the bars those of To do 2 and 3.
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { sameHex } from "../../dist/browser/sim/hex.js";
+import {
+  advanceMinutes,
+  createCharacter,
+  programOf,
+  ruleSigns,
+  send,
+  setProgram,
+} from "../../dist/browser/sim/game.js";
+import {
+  actionFeasible,
+  actionRefusal,
+  chooseActivity,
+  judgeProgram,
+} from "../../dist/browser/sim/program.js";
+import { newMapRun } from "../../dist/browser/sim/run.js";
+import {
+  editorRepertoire,
+  knownRepertoire,
+} from "../../dist/browser/sim/understanding.js";
+import { programFromRules } from "./program-fixture.mjs";
+import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
+
+const map = MAPS.forest;
+const T0 = 1_760_000_000_000;
+const SENT = { mapId: "forest", characterId: 1 };
+const ALWAYS = { kind: "always" };
+const NEVER = { kind: "hereBelow", resource: "stick", value: 0 };
+const act = (kind) => ({ kind });
+const resourceAction = (kind, resource) => ({ kind, resource });
+const rule = (id, condition, action) => ({ id, condition, action });
+const group = (id, condition, rules) => ({
+  id,
+  name: `Group ${id}`,
+  condition,
+  rules,
+});
+const program = (...groups) => ({
+  tripPlan: { take: [], bring: [] },
+  nextGroupId: 100,
+  nextRuleId: 1000,
+  groups,
+});
+
+/** A fresh map run of the forest at minute 0, the character on a tile not yet revealed. */
+function freshRun() {
+  return newMapRun(map, 3, programFromRules(), {
+    mapId: "forest",
+    characterId: 1,
+  }).run;
+}
+
+/** The run with the character's tile replaced by `change(tile)`. */
+function withHere(run, change) {
+  return {
+    ...run,
+    tiles: run.tiles.map((tile) =>
+      sameHex(tile.at, run.character.at) ? change({ ...tile }) : tile,
+    ),
+  };
+}
+
+const revealedHere = (run, stock = {}) =>
+  withHere(run, (tile) => ({ ...tile, revealed: true, stock }));
+
+const carrying = (run, pieces) => ({
+  ...run,
+  character: {
+    ...run.character,
+    backpack: { ...run.character.backpack, ...pieces },
+  },
+});
+
+const campfireHere = (run, minutesLeft) => ({
+  ...run,
+  campfires: [{ at: { ...run.character.at }, minutesLeft }],
+});
+
+const refusalOf = (run, action) => actionRefusal(run, map, action);
+
+// The table of question 4: what refuses the action, and the words of the reason. Each case writes
+// the state out; the words are the task's, which is what binds them.
+test("each refusal of an action gives the reason of the table of question 4", () => {
+  const here = revealedHere(freshRun(), { stick: 3 });
+  const bare = revealedHere(freshRun());
+  const alone = { ...freshRun(), tiles: [freshRun().tiles[0]] };
+  const aloneAtIt = {
+    ...alone,
+    character: { ...alone.character, at: alone.tiles[0].at },
+  };
+  const cases = [
+    ["explore on a revealed tile", bare, act("explore"), "kafelek już odkryty"],
+    ["wander with no neighbour", aloneAtIt, act("wander"), "nie ma dokąd iść"],
+    [
+      "walk to a thing no revealed tile holds",
+      bare,
+      resourceAction("walkTo", "stick"),
+      "nie znasz miejsca, gdzie leży patyk",
+    ],
+    [
+      "walk to a thing lying on the character's tile",
+      here,
+      resourceAction("walkTo", "stick"),
+      "patyk leży już tutaj",
+    ],
+    [
+      "walk to a campfire where there is none",
+      bare,
+      act("walkToCampfire"),
+      "nie ma ogniska",
+    ],
+    [
+      "walk to a campfire the character stands at",
+      campfireHere(bare, 10),
+      act("walkToCampfire"),
+      "już przy ognisku",
+    ],
+    [
+      "gather what does not lie here",
+      bare,
+      resourceAction("gather", "moss"),
+      "tu nie leży mech",
+    ],
+    [
+      "patrol what does not lie here",
+      bare,
+      resourceAction("patrol", "berry"),
+      "tu nie leży jagoda",
+    ],
+    [
+      "gather into a full backpack",
+      carrying(here, { berry: 60 }),
+      resourceAction("gather", "stick"),
+      "plecak pełny",
+    ],
+    [
+      "craft a campfire on an unrevealed tile",
+      carrying(freshRun(), { stick: 6 }),
+      act("craftCampfire"),
+      "kafelek nieodkryty",
+    ],
+    [
+      "craft a campfire where one stands",
+      carrying(campfireHere(bare, 0), { stick: 6 }),
+      act("craftCampfire"),
+      "tu już stoi ognisko",
+    ],
+    [
+      "craft a campfire short of sticks",
+      carrying(bare, { stick: 2 }),
+      act("craftCampfire"),
+      "brakuje 4 × patyk",
+    ],
+    [
+      "light a campfire where none stands",
+      carrying(bare, { stick: 2 }),
+      act("lightCampfire"),
+      "tu nie stoi ognisko",
+    ],
+    [
+      "light a campfire that burns",
+      carrying(campfireHere(bare, 12), { stick: 2 }),
+      act("lightCampfire"),
+      "ognisko już płonie",
+    ],
+    [
+      "light a campfire short of sticks",
+      carrying(campfireHere(bare, 0), { stick: 1 }),
+      act("lightCampfire"),
+      "brakuje 1 × patyk",
+    ],
+    [
+      "light a stick on an unrevealed tile",
+      carrying(freshRun(), { stick: 1 }),
+      act("lightItem"),
+      "kafelek nieodkryty",
+    ],
+    [
+      "light a stick with none in the backpack",
+      bare,
+      act("lightItem"),
+      "brakuje 1 × patyk",
+    ],
+    [
+      "feed a campfire that does not burn",
+      carrying(campfireHere(bare, 0), { stick: 1 }),
+      act("feedCampfire"),
+      "tu nie płonie ognisko",
+    ],
+    [
+      "feed a campfire with no fuel",
+      campfireHere(bare, 12),
+      act("feedCampfire"),
+      "brak opału: patyk",
+    ],
+    ["eat with no berry", bare, act("eat"), "brakuje 1 × jagoda"],
+    ["a combat action outside combat", bare, act("kick"), "tylko w walce"],
+    [
+      "a combat action with a stick outside combat",
+      carrying(bare, { stick: 1 }),
+      act("strikeWithStick"),
+      "tylko w walce",
+    ],
+  ];
+  for (const [name, run, action, reason] of cases) {
+    assert.equal(refusalOf(run, action), reason, name);
+    assert.equal(actionFeasible(run, map, action), false, name);
+  }
+});
+
+test("an action that can start gives no reason", () => {
+  const run = carrying(revealedHere(freshRun(), { stick: 3 }), {
+    stick: 6,
+    berry: 1,
+  });
+  for (const action of [
+    act("wander"),
+    resourceAction("gather", "stick"),
+    act("craftCampfire"),
+    act("lightItem"),
+    act("eat"),
+  ])
+    assert.equal(refusalOf(run, action), null, action.kind);
+  assert.equal(refusalOf(freshRun(), act("explore")), null);
+});
+
+test("a spell short of nature energy gives the energy the character has, rounded down, of what it costs", () => {
+  const ready = carrying(revealedHere(freshRun()), { stick: 1 });
+  const tired = { ...ready, natureEnergy: 9.5 };
+  assert.equal(
+    refusalOf(tired, act("lightItem")),
+    "brak energii natury: 9 z 10",
+  );
+  assert.equal(
+    refusalOf({ ...ready, natureEnergy: 10 }, act("lightItem")),
+    null,
+  );
+});
+
+test("of several reasons the world and the backpack come before the nature energy", () => {
+  const drained = { ...revealedHere(freshRun()), natureEnergy: 0 };
+  assert.equal(
+    refusalOf(drained, act("lightCampfire")),
+    "tu nie stoi ognisko",
+    "the energy is not the reason while the world refuses",
+  );
+  assert.equal(
+    refusalOf(carrying(drained, { stick: 1 }), act("lightItem")),
+    "brak energii natury: 0 z 10",
+  );
+});
+
+test("the bar of every rule is judged, below the winning rule too", () => {
+  const judged = judgeProgram(
+    freshRun(),
+    map,
+    program(
+      group(1, ALWAYS, [
+        rule(11, ALWAYS, act("explore")),
+        rule(12, ALWAYS, act("wander")),
+        rule(13, NEVER, act("wander")),
+        rule(14, ALWAYS, act("eat")),
+      ]),
+    ),
+  );
+  assert.equal(judged.winner?.id, 11);
+  assert.deepEqual(judged.rules[11], { bar: "go", reason: null });
+  assert.deepEqual(
+    judged.rules[12],
+    { bar: "go", reason: null },
+    "a rule below the winner that could start is green too",
+  );
+  assert.deepEqual(judged.rules[13], { bar: "unmet", reason: null });
+  assert.deepEqual(judged.rules[14], {
+    bar: "blocked",
+    reason: "brakuje 1 × jagoda",
+  });
+});
+
+test("the winner is the first green rule of the first group that holds", () => {
+  const judged = judgeProgram(
+    freshRun(),
+    map,
+    program(
+      group(1, NEVER, [rule(11, ALWAYS, act("explore"))]),
+      group(2, ALWAYS, [
+        rule(21, ALWAYS, act("eat")),
+        rule(22, ALWAYS, act("wander")),
+        rule(23, ALWAYS, act("explore")),
+      ]),
+    ),
+  );
+  assert.equal(judged.winner?.id, 22);
+});
+
+test("no rule goes: no winner", () => {
+  const judged = judgeProgram(
+    freshRun(),
+    map,
+    program(group(1, ALWAYS, [rule(11, ALWAYS, act("eat"))])),
+  );
+  assert.equal(judged.winner, null);
+});
+
+test("every rule of a group whose condition does not hold shows dark with no reason, whatever the rule would say", () => {
+  const judged = judgeProgram(
+    freshRun(),
+    map,
+    program(
+      group(1, NEVER, [
+        rule(11, ALWAYS, act("explore")),
+        rule(12, ALWAYS, act("eat")),
+      ]),
+    ),
+  );
+  assert.equal(judged.groups[1], "unmet");
+  assert.deepEqual(judged.rules[11], { bar: "unmet", reason: null });
+  assert.deepEqual(judged.rules[12], { bar: "unmet", reason: null });
+});
+
+test("the bar of a group is green when one of its rules can start, amber when none can, and amber when it holds no rule", () => {
+  const judged = judgeProgram(
+    freshRun(),
+    map,
+    program(
+      group(1, ALWAYS, [
+        rule(11, ALWAYS, act("eat")),
+        rule(12, NEVER, act("explore")),
+      ]),
+      group(2, ALWAYS, []),
+      group(3, ALWAYS, [
+        rule(31, ALWAYS, act("eat")),
+        rule(32, ALWAYS, act("explore")),
+      ]),
+      group(4, NEVER, [rule(41, ALWAYS, act("explore"))]),
+    ),
+  );
+  assert.deepEqual(judged.groups, {
+    1: "blocked",
+    2: "blocked",
+    3: "go",
+    4: "unmet",
+  });
+});
+
+test("a combat rule outside combat is amber with „tylko w walce” when its condition holds, dark when it does not", () => {
+  const judged = judgeProgram(
+    freshRun(),
+    map,
+    program(
+      group(1, ALWAYS, [
+        rule(11, ALWAYS, act("kick")),
+        rule(12, NEVER, act("kick")),
+      ]),
+    ),
+  );
+  assert.deepEqual(judged.rules[11], {
+    bar: "blocked",
+    reason: "tylko w walce",
+  });
+  assert.deepEqual(judged.rules[12], { bar: "unmet", reason: null });
+  assert.equal(judged.winner, null);
+});
+
+test("in combat the rule the first turn would choose wins, an ordinary rule is amber with „trwa walka”, and a combat action short of its stick says what it lacks", () => {
+  const judged = judgeProgram(
+    freshRun(),
+    map,
+    program(
+      group(1, ALWAYS, [
+        rule(11, ALWAYS, act("explore")),
+        rule(12, ALWAYS, act("strikeWithStick")),
+        rule(13, ALWAYS, act("kick")),
+        rule(14, ALWAYS, act("dodge")),
+        rule(15, NEVER, act("kick")),
+      ]),
+    ),
+    { combat: { health: 100, opponentHealth: 24 } },
+  );
+  assert.equal(judged.winner?.id, 13);
+  assert.deepEqual(judged.rules[11], { bar: "blocked", reason: "trwa walka" });
+  assert.deepEqual(judged.rules[12], {
+    bar: "blocked",
+    reason: "brakuje 1 × patyk",
+  });
+  assert.deepEqual(judged.rules[13], { bar: "go", reason: null });
+  assert.deepEqual(
+    judged.rules[14],
+    { bar: "go", reason: null },
+    "a combat rule below the winner that could be chosen is green",
+  );
+  assert.deepEqual(judged.rules[15], { bar: "unmet", reason: null });
+});
+
+test("combat conditions read the health of the two sides given", () => {
+  const rules = program(
+    group(1, ALWAYS, [
+      rule(11, { kind: "healthBelow", value: 50 }, act("kick")),
+      rule(12, { kind: "opponentHealthBelow", value: 25 }, act("dodge")),
+    ]),
+  );
+  const at = (health, opponentHealth) =>
+    judgeProgram(freshRun(), map, rules, {
+      combat: { health, opponentHealth },
+    }).rules;
+  assert.equal(at(49, 24)[11].bar, "go");
+  assert.equal(at(50, 25)[11].bar, "unmet");
+  assert.equal(at(50, 24)[12].bar, "go");
+  assert.equal(at(50, 25)[12].bar, "unmet");
+});
+
+test("stopping at the winner leaves the rules below it unjudged", () => {
+  const rules = program(
+    group(1, ALWAYS, [
+      rule(11, ALWAYS, act("explore")),
+      rule(12, ALWAYS, act("wander")),
+    ]),
+    group(2, ALWAYS, [rule(21, ALWAYS, act("wander"))]),
+  );
+  const judged = judgeProgram(freshRun(), map, rules, { throughWinner: true });
+  assert.equal(judged.winner?.id, 11);
+  assert.deepEqual(Object.keys(judged.rules), ["11"]);
+  assert.equal(chooseActivity(freshRun(), map, rules).ruleId, 11);
+});
+
+/** The state of a map run of the forest for a character that knows everything, program `groups`. */
+function sentWith(groups, understanding = fullUnderstanding()) {
+  const created = createCharacter(
+    { ...newKnowingGame(), understanding },
+    "Ala",
+  ).state;
+  const set = setProgram(created, program(...groups)).state;
+  return send(set, SENT, T0).state;
+}
+
+test("a rule outside the repertoire is amber with its reason, whether or not its own condition holds", () => {
+  // „Obchód” is of a branch the mage did not buy; fibre is a thing the Understanding lacks.
+  const understanding = {
+    ...fullUnderstanding(),
+    items: fullUnderstanding().items.filter((item) => item !== "fiber"),
+  };
+  const state = sentWith(
+    [
+      group(1, ALWAYS, [
+        rule(11, ALWAYS, resourceAction("patrol", "stick")),
+        rule(12, NEVER, resourceAction("patrol", "stick")),
+        rule(13, ALWAYS, resourceAction("gather", "fiber")),
+        rule(
+          14,
+          { kind: "itemBelow", item: "fiber", value: 3 },
+          act("explore"),
+        ),
+        rule(15, ALWAYS, act("explore")),
+      ]),
+    ],
+    understanding,
+  );
+  const { judgement } = ruleSigns(state);
+  assert.deepEqual(judgement.rules[11], {
+    bar: "blocked",
+    reason: "gałąź niewykupiona",
+  });
+  assert.deepEqual(judgement.rules[12], {
+    bar: "blocked",
+    reason: "gałąź niewykupiona",
+  });
+  assert.deepEqual(judgement.rules[13], {
+    bar: "blocked",
+    reason: "jeszcze nieodkryte: włókno",
+  });
+  assert.deepEqual(judgement.rules[14], {
+    bar: "blocked",
+    reason: "jeszcze nieodkryte: włókno",
+  });
+  assert.deepEqual(judgement.rules[15], { bar: "go", reason: null });
+  assert.equal(judgement.winner?.id, 15);
+});
+
+test("an undiscovered condition or action is named by its label", () => {
+  const known = fullUnderstanding();
+  const state = sentWith(
+    [
+      group(1, ALWAYS, [
+        rule(11, { kind: "satietyBelow", value: 50 }, act("explore")),
+        rule(12, ALWAYS, act("eat")),
+      ]),
+    ],
+    {
+      ...known,
+      conditions: known.conditions.filter((kind) => kind !== "satietyBelow"),
+      actions: known.actions.filter((kind) => kind !== "eat"),
+    },
+  );
+  const { judgement } = ruleSigns(state);
+  assert.equal(
+    judgement.rules[11].reason,
+    "jeszcze nieodkryte: Sytość poniżej",
+  );
+  assert.equal(
+    judgement.rules[12].reason,
+    "jeszcze nieodkryte: Zjedz — jagoda",
+  );
+});
+
+test("a group whose condition lies outside the repertoire shows dark with its rules, which give no reason though they lie outside it", () => {
+  const known = fullUnderstanding();
+  const cold = { kind: "temperatureBelow", value: 36 };
+  const sent = sentWith(
+    [
+      group(1, cold, [
+        rule(11, ALWAYS, act("explore")),
+        rule(12, ALWAYS, resourceAction("patrol", "stick")),
+      ]),
+      group(2, ALWAYS, [rule(21, ALWAYS, act("wander"))]),
+    ],
+    {
+      ...known,
+      conditions: known.conditions.filter(
+        (kind) => kind !== "temperatureBelow",
+      ),
+      actions: known.actions.filter((kind) => kind !== "explore"),
+    },
+  );
+  // The body stands at 34 degrees, so the condition of group 1 holds: only the repertoire can
+  // make the group dark.
+  const state = {
+    ...sent,
+    run: { ...sent.run, body: { ...sent.run.body, temperature: 34 } },
+  };
+  assert.equal(
+    judgeProgram(state.run, map, state.run.copy.program).groups[1],
+    "go",
+    "precondition: without the repertoire the group goes",
+  );
+  const { judgement } = ruleSigns(state);
+  assert.equal(judgement.groups[1], "unmet");
+  assert.deepEqual(judgement.rules[11], { bar: "unmet", reason: null });
+  assert.deepEqual(judgement.rules[12], { bar: "unmet", reason: null });
+  assert.equal(judgement.groups[2], "go");
+  assert.equal(judgement.winner?.id, 21);
+});
+
+test("the repertoire is checked before the condition, so a rule outside it never wins", () => {
+  const known = fullUnderstanding();
+  const rules = program(
+    group(1, ALWAYS, [
+      rule(11, ALWAYS, act("explore")),
+      rule(12, ALWAYS, act("wander")),
+    ]),
+  );
+  const state = sentWith(rules.groups, {
+    ...known,
+    actions: known.actions.filter((kind) => kind !== "explore"),
+  });
+  assert.equal(ruleSigns(state).judgement.winner.id, 12);
+});
+
+test("the winner the signs show is the rule the pick takes, minute after minute, over the program as the character can use it", () => {
+  const known = fullUnderstanding();
+  const state = sentWith(
+    [
+      group(1, ALWAYS, [
+        rule(11, ALWAYS, resourceAction("patrol", "stick")),
+        rule(12, { kind: "satietyBelow", value: 95 }, act("eat")),
+        rule(13, ALWAYS, resourceAction("gather", "stick")),
+        rule(14, ALWAYS, act("explore")),
+        rule(15, ALWAYS, act("wander")),
+      ]),
+    ],
+    { ...known, items: known.items.filter((item) => item !== "berry") },
+  );
+  let current = state;
+  for (let minute = 0; minute < 60; minute += 1) {
+    const run = current.run;
+    const reduced = programOf(
+      current,
+      run.copy.program,
+      run.character.id,
+      run.character.skills,
+    );
+    const picked = chooseActivity(run, MAPS[run.mapId], reduced);
+    assert.equal(
+      ruleSigns(current).judgement.winner?.id,
+      picked.kind === "rule" ? picked.ruleId : undefined,
+      `minute ${run.minute}`,
+    );
+    current = advanceMinutes(current, 1).state;
+  }
+});
+
+test("the repertoire the signs read is the editor's, and the knowledge is what the Understanding holds of the archetype with every branch bought", () => {
+  const state = sentWith([group(1, ALWAYS, [])]);
+  assert.equal(editorRepertoire(state).actions.includes("patrol"), false);
+  assert.equal(knownRepertoire(state).actions.includes("patrol"), true);
+});
+
+// What the player sees as running, on top of the winner.
+const EXPLORE_RULE = rule(7, ALWAYS, act("explore"));
+const WANDER_RULE = rule(8, ALWAYS, act("wander"));
+
+test("the rule whose action goes on stands as running when another rule wins now, and not when it is the winner", () => {
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
+  assert.equal(started.run.current.activity.ruleId, 7, "precondition");
+  assert.equal(ruleSigns(started).running, null, "it is the winner");
+  const edited = setProgram(
+    started,
+    program(group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])),
+  ).state;
+  const signs = ruleSigns(edited);
+  assert.equal(signs.judgement.winner.id, 8);
+  assert.equal(signs.running, 7);
+});
+
+test("a fix of the copy shows at once: a rule that could not start turns green", () => {
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
+  const before = setProgram(
+    started,
+    program(group(1, ALWAYS, [rule(9, ALWAYS, act("eat")), EXPLORE_RULE])),
+  ).state;
+  assert.equal(ruleSigns(before).judgement.rules[9].bar, "blocked");
+  const fixed = {
+    ...before,
+    run: {
+      ...before.run,
+      character: {
+        ...before.run.character,
+        backpack: { ...before.run.character.backpack, berry: 1 },
+      },
+    },
+  };
+  assert.equal(ruleSigns(fixed).judgement.rules[9].bar, "go");
+});
+
+test("no map run, no signs", () => {
+  assert.equal(ruleSigns(newKnowingGame()), null);
+});
+
+/** The map run after a death of cold in the next game minute, the activity of the death still on. */
+function diedOfCold() {
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
+  const dying = {
+    ...started,
+    run: {
+      ...started.run,
+      body: { temperature: 34, satiety: 100, health: 0.1 },
+    },
+  };
+  const fallen = advanceMinutes(dying, 1).state;
+  assert.equal(fallen.run.death?.cause, "cold", "precondition");
+  return fallen;
+}
+
+test("after a death of cold the rule whose action was going on stands as running, on the stopped minute", () => {
+  const fallen = diedOfCold();
+  const edited = setProgram(
+    fallen,
+    program(group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])),
+  ).state;
+  const signs = ruleSigns(edited);
+  assert.equal(signs.judgement.winner.id, 8);
+  assert.equal(signs.running, 7);
+});
+
+test("after a completion a finished action is no longer running, one still going is", () => {
+  const started = sentWith([group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])]);
+  const completed = (endMinute) => ({
+    ...started,
+    run: {
+      ...started.run,
+      minute: 50,
+      completion: { minute: 50 },
+      current: {
+        activity: { kind: "rule", ruleId: 7, action: act("explore") },
+        startMinute: 30,
+        endMinute,
+        stepTo: null,
+      },
+    },
+  });
+  assert.equal(ruleSigns(completed(50)).running, null);
+  assert.equal(ruleSigns(completed(60)).running, 7);
+});
+
+// The minutes of an attack: the first turn's pick, no action going on.
+const WOLF_HEALTH = 24;
+function fighting(groups) {
+  const started = sentWith(groups);
+  const activeCombat = {
+    creatureId: "wolf",
+    attackMinute: 181,
+    resolveMinute: 186,
+  };
+  return {
+    ...started,
+    run: {
+      ...started.run,
+      minute: 181,
+      current: null,
+      activeCombat,
+      lastCombat: { ...activeCombat, result: null },
+    },
+  };
+}
+
+test("in the minutes of an attack the signs show the first turn's pick at the health of the mage and of the wolf, and no action is running", () => {
+  const state = fighting([
+    group(1, ALWAYS, [
+      rule(11, ALWAYS, act("explore")),
+      rule(
+        12,
+        { kind: "opponentHealthBelow", value: WOLF_HEALTH },
+        act("dodge"),
+      ),
+      rule(
+        13,
+        { kind: "opponentHealthBelow", value: WOLF_HEALTH + 1 },
+        act("kick"),
+      ),
+      rule(14, ALWAYS, act("kick")),
+    ]),
+  ]);
+  const signs = ruleSigns(state);
+  assert.equal(signs.running, null);
+  assert.deepEqual(signs.judgement.rules[11], {
+    bar: "blocked",
+    reason: "trwa walka",
+  });
+  assert.equal(
+    signs.judgement.rules[12].bar,
+    "unmet",
+    "the wolf has 24, which is not below 24",
+  );
+  assert.equal(signs.judgement.winner.id, 13);
+  assert.equal(signs.judgement.rules[14].bar, "go");
+});
+
+test("after a death in combat no action is running", () => {
+  const state = fighting([group(1, ALWAYS, [rule(11, ALWAYS, act("kick"))])]);
+  const dying = {
+    ...state,
+    run: {
+      ...state.run,
+      minute: 185,
+      body: { temperature: 37, satiety: 100, health: 5 },
+    },
+  };
+  const fallen = advanceMinutes(dying, 1).state;
+  assert.equal(fallen.run.death?.cause, "combat", "precondition");
+  const signs = ruleSigns(fallen);
+  assert.equal(signs.running, null);
+  assert.equal(signs.judgement.rules[11].bar, "blocked");
+  assert.equal(signs.judgement.rules[11].reason, "tylko w walce");
+});

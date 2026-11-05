@@ -5,7 +5,14 @@ import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
 import type { MapDef } from "./data/maps.js";
+import { RESOURCES } from "./data/resources.js";
 import { actionMinutes, branchActionAvailable, skillBonus } from "./skills.js";
+import {
+  BRANCH_NOT_BOUGHT,
+  conditionInRepertoire,
+  outsideReason,
+  type Repertoire,
+} from "./understanding.js";
 import type {
   Action,
   Activity,
@@ -13,12 +20,14 @@ import type {
   Campfire,
   Condition,
   ConditionContext,
+  GroupId,
   Hex,
   ItemId,
   MapRun,
   Program,
   ProgramRule,
   ResourceId,
+  RuleId,
   Tile,
 } from "./types.js";
 
@@ -200,67 +209,235 @@ function walkingTiles(run: RunView): Tile[] {
   }));
 }
 
+/** The name of a resource or an item as the game writes it, in lower case. */
+function thingName(item: ItemId): string {
+  return RESOURCES[item].name;
+}
+
+/** „brakuje {how many} × {item}”: what the backpack lacks of the pieces `need` names. */
+function lacking(backpack: Backpack, need: { item: ItemId; count: number }) {
+  return `brakuje ${need.count - backpack[need.item]} × ${thingName(need.item)}`;
+}
+
+/** The first item of the data's order that the data marks for a use. */
+function firstItemFor(use: ItemUse): ItemId {
+  const ids = Object.keys(ITEMS) as ItemId[];
+  return ids.find((id) => ITEMS[id][use] !== undefined)!;
+}
+
+/**
+ * Why an action cannot start now outside combat, in the words of the player: null where it can.
+ * The first of these that holds is given: combat, then the world and the backpack, then the nature
+ * energy a spell costs, then a branch the character did not buy. Never draws: the wander generator
+ * is left as it is.
+ */
+export function actionRefusal(
+  run: RunView,
+  _map: MapDef,
+  action: Action,
+): string | null {
+  const refusal = worldRefusal(run, action);
+  if (refusal !== null) return refusal;
+  const cost = natureEnergyCost(action);
+  if (run.natureEnergy < cost)
+    return `brak energii natury: ${Math.floor(run.natureEnergy)} z ${cost}`;
+  if (!branchActionAvailable(run.character.skills, action.kind))
+    return BRANCH_NOT_BOUGHT;
+  return null;
+}
+
+/** The refusal of an action by combat, the world or the backpack; null where none of them refuses. */
+function worldRefusal(run: RunView, action: Action): string | null {
+  const backpack = run.character.backpack;
+  switch (action.kind) {
+    case "explore": {
+      const here = tileAt(run.tiles, run.character.at);
+      return here !== undefined && !here.revealed
+        ? null
+        : "kafelek już odkryty";
+    }
+    case "wander":
+      return neighbours(run.tiles, run.character.at).length > 0
+        ? null
+        : "nie ma dokąd iść";
+    case "walkTo": {
+      const target = walkTarget(run, action.resource);
+      if (target === null)
+        return `nie znasz miejsca, gdzie leży ${thingName(action.resource)}`;
+      return target.minutes > 0
+        ? null
+        : `${thingName(action.resource)} leży już tutaj`;
+    }
+    case "walkToCampfire": {
+      const target = campfireTarget(run);
+      if (target === null) return "nie ma ogniska";
+      return target.minutes > 0 ? null : "już przy ognisku";
+    }
+    case "gather":
+    case "patrol":
+      if (stockHere(run, action.resource) <= 0)
+        return `tu nie leży ${thingName(action.resource)}`;
+      return backpackCount(backpack) < backpackCap(run.character)
+        ? null
+        : "plecak pełny";
+    case "craftCampfire":
+      if (!revealedHere(run)) return "kafelek nieodkryty";
+      if (campfireHere(run) !== undefined) return "tu już stoi ognisko";
+      return holds(backpack, CAMPFIRE.craft)
+        ? null
+        : lacking(backpack, CAMPFIRE.craft);
+    case "lightCampfire": {
+      const campfire = campfireHere(run);
+      if (campfire === undefined) return "tu nie stoi ognisko";
+      if (campfire.minutesLeft > 0) return "ognisko już płonie";
+      return skillBonus(run.character.skills, "cleanFlame") > 0 ||
+        holds(backpack, CAMPFIRE.light)
+        ? null
+        : lacking(backpack, CAMPFIRE.light);
+    }
+    case "lightItem":
+      if (!revealedHere(run)) return "kafelek nieodkryty";
+      return itemFor(backpack, "lightable") !== null
+        ? null
+        : lacking(backpack, { item: firstItemFor("lightable"), count: 1 });
+    case "feedCampfire":
+      if ((campfireHere(run)?.minutesLeft ?? 0) <= 0)
+        return "tu nie płonie ognisko";
+      return itemFor(backpack, "fuel") !== null
+        ? null
+        : `brak opału: ${thingName(firstItemFor("fuel"))}`;
+    case "eat":
+      return itemFor(backpack, "food") !== null
+        ? null
+        : lacking(backpack, { item: firstItemFor("food"), count: 1 });
+    case "strikeWithStick":
+    case "kick":
+    case "dodge":
+      return "tylko w walce";
+  }
+}
+
 /**
  * Whether an action can start now. A spell needs at least the nature energy it costs, as the other
  * actions need their pieces. Never draws: the wander generator is left as it is.
  */
 export function actionFeasible(
   run: RunView,
-  _map: MapDef,
+  map: MapDef,
   action: Action,
 ): boolean {
-  if (run.natureEnergy < natureEnergyCost(action)) return false;
-  if (!branchActionAvailable(run.character.skills, action.kind)) return false;
-  switch (action.kind) {
-    case "explore": {
-      const here = tileAt(run.tiles, run.character.at);
-      return here !== undefined && !here.revealed;
-    }
-    case "wander":
-      return neighbours(run.tiles, run.character.at).length > 0;
-    case "walkTo": {
-      const target = walkTarget(run, action.resource);
-      return target !== null && target.minutes > 0;
-    }
-    case "walkToCampfire": {
-      const target = campfireTarget(run);
-      return target !== null && target.minutes > 0;
-    }
-    case "gather":
-    case "patrol":
-      return (
-        stockHere(run, action.resource) > 0 &&
-        backpackCount(run.character.backpack) < backpackCap(run.character)
-      );
-    case "craftCampfire":
-      return (
-        revealedHere(run) &&
-        campfireHere(run) === undefined &&
-        holds(run.character.backpack, CAMPFIRE.craft)
-      );
-    case "lightCampfire":
-      return (
-        campfireHere(run)?.minutesLeft === 0 &&
-        (skillBonus(run.character.skills, "cleanFlame") > 0 ||
-          holds(run.character.backpack, CAMPFIRE.light))
-      );
-    case "lightItem":
-      return (
-        revealedHere(run) &&
-        itemFor(run.character.backpack, "lightable") !== null
-      );
-    case "feedCampfire":
-      return (
-        (campfireHere(run)?.minutesLeft ?? 0) > 0 &&
-        itemFor(run.character.backpack, "fuel") !== null
-      );
-    case "eat":
-      return itemFor(run.character.backpack, "food") !== null;
-    case "strikeWithStick":
-    case "kick":
-    case "dodge":
-      return false;
+  return actionRefusal(run, map, action) === null;
+}
+
+/**
+ * Why a rule's action cannot be carried out in combat: null where it can. Only a combat action can,
+ * and one that uses an item needs a piece of it in the backpack.
+ */
+function combatRefusal(run: RunView, action: Action): string | null {
+  const effect = (ACTIONS[action.kind] as ActionDef).combat;
+  if (!effect) return "trwa walka";
+  if (
+    "item" in effect &&
+    effect.item &&
+    run.character.backpack[effect.item] < 1
+  )
+    return lacking(run.character.backpack, { item: effect.item, count: 1 });
+  return null;
+}
+
+/**
+ * What the bar at a rule or a rule group says: `go` where its condition holds and it can start (of
+ * a rule group, where one of its rules can), `blocked` where the condition holds and it cannot,
+ * `unmet` where the condition does not hold.
+ */
+export type ConditionBar = "go" | "blocked" | "unmet";
+
+/** What one rule shows: its bar and, where it is `blocked`, the reason in the player's words. */
+export type RuleJudgement = { bar: ConditionBar; reason: string | null };
+
+/** What the pick judged of a program, rule by rule and group by group. */
+export type ProgramJudgement = {
+  groups: Record<GroupId, ConditionBar>;
+  rules: Record<RuleId, RuleJudgement>;
+  /** The rule the pick takes: the first whose bar is `go`; null where none is. */
+  winner: ProgramRule | null;
+};
+
+export type JudgeOptions = {
+  /**
+   * What the character can use and what the Understanding knows of it (`knownRepertoire`). The
+   * repertoire is checked before the condition: a rule outside it is `blocked` with its reason, a
+   * group whose condition lies outside it counts as one whose condition does not hold. Left out
+   * where the program is already reduced to the repertoire.
+   */
+  reach?: { repertoire: Repertoire; known: Repertoire };
+  /** The health of the side that picks and of its opponent: judges as a combat turn does. */
+  combat?: ConditionContext;
+  /** Stops after the winner: the rules and groups below it are not judged. */
+  throughWinner?: boolean;
+};
+
+/** What one rule of a group that holds shows. */
+function judgeRule(
+  run: RunView,
+  map: MapDef,
+  rule: ProgramRule,
+  options: JudgeOptions,
+): RuleJudgement {
+  const { reach, combat } = options;
+  if (reach) {
+    const outside = outsideReason(reach.repertoire, reach.known, rule);
+    if (outside !== null) return { bar: "blocked", reason: outside };
   }
+  if (!conditionHolds(run, map, rule.condition, combat))
+    return { bar: "unmet", reason: null };
+  const reason = combat
+    ? combatRefusal(run, rule.action)
+    : actionRefusal(run, map, rule.action);
+  return reason === null
+    ? { bar: "go", reason: null }
+    : { bar: "blocked", reason };
+}
+
+/**
+ * Judges the rule groups of a program in order, each only while its condition holds, and the rules
+ * of each in order: the one function the pick, the combat pick and what the program shows beside its
+ * rules all come from. The winner is the first rule whose bar is `go`. A rule in a group whose
+ * condition does not hold is `unmet` with no reason. Inputs are not changed.
+ */
+export function judgeProgram(
+  run: RunView,
+  map: MapDef,
+  program: Program,
+  options: JudgeOptions = {},
+): ProgramJudgement {
+  const { reach, combat, throughWinner = false } = options;
+  const groups: Record<GroupId, ConditionBar> = {};
+  const rules: Record<RuleId, RuleJudgement> = {};
+  let winner: ProgramRule | null = null;
+  for (const group of program.groups) {
+    if (throughWinner && winner !== null) break;
+    const holds =
+      (!reach || conditionInRepertoire(reach.repertoire, group.condition)) &&
+      conditionHolds(run, map, group.condition, combat);
+    if (!holds) {
+      groups[group.id] = "unmet";
+      for (const rule of group.rules)
+        rules[rule.id] = { bar: "unmet", reason: null };
+      continue;
+    }
+    let goes = false;
+    for (const rule of group.rules) {
+      if (throughWinner && winner !== null) break;
+      const judged = judgeRule(run, map, rule, options);
+      rules[rule.id] = judged;
+      if (judged.bar !== "go") continue;
+      goes = true;
+      winner ??= rule;
+    }
+    groups[group.id] = goes ? "go" : "blocked";
+  }
+  return { groups, rules, winner };
 }
 
 /** The first feasible rule of the first qualifying group, both conditions holding; else a wait. */
@@ -269,18 +446,10 @@ export function chooseActivity(
   map: MapDef,
   program: Program,
 ): Activity {
-  for (const group of program.groups) {
-    if (!conditionHolds(run, map, group.condition)) continue;
-    for (const rule of group.rules) {
-      if (
-        conditionHolds(run, map, rule.condition) &&
-        actionFeasible(run, map, rule.action)
-      ) {
-        return { kind: "rule", ruleId: rule.id, action: { ...rule.action } };
-      }
-    }
-  }
-  return { kind: "wait" };
+  const { winner } = judgeProgram(run, map, program, { throughWinner: true });
+  return winner
+    ? { kind: "rule", ruleId: winner.id, action: { ...winner.action } }
+    : { kind: "wait" };
 }
 
 /** The first feasible combat rule at the actor's current health, or no action this exchange. */
@@ -291,21 +460,9 @@ export function chooseCombatRule(
   health: number,
   opponentHealth: number,
 ): ProgramRule | null {
-  const context: ConditionContext = { health, opponentHealth };
-  for (const group of program.groups) {
-    if (!conditionHolds(run, map, group.condition, context)) continue;
-    for (const rule of group.rules) {
-      if (!conditionHolds(run, map, rule.condition, context)) continue;
-      const effect = (ACTIONS[rule.action.kind] as ActionDef).combat;
-      if (!effect) continue;
-      if (
-        "item" in effect &&
-        effect.item &&
-        run.character.backpack[effect.item] < 1
-      )
-        continue;
-      return rule;
-    }
-  }
-  return null;
+  const { winner } = judgeProgram(run, map, program, {
+    combat: { health, opponentHealth },
+    throughWinner: true,
+  });
+  return winner;
 }

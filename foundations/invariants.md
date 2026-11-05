@@ -478,7 +478,7 @@ In the stylesheets of the part browser-view, `outline` and the `outline-*` prope
 
 ## design-token-contrast
 
-In `src/browser/tokens.css`, each of `text-strong`, `text`, `text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change` has a contrast ratio of at least 4.5:1 against each of `page`, `panel` and `highlight`, `control-border` and `focus` have at least 3:1 against each of those three, `character` has at least 3:1 against `tile-revealed` and against `tile-hidden`, and `tile-revealed` has at least 3:1 against `tile-hidden`, each ratio computed from the values of those roles as WCAG 2.2 defines the contrast ratio.
+In `src/browser/tokens.css`, each of `text-strong`, `text`, `text-secondary`, `text-label`, `positive`, `warning`, `danger`, `discovery` and `player-change` has a contrast ratio of at least 4.5:1 against each of `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, `control-border` and `focus` have at least 3:1 against each of those five, `character` has at least 3:1 against `tile-revealed` and against `tile-hidden`, and `tile-revealed` has at least 3:1 against `tile-hidden`, each ratio computed from the values of those roles as WCAG 2.2 defines the contrast ratio.
 
 - **Method:** test
 - **Rests on:** wcag-text-contrast · wcag-non-text-contrast · wcag-contrast-ratio
@@ -1204,6 +1204,16 @@ Every file the build copies from `assets/sprites/` is a PNG image.
 - **Rests on:** none
 - **Derives from:** D-271
 - **Part:** browser-view
+- **Violated:** no
+
+## rule-state-from-pick
+
+The background, the bar and the reason a program rule or rule group shows come from the function of the simulation that picks the rule a character carries out.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-308 · D-309 · D-310
+- **Part:** simulation · browser-view
 - **Violated:** no
 
 ## Withdrawn identifiers
