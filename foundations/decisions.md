@@ -6083,7 +6083,7 @@ move by a handle with such a line, with no arrows in the header of a rule group.
 - **Relations:** derives from D-23 · derives from D-44
 - **Verification:** an agent compares a change with the decision:
   - complies: one editor component drawing the program on Programy and the copy on the screen of a
-    map run; a click on the row „Zapas poniżej 8 · patyk → Zbierz — patyk” opening the rule panel
+    map run; a click on the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” opening the rule panel
     beside the rows; a program rule dragged by its handle into another rule group, a line showing
     where it lands; a rule group dragged by its handle above another
   - violates: a native select list in a rule's row; the rule panel opened over the rows; „↑” and
@@ -6177,7 +6177,7 @@ target.
   - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · patyk → Zbierz — patyk”, in the
     cell „Zbierz” and over the head of the mage gathering; „Idź” and „Idź — ognisko” sharing one
     icon
-  - violates: the icon of a stick in the row of „Zbierz — patyk”; a greyed cell drawn with no icon
+  - violates: the icon of a stick in the row of „Zbierz — Patyk”; a greyed cell drawn with no icon
     while a cell that may be picked has one; cells drawn as text alone while the rows show icons
 - **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5, and § Settlements to record, row 3
 
@@ -6218,7 +6218,7 @@ run the time of a step on that map, and nothing for a movement outside a map run
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Zbierz — patyk” with its time in its row and beside „Zbierz” in the rule panel;
+  - complies: „Zbierz — Patyk” with its time in its row and beside „Zbierz” in the rule panel;
     „Kopnij” with „tura”; „Idź” on Programy with no map run in the game showing no time
   - violates: a time in the row and none in the panel; a time beside „Idź” outside a map run
 - **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, questions 6 and 17, and § Settlements to record, row 5
@@ -6349,7 +6349,7 @@ The program editor shows no current value beside a condition, such as „teraz 3
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Zapas poniżej 8 · patyk” with nothing beside it during a map run
+  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run
   - violates: „teraz 3” beside a condition in a rule's row or in the rule panel
 - **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 12
 
@@ -6454,8 +6454,8 @@ cell. After the last field the panel stays open, and „✕”, Escape or openin
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** an agent compares a change with the decision:
-  - complies: the rule „Zapas poniżej 8 · patyk → Zbierz — patyk” written from a click on its row
-    in six acts — the row, „Zapas poniżej”, 8 with Enter, „patyk”, „Zbierz”, „patyk” — and the
+  - complies: the rule „Zapas poniżej 8 · Patyk → Zbierz — Patyk” written from a click on its row
+    in six acts — the row, „Zapas poniżej”, 8 with Enter, „Patyk”, „Zbierz”, „Patyk” — and the
     panel still open after the last of them; Escape closing it
   - violates: the panel closing by itself after the target of the action; a pick waiting for a
     button that confirms it; Enter on a greyed cell changing the rule; a number field standing for
