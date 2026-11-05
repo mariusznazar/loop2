@@ -457,3 +457,26 @@ export function withFirstChillRule(program: Program): Program {
     nextRuleId: program.nextRuleId + 1,
   };
 }
+
+/**
+ * The name of the first rule group of the copy the map run carries out, in the copy's order, that
+ * holds a program rule "Zawsze → Eksploruj" — where the rule the game wrote at the held discovery
+ * stands now. Null where the state holds no map run or no discovery, where the held discovery is
+ * not the one at which the game wrote that rule (the first chill; it holds an action the data
+ * reveals by the chill), or where no group of the copy holds such a rule any more. Inputs are not
+ * changed.
+ */
+export function chillRuleGroupName(state: GameState): string | null {
+  if (!state.run || !state.discovery) return null;
+  const atChill = state.discovery.actions.some(
+    (kind) => ACTIONS[kind].revealedBy.kind === "chilled",
+  );
+  if (!atChill) return null;
+  const group = state.run.copy.program.groups.find((candidate) =>
+    candidate.rules.some(
+      (rule) =>
+        rule.condition.kind === "always" && rule.action.kind === "explore",
+    ),
+  );
+  return group ? group.name : null;
+}

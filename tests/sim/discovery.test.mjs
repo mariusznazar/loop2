@@ -17,10 +17,13 @@ import {
   send,
   setPaused,
   setProgram,
+  withSaveTime,
 } from "../../dist/browser/sim/game.js";
 import { sameHex, tileAt } from "../../dist/browser/sim/hex.js";
 import { nextRandom } from "../../dist/browser/sim/random.js";
 import { stepMinute } from "../../dist/browser/sim/run.js";
+import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
+import { chillRuleGroupName } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
 
 const MAP_ID = Object.keys(MAPS)[0];
@@ -752,4 +755,200 @@ test("real time passed over a minute that gave events but no discovery keeps its
   assert.equal(result.state.realMsCarry, 500);
   assert.equal(result.state.paused, false);
   assert.equal(result.state.discovery, null);
+});
+
+// The band of a discovery names the group of the copy that holds the rule the game wrote at the
+// first chill (D-312): the first group, in the copy's order, holding "Zawsze → Eksploruj", read at
+// the time of asking, while the held discovery is the one at the first chill.
+
+function group(id, name, rules = []) {
+  return { id, name, condition: { kind: "always" }, rules };
+}
+
+// A program of the groups `groups`, the next identities past every identity they hold.
+function programOfGroups(...groups) {
+  return {
+    groups,
+    tripPlan: { take: [], bring: [] },
+    nextGroupId: Math.max(0, ...groups.map((one) => one.id)) + 1,
+    nextRuleId:
+      Math.max(
+        0,
+        ...groups.flatMap((one) => one.rules.map((rule) => rule.id)),
+      ) + 1,
+  };
+}
+
+// The game stopped at the first chill, the copy of a program of `groups` carried out.
+function chilledIn(...groups) {
+  const state = advanceMinutes(sentNew(programOfGroups(...groups)), 100).state;
+  assert.equal(
+    state.run.minute,
+    84,
+    "precondition: stopped at the first chill",
+  );
+  assert.deepEqual(state.discovery, CHILL_REVEALED, "precondition: the chill");
+  return state;
+}
+
+// The copy the player edits while the band stands: `change` is given a clone of its program.
+function editedCopy(state, change) {
+  const program = structuredClone(state.run.copy.program);
+  change(program);
+  return setProgram(state, program).state;
+}
+
+function deepFreeze(value) {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const inner of Object.values(value)) deepFreeze(inner);
+  }
+  return value;
+}
+
+test("the first chill of a new game names the group Program, where the game wrote the rule", () => {
+  const state = advanceMinutes(sentNew(), 100).state;
+  assert.equal(chillRuleGroupName(state), "Program");
+});
+
+test("a copy whose first group the player renamed before the first chill names that name", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  assert.deepEqual(
+    state.run.copy.program.groups.map((one) => one.rules.length),
+    [1, 0],
+    "precondition: the rule stands in the first group",
+  );
+  assert.equal(chillRuleGroupName(state), "Ogień");
+});
+
+test("a copy with no rule group gets the group Program at the first chill, and the name is Program", () => {
+  const state = chilledIn();
+  assert.equal(chillRuleGroupName(state), "Program");
+});
+
+test("a group dragged above the one holding the rule while the band stands leaves the name where the rule stands", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const dragged = editedCopy(state, (program) => program.groups.reverse());
+  assert.deepEqual(
+    dragged.run.copy.program.groups.map((one) => one.name),
+    ["Głód", "Ogień"],
+    "precondition: Głód stands first",
+  );
+  assert.equal(chillRuleGroupName(dragged), "Ogień");
+});
+
+test("a group renamed while the band stands gives the new name", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const renamed = editedCopy(state, (program) => {
+    program.groups[0].name = "Ciepło";
+  });
+  assert.equal(chillRuleGroupName(renamed), "Ciepło");
+});
+
+test("the rule moved into another group while the band stands gives that group", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const moved = editedCopy(state, (program) => {
+    program.groups[1].rules = program.groups[0].rules;
+    program.groups[0].rules = [];
+  });
+  assert.equal(chillRuleGroupName(moved), "Głód");
+});
+
+test("another group holding its own Zawsze → Eksploruj, dragged above the one the game wrote into, gives that group", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const dragged = editedCopy(state, (program) => {
+    program.groups[1].rules.push(explorationRule(program.nextRuleId));
+    program.nextRuleId += 1;
+    program.groups.reverse();
+  });
+  assert.equal(chillRuleGroupName(dragged), "Głód");
+});
+
+test("the rule deleted while the band stands gives null, and the first other group holding such a rule once there is one", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const deleted = editedCopy(state, (program) => {
+    program.groups[0].rules = [];
+  });
+  assert.equal(chillRuleGroupName(deleted), null);
+  const another = editedCopy(deleted, (program) => {
+    program.groups[1].rules.push(explorationRule(program.nextRuleId));
+    program.nextRuleId += 1;
+  });
+  assert.equal(chillRuleGroupName(another), "Głód");
+});
+
+test("the group of the rule deleted while the band stands gives null", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const deleted = editedCopy(state, (program) => {
+    program.groups.splice(0, 1);
+  });
+  assert.equal(chillRuleGroupName(deleted), null);
+});
+
+test("a rule that is not Zawsze → Eksploruj does not name its group", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const changed = editedCopy(state, (program) => {
+    program.groups[0].rules = [
+      {
+        id: 1,
+        condition: { kind: "always" },
+        action: { kind: "wander" },
+      },
+      {
+        id: program.nextRuleId,
+        condition: { kind: "temperatureBelow", value: 30 },
+        action: { kind: "explore" },
+      },
+    ];
+    program.nextRuleId += 1;
+  });
+  assert.equal(chillRuleGroupName(changed), null);
+});
+
+test("the first finished exploration, a discovery that wrote no rule, gives null though the copy holds the rule", () => {
+  const chilled = advanceMinutes(sentNew(), 100).state;
+  const explored = advanceMinutes(chilled, 100).state;
+  assert.equal(explored.run.minute, 104, "precondition: the exploration");
+  assert.ok(explored.discovery.actions.includes("walkTo"));
+  assert.equal(
+    explored.run.copy.program.groups[0].rules.length,
+    1,
+    "precondition: the copy still holds the rule",
+  );
+  assert.equal(chillRuleGroupName(explored), null);
+});
+
+test("a state holding no discovery gives null, before the first chill and after Wznów", () => {
+  assert.equal(chillRuleGroupName(sentNew()), null);
+  assert.equal(chillRuleGroupName(advanceMinutes(sentNew(), 83).state), null);
+  const chilled = advanceMinutes(sentNew(), 100).state;
+  const resumed = setPaused(chilled, false).state;
+  assert.equal(resumed.run.copy.program.groups[0].rules.length, 1);
+  assert.equal(chillRuleGroupName(resumed), null);
+});
+
+test("a state holding no map run gives null, whatever it holds", () => {
+  assert.equal(chillRuleGroupName(newGame()), null);
+  const chilled = advanceMinutes(sentNew(), 100).state;
+  assert.equal(chillRuleGroupName({ ...chilled, run: null }), null);
+});
+
+test("a saved document of the paused state, loaded again, gives the same name, with the shape unchanged", () => {
+  const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
+  const dragged = editedCopy(state, (program) => program.groups.reverse());
+  const document = JSON.parse(
+    JSON.stringify(savedGame(withSaveTime(dragged, REAL_MS))),
+  );
+  const loaded = loadSavedGame(document);
+  assert.equal(loaded.ok, true);
+  assert.equal(loaded.state.discovery !== null, true);
+  assert.equal(chillRuleGroupName(loaded.state), "Ogień");
+  assert.deepEqual(Object.keys(document).sort(), ["game", "version"]);
+});
+
+test("asking changes neither the state nor anything reachable from it", () => {
+  const state = deepFreeze(chilledIn(group(1, "Ogień"), group(2, "Głód")));
+  const copy = structuredClone(state);
+  assert.equal(chillRuleGroupName(state), "Ogień");
+  assert.deepEqual(state, copy);
 });
