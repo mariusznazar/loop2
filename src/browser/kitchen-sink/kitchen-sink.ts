@@ -534,14 +534,17 @@ function menuSection(): HTMLElement {
 /** The kinds of the table Roles, by their names on the page. */
 type Kind = "tło" | "tekst" | "inne";
 
-/** The 23 roles of the styleguide's table Roles, in its order, with their kinds. */
+/** The 26 roles of the styleguide's table Roles, in its order, with their kinds. */
 const ROLES: readonly (readonly [string, Kind])[] = [
   ["page", "tło"],
   ["panel", "tło"],
   ["highlight", "tło"],
+  ["rule-winning", "tło"],
+  ["rule-running", "tło"],
   ["divider", "inne"],
   ["control-border", "inne"],
   ["selected", "inne"],
+  ["condition-unmet", "inne"],
   ["text-strong", "tekst"],
   ["text", "tekst"],
   ["text-secondary", "tekst"],
@@ -561,7 +564,7 @@ const ROLES: readonly (readonly [string, Kind])[] = [
   ["focus", "inne"],
 ];
 
-/** The three roles of the kind background, on which every role of the kind text stands. */
+/** The five roles of the kind background, on which every role of the kind text stands. */
 const SURFACES = ROLES.filter(([, kind]) => kind === "tło").map(
   ([name]) => name,
 );

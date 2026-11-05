@@ -10,6 +10,11 @@
  * own drag (D-270), a drop line showing where they would land. The page holds the list behind
  * `createRuleList`, as the program list does, calling it from an event handler or the continuation
  * of an answer, never from render or an effect. Nothing runs when the module is imported.
+ *
+ * Where the page gives it the signs of the copy of a map run (`signs`, from `ruleSigns` of the
+ * simulation; task stan-i-powod-przy-regule) a row stands on the background `rule-winning` when it
+ * wins now and on `rule-running` when its action is being carried out and another rule wins, and
+ * every row and header carries the bar of its condition and, in a row, the reason it cannot start.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type {
@@ -21,6 +26,7 @@ import type {
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ACTIONS } from "../sim/data/actions.js";
+import type { RuleSigns } from "../sim/game.js";
 import type { GameState, GroupId, Program, RuleGroup } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
 import {
@@ -55,6 +61,11 @@ export type RuleListProps = {
   folded: readonly GroupId[];
   /** The row or the header whose panel stands open; null where none does. */
   open: { groupId: GroupId; ruleId: number | null } | null;
+  /**
+   * What the rows and headers show of the condition of each rule and group: only for the copy of a
+   * map run, otherwise null or left out.
+   */
+  signs?: RuleSigns | null;
 };
 
 /** The row, or with a null rule the header of the group, a click or an addition asks to open. */
@@ -179,6 +190,7 @@ export function RuleListView({
   counts,
   folded,
   open,
+  signs = null,
   onCommit,
   onOpen,
   onFoldedChange,
@@ -412,10 +424,21 @@ export function RuleListView({
     const arrows = ruleArrows(program, group.id, index);
     const isOpen = open?.groupId === group.id && open.ruleId === each.id;
     const target = { over: "row", group, index } as const;
+    const judged = signs?.judgement.rules[each.id];
+    const standing =
+      signs === null
+        ? ""
+        : signs.judgement.winner?.id === each.id
+          ? " winning"
+          : signs.running === each.id
+            ? " running"
+            : "";
     return (
       <li
         key={each.id}
-        className={isOpen ? "rule-list-row open" : "rule-list-row"}
+        className={`rule-list-row${isOpen ? " open" : ""}${standing}${
+          judged === undefined ? "" : ` bar-${judged.bar}`
+        }`}
         data-rule={each.id}
         tabIndex={0}
         aria-current={isOpen ? "true" : undefined}
@@ -462,6 +485,9 @@ export function RuleListView({
           />
           {sentence.action}
         </span>
+        {judged?.reason == null ? null : (
+          <span className="rule-reason">{judged.reason}</span>
+        )}
         {time === null ? null : <span className="rule-time">{time}</span>}
         {counts === null ? null : (
           <span className="rule-count">{countText(counts[each.id] ?? 0)}</span>
@@ -497,6 +523,7 @@ export function RuleListView({
     const isFolded = folded.includes(group.id);
     const isOpen = open?.groupId === group.id && open.ruleId === null;
     const target = { over: "group", group } as const;
+    const bar = signs?.judgement.groups[group.id];
     const lands = landing?.kind === "rule" && landing.groupId === group.id;
     const lineAt = lands ? landing.beforeId : undefined;
     const rows = group.rules.flatMap((each, index) => [
@@ -516,7 +543,9 @@ export function RuleListView({
         onDrop={(event) => drop(event, target)}
       >
         <div
-          className={isOpen ? "rule-list-header open" : "rule-list-header"}
+          className={`rule-list-header${isOpen ? " open" : ""}${
+            bar === undefined ? "" : ` bar-${bar}`
+          }`}
           tabIndex={0}
           aria-current={isOpen ? "true" : undefined}
           ref={track(`group:${group.id}:open`)}

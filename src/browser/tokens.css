@@ -11,11 +11,14 @@
   --page: #09090b; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the background of the page (the task, Q9) */
   --panel: #18181b; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the background of the chronicle and of the end of a map run (the task, Q9) */
   --highlight: #27272a; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the highlighted row and the unfilled part of the progress bar (the task, Q9) */
+  --rule-winning: #152a26; /* Source: changed for the thresholds 4.5:1 of text-label and 3:1 of control-border of D-42 (WCAG 2.2 1.4.3, 1.4.11) on it: the green of the rule that wins now in loop (bg-emerald-500/15, #00bc7d at a cover of 15%, RulesPanel.tsx of the loop repository at commit cdc7c0d) laid on panel, the cover lowered to 11%, the greatest that keeps both thresholds; Mariusz's choice, way B of question 1 of the task stan-i-powod-przy-regule, 2026-11-03 */
+  --rule-running: #152a37; /* Source: changed for the thresholds 4.5:1 of text-label and 3:1 of control-border of D-42 (WCAG 2.2 1.4.3, 1.4.11) on it: the blue of the rule whose action is being carried out in loop (bg-sky-500/15, #00a6f4 at a cover of 15%, RulesPanel.tsx of the loop repository at commit cdc7c0d) laid on panel, the cover lowered to 13%, the greatest that keeps text-label at 4.5:1; Mariusz's choice, way B of question 1 of the task stan-i-powod-przy-regule, 2026-11-03 */
 
   /* Lines and frames */
   --divider: #27272a; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the lines between sections (the task, Q9) */
   --control-border: #71717b; /* Source: changed for the threshold 3:1 of D-42 (WCAG 2.2 1.4.11) on page, panel and highlight, which loop's frame #3f3f46 misses: the colour of labels of loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page (the task, Q8, Q9) */
   --selected: #d4d4d8; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: the frame of the selected button (the task, Q19 C) */
+  --condition-unmet: #27272a; /* Source: loop, the dark bar of a rule whose condition does not hold (border-zinc-800, #27272a, RulesPanel.tsx of the loop repository at commit cdc7c0d); no threshold of contrast; Mariusz's choice, way A of question 2 of the task stan-i-powod-przy-regule, 2026-11-03 */
 
   /* Text */
   --text-strong: #f4f4f5; /* Source: loop, https://kantarion.bieda.it/ read 2026-10-20 from the rendered page: names and headings (the task, Q9) */

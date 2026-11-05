@@ -4,11 +4,15 @@ import { takeFromNowhere, takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
   discover,
+  editorRepertoire,
+  knownRepertoire,
   newUnderstanding,
   programInRepertoire,
   repertoireOf,
   withFirstChillRule,
 } from "./understanding.js";
+import { CREATURES } from "./data/creatures.js";
+import { judgeProgram, type ProgramJudgement } from "./program.js";
 import { BALANCE, INITIAL_SEED } from "./data/balance.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import {
@@ -43,6 +47,7 @@ import type {
   Program,
   ProgramCopy,
   ProgramId,
+  RuleId,
   Traits,
   Understanding,
 } from "./types.js";
@@ -128,6 +133,57 @@ export function programOf(
     program,
     repertoireOf(state.understanding, archetype.predispositions, skills),
   );
+}
+
+/**
+ * What the copy of the map run shows beside its rules: the judgement of every rule and rule group
+ * and the rule whose action is being carried out.
+ */
+export type RuleSigns = {
+  judgement: ProgramJudgement;
+  /**
+   * The rule whose action is being carried out, where it is not the rule that wins now; null where
+   * no action is being carried out or it is the winner's.
+   */
+  running: RuleId | null;
+};
+
+/**
+ * The signs of the copy of the map run as it stands now, from the function that picks the rule
+ * (`judgeProgram`) over the whole copy, the repertoire checked before the condition. Outside combat
+ * they are what the pick of this game minute would judge. In the minutes of an attack, from the
+ * minute of the attack to the resolving of its turns, they are what the first turn would judge at the
+ * health of the character and of the creature as they stand, so no action is being carried out.
+ * After an end of the map run they are counted on the stopped minute: an action is being carried out
+ * after a death of cold or hunger, the activity of that moment, and after a completion while it has
+ * not ended; after a death in combat none is. Null without a map run. Inputs are not changed.
+ */
+export function ruleSigns(state: GameState): RuleSigns | null {
+  const run = state.run;
+  if (!run) return null;
+  const combat = run.activeCombat
+    ? {
+        health: run.body.health,
+        opponentHealth: CREATURES[run.activeCombat.creatureId].health,
+      }
+    : undefined;
+  const judgement = judgeProgram(run, mapOf(run.mapId), run.copy.program, {
+    reach: {
+      repertoire: editorRepertoire(state),
+      known: knownRepertoire(state),
+    },
+    combat,
+  });
+  const current = run.current;
+  const carried =
+    current?.activity.kind === "rule" &&
+    (run.death !== null || run.minute < current.endMinute)
+      ? current.activity.ruleId
+      : null;
+  return {
+    judgement,
+    running: carried === judgement.winner?.id ? null : carried,
+  };
 }
 
 /**
