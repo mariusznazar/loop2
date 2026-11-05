@@ -1,1 +1,0 @@
-form holds; sections: What you will see, For you to decide, Cost, How to merge, Technical changes, Checks, Foundation entries, Minor findings, Findings outside the task's scope, Questions carried to cycle, Course of the cycle; task: not English, 817 words; block: not English, 515 words
