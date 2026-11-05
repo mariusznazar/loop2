@@ -810,6 +810,38 @@ test("a number typed into the panel on the screen of a map run at 16× keeps its
   });
 });
 
+// Task edytor-programu, Acceptance criteria 3, found in the browser: on Enter the panel moves the focus
+// to a cell of the next pick during the key's own event, and a browser then delivers the same Enter to
+// that cell and picks it, so a field the player must see is skipped. jsdom does not deliver that
+// second press, so the case holds the cause: the keydown of Enter is consumed. Catches the number's
+// Enter left to the browser.
+test("Enter in the number field is consumed, so the press cannot reach the cell the focus moves to", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, runWithNumber());
+    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+    const number = game.root.querySelector('input[aria-label="Liczba"]');
+    await inAct(() => number.focus());
+    const { KeyboardEvent } = page.window;
+    let delivered = null;
+    await inAct(() => {
+      delivered = number.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+    assert.equal(delivered, false, "the key press is consumed");
+    assert.ok(
+      game.root
+        .querySelector(".rule-panel")
+        .contains(page.document.activeElement),
+      "the panel moved on",
+    );
+  });
+});
+
 /** The texts of the panel's lines and heading of the copy. */
 const copyTexts = (root) =>
   [...root.querySelectorAll(".copy-heading, .copy-line")].map(

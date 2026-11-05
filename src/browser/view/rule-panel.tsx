@@ -480,8 +480,11 @@ export function RulePanelView({
             }}
             onKeyDown={(event) => {
               // The field commits a changed number on Enter itself; the panel then moves on, also
-              // where the number stays as it was.
+              // where the number stays as it was. The key press is consumed here: the focus goes to
+              // a cell of the next pick during this event, and a browser would otherwise deliver the
+              // same Enter to that cell and pick it.
               if (event.key !== "Enter") return;
+              event.preventDefault();
               const following = fieldAfter(fields, "number");
               if (following !== null) moveTo(following);
             }}
