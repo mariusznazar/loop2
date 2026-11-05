@@ -46,4 +46,34 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
     sourceUrl: "https://game-icons.net/1x1/lorc/campfire.html",
     changes: CHANGES,
   },
+  binoculars: {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/binoculars.html",
+    changes: CHANGES,
+  },
+  hiking: {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/hiking.html",
+    changes: CHANGES,
+  },
+  "direction-sign": {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/direction-sign.html",
+    changes: CHANGES,
+  },
+  grab: {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/grab.html",
+    changes: CHANGES,
+  },
+  "claw-hammer": {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/claw-hammer.html",
+    changes: CHANGES,
+  },
+  "match-tip": {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/match-tip.html",
+    changes: CHANGES,
+  },
 };

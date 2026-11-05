@@ -165,10 +165,29 @@ const TITLES = {
   fern: "Fern icon",
   flax: "Flax icon",
   campfire: "Campfire icon",
+  binoculars: "Binoculars icon",
+  hiking: "Hiking icon",
+  "direction-sign": "Direction sign icon",
+  grab: "Grab icon",
+  "claw-hammer": "Claw hammer icon",
+  "match-tip": "Match tip icon",
 };
 
-/** Everything the data gives an icon, in the footer's order: the resources, then the campfire. */
-const NAMED = [...Object.values(RESOURCES), CAMPFIRE];
+/**
+ * The icons of the actions, one line each in the footer, after the campfire's: named by the actions
+ * that show the icon, in the order of the data (actions.ts).
+ */
+const ACTION_ICONS = [
+  { name: "Eksploruj", icon: "binoculars" },
+  { name: "Wędruj", icon: "hiking" },
+  { name: "Idź, Idź — ognisko", icon: "direction-sign" },
+  { name: "Zbierz, Obchód", icon: "grab" },
+  { name: "Wytwórz — ognisko", icon: "claw-hammer" },
+  { name: "Zapal — ognisko, Zapal — patyk", icon: "match-tip" },
+];
+
+/** Everything the data gives an icon, in the footer's order: the resources, the campfire, the actions. */
+const NAMED = [...Object.values(RESOURCES), CAMPFIRE, ...ACTION_ICONS];
 
 test("each footer line names the icon by its title on game-icons.net and says after the licence that it was changed", async () => {
   const { items, credits } = await builtFooter();
@@ -188,7 +207,7 @@ test("each footer line names the icon by its title on game-icons.net and says af
 
 test("the footer credits the campfire's icon, by Lorc, after the four resources' icons", async () => {
   const { items } = await builtFooter();
-  assert.equal(items.length, 5);
+  assert.equal(items.length, NAMED.length);
   assert.equal(
     textOf(items[4]),
     "ognisko: „Campfire icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",

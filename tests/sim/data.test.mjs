@@ -79,18 +79,24 @@ test("actions carry their labels, status texts and the fixed explore duration", 
     status: "Eksploruje",
     minutes: 20,
     revealedBy: { kind: "chilled" },
+    icon: "binoculars",
+    iconTitle: "Binoculars icon",
   });
   assert.deepEqual(ACTIONS.wander, {
     label: "Wędruj",
     status: "Wędruje",
     minutes: null,
     revealedBy: { kind: "chilled" },
+    icon: "hiking",
+    iconTitle: "Hiking icon",
   });
   assert.deepEqual(ACTIONS.walkTo, {
     label: "Idź",
     status: "Idzie po",
     minutes: null,
     revealedBy: { kind: "explored" },
+    icon: "direction-sign",
+    iconTitle: "Direction sign icon",
   });
 });
 

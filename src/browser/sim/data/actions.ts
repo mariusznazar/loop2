@@ -17,6 +17,10 @@ export type ActionDef = {
   natureEnergy?: number;
   /** Combat-only effect; absent actions belong to ordinary map time. */
   combat?: { damage: number; item?: ItemId } | { reducesNextDamageBy: number };
+  /** File name in assets/icons, without the extension: the icon the action shows wherever it stands. */
+  icon?: string;
+  /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
+  iconTitle?: string;
 };
 
 export type ActionId = keyof typeof ACTIONS;
@@ -32,42 +36,56 @@ export const ACTIONS = {
     status: "Eksploruje",
     minutes: 20,
     revealedBy: { kind: "chilled" },
+    icon: "binoculars",
+    iconTitle: "Binoculars icon",
   },
   wander: {
     label: "Wędruj",
     status: "Wędruje",
     minutes: null,
     revealedBy: { kind: "chilled" },
+    icon: "hiking",
+    iconTitle: "Hiking icon",
   },
   walkTo: {
     label: "Idź",
     status: "Idzie po",
     minutes: null,
     revealedBy: { kind: "explored" },
+    icon: "direction-sign",
+    iconTitle: "Direction sign icon",
   },
   walkToCampfire: {
     label: "Idź — ognisko",
     status: "Idzie do ogniska",
     minutes: null,
     revealedBy: { kind: "campfireCrafted" },
+    icon: "direction-sign",
+    iconTitle: "Direction sign icon",
   },
   gather: {
     label: "Zbierz",
     status: "Zbiera",
     minutes: 10,
     revealedBy: { kind: "explored" },
+    icon: "grab",
+    iconTitle: "Grab icon",
   },
   patrol: {
     label: "Obchód",
     status: "Robi obchód po",
     minutes: 40,
     revealedBy: { kind: "treeDiscovered", skill: "smallItemGathering" },
+    icon: "grab",
+    iconTitle: "Grab icon",
   },
   craftCampfire: {
     label: "Wytwórz — ognisko",
     status: "Wytwarza ognisko",
     minutes: 20,
     revealedBy: { kind: "gathered", item: "stick" },
+    icon: "claw-hammer",
+    iconTitle: "Claw hammer icon",
   },
   // „Zapal — ognisko” and „Zapal — patyk” are the spell Płomyk, paid with nature energy besides
   // their sticks.
@@ -77,6 +95,8 @@ export const ACTIONS = {
     minutes: 5,
     revealedBy: { kind: "gathered", item: "stick" },
     natureEnergy: 10,
+    icon: "match-tip",
+    iconTitle: "Match tip icon",
   },
   lightItem: {
     label: "Zapal — patyk",
@@ -84,6 +104,8 @@ export const ACTIONS = {
     minutes: 5,
     revealedBy: { kind: "gathered", item: "stick" },
     natureEnergy: 10,
+    icon: "match-tip",
+    iconTitle: "Match tip icon",
   },
   feedCampfire: {
     label: "Zasil — ognisko",
