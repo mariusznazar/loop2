@@ -23,7 +23,11 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/combat-line.ts` | do not copy | — |
 | `src/browser/view/controls/button.ts` | copy | — |
 | `src/browser/view/controls/number-field.ts` | copy | — |
+| `src/browser/view/controls/pick-cell.ts` | copy | — |
 | `src/browser/view/controls/react-button.tsx` | copy | — |
+| `src/browser/view/controls/react-number-field.tsx` | copy | — |
+| `src/browser/view/controls/react-pick-cell.tsx` | copy | — |
+| `src/browser/view/controls/react-select-list.tsx` | copy | — |
 | `src/browser/view/controls/react-text-field.tsx` | copy | — |
 | `src/browser/view/controls/select-list.ts` | copy | — |
 | `src/browser/view/controls/text-field.ts` | copy | — |
@@ -39,7 +43,9 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/password-reset.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | do not copy | — |
 | `src/browser/view/program-list.tsx` | copy | — |
-| `src/browser/view/program-panel.ts` | do not copy | — |
+| `src/browser/view/program-panel.tsx` | copy | — |
+| `src/browser/view/rule-list.tsx` | copy | — |
+| `src/browser/view/rule-panel.tsx` | copy | — |
 | `src/browser/view/run-screen.ts` | do not copy | — |
 | `src/browser/view/screen-address.ts` | copy | — |
 | `src/browser/view/status-row.ts` | do not copy | — |
@@ -48,6 +54,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/tile-list.ts` | do not copy | — |
 | `src/browser/view/trip-editor.ts` | do not copy | — |
 | `src/browser/view/trip-lines.ts` | do not copy | — |
+| `src/browser/view/trip-plan.tsx` | copy | — |
 
 ## Rules
 
@@ -257,9 +264,10 @@ przez `input.disabled`, a zdanie odmowy albo braku połączenia pokazuje
 a przycisk, który wysyła formularz, dostaje `submit: true`. Rodzaj przycisku
 ustawia `kind` w obu postaciach, a akcja poboczna i zakładka to rodzaje `secondary`
 i `tab`. Postacie Reacta to `ReactButton` (`kind`, `waitingText`, `selected`,
-`submit`) oraz `ReactTextField`, `ReactPasswordField`, `ReactFormWarning`
-i `ReactFormNote`. Wyłączony przycisk traci fokus, więc ekran po odpowiedzi
-ustawia go na kontrolce, od której gracz zaczął.
+`submit`) oraz `ReactTextField`, `ReactPasswordField`, `ReactFormWarning`,
+`ReactFormNote`, `ReactSelectList`, `ReactNumberField` i `ReactPickCell`.
+Wyłączony przycisk traci fokus, więc ekran po odpowiedzi ustawia go na
+kontrolce, od której gracz zaczął.
 
 ### Gra na stronie i odpowiedzi serwera
 
