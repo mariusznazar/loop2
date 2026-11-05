@@ -225,8 +225,8 @@ export function createGameView(options: GameViewOptions): GameView {
   // The folding of rule groups is one memory of the page, which both panels read and change; it is
   // not part of the game state, so a reload forgets it (D-295).
   const folding = createFolding();
+  // The panel of Przejście stands in the program's area of its screen, under the band of a discovery.
   const runPanel = createProgramPanel(panelControls, "run", folding);
-  runPanel.element.classList.add("screen-area");
   const programsPanel = createProgramPanel(panelControls, "programs", folding);
   programsPanel.element.classList.add("screen-area");
 
