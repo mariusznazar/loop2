@@ -12,7 +12,7 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CLAUDE_COPY = os.path.join(ROOT, ".claude", "skills", "loop2-play")
 AGENTS_COPY = os.path.join(ROOT, ".agents", "skills", "loop2-play")
-FILES = ["SKILL.md", "frames.js", "save-frames.mjs"]
+FILES = ["SKILL.md", "compose-state.mjs", "frames.js", "save-frames.mjs"]
 SAVE_FRAMES = os.path.join(CLAUDE_COPY, "save-frames.mjs")
 
 

@@ -65,6 +65,60 @@ The way into a map run:
 4. After a reload the same map run comes back paused, with „(pauza)” in that line. Click „Wznów”.
    A map run also stops by itself at a discovery, again with „Wznów”.
 
+## Compose a game state
+
+Playing reaches the combat actions in the Understanding, or a bought branch, only after hours. Build
+the state with the functions of the simulation and send it by the ordinary save request, the one the
+page itself makes:
+
+1. `npm run build`; the script imports the built simulation from `dist/browser/sim/`.
+2. `node .claude/skills/loop2-play/compose-state.mjs > .playwright-cli/state.json` prints the saved
+   document: one character, „Agent”, with the verbs of combat in the Understanding and the branch
+   „Obchód” bought. It holds no account, no session and no address and writes no database. To make
+   another state, copy it to `.playwright-cli/` as `frames.js` is copied and change what it builds:
+   `newGame`, `createCharacter`, `buyBranch`, `send` and `discover` are in `src/browser/sim/`, and
+   the document of a state that the game would not load is refused on loading, so check a new state
+   with `loadSavedGame` of `saved-game.js` before sending it.
+3. Start the game, open it and make the account through the login card (step 1 of the way into a
+   map run); create no character, since the document brings it.
+4. Send the document from the signed-in page: `GET /api/saved-game` gives the `revision` held, then
+   `PUT /api/saved-game` takes `version`, `basedOn` (that revision, 0 where `save` is null) and
+   `game`; the form stands in `src/browser/account-api.ts`. The code below goes to
+   `playwright-cli run-code`, which has no file system, so this builds its file with the document
+   in it:
+
+```sh
+{ printf 'async (page) => {\n  const saved = '; tr -d '\n' < .playwright-cli/state.json; cat <<'EOF'
+;
+  return page.evaluate(async (saved) => {
+    const current = await (await fetch("/api/saved-game")).json();
+    const reply = await fetch("/api/saved-game", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        version: saved.version,
+        basedOn: current.save?.revision ?? 0,
+        game: saved.game,
+      }),
+    });
+    return `${reply.status} ${await reply.text()}`;
+  }, saved);
+}
+EOF
+} > .playwright-cli/send-state.js
+playwright-cli --raw run-code --filename .playwright-cli/send-state.js
+```
+
+   It answers `200 {"revision":…}`. On Playwright MCP, which takes no such file, give
+   `browser_run_code_unsafe` the same function with the document pasted in as `saved`.
+5. `playwright-cli reload`. The team now holds „Agent”; click „Wyślij” at it and open the editor of
+   the map run: the action select list of „Dodaj regułę” holds „Uderz — patyk”, „Kopnij”, „Odskocz”
+   and „Obchód”.
+
+The page saves too, so send the document before the page does anything else to the save, and reload
+at once. A document the game refuses to load shows „Zapis był uszkodzony i nie dał się wczytać.” and
+a game that starts anew.
+
 ## Read motion from a stream of frames
 
 The text of a page shows no motion, and one screenshot misses what lasts a moment. With a map run
@@ -149,4 +203,7 @@ your report; on Playwright MCP, `browser_close` takes the place of `playwright-c
   server, where a person goes through them.
 - The tunnel in front of the test server: this start's HTTPS proxy stands in for it, and headers
   made up here prove nothing about that route.
-- Late states of the game: they take too long to reach by playing.
+- Late states reached by composing: the state is built by the game's own code, so it agrees with
+  the game even where both are wrong, and a loaded save carries no events, so what the scene and
+  the chronicle show of them may stand empty until the game passes a stretch. Whether a state can
+  be reached by playing is not checked here.
