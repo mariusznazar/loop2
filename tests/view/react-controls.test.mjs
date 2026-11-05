@@ -27,6 +27,11 @@ import {
   ReactPasswordField,
   ReactTextField,
 } from "../../dist/browser/view/controls/react-text-field.js";
+import {
+  createPickCell,
+  setPickCellChosen,
+} from "../../dist/browser/view/controls/pick-cell.js";
+import { ReactPickCell } from "../../dist/browser/view/controls/react-pick-cell.js";
 
 // --- the element tree as plain data ------------------------------------------------------------
 
@@ -734,5 +739,166 @@ test("a warning that was shown and then cleared is the same element as one never
     warning.set(SENTENCE);
     warning.set(null);
     assert.deepEqual(drawnTree(drawing), domTree(document, warning.element));
+  });
+});
+
+// --- the pick cell (D-265, D-288, D-289, D-291) -------------------------------------------------
+
+const PICK_TEXT = "Kopnij";
+const PICK_ICON = "boot-kick";
+const PICK_REASON = "nie znasz jeszcze celu";
+
+test("a pick cell available is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, { text: PICK_TEXT }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createPickCell({ text: PICK_TEXT })),
+    );
+  });
+});
+
+test("a pick cell chosen is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, { text: PICK_TEXT, chosen: true }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(document, createPickCell({ text: PICK_TEXT, chosen: true })),
+    );
+  });
+});
+
+test("a greyed pick cell with its reason is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, {
+        text: PICK_TEXT,
+        greyed: true,
+        reason: PICK_REASON,
+      }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(
+        document,
+        createPickCell({ text: PICK_TEXT, greyed: true, reason: PICK_REASON }),
+      ),
+    );
+  });
+});
+
+test("a pick cell with its icon of an action is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, { text: PICK_TEXT, icon: PICK_ICON }),
+    );
+    const drawnIcon = drawing.container.querySelector(".action-icon");
+    assert.equal(
+      drawnIcon.getAttribute("style").includes(`/icons/${PICK_ICON}.svg`),
+      true,
+      "the React form draws the file of the action's icon",
+    );
+    const domCell = createPickCell({ text: PICK_TEXT, icon: PICK_ICON });
+    assert.equal(
+      domCell
+        .querySelector(".action-icon")
+        .getAttribute("style")
+        .includes(`/icons/${PICK_ICON}.svg`),
+      true,
+      "the DOM form draws the file of the action's icon",
+    );
+    assert.deepEqual(drawnTree(drawing), domTree(document, domCell));
+  });
+});
+
+test("a greyed pick cell with its icon and its reason is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, {
+        text: PICK_TEXT,
+        icon: PICK_ICON,
+        chosen: true,
+        greyed: true,
+        reason: PICK_REASON,
+      }),
+    );
+    assert.deepEqual(
+      drawnTree(drawing),
+      domTree(
+        document,
+        createPickCell({
+          text: PICK_TEXT,
+          icon: PICK_ICON,
+          chosen: true,
+          greyed: true,
+          reason: PICK_REASON,
+        }),
+      ),
+    );
+  });
+});
+
+test("a pick cell chosen in place is the same element as one drawn chosen", async () => {
+  await withPage(async ({ document }) => {
+    const cell = createPickCell({ text: PICK_TEXT, icon: PICK_ICON });
+    setPickCellChosen(cell, true);
+    const actual = domTree(document, cell);
+    const expected = domTree(
+      document,
+      createPickCell({ text: PICK_TEXT, icon: PICK_ICON, chosen: true }),
+    );
+    assert.deepEqual(actual, expected);
+  });
+});
+
+test("a greyed pick cell is aria-disabled, not disabled, and a click on it reaches no handler in either form", async () => {
+  await withPage(async ({ document, window }) => {
+    const picks = [];
+    const onPick = () => picks.push("pick");
+    const click = (element) =>
+      inAct(() =>
+        element.dispatchEvent(new window.Event("click", { bubbles: true })),
+      );
+
+    const drawing = await drawn(
+      document,
+      createElement(ReactPickCell, {
+        text: PICK_TEXT,
+        greyed: true,
+        reason: PICK_REASON,
+        onPick,
+      }),
+    );
+    const reactGreyed = drawing.container.firstElementChild;
+    await click(reactGreyed);
+    assert.equal(reactGreyed.getAttribute("aria-disabled"), "true");
+    assert.equal(reactGreyed.hasAttribute("disabled"), false);
+    assert.deepEqual(picks, [], "React: a greyed cell gives no pick");
+
+    const domGreyed = createPickCell({
+      text: PICK_TEXT,
+      greyed: true,
+      reason: PICK_REASON,
+      onPick,
+    });
+    document.body.append(domGreyed);
+    await click(domGreyed);
+    assert.equal(domGreyed.getAttribute("aria-disabled"), "true");
+    assert.equal(domGreyed.hasAttribute("disabled"), false);
+    assert.deepEqual(picks, [], "DOM: a greyed cell gives no pick");
+
+    const domAvailable = createPickCell({ text: PICK_TEXT, onPick });
+    document.body.append(domAvailable);
+    await click(domAvailable);
+    assert.deepEqual(picks, ["pick"], "DOM: an available cell gives a pick");
   });
 });

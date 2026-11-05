@@ -357,6 +357,49 @@ header .save-line {
   color: var(--text-disabled);
 }
 
+/*
+ * The pick cell, one position of a pick in the rule panel (D-288, D-289; styleguide "States of shared
+ * controls"): a button of its group with the frame in `control-border` and the text in `text`; the
+ * chosen one looks as the button selected in its group. A greyed one, which may not be picked now,
+ * has a dashed frame, its name in `text-disabled` and its reason in `text-secondary` under the name.
+ * It is `aria-disabled`, not `disabled`, so the keyboard still reaches it to read the reason. Focus is
+ * the one :focus-visible rule above.
+ */
+.button.pick-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  text-align: left;
+}
+
+.button.pick-cell.greyed {
+  color: var(--text-disabled);
+  border-style: dashed;
+  border-color: var(--text-disabled);
+  cursor: default;
+}
+
+.pick-cell-reason {
+  flex-basis: 100%;
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
+/*
+ * The icon of an action, drawn as a mask in the colour of the text beside it, so it greys with a greyed
+ * cell (D-291, D-43). The file's URL is set on the element in `--icon`. The height is the line's, a
+ * layout dimension D-43 leaves out.
+ */
+.action-icon {
+  flex: none;
+  height: 1lh;
+  aspect-ratio: 1;
+  background-color: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
 .select-list option {
   color: var(--text);
   background: var(--panel);
