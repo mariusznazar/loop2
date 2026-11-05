@@ -21,7 +21,7 @@ Reading of the sentence:
   modules' text), and nothing else. The line of a tile under the drawing and the table of revealed
   tiles stand outside it, so outside this reading: D-19 puts the numbers of stock in that table and
   in that line, never on the drawing. That decision is why this check no longer builds the terrain
-  panel with `createTerrainPanel()` and reads everything in it but its table (`guidelines/testing.md`,
+  panel's DOM module and reads everything in it but its table (`guidelines/testing.md`,
   "Changing an existing test"): with the line of a tile beside the drawing, numbers stand outside
   the table by D-19, and the drawing is a component of its own;
 - shows: the drawing's text (every text node, a `title` or `desc` element's included, as the
