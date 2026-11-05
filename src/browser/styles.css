@@ -883,6 +883,102 @@ header .save-line {
   pointer-events: none;
 }
 
+/*
+ * The rule panel (styleguide rule "Program editor", D-288, D-290, D-293, D-302, D-306): a block on
+ * `panel` with its text in `text` and a frame in `divider`; the heading, a name, in `text-strong`; the
+ * labels of its fields, the names of the groups of actions and the time beside an action in
+ * `text-label`; the sentence of the copy, an explanation, in `text-secondary`. One field at a time
+ * shows its pick: the cells of the pick cell control in a grid of four to a line, the conditions in
+ * two (`two-columns`, the number `columnsOf` in `rule-panel.tsx` moves by), the sections of the
+ * conditions parted by a line in `divider`. Focus is the one :focus-visible rule above.
+ */
+.rule-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding: var(--space-m);
+  color: var(--text);
+  background: var(--panel);
+  border: var(--frame-width) solid var(--divider);
+}
+
+.rule-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.rule-panel-heading {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.rule-panel-note {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.rule-panel-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.rule-panel-label,
+.rule-panel-section-name,
+.rule-panel-time {
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+.rule-panel-value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.rule-panel-pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  align-self: stretch;
+}
+
+.rule-panel-section-name {
+  margin: 0 0 var(--space-xs);
+  font-weight: var(--font-weight-body);
+}
+
+/* The sections of the conditions, which bear no names, parted by a line (D-290). */
+.rule-panel-pick.parted > .rule-panel-section + .rule-panel-section {
+  padding-top: var(--space-s);
+  border-top: var(--frame-width) solid var(--divider);
+}
+
+.rule-panel-cells {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.rule-panel-cells.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rule-panel-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.rule-panel-cell > .pick-cell {
+  width: 100%;
+}
+
 .headquarters h2 {
   margin: 0 0 var(--space-s);
   font-size: var(--font-size-heading);

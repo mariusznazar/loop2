@@ -1,16 +1,24 @@
-// The rule list of the program editor (task edytor-programu, To do 1, 2, 6–10; D-93, D-270, D-292, D-295,
-// D-297) on jsdom through tests/view/page-document.mjs (D-264). jsdom shows which elements the list
-// builds, what it hands the page and which element holds the focus; the real drag, the real focus ring
-// and the look are the browser check's (D-88), so a drag case here sends the events a drag sends.
-import { assert, inAct, withPage } from "./page-document.mjs";
+// The rule list and the rule panel of the program editor (task edytor-programu, To do 1–10; D-93,
+// D-270, D-288 to D-306) on jsdom through tests/view/page-document.mjs (D-264). jsdom shows which
+// elements the list and the panel build, what they hand the page and which element holds the focus;
+// the real drag, the real focus ring and the look are the browser check's (D-88), so a drag case here
+// sends the events a drag sends.
+import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
-import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
+import {
+  createCharacter,
+  newGame,
+  passRealTime,
+  send,
+  setPace,
+} from "../../dist/browser/sim/game.js";
 import {
   fullUnderstanding,
   newKnowingGame,
 } from "../sim/understanding-fixture.mjs";
 import { createRuleList } from "../../dist/browser/view/rule-list.js";
+import { createRulePanel } from "../../dist/browser/view/rule-panel.js";
 
 const rule = (id, condition, action) => ({ id, condition, action });
 const EXPLORE = { kind: "explore" };
@@ -867,5 +875,562 @@ test("after a drop the focus goes to the dropped rule's row, and to a folded gro
     await drag(headerOf(page.root, 2), "drop");
     await showAgain(list, props, calls[0][1], { folded: [2] });
     assert.equal(page.document.activeElement, headerOf(page.root, 2));
+  });
+});
+
+// --- the rule panel ------------------------------------------------------------------------------
+
+/**
+ * A rule panel placed on the page closed and then opened on `open`, as the page opens it on a click,
+ * with what it hands the page kept in `calls`.
+ */
+async function mountPanel({ root }, program, open, extra = {}) {
+  const calls = [];
+  const props = {
+    state: newKnowingGame(),
+    program,
+    open,
+    copy: false,
+    ...extra,
+  };
+  let panel = null;
+  await inAct(() => {
+    panel = createRulePanel({
+      onCommit: (next) => calls.push(["commit", next]),
+      onClose: () => calls.push(["close"]),
+      props: { ...props, open: null },
+    });
+    root.append(panel.element);
+  });
+  await inAct(() => panel.update(props));
+  return { panel, calls, props };
+}
+
+/**
+ * The rule list and the rule panel side by side, wired as the page wires them: a click on a row opens
+ * the panel on that rule, and each edit of either becomes the program both draw next.
+ */
+async function mountEditor({ root }, program, state = newKnowingGame()) {
+  const page = { program, open: null, commits: [] };
+  let list = null;
+  let panel = null;
+  const listProps = () => ({
+    state,
+    program: page.program,
+    counts: null,
+    folded: [],
+    open: page.open,
+  });
+  const panelProps = () => ({
+    state,
+    program: page.program,
+    open: page.open,
+    copy: false,
+  });
+  const redraw = () => {
+    list.update(listProps());
+    panel.update(panelProps());
+  };
+  const onCommit = (next) => {
+    page.commits.push(next);
+    page.program = next;
+    redraw();
+  };
+  const onOpen = (target) => {
+    page.open = target;
+    redraw();
+  };
+  const onClose = () => {
+    page.open = null;
+    redraw();
+  };
+  await inAct(() => {
+    list = createRuleList({
+      onCommit,
+      onOpen,
+      onFoldedChange: () => {},
+      props: listProps(),
+    });
+    panel = createRulePanel({ onCommit, onClose, props: panelProps() });
+    root.append(list.element, panel.element);
+  });
+  return page;
+}
+
+const panelOf = (root) => root.querySelector(".rule-panel");
+const cellsIn = (element) => [...element.querySelectorAll(".pick-cell")];
+/** The name a cell shows, without the reason drawn inside it. */
+const nameOf = (cell) =>
+  [...cell.childNodes]
+    .filter((node) => node.nodeType === 3)
+    .map((node) => node.textContent)
+    .join("");
+const cellNamed = (element, name) =>
+  cellsIn(element).find((cell) => nameOf(cell) === name);
+const labelsIn = (element) =>
+  [...element.querySelectorAll(".rule-panel-label")].map(
+    (label) => label.textContent,
+  );
+const reasonOf = (cell) =>
+  cell.querySelector(".pick-cell-reason")?.textContent ?? null;
+const numberIn = (element) => element.querySelector('input[type="number"]');
+
+function key(target, name) {
+  assert.ok(target, "what the case presses a key on stands");
+  const { Event } = target.ownerDocument.defaultView;
+  const event = new Event("keydown", { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "key", { value: name });
+  return inAct(() => target.dispatchEvent(event));
+}
+
+/** The state with its Understanding narrowed to `parts`. */
+function knowing(state, parts) {
+  return { ...state, understanding: { ...state.understanding, ...parts } };
+}
+
+/** One rule, as the group „Pierwsza” of `twoGroups` holds it in the place of rule 1. */
+function withFirstRule(condition, action) {
+  const program = twoGroups();
+  program.groups[0].rules[0] = rule(1, condition, action);
+  return program;
+}
+
+const ZAPAS_8_PATYK = { kind: "itemBelow", item: "stick", value: 8 };
+const ZBIERZ_PATYK = { kind: "gather", resource: "stick" };
+
+test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
+  // Task edytor-programu, Acceptance criteria: the row, „Zapas poniżej”, 8 with Enter, „Patyk”,
+  // „Zbierz”, „Patyk”.
+  await withPage(async (page) => {
+    const editor = await mountEditor(page, twoGroups());
+    await press(rowOf(page.root, 2).querySelector(".rule-condition"));
+    const panel = panelOf(page.root);
+    assert.ok(panel, "the click on the row opens the panel");
+    await press(cellNamed(panel, "Zapas poniżej"));
+    const number = numberIn(panel);
+    assert.equal(page.document.activeElement, number, "the pick moved on");
+    await typeInto(number, "8");
+    await key(number, "Enter");
+    await press(cellNamed(panel, "Patyk"));
+    await press(cellNamed(panel, "Zbierz"));
+    await press(cellNamed(panel, "Patyk"));
+    assert.equal(
+      textIn(rowOf(page.root, 2), ".rule-condition"),
+      "Zapas poniżej 8 · Patyk",
+    );
+    assert.equal(textIn(rowOf(page.root, 2), ".rule-action"), "Zbierz — Patyk");
+    assert.ok(panelOf(page.root), "the panel stays open after the last field");
+    // „Zapas poniżej” and „Zbierz” changed the rule; 8 and the two „Patyk” were the values the rule
+    // already held, and a pick that changes nothing commits nothing (D-131).
+    assert.equal(editor.commits.length, 2);
+  });
+});
+
+test("a number typed in the panel keeps its text and the focus while the game at 16× redraws the panel, and Enter commits it", async () => {
+  // Task edytor-programu, Acceptance criteria, and D-03: „a number field whose value the game clips
+  // may lose its cursor”.
+  await withPage(async (page) => {
+    let state = setPace(runningGame(), 16).state;
+    const { panel, calls, props } = await mountPanel(
+      page,
+      withFirstRule(ZAPAS_8_PATYK, EXPLORE),
+      { groupId: 1, ruleId: 1, field: "number" },
+      { state },
+    );
+    const number = numberIn(panelOf(page.root));
+    assert.equal(page.document.activeElement, number, "the panel opens on it");
+    await typeInto(number, "12");
+    const minutes = state.run.minute;
+    for (let frame = 0; frame < 5; frame += 1) {
+      state = passRealTime(state, 200).state;
+      await inAct(() => panel.update({ ...props, state }));
+    }
+    assert.ok(state.run.minute > minutes, "precondition: the game went on");
+    assert.equal(numberIn(panelOf(page.root)), number, "the same field");
+    assert.equal(number.value, "12");
+    assert.equal(page.document.activeElement, number);
+    assert.deepEqual(calls, []);
+    await key(number, "Enter");
+    assert.deepEqual(calls[0][1].groups[0].rules[0].condition, {
+      kind: "itemBelow",
+      item: "stick",
+      value: 12,
+    });
+  });
+});
+
+test("the fields of a rule stand in the order condition, number, target of the condition, action, target of the action, each only where the rule has it", async () => {
+  await withPage(async (page) => {
+    await mountPanel(page, withFirstRule(ZAPAS_8_PATYK, ZBIERZ_PATYK), {
+      groupId: 1,
+      ruleId: 1,
+    });
+    assert.deepEqual(labelsIn(panelOf(page.root)), [
+      "Warunek",
+      "Liczba",
+      "Cel warunku",
+      "Czynność",
+      "Cel czynności",
+    ]);
+  });
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), { groupId: 1, ruleId: 1 });
+    assert.deepEqual(labelsIn(panelOf(page.root)), ["Warunek", "Czynność"]);
+    assert.equal(numberIn(panelOf(page.root)), null);
+  });
+  await withPage(async (page) => {
+    await mountPanel(
+      page,
+      withFirstRule({ kind: "temperatureBelow", value: 36 }, { kind: "kick" }),
+      { groupId: 1, ruleId: 1 },
+    );
+    assert.deepEqual(labelsIn(panelOf(page.root)), [
+      "Warunek",
+      "Liczba",
+      "Czynność",
+    ]);
+  });
+});
+
+test("the panel opens on the condition and its focus on the cell chosen there, or on the field its opener names", async () => {
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), { groupId: 1, ruleId: 1 });
+    const panel = panelOf(page.root);
+    assert.deepEqual(cellsIn(panel).map(nameOf).slice(0, 2), [
+      "Zawsze",
+      "Temperatura poniżej",
+    ]);
+    assert.equal(page.document.activeElement, cellNamed(panel, "Zawsze"));
+    assert.equal(cellNamed(panel, "Eksploruj"), undefined);
+  });
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), {
+      groupId: 1,
+      ruleId: 1,
+      field: "action",
+    });
+    const panel = panelOf(page.root);
+    assert.equal(cellNamed(panel, "Zawsze"), undefined);
+    assert.equal(page.document.activeElement, cellNamed(panel, "Eksploruj"));
+  });
+});
+
+test("each pick changes the rule at once with a whole new program and moves on, a pick of the value held too", async () => {
+  await withPage(async (page) => {
+    const { panel, calls, props } = await mountPanel(page, twoGroups(), {
+      groupId: 1,
+      ruleId: 2,
+    });
+    // „Zawsze” is held: nothing changes and the panel moves on to the action.
+    await press(cellNamed(panelOf(page.root), "Zawsze"));
+    assert.deepEqual(calls, []);
+    assert.equal(
+      page.document.activeElement,
+      cellNamed(panelOf(page.root), "Eksploruj"),
+    );
+    await press(cellNamed(panelOf(page.root), "Kopnij"));
+    assert.equal(calls.length, 1);
+    const next = calls[0][1];
+    assert.deepEqual(
+      next.groups[0].rules[1],
+      rule(2, ALWAYS, { kind: "kick" }),
+    );
+    assert.deepEqual(idsOf(next), [[1, 2], [3]]);
+    // The action is the last field of this rule: the panel stays open on its pick.
+    await inAct(() => panel.update({ ...props, program: next }));
+    const kopnij = cellNamed(panelOf(page.root), "Kopnij");
+    assert.equal(kopnij?.getAttribute("aria-pressed"), "true");
+  });
+});
+
+test("in a grid the arrow keys move among the cells, two columns of conditions, a greyed cell reached and Enter on it doing nothing", async () => {
+  await withPage(async (page) => {
+    const state = knowing(newKnowingGame(), { items: [] });
+    const { calls } = await mountPanel(
+      page,
+      twoGroups(),
+      { groupId: 1, ruleId: 1 },
+      { state },
+    );
+    const panel = panelOf(page.root);
+    const at = () => nameOf(page.document.activeElement);
+    // The sections: Zawsze; Temperatura, Sytość, Zdrowie, Energia natury; Zapas, Tu leży, Zostało
+    // mniej niż — ognisko, Z dala od — ognisko; Przeciwnik ma poniżej (D-290), two to a line.
+    await key(page.document.activeElement, "ArrowDown");
+    assert.equal(at(), "Temperatura poniżej");
+    await key(page.document.activeElement, "ArrowRight");
+    assert.equal(at(), "Sytość poniżej");
+    await key(page.document.activeElement, "ArrowDown");
+    assert.equal(at(), "Energia natury poniżej");
+    await key(page.document.activeElement, "ArrowDown");
+    assert.equal(at(), "Tu leży mniej niż");
+    assert.equal(
+      reasonOf(page.document.activeElement),
+      "nie znasz jeszcze celu",
+    );
+    await key(page.document.activeElement, "Enter");
+    assert.deepEqual(calls, []);
+    assert.equal(at(), "Tu leży mniej niż");
+    // Only the cell the keyboard stands on is in the order of Tab, so Tab leaves the grid.
+    const reachable = cellsIn(panel).filter((cell) => cell.tabIndex === 0);
+    assert.deepEqual(reachable.map(nameOf), ["Tu leży mniej niż"]);
+    await key(page.document.activeElement, "ArrowUp");
+    assert.equal(at(), "Energia natury poniżej");
+    await key(page.document.activeElement, "ArrowLeft");
+    assert.equal(at(), "Zdrowie poniżej");
+    await key(page.document.activeElement, "Enter");
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0][1].groups[0].rules[0].condition.kind, "healthBelow");
+  });
+});
+
+test("each reason stands beside its greyed cell: „gałąź niewykupiona”, „wybierzesz w przejściu…”, „nie znasz jeszcze celu”, „nie ma go na tej mapie”", async () => {
+  // D-289; the four sentences are written out as the task gives them.
+  const open = { groupId: 1, ruleId: 1, field: "action" };
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), open, { state: runningGame() });
+    const panel = panelOf(page.root);
+    assert.equal(reasonOf(cellNamed(panel, "Obchód")), "gałąź niewykupiona");
+    assert.ok(cellNamed(panel, "Obchód").classList.contains("greyed"));
+    assert.equal(reasonOf(cellNamed(panel, "Zbierz")), null);
+  });
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), open);
+    assert.equal(
+      reasonOf(cellNamed(panelOf(page.root), "Obchód")),
+      "wybierzesz w przejściu postaci, która ją kupiła",
+    );
+  });
+  await withPage(async (page) => {
+    const state = knowing(newKnowingGame(), { items: [] });
+    const { calls } = await mountPanel(page, twoGroups(), open, { state });
+    const zbierz = cellNamed(panelOf(page.root), "Zbierz");
+    assert.equal(reasonOf(zbierz), "nie znasz jeszcze celu");
+    await press(zbierz);
+    assert.deepEqual(calls, [], "a greyed cell picks nothing");
+  });
+  await withPage(async (page) => {
+    const mapId = Object.keys(MAPS)[0];
+    const resources = MAPS[mapId].resources;
+    MAPS[mapId].resources = resources.filter((each) => each.id !== "fiber");
+    try {
+      await mountPanel(
+        page,
+        withFirstRule(ALWAYS, ZBIERZ_PATYK),
+        { groupId: 1, ruleId: 1, field: "actionTarget" },
+        { state: runningGame() },
+      );
+      const panel = panelOf(page.root);
+      assert.equal(
+        reasonOf(cellNamed(panel, "Włókno")),
+        "nie ma go na tej mapie",
+      );
+      assert.equal(reasonOf(cellNamed(panel, "Mech")), null);
+    } finally {
+      MAPS[mapId].resources = resources;
+    }
+  });
+});
+
+test("a value the rule holds outside the pick stands chosen and greyed, with no reason made up where none fits, and another pick changes it", async () => {
+  await withPage(async (page) => {
+    const state = knowing(newKnowingGame(), {
+      actions: ["explore"],
+      conditions: ["always"],
+      items: ["stick"],
+    });
+    const { calls } = await mountPanel(
+      page,
+      withFirstRule(ALWAYS, { kind: "kick" }),
+      { groupId: 1, ruleId: 1, field: "action" },
+      { state },
+    );
+    const kopnij = cellNamed(panelOf(page.root), "Kopnij");
+    assert.equal(kopnij.getAttribute("aria-pressed"), "true");
+    assert.ok(kopnij.classList.contains("greyed"));
+    assert.equal(reasonOf(kopnij), null);
+    await press(kopnij);
+    assert.deepEqual(calls, []);
+    await press(cellNamed(panelOf(page.root), "Eksploruj"));
+    assert.deepEqual(calls[0][1].groups[0].rules[0].action, EXPLORE);
+  });
+  await withPage(async (page) => {
+    // „Obchód” held while the character of the map run has not bought its branch: its reason stands.
+    await mountPanel(
+      page,
+      withFirstRule(ALWAYS, { kind: "patrol", resource: "stick" }),
+      { groupId: 1, ruleId: 1, field: "action" },
+      { state: runningGame() },
+    );
+    const obchod = cellNamed(panelOf(page.root), "Obchód");
+    assert.equal(obchod.getAttribute("aria-pressed"), "true");
+    assert.equal(reasonOf(obchod), "gałąź niewykupiona");
+  });
+});
+
+test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walka, each with its icon and the time of one execution beside it", async () => {
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), {
+      groupId: 1,
+      ruleId: 1,
+      field: "action",
+    });
+    const panel = panelOf(page.root);
+    const groups = [...panel.querySelectorAll(".rule-panel-section")].map(
+      (section) => [
+        textIn(section, ".rule-panel-section-name"),
+        cellsIn(section).map(nameOf),
+      ],
+    );
+    assert.deepEqual(groups, [
+      ["Ruch", ["Eksploruj", "Wędruj", "Idź", "Idź — ognisko"]],
+      ["Zbieranie", ["Zbierz", "Obchód"]],
+      [
+        "Ogień",
+        [
+          "Wytwórz — ognisko",
+          "Zapal — ognisko",
+          "Zapal — patyk",
+          "Zasil — ognisko",
+        ],
+      ],
+      [
+        "Żywność i walka",
+        ["Zjedz — jagoda", "Uderz — patyk", "Kopnij", "Odskocz"],
+      ],
+    ]);
+    const timeOf = (name) =>
+      cellNamed(panel, name).parentElement.querySelector(".rule-panel-time")
+        ?.textContent ?? null;
+    // The minutes of the data (src/browser/sim/data/actions.ts): „Zbierz” 10, „Obchód” 40.
+    assert.equal(timeOf("Zbierz"), "10 min");
+    assert.equal(timeOf("Obchód"), "40 min");
+    assert.equal(timeOf("Kopnij"), "tura");
+    assert.equal(timeOf("Wędruj"), null, "no map gives a move its step");
+    assert.ok(cellNamed(panel, "Zbierz").querySelector(".action-icon"));
+  });
+});
+
+test("the conditions stand in two columns in their sections, parted by a line, with no names; no search, no row „ostatnio” and no current value", async () => {
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), { groupId: 1, ruleId: 1 });
+    const panel = panelOf(page.root);
+    const sections = [...panel.querySelectorAll(".rule-panel-section")];
+    assert.deepEqual(
+      sections.map((section) => cellsIn(section).map(nameOf)),
+      [
+        ["Zawsze"],
+        [
+          "Temperatura poniżej",
+          "Sytość poniżej",
+          "Zdrowie poniżej",
+          "Energia natury poniżej",
+        ],
+        [
+          "Zapas poniżej",
+          "Tu leży mniej niż",
+          "Zostało mniej niż — ognisko",
+          "Z dala od — ognisko",
+        ],
+        ["Przeciwnik ma poniżej"],
+      ],
+    );
+    assert.equal(panel.querySelector(".rule-panel-section-name"), null);
+    assert.ok(
+      panel.querySelector(".rule-panel-pick.parted"),
+      "parted by a line",
+    );
+    assert.ok(
+      sections.every((section) =>
+        section.querySelector(".rule-panel-cells.two-columns"),
+      ),
+    );
+    assert.equal(panel.querySelector('input:not([type="number"])'), null);
+    assert.doesNotMatch(panel.textContent, /ostatnio|teraz/);
+  });
+});
+
+test("the panel of a group holds its name and its condition with its number and target, and no action", async () => {
+  await withPage(async (page) => {
+    const { panel, calls, props } = await mountPanel(page, twoGroups(), {
+      groupId: 1,
+      ruleId: null,
+    });
+    assert.deepEqual(labelsIn(panelOf(page.root)), ["Nazwa grupy", "Warunek"]);
+    const name = panelOf(page.root).querySelector('input[type="text"]');
+    assert.equal(name.value, "Pierwsza");
+    assert.equal(cellNamed(panelOf(page.root), "Eksploruj"), undefined);
+    await inAct(() => name.focus());
+    await typeInto(name, "Ranek");
+    await inAct(() => panel.update({ ...props, state: runningGame() }));
+    assert.equal(name.value, "Ranek", "the name typed stays through a redraw");
+    await key(name, "Enter");
+    assert.equal(calls[0][1].groups[0].name, "Ranek");
+    await press(cellNamed(panelOf(page.root), "Sytość poniżej"));
+    const next = calls[1][1];
+    assert.deepEqual(next.groups[0].condition.kind, "satietyBelow");
+    assert.deepEqual(idsOf(next), [[1, 2], [3]]);
+    await inAct(() => panel.update({ ...props, program: next }));
+    assert.deepEqual(labelsIn(panelOf(page.root)), [
+      "Nazwa grupy",
+      "Warunek",
+      "Liczba",
+    ]);
+    assert.equal(page.document.activeElement, numberIn(panelOf(page.root)));
+  });
+});
+
+test("the panel of the copy says „Zmiana zeruje passę tego przejścia.”, with no word of the count, and that of a saved program says nothing", async () => {
+  // D-302.
+  await withPage(async (page) => {
+    await mountPanel(
+      page,
+      twoGroups(),
+      { groupId: 1, ruleId: 1 },
+      { copy: true },
+    );
+    assert.equal(
+      textIn(panelOf(page.root), ".rule-panel-note"),
+      "Zmiana zeruje passę tego przejścia.",
+    );
+    assert.doesNotMatch(panelOf(page.root).textContent, /Wykonano|licz/);
+  });
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), { groupId: 1, ruleId: 1 });
+    assert.equal(panelOf(page.root).querySelector(".rule-panel-note"), null);
+    assert.doesNotMatch(panelOf(page.root).textContent, /passę/);
+  });
+});
+
+test("„✕” and Escape ask to close the panel, and with nothing open it draws nothing", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mountPanel(page, twoGroups(), {
+      groupId: 1,
+      ruleId: 1,
+    });
+    await press(buttonNamed(panelOf(page.root), "✕"));
+    await key(page.document.activeElement, "Escape");
+    assert.deepEqual(calls, [["close"], ["close"]]);
+  });
+  await withPage(async (page) => {
+    await mountPanel(page, twoGroups(), null);
+    assert.equal(panelOf(page.root), null);
+  });
+});
+
+test("opening another rule shows that rule on its condition", async () => {
+  await withPage(async (page) => {
+    const program = withFirstRule(ZAPAS_8_PATYK, ZBIERZ_PATYK);
+    const { panel, props } = await mountPanel(page, program, {
+      groupId: 1,
+      ruleId: 1,
+      field: "action",
+    });
+    await inAct(() =>
+      panel.update({ ...props, open: { groupId: 2, ruleId: 3 } }),
+    );
+    const shown = panelOf(page.root);
+    assert.deepEqual(labelsIn(shown), ["Warunek", "Czynność"]);
+    assert.equal(page.document.activeElement, cellNamed(shown, "Zawsze"));
   });
 });
