@@ -1,0 +1,13 @@
+# Findings of the review of the whole change that block (the reviewer's words)
+
+Review: `reports/report-review-whole.md`, first line `FAIL 01363a5afa5cfa6172341aaeacacee7ff77f537d`. Range reviewed: `6fec0ea..01363a5`. Only the blocking finding is yours; the Minor findings and the out-of-scope finding are not (they go to the request).
+
+### Important 1 — the skill's check of a composed state names a control that no longer exists
+
+- Place: `.claude/skills/loop2-play/SKILL.md:114-116` and its copy `.agents/skills/loop2-play/SKILL.md:114-116`.
+- Text at the head: "5. `playwright-cli reload`. The team now holds „Agent”; click „Wyślij” at it and open the editor of the map run: the action select list of „Dodaj regułę” holds „Uderz — patyk”, „Kopnij”, „Odskocz” and „Obchód”."
+- What is wrong: this step is the check that the composed state worked, and it describes the DOM editor. Slice 13 removed that editor. On the head there is no button „Dodaj regułę” and no action select list. The actions now stand as cells in the rule panel, under the field „Czynność”, which opens from a row or from „+ reguła”. `git grep "Dodaj regułę"` finds the sentence in the skill, in the decision log's *Origin* of D-124 and in old comments, and nowhere in the drawn screen.
+- Why it matters: To do 16 requires that `.claude/skills/loop2-play/SKILL.md` say how an agent reaches a state with the combat verbs and a bought branch in the action pick. The skill does say how to build and send the state. But it tells the agent to confirm the result on a control the game no longer draws. An agent following it cannot finish the check, or reports the composed state as broken. The next check that depends on a composed state uses this exact step, slice 8 of this cycle included.
+- Evidence: `git show 3664173 --stat` (slice 13 rewrote `program-editor.ts` without its DOM part), `tests/view/rule-editor.test.mjs:462` ("the buttons of an old „Dodaj regułę”, „Dodaj grupę” and the arrows of a group are gone"), and the screenshots `reports/slice-13-run-panel.png` and `reports/slice-12-run-screen-panel-open-action-reasons.png`, which show the action pick as cells.
+- Slice: spans slice 2 (`fccc084`, which wrote the step while the DOM editor still stood) and slice 13 (`3664173`, which removed the editor and did not update the step). Neither the plan's *Change* list for slice 13 nor the one for slice 14 named the skill, so the plan has a gap here as well.
+- Fix, as the reviewer sees it: rewrite step 5 in both copies so that it opens the rule panel of a row or of „+ reguła” on the screen of the map run and reads the cells „Uderz — patyk”, „Kopnij”, „Odskocz” and „Obchód” under „Czynność”. `tests/agent_workflow/test_loop2_play_skill.py` keeps the two copies the same.

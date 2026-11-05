@@ -1,0 +1,5 @@
+- Orchestrator's answers (autonomous choices Q7, Q8, recorded in the cycle record, not the human's), from slice 5's report:
+  - Slice 5 made `moveRule` cross group edges and added `ruleArrows`, `dropGroup`, the pick, sentence, number, time and group-summary functions in `src/browser/view/program-editor.ts`; read its exports and the report `docs/task-cycles/edytor-programu/reports/report-slice-5.md`.
+  - `focusAfter` of the old DOM editor still points at the origin group after a rule is moved across a group edge. `focusAfter` is not in your *Change* list: do not rely on it. Compute, inside `rule-list.tsx`, the focus target of a cross-group move yourself (the moved rule's control in its new group) and keep a test for it.
+  - Targets are shown capitalised in sentences (`Patyk`), as the acceptance criterion reads.
+  - The pick cell (slice 6) is `src/browser/view/controls/react-pick-cell.tsx` with the mask class `.action-icon`; the React select list and number field (slice 7) exist. The destructive button is neutral at rest (slice 8).

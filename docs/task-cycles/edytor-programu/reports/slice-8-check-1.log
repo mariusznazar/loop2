@@ -1,0 +1,9 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_application_build_kitchen_sink.py
+
+...
+----------------------------------------------------------------------
+Ran 3 tests in 6.701s
+
+OK
