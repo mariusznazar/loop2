@@ -729,6 +729,61 @@ header .save-line {
   color: var(--danger);
 }
 
+/*
+ * The trip plan of a program in React (task edytor-programu, Slice 11): the folding line and the
+ * lists under it. The lists take the look of the rows above (`trip-list`, `trip-entry`). The labels
+ * stand in `text-label` and the rest in the text's own role; the icons keep the colour of their files,
+ * so no colour is set for them.
+ */
+.trip-plan {
+  border-top: var(--frame-width) solid var(--divider);
+  margin-top: var(--space-m);
+  padding-top: var(--space-m);
+}
+
+.trip-plan-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-m);
+  cursor: pointer;
+}
+
+.trip-plan-side {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs) var(--space-s);
+}
+
+.trip-plan-label {
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+.trip-plan-position {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+/* An item's icon, as tall as the line it stands in. */
+.trip-plan-icon {
+  height: 1lh;
+  aspect-ratio: 1;
+}
+
+.trip-plan-list {
+  margin-bottom: var(--space-m);
+}
+
+.trip-plan-heading {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
 .rule-group-header,
 .group-condition {
   display: flex;

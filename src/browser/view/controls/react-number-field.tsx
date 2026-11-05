@@ -4,13 +4,15 @@
  * `tests/view/react-controls.test.mjs` keeps the two forms alike. It holds the text typed into it
  * while it has the focus, and takes a new value from its props only without the focus, so a screen
  * that redraws often leaves the typed text and the cursor in place. A number is committed on Enter
- * and on leaving the field, through the rule `readNumberField` of `program-editor.ts` gives.
- * Nothing here runs when the module is imported.
+ * and on leaving the field, through the rule `readNumberField` of `program-editor.ts` gives, or with
+ * `rule="trip"` through the trip count rule of `trip-editor.ts` (D-181). Nothing here runs when the
+ * module is imported.
  */
 import { useId, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent, Ref } from "react";
 import type { ConditionNumber } from "../../sim/program.js";
 import { readNumberField } from "../program-editor.js";
+import { tripCount } from "../trip-editor.js";
 
 export type ReactNumberFieldProps = {
   /** The field's name for assistive technology. */
@@ -23,7 +25,17 @@ export type ReactNumberFieldProps = {
   error?: string | null;
   /** Locks the field. */
   disabled?: boolean;
-  /** Called with the committed number when it differs from `value`. */
+  /**
+   * The rule of a committed number. Left out, the range rule of `readNumberField`: `onCommit` is
+   * called with the number when it differs from `value`. `"trip"`: the trip count rule (D-181), a
+   * safe integer from 1 up. Text that is no such count commits nothing, keeps `value` and the
+   * draft in the field, and calls `onReject`; a valid count calls `onCommit` every time it is
+   * committed, also when it equals `value`, so the screen can clear its message.
+   */
+  rule?: "trip";
+  /** Under the trip rule, called when the text left in the field is no valid count. */
+  onReject?: () => void;
+  /** Called with the committed number, see `rule`. */
   onCommit?: (committed: number) => void;
   /** The input's element, for the screen that moves focus to it. */
   inputRef?: Ref<HTMLInputElement>;
@@ -36,12 +48,15 @@ export function ReactNumberField({
   value,
   error,
   disabled,
+  rule,
+  onReject,
   onCommit,
   inputRef,
 }: ReactNumberFieldProps) {
   const id = useId();
   const messageId = `${id}-message`;
-  // The text shown while the field has the focus; null while it has none.
+  // The text shown while the field has the focus, or while a rejected trip count stays in it; null
+  // otherwise.
   const [draft, setDraft] = useState<string | null>(null);
   // Whether the text was typed in this focus: leaving the field without typing commits nothing,
   // as the change event of the DOM form does.
@@ -55,8 +70,23 @@ export function ReactNumberField({
     return result.value;
   }
 
+  // Under the trip rule: commits a valid count, or rejects the text and keeps it in the field.
+  // Returns the count committed, or null where the text was rejected.
+  function commitTrip(text: string): number | null {
+    typed.current = false;
+    const count = tripCount(text);
+    if (count === null) {
+      onReject?.();
+      return null;
+    }
+    onCommit?.(count);
+    return count;
+  }
+
   function handleFocus(): void {
-    setDraft(String(value));
+    // A rejected trip count stays in the field across a focus; under the range rule the draft is
+    // always null here, so the field shows the number it holds.
+    setDraft((current) => current ?? String(value));
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -66,10 +96,26 @@ export function ReactNumberField({
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
     if (event.key !== "Enter" || !typed.current || draft === null) return;
+    if (rule === "trip") {
+      const count = commitTrip(draft);
+      if (count !== null) setDraft(String(count));
+      return;
+    }
     setDraft(String(commit(draft)));
   }
 
   function handleBlur(): void {
+    if (rule === "trip") {
+      // A rejected text stays in the field; it is reported only when the player typed it.
+      if (draft !== null && tripCount(draft) === null) {
+        if (typed.current) onReject?.();
+        typed.current = false;
+        return;
+      }
+      if (typed.current && draft !== null) commitTrip(draft);
+      setDraft(null);
+      return;
+    }
     if (typed.current && draft !== null) commit(draft);
     setDraft(null);
   }

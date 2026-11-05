@@ -916,6 +916,13 @@ const SELECT_OPTIONS = [
 
 // The range of a number field: the condition kind's number, which the commit rule reads too.
 const RANGE = { defaultValue: 1, min: 0, max: 10, step: 1 };
+// A trip count: a safe integer from 1 up (D-181).
+const TRIP_RANGE = {
+  defaultValue: 1,
+  min: 1,
+  max: Number.MAX_SAFE_INTEGER,
+  step: 1,
+};
 
 test("a select list with positions is the same element tree in both forms", async () => {
   await withPage(async ({ document }) => {
@@ -1156,6 +1163,65 @@ test("a number field commits the clamped number when left after typing, and noth
       commits,
       [10],
       "a number above the range commits the range's end",
+    );
+  });
+});
+
+// The trip count rule (D-181) of the opt-in `rule="trip"`: text that is no whole count from 1 commits
+// nothing, keeps the number shown and the draft in the field, and is reported through `onReject`, so
+// the screen can show its message. Breaks: the range rule rounds "2.4" to 2 and clamps "0" to 1, so
+// both commit here; a field that drops the draft on blur shows "3" in place of "0" and fails the
+// draft check; a field that reports a count equal to the number shown as a rejection fails too.
+test("a number field under the trip count rule commits nothing on text that is no whole count from 1, keeps its draft and reports it", async () => {
+  await withPage(async ({ document, window }) => {
+    const commits = [];
+    let rejects = 0;
+    const render = (value) =>
+      createElement(ReactNumberField, {
+        label: "Liczba",
+        number: TRIP_RANGE,
+        value,
+        rule: "trip",
+        onCommit: (committed) => commits.push(committed),
+        onReject: () => {
+          rejects += 1;
+        },
+      });
+    const drawing = await drawn(document, render(3));
+    const input = drawing.container.querySelector("input");
+    await inAct(() => input.focus());
+    await typeInto(input, "0");
+    await inAct(() => input.blur());
+    assert.deepEqual(commits, [], "the zero commits nothing");
+    assert.equal(rejects, 1, "the zero is reported once");
+    assert.equal(input.value, "0", "the draft stays in the field");
+    await inAct(() => input.focus());
+    assert.equal(input.value, "0", "a new focus keeps the draft");
+    await typeInto(input, "2.4");
+    await inAct(() =>
+      input.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      ),
+    );
+    assert.deepEqual(commits, [], "a fraction commits nothing on Enter");
+    assert.equal(rejects, 2, "the fraction is reported on Enter");
+    await inAct(() => input.blur());
+    assert.equal(rejects, 2, "leaving the rejected draft reports it no more");
+    await inAct(() => input.focus());
+    await typeInto(input, "5");
+    await inAct(() => input.blur());
+    assert.deepEqual(commits, [5], "a whole count from 1 commits as typed");
+    assert.equal(rejects, 2);
+    await inAct(() => drawing.root.render(render(5)));
+    assert.equal(input.value, "5", "after the commit the field shows it");
+    await inAct(() => input.focus());
+    // "5.0" is a valid count that differs in text from the 5 shown, so the field sees a change.
+    await typeInto(input, "5.0");
+    await inAct(() => input.blur());
+    assert.deepEqual(
+      commits,
+      [5, 5],
+      "a valid count equal to the number shown is still reported",
     );
   });
 });
