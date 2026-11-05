@@ -6669,11 +6669,12 @@ the band leaves that sentence out.
     „Głód”, the first chill writing the rule into „Ogień” and the player dragging „Głód” above it
     while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
     Eksploruj.”; „Ogień” renamed „Ciepło” while the band stands giving „… w grupie „Ciepło”: …”;
-    the rule deleted while the band stands, the band keeping what was discovered with no sentence
-    about the rule
+    the rule deleted while the band stands and no other group holding „Zawsze → Eksploruj”, the band
+    keeping what was discovered with no sentence about the rule
   - violates: after „Głód” is dragged above „Ogień”, the band reading „Gra dopisała regułę w grupie
-    „Głód”: Zawsze → Eksploruj.”; the sentence still standing after the rule or its group was
-    deleted; the sentence in the band of a discovery at which the game wrote no rule; „Gra dopisała
+    „Głód”: Zawsze → Eksploruj.” while „Głód” holds no rule „Zawsze → Eksploruj”; the sentence still
+    standing after the rule or its group was deleted while no other group holds „Zawsze →
+    Eksploruj”; the sentence in the band of a discovery at which the game wrote no rule; „Gra dopisała
     regułę 1.1”; the group named from the saved program rather than from the copy
 - **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, question 6, and § Settlements to record, row 5
 
@@ -6681,9 +6682,10 @@ the band leaves that sentence out.
 copy's group in which the player finds the rule now — after a group dragged above it, a rename, or
 the rule moved with its group or into another one, and after a load of the paused game — without
 the band depending on the numbering of rules. Accepted with it: a longer sentence in the band. Its
-further cost: where the player keeps a rule „Zawsze → Eksploruj” of their own in a group dragged
-above the one the game wrote into, the band names that earlier group, where the same rule also
-stands.
+further cost: where a rule „Zawsze → Eksploruj” of the player's own, such as one „+ reguła” adds,
+stands in another group that comes first — dragged above the one the game wrote into, or left
+standing after the game's rule or its group is deleted — the band names that group, where the same
+rule stands.
 *Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
 looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
 the numbering; no sentence about the rule — a departure from the project's definition; a name the
