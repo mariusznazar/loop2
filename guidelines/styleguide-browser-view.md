@@ -99,8 +99,11 @@ Nie jest nią: `0`, procent, rozmiar w `fr`, `vw` albo `vh`, słowo kluczowe
 w regule `@media`, geometria rysunku siatki liczona w TypeScripcie, atrybuty
 `width` i `height` obrazka, wymiar układu — szerokość albo wysokość z jej
 minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
-w `assets/icons/`. Kolor ikon stoi w samych plikach ikon; gdy zmienia się
-wartość `text-strong`, zmień go w nich ręcznie.
+w `assets/icons/`. Dwa sposoby stoją obok siebie do zadania 24: ikony
+czynności rysowane maską biorą kolor z tekstu obok, więc szarzeją razem
+z wyszarzoną komórką i zmiana `text-strong` dochodzi do nich sama; każda inna
+ikona ma kolor w swoim pliku, a gdy zmienia się wartość `text-strong`, zmień go
+w nim ręcznie (D-43).
 
 Czcionki interfejsu to Geist i Geist Mono z plików produktu (D-46): tekst gry
 idzie stosem Geist, kronika i zegar przejścia stosem Geist Mono.
@@ -154,7 +157,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285
+- **Decision:** D-38 · D-44 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -202,8 +205,10 @@ Kontrolki odstępujące od tej listy stanów:
 - `src/browser/view/controls/button.ts` — przycisk, przycisk niszczący
   i przycisk wybrany w grupie: error nie dotyczy, bo przycisk nie ma
   niepoprawnej wartości; empty nie dotyczy, bo przycisk nie ma pozycji ani
-  wpisu. Przycisk niszczący ma tekst w `danger`; są nim „Zakończ”, „Usuń”,
-  „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” i „Zatrzymaj” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
+  wpisu. Przycisk niszczący w spoczynku jest neutralny, z tekstem w `text`,
+  a pod kursorem i przy fokusie ma tekst w `danger` (D-44, D-39), w obu
+  postaciach przycisku; są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
+  „Przełącz postać na ten program” i „Zatrzymaj” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
   Loading dotyczy tylko zwykłego przycisku, który czeka na odpowiedź
   serwera, także w głównym wyglądzie; przycisk niszczący i przycisk wybrany
@@ -236,6 +241,19 @@ Kontrolki odstępujące od tej listy stanów:
   żaden formularz czekający na serwer jej nie ma.
 - `src/browser/view/controls/number-field.ts` — pole liczby: loading nie
   dotyczy, bo żaden formularz czekający na serwer go nie ma.
+- `src/browser/view/controls/pick-cell.ts` — komórka wyboru, czyli jedna
+  pozycja wyboru w panelu reguły (D-288, D-44): default — ramka w
+  `control-border`, tekst w `text`; hover — tło `highlight`; visible focus —
+  obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
+  w grupie, z ramką w `selected` i tekstem w `text-strong` (D-40);
+  wyszarzona (stan disabled) ma ramkę przerywaną — słowo kluczowe `dashed`,
+  bez nowej wartości — nazwę w `text-disabled` i powód w `text-secondary`
+  (D-289); klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
+  powód, a wybór jej niczego nie robi. Error nie dotyczy, bo komórka nie ma
+  wpisu, który mógłby być błędny; empty nie dotyczy, bo komórka jest jedną
+  pozycją, nie listą; loading nie dotyczy, bo żaden formularz czekający na
+  serwer jej nie ma. Ikona czynności w komórce jest rysowana maską w kolorze
+  tekstu obok (D-291, D-43), więc szarzeje razem z wyszarzoną komórką.
 
 Kontrolka, która odstępuje od listy stanów, stoi tu ze swoją ścieżką i powodem;
 reguła nie powtarza listy kontrolek, którą trzyma kod. Przegląd porównuje stany
@@ -305,7 +323,8 @@ komenda `npm run kitchen-sink`; nic, co pisze `npm run build`, a to trafia na
 serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontrolkę
 w jej postaci DOM (D-269), w każdym stanie albo z powodem, dla którego stan
 nie dotyczy — przycisk także w głównym wyglądzie (D-274) i jako zakładkę
-wybraną i niewybraną (D-276) — formularze
+wybraną i niewybraną (D-276), przycisk niszczący w spoczynku, pod kursorem
+i przy fokusie (D-44) — formularze
 logowania i zakładania konta, „Nie pamiętam hasła” i „Ustaw nowe hasło”
 czekające na serwer i ze zdaniem odmowy pod nimi oraz formularz „Nie pamiętam
 hasła” ze zdaniem odpowiedzi na prośbę w `text` z belką (D-44),
@@ -369,7 +388,8 @@ States of shared controls.
 
 Ramka albo belka, którą ekran rysuje przy tekście, żeby go wyróżnić — ramka
 głównego przycisku, belka zdania po prośbie o odnośnik, ramka pola z błędem
-w kolorze jego komunikatu — bierze kolor tego tekstu: w stylach
+w kolorze jego komunikatu, linia upuszczenia reguły przy napisie „tu wyląduje”
+w kolorze tego napisu — bierze kolor tego tekstu: w stylach
 `currentColor` albo tę samą rolę co tekst. Jest częścią tekstu, więc nie
 dostaje własnej roli i nie zmienia znaczenia roli tego tekstu (D-39, D-40).
 Linia, która znaczy wybrane w swojej grupie — ramka przycisku wybranego
@@ -436,6 +456,34 @@ Lista programów na ekranie Programy: pozycja jest odnośnikiem do programu
 `--bar-width` po lewej, każda inna — tekst w `text`; pod kursorem tło
 `highlight` (D-40, D-280). Przegląd zmiany czyta pozycje paska, menu i listy
 wobec tej reguły i wobec strony wszystkich stanów.
+
+### Program editor
+
+- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-279 · D-39 · D-40 · D-43
+- **Invariant:** none
+- **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”.
+- **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`.
+
+Edytor programu stoi na ekranie Programy i na ekranie przejścia (D-288).
+Wygląd jego części bierze się z istniejących ról; edytor nie dokłada żadnej
+nowej barwy, roli ani wartości.
+
+- Wiersz reguły: warunek w `text-secondary`, czynność w `text-strong`, numer
+  (D-292), czas wykonania (D-293) i licznik „Wykonano {n}×” (D-93) w
+  `text-label`; ikona czynności stoi przy czynności i jest rysowana maską w
+  kolorze tekstu obok (D-291, D-43). Wiersz otwarty i wiersz pod kursorem stoją
+  na tle `highlight`, z tekstem w ich własnych rolach (reguła Every
+  background with its text).
+- Nagłówek grupy reguł: nazwa w `text-strong`, warunek w `text-secondary`,
+  liczba reguł i suma „Wykonano” w `text-label`.
+- Panel reguły stoi na tle `panel` z ramką w `divider`; podpisy jego pól są
+  w `text-label`. Komórki jego wyboru podaje reguła States of shared controls.
+- Linia upuszczenia — linia, która pokazuje, gdzie wyląduje przeciągana reguła
+  albo grupa reguł — ma napis „tu wyląduje” w `text-strong`, a sama linia bierze
+  kolor tego napisu (D-279, reguła A line at a text takes the colour of that
+  text).
+
+Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ## Examples
 
