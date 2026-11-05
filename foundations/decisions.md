@@ -6654,30 +6654,42 @@ screen of a map run too — a link to the place the player already stands in.
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
-Where the game wrote a program rule at the discovery a band names, the band says „Gra dopisała
-regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”, {nazwa grupy} being the name of the copy's
-first rule group as it stands, the group into which the game writes such a rule (D-123), and it
-gives the rule no number. Where the copy holds no rule group, the band leaves that sentence out.
+Where a band names the discovery at which the game wrote a program rule (D-123), the band says „Gra
+dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”, {nazwa grupy} being the name of the
+first rule group of the copy, in the order of the program editor, that holds a program rule „Zawsze
+→ Eksploruj”, and it gives the rule no number. Where no rule group of the copy holds such a rule,
+the band leaves that sentence out.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-123
 - **Verification:** an agent compares a change with the decision:
   - complies: at the first chill of a new game the band reading „Gra dopisała regułę w grupie
-    „Program”: Zawsze → Eksploruj.” after what was discovered; with the copy's first rule group
-    renamed „Ogień” before the first chill, „Gra dopisała regułę w grupie „Ogień”: Zawsze →
-    Eksploruj.”
-  - violates: „Gra dopisała regułę 1.1”; the sentence in the band of a discovery at which the game
-    wrote no rule; the group named from the saved program rather than from the copy
+    „Program”: Zawsze → Eksploruj.” after what was discovered; with the copy's groups „Ogień” and
+    „Głód”, the first chill writing the rule into „Ogień” and the player dragging „Głód” above it
+    while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
+    Eksploruj.”; „Ogień” renamed „Ciepło” while the band stands giving „… w grupie „Ciepło”: …”;
+    the rule deleted while the band stands, the band keeping what was discovered with no sentence
+    about the rule
+  - violates: after „Głód” is dragged above „Ogień”, the band reading „Gra dopisała regułę w grupie
+    „Głód”: Zawsze → Eksploruj.”; the sentence still standing after the rule or its group was
+    deleted; the sentence in the band of a discovery at which the game wrote no rule; „Gra dopisała
+    regułę 1.1”; the group named from the saved program rather than from the copy
 - **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, question 6, and § Settlements to record, row 5
 
 *Rationale:* the band stands above the program the map run carries out, the copy, so it names the
-copy's group, and the player finds the rule there without the band depending on the numbering of
-rules. Accepted with it: a longer sentence in the band; a group renamed or moved while the band
-stands shows the name of the group first at that time.
+copy's group in which the player finds the rule now — after a group dragged above it, a rename, or
+the rule moved with its group or into another one, and after a load of the paused game — without
+the band depending on the numbering of rules. Accepted with it: a longer sentence in the band. Its
+further cost: where the player keeps a rule „Zawsze → Eksploruj” of their own in a group dragged
+above the one the game wrote into, the band names that earlier group, where the same rule also
+stands.
 *Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
 looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
-the numbering; no sentence about the rule — a departure from the project's definition.
+the numbering; no sentence about the rule — a departure from the project's definition; a name the
+screen holds from the moment of the discovery — lost at a load of the paused game, and stale after a
+rename; the copy's first rule group as it stands — false after another group is dragged above it or
+the group is deleted.
 
 ### D-313 — What does „Dodaj regułę z tym” do?
 
