@@ -6114,8 +6114,8 @@ postaci, która ją kupiła”; „Idź”, „Zbierz”, „Obchód”, „Tu l
 target to point at, „nie znasz jeszcze celu”; and a discovered target absent from the map of the map
 run, „nie ma go na tej mapie”. While the game holds no map run every discovered target may be
 picked, the actions of combat may be picked outside combat too, and a rule holding a value outside
-what may be picked shows it in the panel as picked and greyed, with its reason, and the player can
-change it.
+what may be picked shows it in the panel as picked and greyed, with its reason where one of those
+above fits and with none otherwise, and the player can change it.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -6125,19 +6125,24 @@ change it.
     „gałąź niewykupiona”; with no map run in the game, „Zbierz” offering every discovered item;
     „Kopnij” to be picked while no creature attacks; a rule whose target is absent from the map of
     the map run showing that target picked and greyed with „nie ma go na tej mapie”, and a click on
-    another target changing it
+    another target changing it; a rule holding a value that none of the listed reasons fits showing
+    it picked and greyed with no reason, and a click on another value changing it
   - violates: „Kopnij” in the pick before the first attack revealed it; a greyed cell with no
-    reason; „Zbierz” left out of the pick while no target is known; a rule's value outside the pick
-    shown as if nothing were picked
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, questions 1 and 16, and § Settlements to record, row 1
+    reason where one of the listed reasons fits; „Zbierz” left out of the pick while no target is
+    known; a rule's value outside the pick shown as if nothing were picked
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, questions 1 and 16, and § Settlements to record, row 1; the human's decision at the request of the task that wrote this entry, 2026-11-05, on the held value that no listed reason fits
 
 *Rationale:* the pick holds as many choices as the player has found, so it never starts
 overwhelming and the growing list is visible progress (D-118). What has been found and cannot be
 picked now stays in sight with its reason, since a choice that vanishes without a word leaves the
-player asking where it went; a branch not bought stands greyed as in the predecessor game, loop.
+player asking where it went; a branch not bought stands greyed as in the predecessor game, loop. A
+held value that none of the listed reasons fits shows with none, since no reason sentence for it has
+been set, and only a state composed by hand or an old save reaches it.
 *Rejected:* only branch actions greyed and everything else that may not be picked left out — the
 rest vanishes without a word, and moss and fibre would later vanish from Programy; hiding what may
-not be picked — the player asks where it went.
+not be picked — the player asks where it went; a reason sentence for a held value that none of
+the listed reasons fits — wording not yet set, for a case that only a composed state or an old save
+reaches.
 
 ### D-290 — How does the pick of the rule panel group its cells?
 
@@ -6409,18 +6414,21 @@ A program rule and a rule group are deleted at once, at the click, with no quest
 
 ### D-304 — Where does the player add a rule group?
 
-The button that adds a rule group reads „+ dodaj grupę” and stands beside „+ reguła”.
+The button that adds a rule group reads „+ dodaj grupę” and stands under the rule groups, in the notation of „+ reguła”, at the foot of
+the list.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-90 · derives from D-124
 - **Verification:** an agent compares a change with the decision:
-  - complies: „+ dodaj grupę” beside „+ reguła”
-  - violates: „Dodaj grupę” beside „+ reguła”
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 16
+  - complies: „+ dodaj grupę” at the foot of the list, under the last rule group
+  - violates: „Dodaj grupę” at the foot of the list
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 16; the human's decision at the request of the task that wrote this entry, 2026-11-05, on where the button stands
 
-*Rationale:* the two buttons that add stand side by side in one notation.
-*Rejected:* „Dodaj grupę” unchanged — two notations side by side.
+*Rationale:* the two buttons that add are written in one notation; „+ dodaj grupę” stands once under
+all the groups.
+*Rejected:* „Dodaj grupę” unchanged — two notations side by side; the two buttons on one line — when
+the last group is folded its „+ reguła” is hidden and nothing stands beside the button.
 
 ### D-305 — Does the program editor mark a program rule that does not fire?
 
