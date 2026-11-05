@@ -10,6 +10,7 @@ import {
   ICON_CREDITS,
   ICON_SOURCE_COMMIT,
 } from "../../dist/browser/view/credits.js";
+import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
 import { CreditsSection } from "../../dist/browser/view/credits-section.js";
@@ -171,6 +172,11 @@ const TITLES = {
   grab: "Grab icon",
   "claw-hammer": "Claw hammer icon",
   "match-tip": "Match tip icon",
+  logging: "Logging icon",
+  meal: "Meal icon",
+  "deadly-strike": "Deadly strike icon",
+  "boot-kick": "Boot kick icon",
+  dodge: "Dodge icon",
 };
 
 /**
@@ -184,6 +190,11 @@ const ACTION_ICONS = [
   { name: "Zbierz, Obchód", icon: "grab" },
   { name: "Wytwórz — ognisko", icon: "claw-hammer" },
   { name: "Zapal — ognisko, Zapal — patyk", icon: "match-tip" },
+  { name: "Zasil — ognisko", icon: "logging" },
+  { name: "Zjedz — jagoda", icon: "meal" },
+  { name: "Uderz — patyk", icon: "deadly-strike" },
+  { name: "Kopnij", icon: "boot-kick" },
+  { name: "Odskocz", icon: "dodge" },
 ];
 
 /** Everything the data gives an icon, in the footer's order: the resources, the campfire, the actions. */
@@ -216,6 +227,14 @@ test("the footer credits the campfire's icon, by Lorc, after the four resources'
   assert.equal(links[0].href, "https://game-icons.net/1x1/lorc/campfire.html");
 });
 
+test("the footer credits the actions' icons after the campfire's, one line each, in the order of the data", async () => {
+  const { items } = await builtFooter();
+  assert.deepEqual(
+    items.slice(5).map((item) => textOf(item).split(":")[0]),
+    ACTION_ICONS.map((action) => action.name),
+  );
+});
+
 test("the campfire's data names the icon file campfire.svg and its title on game-icons.net", () => {
   assert.equal(CAMPFIRE.icon, "campfire");
   assert.equal(CAMPFIRE.iconTitle, "Campfire icon");
@@ -237,6 +256,17 @@ test("each icon the data names, the campfire's included, exists as a file", () =
   const names = NAMED.map((named) => named.icon);
   assert.ok(names.includes(CAMPFIRE.icon));
   for (const icon of names) assert.ok(existsSync(`${ICONS}${icon}.svg`), icon);
+});
+
+test("each action of the data names an icon and its title, and the icon file exists", () => {
+  for (const [id, action] of Object.entries(ACTIONS)) {
+    assert.ok(action.icon, `${id} names no icon`);
+    assert.ok(action.iconTitle, `${id} names no icon title`);
+    assert.ok(
+      existsSync(`${ICONS}${action.icon}.svg`),
+      `${id}: ${action.icon}`,
+    );
+  }
 });
 
 test("each icon file has a credit with an author and the source commit", () => {

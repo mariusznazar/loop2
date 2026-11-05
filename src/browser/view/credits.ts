@@ -76,4 +76,29 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
     sourceUrl: "https://game-icons.net/1x1/lorc/match-tip.html",
     changes: CHANGES,
   },
+  logging: {
+    author: "Skoll",
+    sourceUrl: "https://game-icons.net/1x1/skoll/logging.html",
+    changes: CHANGES,
+  },
+  meal: {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/meal.html",
+    changes: CHANGES,
+  },
+  "deadly-strike": {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/deadly-strike.html",
+    changes: CHANGES,
+  },
+  "boot-kick": {
+    author: "Lorc",
+    sourceUrl: "https://game-icons.net/1x1/lorc/boot-kick.html",
+    changes: CHANGES,
+  },
+  dodge: {
+    author: "Felbrigg",
+    sourceUrl: "https://game-icons.net/1x1/felbrigg/dodge.html",
+    changes: CHANGES,
+  },
 };

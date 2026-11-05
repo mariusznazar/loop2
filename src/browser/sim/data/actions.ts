@@ -18,9 +18,9 @@ export type ActionDef = {
   /** Combat-only effect; absent actions belong to ordinary map time. */
   combat?: { damage: number; item?: ItemId } | { reducesNextDamageBy: number };
   /** File name in assets/icons, without the extension: the icon the action shows wherever it stands. */
-  icon?: string;
+  icon: string;
   /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
-  iconTitle?: string;
+  iconTitle: string;
 };
 
 export type ActionId = keyof typeof ACTIONS;
@@ -112,12 +112,16 @@ export const ACTIONS = {
     status: "Zasila ognisko",
     minutes: 5,
     revealedBy: { kind: "lit" },
+    icon: "logging",
+    iconTitle: "Logging icon",
   },
   eat: {
     label: "Zjedz — jagoda",
     status: "Je jagodę",
     minutes: 5,
     revealedBy: { kind: "gathered", item: "berry" },
+    icon: "meal",
+    iconTitle: "Meal icon",
   },
   strikeWithStick: {
     label: "Uderz — patyk",
@@ -125,6 +129,8 @@ export const ACTIONS = {
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
     combat: { damage: 6, item: "stick" },
+    icon: "deadly-strike",
+    iconTitle: "Deadly strike icon",
   },
   kick: {
     label: "Kopnij",
@@ -132,6 +138,8 @@ export const ACTIONS = {
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
     combat: { damage: 3 },
+    icon: "boot-kick",
+    iconTitle: "Boot kick icon",
   },
   dodge: {
     label: "Odskocz",
@@ -139,5 +147,7 @@ export const ACTIONS = {
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
     combat: { reducesNextDamageBy: 5 },
+    icon: "dodge",
+    iconTitle: "Dodge icon",
   },
 } as const satisfies Record<string, ActionDef>;

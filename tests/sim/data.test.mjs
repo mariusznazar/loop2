@@ -107,6 +107,8 @@ test("combat actions carry the accepted damage, item requirement and attack reve
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
     combat: { damage: 6, item: "stick" },
+    icon: "deadly-strike",
+    iconTitle: "Deadly strike icon",
   });
   assert.deepEqual(ACTIONS.kick, {
     label: "Kopnij",
@@ -114,6 +116,8 @@ test("combat actions carry the accepted damage, item requirement and attack reve
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
     combat: { damage: 3 },
+    icon: "boot-kick",
+    iconTitle: "Boot kick icon",
   });
   assert.deepEqual(ACTIONS.dodge, {
     label: "Odskocz",
@@ -121,6 +125,8 @@ test("combat actions carry the accepted damage, item requirement and attack reve
     minutes: null,
     revealedBy: { kind: "attacked", creature: "wolf" },
     combat: { reducesNextDamageBy: 5 },
+    icon: "dodge",
+    iconTitle: "Dodge icon",
   });
 });
 
