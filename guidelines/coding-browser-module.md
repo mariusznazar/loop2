@@ -33,6 +33,8 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/controls/text-field.ts` | copy | — |
 | `src/browser/view/credits-section.tsx` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
+| `src/browser/view/discovery-band.tsx` | copy | — |
+| `src/browser/view/discovery-rule.ts` | copy | — |
 | `src/browser/view/email-confirmation.ts` | do not copy | — |
 | `src/browser/view/email-status.ts` | do not copy | — |
 | `src/browser/view/footer.ts` | do not copy | — |
@@ -46,15 +48,18 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/program-panel.tsx` | copy | — |
 | `src/browser/view/rule-list.tsx` | copy | — |
 | `src/browser/view/rule-panel.tsx` | copy | — |
-| `src/browser/view/run-screen.ts` | do not copy | — |
+| `src/browser/view/run-header.tsx` | copy | — |
+| `src/browser/view/run-screen.tsx` | copy | — |
 | `src/browser/view/screen-address.ts` | copy | — |
 | `src/browser/view/status-row.ts` | do not copy | — |
-| `src/browser/view/terrain-panel.ts` | do not copy | — |
+| `src/browser/view/terrain-drawing.tsx` | copy | — |
 | `src/browser/view/terrain-picture.ts` | copy | — |
 | `src/browser/view/tile-list.ts` | do not copy | — |
+| `src/browser/view/tile-table.tsx` | copy | — |
 | `src/browser/view/trip-editor.ts` | do not copy | — |
 | `src/browser/view/trip-lines.ts` | do not copy | — |
 | `src/browser/view/trip-plan.tsx` | copy | — |
+| `src/browser/view/world-area.tsx` | copy | — |
 
 ## Rules
 
@@ -244,15 +249,19 @@ wymaga D-267. „Wyślij ponownie” pasek wysyła sam przez `client`.
 
 ### Kontrolki w DOM i ich aktualizacja
 
-Ten akapit o `status-row.ts` dotyczy utrzymania ekranu, który zostaje w DOM,
+Ten akapit o `headquarters.ts` dotyczy utrzymania ekranu, który zostaje w DOM,
 nie budowy nowego ekranu (D-265).
 
-`src/browser/view/status-row.ts` tworzy przyciski raz, a przy zmianie stanu
-aktualizuje tekst istniejących elementów. Dzięki temu przycisk zachowuje fokus.
-Obsługa kliknięć przekazuje działania do aplikacji przez `StatusRowControls`;
-aplikacja wywołuje symulację. Taki podział jest przykładem dla edytowalnych
-kontrolek ekranu, który zostaje w DOM. Każdy moduł nie musi mieć `update()`,
-a elementy statyczne mogą być przebudowywane.
+`src/browser/view/headquarters.ts` tworzy pole imienia nowej postaci i przycisk
+„Załóż” raz, a przy zmianie stanu aktualizuje istniejące elementy: `update`
+ustawia `disabled` przycisków „Wyślij” i „Puść w pętlę”, a `setLine` zapisuje
+tekst i widoczność wiersza tylko tam, gdzie się zmieniły. Dzięki temu pole
+i przycisk zachowują fokus. Listę postaci odbudowuje tylko wtedy, gdy zmieni się
+drużyna, rozwiązane mapy albo numery i nazwy programów. Obsługa kliknięć
+przekazuje działania do aplikacji przez `HeadquartersControls`; aplikacja
+wywołuje symulację. Taki podział jest przykładem dla edytowalnych kontrolek
+ekranu, który zostaje w DOM. Każdy moduł nie musi mieć `update()`, a elementy
+statyczne mogą być przebudowywane.
 
 Wspólne kontrolki w `src/browser/view/controls/` budują ekrany; kontrolka, która
 czeka na serwer, zmienia się w miejscu. W postaci DOM `setButtonWaiting`
@@ -312,6 +321,6 @@ o ponowieniu.
 - `src/browser/view/`
 - `src/browser/view/account-card.tsx`
 - `src/browser/view/controls/`
-- `src/browser/view/status-row.ts`
+- `src/browser/view/headquarters.ts`
 - `src/browser/kitchen-sink/`
 - `tests/view/react-controls.test.mjs`

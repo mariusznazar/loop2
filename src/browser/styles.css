@@ -1307,26 +1307,6 @@ header .save-line {
   color: var(--text-label);
 }
 
-.status-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-s);
-}
-
-/* The run's clock: the minute of the map run and what the character does. */
-.status-text {
-  margin: 0;
-  margin-right: auto;
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-/* A completed map run: the status text says something works, is in order (D-39). */
-.status-text.positive {
-  color: var(--positive);
-}
-
 /*
  * The header of the screen of a map run (D-311): the character's name and the map's name, in
  * `text-strong` as names are (D-40), then the status row in its order. The clock stays in Geist Mono
@@ -1368,12 +1348,6 @@ header .save-line {
 /* A map solved in the headquarters, beside the character's row (D-39). */
 .map-label.solved {
   color: var(--positive);
-}
-
-/* What the last game minute of a discovery revealed, under the status row (D-39). */
-.discovery-text {
-  margin: var(--space-xs) 0 0;
-  color: var(--discovery);
 }
 
 /*
@@ -1443,14 +1417,6 @@ header .save-line {
   color: var(--text);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
-}
-
-.terrain-panel {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-l);
-  margin-top: var(--space-m);
 }
 
 /* The rule panel in the place of the table of revealed tiles, beside the drawing (D-282). */
