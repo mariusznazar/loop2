@@ -2,6 +2,7 @@
 
 - Projects: C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\
 - Tasks: C:\Storage\The Brain\The Brain\Notes\Projects\(P) Loop\_tasks_active.md
+- When a task document first reaches `Status: ready for cycle`, set the task's line to Ready, [/], and remove its date, as the section "Zadania agentowe" of `C:\Storage\The Brain\The Brain\Notes\Resources\(R) Obsidian\obsidian_rulebook.md` gives.
 
 Before changing product code, including scripts and tests, read `guidelines/coding.md`.
 
