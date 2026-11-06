@@ -30,13 +30,13 @@ export const SCENE = {
   /** The line the mage's feet and the things standing on the ground stand on. */
   groundLine: 136,
   /** Left edge of the mage's frame where it waits, in the middle of the clearing. */
-  clearingX: 160,
+  clearingX: 144,
   /**
    * Left edge of the mage's frame at the right edge of the frame, always the same place. The mage's
-   * figure, 25 pixels wide, ends at column 44 of its frame in both sheets, so at 291 its last column
-   * is the frame's last, 335; at 292 it would lie one column outside and be clipped.
+   * figure, 25 pixels wide, ends at column 44 of its frame in both sheets, so at 275 its last column
+   * is 319, inside the frame of 336 with 16 pixels to spare.
    */
-  rightEdgeX: 291,
+  rightEdgeX: 275,
 } as const;
 
 /** The mage's sheets, by the archetype of the character: idle and run, each in its frame size. */
@@ -54,7 +54,7 @@ export const SCENE_MAGES = {
 export const SCENE_FIRE = {
   picture: { file: "fire.png", width: 32, height: 32, frames: 4 },
   place: { x: 124, y: 132 },
-  mageAt: 96,
+  mageAt: 80,
 } as const satisfies SceneSpot;
 
 /** The props of the scene, by the resource each shows; a resource with no prop has none here. */
@@ -62,16 +62,16 @@ export const SCENE_PROPS = {
   stick: {
     picture: { file: "sticks.png", width: 22, height: 13, frames: 1 },
     place: { x: 80, y: 132 },
-    mageAt: 58,
+    mageAt: 42,
   },
   berry: {
     picture: { file: "berry-bush.png", width: 29, height: 27, frames: 1 },
     place: { x: 252, y: 122 },
-    mageAt: 240,
+    mageAt: 224,
   },
   moss: {
     picture: { file: "moss.png", width: 12, height: 9, frames: 1 },
     place: { x: 40, y: 128 },
-    mageAt: 26,
+    mageAt: 32,
   },
 } as const satisfies Partial<Record<ResourceId, SceneSpot>>;

@@ -33,14 +33,16 @@ const ALWAYS = { kind: "always" };
 
 // The layout of the old Loop's scene (C:\Storage\repos\loop\src\components\probe\Scene.tsx lines
 // 44-58 at cdc7c0d), in the pixels of the 336 × 152 frame. A place is the left edge and the line the
-// picture stands on; the mage's place is its frame's left edge, its feet on the ground line.
+// picture stands on; the mage's place is its frame's left edge, its feet on the ground line. The
+// mage's frame is 64 pixels wide and the old Loop's was 32, so each of its places is the old one
+// moved 16 pixels left, which keeps the figure's centre where the old Loop had it.
 const GROUND = 136;
-const MAGE_AT_STICKS = 58;
-const MAGE_AT_BERRY = 240;
-const MAGE_AT_MOSS = 26;
-const MAGE_AT_FIRE = 96;
-const CLEARING = 160;
-const RIGHT_EDGE = 291;
+const MAGE_AT_STICKS = 42;
+const MAGE_AT_BERRY = 224;
+const MAGE_AT_MOSS = 32;
+const MAGE_AT_FIRE = 80;
+const CLEARING = 144;
+const RIGHT_EDGE = 275;
 const COMBAT_KINDS = ["strikeWithStick", "kick", "dodge"];
 const NO_UNDERSTANDING_ITEMS = {
   trees: [],
@@ -247,7 +249,7 @@ test("the props stand the same whatever the mage is doing", () => {
   assert.deepEqual(sceneDrawing(doing({ kind: "explore" })).props, idle);
 });
 
-test("the mage's place is the prop's own mage place: the sticks' is 58, the bush's 240, the moss's 26", () => {
+test("the mage's place is the prop's own mage place: the sticks' is 42, the bush's 224, the moss's 32", () => {
   assert.equal(SCENE_PROPS.stick.mageAt, MAGE_AT_STICKS);
   assert.equal(SCENE_PROPS.berry.mageAt, MAGE_AT_BERRY);
   assert.equal(SCENE_PROPS.moss.mageAt, MAGE_AT_MOSS);

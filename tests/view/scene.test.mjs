@@ -163,10 +163,10 @@ test("the props and the mage stand at the places of the data, as percentages of 
     placedAt(prop("stick"), [23.8095, 78.2895, 6.5476, 8.5526], "sticks");
     placedAt(prop("berry"), [75, 62.5, 8.631, 17.7632], "berry bush");
     placedAt(prop("moss"), [11.9048, 78.2895, 3.5714, 5.9211], "moss");
-    // At the sticks the mage stands at 58, its feet on the line 136.
+    // At the sticks the mage stands at 42, its feet on the line 136.
     placedAt(
       one(scene, ".scene-mage"),
-      [17.2619, 47.3684, 19.0476, 42.1053],
+      [12.5, 47.3684, 19.0476, 42.1053],
       "mage",
     );
   });
@@ -178,22 +178,22 @@ test("the mage stands where the activity leads it: the sticks, the fire, the rig
   await withPage(async (page) => {
     const leftOf = async (state) =>
       (await drawn(page, state)).querySelector(".scene-mage").style.left;
-    near(await leftOf(doing(GATHER_STICK)), 17.2619, "sticks 58");
+    near(await leftOf(doing(GATHER_STICK)), 12.5, "sticks 42");
     near(
       await leftOf(doing({ kind: "gather", resource: "berry" })),
-      71.4286,
-      "berry 240",
+      66.6667,
+      "berry 224",
     );
-    near(await leftOf(doing({ kind: "craftCampfire" })), 28.5714, "fire 96");
-    near(await leftOf(doing({ kind: "explore" })), 86.6071, "right edge 291");
+    near(await leftOf(doing({ kind: "craftCampfire" })), 23.8095, "fire 80");
+    near(await leftOf(doing({ kind: "explore" })), 81.8452, "right edge 275");
     near(
       await leftOf(withRun(sent(), { current: WAITING })),
-      47.619,
-      "clearing 160",
+      42.8571,
+      "clearing 144",
     );
     near(
       await leftOf(withRun(sent(), { current: null })),
-      47.619,
+      42.8571,
       "combat: no place yet",
     );
   });
