@@ -1,4 +1,0 @@
-- Earlier slices: Slice 1 `assets/sprites/forest-scene.png` (336 × 152); Slice 5 `src/browser/view/run-header.tsx` uses its own classes `run-header-*`, so do not depend on `.status-text`.
-- The committed scene scale is 2 (672 × 304) until the human picks (orchestrator's answer Q5). D-311, D-19 (whole, as rewritten), D-147, D-185, D-216, D-272, D-314 and D-315 at the current head are binding; read them whole.
-- New rows of `guidelines/coding-browser-module.md` are Slice 12's; do not add them.
-- Long table rows of `guidelines/testing.md` can be cut by your reading tool at ~1800 characters a line; read those lines another way (e.g. `sed -n`), so the file is read whole.

@@ -1,2 +1,0 @@
-- Slice 3 (commit `476b12a`) wrote `src/browser/view/discovery-rule.ts`: `discoveryRule(state): DiscoveryRule | null`, with `DiscoveryRule = { program, open: RulePanelOpen }`. Use it as it is.
-- The orchestrator's answers on Slice 3's concerns (binding): a discovered action the character cannot use yet is written as D-313 says and shown greyed by the panel (D-289); no guard is added.
