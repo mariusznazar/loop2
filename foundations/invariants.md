@@ -1206,6 +1206,16 @@ Every file the build copies from `assets/sprites/` is a PNG image.
 - **Part:** browser-view
 - **Violated:** no
 
+## loop2-container-sprites
+
+The loop2 container built from the repository serves, at the path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file the scene's drawing asks for.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-271 · D-316
+- **Part:** browser-view · simulation · build-tools · account-server · deployment
+- **Violated:** no
+
 ## rule-state-from-pick
 
 The background, the bar and the reason a program rule or rule group shows come from the function of the simulation that picks the rule a character carries out.

@@ -5621,23 +5621,29 @@ open while the screens move to React.
 
 The scene's pictures and the picture of the game behind the login card are sprites of the pack
 Pixel Crawler, kept in `assets/sprites/` outside the directory the account and save server serves
-and copied into it when the application is built. A sprite file holds pixels alone.
+and copied into it when the application is built. A sprite file holds pixels alone, and the
+character of the scene is the pack's mage.
 
 - **Scope:** browser-view · build-tools · deployment
 - **Based on:** pixel-crawler-terms
 - **Relations:** none
-- **Verification:** invariants: sprite-file-content. An agent compares a change with the decision:
+- **Verification:** invariants: sprite-file-content · loop2-container-sprites. An agent compares a
+  change with the decision:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
-    PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes
+    PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
+    the character of the scene drawn from a sprite file made from the pack's mage
   - violates: a picture placed straight in the directory the server serves; a sprite file in
-    another format, or a PNG file carrying text or metadata chunks; a picture drawn from another pack
+    another format, or a PNG file carrying text or metadata chunks; a picture drawn from another pack;
+    the hooded figure of loop as the character of the scene
 - **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
-  come from?”
+  come from?” · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
+  item 2
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
-fire and trees the game's pictures show. Kept apart from what the server serves, as the icons and
+fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
+are ready. Kept apart from what the server serves, as the icons and
 the fonts are, a picture reaches the player only through the build; it comes from outside the
 product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
 credit and allow its arts to be altered, so a picture made from them may be dimmed and composed.
@@ -6772,3 +6778,57 @@ over that picture, never darkness in the picture's file.
 dawn, so the darkness changes while the background stays one picture, and the background in full
 light is that dawn.
 *Rejected:* a background darkened in its file — the night would have to replace the file.
+
+### D-316 — What does the scene show, and from what does it draw?
+
+The scene draws the character and its campfire from the game state and holds no state of the game,
+the picture of each resource and archetype it shows standing in the game's data. Sticks, the berry
+bush and moss always stand in the scene, and the campfire only while it stands on the character's
+tile, burning with a fire that moves or extinguished, the same picture in `grayscale(1)
+brightness(0.55)` and without motion. Motion comes from CSS at a fixed beat that does not depend on
+the pace, with no loop of drawing.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-18 · derives from D-271
+- **Verification:** invariants: loop2-container-sprites. For what the scene draws and from what, an
+  agent compares a change with the decision:
+  - complies: the mage and the campfire drawn from the game state of a map run, with the file and the
+    place of the sticks, the bush and the moss read from the files of the game's data; the sticks,
+    the bush and the moss standing in the scene while the character's tile holds none of them; an
+    extinguished campfire on the character's tile drawn still and grey; the frames of the mage's
+    sprite changing by a CSS animation at the same beat at 1× and at 16×
+  - violates: the picture of a resource named in the code of the browser view; a canvas or a timer
+    redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
+    in the scene while the character's tile holds none; the place where the mage stands kept in the
+    game state
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 4, 5 and 7, Questions to settle, question 3, and § Settlements to record, row 3 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F1, F3, F4, F6 and F9 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), parts 8 and 9 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7
+
+*Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
+figure legible at the fastest pace. The pictures stand in the game's data, as the rest of the
+game's content does, so the code of the view names no resource. The scene may thus show
+what the character's tile does not hold; the numbers of the stock are given by the table and the
+line under the map. An extinguished campfire is the picture of a
+burning one without colour and without motion.
+*Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
+a prop standing only while its resource lies on the character's tile — a piece of a scene showing
+the character's tile, left out of the project, would enter it, and the scene would change at
+„Eksploruj” with no transition; no props — the mage would have nothing to walk to.
+
+### D-317 — How long do the scene's effects last?
+
+The scene follows the system's setting for reduced motion and shows no flash of its whole area.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the scene under the system's setting for reduced motion keeping its frames still; an
+    effect of the scene that changes a part of its area
+  - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
+    that moves under the system's setting for reduced motion as it does without it
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F2 and F5 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 5
+
+*Rationale:* pictures scaled up can pass the area below which flashing is allowed, so no effect
+takes the whole area of the scene, and a player who asks the system for less motion gets less.
+*Rejected:* none considered
