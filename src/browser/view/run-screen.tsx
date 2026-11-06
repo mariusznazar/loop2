@@ -12,7 +12,8 @@
  * holding the map run it is given, and hands the program panel that state. The program panel keeps
  * its own root; the screen puts its element into the program's area and the host of its rule panel
  * into the right area. The screen holds the hovered tile's key, which the drawing, the line under it
- * and the table share. Nothing runs when the module is imported.
+ * and the table share, and hands the events of each update to the world area for its scene (D-04).
+ * Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
@@ -32,7 +33,8 @@ export type RunScreen = {
   /**
    * Shows the map run `run` of the game state `state`: the screen and its program panel draw from a
    * game state holding that map run, so the one the address names is the one drawn. `events` are
-   * those of the simulation call that returned `state`, which the panel reads for a map run started.
+   * those of the simulation call that returned `state`, which the panel and the scene read for a map
+   * run started.
    */
   update(state: GameState, run: GameMapRun, events: readonly GameEvent[]): void;
   /** Moves keyboard focus to the screen, for the page to call when a send opens it. */
@@ -77,6 +79,8 @@ function createRuleOpen(): RuleOpen {
 type RunScreenViewProps = {
   /** The game state with the map run the screen was given; null until the first `update`. */
   state: GameState | null;
+  /** The events of the simulation call that returned `state`; none before the first `update`. */
+  events: readonly GameEvent[];
   controls: StatusRowControls;
   /** The program panel's element, which keeps its own root. */
   panelElement: HTMLElement;
@@ -95,6 +99,7 @@ type RunScreenViewProps = {
  */
 function RunScreenView({
   state,
+  events,
   controls,
   panelElement,
   ruleHost,
@@ -123,7 +128,12 @@ function RunScreenView({
       <div className="run-screen-areas" data-scene-scale={SCENE_SCALE}>
         <section className="screen-area run-world">
           {state === null ? null : (
-            <WorldArea state={state} hovered={hovered} onHover={setHovered} />
+            <WorldArea
+              state={state}
+              events={events}
+              hovered={hovered}
+              onHover={setHovered}
+            />
           )}
         </section>
         <section className="screen-area run-program">
@@ -169,11 +179,12 @@ export function createRunScreen(
   const onAddRule = () => panel.addDiscoveredRule();
   const root = createRoot(element);
 
-  function draw(state: GameState | null): void {
+  function draw(state: GameState | null, events: readonly GameEvent[]): void {
     flushSync(() => {
       root.render(
         <RunScreenView
           state={state}
+          events={events}
           controls={controls}
           panelElement={panel.element}
           ruleHost={ruleHost}
@@ -183,7 +194,7 @@ export function createRunScreen(
       );
     });
   }
-  draw(null);
+  draw(null, []);
 
   return {
     element,
@@ -193,7 +204,7 @@ export function createRunScreen(
       events: readonly GameEvent[],
     ): void {
       const shown: GameState = state.run === run ? state : { ...state, run };
-      draw(shown);
+      draw(shown, events);
       panel.update(shown, events);
     },
     focus(): void {
