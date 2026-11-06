@@ -1,0 +1,3 @@
+- Earlier slices: Slice 2 `chillRuleGroupName` in `src/browser/sim/understanding.ts`; Slice 3 `discoveryRule` in `src/browser/view/discovery-rule.ts`; Slice 4 `addDiscoveredRule()` on `ProgramPanel` in `src/browser/view/program-panel.tsx`. Your header does not need them.
+- D-311 (the layout, with row 1 in it) and D-130 at the current head are binding for the header; read them whole.
+- `tests/quality/test_quality_invariants.py` finds its tools in `.runs/quality-venv/Scripts`; it also runs Prettier on the files you change — format them with the local Prettier before committing.

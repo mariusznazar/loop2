@@ -1,0 +1,3 @@
+- Earlier slices: Slice 2 `chillRuleGroupName(state)` in `src/browser/sim/understanding.ts` (the group name or null — D-312 at the current head, read it whole); Slice 3 `discoveryRule(state)` in `src/browser/view/discovery-rule.ts` (null greys the button, D-313).
+- Use the shared React button `ReactButton` of `src/browser/view/controls/react-button.tsx`, as Slice 5's `run-header.tsx` does.
+- Long lines of `guidelines/testing.md` can be cut by your reading tool; read them another way (e.g. `sed -n`) so the file is read whole.

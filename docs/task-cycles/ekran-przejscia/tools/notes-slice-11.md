@@ -1,0 +1,3 @@
+- Slice 9 (commit `6c2f520`) moved the screen to `src/browser/view/run-screen.tsx`, which uses `TerrainDrawing` and `TileTable` of Slice 6; check with `git grep` that nothing imports `terrain-panel` or `createTileListView` before removing.
+- Slice 9 kept the stylesheet rules `.terrain-panel` and `.rule-panel-host`: your goal says change no stylesheet — leave them; the whole-change review judges dead rules.
+- Long lines of `guidelines/testing.md` can be cut by your reading tool; read them another way (e.g. `sed -n`) so the file is read whole.

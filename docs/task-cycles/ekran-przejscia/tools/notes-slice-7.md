@@ -1,0 +1,3 @@
+- Slice 6 (commit `eca76c8`) wrote `src/browser/view/terrain-drawing.tsx`: `TerrainDrawing({ state, hovered, onHover })`, an SVG with tiles `g[data-tile]`, icons, outlines and `outline link-highlight` last; no text; `terrainPicture` computed in render, so a game state can be passed straight in. The line of a tile (`p.tile-line`) and the table stand outside it.
+- The invariant's sentence as the foundation step left it (E18) is at the current head of `foundations/invariants.md`, `terrain-drawing-numbers`; the docstring quotes that sentence.
+- Long lines of `guidelines/testing.md` can be cut by your reading tool at ~1800 characters; read them another way (e.g. `sed -n`) so the file is read whole.

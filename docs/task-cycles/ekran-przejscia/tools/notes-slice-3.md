@@ -1,0 +1,2 @@
+- D-313 at the current head is binding for what the button adds, where the panel opens and that it gives null (the button greyed out) where the copy holds no rule group; read it whole.
+- Slice 2 (commit `1f899ec`) added `chillRuleGroupName` to `src/browser/sim/understanding.ts`; your module does not need it.

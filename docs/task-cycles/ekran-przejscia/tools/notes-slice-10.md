@@ -1,0 +1,4 @@
+- Slice 9 (commit `6c2f520`) moved the screen to `src/browser/view/run-screen.tsx`; the DOM forms you remove are no longer imported by the screen — check with `git grep` before removing.
+- The React cases that now carry the removed DOM cases: `tests/view/run-header.test.mjs` (Slice 5), `tests/view/world-area.test.mjs` (Slice 6), `tests/view/discovery-band.test.mjs` (Slice 8; it carries `status-row.test.mjs` cases at base lines 442 and 582). Name in each commit message the case that now carries each removed behaviour.
+- Slice 9 kept the stylesheet rules `.status-row`, `.status-text`, `.discovery-text` for you: your goal says change no stylesheet — leave them; the whole-change review judges dead rules.
+- Long lines of `guidelines/testing.md` can be cut by your reading tool; read them another way (e.g. `sed -n`) so the file is read whole.
