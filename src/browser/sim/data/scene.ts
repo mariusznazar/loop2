@@ -31,8 +31,12 @@ export const SCENE = {
   groundLine: 136,
   /** Left edge of the mage's frame where it waits, in the middle of the clearing. */
   clearingX: 160,
-  /** Left edge of the mage's frame at the right edge of the frame, always the same place. */
-  rightEdgeX: 292,
+  /**
+   * Left edge of the mage's frame at the right edge of the frame, always the same place. The mage's
+   * figure, 25 pixels wide, ends at column 44 of its frame in both sheets, so at 291 its last column
+   * is the frame's last, 335; at 292 it would lie one column outside and be clipped.
+   */
+  rightEdgeX: 291,
 } as const;
 
 /** The mage's sheets, by the archetype of the character: idle and run, each in its frame size. */
