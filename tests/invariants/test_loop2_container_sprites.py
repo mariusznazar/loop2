@@ -1,0 +1,181 @@
+"""Invariant loop2-container-sprites: The loop2 container built from the repository serves, at the
+path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file
+the scene's drawing asks for.
+
+Reading of the sentence:
+- the loop2 container built from the repository: the image `docker build` builds from the working
+  tree's `Dockerfile`, with the working tree as the build context and only read, run as a
+  container with `docker run`;
+- every file the scene's drawing asks for: here, the set this check reads is every file standing
+  directly in `assets/sprites/` of the working tree whose name ends in `.png`; subdirectories and
+  their files are not counted. The set must not be empty: an empty directory fails the check
+  instead of passing it vacuously. That the scene's drawing asks for exactly these files is not
+  checked here; the case of Slice 3 of task `scena-z-ludzikiem` ties the files the drawing asks for
+  to these files;
+- serves ... at `/sprites/<file name>`: from inside the running container, a GET of
+  `/sprites/<file name>` (the name percent-encoded as a URL path segment) on the one TCP port the
+  container listens on answers with status 200;
+- with the same bytes as that file: the body of that answer equals, byte for byte, the file as it
+  stands in the working tree. The expected bytes are read from the working tree, never from the
+  image, the build output or the server.
+
+The check builds the image with `docker build --build-arg LOOP2_COMMIT=invariant-check`, then uses
+`start_production_container` from `tests/invariants/account_container_support.py` to create fresh
+disposable database and read-only synthetic secret volumes, start the normal production command
+under 512 MiB, and verify its account resources and node identity. It waits for a listening TCP
+socket in the container's `/proc/net/tcp` and `tcp6`, makes the GETs with the container's own
+Node.js through `docker exec`, then removes the container, both volumes and the image; each
+removal is registered before the command it undoes. Where no Docker daemon answers, the test is
+skipped, so the run gives this invariant no `pass`: whether the container serves the sprites
+stays unchecked, never passed.
+
+Does NOT cover: the container on the server; requests other than GET; headers of the answer
+(media type, caching); paths under `/sprites/` that name no file of `assets/sprites/`; files of
+`assets/sprites/` that are not PNG; that the scene's drawing asks for each file of the set.
+"""
+
+import base64
+import json
+import os
+import shutil
+import subprocess
+import time
+import unittest
+import urllib.parse
+import uuid
+
+import loop2_invariant_support as support
+from tests.invariants.account_container_support import start_production_container
+
+DOCKERFILE = "Dockerfile"
+SPRITES_DIRECTORY = "assets/sprites"
+SPRITE_SUFFIX = ".png"
+URL_PREFIX = "/sprites/"
+EXPECTED_STATUS = 200
+
+DAEMON_TIMEOUT = 30     # seconds for `docker version` to answer
+BUILD_TIMEOUT = 1200    # seconds for the image build
+LISTEN_WAIT = 60        # seconds for the started container to hold a listening socket
+
+# Run inside the container by its own Node.js: the ports of the listening sockets (state 0A) in
+# the container's TCP tables.
+LISTEN_PROBE = r"""
+const fs = require("fs");
+const ports = new Set();
+for (const table of ["/proc/net/tcp", "/proc/net/tcp6"]) {
+  let text = "";
+  try { text = fs.readFileSync(table, "utf8"); } catch {}
+  for (const line of text.split("\n").slice(1)) {
+    const c = line.trim().split(/\s+/);
+    if (c.length > 3 && c[3] === "0A") ports.add(parseInt(c[1].split(":").pop(), 16));
+  }
+}
+console.log(JSON.stringify([...ports]));
+"""
+
+# Run inside the container: the status and the base64 of the body of a GET of each path given.
+HTTP_PROBE = r"""
+const [port, ...paths] = process.argv.slice(2);
+Promise.all(paths.map(async (path) => {
+  const response = await fetch(`http://127.0.0.1:${port}${path}`,
+                               { signal: AbortSignal.timeout(10000) });
+  const body = Buffer.from(await response.arrayBuffer());
+  return { path, status: response.status, body: body.toString("base64") };
+})).then((r) => console.log(JSON.stringify(r)),
+         (e) => { console.error(String(e)); process.exit(1); });
+"""
+
+
+def docker():
+    return shutil.which("docker")
+
+
+def docker_answers():
+    if docker() is None:
+        return False
+    try:
+        result = subprocess.run([docker(), "version", "--format", "{{.Server.Version}}"],
+                                capture_output=True, timeout=DAEMON_TIMEOUT)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return result.returncode == 0 and result.stdout.strip() != b""
+
+
+def docker_run(*arguments, timeout=support.COMMAND_TIMEOUT):
+    return support.run([docker(), *arguments], support.ROOT, timeout=timeout)
+
+
+def node_in_container(name, script, *arguments):
+    """(exit code, stdout, stderr) of a script run by the container's own Node.js, the script
+    given on standard input."""
+    result = subprocess.run([docker(), "exec", "-i", name, "node", "-", *arguments],
+                            input=script.encode("utf-8"), capture_output=True,
+                            timeout=support.COMMAND_TIMEOUT)
+    return (result.returncode, result.stdout.decode("utf-8", "replace"),
+            result.stderr.decode("utf-8", "replace"))
+
+
+def working_tree_sprites():
+    """{file name: bytes} of the PNG files standing directly in assets/sprites/ of the working
+    tree."""
+    directory = os.path.join(support.ROOT, *SPRITES_DIRECTORY.split("/"))
+    if not os.path.isdir(directory):
+        raise AssertionError(f"{SPRITES_DIRECTORY}/ does not exist in the working tree")
+    sprites = {}
+    for name in sorted(os.listdir(directory)):
+        path = os.path.join(directory, name)
+        if os.path.isfile(path) and name.endswith(SPRITE_SUFFIX):
+            with open(path, "rb") as handle:
+                sprites[name] = handle.read()
+    return sprites
+
+
+class ContainerServesSprites(unittest.TestCase):
+
+    def test_container_serves_each_sprite_with_the_file_bytes(self):
+        # invariant: loop2-container-sprites
+        support.read_required(DOCKERFILE)
+        sprites = working_tree_sprites()
+        self.assertTrue(sprites, f"{SPRITES_DIRECTORY}/ holds no file ending in {SPRITE_SUFFIX}")
+        if not docker_answers():
+            self.skipTest("no Docker daemon answers; whether the loop2 container serves the "
+                          "sprites of assets/sprites/ (loop2-container-sprites) stays unchecked")
+        tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
+        name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
+        self.addCleanup(docker_run, "image", "rm", "-f", tag)
+        code, output = docker_run("build", "--build-arg", "LOOP2_COMMIT=invariant-check",
+                                  "-t", tag, ".", timeout=BUILD_TIMEOUT)
+        self.assertEqual(code, 0, f"`docker build` failed:\n{output}")
+        start_production_container(self, tag, name)
+
+        deadline = time.monotonic() + LISTEN_WAIT
+        while True:
+            code, output, errors = node_in_container(name, LISTEN_PROBE)
+            self.assertEqual(code, 0, f"reading the container's sockets failed:\n{output}{errors}")
+            ports = json.loads(output.strip().splitlines()[-1])
+            if ports or time.monotonic() > deadline:
+                break
+            time.sleep(1)
+        self.assertTrue(ports, f"nothing listens in the container within {LISTEN_WAIT} s; "
+                               f"container log:\n{docker_run('logs', name)[1]}")
+        self.assertEqual(len(ports), 1, f"the container listens on several ports, so its "
+                                        f"listening port is not one: {ports}")
+
+        paths = {URL_PREFIX + urllib.parse.quote(sprite, safe=""): sprite for sprite in sprites}
+        code, output, errors = node_in_container(name, HTTP_PROBE, str(ports[0]), *paths)
+        self.assertEqual(code, 0, f"the HTTP probe in the container failed:\n{output}{errors}")
+        answers = {a["path"]: a for a in json.loads(output.strip().splitlines()[-1])}
+        for path, sprite in paths.items():
+            with self.subTest(sprite=sprite):
+                answer = answers[path]
+                self.assertEqual(answer["status"], EXPECTED_STATUS,
+                                 f"GET {path} in the container answers {answer['status']}")
+                body = base64.b64decode(answer["body"])
+                self.assertEqual(body, sprites[sprite],
+                                 f"GET {path} in the container answers {len(body)} bytes that "
+                                 f"differ from {SPRITES_DIRECTORY}/{sprite} "
+                                 f"({len(sprites[sprite])} bytes) in the working tree")
+
+
+if __name__ == "__main__":
+    unittest.main()
