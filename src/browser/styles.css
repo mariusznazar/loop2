@@ -1419,7 +1419,7 @@ header .save-line {
   overflow-wrap: anywhere;
 }
 
-/* The rule panel in the place of the table of revealed tiles, beside the drawing (D-282). */
+/* The element of its own that `createRulePanel` builds for the rule panel. */
 .rule-panel-host {
   flex: 1 1 0;
   min-width: 0;

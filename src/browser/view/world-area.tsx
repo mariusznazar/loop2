@@ -18,7 +18,7 @@ import { TerrainDrawing } from "./terrain-drawing.js";
 import { tileLine } from "./tile-list.js";
 import { deathSettlementLine, solvedRunText, tripTexts } from "./trip-lines.js";
 
-/** The scene's picture is 336 × 152 pixels, and the screen shows it at a whole multiple (D-314). */
+/** The scene's picture, the forest of D-314, is 336 × 152 pixels, shown at a whole multiple. */
 const SCENE_WIDTH = 336;
 const SCENE_HEIGHT = 152;
 
