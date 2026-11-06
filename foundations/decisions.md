@@ -6850,8 +6850,8 @@ The mage walks to the place its current action leads it to: with „Zbierz” an
 sticks, the berry bush or the moss, as the target says, with „Wytwórz — ognisko”, „Zapal — ognisko”
 and „Zasil — ognisko” to the place of the campfire, with „Eksploruj”, „Wędruj”, „Idź” and „Idź —
 ognisko” to the right edge of the scene, always the same place, and while it waits, no program rule
-fitting, to the middle of the clearing. Where its action leads nowhere — the flax, „Zapal — patyk”,
-„Zjedz” and a fight — the mage stays where it stands.
+fitting, to the middle of the clearing. Where its action leads nowhere — „Zbierz” and „Obchód” with
+fibre as the target, „Zapal — patyk”, „Zjedz — jagoda” and a fight — the mage stays where it stands.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -6863,7 +6863,7 @@ fitting, to the middle of the clearing. Where its action leads nowhere — the f
     „Zapal — patyk” leaving the mage where it stands
   - violates: the mage walking to the campfire for „Zapal — patyk”; the place at the right edge
     differing between „Eksploruj” and „Idź”; the mage walking to the middle of the clearing for
-    „Zjedz”
+    „Zjedz — jagoda”
 - **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, Questions to settle, question 2, and § Settlements to record, row 2
 
 *Rationale:* each place tells the player what the character does: the props it gathers from, the
