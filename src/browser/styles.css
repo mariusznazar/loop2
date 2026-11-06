@@ -192,20 +192,16 @@ header .save-line {
 
 /*
  * A screen of the game (D-280, D-282): a grid whose columns are areas of their own, each a block on
- * `panel` with text in `text`, so a narrower layout places them one under the other. A screen with
- * the class `columns` has two of them, the program panel and a column beside it; Programy has two
- * too, the list of programs and the program panel, with the list the narrower; Siedziba holds the
- * headquarters alone. The screens that do not show are hidden with `[hidden]`.
+ * `panel` with text in `text`, so a narrower layout places them one under the other. Programy has
+ * two, the list of programs and the program panel, with the list the narrower; Siedziba holds the
+ * headquarters alone; the screen of a map run holds its header over a grid of three areas of its
+ * own, below. The screens that do not show are hidden with `[hidden]`.
  */
 .screen {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-xl);
   align-items: start;
-}
-
-.screen.columns {
-  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
 }
 
 .screen.programs-screen {
@@ -232,7 +228,6 @@ header .save-line {
 }
 
 @media (max-width: 720px) {
-  .screen.columns,
   .screen.programs-screen,
   .screen.programs-screen.with-rule-panel {
     grid-template-columns: 1fr;
@@ -257,6 +252,51 @@ header .save-line {
   border: none;
   padding: 0;
   min-height: 0;
+}
+
+/*
+ * The screen of a map run (D-311, D-282, D-280; task ekran-przejscia, To do 2): under its header the
+ * world, the program and the right area side by side, each an area of its own. The sizes are layout
+ * dimensions, which D-43 leaves out, chosen from the scene's width, the width the rule panel takes
+ * and the content of at most 1344 px (D-280); the screen sets the scale of the scene from its one
+ * constant, `SCENE_SCALE` of world-area.tsx, as `data-scene-scale`, and the rules of each scale are
+ * keyed by it, so the choice of one scale deletes the rules of the other.
+ *
+ * - The world's column is the scene's width with the area's padding and frame, 2 × 16 px and
+ *   2 × 1 px: 336 + 34 = 370 px at the scale 1, 672 + 34 = 706 px at the scale 2.
+ * - The right area's column is 336 px at both scales, the width of the scene of the scale 1: the
+ *   rule panel takes 276 px of it inside the area's padding and frame, four cells of its pick to a
+ *   line, and the table of revealed tiles of Las fits it with the narrower padding of its cells.
+ * - The program takes the rest, at least 170 px; with the gaps of 16 px between the areas that is
+ *   606 px at the scale 1 and 270 px at the scale 2 in content 1344 px wide, and in a window 1280 px
+ *   wide, the content 1248 px, 510 px and 174 px.
+ * - The three stand side by side from the window width that holds the world's column, the right
+ *   area's, the program's 170 px, the two gaps and the page's padding of 2 × 16 px: 940 px at the
+ *   scale 1 and 1276 px at the scale 2. Below it the areas stand one under the other in their order,
+ *   the world, the program and the right area, each the width of the content.
+ */
+.run-screen-areas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-l);
+  align-items: start;
+}
+
+@media (min-width: 940px) {
+  .run-screen-areas[data-scene-scale="1"] {
+    grid-template-columns: 370px minmax(0, 1fr) 336px;
+  }
+}
+
+@media (min-width: 1276px) {
+  .run-screen-areas[data-scene-scale="2"] {
+    grid-template-columns: 706px minmax(0, 1fr) 336px;
+  }
+}
+
+/* The table of revealed tiles keeps its numbers on one line, so a table wider than its area scrolls. */
+.screen-area.run-right {
+  overflow-x: auto;
 }
 
 /*
@@ -1267,23 +1307,41 @@ header .save-line {
   color: var(--text-label);
 }
 
-.status-row {
+/*
+ * The header of the screen of a map run (D-311): the character's name and the map's name, in
+ * `text-strong` as names are (D-40), then the status row in its order. The clock stays in Geist Mono
+ * (D-46) and the text of a completion in `positive` (D-39, D-132). The warning of a cut trip plan is
+ * the shared `trip-warning`.
+ */
+.run-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-s);
 }
 
-/* The run's clock: the minute of the map run and what the character does. */
-.status-text {
+.run-header-name {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.run-header-map {
+  margin: 0;
+  font-size: var(--font-size-map-title);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.run-header-status {
   margin: 0;
   margin-right: auto;
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
 }
 
-/* A completed map run: the status text says something works, is in order (D-39). */
-.status-text.positive {
+.run-header-status.positive {
   color: var(--positive);
 }
 
@@ -1292,9 +1350,23 @@ header .save-line {
   color: var(--positive);
 }
 
-/* What the last game minute of a discovery revealed, under the status row (D-39). */
-.discovery-text {
-  margin: var(--space-xs) 0 0;
+/*
+ * The band of a discovery above the program on the screen of a map run (D-122): its text in the role
+ * `discovery` (D-39) with a bar at its left in the colour of that text (D-279), then the two shared
+ * buttons.
+ */
+.discovery-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.discovery-band-text {
+  margin: 0;
+  margin-right: auto;
+  padding-left: var(--space-s);
+  border-left: var(--bar-width) solid currentColor;
   color: var(--discovery);
 }
 
@@ -1323,15 +1395,31 @@ header .save-line {
   color: var(--danger);
 }
 
-.terrain-panel {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-l);
+/*
+ * The world area of the screen of a map run (D-311): the scene at the top, a still picture drawn
+ * pixel-sharp at the size its width and height attributes give, with nothing drawn on it or over it
+ * (D-272); under the lines the drawing of the map and the line of a tile under it, in `text` as the
+ * numbers of a tile are content to read (D-19). The other parts keep the rules of their DOM modules.
+ */
+.scene {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.world-drawing {
   margin-top: var(--space-m);
 }
 
-/* The rule panel in the place of the table of revealed tiles, beside the drawing (D-282). */
+.tile-line {
+  margin: var(--space-xs) 0 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* The element of its own that `createRulePanel` builds for the rule panel. */
 .rule-panel-host {
   flex: 1 1 0;
   min-width: 0;
@@ -1385,9 +1473,10 @@ header .save-line {
   font-variant-numeric: tabular-nums;
 }
 
+/* The cells keep a narrow padding, so the table of Las fits the right area (the rule above). */
 .tile-list th,
 .tile-list td {
-  padding: var(--space-2xs) var(--space-s);
+  padding: var(--space-2xs) var(--space-xs);
   text-align: right;
   white-space: nowrap;
 }

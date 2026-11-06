@@ -75,23 +75,3 @@ export function combatText(combat: LastCombat): string {
   const actions = actionText(combat);
   return actions.length === 0 ? intro : `${intro} ${actions.join(" · ")}`;
 }
-
-export type CombatLine = {
-  element: HTMLParagraphElement;
-  update(combat: LastCombat | null): void;
-};
-
-/** Creates the wrapped encounter paragraph; null removes it from the visible flow. */
-export function createCombatLine(): CombatLine {
-  const element = document.createElement("p");
-  element.className = "combat-line";
-  element.hidden = true;
-  return {
-    element,
-    update(combat): void {
-      const text = combat ? combatText(combat) : "";
-      element.hidden = text === "";
-      if (element.textContent !== text) element.textContent = text;
-    },
-  };
-}

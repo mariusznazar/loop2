@@ -83,78 +83,33 @@ export function tileList(state: GameState): TileList {
   return { columns, rows };
 }
 
+/**
+ * The line under the drawing of the game map (D-19, D-70): for the hovered tile, else the character's
+ * tile, „(col, row): patyk 12 · jagoda — · …” with the stock of each resource of the map as the tile's
+ * row of the table gives it. A tile not revealed gives its label alone, with nothing of its stock,
+ * and the state of a campfire stands in the table alone. A key that names no tile of the map run
+ * counts as none hovered. Null without a map run. Pure.
+ */
+export function tileLine(
+  state: GameState,
+  hovered: string | null,
+): string | null {
+  const run = state.run;
+  if (!run) return null;
+  const tile =
+    run.tiles.find((candidate) => tileKey(candidate) === hovered) ??
+    run.tiles.find((candidate) => sameHex(candidate.at, run.character.at));
+  if (!tile) return null;
+  const { columns, rows } = tileList(state);
+  const row = rows.find((candidate) => tileKey(candidate) === tileKey(tile));
+  if (!row) return tileLabel(tile);
+  const stock = columns.map(
+    (column, index) => `${column.name} ${row.cells[index]}`,
+  );
+  return `${row.label}: ${stock.join(SEPARATOR)}`;
+}
+
 /** The key that ties a tile of the drawing to its row in the list: „col,row”. */
 export function tileKey(tile: { col: number; row: number }): string {
   return `${tile.col},${tile.row}`;
-}
-
-export type TileListView = {
-  element: HTMLTableElement;
-  /** Replaces the shown list; rows carry `data-tile` with their tile's key. */
-  draw(list: TileList): void;
-};
-
-/**
- * Builds the table of revealed tiles. `onHover` gets the key of the row under the pointer, or
- * null when the pointer is over no row; the listeners sit on the table, so they survive redraws.
- */
-export function createTileListView(
-  onHover: (key: string | null) => void,
-): TileListView {
-  const element = document.createElement("table");
-  element.className = "tile-list";
-  const head = document.createElement("thead");
-  const body = document.createElement("tbody");
-  element.append(head, body);
-
-  element.addEventListener("pointerover", (event) => {
-    const row =
-      event.target instanceof Element
-        ? event.target.closest("tbody tr[data-tile]")
-        : null;
-    onHover(row instanceof HTMLElement ? (row.dataset.tile ?? null) : null);
-  });
-  element.addEventListener("pointerleave", () => onHover(null));
-
-  return {
-    element,
-    draw(list: TileList): void {
-      const headRow = document.createElement("tr");
-      headRow.append(document.createElement("th"));
-      for (const column of list.columns) {
-        const cell = document.createElement("th");
-        cell.scope = "col";
-        const icon = document.createElement("img");
-        icon.src = column.href;
-        icon.alt = "";
-        icon.width = 16;
-        icon.height = 16;
-        cell.append(icon, ` ${column.name}`);
-        headRow.append(cell);
-      }
-      // The column of the campfire and the burning items has no heading: each text names its thing.
-      headRow.append(document.createElement("th"));
-      head.replaceChildren(headRow);
-      body.replaceChildren(
-        ...list.rows.map((row) => {
-          const line = document.createElement("tr");
-          line.dataset.tile = tileKey(row);
-          const label = document.createElement("th");
-          label.scope = "row";
-          label.textContent = row.label;
-          line.append(label);
-          for (const value of row.cells) {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            line.append(cell);
-          }
-          const fire = document.createElement("td");
-          fire.className = "tile-fire";
-          fire.textContent = row.fire.join(SEPARATOR);
-          line.append(fire);
-          return line;
-        }),
-      );
-    },
-  };
 }

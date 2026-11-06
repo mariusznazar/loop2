@@ -42,8 +42,6 @@ import {
   passwordProblems,
   registrationProblems,
 } from "../../dist/browser/view/account-rules.js";
-import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
-import { createRunScreen } from "../../dist/browser/view/run-screen.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- the page on jsdom --------------------------------------------------------------------------
@@ -2031,7 +2029,9 @@ test("a save builds the game the load gives: a map run that went on comes back p
       await held.answer("currentAccount", ACCOUNT);
       await held.answer("loadSavedGame", saveOf(game, 3));
       assert.equal(shown(byClass(root, "headquarters")[0]), false, name);
-      assert.ok(shown(byClass(root, "run-panel")[0]), name);
+      // Task ekran-przejscia, To do 2 and 8: the screen of a map run holds no column of its own any
+      // more, so the screen itself is what shows.
+      assert.ok(shown(byClass(root, "run-screen")[0]), name);
       assert.ok(shown(buttonNamed(root, "Restart")), name);
       assert.ok(shown(buttonNamed(root, "Zakończ")), name);
       const resume = buttonNamed(root, "Wznów");
@@ -2498,12 +2498,23 @@ test("each act of the player that changes the game state is saved at once, and o
     const held = heldClient();
     await startPage(held);
     await held.answer("currentAccount", ACCOUNT);
-    await held.answer("loadSavedGame", saveOf(twoPrograms(), 4));
-    // Without a map run the pause changes nothing (setPaused); its button stands, unlabelled.
-    const pause = all(byClass(root, "status-row")[0]).find(
-      (element) => element.localName === "button" && element.textContent === "",
+    await held.answer("loadSavedGame", saveOf(pausedRun(), 4));
+    // Without a map run the pause changes nothing (setPaused). Task ekran-przejscia, To do 8: the
+    // header in React draws nothing without a map run, where the status row in DOM stood with an
+    // unlabelled pause button, so the pause pressed without a map run is the „Wznów” the hidden
+    // screen of a map run still holds after „Zakończ” ended its map run (D-281).
+    await inAct(() => fire(buttonNamed(root, "Zakończ"), "click"));
+    await settle();
+    assert.deepEqual(
+      waitingCalls(held),
+      ["saveGame"],
+      "precondition: „Zakończ” saved",
     );
-    fire(pause, "click");
+    await held.answer("saveGame", { kind: "saved", revision: 5 });
+    const resume = buttonNamed(byClass(root, "run-screen")[0], "Wznów");
+    assert.equal(shown(resume), false, "precondition: the screen is hidden");
+    // Inside act: the click reaches the screen's React tree.
+    await inAct(() => fire(resume, "click"));
     await settle();
     assert.deepEqual(waitingCalls(held), []);
   });
@@ -3536,7 +3547,8 @@ function shownScreen(root) {
     return element !== undefined && shown(element);
   };
   if (shows("character-screen")) return "character";
-  if (shows("run-panel")) return "run";
+  // Task ekran-przejscia, To do 2 and 8: the screen of a map run holds no column of its own.
+  if (shows("run-screen")) return "run";
   if (shows("headquarters")) return "headquarters";
   if (shows("programs-screen")) return "programs";
   return null;
@@ -3558,7 +3570,9 @@ function returnItem(root) {
   return item ? [item.textContent, item.getAttribute("href")] : null;
 }
 
-const statusTextOf = (root) => byClass(root, "status-text")[0]?.textContent;
+// Task ekran-przejscia, To do 1 and 8: the status row stands in the header of the screen, in React.
+const statusTextOf = (root) =>
+  byClass(root, "run-header-status")[0]?.textContent;
 
 /** A click on the link to `hash`, inside act: the bar redraws at a change of screen. */
 const follow = (address, hash) => inAct(() => address.follow(hash));
@@ -3997,98 +4011,6 @@ test("a game built again after a conflict stays on the screen the address names,
     await held.answer("loadSavedGame", saveOf({ ...passing(), pace: 2 }, 6));
     assert.equal(shownScreen(root), "character", "not the sign-in's screen");
     assert.equal(address.hash(), "#/postac/1");
-  });
-});
-
-/** Controls of a screen or a panel that a case never presses. */
-const unpressed = (...names) =>
-  Object.fromEntries(names.map((name) => [name, () => undefined]));
-
-// To do 6, D-281, D-166, the review of the whole change (B2): the screen of a map run takes its
-// map run as a parameter and reads none of the game state by itself, its program panel with the
-// copy included. The screen is built here on its own, as the game view builds it, so the case can
-// give it a game state whose map run differs from the one it is given. Catches the panel drawing the
-// copy of the game state's map run beside the column of the map run the screen was given.
-test("the screen of a map run gives its program panel the map run it was given, with the copy of that map run, not the game state's", async () => {
-  await withPage(async ({ root }) => {
-    const panel = createProgramPanel(
-      unpressed(
-        "editCopy",
-        "editProgram",
-        "createProgram",
-        "renameProgram",
-        "deleteProgram",
-        "saveCopy",
-        "saveCopyAsNew",
-        "discardCopy",
-        "switchProgram",
-      ),
-      "run",
-    );
-    const screen = createRunScreen(
-      panel,
-      unpressed("togglePause", "setPace", "restart", "end"),
-    );
-    root.append(screen.element);
-    // The game state holds Ala's map run on the copy of „Program”; the screen is given her map run
-    // on the copy of „Program 2”, as a second map run of the game would be.
-    const state = pausedRun();
-    const given = send(
-      twoPrograms(),
-      { mapId: "forest", characterId: 1, programId: 2 },
-      0,
-    ).state.run;
-    assert.equal(state.run.copy.programId, 1, "precondition: the state's copy");
-    assert.equal(given.copy.programId, 2, "precondition: the given copy");
-
-    await inAct(() => screen.update(state, given, []));
-    assert.equal(
-      byClass(root, "copy-heading")[0].textContent,
-      "Kopia: Program 2",
-      "the panel shows the copy of the map run the screen was given",
-    );
-    assert.equal(listLabelled(root, "Program:").value, "copy");
-    assert.match(statusTextOf(root), /^Minuta 0 /);
-  });
-});
-
-// Task edytor-programu, To do 3 and question 3, D-282. Catches the rule panel standing under the rows
-// of the map run's screen instead of in the place of the table of revealed tiles, the table standing
-// beside an open panel, the drawing leaving with the table, and the table not coming back at „✕”.
-test("on the screen of a map run an open rule panel stands in the place of the table of revealed tiles, beside the drawing, and the table comes back at „✕”", async () => {
-  await onPage(async ({ root }) => {
-    const held = heldClient();
-    await reloadedAt(held, RUN_ADDRESS, pausedRun());
-    const run = byClass(root, "run-screen")[0];
-    const terrain = byClass(run, "terrain-panel")[0];
-    const table = byClass(terrain, "tile-list")[0];
-    const host = byClass(terrain, "rule-panel-host")[0];
-    const drawing = byClass(terrain, "terrain-drawing")[0];
-    assert.ok(table && host && drawing, "the terrain panel holds the three");
-    assert.ok(shown(table), "the table stands while no rule is open");
-    assert.equal(shown(host), false, "the place of the panel is empty");
-    assert.equal(byClass(run, "rule-panel").length, 0);
-
-    await press(
-      byClass(run, "rule-list-header").find((element) => shown(element)),
-    );
-    const panels = byClass(run, "rule-panel");
-    assert.equal(panels.length, 1, "the panel is open");
-    assert.ok(host.contains(panels[0]), "in the place of the table");
-    assert.equal(terrain, host.parentElement, "beside the drawing");
-    assert.equal(shown(table), false, "the table is hidden meanwhile");
-    assert.ok(shown(drawing), "the drawing stays");
-    assert.equal(
-      byClass(byClass(run, "program-panel")[0], "rule-panel").length,
-      0,
-      "the panel does not stand under the rows",
-    );
-
-    await press(buttonLabelled(run, "Zamknij panel"));
-    assert.equal(byClass(run, "rule-panel").length, 0);
-    assert.ok(shown(table), "the table is back");
-    assert.equal(shown(host), false);
-    assert.ok(shown(drawing));
   });
 });
 

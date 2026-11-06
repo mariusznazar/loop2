@@ -1,5 +1,4 @@
 import { ACTIONS } from "../sim/data/actions.js";
-import { BALANCE } from "../sim/data/balance.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { CREATURES } from "../sim/data/creatures.js";
@@ -17,8 +16,6 @@ import type {
   Understanding,
 } from "../sim/types.js";
 import { mapRunEnded } from "../sim/game.js";
-import { createButton, setButtonSelected } from "./controls/button.js";
-import { tripWarning } from "./trip-lines.js";
 
 const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
 const PAUSED_SUFFIX = " (pauza)";
@@ -148,84 +145,3 @@ export type StatusRowControls = {
   restart(): void;
   end(): void;
 };
-
-export type StatusRow = {
-  element: HTMLElement;
-  /**
-   * The line of what the last game minute of a discovery revealed, in the role `discovery`; hidden
-   * while the game state holds no discovery. The page places it under the status row.
-   */
-  discovery: HTMLElement;
-  /** Shows the given game state; call only while it holds a map run. */
-  update(state: GameState): void;
-};
-
-/**
- * Builds the status row: its text and the buttons „Pauza”/„Wznów”, one per pace of the data
- * (the number and „×”, the one of the state's pace selected), „Restart”, „Zakończ”; after the
- * end of the map run, in death or a completion, the pause and pace buttons are hidden, and „Restart”
- * and „Zakończ” act on the map run ended; after a completion the text element carries the class
- * `positive`, and then only. The elements are made once and updated in place, so a button keeps focus across
- * clock ticks.
- */
-export function createStatusRow(controls: StatusRowControls): StatusRow {
-  const element = document.createElement("div");
-  element.className = "status-row";
-  const text = document.createElement("p");
-  text.className = "status-text";
-  const discovery = document.createElement("p");
-  discovery.className = "discovery-text";
-  discovery.hidden = true;
-  const pauseButton = createButton("");
-  const paceButtons = BALANCE.paces.map((pace) => {
-    const button = createButton(`${pace}×`);
-    button.addEventListener("click", () => controls.setPace(pace));
-    return button;
-  });
-  // „Restart” and „Zakończ” end the map run as it stands: destructive buttons (D-44).
-  const restartButton = createButton("Restart", { kind: "destructive" });
-  const endButton = createButton("Zakończ", { kind: "destructive" });
-  const warning = document.createElement("p");
-  warning.className = "trip-warning";
-  element.append(
-    text,
-    pauseButton,
-    ...paceButtons,
-    restartButton,
-    warning,
-    endButton,
-  );
-
-  pauseButton.addEventListener("click", () => controls.togglePause());
-  restartButton.addEventListener("click", () => controls.restart());
-  endButton.addEventListener("click", () => controls.end());
-
-  return {
-    element,
-    discovery,
-    update(state: GameState): void {
-      const revealed = state.discovery ? discoveryText(state.discovery) : "";
-      discovery.hidden = revealed === "";
-      if (discovery.textContent !== revealed) discovery.textContent = revealed;
-      if (!state.run) return;
-      const cut = tripWarning(
-        state.run.copy.program.tripPlan,
-        state.run.character.traits.carryingCapacity,
-        MAPS[state.run.mapId],
-      );
-      warning.hidden = cut === null;
-      warning.textContent = cut ?? "";
-      const shown = statusText(state.run, state.paused);
-      if (text.textContent !== shown) text.textContent = shown;
-      text.classList.toggle("positive", state.run.completion !== null);
-      const label = pauseLabel(state);
-      pauseButton.hidden = label === null;
-      if (label !== null && pauseButton.textContent !== label)
-        pauseButton.textContent = label;
-      paceButtons.forEach((button, index) => {
-        button.hidden = label === null;
-        setButtonSelected(button, BALANCE.paces[index] === state.pace);
-      });
-    },
-  };
-}

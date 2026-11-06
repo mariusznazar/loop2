@@ -913,6 +913,169 @@ test("a number typed into the rule panel in its host keeps its text and the focu
   });
 });
 
+// --- „Dodaj regułę z tym”: the panel adds the discovered rule --------------------------------------
+// Task ekran-przejscia, To do 7, questions 5 and 10; D-313, D-124, D-131, D-166, D-306. Which rule a
+// discovery writes is the case of tests/view/discovery-rule.test.mjs; these cases hold what the panel
+// does with it: the act it hands the game, the program it shows and where the rule panel opens.
+
+/**
+ * A new game whose first map run reached its first chill: the game pauses on the discovery
+ * „Eksploruj”, „Wędruj” and „Temperatura poniżej”, and the copy's group „Program” holds the rule the
+ * game wrote, „Zawsze → Eksploruj”.
+ */
+function firstChill() {
+  const sent = send(createCharacter(newGame(), "Ala").state, SENT, REAL_MS);
+  return advanceMinutes(sent.state, 100).state;
+}
+
+/** The rules of a group, without their numbers. */
+const rulesOfGroup = (group) =>
+  group.rules.map(({ condition, action }) => ({ condition, action }));
+
+// Catches the call handing the game no edit or an edit of a saved program, the rule panel left closed,
+// opened beside the rows though the screen gave it a host, opened on the condition after the button
+// filled the action, the screen not told it opened, the focus left outside the field, and the streak
+// left as it stood.
+test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group „Program”, opens it in the host on the action with the focus there, and the streak goes to zero", async () => {
+  await withPage(async (page) => {
+    const chilled = firstChill();
+    assert.deepEqual(
+      chilled.discovery?.actions,
+      ["explore", "wander"],
+      "precondition: the first chill holds its discovery",
+    );
+    assert.deepEqual(
+      rulesOfGroup(chilled.run.copy.program.groups[0]),
+      [ALWAYS_EXPLORE],
+      "precondition: the copy holds the rule the game wrote",
+    );
+    // The cold of the first chill has already set the real streak to zero, so a streak set by hand
+    // shows that the call itself zeroes it (D-131).
+    const game = await wiredPanel(page, {
+      ...chilled,
+      run: { ...chilled.run, streak: 40 },
+    });
+    const { host, told } = await withHost(page, game);
+    await inAct(() => game.panel.addDiscoveredRule());
+
+    assert.deepEqual(game.acts, [["editCopy"]]);
+    const group = game.state.run.copy.program.groups[0];
+    assert.equal(group.name, "Program");
+    assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_EXPLORE]);
+    assert.equal(game.state.run.streak, 0);
+    assert.deepEqual(
+      told,
+      [false, true],
+      "the screen is told the panel opened",
+    );
+    assert.equal(
+      host.querySelector(".rule-panel-heading")?.textContent,
+      "Reguła 1.2",
+    );
+    assert.equal(classed(game.root, "rule-panel").length, 0, "none beside");
+    assert.equal(
+      rowOf(game.root, group.rules[1].id).getAttribute("aria-current"),
+      "true",
+    );
+    const focused = page.document.activeElement;
+    assert.ok(host.contains(focused), "the focus is in the panel in the host");
+    assert.equal(
+      focused.closest('[role="group"]')?.getAttribute("aria-label"),
+      "Czynność",
+      "the focus is in the action's pick",
+    );
+    assert.equal(focused.textContent, "Eksploruj");
+  });
+});
+
+// D-166, D-313: the rule goes to the copy, which the list „Program:” then shows; D-306: „✕” closes
+// the panel the call opened, as any. Catches a saved program left shown, or edited, when the call adds
+// the rule, and a request to open that opens again at every draw.
+test("with a saved program shown on the list „Program:”, „Dodaj regułę z tym” shows the copy and opens the new rule there, once", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, firstChill());
+    await pick(game.root, "1");
+    assert.equal(programList(game.root).value, "1", "precondition");
+    const saved = game.state.programs[0].program;
+    await inAct(() => game.panel.addDiscoveredRule());
+
+    assert.deepEqual(game.acts, [["editCopy"]]);
+    assert.equal(game.state.programs[0].program, saved, "no saved edit");
+    assert.equal(game.state.run.copy.program.groups[0].rules.length, 2);
+    assert.equal(programList(game.root).value, "copy");
+    assert.equal(
+      game.root.querySelector(".rule-panel-heading")?.textContent,
+      "Reguła 1.2",
+    );
+    assert.ok(
+      game.root
+        .querySelector(".rule-panel")
+        .contains(page.document.activeElement),
+      "the focus went into the panel",
+    );
+
+    await click(buttonNamed(game.root.querySelector(".rule-panel"), "✕"));
+    assert.equal(classed(game.root, "rule-panel").length, 0, "closed by ✕");
+    assert.equal(
+      page.document.activeElement,
+      rowOf(game.root, game.state.run.copy.program.groups[0].rules[1].id),
+      "the focus went to the new rule's row",
+    );
+    await game.change({ state: game.state, events: [] });
+    assert.equal(classed(game.root, "rule-panel").length, 0, "stays closed");
+  });
+});
+
+// A field of the editor commits its text when it loses the focus, and the screen may call while a
+// field of the copy's rule panel still holds it. Catches the typed text lost when the panel moves to
+// the new rule, and the rule built on the copy without the text.
+test("text typed into the copy's editor and not yet committed lands in the copy before „Dodaj regułę z tym” adds its rule", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, firstChill());
+    const groupName = await openGroupName(game.root);
+    await typeInFocused(groupName, "Las nocą");
+    await inAct(() => game.panel.addDiscoveredRule());
+    const group = game.state.run.copy.program.groups[0];
+    assert.equal(group.name, "Las nocą");
+    assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_EXPLORE]);
+    assert.equal(
+      game.root.querySelector(".rule-panel-heading")?.textContent,
+      "Reguła 1.2",
+    );
+  });
+});
+
+// Catches a call that adds a rule, opens a panel or shows the copy where the game holds no
+// discovery, and one that acts in the panel of Programy, which shows a saved program (D-166).
+test("with no discovery held, and on Programy, „Dodaj regułę z tym” changes nothing and opens nothing", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(
+      page,
+      send(gameWithRule(), SENT, REAL_MS).state,
+    );
+    assert.equal(game.state.discovery, null, "precondition: no discovery");
+    const { host, told } = await withHost(page, game);
+    await pick(game.root, "1");
+    const before = game.state;
+    await inAct(() => game.panel.addDiscoveredRule());
+    assert.deepEqual(game.acts, []);
+    assert.equal(game.state, before);
+    assert.equal(programList(game.root).value, "1", "the program shown stays");
+    assert.equal(host.querySelector(".rule-panel"), null);
+    assert.equal(classed(game.root, "rule-panel").length, 0);
+    assert.deepEqual(told, [false]);
+  });
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, firstChill(), "programs");
+    assert.ok(game.state.discovery, "precondition: a discovery is held");
+    const before = game.state;
+    await inAct(() => game.panel.addDiscoveredRule());
+    assert.deepEqual(game.acts, []);
+    assert.equal(game.state, before);
+    assert.equal(classed(game.root, "rule-panel").length, 0);
+  });
+});
+
 /** The texts of the panel's lines and heading of the copy. */
 const copyTexts = (root) =>
   [...root.querySelectorAll(".copy-heading, .copy-line")].map(

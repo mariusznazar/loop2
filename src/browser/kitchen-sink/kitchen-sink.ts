@@ -40,7 +40,7 @@ export const PAGE_MARKER = "loop2-kitchen-sink-page";
 const SVG_NS = "http://www.w3.org/2000/svg";
 /** The tiles' radius, as the game draws them (`terrain-picture.ts`). */
 const TILE_SIZE = 24;
-/** Room around the tiles for the outlines' stroke, as in `terrain-panel.ts`. */
+/** Room around the tiles for the outlines' stroke, as in `terrain-drawing.tsx`. */
 const MARGIN = 4;
 
 // --- controls -------------------------------------------------------------------------------

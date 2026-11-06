@@ -581,7 +581,7 @@ class BrowserViewTokenValues(unittest.TestCase):
         # invariant: browser-view-token-values
         files = population()
         for expected in ("src/browser/index.html", "src/browser/main.ts",
-                         "src/browser/view/app.ts", "src/browser/view/terrain-panel.ts"):
+                         "src/browser/view/app.ts", "src/browser/view/terrain-drawing.tsx"):
             self.assertIn(expected, files)
         self.assertNotIn(TOKEN_FILE, files)
         self.assertEqual([path for path in files if path.startswith("src/browser/sim/")], [])

@@ -354,7 +354,7 @@ The loop2 container built from the repository serves each SVG icon file directly
 
 ## terrain-drawing-numbers
 
-The terrain panel's drawing of the game map shows no number of the stock a tile holds.
+The drawing of the game map shows no number of the stock a tile holds.
 
 - **Method:** test
 - **Rests on:** none

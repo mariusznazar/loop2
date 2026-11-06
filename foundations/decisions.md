@@ -399,11 +399,12 @@ change of data alone.
 by rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
 *Rejected:* none considered
 
-### D-19 — How does the player interact with the terrain panel's drawing of the game map?
+### D-19 — How does the player interact with the drawing of the game map?
 
-The terrain panel's drawing of the game map is a picture, not a control: its only interaction is
-hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock
-stand in that list, never on the drawing.
+The drawing of the game map is a picture, not a control: its only interaction is hovering, which
+links a tile with its row in the list of revealed tiles, and the numbers of stock
+stand in that list and in the line under the drawing, which shows the hovered tile or else the
+character's tile, never on the drawing.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -420,7 +421,8 @@ stand in that list, never on the drawing.
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
 character's tile against numbers the list shows, and the list keeps the stock of every resource of
 a tile readable where numbers written into the tiles would not be; hovering ties a tile to its
-numbers without writing them on it.
+numbers without writing them on it. The list stands in the right area, which the editing of a rule
+takes, so the line under the drawing keeps the numbers beside the program while the player writes.
 *Rejected:* the grid drawn without the list and its numbers — the player would write that condition
 without seeing the number it compares; numbers written into the tiles — unreadable where a tile
 holds several resources.
@@ -933,7 +935,7 @@ The kitchen-sink page of the browser view is built from `src/browser/kitchen-sin
 - **Relations:** derives from D-38
 - **Verification:** invariants: application-build-kitchen-sink · preview-server-access. An agent compares a change with the decision:
   - complies: the page compiled into `dist/kitchen-sink/` and served on the developer's machine alone;
-  - violates: the page drawing the terrain panel from a game state put together by hand; the page served by the account server in a development mode.
+  - violates: the page drawing the game map from a game state put together by hand; the page served by the account server in a development mode.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q13. Gdzie stoi strona wszystkich stanów i jak nie trafia na serwer testowy?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point A
 
 *Rationale:* The test server deploys what `npm run build` writes, and the account server serves the whole of its output, so a page kept out of that build never reaches players. Samples drawn with the roles show every state of a tile without a game state made by hand, which no function of the simulation returned (D-04).
@@ -947,7 +949,7 @@ The fonts of the browser view are Geist and Geist Mono, whose web-font files and
 - **Based on:** geist-licence · npm package `geist` 1.8.2, its peer dependencies (https://registry.npmjs.org/geist/1.8.2 § peerDependencies — "{"next":">=13.2.0"}"; read 2026-10-23)
 - **Relations:** none
 - **Verification:** invariants: font-file-provenance. An agent compares a change with the decision:
-  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the status row set in Geist Mono;
+  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the status row of the header of the screen of a map run set in Geist Mono;
   - violates: a stylesheet that loads a font from Google Fonts or another CDN; font files taken from the npm package `geist`; the headings of the panels set in Geist Mono.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jakie czcionki, rozmiary i odstępy?"
 
@@ -1361,7 +1363,7 @@ Each feeding of a campfire burning at the feeding's start adds, at the feeding's
 
 ### D-70 — How does the browser view show a campfire?
 
-A campfire shows on the terrain panel's drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
+A campfire shows on the drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -2185,7 +2187,7 @@ poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the 
   - complies: a mage of a new game first chilled in game minute 84 bringing „Eksploruj”, „Wędruj”
     and „Temperatura poniżej” into the Understanding; the program editor offering „Idź” and a
     condition „Tu leży mniej niż” once the first exploration has finished; the first finished
-    „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury poniżej” in one line of discoveries
+    „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury poniżej” in one band of a discovery
   - violates: the conditions on the campfire offered after the first gathered stick, before any
     campfire has been crafted; „Zasil — ognisko” discovered with the first gathered stick;
     „Energia natury poniżej” discovered before the first finished „Zapal”
@@ -2203,38 +2205,42 @@ conditions on the campfire come with the first crafted campfire, later than in l
 ### D-122 — What does a map run do, and what does the player see, when something is discovered?
 
 When something is discovered in a map run the player starts, the map run stops in the same pause
-as after „Pauza”: the status row adds „ (pauza)”, and the player goes on with „Wznów”. Below the
-status row a line in the role `discovery` names what was discovered, the discoveries of one game
-minute in one line, and it stands until the player goes on; where the last encounter has a line, it stands below the discovery line and above the body and backpack. Where the map run ends in a completion
-in the game minute of a discovery, the screen after the completion takes the place of the pause, and
-the line stands below its status row until „Restart” or „Zakończ”.
+as after „Pauza”: the status row adds „ (pauza)”, and the player goes on with „Wznów”. A band in
+the role `discovery` above the program names what was discovered and the program rule the game
+wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose
+„Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on. Where
+the map run ends in a completion in the game minute of a discovery, the screen after the completion
+takes the place of the pause, and the band stands, with no „Wznów”, until „Restart” or „Zakończ”.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-118
 - **Verification:** invariants: player-map-run-pace. An agent compares a change with the decision:
-  - complies: after the first finished exploration the status row ending in „ (pauza)” and below
-    it the line „Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu leży
-    mniej niż … szt., Zapas poniżej … szt.”, gone once the player presses „Wznów”; a completion of
-    Las in the game minute of a discovery showing „Minuta 480 · Las rozwiązany” with no „ (pauza)”
-    and the line of that discovery below it until „Restart”
-  - violates: a button of its own for going on after a discovery; the line of discoveries still
-    standing after „Wznów”; two discoveries of one game minute in two lines; a completion in the
-    game minute of a discovery leaving the map run paused with „Wznów”; the line of that discovery
-    gone from the screen after the completion before „Restart” or „Zakończ”
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?"
+  - complies: after the first finished exploration the status row ending in „ (pauza)” and above
+    the program the band „Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu
+    leży mniej niż … szt., Zapas poniżej … szt.” with „Dodaj regułę z tym” and „Wznów”, gone once
+    the player presses „Wznów” in the band or in the header; a completion of Las in the game minute
+    of a discovery showing „Minuta 480 · Las rozwiązany” with no „ (pauza)” and the band of that
+    discovery, with no „Wznów”, until „Restart”
+  - violates: a „Wznów” of the band that does anything other than the „Wznów” of the header; the
+    band still standing after „Wznów”; the band standing under the status row in the world area; two
+    discoveries of one game minute in two bands; a completion in the game minute of a discovery
+    leaving the map run paused with „Wznów”; the band of that discovery gone from the screen after
+    the completion before „Restart” or „Zakończ”
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
-whatever treats a paused map run treats a map run stopped by a discovery the same. A map run that
-ends in the game minute of a discovery has nothing to go on to, so the screen of its end stands
-in place of the pause, and the player still reads what that game minute discovered, which enters the
-Understanding as any discovery does. Accepted with it: a stop at a discovery cannot be told apart in
-the game state from the player's pause, and a player who goes on at once loses the list of
-discoveries, since the game keeps no record of them; the line of discoveries ends in two ways,
-„Wznów” or „Restart” and „Zakończ”, and the screen after a completion can keep both discovery and encounter text.
-*Rejected:* a stop at a discovery as a game state of its own, with a button of its own; the screen
-after a completion with no line of the discovery made in its game minute — the player would not
-learn what that game minute discovered.
+whatever treats a paused map run treats a map run stopped by a discovery the same. A discovery
+concerns the program, so it stands above the program. A map run that ends in the game minute of a
+discovery has nothing to go on to, so the screen of its end stands in place of the pause, and the
+player still reads what that game minute discovered, which enters the Understanding as any
+discovery does. Accepted with it: a stop at a discovery cannot be told apart in the game state from
+the player's pause, and a player who goes on at once loses the list of discoveries, since the game
+keeps no record of them; the band ends in two ways, „Wznów” or „Restart” and „Zakończ”, and the
+screen after a completion can keep both the band and the encounter's paragraph.
+*Rejected:* a stop at a discovery as a game state of its own, with a button of its own for going
+on; the screen after a completion with no word of the discovery made in its game minute — the player
+would not learn what that game minute discovered.
 
 ### D-123 — What does the game write into the program at a discovery?
 
@@ -2294,11 +2300,12 @@ that cannot be used.
 *Rejected:* „+ reguła” adding „Zawsze → Eksploruj” before „Eksploruj” is discovered — the
 program editor would offer an action the Understanding does not hold.
 
-### D-125 — What do the body row, the backpack and the terrain panel show of what is not yet discovered?
+### D-125 — What do the body row, the backpack, the list of revealed tiles and the drawing of the game map show of what is not yet discovered?
 
 The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the
 game state holds, whatever the Understanding holds: the body row shows satiety before the condition
-„Sytość poniżej” is discovered, and the backpack and the terrain panel show every item they hold.
+„Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the
+game map show every item they hold.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -2309,11 +2316,12 @@ game state holds, whatever the Understanding holds: the body row shows satiety b
     backpack or of a revealed tile drawn or listed as unknown until it is discovered
 - **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Czy odkrywanie zasłania coś poza listami edytora programu — wiersz ciała, plecak, listę odsłoniętych kafelków, rysunek mapy?"
 
-*Rationale:* the Understanding decides what a program can name, while the body row, the backpack
-and the terrain panel show the state of the map run the program acts on. Accepted with it: the
-player sees satiety in the body row before a condition on it can be written.
-*Rejected:* the body row hiding satiety until „Sytość poniżej” is discovered, and the backpack and
-the terrain panel hiding items not yet discovered.
+*Rationale:* the Understanding decides what a program can name, while the body row, the backpack,
+the list of revealed tiles and the drawing of the game map show the state of the map run the
+program acts on. Accepted with it: the player sees satiety in the body row before a condition on it
+can be written.
+*Rejected:* the body row hiding satiety until „Sytość poniżej” is discovered, and the backpack, the
+list of revealed tiles and the drawing of the game map hiding items not yet discovered.
 
 ### D-126 — What does the simulation do with a program rule outside the character's repertoire?
 
@@ -2421,24 +2429,25 @@ the pace anew for each attempt.
 ### D-130 — Where does the player pick the pace, and with which control?
 
 The player picks the pace with five buttons „1×”, „2×”, „4×”, „8×” and „16×” beside „Pauza” in the
-status row of the map run, and the button of the pace in force is a button selected in its group.
+header of the screen of a map run, and the button of the pace in force is a button selected in its
+group.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-44
 - **Verification:** an agent compares a change with the decision:
-  - complies: „4×” shown selected among the five buttons beside „Pauza” while the map run passes at
-    4×, each button made with the shared button selected in its group
-  - violates: a select list of paces; a pace button that creates and styles a `<button>` of its
-    own; the pace in force marked in a way no shared control holds
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?"
+  - complies: „4×” shown selected among the five buttons beside „Pauza” in the header of the screen
+    of a map run while the map run passes at 4×, each button made with the shared button selected in
+    its group
+  - violates: a select list of paces; the pace buttons standing in an area of the screen under the
+    header; a pace button that creates and styles a `<button>` of its own; the pace in force marked
+    in a way no shared control holds
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where does the player pick the pace, and with which control?”
 
 *Rationale:* the pace stands where the player watches the map run, beside „Pauza”, the other
 control of its time, and the button selected in its group marks the pace in force with a shared
-control the browser view already holds.
-*Rejected:* a pace control standing apart from „Pauza”, or one built from a control of its own —
-the controls of a map run's time would stand in two places, or the browser view would gain a
-control the shared controls do not hold.
+control.
+*Rejected:* a pace control standing apart from „Pauza”, or one built from a control of its own.
 
 ### D-131 — Which changes of the program a map run carries out reset its solving progress?
 
@@ -2502,17 +2511,19 @@ the state of the map run that solved the map.
 
 ### D-133 — Where does the player see a map run's streak and a map's solving condition?
 
-During a map run the status row shows progress for the requirements present in the map's solving condition beside the game minute and the character's activity: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present, as „Minuta 312 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2”. The headquarters shows by each available map the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu” or „Las — głębiej — 540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka”.
+During a map run the status row in the header of the screen of a map run shows progress for the requirements present in the map's solving condition beside the game minute and the character's activity: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present, as „Minuta 312 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2”. The headquarters shows by each available map the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu” or „Las — głębiej — 540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: a paused map run reading „Minuta 312 · Eksploruje · Passa 120/480 (pauza)”; the
-    sentence of Las standing by the map in the row of each character in the headquarters
-  - violates: a progress bar in place of „Passa 120/480”; a streak target shown for a map that asks for beaten attacks alone; the sentence of the condition written in
-    the code of the headquarters
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?"
+  - complies: a paused map run reading „Minuta 312 · Eksploruje · Passa 120/480 (pauza)” in the
+    header of the screen of the map run; the sentence of Las standing by the map in the row of each
+    character in the headquarters
+  - violates: a progress bar in place of „Passa 120/480”; „Passa 120/480” standing in the world area
+    under the header; a streak target shown for a map that asks for beaten attacks alone; the
+    sentence of the condition written in the code of the headquarters
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 3
 
 *Rationale:* the player sees during a map run how far the program has come towards the map's
 condition, and in the headquarters what each map asks before sending a character. Accepted with it:
@@ -2748,7 +2759,7 @@ The encounter ends immediately when either side reaches zero health: a creature 
 
 ### D-147 — What record of an encounter does the player read?
 
-From an attack the map run keeps its last encounter’s facts and shows a wrapping paragraph in `text`, below any discovery line and above the body and backpack: before the turns it gives the creature’s starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter’s result. The line stands through „Wznów”, editing and the frozen death or completion screen until another attack replaces it or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. The status activity is „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Minuta {minute} · Mag zginął w walce”.
+From an attack the map run keeps its last encounter’s facts and shows a wrapping paragraph in `text` in the world area of the screen of a map run, under the scene and above the body row and backpack: before the turns it gives the creature’s starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter’s result. The line stands through „Wznów”, editing and the frozen death or completion screen until another attack replaces it or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. The status activity is „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Minuta {minute} · Mag zginął w walce”.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -2756,7 +2767,7 @@ From an attack the map run keeps its last encounter’s facts and shows a wrappi
 - **Verification:** an agent compares a change with the decision:
   - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them
   - violates: a completion before the turns displaying an invented victory, defeat or departure
-- **Origin:** none
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
 
 *Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph.
 *Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; putting it above discovery — moves the explanation of the pause.
@@ -3329,15 +3340,15 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 
 ### D-185 — Where does the player read what completion deposited?
 
-After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands below the discovery line and last-encounter paragraph when present and above the body and backpack, directly below the status row when neither is present, until „Restart” or „Zakończ”.
+After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the world area of the screen of a map run, under the scene and the last-encounter paragraph when present and above the body row and backpack, until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-147 · derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12"
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
 
-*Rationale:* The transfer remains readable with the final state, even when discovery and a long encounter place it further below the status.
+*Rationale:* The transfer remains readable with the final state, even when a long encounter places it further below the scene.
 *Rejected:* placing it above discovery — changes the established order; placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
@@ -3471,17 +3482,17 @@ A manual map run holds the practice it gathers separately by character skill and
 
 ### D-195 — When does a character skill tree become known?
 
-A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens. The discovery line names the tree beside the action, as „Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
+A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens. The band of a discovery names the tree beside the action, as „Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-122
 - **Verification:** an agent compares a change with the decision:
   - complies: the first discovery of gathering also revealing its tree and „Obchód”
-  - violates: a tree becoming known only on its first purchase; an unnamed tree in the discovery line
+  - violates: a tree becoming known only on its first purchase; an unnamed tree in the band of a discovery
 - **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3 and Q4; accepted settlements 3 and 4
 
-*Rationale:* Discovery tells the player what the action can grow before the first point is earned. Accepted with it: longer discovery lines and known actions that no character can yet carry out.
+*Rationale:* Discovery tells the player what the action can grow before the first point is earned. Accepted with it: longer bands of a discovery and known actions that no character can yet carry out.
 *Rejected:* revealing a branch action on the first purchase — discovery would depend on a character’s purchase; showing the tree only at the first point; leaving the tree unnamed
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
@@ -3989,9 +4000,8 @@ the attempt earns nothing. Accepted with it: one more line on the screen.
 
 ### D-216 — Where does the player read what a character's death took?
 
-After a character's death, at the place of the line „Do skrzynki: …” below the discovery line and
-last-encounter paragraph when present and above the body row, until „Restart” or „Zakończ” and after
-a load too, a line stands: „Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.” in
+After a character's death, at the place of the line „Do skrzynki: …”, until „Restart” or „Zakończ”
+and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.” in
 `text-secondary` when the death used up a resurrection, and „Wskrzeszenie nie było gotowe: postać
 straciła całą wprawę i wykupione stopnie. Teraz to pokolenie {n}.” in `danger` when no resurrection
 was ready.
@@ -4000,7 +4010,7 @@ was ready.
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-62 · derives from D-185 · derives from D-190 · derives from D-212
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 4
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 4 · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
 
 *Rationale:* the player learns what the death took before pressing „Restart”. The first text gives
 no hours, since after a load such a number could already be false, and the second stands in `danger`
@@ -5636,24 +5646,26 @@ pictures as the main way — frames drift apart; new packs — another palette a
 
 ### D-272 — Where may a picture of the game stand?
 
-A picture of the game stands behind the login card, and text stands on a solid background, never
-on a picture.
+A picture of the game stands behind the login card and as the scene, and text stands on a solid
+background, never on a picture.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
 - **Verification:** an agent compares a change with the decision:
   - complies: the screen of the login card with the picture over the whole window and every sentence
-    of the page inside the card, on its solid `panel`; the waiting screens and the game with no
-    picture
+    of the page inside the card, on its solid `panel`; the scene at the top of the world area of the
+    screen of a map run with no text on it or over it, the paragraph of the last encounter on the
+    solid background under it; the waiting screens with no picture
   - violates: a sentence of the page standing on the picture outside the card; the card's background
-    made half-transparent over the picture
+    made half-transparent over the picture; the game minute or the name of the map written over the
+    scene
 - **Origin:** rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), part C.2 ·
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where may a picture of the game
   stand?”
 
-*Rationale:* the game stops looking like a form through a picture where there is nothing to read,
+*Rationale:* the game stops looking like a form through pictures where there is nothing to read,
 and contrast stays what its check measures, since that check knows colours and not what lies under
 text.
 *Rejected:* a half-transparent card over a picture — the check of contrast reads colour values, not
@@ -5944,8 +5956,8 @@ and its target after it.
 - **Based on:** none
 - **Relations:** derives from D-280
 - **Verification:** an agent compares a change with the decision:
-  - complies: the program panel and the column of the map run on the screen of a map run each an
-    area of its own, which a narrower layout can place one above the other; on Programy the list of
+  - complies: the world, the program and the right area of the screen of a map run each an area of
+    its own, which a narrower layout can place one above the other; on Programy the list of
     programs, the program editor and the rule panel each an area of its own; the team on Siedziba
     under the heading „Drużyna”; the rule panel offering „Zbierz” and, once it is picked, the targets
     of „Zbierz” in a field after it
@@ -6605,3 +6617,158 @@ order is that of loop. Accepted with it: every new action needs a reason of its 
 *Rejected:* the reasons written by the cycle itself and judged by the human at the merge — corrections
 are a round of remarks before the merge, which the tasks that follow wait for; a table with the rows
 the human chooses to correct — the human corrected no row.
+
+### D-311 — How is the screen of a map run laid out?
+
+The screen of a map run has three areas under one header: the world on the left, the program in
+the middle, and on the right one content at a time, the editing of a program rule or a rule group
+while one is open and the table of revealed tiles otherwise. The world holds, from the top, the
+scene, the paragraph of the last encounter, the line of the end of the map run (D-185, D-216), the
+body row with the backpack and the lines below them, the drawing of the map and the line of a tile
+under it. The header holds the character's name, the map's name and after them the whole status row
+in its order: the text of the game minute, the character's activity and the numbers of the solving
+condition, „Pauza” or „Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280 · derives from D-282
+- **Verification:** an agent compares a change with the decision:
+  - complies: on the screen of a map run of Las the character's name and „Las” before „Minuta 212 ·
+    Eksploruje · Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the
+    header, and under it the world, the program and the table of revealed tiles side by side; a rule
+    opened from its row standing in the right area in the place of the table, and „✕” bringing the
+    table back; after a completion the line „Do skrzynki: …” under the scene in the world area, the
+    table staying in the right area
+  - violates: the rule panel opened over the program or under the table; the table of revealed tiles
+    standing under the drawing in the world area; the line „Do skrzynki: …” in the right area;
+    „Restart” and „Zakończ” standing in the world area
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1
+
+*Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
+Accepted with it: a long header.
+*Rejected:* the pick of an action in a window over the screen, as in loop — it hides what the
+character needs; the end of a map run below an open editor of a rule, as in loop — its buttons fall
+under the edge of the window; the needs below two drawings of one place, as in loop; the trip plan
+under the editor during a map run; a header with no activity of the character and a row of its own
+under the scene saying what the character does — work of another task of the project, and a change
+of its plan; the clock written as „03:32” — a new notation of time; „Wróć do przejścia” on the
+screen of a map run too — a link to the place the player already stands in.
+
+### D-312 — How does the band of a discovery name the program rule the game wrote?
+
+Where a band names the discovery at which the game wrote a program rule (D-123), the band says „Gra
+dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”, {nazwa grupy} being the name of the
+first rule group of the copy, in the order of the program editor, that holds a program rule „Zawsze
+→ Eksploruj”, and it gives the rule no number. Where no rule group of the copy holds such a rule,
+the band leaves that sentence out.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** derives from D-122 · derives from D-123
+- **Verification:** an agent compares a change with the decision:
+  - complies: at the first chill of a new game the band reading „Gra dopisała regułę w grupie
+    „Program”: Zawsze → Eksploruj.” after what was discovered; with the copy's groups „Ogień” and
+    „Głód”, „Głód” holding no rule „Zawsze → Eksploruj”, the first chill writing the rule into
+    „Ogień” and the player dragging „Głód” above it while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
+    Eksploruj.”; „Ogień” renamed „Ciepło” while the band stands giving „… w grupie „Ciepło”: …”;
+    the rule deleted while the band stands and no other group holding „Zawsze → Eksploruj”, the band
+    keeping what was discovered with no sentence about the rule
+  - violates: after „Głód” is dragged above „Ogień”, the band reading „Gra dopisała regułę w grupie
+    „Głód”: Zawsze → Eksploruj.” while „Głód” holds no rule „Zawsze → Eksploruj”; the sentence still
+    standing after the rule or its group was deleted while no other group holds „Zawsze →
+    Eksploruj”; the sentence in the band of a discovery at which the game wrote no rule; „Gra dopisała
+    regułę 1.1”; the group named from the saved program rather than from the copy
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, question 6, and § Settlements to record, row 5
+
+*Rationale:* the band stands above the program the map run carries out, the copy, so it names the
+copy's group in which the player finds the rule now — after a group dragged above it, a rename, or
+the rule moved with its group or into another one, and after a load of the paused game — without
+the band depending on the numbering of rules. Accepted with it: a longer sentence in the band. Its
+further cost: where a rule „Zawsze → Eksploruj” of the player's own, such as one „+ reguła” adds,
+stands in another group that comes first — dragged above the one the game wrote into, or left
+standing after the game's rule or its group is deleted — the band names that group, where the same
+rule stands.
+*Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
+looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
+the numbering; no sentence about the rule — a departure from the project's definition; a name the
+screen holds from the moment of the discovery — lost at a load of the paused game, and stale after a
+rename; the copy's first rule group as it stands — false after another group is dragged above it or
+the group is deleted.
+
+### D-313 — What does „Dodaj regułę z tym” do?
+
+„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first
+rule group and opens its rule panel on the field it filled from the discovery: where the discovery
+holds an action that takes no target or one the rule panel offers a target for, the rule is
+„Zawsze → {the first such action}” and the panel opens on the action, the action's target, where it
+takes one, being the first target that matches an item of the same discovery, else the first target
+the rule panel offers for that action. Where the discovery holds no such action but a condition that
+takes no target or one the rule panel offers a target for, the rule is „{the first such condition}
+→ Eksploruj”, the condition's number and target being those a pick of that condition in the rule
+panel gives, and the panel opens on the condition; where it holds neither, the button does what
+„+ reguła” does (D-124). Where the copy holds no rule group, the button is disabled.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-122 · derives from D-124 · derives from D-306
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — patyk” at the end of the copy's
+    first rule group, with the rule panel open on the action; at the first chill of a new game
+    „Zawsze → Eksploruj” added at the end of the copy's group „Program” with the panel on the action
+    and the streak at zero (D-131); a discovery of an item alone adding „Zawsze → Eksploruj” with the
+    panel on the condition; a discovery of „Idź” and „Wędruj” while the rule panel offers no target
+    for „Idź” giving „Zawsze → Wędruj”
+  - violates: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — jagoda”; the rule added to a rule
+    group of its own or to the saved program; the panel opened on the condition after the button
+    filled the action; the button adding a rule group while the copy holds none
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 5 and 10, and § Settlements to record, row 4
+
+*Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
+the discovery into the rule and opens the panel where the player goes on writing, and „Odkryto:
+Zbierz, Patyk.” gives „Zawsze → Zbierz — patyk” at once. Accepted with it: a rule of acting on the
+list of discoveries, the adding setting the streak to zero as every change of the copy does
+(D-131); a player who deleted every rule group in the pause adds a group before using the button.
+*Rejected:* the button doing what „+ reguła” does — the words „z tym” promise more; the button left
+for later — a departure from the approved wording; the target always the first of the grid,
+whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”; the rule group
+„Program” with the condition „Zawsze” added where the copy holds none, as the game does at the
+first chill (D-123) — reachable only by deleting every group in the pause.
+
+### D-314 — What does the background of the scene show?
+
+The background of the scene is a still picture of a forest in snow, composed from the pictures of
+the pack Pixel Crawler that the predecessor game, loop, cut out.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-271
+- **Verification:** an agent compares a change with the decision:
+  - complies: a background of pines, a tree and a sapling in their snow variants, composed from
+    loop's cut pictures of Pixel Crawler
+  - violates: a green forest; a background composed from pictures cut anew from the pack's sheets
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 2, and § Settlements to record, row 2
+
+*Rationale:* the scene shows the same forest as the picture behind the login card, from pictures
+already cut. Accepted with it: frost shows worse on white, and snow lies also on a map of 25 °C.
+*Rejected:* a green forest — another forest than the one behind the login card, and pictures cut
+from the pack's sheets.
+
+### D-315 — Where does the darkness of the scene stand?
+
+The background picture of the scene is in full light, and a night or a dawn of the scene is a layer
+over that picture, never darkness in the picture's file.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-314
+- **Verification:** an agent compares a change with the decision:
+  - complies: the file of the background as light as the cut pictures it is composed from, the
+    scene showing it unchanged while no layer stands over it
+  - violates: the file of the background darkened, as the picture behind the login card is; a night
+    drawn by putting another file in place of the background
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 2, and § Settlements to record, row 3
+
+*Rationale:* the night of the scene brightens with the streak and the solving of a map gives a full
+dawn, so the darkness changes while the background stays one picture, and the background in full
+light is that dawn.
+*Rejected:* a background darkened in its file — the night would have to replace the file.
