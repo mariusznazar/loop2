@@ -1396,16 +1396,227 @@ header .save-line {
 }
 
 /*
- * The world area of the screen of a map run (D-311): the scene at the top, a still picture drawn
- * pixel-sharp at the size its width and height attributes give, with nothing drawn on it or over it
- * (D-272); under the lines the drawing of the map and the line of a tile under it, in `text` as the
- * numbers of a tile are content to read (D-19). The other parts keep the rules of their DOM modules.
+ * The world area of the screen of a map run (D-311): the scene at the top, a picture drawn
+ * pixel-sharp with nothing in it the keyboard or a click reaches and no text on it or over it
+ * (D-272, D-321); under the lines the drawing of the map and the line of a tile under it, in `text` as
+ * the numbers of a tile are content to read (D-19). The other parts keep the rules of their DOM
+ * modules.
+ *
+ * The scene (D-316, D-320, D-322; task scena-z-ludzikiem): the forest picture sets the frame's size
+ * from its width and height attributes, and every other part lies over it at the place and size
+ * TypeScript gives as percentages of the frame, so the stylesheet holds no length of a sprite and the
+ * scene is right at either scale. A sheet holds all frames of a picture side by side; `--frames` is
+ * their number, and the sheet shows one of them, the first where it stands still. The scene's motion
+ * stands in the rules after the badge.
  */
 .scene {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.scene-background {
   display: block;
   max-width: 100%;
   height: auto;
   image-rendering: pixelated;
+}
+
+.scene-prop,
+.scene-fire,
+.scene-mage {
+  position: absolute;
+}
+
+.scene-sheet {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scene-sheet img {
+  display: block;
+  width: calc(var(--frames) * 100%);
+  max-width: none;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/*
+ * The mage's figure holds its two sheets one over the other: the idle sheet shows while it stands and
+ * the run sheet, hidden then, on a walk. Its sheets face right, so a mage facing left is mirrored,
+ * the figure alone and not the badge over it.
+ */
+.scene-mage-sprite,
+.scene-mage-sprite > .scene-sheet {
+  position: absolute;
+  inset: 0;
+}
+
+.scene-mage-run {
+  visibility: hidden;
+}
+
+.scene-mage[data-facing="left"] .scene-mage-sprite {
+  transform: scaleX(-1);
+}
+
+/*
+ * The player's pause greys the whole scene with the old Loop's value (Scene.tsx at commit cdc7c0d,
+ * `paused ? 'grayscale(1) brightness(0.5)'`; D-322). At a discovery, after a completion and after a
+ * death the scene itself keeps its colours.
+ */
+.scene[data-standing="paused"] {
+  filter: grayscale(1) brightness(0.5);
+}
+
+/*
+ * A dead mage and an extinguished fire share one grey, the old Loop's value for both (sprites.tsx
+ * line 64 at commit cdc7c0d; D-322, D-316).
+ */
+.scene[data-standing="dead"] .scene-mage-sprite,
+.scene-fire[data-burning="false"] {
+  filter: grayscale(1) brightness(0.55);
+}
+
+/*
+ * The badge over the mage's head (D-320): a solid `panel` with the icon of the action drawn as the
+ * mask of `.action-icon` in `text-strong`, though no text stands beside it, and under it the bar of
+ * the progress, the fill in `positive` on a track in `highlight`. It sits just above the head, at the
+ * middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen at
+ * each scale by viewing the scene (16 at the scale 1, 32 at the scale 2: about two thirds of the
+ * width of the mage's figure, 25 pixels of the picture, at either scale); the padding and the gap
+ * are steps of the spacing scale, the bar's thickness is `--bar-width`, doubled at the scale 2.
+ */
+.scene-badge {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 56%;
+  width: fit-content;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  background: var(--panel);
+  color: var(--text-strong);
+}
+
+.run-screen-areas[data-scene-scale="1"] .scene-badge .action-icon {
+  height: 16px;
+}
+
+.run-screen-areas[data-scene-scale="2"] .scene-badge .action-icon {
+  height: 32px;
+}
+
+.scene-badge-bar {
+  display: block;
+  height: var(--bar-width);
+  background: var(--highlight);
+}
+
+/* At the scale 2 the bar is twice the token, as the whole scene is, so it keeps its proportion. */
+.run-screen-areas[data-scene-scale="2"] .scene-badge-bar {
+  height: calc(var(--bar-width) * 2);
+}
+
+.scene-badge-fill {
+  display: block;
+  width: calc(var(--progress) * 100%);
+  height: 100%;
+  background: var(--positive);
+}
+
+/*
+ * The scene's motion (D-316, D-319, D-320; task scena-z-ludzikiem, To do 5 and 10), from CSS at a
+ * beat apart from the pace, and only where the system's setting asks for no less motion (D-317); under
+ * that setting the frames stand on the first, the mage stands at its place at once and the bar jumps at
+ * each reading. The animations are written in longhands, so none sets the play state the stop below
+ * sets.
+ *
+ * - The frames of the mage's sheets and of the burning fire change every 160 ms: the picture of all
+ *   frames moves its own width in as many steps as it holds frames, one frame a step. An extinguished
+ *   fire and the props, one frame each, stand still.
+ * - A walk lasts 640 ms at every pace: the mage's element starts it at the offset it walks from,
+ *   `--walk-start`, which TypeScript gives as a percentage of the mage's own frame, and ends it at its
+ *   place, linear, at the speed of a run. For the same 640 ms the run sheet shows in place of the idle
+ *   sheet. Each walk starts on a new element, so its animations start with it.
+ * - The bar's fill follows each reading of the clock over the reading's interval, the 200 ms of
+ *   `TICK_MS` in src/browser/view/clock.ts, while the scene goes on; a new action's bar is a new
+ *   element and starts empty, so it never runs back from the last action's fill.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .scene-mage-sprite img,
+  .scene-fire[data-burning="true"] img {
+    animation-name: scene-frames;
+    animation-duration: calc(var(--frames) * 160ms);
+    animation-timing-function: steps(var(--frames));
+    animation-iteration-count: infinite;
+  }
+
+  .scene-mage[data-walking] {
+    animation-name: scene-walk;
+    animation-duration: 640ms;
+    animation-timing-function: linear;
+  }
+
+  .scene-mage[data-walking] .scene-mage-run {
+    animation-name: scene-shown;
+    animation-duration: 640ms;
+  }
+
+  .scene-mage[data-walking] .scene-mage-idle {
+    animation-name: scene-hidden;
+    animation-duration: 640ms;
+  }
+
+  .scene[data-standing="going"] .scene-badge-fill {
+    transition: width 200ms linear;
+  }
+
+  @starting-style {
+    .scene[data-standing="going"] .scene-badge-fill {
+      width: 0;
+    }
+  }
+}
+
+/*
+ * Every stop — the player's pause, a discovery, a death and a completion — holds every animation of
+ * the scene where it is: the frames, the fire and the mage on its way (D-322). Going on again goes on
+ * from there. The pause's grey comes with no animation, and nothing lights or darkens the whole scene
+ * (D-317).
+ */
+.scene:not([data-standing="going"]) * {
+  animation-play-state: paused;
+}
+
+@keyframes scene-frames {
+  to {
+    translate: -100%;
+  }
+}
+
+@keyframes scene-walk {
+  from {
+    translate: var(--walk-start);
+  }
+}
+
+@keyframes scene-shown {
+  from,
+  to {
+    visibility: visible;
+  }
+}
+
+@keyframes scene-hidden {
+  from,
+  to {
+    visibility: hidden;
+  }
 }
 
 .world-drawing {

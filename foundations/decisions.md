@@ -55,8 +55,9 @@ The game is written in TypeScript and runs in the browser. Its simulation is a s
 functions, of which those that pass game time take a game state and a span of game minutes and
 return the next game state together with the events it produced, and real time enters the
 simulation only as an argument. The browser view draws the game only from the game state, the
-game's content data and the moment of the browser's clock, which it reads and passes to the
-simulation, and changes the game state only through functions of the simulation, to which it passes
+game's content data, the moment of the browser's clock, which it reads and passes to the
+simulation, and, for the scene, its previous reading of the game state and the events the
+simulation returned, and changes the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
 the server or kept in the page's memory after a save found no session (D-211).
 
@@ -74,14 +75,17 @@ the server or kept in the page's memory after a save found no session (D-211).
     browser downloaded, or from the refusal it returns; after a sign-in to the same account, the
     page building the game from what that function returns for the state it kept; the headquarters
     line drawn from a stored moment of readiness and the clock's reading; a game state storing the
-    moment of an event, such as the moment a resurrection is ready or the moment of a save
+    moment of an event, such as the moment a resurrection is ready or the moment of a save; the
+    scene comparing the game state it is given with its previous reading to find the place where the
+    mage stands, or to find the start of a map run
   - violates: a screen of the game written as a Godot scene, or a script of the game's own code that
     the browser loads, written directly in JavaScript instead of compiled from TypeScript; a
     simulation function that reads the system time or the page; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
-    reading written into the game state on each reading
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle
+    reading written into the game state on each reading; a field added to the game state, and with
+    it to the save, for what the scene's motion needs
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-04 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
 
 *Rationale:* text code and tests give the most leverage in work with AI agents. A simulation of
 pure functions makes progress while away plain arithmetic and the save a JSON document, and runs on
@@ -97,7 +101,9 @@ passes no game time. The browser view also reads the
 game's content data, which stands apart from the game state, to name and picture what the game
 state holds. The moment of the browser's clock stands apart from it too: the game state stores a
 moment of an event, written once at the event, and the view compares it with its latest reading, so
-real time passing at the headquarters makes no new game state to save.
+real time passing at the headquarters makes no new game state to save. The scene's motion needs
+what one reading of the game state does not say, such as the place where the mage stood, and its
+previous reading and the events give it, so no state of a drawing enters the save.
 *Rejected:* Godot — slower to work on with AI agents; a browser view that draws from the game state
 and changes nothing in it — the player changes the game state from the browser view; loading
 counted as a choice of the player, signing in, with this decision left as it stood — a strained
@@ -109,7 +115,8 @@ browser view drawing from the game state alone — each reading makes a new game
 30-second rhythm of saving sends a save at an idle headquarters and after a load, against D-207, and
 a stale moment enters the saved document; a function of the simulation that takes the moment and
 returns the text to draw — the view would still draw from the moment, with content in the
-simulation.
+simulation; new fields in the game state for what an effect needs — state of a drawing would enter
+the save.
 
 ### D-05 — What serves the built game and account requests in the container?
 
@@ -838,33 +845,33 @@ Loop2 adopts the styleguide template of its pinned the-way, with no departure, f
 
 ### D-39 — What do the signal colours of the browser view mean?
 
-In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it.
+In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it. `positive` also stands as the fill of the progress bar over the mage's head, on a track in `highlight` in a badge on `panel`, with a contrast ratio of at least 3:1 against what it stands on; `warning` stands in no progress bar.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`;
-  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 10, Questions to settle, questions 2 and G
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`;
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 10, Questions to settle, questions 2 and G · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 13
 
-*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row.
-*Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss; a role of its own for each colour of the bar, two of them equal to colours of text — pairs of roles with equal values that drift apart when one of them changes.
+*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row. The fill of the progress bar over the mage's head says that the action is going on, which `positive` says in text, and it keeps the threshold of a part that is no text, against what it stands on.
+*Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss; a role of its own for each colour of the bar, two of them equal to colours of text — pairs of roles with equal values that drift apart when one of them changes; the fill of the progress bar over the mage's head in `text-strong` — the bar would not tell from the icon above it.
 
 ### D-40 — What do the neutral roles of the browser view mean?
 
-In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with.
+In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with. The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`;
-  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 8 and 10, Questions to settle, questions 1 and 2
+  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`;
+  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 8 and 10, Questions to settle, questions 1 and 2 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 12, and § Settlements to record, row 9
 
-*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. Accepted with it: the backgrounds of the two rules are paler than loop's, so that the text on them keeps the contrast the product holds, and the dark bar is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar.
-*Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings; the rule that wins marked by `highlight` — that background already says that a row is marked or under the pointer; the backgrounds of the two rules in loop's colours on the page background — on the panel the row comes out darker than its surroundings, like a greenish hole; a dark bar of a value visible on every background, at least 3:1 — a clear grey bar at most rules, a busier program and a departure from loop.
+*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. Accepted with it: the backgrounds of the two rules are paler than loop's, so that the text on them keeps the contrast the product holds, and the dark bar is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. Accepted with it: a role of the kind text stands at something that is no text.
+*Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings; the rule that wins marked by `highlight` — that background already says that a row is marked or under the pointer; the backgrounds of the two rules in loop's colours on the page background — on the panel the row comes out darker than its surroundings, like a greenish hole; a dark bar of a value visible on every background, at least 3:1 — a clear grey bar at most rules, a busier program and a departure from loop; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well.
 
 ### D-41 — What do the roles of the terrain grid and of keyboard focus mean?
 
@@ -898,18 +905,18 @@ For now every screen of the browser view keeps three success criteria of WCAG 2.
 
 ### D-43 — What counts in the browser view as a value written in place of a design token?
 
-In the files of the part browser-view other than its file of design tokens, a value written in place of a design token is a colour in any notation — hexadecimal, functional, a named colour or a system colour — in styles and in TypeScript and, in styles, a size or spacing in `px`, `rem` or `em`, a font name, or a unitless stroke width, dash pattern, opacity or font weight, those four unitless kinds being all. None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing computed in TypeScript, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/` — that of an icon of an action drawn as a mask, taking its colour from the text beside it, and that of any other icon holding its colour in the file, changed by hand when the value of `text-strong` changes.
+In the files of the part browser-view other than its file of design tokens, a value written in place of a design token is a colour in any notation — hexadecimal, functional, a named colour or a system colour — in styles and in TypeScript and, in styles, a size or spacing in `px`, `rem` or `em`, a font name, or a unitless stroke width, dash pattern, opacity or font weight, those four unitless kinds being all. None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/` — that of an icon of an action drawn as a mask, taking its colour from the text beside it or, in the badge over the mage's head where no text stands beside it, from `text-strong`, and that of any other icon holding its colour in the file, changed by hand when the value of `text-strong` changes.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** invariants: browser-view-token-values. For values the text of a file does not show, an agent compares a change with the decision:
-  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`; the icon of „Zbierz” drawn as a mask in the colour of the text beside it, dimmed with its greyed cell;
+  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`; the icon of „Zbierz” drawn as a mask in the colour of the text beside it, dimmed with its greyed cell; the frames and positions of the mage's sprite given from TypeScript as percentages of the scene's width and height; the icon of „Zbierz” in the badge over the mage's head drawn as a mask in `text-strong`;
   - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Co liczy się jako wartość wpisana zamiast tokenu projektowego?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point D · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Co liczy się jako wartość wpisana zamiast tokenu projektowego?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point D · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 12, and § Settlements to record, row 9
 
-*Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, and the icon files. An icon of an action drawn as a mask takes the role of the text beside it, so it dims with a greyed cell, needs no file for each state, and a change of `text-strong` reaches it at once; the other icons hold their colour themselves, so a change of `text-strong` reaches them only by hand. Accepted with it: two ways of drawing an icon stand side by side.
-*Rejected:* the colour of an icon of an action standing in its file and changed by hand — every state of the icon takes a file; the icons of actions as pictures dimmed by opacity — a new value of appearance and a second way of drawing to remove later; a gentler check counting no more such values than before the change — the screens are moved onto the tokens at once.
+*Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, the frames and positions of a sprite, and the icon files. An icon of an action drawn as a mask takes the role of the text beside it, so it dims with a greyed cell, needs no file for each state, and a change of `text-strong` reaches it at once, and in the badge over the mage's head, where no text stands beside it, it takes `text-strong`, the role of the action in the row of a rule; the other icons hold their colour themselves, so a change of `text-strong` reaches them only by hand. Accepted with it: two ways of drawing an icon stand side by side.
+*Rejected:* the colour of an icon of an action standing in its file and changed by hand — every state of the icon takes a file; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well; the icons of actions as pictures dimmed by opacity — a new value of appearance and a second way of drawing to remove later; a gentler check counting no more such values than before the change — the screens are moved onto the tokens at once.
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
@@ -2208,7 +2215,8 @@ When something is discovered in a map run the player starts, the map run stops i
 as after „Pauza”: the status row adds „ (pauza)”, and the player goes on with „Wznów”. A band in
 the role `discovery` above the program names what was discovered and the program rule the game
 wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose
-„Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on. Where
+„Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the
+scene keeping its colours. Where
 the map run ends in a completion in the game minute of a discovery, the screen after the completion
 takes the place of the pause, and the band stands, with no „Wznów”, until „Restart” or „Zakończ”.
 
@@ -2221,16 +2229,18 @@ takes the place of the pause, and the band stands, with no „Wznów”, until �
     leży mniej niż … szt., Zapas poniżej … szt.” with „Dodaj regułę z tym” and „Wznów”, gone once
     the player presses „Wznów” in the band or in the header; a completion of Las in the game minute
     of a discovery showing „Minuta 480 · Las rozwiązany” with no „ (pauza)” and the band of that
-    discovery, with no „Wznów”, until „Restart”
+    discovery, with no „Wznów”, until „Restart”; the scene in its colours while the band stands
   - violates: a „Wznów” of the band that does anything other than the „Wznów” of the header; the
     band still standing after „Wznów”; the band standing under the status row in the world area; two
     discoveries of one game minute in two bands; a completion in the game minute of a discovery
     leaving the map run paused with „Wznów”; the band of that discovery gone from the screen after
-    the completion before „Restart” or „Zakończ”
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7
+    the completion before „Restart” or „Zakończ”; the scene greyed at a stop at a discovery
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
-whatever treats a paused map run treats a map run stopped by a discovery the same. A discovery
+whatever treats a paused map run treats a map run stopped by a discovery the same, the scene
+excepted: it keeps its colours at a stop at a discovery, so that the moment of the reward is not
+dimmed. A discovery
 concerns the program, so it stands above the program. A map run that ends in the game minute of a
 discovery has nothing to go on to, so the screen of its end stands in place of the pause, and the
 player still reads what that game minute discovered, which enters the Understanding as any
@@ -2240,7 +2250,8 @@ keeps no record of them; the band ends in two ways, „Wznów” or „Restart�
 screen after a completion can keep both the band and the encounter's paragraph.
 *Rejected:* a stop at a discovery as a game state of its own, with a button of its own for going
 on; the screen after a completion with no word of the discovery made in its game minute — the player
-would not learn what that game minute discovered.
+would not learn what that game minute discovered; the scene greyed at a stop at a discovery, as at a
+pause — it would dim the moment of the reward.
 
 ### D-123 — What does the game write into the program at a discovery?
 
@@ -5621,23 +5632,29 @@ open while the screens move to React.
 
 The scene's pictures and the picture of the game behind the login card are sprites of the pack
 Pixel Crawler, kept in `assets/sprites/` outside the directory the account and save server serves
-and copied into it when the application is built. A sprite file holds pixels alone.
+and copied into it when the application is built. A sprite file holds pixels alone, and the
+character of the scene is the pack's mage.
 
 - **Scope:** browser-view · build-tools · deployment
 - **Based on:** pixel-crawler-terms
 - **Relations:** none
-- **Verification:** invariants: sprite-file-content. An agent compares a change with the decision:
+- **Verification:** invariants: sprite-file-content · loop2-container-sprites. An agent compares a
+  change with the decision:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
-    PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes
+    PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
+    the character of the scene drawn from a sprite file made from the pack's mage
   - violates: a picture placed straight in the directory the server serves; a sprite file in
-    another format, or a PNG file carrying text or metadata chunks; a picture drawn from another pack
+    another format, or a PNG file carrying text or metadata chunks; a picture drawn from another pack;
+    the hooded figure of loop as the character of the scene
 - **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
-  come from?”
+  come from?” · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
+  item 2
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
-fire and trees the game's pictures show. Kept apart from what the server serves, as the icons and
+fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
+are ready. Kept apart from what the server serves, as the icons and
 the fonts are, a picture reaches the player only through the build; it comes from outside the
 product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
 credit and allow its arts to be altered, so a picture made from them may be dimmed and composed.
@@ -6772,3 +6789,200 @@ over that picture, never darkness in the picture's file.
 dawn, so the darkness changes while the background stays one picture, and the background in full
 light is that dawn.
 *Rejected:* a background darkened in its file — the night would have to replace the file.
+
+### D-316 — What does the scene show, and from what does it draw?
+
+The scene draws the character and its campfire from the game state and holds no state of the game,
+the picture of each resource and archetype it shows standing in the game's data. Sticks, the berry
+bush and moss always stand in the scene, and the campfire only while it stands on the character's
+tile, burning with a fire that moves or extinguished, the same picture in `grayscale(1)
+brightness(0.55)` and without motion. Motion comes from CSS at a fixed beat that does not depend on
+the pace, with no loop of drawing.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-18 · derives from D-271
+- **Verification:** invariants: loop2-container-sprites. For what the scene draws and from what, an
+  agent compares a change with the decision:
+  - complies: the mage and the campfire drawn from the game state of a map run, with the file and the
+    place of the sticks, the bush and the moss read from the files of the game's data; the sticks,
+    the bush and the moss standing in the scene while the character's tile holds none of them; an
+    extinguished campfire on the character's tile drawn still and grey; the frames of the mage's
+    sprite changing by a CSS animation at the same beat at 1× and at 16×
+  - violates: the picture of a resource named in the code of the browser view; a canvas or a timer
+    redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
+    in the scene while the character's tile holds none; the place where the mage stands kept in the
+    game state
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 4, 5 and 7, Questions to settle, question 3, and § Settlements to record, row 3 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F1, F3, F4, F6 and F9 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), parts 8 and 9 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7
+
+*Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
+figure legible at the fastest pace. The pictures stand in the game's data, as the rest of the
+game's content does, so the code of the view names no resource. The scene may thus show
+what the character's tile does not hold; the numbers of the stock are given by the table and the
+line under the map. An extinguished campfire is the picture of a
+burning one without colour and without motion.
+*Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
+a prop standing only while its resource lies on the character's tile — a piece of a scene showing
+the character's tile, left out of the project, would enter it, and the scene would change at
+„Eksploruj” with no transition; no props — the mage would have nothing to walk to.
+
+### D-317 — How long do the scene's effects last?
+
+The scene follows the system's setting for reduced motion and shows no flash of its whole area.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the scene under the system's setting for reduced motion keeping its frames still; an
+    effect of the scene that changes a part of its area
+  - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
+    that moves under the system's setting for reduced motion as it does without it
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F2 and F5 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 5
+
+*Rationale:* pictures scaled up can pass the area below which flashing is allowed, so no effect
+takes the whole area of the scene, and a player who asks the system for less motion gets less.
+*Rejected:* none considered
+
+### D-318 — Where does the mage go for each action?
+
+The mage walks to the place its current action leads it to: with „Zbierz” and „Obchód” to the
+sticks, the berry bush or the moss, as the target says, with „Wytwórz — ognisko”, „Zapal — ognisko”
+and „Zasil — ognisko” to the place of the campfire, with „Eksploruj”, „Wędruj”, „Idź” and „Idź —
+ognisko” to the right edge of the scene, always the same place, and while it waits, no program rule
+fitting, to the middle of the clearing. Where its action leads nowhere — „Zbierz” and „Obchód” with
+fibre as the target, „Zapal — patyk”, „Zjedz — jagoda” and a fight — the mage stays where it stands.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-316
+- **Verification:** an agent compares a change with the decision:
+  - complies: the mage carrying out „Zbierz — Patyk” standing at the sticks; the mage carrying out
+    „Zasil — ognisko” at the place of the campfire; „Eksploruj” and „Idź — ognisko” leading to the
+    same place at the right edge; the mage with no rule fitting in the middle of the clearing;
+    „Zapal — patyk” leaving the mage where it stands
+  - violates: the mage walking to the campfire for „Zapal — patyk”; the place at the right edge
+    differing between „Eksploruj” and „Idź”; the mage walking to the middle of the clearing for
+    „Zjedz — jagoda”
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, Questions to settle, question 2, and § Settlements to record, row 2
+
+*Rationale:* each place tells the player what the character does: the props it gathers from, the
+fire it tends, the edge it sets out through. Accepted with it: the right edge does not say which way
+the character really walks on the map, and „Zapal — patyk” departs from loop, where the mage walked
+to the campfire.
+*Rejected:* the sticks and the campfire alone, the mage standing at the rest — less than loop has,
+and „Eksploruj” gives no motion.
+
+### D-319 — How does the mage walk to its place?
+
+The walk of the mage to its place lasts 640 ms and the frames of its sprite change every 160 ms, at
+every pace, as a movement of the character and no effect of an ordinary event. A target that changes
+on the way turns the mage from the place it has reached. At the start of a map run, after
+„Restart”, after a load and under the system's setting for reduced motion the mage stands at its
+place at once, and under that setting the frames stand still.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-316 · derives from D-317
+- **Verification:** an agent compares a change with the decision:
+  - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×; a target
+    changed half way turning the mage from where it stands; the mage standing at the place of its
+    action at once after „Restart” and after a load
+  - violates: a walk shortened to 300 ms or to the time of the action; a walk whose length follows
+    the pace or the distance; a mage that starts its walk from the edge of the scene after a load; a
+    mage that walks under the system's setting for reduced motion
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 5 and 10, Questions to settle, question 4, and § Settlements to record, row 4
+
+*Rationale:* the walk is a movement of the character, so the beat of the scene, apart from the
+pace, gives its length, and it lasts as long at the fastest pace as at the slowest. Accepted with
+it: at the fastest pace the mage often still walks when its action ends.
+*Rejected:* the shorter of 640 ms and the time of the action — the length would follow the pace,
+and the beat is to be apart from it; 300 ms — the mage jumps across the scene; a time that depends
+on the distance — it does not fit at 16×.
+
+### D-320 — What stands over the mage's head?
+
+Over the mage's head stands a badge on a solid `panel` background, never an icon or a bar straight
+on the picture of the forest, holding the icon of the current action (D-291) in `text-strong`,
+though no text stands beside it, and under the icon the progress bar of that action with its fill
+in `positive` on a track in `highlight`. While the character waits no icon and no bar stand there,
+and in combat no icon does. Under the system's setting for reduced motion the bar jumps at the
+readings of the clock instead of filling smoothly between them.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-291 · derives from D-316
+- **Verification:** an agent compares a change with the decision:
+  - complies: the mage gathering a stick with the badge over its head, the icon of „Zbierz” in it in
+    `text-strong` and under it the bar in `positive` on `highlight`; the mage waiting with nothing
+    over its head
+  - violates: the icon over the head standing straight on the trees; the fill of the bar in
+    `text-strong` or `warning`; a sign of waiting over the head; the icon of a stick over the head of
+    the mage who gathers it
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 10, Questions to settle, questions 4, 5, 6, 12 and 13, and § Settlements to record, rows 5, 6 and 9
+
+*Rationale:* the badge sets the sign apart from the forest, where a light tree could hide an icon
+that no test would find. The icon is the one the action has in the row of a rule (D-291), so
+gathering a stick and gathering a berry look alike over the head and the walk tells them apart. In
+`text-strong` it looks as the icon of the action does in a running row and as the icons of the drawing of
+the map do, which no text stands beside either. Waiting lasts a fraction of a second at the fastest
+pace, so a sign for it would only flicker. Accepted with it: the badge hides a piece of the forest
+over the head, and in combat the mage stands without a sign.
+*Rejected:* the icon of the target where the action has one — „Idź — patyk” and „Zbierz — patyk”
+look alike; an icon of combat with a bar to the minute the fight is decided — an icon that the
+work on combat may not leave; the bar in `text-strong` — it does not tell from the icon; the icon
+and the bar straight on the picture — on a light tree the icon can vanish and no test finds it; the
+icon in `text` — darker than the icon in the row of a rule and than the icons on the map, though
+both values read well.
+
+### D-321 — Does a click on the scene do anything?
+
+The scene is a picture, not a control: a click on it does nothing and no pause sign stands on it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-44
+- **Verification:** an agent compares a change with the decision:
+  - complies: a click on the scene leaving the map run as it was; „Pauza” the only way in the view
+    to pause a map run by hand
+  - violates: a click on the scene pausing the map run, as in loop; a pause sign standing on the
+    scene
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 8, and § Settlements to record, row 7
+
+*Rationale:* a scene that takes a click is a new kind of control, and the controls of the screens
+are the shared ones (D-44). Accepted with it: the player loses the shortcut of loop, where a click
+on the scene paused the game, though „Pauza” stands in the same view and the grey of the scene says
+that the game stands still.
+*Rejected:* a click as in loop — a new kind of shared control and a change of D-44; a pause sign
+alone — it says what the grey and „Wznów” already say.
+
+### D-322 — What does the scene show while time stands still?
+
+While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)`
+and all its motion, the fire and the mage together, stands still. At a stop at a discovery the scene
+keeps its colours (D-122) and its motion stands still too. After a death the motion of the scene
+stands still, no badge stands over the head and the mage is grey with `grayscale(1)
+brightness(0.55)`, and after a completion the motion stands still, no badge stands there and the
+mage stands in colour.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-62 · derives from D-122 · derives from D-132 · derives from D-316
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Pauza” pressed, the scene grey and the fire and the mage still; the stop at the
+    first discovery, the scene in colour and the fire and the mage still; after a death of cold the
+    mage grey, the motion still and no badge; after a completion of Las the mage in colour, the
+    motion still and no badge
+  - violates: the fire moving at a stop at a discovery; the scene greyed at a stop at a discovery;
+    the whole scene greyed as at a pause after a death; the badge standing over a mage who is dead;
+    „Pauza” leaving the scene in colour
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 8 and 9, Questions to settle, questions 1 and 7, and § Settlements to record, rows 1 and 8
+
+*Rationale:* a scene that moves while game time stands still would contradict the pause, which loop
+avoided on purpose. The grey says that the game stands still, and a stop at a discovery stays in
+colour so that the moment of the reward is not dimmed. After a death the grey mage tells the end
+from a pause, and a completion shows in the scene as a stop does.
+*Rejected:* the fire and the mage moving on at a stop at a discovery — the world would move while
+game time stands still, which loop avoided on purpose; the scene as at the player's pause after a
+death — the end of a game would look like a pause; a ready sheet of the mage's death — part of what
+the effects of a death are to bring would come into the scene.

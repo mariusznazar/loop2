@@ -50,6 +50,8 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/rule-panel.tsx` | copy | — |
 | `src/browser/view/run-header.tsx` | copy | — |
 | `src/browser/view/run-screen.tsx` | copy | — |
+| `src/browser/view/scene-picture.ts` | copy | — |
+| `src/browser/view/scene.tsx` | copy | — |
 | `src/browser/view/screen-address.ts` | copy | — |
 | `src/browser/view/status-row.ts` | do not copy | — |
 | `src/browser/view/terrain-drawing.tsx` | copy | — |

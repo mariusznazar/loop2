@@ -1,24 +1,28 @@
 /**
  * The world area of the screen of a map run in React (D-311, D-19, D-70, D-147, D-185, D-186, D-201,
- * D-215, D-216, D-272, D-314; task ekran-przejscia, To do 4, 5 and 6): from the top the scene, the
- * paragraph of the last encounter, the lines of the end of the map run — the deposit and the
- * settlement of a death — the body row with the backpack, the lines of a solved map, of the practice
- * and of the preview of the bring plan between the backpack and the drawing, the drawing of the game
- * map and the line of a tile under it. Each part shows and hides as its DOM module does. It draws
- * from props: the screen gives the game state with its map run in place and, for the hovered tile,
- * the key and its setter, which it shares with the table of revealed tiles in another area. It
- * imports the pure functions of the DOM modules and keeps the classes those modules give, so the
- * rules of the stylesheet apply (D-265). Nothing runs when the module is imported.
+ * D-215, D-216, D-272, D-314, D-316, D-320 to D-322; tasks ekran-przejscia, To do 4, 5 and 6, and
+ * scena-z-ludzikiem): from the top the scene, the paragraph of the last encounter, the lines of the
+ * end of the map run — the deposit and the settlement of a death — the body row with the backpack,
+ * the lines of a solved map, of the practice and of the preview of the bring plan between the
+ * backpack and the drawing, the drawing of the game map and the line of a tile under it. Each part
+ * shows and hides as its DOM module does. It draws from props: the screen gives the game state with
+ * its map run in place, the events of the simulation call that returned it, which it hands to the
+ * scene (D-04), and, for the hovered tile, the key and its setter, which it shares with the table of
+ * revealed tiles in another area. It imports the pure functions of the DOM modules and
+ * keeps the classes those modules give, so the rules of the stylesheet apply (D-265). Nothing runs
+ * when the module is imported.
  */
+import type { GameEvent } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";
 import { bodyValues, backpackText } from "./body-row.js";
 import { practiceText } from "./character-skills.js";
 import { combatText } from "./combat-line.js";
+import { Scene } from "./scene.js";
 import { TerrainDrawing } from "./terrain-drawing.js";
 import { tileLine } from "./tile-list.js";
 import { deathSettlementLine, solvedRunText, tripTexts } from "./trip-lines.js";
 
-/** The scene's picture, the forest of D-314, is 336 × 152 pixels, shown at a whole multiple. */
+/** The scene's frame, the forest of D-314, is 336 × 152 pixels, shown at a whole multiple. */
 const SCENE_WIDTH = 336;
 const SCENE_HEIGHT = 152;
 
@@ -41,6 +45,8 @@ const SEPARATOR = " · ";
 export type WorldAreaProps = {
   /** The game state the area draws; it draws nothing while the state holds no map run. */
   state: GameState;
+  /** The events of the simulation call that returned `state`, for the scene. */
+  events: readonly GameEvent[];
   /** The key of the hovered tile, „col,row”, or null when none is hovered. */
   hovered: string | null;
   /** Called with the key of the tile under the pointer, or null when the pointer is over none. */
@@ -48,12 +54,13 @@ export type WorldAreaProps = {
 };
 
 /**
- * The world area. The scene is a still picture with nothing drawn on it or over it (D-272). The
- * encounter paragraph is drawn only while the map run holds a record of one. A value of the body row
- * below its threshold stands in `danger`, as does the settlement of a death that took the progress
- * (D-39). The line under the drawing gives the hovered tile's numbers, else the character's tile's.
+ * The world area. The scene is a picture drawn from the game state, with no text on it or over it
+ * and nothing in it to take a click or the keyboard (D-272, D-321). The encounter paragraph is drawn
+ * only while the map run holds a record of one. A value of the body row below its threshold stands
+ * in `danger`, as does the settlement of a death that took the progress (D-39). The line under the
+ * drawing gives the hovered tile's numbers, else the character's tile's.
  */
-export function WorldArea({ state, hovered, onHover }: WorldAreaProps) {
+export function WorldArea({ state, events, hovered, onHover }: WorldAreaProps) {
   const run = state.run;
   if (run === null) return null;
   const scene = sceneSize(SCENE_SCALE);
@@ -64,12 +71,11 @@ export function WorldArea({ state, hovered, onHover }: WorldAreaProps) {
   const line = tileLine(state, hovered);
   return (
     <div className="world-area">
-      <img
-        className="scene"
-        src="/sprites/forest-scene.png"
-        alt=""
+      <Scene
+        state={state}
         width={scene.width}
         height={scene.height}
+        events={events}
       />
       {run.lastCombat ? (
         <p className="combat-line">{combatText(run.lastCombat)}</p>

@@ -249,8 +249,12 @@ test("the line of a death that used a resurrection is not in danger, and a death
   });
 });
 
-// Catches a scene of a size the constant does not give, a text on the picture or a source other than
-// the file of the forest. The sizes are the two the task puts to the human (question 1).
+// Catches a scene of a size the constant does not give, a text on the picture or a background other
+// than the file of the forest. The scene is no longer one `img`: since the task scena-z-ludzikiem
+// (To do 1 and 7) it is a frame that holds the forest as its background image and the props, the
+// campfire, the mage and the badge over it (D-316, D-320), so the case reads the size and the source
+// from the background and the absence of text from the whole frame. The sizes are the two the task
+// ekran-przejscia puts to the human (question 1).
 test("the scene is the picture of the forest at the size of the scale, with no text inside or over it", async () => {
   assert.deepEqual(sceneSize(1), { width: 336, height: 152 });
   assert.deepEqual(sceneSize(2), { width: 672, height: 304 });
@@ -259,24 +263,38 @@ test("the scene is the picture of the forest at the size of the scale, with no t
     const { container } = await draw(document, sent());
     const world = worldOf(container);
     const scene = world.firstElementChild;
-    assert.equal(scene.nodeName, "IMG");
-    assert.equal(scene.getAttribute("src"), "/sprites/forest-scene.png");
+    assert.equal(scene.className, "scene");
+    assert.equal(scene.parentElement, world);
+    const background = scene.querySelector(".scene-background");
+    assert.equal(background.nodeName, "IMG");
+    assert.equal(background.getAttribute("src"), "/sprites/forest-scene.png");
     assert.equal(
-      scene.getAttribute("width"),
+      background.getAttribute("width"),
       String(sceneSize(SCENE_SCALE).width),
     );
     assert.equal(
-      scene.getAttribute("height"),
+      background.getAttribute("height"),
       String(sceneSize(SCENE_SCALE).height),
     );
     assert.equal(
-      scene.getAttribute("alt"),
+      background.getAttribute("alt"),
       "",
       "a decoration, read as nothing",
     );
-    // Nothing inside it, and nothing wrapped round it that could carry text over it (D-272).
-    assert.equal(scene.childNodes.length, 0);
-    assert.equal(scene.parentElement, world);
+    assert.equal(
+      scene.getAttribute("aria-hidden"),
+      "true",
+      "the whole frame is a decoration",
+    );
+    // No text in it or over it (D-272): the frame holds none, and none stands wrapped round it.
+    assert.equal(scene.textContent, "");
+    for (const image of scene.querySelectorAll("img")) {
+      assert.equal(
+        image.getAttribute("alt"),
+        "",
+        "every picture is a decoration",
+      );
+    }
   });
 });
 
