@@ -1,5 +1,0 @@
-load-paused: 1 frames, 250 samples over 1506 ms
-  idleF: 0 changes
-  runF: 0 changes
-  fireF: 0 changes
-  fill: 0 changes over 250 samples, 0 backward within one bar
