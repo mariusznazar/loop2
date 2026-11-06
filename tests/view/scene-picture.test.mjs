@@ -40,7 +40,7 @@ const MAGE_AT_BERRY = 240;
 const MAGE_AT_MOSS = 26;
 const MAGE_AT_FIRE = 96;
 const CLEARING = 160;
-const RIGHT_EDGE = 292;
+const RIGHT_EDGE = 291;
 const COMBAT_KINDS = ["strikeWithStick", "kick", "dodge"];
 const NO_UNDERSTANDING_ITEMS = {
   trees: [],
