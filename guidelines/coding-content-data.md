@@ -23,6 +23,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/sim/data/items.ts` | copy | — |
 | `src/browser/sim/data/maps.ts` | copy | — |
 | `src/browser/sim/data/revelations.ts` | copy | — |
+| `src/browser/sim/data/scene.ts` | copy | — |
 | `src/browser/sim/data/skills.ts` | copy | — |
 | `src/browser/sim/data/traits.ts` | copy | — |
 

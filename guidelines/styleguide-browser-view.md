@@ -14,20 +14,20 @@ bez odstępstw zgodnie z D-38.
 | Role | Kind | Meaning for the user | Text on it | Decision |
 |---|---|---|---|---|
 | `page` | background | Tu jest gra. | `text` | D-40 |
-| `panel` | background | To osobny, wydzielony blok. | `text` | D-40 |
-| `highlight` | background | Ten wiersz albo tor jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
+| `panel` | background | To osobny, wydzielony blok, także plakietka nad głową postaci. | `text` | D-40 |
+| `highlight` | background | Ten wiersz albo tor, także tor paska nad głową postaci, jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
 | `rule-winning` | background | Ta reguła programu wygrywa teraz. | `text` | D-40 |
 | `rule-running` | background | Czynność tej reguły programu trwa teraz. | `text` | D-40 |
 | `divider` | other | Tu kończy się jedna sekcja, a zaczyna następna. | — | D-40 |
 | `control-border` | other | To da się kliknąć albo wpisać. | — | D-40 |
 | `selected` | other | To jest wybrane w swojej grupie. | — | D-40 |
 | `condition-unmet` | other | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu. | — | D-40 |
-| `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw. | — | D-40 |
+| `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, choć obok niej nie ma tekstu. | — | D-40 |
 | `text` | text | Treść do przeczytania. | — | D-40 |
 | `text-secondary` | text | Opis, wyjaśnienie albo dopisek. | — | D-40 |
 | `text-label` | text | Nazwa pola albo sekcji, albo data. | — | D-40 |
 | `text-disabled` | text | Tego teraz nie da się użyć. | — | D-40 |
-| `positive` | text | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć. | — | D-39 |
+| `positive` | text | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, oraz jako wypełnienie paska postępu nad głową postaci. | — | D-39 |
 | `warning` | text | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć. | — | D-39 |
 | `danger` | text | Grozi utrata postaci, postępu albo danych. | — | D-39 |
 | `discovery` | text | Odkryto coś nowego. | — | D-39 |
@@ -73,7 +73,9 @@ zachowuje ją na każdym z tych pięciu teł, bo każda rola rodzaju `text` stoi
 na wszystkich pięciu (D-39, D-40): przycisk niszczący pod kursorem ma dalej
 tekst w `danger`, a przycisk wybrany w grupie — w `text-strong`. Wartości każdej pary trzyma
 w kodzie reguła Contrast of every pair. Przegląd zmiany tabeli Roles czyta
-każde tło z jego tekstem.
+każde tło z jego tekstem. Tor paska postępu nad głową postaci (`highlight`)
+nie ma tekstu i kod nie ustawia na nim żadnej roli tekstu; ta reguła nie mówi,
+czy tor go potrzebuje.
 
 ### No value in place of a design token
 
@@ -99,14 +101,16 @@ W plikach części poza plikiem tokenów wartością wpisaną zamiast tokenu jes
 
 Nie jest nią: `0`, procent, rozmiar w `fr`, `vw` albo `vh`, słowo kluczowe
 (`transparent`, `currentColor`, `inherit`, `none`), próg szerokości ekranu
-w regule `@media`, geometria rysunku siatki liczona w TypeScripcie, atrybuty
+w regule `@media`, geometria rysunku siatki i sceny liczona w TypeScripcie,
+klatki i położenia obrazków postaci i zasobów sceny, atrybuty
 `width` i `height` obrazka, wymiar układu — szerokość albo wysokość z jej
 minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
-w `assets/icons/`. Dwa sposoby stoją obok siebie do zadania 24: ikony
-czynności rysowane maską biorą kolor z tekstu obok, więc szarzeją razem
-z wyszarzoną komórką i zmiana `text-strong` dochodzi do nich sama; każda inna
-ikona ma kolor w swoim pliku, a gdy zmienia się wartość `text-strong`, zmień go
-w nim ręcznie (D-43).
+w `assets/icons/`, ani ikona czynności nad głową postaci rysowana maską
+w `text-strong`, bo obok niej nie ma tekstu. Dwa sposoby stoją obok siebie do
+zadania 24: ikony czynności rysowane maską biorą kolor z tekstu obok, więc
+szarzeją razem z wyszarzoną komórką i zmiana `text-strong` dochodzi do nich
+sama; każda inna ikona ma kolor w swoim pliku, a gdy zmienia się wartość
+`text-strong`, zmień go w nim ręcznie (D-43).
 
 Czcionki interfejsu to Geist i Geist Mono z plików produktu (D-46): tekst gry
 idzie stosem Geist, kronika i zegar przejścia stosem Geist Mono.
@@ -114,6 +118,17 @@ idzie stosem Geist, kronika i zegar przejścia stosem Geist Mono.
 Test niezmiennika przeszukuje tekst plików części. Wartości, której tekst pliku
 nie pokazuje — koloru składanego w TypeScripcie z liczb i wpisywanego do stylu —
 pilnuje przegląd zmiany (D-43).
+
+Wyjątki ze sceny przepuszcza test `browser-view-token-values`, bo żaden z nich
+nie jest kolorem, nazwą czcionki ani wartością w `px`, `rem` lub `em` spoza
+wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w TypeScripcie
+(`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
+kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`
+przy każdej skali. Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
+ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga i paska) oraz dwóch
+filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
+sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach. D-43 ich też
+nie liczy; czy staną się tokenami, ten przewodnik nie rozstrzyga.
 
 ### Visible focus
 
@@ -505,6 +520,48 @@ nowej barwy, roli ani wartości.
   text).
 
 Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
+
+### The scene of a map run
+
+- **Decision:** D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-39 · D-40 · D-43
+- **Invariant:** none
+- **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi.
+- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę.
+
+Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem i magiem. Stoi
+w `src/browser/view/scene.tsx` i `src/browser/view/scene-picture.ts`, a jej
+ruch i szarości w `src/browser/styles.css`; nazwy plików obrazków postaci
+i zasobów leżą w danych gry, w `src/browser/sim/data/scene.ts`, nie w kodzie
+widoku (D-316).
+Scena jest obrazem: nie ma na niej tekstu ani przycisku, kod nie daje jej
+reakcji na kliknięcie, a cały jej obszar nie błyska (D-272, D-321, D-317).
+
+Plakietka stoi nad głową maga na tle `panel` (D-320). Niesie ikonę bieżącej
+czynności, tę samą co przy regule w wierszu edytora (D-291), w `text-strong`,
+choć obok niej nie ma tekstu (D-40, D-43). Pod ikoną stoi pasek postępu tej
+czynności: wypełnienie w `positive` na torze w `highlight`, z co najmniej 3:1
+wobec tła, na którym stoi (D-39, D-40). Pasek ma grubość `--bar-width`, a przy
+skali 2 — `calc(var(--bar-width) * 2)`. Plakietki nie ma przy czekaniu, w walce,
+po śmierci i po rozwiązaniu mapy (D-320, D-322).
+
+Ruch daje CSS, bez pętli rysowania: klatki maga i ognia zmieniają się w stałym
+takcie, dojście maga na miejsce trwa zawsze tyle samo, niezależnie od tempa gry,
+a pasek płynie między odczytami zegara (D-316, D-319, D-320); czasy stoją
+w `src/browser/styles.css`. Zmiana celu w drodze skręca maga z miejsca, w którym jest.
+Przy zatrzymaniu — pauzie, odkryciu, śmierci i ukończeniu — cały ruch sceny,
+także ogień i mag, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu
+klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
+(D-317, D-319, D-320).
+
+Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę tą samą
+wartością co stara Loop (D-322). Martwy mag i wygasłe ognisko mają jedną wspólną
+szarość, też z wartością starej Loop (D-316, D-322); obie wartości stoją
+w regułach sceny w `src/browser/styles.css`, a źródła w ich komentarzach. Przy
+zatrzymaniu na odkryciu scena zostaje kolorowa, a po ukończeniu mag stoi
+w kolorze; po śmierci mag jest szary (D-322). Wygasłe ognisko to ten sam obrazek
+bez koloru i bez ruchu, a stoi tylko wtedy, gdy stoi na kafelku postaci (D-316).
+Lista wartości tego przewodnika ich nie nazywa (zob. „No value in place of a
+design token”).
 
 ## Examples
 
