@@ -399,10 +399,10 @@ change of data alone.
 by rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
 *Rejected:* none considered
 
-### D-19 — How does the player interact with the terrain panel's drawing of the game map?
+### D-19 — How does the player interact with the drawing of the game map?
 
-The terrain panel's drawing of the game map is a picture, not a control: its only interaction is
-hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock
+The drawing of the game map is a picture, not a control: its only interaction is hovering, which
+links a tile with its row in the list of revealed tiles, and the numbers of stock
 stand in that list and in the line under the drawing, which shows the hovered tile or else the
 character's tile, never on the drawing.
 
@@ -935,7 +935,7 @@ The kitchen-sink page of the browser view is built from `src/browser/kitchen-sin
 - **Relations:** derives from D-38
 - **Verification:** invariants: application-build-kitchen-sink · preview-server-access. An agent compares a change with the decision:
   - complies: the page compiled into `dist/kitchen-sink/` and served on the developer's machine alone;
-  - violates: the page drawing the terrain panel from a game state put together by hand; the page served by the account server in a development mode.
+  - violates: the page drawing the game map from a game state put together by hand; the page served by the account server in a development mode.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q13. Gdzie stoi strona wszystkich stanów i jak nie trafia na serwer testowy?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point A
 
 *Rationale:* The test server deploys what `npm run build` writes, and the account server serves the whole of its output, so a page kept out of that build never reaches players. Samples drawn with the roles show every state of a tile without a game state made by hand, which no function of the simulation returned (D-04).
@@ -1363,7 +1363,7 @@ Each feeding of a campfire burning at the feeding's start adds, at the feeding's
 
 ### D-70 — How does the browser view show a campfire?
 
-A campfire shows on the terrain panel's drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
+A campfire shows on the drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -2187,7 +2187,7 @@ poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the 
   - complies: a mage of a new game first chilled in game minute 84 bringing „Eksploruj”, „Wędruj”
     and „Temperatura poniżej” into the Understanding; the program editor offering „Idź” and a
     condition „Tu leży mniej niż” once the first exploration has finished; the first finished
-    „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury poniżej” in one line of discoveries
+    „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury poniżej” in one band of a discovery
   - violates: the conditions on the campfire offered after the first gathered stick, before any
     campfire has been crafted; „Zasil — ognisko” discovered with the first gathered stick;
     „Energia natury poniżej” discovered before the first finished „Zapal”
@@ -2300,11 +2300,12 @@ that cannot be used.
 *Rejected:* „+ reguła” adding „Zawsze → Eksploruj” before „Eksploruj” is discovered — the
 program editor would offer an action the Understanding does not hold.
 
-### D-125 — What do the body row, the backpack and the terrain panel show of what is not yet discovered?
+### D-125 — What do the body row, the backpack, the list of revealed tiles and the drawing of the game map show of what is not yet discovered?
 
 The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the
 game state holds, whatever the Understanding holds: the body row shows satiety before the condition
-„Sytość poniżej” is discovered, and the backpack and the terrain panel show every item they hold.
+„Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the
+game map show every item they hold.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -2315,11 +2316,12 @@ game state holds, whatever the Understanding holds: the body row shows satiety b
     backpack or of a revealed tile drawn or listed as unknown until it is discovered
 - **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Czy odkrywanie zasłania coś poza listami edytora programu — wiersz ciała, plecak, listę odsłoniętych kafelków, rysunek mapy?"
 
-*Rationale:* the Understanding decides what a program can name, while the body row, the backpack
-and the terrain panel show the state of the map run the program acts on. Accepted with it: the
-player sees satiety in the body row before a condition on it can be written.
-*Rejected:* the body row hiding satiety until „Sytość poniżej” is discovered, and the backpack and
-the terrain panel hiding items not yet discovered.
+*Rationale:* the Understanding decides what a program can name, while the body row, the backpack,
+the list of revealed tiles and the drawing of the game map show the state of the map run the
+program acts on. Accepted with it: the player sees satiety in the body row before a condition on it
+can be written.
+*Rejected:* the body row hiding satiety until „Sytość poniżej” is discovered, and the backpack, the
+list of revealed tiles and the drawing of the game map hiding items not yet discovered.
 
 ### D-126 — What does the simulation do with a program rule outside the character's repertoire?
 
@@ -3480,17 +3482,17 @@ A manual map run holds the practice it gathers separately by character skill and
 
 ### D-195 — When does a character skill tree become known?
 
-A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens. The discovery line names the tree beside the action, as „Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
+A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens. The band of a discovery names the tree beside the action, as „Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-122
 - **Verification:** an agent compares a change with the decision:
   - complies: the first discovery of gathering also revealing its tree and „Obchód”
-  - violates: a tree becoming known only on its first purchase; an unnamed tree in the discovery line
+  - violates: a tree becoming known only on its first purchase; an unnamed tree in the band of a discovery
 - **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3 and Q4; accepted settlements 3 and 4
 
-*Rationale:* Discovery tells the player what the action can grow before the first point is earned. Accepted with it: longer discovery lines and known actions that no character can yet carry out.
+*Rationale:* Discovery tells the player what the action can grow before the first point is earned. Accepted with it: longer bands of a discovery and known actions that no character can yet carry out.
 *Rejected:* revealing a branch action on the first purchase — discovery would depend on a character’s purchase; showing the tree only at the first point; leaving the tree unnamed
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
@@ -6666,8 +6668,8 @@ the band leaves that sentence out.
 - **Verification:** an agent compares a change with the decision:
   - complies: at the first chill of a new game the band reading „Gra dopisała regułę w grupie
     „Program”: Zawsze → Eksploruj.” after what was discovered; with the copy's groups „Ogień” and
-    „Głód”, the first chill writing the rule into „Ogień” and the player dragging „Głód” above it
-    while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
+    „Głód”, „Głód” holding no rule „Zawsze → Eksploruj”, the first chill writing the rule into
+    „Ogień” and the player dragging „Głód” above it while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
     Eksploruj.”; „Ogień” renamed „Ciepło” while the band stands giving „… w grupie „Ciepło”: …”;
     the rule deleted while the band stands and no other group holding „Zawsze → Eksploruj”, the band
     keeping what was discovered with no sentence about the rule
@@ -6697,13 +6699,14 @@ the group is deleted.
 
 „Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first
 rule group and opens its rule panel on the field it filled from the discovery: where the discovery
-holds an action, the rule is „Zawsze → {its first action}” and the panel opens on the action, the
-action's target, where it takes one, being the first target that matches an item of the same
-discovery, else the first target the rule panel offers for that action. Where the discovery holds
-no action but a condition, the rule is „{its first condition} → Eksploruj”, the condition's number
-and target being those a pick of that condition in the rule panel gives, and the panel opens on the
-condition; where it holds neither, the button does what „+ reguła” does (D-124). Where the copy
-holds no rule group, the button is disabled.
+holds an action that takes no target or one the rule panel offers a target for, the rule is
+„Zawsze → {the first such action}” and the panel opens on the action, the action's target, where it
+takes one, being the first target that matches an item of the same discovery, else the first target
+the rule panel offers for that action. Where the discovery holds no such action but a condition that
+takes no target or one the rule panel offers a target for, the rule is „{the first such condition}
+→ Eksploruj”, the condition's number and target being those a pick of that condition in the rule
+panel gives, and the panel opens on the condition; where it holds neither, the button does what
+„+ reguła” does (D-124). Where the copy holds no rule group, the button is disabled.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -6713,7 +6716,8 @@ holds no rule group, the button is disabled.
     first rule group, with the rule panel open on the action; at the first chill of a new game
     „Zawsze → Eksploruj” added at the end of the copy's group „Program” with the panel on the action
     and the streak at zero (D-131); a discovery of an item alone adding „Zawsze → Eksploruj” with the
-    panel on the condition
+    panel on the condition; a discovery of „Idź” and „Wędruj” while the rule panel offers no target
+    for „Idź” giving „Zawsze → Wędruj”
   - violates: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — jagoda”; the rule added to a rule
     group of its own or to the saved program; the panel opened on the condition after the button
     filled the action; the button adding a rule group while the copy holds none
