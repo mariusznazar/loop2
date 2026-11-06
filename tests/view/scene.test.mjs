@@ -1,9 +1,11 @@
-// The scene drawn still (task scena-z-ludzikiem, To do 1, 2, 4, 6, 8, 9 and 11; D-316, D-320, D-321,
-// D-322, D-272, D-43) on jsdom through tests/view/page-document.mjs (D-264): the parts it draws in each
-// way it stands, the badge over the mage, the fire absent, burning and extinguished, the greys, and
-// that it is a picture nothing in which the keyboard reaches or a click moves. Motion is the next
-// slice's. The look and the real events are checked in the browser (D-88). Every comparison is of plain
-// data or of a handful of words (D-268).
+// The scene (task scena-z-ludzikiem, To do 1 to 11; D-316 to D-322, D-272, D-43, D-04) on jsdom
+// through tests/view/page-document.mjs (D-264): the parts it draws in each way it stands, the badge
+// over the mage, the fire absent, burning and extinguished, the greys, that it is a picture nothing
+// in which the keyboard reaches or a click moves, and of its motion what jsdom can show — where the
+// mage stands at once and where it walks, the place kept where it stays, the stops that hold every
+// animation, the bar of a new action, and the elements a redraw keeps. jsdom runs no animation: the
+// motion itself, the beat and reduced motion are read from a stream of frames in the browser (D-254,
+// D-88). Every comparison is of plain data or of a handful of words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
@@ -13,6 +15,7 @@ import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   createCharacter,
   newGame,
+  restart,
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
@@ -119,8 +122,9 @@ const sheetOf = (element) => {
   };
 };
 
-// Catches a scene that leaves out a part of To do 1, 2 or 4, or draws a part from another file.
-test("a scene going on draws the background, the three props and the mage on its first idle frame, and no fire", async () => {
+// Catches a scene that leaves out a part of To do 1, 2 or 4, or draws a part from another file. The
+// mage holds its idle sheet and its run sheet, which it shows on a walk (To do 5).
+test("a scene going on draws the background, the three props and the mage with its idle and run sheets, and no fire", async () => {
   await withPage(async (page) => {
     const scene = await drawn(page, doing(GATHER_STICK));
     assert.equal(scene.className, "scene");
@@ -144,10 +148,16 @@ test("a scene going on draws the background, the three props and the mage on its
     ]);
 
     const mage = one(scene, ".scene-mage");
-    assert.deepEqual(sheetOf(one(mage, ".scene-mage-sprite")), {
+    const figure = one(mage, ".scene-mage-sprite");
+    assert.deepEqual(sheetOf(one(figure, ".scene-mage-idle")), {
       src: "/sprites/mage-idle.png",
       alt: "",
       frames: "4",
+    });
+    assert.deepEqual(sheetOf(one(figure, ".scene-mage-run")), {
+      src: "/sprites/mage-run.png",
+      alt: "",
+      frames: "6",
     });
     assert.equal(scene.querySelector(".scene-fire"), null, "no fire");
   });
@@ -173,7 +183,7 @@ test("the props and the mage stand at the places of the data, as percentages of 
 });
 
 // Catches a mage that stands at the same place whatever it does, or one that has no place where it
-// stays (the previous reading of the scene is the next slice's; until then it stands in the clearing).
+// stays at a first draw, which has no previous reading: there it stands in the clearing.
 test("the mage stands where the activity leads it: the sticks, the fire, the right edge, the clearing", async () => {
   await withPage(async (page) => {
     const leftOf = async (state) =>
@@ -312,8 +322,11 @@ test("the scene marks how it stands: going, paused, at a discovery, dead, comple
   });
 });
 
-/** The greys of D-322 as the stylesheet gives them, read from the real file laid on a scene. */
-function filterOf(element) {
+/**
+ * A property of an element as the real stylesheet, laid on its page, gives it. jsdom reads no rule
+ * inside an `@media` rule of a feature, so this shows what the scene does under any setting of motion.
+ */
+function computed(element, property) {
   const { document, getComputedStyle } = element.ownerDocument.defaultView;
   if (!document.querySelector("style[data-test-styles]")) {
     const style = document.createElement("style");
@@ -321,7 +334,12 @@ function filterOf(element) {
     style.textContent = STYLES;
     document.head.append(style);
   }
-  const filter = getComputedStyle(element).getPropertyValue("filter");
+  return getComputedStyle(element).getPropertyValue(property);
+}
+
+/** The greys of D-322 as the stylesheet gives them. */
+function filterOf(element) {
+  const filter = computed(element, "filter");
   return filter === "none" ? "" : filter;
 }
 
@@ -440,5 +458,302 @@ test("a game with no map run draws no scene", async () => {
       ),
     );
     assert.equal(container.childElementCount, 0);
+  });
+});
+
+// --- motion (Slice 5) -----------------------------------------------------------------------------
+
+/**
+ * A scene mounted once and drawn again at each state given, with the events of the simulation call
+ * that returned it, as the screen draws it at each reading of the clock.
+ */
+async function mounted({ document }, state, events = []) {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const draw = (next, nextEvents = []) =>
+    inAct(() =>
+      root.render(
+        createElement(Scene, {
+          state: next,
+          width: 672,
+          height: 304,
+          events: nextEvents,
+        }),
+      ),
+    );
+  await draw(state, events);
+  return {
+    draw,
+    scene: () => one(container, ".scene"),
+    mage: () => one(container, ".scene-mage"),
+  };
+}
+
+/** The sent state doing the action from `startMinute`, for ten minutes, at `minute`. */
+const doingFrom = (action, startMinute, minute = startMinute) =>
+  withRun(sent(), {
+    current: { ...current(action), startMinute, endMinute: startMinute + 10 },
+    minute,
+  });
+
+/** The events of an ordinary change of activity at `minute`, as a game minute returns them. */
+const changed = (action, minute) => [
+  {
+    kind: "activityFinished",
+    minute,
+    activity: { kind: "rule", ruleId: 1, action: GATHER_STICK },
+  },
+  {
+    kind: "activityStarted",
+    minute,
+    activity: { kind: "rule", ruleId: 1, action },
+    stepTo: null,
+  },
+];
+
+/** How the mage stands: its left edge, whether it walks, the offset it walks from and its facing. */
+const standingOf = (mage) => ({
+  left: mage.style.left,
+  walking: mage.hasAttribute("data-walking"),
+  from: mage.style.getPropertyValue("--walk-start"),
+  facing: mage.getAttribute("data-facing"),
+});
+
+// To do 5, D-319. Catches a mage that walks in from somewhere at the scene's first draw, after a load
+// included, instead of standing at its place at once.
+test("at its first draw, after a load included, the mage stands at its place at once, with no walk", async () => {
+  await withPage(async (page) => {
+    const { mage } = await mounted(page, doing({ kind: "explore" }));
+    const placed = standingOf(mage());
+    near(placed.left, 81.8452, "right edge 275");
+    assert.equal(placed.walking, false, "no walk");
+    assert.equal(placed.from, "", "no place it walks from");
+  });
+});
+
+// To do 5, D-319. Catches a mage that jumps to its next place at an ordinary change of activity, walks
+// from another place than the one it stands at, or faces away from the way it walks. The offset the
+// walk starts from is a percentage of the mage's own frame of 64 pixels: from 42 to 275 it starts
+// 233 pixels to the left, -364.0625 %.
+test("at an ordinary change of activity the mage walks from where it stands to its next place, facing the way it walks", async () => {
+  await withPage(async (page) => {
+    const { draw, mage } = await mounted(page, doingFrom(GATHER_STICK, 0));
+    await draw(
+      doingFrom({ kind: "explore" }, 10),
+      changed({ kind: "explore" }, 10),
+    );
+    const there = standingOf(mage());
+    near(there.left, 81.8452, "heading to the right edge 275");
+    assert.deepEqual(
+      { walking: there.walking, from: there.from, facing: there.facing },
+      { walking: true, from: "-364.0625%", facing: "right" },
+    );
+
+    await draw(doingFrom(GATHER_STICK, 30), changed(GATHER_STICK, 30));
+    const back = standingOf(mage());
+    near(back.left, 12.5, "heading back to the sticks 42");
+    assert.deepEqual(
+      { walking: back.walking, from: back.from, facing: back.facing },
+      { walking: true, from: "364.0625%", facing: "left" },
+    );
+  });
+});
+
+// To do 5, D-319, the glossary's map run restart. Catches a mage that walks across the scene at the
+// start of a map run or after „Restart”: the event `mapRunStarted` the simulation returned places it
+// at once, where the same state read without that event is an ordinary change and a walk.
+test("at „Restart”, the event of a map run started, the mage stands at its place at once, crossing nothing", async () => {
+  await withPage(async (page) => {
+    const before = doingFrom({ kind: "gather", resource: "berry" }, 0, 4);
+    const restarted = restart(before);
+    assert.ok(
+      restarted.events.some((event) => event.kind === "mapRunStarted"),
+      "precondition: „Restart” returns the event of a map run started",
+    );
+    assert.equal(
+      restarted.state.run.current.activity.action.kind,
+      "explore",
+      "precondition: the restarted map run explores at once",
+    );
+
+    const started = await mounted(page, before);
+    await started.draw(restarted.state, restarted.events);
+    const placed = standingOf(started.mage());
+    near(placed.left, 81.8452, "the right edge 275");
+    assert.equal(placed.walking, false, "no walk at the start of a map run");
+
+    const read = await mounted(page, before);
+    await read.draw(restarted.state, []);
+    assert.equal(
+      standingOf(read.mage()).walking,
+      true,
+      "the same state without the event is an ordinary change",
+    );
+  });
+});
+
+// D-318, D-04 (the scene's previous reading). Catches a mage that goes to the clearing, or anywhere,
+// where its activity leaves it standing: „Zjedz”, combat and a death keep the place it had.
+test("where the activity leaves the mage standing, it keeps the place of the previous reading, in combat and after a death too", async () => {
+  await withPage(async (page) => {
+    const berry = { kind: "gather", resource: "berry" };
+    const { draw, mage } = await mounted(page, doingFrom(berry, 0));
+    near(mage().style.left, 66.6667, "precondition: at the berry bush 224");
+    const states = {
+      eating: doingFrom({ kind: "eat" }, 10),
+      combat: withRun(sent(), { current: null, minute: 20 }),
+      dead: withRun(doingFrom(berry, 30), {
+        death: { minute: 31, cause: "cold" },
+      }),
+    };
+    for (const [name, state] of Object.entries(states)) {
+      await draw(state);
+      const kept = standingOf(mage());
+      near(kept.left, 66.6667, `${name}: the berry bush kept`);
+      assert.equal(kept.walking, false, `${name}: no walk`);
+    }
+  });
+});
+
+// To do 8 and 9, D-322. Catches a stop that leaves an animation of the scene running: the frames of
+// the mage's sheets, the fire's or the mage's walk, at the player's pause, a discovery, a death or a
+// completion; and a scene going on whose animations stand.
+test("every stop holds every animation of the scene where it is, and a scene going on runs them", async () => {
+  await withPage(async (page) => {
+    const animated = (scene) => [
+      ["mage", one(scene, ".scene-mage")],
+      ["idle frames", one(scene, ".scene-mage-idle img")],
+      ["run frames", one(scene, ".scene-mage-run img")],
+      ["run sheet", one(scene, ".scene-mage-run")],
+      ["idle sheet", one(scene, ".scene-mage-idle")],
+      ["fire frames", one(scene, ".scene-fire img")],
+    ];
+    for (const [standing, make] of Object.entries(STANDINGS)) {
+      const scene = await drawn(page, withFire(42, make()));
+      assert.equal(scene.getAttribute("data-standing"), standing);
+      for (const [name, element] of animated(scene)) {
+        const state = computed(element, "animation-play-state");
+        if (standing === "going")
+          assert.notEqual(state, "paused", `${standing}: ${name}`);
+        else assert.equal(state, "paused", `${standing}: ${name}`);
+      }
+    }
+  });
+});
+
+// Carried question 4, D-320. Catches a bar that runs back from the last action's fill to the next
+// action's — the same action again at the same place, where the mage does not walk, and the first
+// action after „Restart”, which starts at the same minute 0 as the last — and a bar rebuilt at every
+// reading, which could not fill smoothly from one reading to the next.
+test("a new action's bar starts empty as a bar of its own, and one action's bar stays the same bar from reading to reading", async () => {
+  await withPage(async (page) => {
+    const fill = (scene) => one(scene, ".scene-badge-fill");
+    const progress = (element) =>
+      Number(element.style.getPropertyValue("--progress"));
+    const { draw, scene } = await mounted(page, doingFrom(GATHER_STICK, 0, 9));
+    const first = fill(scene());
+    near(`${progress(first) * 100}%`, 90, "precondition: nine minutes of ten");
+
+    await draw({ ...doingFrom(GATHER_STICK, 0, 9), realMsCarry: 500 });
+    assert.equal(fill(scene()), first, "the same action, the same bar");
+    near(`${progress(first) * 100}%`, 95, "it fills on");
+
+    await draw(doingFrom(GATHER_STICK, 10), changed(GATHER_STICK, 10));
+    assert.equal(
+      one(scene(), ".scene-mage").hasAttribute("data-walking"),
+      false,
+      "precondition: the same place, no walk",
+    );
+    const next = fill(scene());
+    assert.notEqual(next, first, "a new action, a bar of its own");
+    assert.equal(progress(next), 0, "empty");
+
+    const restarted = restart(doingFrom(GATHER_STICK, 0, 9));
+    const again = await mounted(page, doingFrom(GATHER_STICK, 0, 9));
+    const last = fill(again.scene());
+    await again.draw(restarted.state, restarted.events);
+    assert.equal(
+      restarted.state.run.current.startMinute,
+      0,
+      "precondition: the first action after „Restart” starts at minute 0",
+    );
+    assert.notEqual(
+      fill(again.scene()),
+      last,
+      "after „Restart” a bar of its own",
+    );
+  });
+});
+
+// D-03's accepted risk: the screen redraws five times a second, and a rebuilt element restarts its
+// CSS animations, so the figure would shake. Catches a redraw that rebuilds an element running an
+// animation — the mage, its sheets and their pictures, the fire's — or starts a walk where the place
+// is the same.
+test("a redraw at each reading of the clock keeps every element that runs an animation and starts no walk", async () => {
+  await withPage(async (page) => {
+    const reading = (minute) =>
+      withFire(42, {
+        ...doingFrom(GATHER_STICK, 0, minute),
+        realMsCarry: 200 * minute,
+      });
+    const { draw, scene } = await mounted(page, reading(1));
+    const parts = () =>
+      [
+        ".scene-mage",
+        ".scene-mage-sprite",
+        ".scene-mage-idle",
+        ".scene-mage-idle img",
+        ".scene-mage-run",
+        ".scene-mage-run img",
+        ".scene-fire",
+        ".scene-fire img",
+        ".scene-badge-fill",
+      ].map((selector) => one(scene(), selector));
+    const before = parts();
+    for (const minute of [2, 3, 4]) {
+      await draw(reading(minute));
+      const now = parts();
+      before.forEach((element, index) =>
+        assert.equal(now[index], element, `minute ${minute}: element ${index}`),
+      );
+      assert.equal(
+        one(scene(), ".scene-mage").hasAttribute("data-walking"),
+        false,
+      );
+    }
+  });
+});
+
+// To do 5, the plan's wiring through run-screen.tsx and world-area.tsx (D-04). Catches a screen that
+// does not hand the events of its update to the scene, so the mage walks across the scene at
+// „Restart”.
+test("the screen of a map run hands the events of each update to the scene", async () => {
+  await withPage(async ({ document, root }) => {
+    const controls = {
+      togglePause: () => {},
+      setPace: () => {},
+      restart: () => {},
+      end: () => {},
+    };
+    const panel = () => ({
+      element: document.createElement("div"),
+      update: () => {},
+      placeRulePanel: () => {},
+      addDiscoveredRule: () => {},
+    });
+    const before = doingFrom({ kind: "gather", resource: "berry" }, 0, 4);
+    const restarted = restart(before);
+    const mageAfter = async (events) => {
+      const screen = await inAct(() => createRunScreen(panel(), controls));
+      root.append(screen.element);
+      await inAct(() => screen.update(before, before.run, []));
+      await inAct(() =>
+        screen.update(restarted.state, restarted.state.run, events),
+      );
+      return standingOf(one(screen.element, ".scene-mage"));
+    };
+    assert.equal((await mageAfter(restarted.events)).walking, false);
+    assert.equal((await mageAfter([])).walking, true);
   });
 });
