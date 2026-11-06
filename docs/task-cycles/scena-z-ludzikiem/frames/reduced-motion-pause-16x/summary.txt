@@ -1,0 +1,12 @@
+reduced-motion-pause-16x: 7 frames, 249 samples over 1503 ms
+  140ms status="Minuta 160 · Zbiera: jagoda · Passa 0/480" fillId=3 x=224
+  303ms action="Pauza:true" x=224
+  309ms standing="paused" status="Minuta 163 · Zbiera: jagoda · Passa 0/480 (pauza)" action=undefined x=224
+  903ms action="Wznów:true" x=224
+  909ms standing="going" status="Minuta 163 · Zbiera: jagoda · Passa 0/480" action=undefined x=224
+  1140ms status="Minuta 166 · Zbiera: jagoda · Passa 0/480" x=224
+  1335ms status="Minuta 170 · Zbiera: jagoda · Passa 0/480" fillId=4 x=224
+  idleF: 0 changes
+  runF: 0 changes
+  fireF: 0 changes
+  fill: 6 changes over 249 samples, 0 backward within one bar

@@ -1,0 +1,16 @@
+reduced-motion-pause-restart-16x: 7 frames, 414 samples over 2501 ms
+  301ms action="Pauza:false" x=144
+  307ms action=undefined x=144
+  901ms action="Wznów:false" x=144
+  907ms action=undefined x=144
+  1501ms action="Restart:true" x=144
+  1513ms id=2 walking=false standing="going" status="Minuta 0 · Eksploruje · Passa 0/480" fillId=3 action=undefined x=275
+  1744ms status="Minuta 3 · Eksploruje · Passa 3/480" x=275
+  1939ms status="Minuta 6 · Eksploruje · Passa 6/480" x=275
+  2139ms status="Minuta 10 · Eksploruje · Passa 10/480" x=275
+  2344ms status="Minuta 13 · Eksploruje · Passa 13/480" x=275
+  move x 144 -> 275 from 1501 to 1513 ms (12 ms)
+  idleF: 0 changes
+  runF: 0 changes
+  fireF: 0 changes
+  fill: 5 changes over 165 samples, 0 backward within one bar

@@ -1,0 +1,6 @@
+pace-8x-head: 1 frames, 497 samples over 3006 ms
+  103ms action="8×:false" x=144
+  109ms action=undefined x=144
+  idleF: 0 changes
+  runF: 0 changes
+  fireF: 0 changes

@@ -1,0 +1,23 @@
+turn-on-the-way-16x: 219 frames, 415 samples over 2504 ms
+  105ms action="16×:true" x=275
+  111ms action=undefined x=275
+  304ms action="Wznów:true" x=275
+  311ms standing="going" status="Minuta 0 · Eksploruje · Passa 0/480" action=undefined x=275
+  495ms id=3 walking=true facing="left" shows="run" status="Minuta 2 · Zasila ognisko · Passa 2/480" fillId=4 x=275
+  691ms id=5 facing="right" status="Minuta 6 · Zbiera: jagoda · Passa 6/480" fillId=6 x=219.6
+  892ms status="Minuta 9 · Zbiera: jagoda · Passa 9/480" x=221
+  1093ms status="Minuta 12 · Zbiera: jagoda · Passa 12/480" x=222.3
+  1292ms status="Minuta 15 · Zbiera: jagoda · Passa 15/480" x=223.7
+  1335ms shows="idle" x=224
+  1341ms walking=false x=224
+  1492ms status="Minuta 18 · Zbiera: jagoda · Passa 18/480" fillId=7 x=224
+  1692ms status="Minuta 22 · Zbiera: jagoda · Passa 22/480" x=224
+  1893ms status="Minuta 25 · Zbiera: jagoda · Passa 25/480" x=224
+  2092ms status="Minuta 28 · Zbiera: jagoda · Passa 28/480" fillId=8 x=224
+  2292ms status="Minuta 31 · Zbiera: jagoda · Passa 31/480" x=224
+  2492ms status="Minuta 34 · Zbiera: jagoda · Passa 34/480" x=224
+  move x 275 -> 224 from 499 to 1329 ms (830 ms)
+  idleF: 15 changes, gaps min 27 max 167 mean 142 ms
+  runF: 15 changes, gaps min 27 max 167 mean 142 ms
+  fireF: 13 changes, gaps min 157 max 164 mean 160 ms
+  fill: 320 changes over 415 samples, 0 backward within one bar
