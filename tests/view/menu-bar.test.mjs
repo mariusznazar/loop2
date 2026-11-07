@@ -133,7 +133,7 @@ test("a waiting screen's bar holds the game's name alone, with no item and no �
   });
 });
 
-test("over the game the bar holds the name, „Siedziba” to #/, „Programy” to #/programy and „Konto”, in that order and without icons", async () => {
+test("over the game the bar holds the name, „Siedziba” to #/, „Mapy” to #/mapy, „Programy” to #/programy and „Konto”, in that order and without icons", async () => {
   await withPage(async (page) => {
     await openBar(page);
     const bar = page.root.querySelector(".menu-bar");
@@ -147,6 +147,7 @@ test("over the game the bar holds the name, „Siedziba” to #/, „Programy”
       links.map((link) => [link.textContent, link.getAttribute("href")]),
       [
         ["Siedziba", "#/"],
+        ["Mapy", "#/mapy"],
         ["Programy", "#/programy"],
       ],
     );
@@ -162,11 +163,14 @@ test("over the game the bar holds the name, „Siedziba” to #/, „Programy”
 });
 
 test("the item of the place the page gives is marked with aria-current, and none on a map run's screen", async () => {
-  // D-277, D-280: Siedziba on Siedziba and on Postać, Programy on Programy and on a program, none on
-  // the screen of a map run; the page gives the screen, the bar reads the item from it.
+  // D-277, D-280: Siedziba on Siedziba and on Postać, Mapy on Mapy and on a map, Programy on Programy
+  // and on a program, none on the screen of a map run; the page gives the screen, the bar reads the
+  // item from it.
   const cases = [
     [{ kind: "headquarters" }, "Siedziba"],
     [{ kind: "character", characterId: 2 }, "Siedziba"],
+    [{ kind: "maps" }, "Mapy"],
+    [{ kind: "map", mapId: "forest" }, "Mapy"],
     [{ kind: "programs" }, "Programy"],
     [{ kind: "program", programId: 5 }, "Programy"],
     [{ kind: "run", characterId: 2 }, null],
@@ -203,6 +207,13 @@ test("the bar follows the page's update: the marked item moves, and the open men
       ["Programy"],
     );
     assert.equal(isOpen(page.root), true);
+    await inAct(() => {
+      bar.update(propsOf({ screen: { kind: "map", mapId: "forest" } }));
+    });
+    assert.deepEqual(
+      all(page.root, "[aria-current]").map((link) => link.textContent),
+      ["Mapy"],
+    );
   });
 });
 
@@ -216,6 +227,7 @@ test("„Wróć do przejścia” stands as a link to the map run's address when 
       links.map((link) => [link.textContent, link.getAttribute("href")]),
       [
         ["Siedziba", "#/"],
+        ["Mapy", "#/mapy"],
         ["Programy", "#/programy"],
         ["Wróć do przejścia · Las · minuta 212", "#/postac/3/przejscie"],
       ],
@@ -225,7 +237,7 @@ test("„Wróć do przejścia” stands as a link to the map run's address when 
     });
     assert.deepEqual(
       all(page.root, ".menu-bar a").map((link) => link.textContent),
-      ["Siedziba", "Programy"],
+      ["Siedziba", "Mapy", "Programy"],
     );
   });
 });
@@ -364,6 +376,7 @@ test("the controls of the open menu stand after „Konto” in the order Tab wal
     const walk = all(page.root, "a, button").map((each) => each.textContent);
     assert.deepEqual(walk, [
       "Siedziba",
+      "Mapy",
       "Programy",
       "Konto",
       "Wyślij ponownie",

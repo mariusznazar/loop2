@@ -1,53 +1,27 @@
 import { ARCHETYPES, CREATED_ARCHETYPE } from "../sim/data/archetypes.js";
 import { BALANCE } from "../sim/data/balance.js";
 import { pieceCount } from "../sim/trip.js";
-import { rehearsalMark, tripWarning } from "./trip-lines.js";
-import { MAPS } from "../sim/data/maps.js";
 import { characterName } from "../sim/game.js";
-import { rowProgram } from "../sim/programs.js";
-import type {
-  CharacterId,
-  Chest,
-  GameState,
-  MapId,
-  ProgramId,
-  SavedProgram,
-  Team,
-} from "../sim/types.js";
+import type { CharacterId, Chest, GameState, Team } from "../sim/types.js";
 import { createAwayReport } from "./away-report.js";
 import { screenAddress } from "./screen-address.js";
 import { createButton } from "./controls/button.js";
-import { createSelectList } from "./controls/select-list.js";
 import { createTextField } from "./controls/text-field.js";
 import {
   chestLines,
   generationLabel,
   loopLine,
-  programPositions,
   resurrectionLine,
-  runWaitingSentence,
   stoppedLoopLine,
 } from "./team-lines.js";
-import { sendMaps, solvingSentence } from "./map-lines.js";
 
 /** The message under the name field when the name typed is empty once trimmed. */
 export const EMPTY_NAME_MESSAGE = "Wpisz imię postaci.";
-
-/** The map's name in a character's row: „Mapa: {name}”, with „ · rozwiązana” once the map is solved. Pure. */
-export function mapLabel(mapId: MapId, solved: boolean): string {
-  return `Mapa: ${MAPS[mapId].name}${solved ? " · rozwiązana" : ""}`;
-}
 
 /** What the headquarters asks for; the app turns each into a simulation call. */
 export type HeadquartersControls = {
   /** Creates a character of the given name, already trimmed and not empty. */
   create(name: string): void;
-  /** Picks the program of a character's row, kept until the character is sent. */
-  pick(characterId: CharacterId, programId: ProgramId): void;
-  /** Sends a character to a map with the program its row shows. */
-  send(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
-  /** Puts a character into an earning loop on a solved map with the program its row shows. */
-  startLoop(characterId: CharacterId, mapId: MapId, programId: ProgramId): void;
   /** Stops a character's earning loop at once. */
   stop(characterId: CharacterId): void;
   /** Closes the whole report on earning loops (D-246). */
@@ -57,8 +31,8 @@ export type HeadquartersControls = {
 export type Headquarters = {
   element: HTMLElement;
   /**
-   * Shows the team, its chest, each row's program and each row's resurrection line of the given
-   * game state, the line read at the real moment `nowMs`.
+   * Shows the team, its chest, each row's loop and each row's resurrection line of the given game
+   * state, the line read at the real moment `nowMs`.
    */
   update(state: GameState, nowMs: number): void;
   /**
@@ -87,13 +61,12 @@ function emptyNote(text: string): HTMLElement {
  * Builds the headquarters: the section of the report on earning loops above it while the report
  * holds a line (D-246); the section „Drużyna” with the team's characters in the order they were
  * created, each with its name as a link to its screen Postać, its generation „pokolenie {n}” from 2
- * up, the name of its archetype, the line of its resurrection on a row of its own, one list
- * „Program:” and the button „Wyślij” for each map, the sentence why the sending is inactive while a
- * manual map run waits, and the creation of a character; and the section „Skrzynka” with the team's
- * chest. Every name of the game's content comes from the data. The name field and its button are
- * made once, so they keep focus; the list of characters is rebuilt when the team, the solved maps or
- * the programs' numbers and names change, and the row's program list is only set to the program the
- * row shows otherwise.
+ * up, the name of its archetype, the line of its resurrection on a row of its own, the line of its
+ * earning loop with „Zatrzymaj” or the line of a stopped loop, and the creation of a character; and
+ * the section „Skrzynka” with the team's chest. The screen sends nobody: a character is sent from
+ * the card of a map on the screen Mapy (D-53). Every name of the game's content comes from the data.
+ * The name field and its button are made once, so they keep focus; the list of characters is
+ * rebuilt when the team changes, and the lines of a loop and of a stop are written in place.
  */
 export function createHeadquarters(
   controls: HeadquartersControls,
@@ -158,52 +131,21 @@ export function createHeadquarters(
   nameField.input.addEventListener("input", () => nameField.setError(null));
 
   let shownTeam = "";
-  let shownSolved: MapId[] | null = null;
   let shownChest = "";
-  let shownPrograms = "";
-  let sendButtons: { element: HTMLButtonElement; characterId: CharacterId }[] =
-    [];
-  let loopButtons: { element: HTMLButtonElement; characterId: CharacterId }[] =
-    [];
   let loopRows: {
     characterId: CharacterId;
     line: HTMLElement;
     stop: HTMLButtonElement;
     stopped: HTMLElement;
   }[] = [];
-  let programLists = new Map<CharacterId, HTMLSelectElement>();
-  let runNotes: HTMLElement[] = [];
   let resurrectionLines: {
     element: HTMLElement;
     characterId: CharacterId;
   }[] = [];
-  let warnings: {
-    element: HTMLElement;
-    characterId: CharacterId;
-    capacity: number;
-    mapId: MapId;
-  }[] = [];
-  let marks: {
-    element: HTMLElement;
-    characterId: CharacterId;
-    capacity: number;
-    mapId: MapId;
-    solved: boolean;
-  }[] = [];
 
-  function renderTeam(
-    shown: Pick<Team, "characters">,
-    solved: MapId[],
-    programs: readonly SavedProgram[],
-  ): void {
-    sendButtons = [];
-    loopButtons = [];
+  function renderTeam(shown: Pick<Team, "characters">): void {
     loopRows = [];
-    marks = [];
-    programLists = new Map();
-    runNotes = [];
     resurrectionLines = [];
-    warnings = [];
     const rows = shown.characters.map((character) => {
       const row = document.createElement("li");
       row.className = "team-member";
@@ -246,17 +188,6 @@ export function createHeadquarters(
         stop: stopButton,
         stopped: stoppedLine,
       });
-      const programLabel = document.createElement("span");
-      programLabel.className = "team-member-program-label";
-      programLabel.textContent = "Program:";
-      const programList = createSelectList(
-        `Program: ${character.name}`,
-        programPositions(programs, programs[0]).options,
-      );
-      programList.addEventListener("change", () =>
-        controls.pick(character.id, Number(programList.value)),
-      );
-      programLists.set(character.id, programList);
       row.append(name);
       if (generation !== null) row.append(generationElement);
       row.append(
@@ -265,64 +196,7 @@ export function createHeadquarters(
         loopLineElement,
         stopButton,
         stoppedLine,
-        programLabel,
-        programList,
       );
-      for (const mapId of sendMaps(solved)) {
-        const isSolved = solved.includes(mapId);
-        const where = document.createElement("span");
-        where.className = isSolved ? "map-label solved" : "map-label";
-        where.textContent = mapLabel(mapId, isSolved);
-        const condition = document.createElement("span");
-        condition.className = "map-solving";
-        condition.textContent = solvingSentence(mapId);
-        const button = createButton("Wyślij", {
-          label: `Wyślij: ${character.name}, mapa ${MAPS[mapId].name}`,
-        });
-        button.addEventListener("click", () =>
-          controls.send(character.id, mapId, Number(programList.value)),
-        );
-        sendButtons.push({ element: button, characterId: character.id });
-        // A map not yet solved has no loop (D-243).
-        const loopButton = isSolved
-          ? createButton("Puść w pętlę", {
-              label: `Puść w pętlę: ${character.name}, mapa ${MAPS[mapId].name}`,
-            })
-          : null;
-        if (loopButton !== null) {
-          loopButton.addEventListener("click", () =>
-            controls.startLoop(character.id, mapId, Number(programList.value)),
-          );
-          loopButtons.push({ element: loopButton, characterId: character.id });
-        }
-        const warning = document.createElement("p");
-        warning.className = "trip-warning";
-        warnings.push({
-          element: warning,
-          characterId: character.id,
-          capacity: character.traits.carryingCapacity,
-          mapId,
-        });
-        const mark = document.createElement("p");
-        mark.className = "rehearsal-mark";
-        mark.hidden = true;
-        marks.push({
-          element: mark,
-          characterId: character.id,
-          capacity: character.traits.carryingCapacity,
-          mapId,
-          solved: isSolved,
-        });
-        row.append(where, condition, button);
-        if (loopButton !== null) row.append(loopButton);
-        row.append(warning, mark);
-      }
-      // One sentence per row, under its lines of sending, while a manual map run waits (To do 8).
-      const runNote = document.createElement("p");
-      runNote.className = "team-member-run-note";
-      runNote.hidden = true;
-      runNotes.push(runNote);
-      row.append(runNote);
       return row;
     });
     list.replaceChildren(...rows);
@@ -394,9 +268,6 @@ export function createHeadquarters(
     update(state: GameState, nowMs: number): void {
       report.update(state);
       drawChest(state.team.chest);
-      const programsKey = JSON.stringify(
-        state.programs.map((saved) => [saved.id, saved.name]),
-      );
       const teamKey = JSON.stringify({
         characters: state.team.characters.map(
           ({ id, name, archetypeId, generation }) => ({
@@ -407,61 +278,12 @@ export function createHeadquarters(
           }),
         ),
       });
-      if (
-        teamKey !== shownTeam ||
-        state.solvedMaps !== shownSolved ||
-        programsKey !== shownPrograms
-      ) {
+      if (teamKey !== shownTeam) {
         shownTeam = teamKey;
-        shownSolved = state.solvedMaps;
-        shownPrograms = programsKey;
-        renderTeam(state.team, state.solvedMaps, state.programs);
+        renderTeam(state.team);
       }
-      // Each row shows the program of D-170 as the simulation gives it.
-      for (const [characterId, programList] of programLists)
-        programList.value = programPositions(
-          state.programs,
-          rowProgram(state, characterId),
-        ).value;
-      // One map run at a time: while one goes on, no other character can be sent. A character in
-      // a loop can neither be sent nor put into another loop; the others can (D-243).
-      const inLoop = (characterId: CharacterId): boolean =>
-        Object.hasOwn(state.loops, characterId);
-      for (const { element, characterId } of sendButtons)
-        element.disabled = state.run !== null || inLoop(characterId);
-      for (const { element, characterId } of loopButtons)
-        element.disabled =
-          state.run?.character.id === characterId || inLoop(characterId);
-      // While a manual map run waits or has ended, every row's sending is inactive, so each row says
-      // why (To do 8, question 3).
-      for (const note of runNotes)
-        setLine(
-          note,
-          state.run === null ? null : runWaitingSentence(state.run.mapId),
-        );
       drawLoops(state);
       drawResurrectionLines(state, nowMs);
-      for (const warning of warnings) {
-        const text = tripWarning(
-          rowProgram(state, warning.characterId).program.tripPlan,
-          warning.capacity,
-          MAPS[warning.mapId],
-        );
-        warning.element.hidden = text === null;
-        warning.element.textContent = text ?? "";
-      }
-      for (const mark of marks) {
-        setLine(
-          mark.element,
-          rehearsalMark(
-            mark.solved,
-            rowProgram(state, mark.characterId).program.tripPlan,
-            mark.capacity,
-            MAPS[mark.mapId],
-            state.team.chest,
-          ),
-        );
-      }
     },
   };
 }
