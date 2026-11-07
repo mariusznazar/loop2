@@ -65,6 +65,24 @@ The way into a map run:
 4. After a reload the same map run comes back paused, with „(pauza)” in that line. Click „Wznów”.
    A map run also stops by itself at a discovery, again with „Wznów”.
 
+## Read the console
+
+`playwright-cli console` lists the console of the open page; `playwright-cli console error` keeps
+the errors. The game writes one line of its own when something went wrong that no code of it
+handled, and the screen then says „Coś w grze się zepsuło — odśwież stronę.” under the menu bar
+(or in the card):
+
+```text
+[ERROR] uncaught kind=TypeError code=none place=view/last-resort.installLastResort @ https://127.0.0.1:53211/main.js:8
+```
+
+The line gives the kind of the error, its code and the place that handled it, never its text, so
+reproduce the error from the steps that led to it. The same line stands once until the page is
+reloaded. Entries the browser makes itself for a failed request are no failure of the game: a
+`Failed to load resource … 401 (Unauthorized)` for the account request before anyone has signed in,
+or a 404 for the favicon, are ordinary; only a line that begins `uncaught` or `saved-game-load` is
+the game's own.
+
 ## Compose a game state
 
 Playing reaches the combat actions in the Understanding, or a bought branch, only after hours. Build
