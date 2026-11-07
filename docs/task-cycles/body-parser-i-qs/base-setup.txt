@@ -1,0 +1,8 @@
+npm ci exit 0
+venv exit 0
+pip exit 0
+ruff 0.17.1
+ShellCheck - shell script analysis tool
+version: 0.11.0
+license: GNU General Public License, version 3
+website: https://www.shellcheck.net
