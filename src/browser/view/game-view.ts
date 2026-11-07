@@ -630,7 +630,10 @@ export function createGameView(options: GameViewOptions): GameView {
       (active as HTMLElement).blur();
   }
 
-  /** The DOM screen that shows for `screen`; none for Postać, which is built on entering. */
+  /**
+   * The DOM screen that shows for `screen`; none for Postać, which is built on entering, nor for the
+   * addresses of Mapy, which have no screen yet.
+   */
   function screenHolder(screen: Screen): HTMLElement | null {
     switch (screen.kind) {
       case "headquarters":
@@ -641,6 +644,8 @@ export function createGameView(options: GameViewOptions): GameView {
       case "run":
         return runScreen.element;
       case "character":
+      case "maps":
+      case "map":
         return null;
     }
   }
