@@ -442,7 +442,7 @@ test("„Zapisz” of a copy whose program was deleted saves it as a new program
       renamed(send(twoPrograms(), { ...SENT, programId: 2 }, 0).state),
       2,
     ).state;
-    const { view } = await viewOf(start);
+    const { view, address } = await viewOf(start);
     await press(headerButton(root, "Zakończ"));
     assert.equal(byClass(root, "end-question-note").length, 0);
     await press(answer(root, "Zapisz"));
@@ -463,6 +463,15 @@ test("„Zapisz” of a copy whose program was deleted saves it as a new program
     assert.deepEqual(saved.programs[1].program, RENAMED_PROGRAM);
     assert.equal(saved.lastUsedPrograms[1], 3);
     assert.equal(shownScreen(root), "character");
+    await inAct(() => address.follow("#/programy"));
+    const current = byClass(root, "program-list-item").find(
+      (item) => item.getAttribute("aria-current") === "page",
+    );
+    assert.equal(
+      current.textContent,
+      "Program 2",
+      "Programy shows the new one",
+    );
     await inAct(() => view.dispose());
   });
   await onPage(async ({ root }) => {
