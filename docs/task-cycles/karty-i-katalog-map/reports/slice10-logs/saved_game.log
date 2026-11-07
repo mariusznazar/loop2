@@ -1,0 +1,43 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/sim/saved-game.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a document of the current version loads into the state it describes (6.2938ms)
+✔ the current version is the one the document of the current version is written with (0.123ms)
+✔ the server's save of the current version loads into the game it holds, its revision left out (1.6355ms)
+✔ a map run that goes on comes back paused, at its game minute, pace and carried real time (1.4166ms)
+✔ a map run that ended comes back as it ended (4.2072ms)
+✔ a map run of a solved map comes back marked, and its completion with the empty deposit (2.9903ms)
+✔ a map run moving the character to a neighbouring tile loads with the move (1.1077ms)
+✔ the load changes nothing passed to it, and the state it gives shares nothing with it (3.9761ms)
+✔ a moment of readiness below zero loads, as it is a safe integer of any sign (0.916ms)
+✔ a document of another version is refused as version, whatever its game holds (0.9952ms)
+✔ the document of version 1 is refused as version, whatever its game holds (0.3734ms)
+✔ the document of version 2 is refused as version, whatever its game holds (0.2304ms)
+✔ a document whose character's archetype the data lacks is refused as archetype (0.6957ms)
+✔ a value that is no object with a whole version is refused as shape (0.3841ms)
+✔ a crafted document of the current version is refused whole as shape (144.5778ms)
+✔ no value a document can hold, at any place of it, throws out of the load (15045.6859ms)
+✔ an error of the code in the load is no refusal: it leaves the load as the error it is (2.701ms)
+✔ a document at the edges of what the earning loops, the report and the save time admit loads (11.0189ms)
+✔ the load shares none of the earning loops, the stopped loops or the report with the document (1.4389ms)
+✔ a new game holds no earning loop, no stopped loop, no report and no save time (0.2985ms)
+✔ a state with its save time is a copy holding the moment, the state passed left as it was (0.2382ms)
+✔ a moment that is no safe integer gives no save time (0.4373ms)
+✔ a state stamped by a clock set before 1970 loads back from its saved document (1.408ms)
+✔ the saved document of a state never stamped is refused as shape (0.235ms)
+✔ the saved document of a state is the current version beside a copy of the state, shared nowhere (2.0519ms)
+✔ a game state the simulation made loads back from its saved document (78.5283ms)
+✔ the largest trip count the game accepts loads back, and one beyond the safe integers the game refuses (0.4918ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15433.1545
