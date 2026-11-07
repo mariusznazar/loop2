@@ -28,7 +28,7 @@ test("the condition sentence is the map's name, a dash and the solving text of i
   );
 });
 
-test("the headquarters hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
+test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
   assert.deepEqual(sendMaps(), ["forest", "forestDeep"]);
   assert.deepEqual(sendMaps([]), ["forest"]);
   assert.deepEqual(sendMaps(["forest"]), ["forest", "forestDeep"]);
@@ -65,40 +65,41 @@ test("the heading names the map, with the solved mark and the opener's name from
 // the data gives, and a minutes-without-fire line where the map does not cool the body.
 test("the terrain lines give the grid, the entrance, the step and the minutes without fire", () => {
   assert.deepEqual(terrainLines(forest), [
-    "siatka 4 × 4",
-    "wejście stałe",
-    "krok 5 min",
-    "bez ognia 83 min — otoczenie 25 °C",
+    { text: "siatka 4 × 4", note: null },
+    { text: "wejście stałe", note: null },
+    { text: "krok 5 min", note: null },
+    { text: "bez ognia 83 min — otoczenie 25 °C", note: null },
   ]);
   assert.deepEqual(terrainLines(forestDeep), [
-    "siatka 5 × 5",
-    "wejście losowe",
-    "krok 5 min",
-    "bez ognia 33 min — otoczenie 7 °C",
+    { text: "siatka 5 × 5", note: null },
+    { text: "wejście losowe", note: null },
+    { text: "krok 5 min", note: null },
+    { text: "bez ognia 33 min — otoczenie 7 °C", note: null },
   ]);
 });
 
 // D-327: a step above the usual one (5 minutes, the step most maps of the data give) costs more, one
-// below it costs less. At 37 °C the body never cools below the chill threshold, so the minutes
-// without fire are left out. Catches a note on the usual step, a note with the wrong direction, and a
-// minutes line for a map that does not cool the body.
-test("a step above the usual costs more, one below costs less, and a map that does not cool leaves the minutes out", () => {
+// below it costs less, and the note stands apart from the line's text, as the renewal of a resource
+// does. At 37 °C the body never cools below the chill threshold, so the minutes without fire are
+// left out. Catches a note on the usual step, a note with the wrong direction, a note left in the
+// text instead of standing apart, and a minutes line for a map that does not cool the body.
+test("a step above the usual costs more, one below costs less, the note standing apart, and a map that does not cool leaves the minutes out", () => {
   assert.deepEqual(terrainLines({ ...forest, stepMinutes: 9 }), [
-    "siatka 4 × 4",
-    "wejście stałe",
-    "krok 9 min — drożej niż zwykle",
-    "bez ognia 83 min — otoczenie 25 °C",
+    { text: "siatka 4 × 4", note: null },
+    { text: "wejście stałe", note: null },
+    { text: "krok 9 min", note: " — drożej niż zwykle" },
+    { text: "bez ognia 83 min — otoczenie 25 °C", note: null },
   ]);
   assert.deepEqual(terrainLines({ ...forest, stepMinutes: 2 }), [
-    "siatka 4 × 4",
-    "wejście stałe",
-    "krok 2 min — taniej niż zwykle",
-    "bez ognia 83 min — otoczenie 25 °C",
+    { text: "siatka 4 × 4", note: null },
+    { text: "wejście stałe", note: null },
+    { text: "krok 2 min", note: " — taniej niż zwykle" },
+    { text: "bez ognia 83 min — otoczenie 25 °C", note: null },
   ]);
   assert.deepEqual(terrainLines({ ...forest, ambientTemperature: 37 }), [
-    "siatka 4 × 4",
-    "wejście stałe",
-    "krok 5 min",
+    { text: "siatka 4 × 4", note: null },
+    { text: "wejście stałe", note: null },
+    { text: "krok 5 min", note: null },
   ]);
 });
 

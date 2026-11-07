@@ -14,7 +14,7 @@ import type {
 
 /**
  * The sentence under a character's sending while a manual map run waits or has ended (To do 8,
- * question 3): why „Wyślij” and „Puść w pętlę” are inactive, the map's name from the data. Pure.
+ * question 3): why „Wejdź” and „Puść w pętlę” are inactive, the map's name from the data. Pure.
  */
 export function runWaitingSentence(mapId: MapId): string {
   return `Przejście na mapie ${MAPS[mapId].name} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.`;

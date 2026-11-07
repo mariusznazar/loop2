@@ -1299,7 +1299,7 @@ header .failure-line {
   color: var(--text-secondary);
 }
 
-/* The mark of a rehearsal the loop cannot repeat, under „Wyślij”, in `warning` as the line of D-188 (D-251). */
+/* The mark of a rehearsal the loop cannot repeat, under „Wejdź”, in `warning` as the line of D-188 (D-251). */
 .rehearsal-mark {
   flex-basis: 100%;
   margin: 0;
@@ -1915,7 +1915,7 @@ footer {
 
 /*
  * The card of a map: the name in `text-strong`, „rozwiązana” in `positive` and „odsłania ją {mapa}”
- * in `text-secondary` beside it (D-327); the names of its parts in `text-label`, their content in
+ * in `text-secondary` beside it, each after a „ · ” in `text-secondary` (D-327); the names of its parts in `text-label`, their content in
  * `text`. A step note is a note, so `text-secondary`; „nie odnawia się” and the caps are what the
  * player must not miss, so `warning` (D-39).
  */
@@ -1938,6 +1938,7 @@ footer {
   color: var(--positive);
 }
 
+.maps-card-sep,
 .maps-card-opened-by {
   color: var(--text-secondary);
 }

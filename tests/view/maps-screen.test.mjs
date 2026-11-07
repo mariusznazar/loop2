@@ -276,8 +276,14 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
     const understanding = JSON.stringify(state.understanding);
     const { screen } = await mount(page, propsOf(state, "forest"));
     assert.equal(text(page.root, ".maps-card-solved"), "rozwiązana");
+    // The marks follow the name joined by „ · ”, as To do 4 gives it and as the old Loop joins them.
+    assert.equal(text(page.root, ".maps-card-heading"), "Las · rozwiązana");
     await inAct(() => screen.update(propsOf(state, "forestDeep")));
     assert.equal(text(page.root, ".maps-card-name"), "Las — głębiej");
+    assert.equal(
+      text(page.root, ".maps-card-heading"),
+      "Las — głębiej · odsłania ją Las",
+    );
     assert.equal(text(page.root, ".maps-card-opened-by"), "odsłania ją Las");
     assert.equal(page.root.querySelector(".maps-card-solved"), null);
     assert.deepEqual(texts(page.root, ".maps-card-part-name"), [

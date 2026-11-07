@@ -33,6 +33,9 @@ export type CardHeading = {
   openedBy: string | null;
 };
 
+/** A line of „Teren”: its text, and the note on the step, which stands apart, where the line has one. */
+export type TerrainLine = { text: string; note: string | null };
+
 /** A resource of „Leży tu”: its identifier for the icon, its line, and its renewal, which stands apart. */
 export type ResourceLine = {
   id: ResourceId;
@@ -62,21 +65,30 @@ export function cardHeading(map: MapDef, solved: boolean): CardHeading {
 /**
  * The lines of „Teren” (D-327): the grid, the entrance, the step with a note where it stands
  * against the usual step, and the minutes without fire with the temperature, left out where the map
- * does not cool the body below the chill threshold. Pure.
+ * does not cool the body below the chill threshold. The note comes apart from the step's text, so
+ * the view draws it in its own role. Pure.
  */
-export function terrainLines(map: MapDef): string[] {
+export function terrainLines(map: MapDef): TerrainLine[] {
   const usual = usualStep(Object.values(MAPS));
-  let note = "";
+  let note: string | null = null;
   if (map.stepMinutes > usual) note = " — drożej niż zwykle";
   else if (map.stepMinutes < usual) note = " — taniej niż zwykle";
   const minutes = minutesWithoutFire(map);
   return [
-    `siatka ${map.width} × ${map.height}`,
-    map.entrance === null ? "wejście losowe" : "wejście stałe",
-    `krok ${map.stepMinutes} min${note}`,
+    { text: `siatka ${map.width} × ${map.height}`, note: null },
+    {
+      text: map.entrance === null ? "wejście losowe" : "wejście stałe",
+      note: null,
+    },
+    { text: `krok ${map.stepMinutes} min`, note },
     ...(minutes === null
       ? []
-      : [`bez ognia ${minutes} min — otoczenie ${map.ambientTemperature} °C`]),
+      : [
+          {
+            text: `bez ognia ${minutes} min — otoczenie ${map.ambientTemperature} °C`,
+            note: null,
+          },
+        ]),
   ];
 }
 

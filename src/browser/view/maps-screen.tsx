@@ -108,9 +108,6 @@ type FocusPlumbing = {
   owe: (owed: OwedFocus) => void;
 };
 
-/** The step note of a „Teren” line, such as „ — drożej niż zwykle”, which stands in its own role. */
-const STEP_NOTE = /^(.*?)( — (?:drożej|taniej) niż zwykle)$/;
-
 /** The list of the maps open to the player, the map named marked. */
 function MapList({ state, mapId }: { state: GameState; mapId: MapId | null }) {
   return (
@@ -149,10 +146,16 @@ function MapCard({ mapId, solved }: { mapId: MapId; solved: boolean }) {
       <div className="maps-card-heading">
         <h2 className="maps-card-name">{heading.name}</h2>
         {heading.solved === null ? null : (
-          <span className="maps-card-solved">{heading.solved}</span>
+          <>
+            <span className="maps-card-sep"> · </span>
+            <span className="maps-card-solved">{heading.solved}</span>
+          </>
         )}
         {heading.openedBy === null ? null : (
-          <span className="maps-card-opened-by">{heading.openedBy}</span>
+          <>
+            <span className="maps-card-sep"> · </span>
+            <span className="maps-card-opened-by">{heading.openedBy}</span>
+          </>
         )}
       </div>
       <section className="maps-card-part">
@@ -162,21 +165,14 @@ function MapCard({ mapId, solved }: { mapId: MapId; solved: boolean }) {
       <section className="maps-card-part">
         <h3 className="maps-card-part-name">Teren</h3>
         <ul className="maps-card-lines">
-          {terrainLines(map).map((line) => {
-            const split = STEP_NOTE.exec(line);
-            return (
-              <li key={line}>
-                {split === null ? (
-                  line
-                ) : (
-                  <>
-                    {split[1]}
-                    <span className="maps-card-note">{split[2]}</span>
-                  </>
-                )}
-              </li>
-            );
-          })}
+          {terrainLines(map).map((line) => (
+            <li key={line.text}>
+              {line.text}
+              {line.note === null ? null : (
+                <span className="maps-card-note">{line.note}</span>
+              )}
+            </li>
+          ))}
         </ul>
       </section>
       <section className="maps-card-part">
