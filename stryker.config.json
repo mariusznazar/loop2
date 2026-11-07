@@ -32,6 +32,7 @@
       "tests/sim/hex.test.mjs",
       "tests/sim/layout.test.mjs",
       "tests/sim/loop.test.mjs",
+      "tests/sim/map-card.test.mjs",
       "tests/sim/program-counts.test.mjs",
       "tests/sim/program-list.test.mjs",
       "tests/sim/program.test.mjs",
