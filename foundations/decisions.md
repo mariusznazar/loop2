@@ -3108,7 +3108,7 @@ The program of a new game is named „Program”, and a new program „Program 2
   - violates: two programs named „Program 2” on the list; a name of spaces alone taken; a name cut at a length
 - **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jak nazywa się program nowej gry i nowy program, czy dwa programy mogą nosić tę samą nazwę i czy nazwa ma limit długości?"
 
-*Rationale:* the player tells programs apart by their names on the select lists of the program panel and of the headquarters, and two names that differ in letter case alone read there as one. Accepted with it: the first program „Program” holds the rule group „Program”, so the panel shows the same word twice.
+*Rationale:* the player tells programs apart by their names on the select lists of the program panel and of the card of a map, and two names that differ in letter case alone read there as one. Accepted with it: the first program „Program” holds the rule group „Program”, so the panel shows the same word twice.
 *Rejected:* names that may repeat, as characters' names may (D-52) — two positions of one select list would read the same; a limit to a name's length, which loop has — nothing in the game asks for one.
 
 ### D-170 — Where does the player pick the program a character enters a map with, and which one stands there first?
@@ -5467,8 +5467,8 @@ the one place of the look of both.
 - **Relations:** derives from D-44 · narrows D-03
 - **Verification:** an agent compares a change with the decision:
   - complies: a new attribute of the button written in both forms in one change; a DOM screen left
-    on the DOM form by a change that moves another screen; a new section of the headquarters built
-    in DOM; a new screen in React that imports a pure function of a DOM module
+    on the DOM form by a change that moves another screen; a new section of the waiting screen of
+    the sign-in check built in DOM; a new screen in React that imports a pure function of a DOM module
   - violates: a React component that wraps the DOM function; a class that only the React form sets;
     a React form with no case in the test that compares the two; a new screen that builds its
     DOM elements with `document.createElement` after the pattern of a DOM module
@@ -7084,7 +7084,7 @@ Where the bring list of the program picked is empty, „Pętla nic nie zarobi do
 
 ### D-327 — What does the card of a map hold?
 
-The card of a map follows the card of the predecessor game, loop, with its numbers taken from the map's data, and a part the map lacks stands nowhere: the heading names the map and, once it is solved, „rozwiązana” in `positive`, and for a map that another map opens „odsłania ją {mapa}” in `text-secondary`; „Żąda” holds the sentence of the map's solving condition (D-133); „Teren” holds the grid, the entry, the step, with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other than the usual one, and the minutes without fire with the temperature of the surroundings; „Leży tu” holds each resource with its icon, the approximate number of tiles that hold it, its stock and its renewal, or „nie odnawia się” in `warning`; „Czyha” holds the creature with its health and blow, the chance of an attack in a minute, the quiet time and one total number, the mean gap between attacks counted with that quiet time; „Odbiera” holds the entry cap and the exit cap, each in `warning`. It departs from the card of the predecessor game in five things only: the line of an attack gives that one total number in place of the quiet time and the mean gap after it, an unsolved map shows no „otwarta”, „Odbiera” has no „gasi: {umiejętność}”, the creature stands with no icon, and „Żąda” is the one sentence of the condition from the data. The usual step is the step most maps' data give, the first of the data's order on a tie.
+The card of a map follows the card of the predecessor game, loop, with its numbers taken from the map's data, and a part the map lacks stands nowhere: the heading names the map and, once it is solved, „rozwiązana” in `positive`, and for a map that another map opens „odsłania ją {mapa}” in `text-secondary`; „Żąda” holds the sentence of the map's solving condition (D-133); „Teren” holds the grid, the entry, the step, with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other than the usual one (D-333), and the minutes without fire (D-333) with the temperature of the surroundings; „Leży tu” holds each resource with its icon, the approximate number of tiles that hold it, its stock and its renewal, or „nie odnawia się” in `warning`; „Czyha” holds the creature with its health and blow, the chance of an attack in a minute, the quiet time and one total number, the mean gap between attacks counted with that quiet time; „Odbiera” holds the entry cap and the exit cap, each in `warning`. It departs from the card of the predecessor game in five things only: the line of an attack gives that one total number in place of the quiet time and the mean gap after it, an unsolved map shows no „otwarta”, „Odbiera” has no „gasi: {umiejętność}”, the creature stands with no icon, and „Żąda” is the one sentence of the condition from the data.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -7171,3 +7171,18 @@ In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it s
 
 *Rationale:* the view names no map by its identifier, so an address built from the data needs nothing in the code of the view and nothing new in the data. Accepted with it: an English word with a capital letter in an address that is otherwise Polish and in lower case.
 *Rejected:* the same identifier in lower case with a hyphen, `#/mapy/forest-deep` — a rule of conversion and a guard that two maps do not give one address; the Polish name without diacritics, `#/mapy/las-glebiej` — a new field in the data of each map, or an address that changes with the name of the map.
+
+### D-333 — How are the numbers of the card of a map counted, and where?
+
+The numbers of the card of a map that follow a rule of the game are computed by functions of the simulation, from the map's data and beside the rules they follow, and the view only writes them out. The minutes without fire are the game minutes that a body, from its starting temperature and with no warmth, goes through on that map before the game minute in which it is first chilled, and the item stands only where the map cools the body below the threshold of chill; the tiles that hold a resource are its density times the tiles of the grid, rounded to the nearest whole; the mean gap between attacks is the cooldown of the attack plus the reciprocal of its chance in a game minute, rounded to a whole minute (D-142). The usual step is the step most maps' data give, the first of the data's order on a tie.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-142 · derives from D-327
+- **Verification:** an agent compares a change with the decision:
+  - complies: Las with „bez ognia 83 min” and Las — głębiej with „bez ognia 33 min”, the minute in which a mage is first chilled being 84 and 34; „patyk — ≈ 11 z 16 kafelków” at Las, from the density 0.7 and the 16 tiles of its grid; „średnio co ≈ 280 min” for the wolf, from the cooldown 180 and the chance 0.01; the step 5 min of both maps usual, so no note stands beside it; a map whose ambient temperature does not cool the body below the threshold of chill with no item „bez ognia”
+  - violates: the view counting the minutes without fire from the ambient temperature of a map by a formula of its own; the mean gap counted as the cooldown alone or as the reciprocal of the chance alone; the usual step a number written in the view or in the balance data
+- **Origin:** none
+
+*Rationale:* the player reads on the card what a map asks, and the numbers come out of the rules of the game, the cooling of the body and the spacing of attacks, which stand in the simulation. Counted there once, the card follows a change of balance by itself. Accepted with it: the simulation holds functions that only the card uses, and a usual step that is the step most maps give changes when a map with another step arrives, the notes beside the steps moving with it.
+*Rejected:* the view counting the numbers — the cooling of the body and the spacing of attacks would be written twice and drift apart at the next change of balance; a value „usual step” in the balance data — a number no settled source gives; a constant of the view — a number of the game's content outside its data.
