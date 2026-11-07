@@ -12,7 +12,14 @@
  * render or an effect, since it may dispose the card from there. Nothing runs when the module is
  * imported.
  */
-import { createRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  createContext,
+  createRef,
+  use,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type {
   ChangeEvent,
   FormEvent,
@@ -44,6 +51,7 @@ import {
 } from "./controls/react-text-field.js";
 import { CreditsSection } from "./credits-section.js";
 import type { ConfirmationNotice, PageAddress } from "./email-confirmation.js";
+import { FAILURE_SENTENCE } from "./last-resort.js";
 import { resetOutcome } from "./password-reset.js";
 import type { ResetEnding } from "./password-reset.js";
 
@@ -71,6 +79,13 @@ export type AccountCardOptions = {
   signedIn: SignedIn;
   /** Given, the card stands in „Ustaw nowe hasło” and has no other state. */
   reset: AccountCardReset | null;
+  /** An error that no code of the game handled came before this card: its sentence stands from the start (D-323). */
+  failed: boolean;
+  /**
+   * React took the card down after an error that no code of the game handled, and put the sentence
+   * of the failure alone in its place; called with the error, for the page to write its line (D-323).
+   */
+  onUncaught: (error: unknown) => void;
 };
 
 export type AccountCard = {
@@ -78,6 +93,13 @@ export type AccountCard = {
   element: HTMLElement;
   /** Moves keyboard focus to the first field of the state the card stands in. */
   focus(): void;
+  /**
+   * An error that no code of the game handled came: the sentence of the failure stands in the card
+   * under the button of its form, where the sentence of a refusal stands, until the card goes
+   * (D-323). Nothing happens to a card React took down, which
+   * already holds it.
+   */
+  fail(): void;
   /** Unmounts the card and takes it out of the page; an answer still awaited is then ignored. */
   dispose(): void;
 };
@@ -137,6 +159,9 @@ function useCardLock(isDisposed: () => boolean): CardLock {
     },
   };
 }
+
+/** Whether an error nothing handled has come: every form then shows its sentence under its button (D-323). */
+const FailedContext = createContext(false);
 
 /** One field's value, the message under it and its input. */
 function useField(sharedRef?: RefObject<HTMLInputElement | null>) {
@@ -230,6 +255,7 @@ function CardForm({
   exit,
 }: CardFormProps) {
   const submitButton = useRef<HTMLButtonElement>(null);
+  const failed = use(FailedContext);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -255,6 +281,7 @@ function CardForm({
           buttonRef={submitButton}
         />
         <ReactFormWarning sentence={warning} />
+        {failed ? <ReactFormWarning sentence={FAILURE_SENTENCE} /> : null}
         {note === undefined ? null : <ReactFormNote sentence={note} />}
       </form>
       {exit === undefined ? null : (
@@ -555,7 +582,10 @@ function PageSentence({ notice }: { notice: ConfirmationNotice }) {
   );
 }
 
-type CardProps = AccountCardOptions & {
+type CardProps = Pick<
+  AccountCardOptions,
+  "client" | "sentence" | "signedIn" | "reset"
+> & {
   firstField: RefObject<HTMLInputElement | null>;
   isDisposed: () => boolean;
 };
@@ -635,24 +665,63 @@ function Card({
 }
 
 /**
+ * The sentence of the failure alone, in a panel of the card's width: what stands in the card's
+ * place when React has taken the card down (D-323, D-262).
+ */
+function createFailureCard(): HTMLElement {
+  const element = document.createElement("div");
+  element.className = "account-card-failure";
+  const sentence = document.createElement("p");
+  sentence.className = "form-warning";
+  sentence.setAttribute("role", "alert");
+  sentence.textContent = FAILURE_SENTENCE;
+  element.append(sentence);
+  return element;
+}
+
+/**
  * Builds the card in an element of its own, for the page to place. The render is synchronous, so
  * the card stands in the element when this returns and the page has no frame with an empty screen.
- * Each opening is a new root: nothing typed outlives `dispose()`.
+ * Each opening is a new root: nothing typed outlives `dispose()`. The root has the handling of its
+ * own for an error nothing handled: React then takes the card down, and the sentence of the
+ * failure stands alone in its place, outside React, while the page is told (D-323).
  */
 export function createAccountCard(options: AccountCardOptions): AccountCard {
   const element = document.createElement("div");
   element.className = "account-card-screen";
-  const root = createRoot(element);
+  let failed = options.failed;
+  let down = false;
+  const root = createRoot(element, {
+    onUncaughtError(error): void {
+      down = true;
+      element.replaceChildren(createFailureCard());
+      options.onUncaught(error);
+    },
+  });
   const firstField = createRef<HTMLInputElement>();
   let disposed = false;
-  flushSync(() => {
+  function draw(): void {
     root.render(
-      <Card {...options} firstField={firstField} isDisposed={() => disposed} />,
+      <FailedContext value={failed}>
+        <Card
+          client={options.client}
+          sentence={options.sentence}
+          signedIn={options.signedIn}
+          reset={options.reset}
+          firstField={firstField}
+          isDisposed={() => disposed}
+        />
+      </FailedContext>,
     );
-  });
+  }
+  flushSync(draw);
   return {
     element,
     focus: () => firstField.current?.focus(),
+    fail(): void {
+      failed = true;
+      if (!down && !disposed) draw();
+    },
     dispose(): void {
       disposed = true;
       root.unmount();

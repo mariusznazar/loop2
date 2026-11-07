@@ -46,9 +46,11 @@ header h1 {
 /*
  * The line of saving the game state, on a line of its own under the menu bar, as wide as the content
  * under it, in `warning` (D-208, D-39, D-280); hidden while it says nothing. It stands outside the
- * menu „Konto”, which a closed menu would hide (D-97, D-208).
+ * menu „Konto”, which a closed menu would hide (D-97, D-208). The line of a failure nothing handled
+ * stands beside it in the same way, above it (D-323).
  */
-header .save-line {
+header .save-line,
+header .failure-line {
   box-sizing: border-box;
   width: 100%;
   max-width: 1344px;
@@ -574,8 +576,13 @@ header .save-line {
   image-rendering: pixelated;
 }
 
-/* The login card (D-96): one panel, 400 px wide, or as wide as a narrower window lets it. */
-.account-card {
+/*
+ * The login card (D-96): one panel, 400 px wide, or as wide as a narrower window lets it. The panel
+ * of the failure, with the sentence alone, stands in its place when React has taken the card down
+ * (D-323, D-262).
+ */
+.account-card,
+.account-card-failure {
   box-sizing: border-box;
   width: 400px;
   max-width: 100%;

@@ -106,6 +106,14 @@ export type GameView = {
   /** The current game state, real time passed first, as a document to keep in the page (D-211). */
   keep(): KeptGame;
   /**
+   * Stops the game taking any change, for good (D-323): after an error that no code of the game
+   * handled the store rejects every later result of the simulation, so the clock and the buttons
+   * change nothing, and the clock stops, so that a later read of the state for a save makes no
+   * reading of it, whose error would come back with every save. The saver goes on as D-207, D-208
+   * and D-97 give, with the state the game held. Calling it again does nothing.
+   */
+  halt(): void;
+  /**
    * Ends this game in the page: its clock and its saver stop, it stops listening to the address,
    * and its elements leave the page, taking their event handlers with them. It changes no screen
    * and pauses nothing. Calling it again does nothing.
@@ -161,12 +169,14 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * in a death or a completion and every result in which a loop's map run ended is a moment of saving
  * (D-207). Each reading of the clock rewrites the resurrection lines of the screen that shows,
  * Siedziba's or Postać's, also while a map run waits (D-217). The clock catches up the earning
- * loops of a loaded state as the last step of building (D-247). Nothing here runs when the module
- * is imported.
+ * loops of a loaded state as the last step of building (D-247). After `halt()` the store replaces
+ * the state no more (D-323). Nothing here runs when the module is imported.
  */
 export function createGameView(options: GameViewOptions): GameView {
   const { address } = options;
   let state: GameState = options.state;
+  /** The game takes no change any more: an error nothing handled stopped it (D-323). */
+  let halted = false;
 
   const element = document.createElement("div");
   element.className = "game-view";
@@ -233,7 +243,7 @@ export function createGameView(options: GameViewOptions): GameView {
   const store: GameStore = {
     get: () => state,
     apply(result: GameResult): void {
-      if (result.state === state) return;
+      if (halted || result.state === state) return;
       const ended =
         state.run !== null &&
         !mapRunEnded(state.run) &&
@@ -606,6 +616,10 @@ export function createGameView(options: GameViewOptions): GameView {
         document: savedGame(withSaveTime(state, clock.moment())),
         revision: saver.revision(),
       };
+    },
+    halt(): void {
+      halted = true;
+      clock.dispose();
     },
     dispose(): void {
       if (disposed) return;

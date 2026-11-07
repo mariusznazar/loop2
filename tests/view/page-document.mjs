@@ -30,7 +30,7 @@ const PAGE_GLOBALS = [
 ];
 // React's reports carry no mark of their own, so lines are told apart by what
 // the product writes, and any other line on console.error fails the case.
-const PRODUCT_LINE = /^saved-game-load /;
+const PRODUCT_LINE = /^(saved-game-load|uncaught) /;
 const REPORT_LIMIT = 300;
 
 /**
