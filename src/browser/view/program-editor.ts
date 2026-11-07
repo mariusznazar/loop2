@@ -29,7 +29,7 @@ import type {
   ResourceId,
   RuleGroup,
 } from "../sim/types.js";
-import { sendMaps } from "./headquarters.js";
+import { sendMaps } from "./map-lines.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
@@ -171,7 +171,7 @@ export function offeredItems(state: GameState): ItemId[] {
 
 /**
  * The resources the resource selects offer, in the map's order: those of the run's map during a map
- * run, otherwise of the first map the headquarters sends characters to, that the repertoire holds as
+ * run, otherwise of the first map of the list of maps (`sendMaps`), that the repertoire holds as
  * items. Pure.
  */
 export function offeredResources(state: GameState): ResourceId[] {

@@ -195,7 +195,8 @@ header .failure-line {
 /*
  * A screen of the game (D-280, D-282): a grid whose columns are areas of their own, each a block on
  * `panel` with text in `text`, so a narrower layout places them one under the other. Programy has
- * two, the list of programs and the program panel, with the list the narrower; Siedziba holds the
+ * two, the list of programs and the program panel, with the list the narrower, and Mapy has two of the
+ * same widths, the list of maps and the card of the map picked; Siedziba holds the
  * headquarters alone; the screen of a map run holds its header over a grid of three areas of its
  * own, below. The screens that do not show are hidden with `[hidden]`.
  */
@@ -206,7 +207,8 @@ header .failure-line {
   align-items: start;
 }
 
-.screen.programs-screen {
+.screen.programs-screen,
+.screen.maps-screen {
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
@@ -231,6 +233,7 @@ header .failure-line {
 
 @media (max-width: 720px) {
   .screen.programs-screen,
+  .screen.maps-screen,
   .screen.programs-screen.with-rule-panel {
     grid-template-columns: 1fr;
   }
@@ -309,7 +312,7 @@ header .failure-line {
  * control that waits for a server: the button disabled under a changed text and the fields of its
  * form disabled, which the disabled rules below draw (D-44). The button has four looks beside the
  * plain one: the destructive button, the button selected in its group, the secondary action and
- * the tab, each below, and the main look of the button that sends a form.
+ * the tab, each below, and the main look of the button that sends a form or is of the kind `main`.
  */
 .button,
 .select-list,
@@ -348,13 +351,16 @@ header .failure-line {
 }
 
 /*
- * The main look, of the button that sends its form, recognised by its type, one on a form: the
- * background of the card, text in `text-strong` at the emphasis weight and a frame in the colour of
- * that text, so the frame is part of the text (D-40). Under the pointer it gets the background
- * `highlight` from the rule below, its frame and text unchanged. While it waits it looks as every
- * disabled button does, which the rule after the disabled rule below draws.
+ * The main look, of the button that sends its form, recognised by its type, one on a form, and of
+ * the button of the kind `main`, which sends no form (D-274, „Wejdź” at a character in the card of a
+ * map): the background of the card, text in `text-strong` at the emphasis weight and a frame in the
+ * colour of that text, so the frame is part of the text (D-40). Under the pointer it gets the
+ * background `highlight` from the rule below, its frame and text unchanged. While it waits or is
+ * disabled it looks as every disabled button does, which the rule after the disabled rule below
+ * draws.
  */
-.button[type="submit"] {
+.button[type="submit"],
+.button.main {
   color: var(--text-strong);
   font-weight: var(--font-weight-emphasis);
   border-color: currentColor;
@@ -424,8 +430,9 @@ header .failure-line {
   cursor: default;
 }
 
-/* The main button while it waits: text in `text-disabled` at the normal weight, frame in `control-border`. */
-.button[type="submit"]:disabled {
+/* The main button while it waits or is disabled: text in `text-disabled` at the normal weight, frame in `control-border`. */
+.button[type="submit"]:disabled,
+.button.main:disabled {
   font-weight: var(--font-weight-body);
   border-color: var(--control-border);
 }
@@ -1285,13 +1292,6 @@ header .failure-line {
   color: var(--text);
 }
 
-/* The sentence why the sending is inactive while a manual map run waits, under the row's sending, in `text-secondary`. */
-.team-member-run-note {
-  flex-basis: 100%;
-  margin: 0;
-  color: var(--text-secondary);
-}
-
 /* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */
 .team-member-stopped {
   flex-basis: 100%;
@@ -1299,15 +1299,11 @@ header .failure-line {
   color: var(--text-secondary);
 }
 
-/* The mark of a rehearsal the loop cannot repeat, under „Wyślij”, in `warning` as the line of D-188 (D-251). */
+/* The mark of a rehearsal the loop cannot repeat, under „Wejdź”, in `warning` as the line of D-188 (D-251). */
 .rehearsal-mark {
   flex-basis: 100%;
   margin: 0;
   color: var(--warning);
-}
-
-.team-member-program-label {
-  color: var(--text-label);
 }
 
 .character-creation-label {
@@ -1349,11 +1345,6 @@ header .failure-line {
 }
 
 .run-header-status.positive {
-  color: var(--positive);
-}
-
-/* A map solved in the headquarters, beside the character's row (D-39). */
-.map-label.solved {
   color: var(--positive);
 }
 
@@ -1878,4 +1869,212 @@ footer {
   align-items: baseline;
   gap: var(--space-xs) var(--space-s);
   margin-bottom: var(--space-xs);
+}
+
+/*
+ * The screen Mapy (D-325, D-331, D-327, D-329; styleguide rule "The screen Mapy"): two areas as the
+ * columns of Programy (above), one under the other in a window under 720 px. The list of maps is
+ * drawn as the list of programs is: each row a link in `text`, the picked one in `text-strong` with a
+ * bar in `selected` at its left, a row under the pointer on `highlight`; „rozwiązana” after the name
+ * in `positive` (D-134). Focus is the one :focus-visible rule above.
+ */
+.maps-list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.maps-list-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-s);
+  padding: var(--space-2xs) var(--space-s);
+  color: var(--text);
+  text-decoration: none;
+  border-left: var(--bar-width) solid transparent;
+}
+
+.maps-list-item[aria-current="page"] {
+  color: var(--text-strong);
+  border-left-color: var(--selected);
+}
+
+.maps-list-item:hover {
+  background: var(--highlight);
+}
+
+.maps-list-solved {
+  color: var(--positive);
+}
+
+/* The sentence on the right before a map is picked: a description, so `text-secondary` (D-331). */
+.maps-card-empty {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/*
+ * The card of a map: the name in `text-strong`, „rozwiązana” in `positive` and „odsłania ją {mapa}”
+ * in `text-secondary` beside it, each after a „ · ” in `text-secondary` (D-327); the names of its parts in `text-label`, their content in
+ * `text`. A step note is a note, so `text-secondary`; „nie odnawia się” and the caps are what the
+ * player must not miss, so `warning` (D-39).
+ */
+.maps-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.maps-card-name {
+  margin: 0;
+  font-size: var(--font-size-map-title);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.maps-card-solved {
+  color: var(--positive);
+}
+
+.maps-card-sep,
+.maps-card-opened-by {
+  color: var(--text-secondary);
+}
+
+.maps-card-part {
+  margin-bottom: var(--space-s);
+}
+
+.maps-card-part p {
+  margin: 0;
+}
+
+.maps-card-part-name {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.maps-card-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.maps-card-note {
+  color: var(--text-secondary);
+}
+
+.maps-card-warning {
+  color: var(--warning);
+}
+
+/* A resource's icon, as tall as the line it stands in, as the trip plan's icons are. */
+.maps-card-icon {
+  height: 1lh;
+  aspect-ratio: 1;
+  vertical-align: bottom;
+  margin-right: var(--space-xs);
+}
+
+/*
+ * The section „Kto idzie” under the card (D-329): its name in `text-label` and, at each character,
+ * the lines from the top. A divider tells one character from the next and the section from the card
+ * (D-40). The name is a name, so `text-strong`; the resurrection line is `text-secondary`, in
+ * `danger` when not ready (D-217); the loop's line is `text` (D-244); „Wejdzie: …” is
+ * `text-secondary`; the sentence of a waiting map run is `text-secondary` as in Siedziba (D-287);
+ * the clipped-plan line and the rehearsal mark are the `warning` lines `trip-warning` and
+ * `rehearsal-mark` draw (D-188, D-251).
+ */
+.maps-who {
+  border-top: var(--frame-width) solid var(--divider);
+  margin-top: var(--space-m);
+  padding-top: var(--space-m);
+}
+
+.maps-who-heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.maps-who-empty {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.maps-who-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.maps-who-member {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-s) 0;
+  border-top: var(--frame-width) solid var(--divider);
+}
+
+.maps-who-member:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.maps-who-name {
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.maps-who-resurrection,
+.maps-who-enters,
+.maps-who-run-note {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.maps-who-resurrection.danger {
+  color: var(--danger);
+}
+
+.maps-who-loop,
+.maps-who-program,
+.maps-who-actions,
+.maps-who-loop-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+}
+
+.maps-who-actions {
+  align-items: flex-start;
+}
+
+.maps-who-loop-line {
+  margin: 0;
+  color: var(--text);
+}
+
+.maps-who-program-label {
+  color: var(--text-label);
+}
+
+/* „Wejdź” with the rehearsal mark under it. */
+.maps-who-enter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+/* The sentence beside „Puść w pętlę” when the list „Wynieś” is empty, in `warning` (D-326). */
+.maps-who-empty-loop {
+  color: var(--warning);
 }

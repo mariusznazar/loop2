@@ -1063,7 +1063,7 @@ async function unconfirmedPart(root) {
   return { block: part.parentElement, sentence, button };
 }
 
-/** What the closed bar holds: the name, the two items and „Konto”, with no mark of the address. */
+/** What the closed bar holds: the name, the three items and „Konto”, with no mark of the address. */
 const barText = (root) => byClass(root, "menu-bar")[0].textContent;
 
 test("a reload or sign-in with an unconfirmed address shows the sentence and Wyślij ponownie in the open menu „Konto”, before Wyloguj, and leaves them at logout", async () => {
@@ -1073,7 +1073,7 @@ test("a reload or sign-in with an unconfirmed address shows the sentence and Wy�
     await held.answer("currentAccount", UNCONFIRMED_ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
     // The closed menu shows nothing of the address, and no row of it stands in the header.
-    assert.equal(barText(root), `${ABOUT.name}SiedzibaProgramyKonto`);
+    assert.equal(barText(root), `${ABOUT.name}SiedzibaMapyProgramyKonto`);
     assert.deepEqual(menuSentences(root), []);
     assert.equal(buttonNamed(root, "Wyślij ponownie"), undefined);
     assert.equal(byClass(root, "email-status").length, 0);
@@ -1153,7 +1153,7 @@ test("a created account starts the sentence of its menu with the outcome of its 
       await held.answer("loadSavedGame", NO_SAVE);
       assert.equal(
         barText(root),
-        `${ABOUT.name}SiedzibaProgramyKonto`,
+        `${ABOUT.name}SiedzibaMapyProgramyKonto`,
         message,
       );
       const opened = await unconfirmedPart(root);
@@ -2349,17 +2349,20 @@ const ACTS = [
     expected: (start) => createCharacter(start, "Ola").state,
   },
   {
-    name: "the pick on a headquarters row",
+    // The program is picked at the character in „Kto idzie” of the card of a map (D-170).
+    name: "the pick at a character in „Kto idzie”",
     start: twoPrograms,
+    hash: "#/mapy/forest",
     act: (root) => pickOn(listLabelled(root, "Program: Ala"), "2"),
     expected: (start) => pickProgram(start, 1, 2).state,
   },
   {
     name: "„Puść w pętlę”",
     start: solvedAla,
+    hash: "#/mapy/forest",
     act: (root) =>
       fire(buttonLabelled(root, "Puść w pętlę: Ala, mapa Las"), "click"),
-    // The start takes the real date as its time, and the row's list shows program 2.
+    // The start takes the real date as its time, and the list shows program 2.
     expected: (start) =>
       startLoop(
         start,
@@ -2368,7 +2371,8 @@ const ACTS = [
       ).state,
   },
   {
-    name: "„Zatrzymaj”",
+    // Siedziba keeps the line of a loop with its „Zatrzymaj”.
+    name: "„Zatrzymaj” in Siedziba",
     start: () => loopingAla(false),
     act: (root) => fire(buttonNamed(root, "Zatrzymaj"), "click"),
     check: (game) => {
@@ -2377,9 +2381,21 @@ const ACTS = [
     },
   },
   {
-    name: "sending",
+    name: "„Zatrzymaj” at a character in „Kto idzie”",
+    start: () => loopingAla(false),
+    hash: "#/mapy/forest",
+    act: (root) =>
+      fire(buttonNamed(byClass(root, "maps-screen")[0], "Zatrzymaj"), "click"),
+    check: (game) => {
+      assert.equal(game.loops[1], undefined);
+      assert.notEqual(game.stoppedLoops[1], undefined);
+    },
+  },
+  {
+    name: "„Wejdź”",
     start: twoPrograms,
-    act: (root) => fire(buttonNamed(root, "Wyślij"), "click"),
+    hash: "#/mapy/forest",
+    act: (root) => fire(buttonLabelled(root, "Wejdź: Ala, mapa Las"), "click"),
     // The send takes the real date as its time, so its seed is not this case's to write.
     check: (game) => {
       assert.equal(game.run.mapId, "forest");
@@ -2533,6 +2549,15 @@ function rowOf(root, name) {
   return row;
 }
 
+/** The block of the character named `name` in „Kto idzie” of the screen Mapy under `root`. */
+function whoOf(root, name) {
+  const member = byClass(root, "maps-who-member").find(
+    (candidate) => byClass(candidate, "maps-who-name")[0].textContent === name,
+  );
+  assert.ok(member, `a block of ${name} stands in „Kto idzie”`);
+  return member;
+}
+
 /**
  * The game of `state` built in the page without the account page around it, as a reload at
  * `address` builds it; its element stands in the body.
@@ -2568,9 +2593,10 @@ function alaLoopingOlaFree() {
 // Catches a row that draws the loop line and „Zatrzymaj” for every character or for none, and
 // buttons disabled for the whole team (or by the one map run, as before) when only the character in
 // the loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
-test("a character in a loop shows its line and „Zatrzymaj”; its „Wyślij” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
+test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and in „Kto idzie”; its „Wejdź” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
   await onPage(async ({ root }) => {
-    const { view } = await viewOf(alaLoopingOlaFree());
+    const address = fakeAddress("#/");
+    const { view } = await viewOf(alaLoopingOlaFree(), address);
     const ala = rowOf(root, "Ala");
     const ola = rowOf(root, "Ola");
     const [line] = byClass(ala, "team-member-loop");
@@ -2583,35 +2609,67 @@ test("a character in a loop shows its line and „Zatrzymaj”; its „Wyślij�
     assert.ok(buttonNamed(ala, "Zatrzymaj").classList.contains("destructive"));
     assert.ok(!shown(byClass(ola, "team-member-loop")[0]));
     assert.ok(!shown(buttonNamed(ola, "Zatrzymaj")));
+    // Siedziba sends nobody: no list of programs and no button of sending in a row (To do 8). The
+    // screen is drawn in React since Slice 9, so a character in no loop has no „Zatrzymaj” at all.
+    for (const [row, buttons] of [
+      [ala, ["Zatrzymaj"]],
+      [ola, []],
+    ]) {
+      assert.equal(tagged(row, "select").length, 0);
+      assert.deepEqual(
+        tagged(row, "button").map((button) => button.textContent),
+        buttons,
+      );
+    }
 
+    // The character's block in „Kto idzie”, under each map of the list.
+    await follow(address, "#/mapy/forest");
+    const whoAla = whoOf(root, "Ala");
+    const whoOla = whoOf(root, "Ola");
+    assert.equal(
+      byClass(whoAla, "maps-who-loop-line")[0].textContent,
+      "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
+    );
+    assert.equal(byClass(whoOla, "maps-who-loop").length, 0);
     for (const map of ["Las", "Las — głębiej"]) {
+      await follow(
+        address,
+        map === "Las" ? "#/mapy/forest" : "#/mapy/forestDeep",
+      );
       assert.equal(
-        buttonLabelled(ala, `Wyślij: Ala, mapa ${map}`).disabled,
+        buttonLabelled(whoOf(root, "Ala"), `Wejdź: Ala, mapa ${map}`).disabled,
         true,
         map,
       );
       assert.equal(
-        buttonLabelled(ola, `Wyślij: Ola, mapa ${map}`).disabled,
+        buttonLabelled(whoOf(root, "Ola"), `Wejdź: Ola, mapa ${map}`).disabled,
         false,
         map,
       );
     }
+    await follow(address, "#/mapy/forest");
     assert.equal(
-      buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").disabled,
+      buttonLabelled(whoOf(root, "Ala"), "Puść w pętlę: Ala, mapa Las")
+        .disabled,
       true,
     );
     assert.equal(
-      buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las").disabled,
+      buttonLabelled(whoOf(root, "Ola"), "Puść w pętlę: Ola, mapa Las")
+        .disabled,
       false,
     );
     // The map not yet solved has no loop button at all.
+    await follow(address, "#/mapy/forestDeep");
     assert.equal(
-      all(ola).filter((element) =>
+      all(whoOf(root, "Ola")).filter((element) =>
         element.getAttribute("aria-label")?.startsWith("Puść w pętlę"),
       ).length,
-      1,
+      0,
     );
-    assert.equal(listLabelled(ala, "Program: Ala").disabled, false);
+    assert.equal(
+      listLabelled(whoOf(root, "Ala"), "Program: Ala").disabled,
+      false,
+    );
     await inAct(() => view.dispose());
     // „Kup” is not on Siedziba since Slice 9; the character in the loop buys on its screen Postać.
     const character = await viewOf(
@@ -2623,37 +2681,52 @@ test("a character in a loop shows its line and „Zatrzymaj”; its „Wyślij�
   });
 });
 
-// To do 8, row 1; question 3. Catches a row whose inactive „Wyślij” and „Puść w pętlę” say nothing
-// after the end of a map run, a sentence standing beside the buttons rather than under the lines of
-// sending, one sentence per map instead of one per row, and a sentence left on after „Zakończ”.
-test("after the end of a map run every row's sending is inactive under the sentence why, and „Zakończ” takes the sentence away", async () => {
+// To do 8, row 1; question 3; D-287. Catches a block whose inactive „Wejdź” and „Puść w pętlę” say
+// nothing after the end of a map run, a sentence standing beside the buttons rather than under them,
+// one sentence per map instead of one per character, a sentence left on after „Zakończ”, and a
+// sentence of sending that stays in Siedziba.
+test("after the end of a map run every character's „Wejdź” is inactive under the sentence why, and „Zakończ” takes the sentence away", async () => {
   await onPage(async ({ root }) => {
     const endedWithOla = createCharacter(ended(), "Ola").state;
     const sentence =
       "Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.";
-    // Siedziba is the screen at its own address; the ended run's screen is the one a reload without
-    // a fragment opens.
-    const siedziba = await viewOf(endedWithOla, fakeAddress("#/"));
+    const address = fakeAddress("#/mapy/forest");
+    const { view } = await viewOf(endedWithOla, address);
     for (const name of ["Ala", "Ola"]) {
-      const row = rowOf(root, name);
-      const notes = byClass(row, "team-member-run-note");
-      assert.equal(notes.length, 1, `${name}: one sentence in the row`);
+      const who = whoOf(root, name);
+      const notes = byClass(who, "maps-who-run-note");
+      assert.equal(notes.length, 1, `${name}: one sentence at the character`);
       assert.equal(notes[0].textContent, sentence, name);
       assert.ok(shown(notes[0]), `${name}: the sentence shows`);
-      const send = buttonLabelled(row, `Wyślij: ${name}, mapa Las`);
-      assert.equal(send.disabled, true, name);
-      assert.ok(
-        childrenOf(row).indexOf(notes[0]) > childrenOf(row).indexOf(send),
-        `${name}: the sentence stands under the lines of sending`,
-      );
+      const enter = buttonLabelled(who, `Wejdź: ${name}, mapa Las`);
+      assert.equal(enter.disabled, true, name);
+      assertInOrder(root, [enter, notes[0]]);
     }
-    await inAct(() => siedziba.view.dispose());
-    // „Zakończ” stands on the run's screen; after it the sentence of every row goes.
-    const run = await viewOf(endedWithOla, fakeAddress("#/postac/1/przejscie"));
+    // Siedziba says nothing of sending.
+    await follow(address, "#/");
+    for (const name of ["Ala", "Ola"])
+      assert.equal(
+        byClass(rowOf(root, name), "team-member-run-note").length,
+        0,
+      );
+    await inAct(() => view.dispose());
+
+    // „Zakończ” stands on the run's screen; after it the sentence of every character goes.
+    const runAddress = fakeAddress("#/postac/1/przejscie");
+    const run = await viewOf(endedWithOla, runAddress);
     await inAct(() => fire(buttonNamed(root, "Zakończ"), "click"));
+    await follow(runAddress, "#/mapy/forest");
     for (const name of ["Ala", "Ola"]) {
-      const [note] = byClass(rowOf(root, name), "team-member-run-note");
-      assert.equal(note.hidden, true, `${name}: no run, no sentence`);
+      assert.equal(
+        byClass(whoOf(root, name), "maps-who-run-note").length,
+        0,
+        `${name}: no run, no sentence`,
+      );
+      assert.equal(
+        buttonLabelled(whoOf(root, name), `Wejdź: ${name}, mapa Las`).disabled,
+        false,
+        name,
+      );
     }
     await inAct(() => run.view.dispose());
   });
@@ -2676,26 +2749,37 @@ test("the name in a character's row is a link to its screen Postać, which then 
   });
 });
 
-// Catches a click on „Puść w pętlę” that leaves the row as it was, that opens a map run, or that is
-// not saved; the loop line must stand at once with the buttons of the row shut.
-test("„Puść w pętlę” puts the character into a loop at once and the row shows it, with no map run opened", async () => {
+// To do 7; D-329. Catches a click on „Puść w pętlę” that leaves the character as it was, that opens a
+// map run or leads away from the screen Mapy, that is not saved, or that does not move the focus to
+// the „Zatrzymaj” that now stands in the button's place; the loop line must stand at once with the
+// buttons of the character shut.
+test("„Puść w pętlę” puts the character into a loop at once and the player stays on the screen Mapy, where the character shows it", async () => {
   await onPage(async ({ root }) => {
-    const { view, held } = await viewOf(solvedAla());
-    const ala = rowOf(root, "Ala");
-    assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
+    const address = fakeAddress("#/mapy/forest");
+    const { view, held } = await viewOf(solvedAla(), address);
+    const ala = whoOf(root, "Ala");
+    assert.equal(byClass(ala, "maps-who-loop").length, 0);
     await press(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"));
+    assert.equal(shownScreen(root), "maps", "the player stays on Mapy");
+    assert.deepEqual(address.entries, ["#/mapy/forest"], "with no new entry");
     assert.equal(
-      byClass(ala, "team-member-loop")[0].textContent,
+      byClass(ala, "maps-who-loop-line")[0].textContent,
       "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
     );
-    assert.ok(
-      shown(byClass(root, "headquarters")[0]),
-      "the headquarters stays",
-    );
-    assert.equal(buttonLabelled(ala, "Wyślij: Ala, mapa Las").disabled, true);
+    assert.equal(buttonLabelled(ala, "Wejdź: Ala, mapa Las").disabled, true);
     assert.equal(
       buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").disabled,
       true,
+    );
+    assert.equal(
+      pageDocument().activeElement,
+      buttonNamed(ala, "Zatrzymaj"),
+      "the focus goes to „Zatrzymaj”, which took the place of the pressed button",
+    );
+    assert.equal(
+      byClass(rowOf(root, "Ala"), "team-member-loop")[0].textContent,
+      "Pętla: Las · przejście 1 · minuta 0 · domknięte 0",
+      "Siedziba holds the line as well",
     );
     assert.deepEqual(waitingCalls(held), ["saveGame"]);
     await inAct(() => view.dispose());
@@ -2713,7 +2797,8 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
         1: { ...base.loops[1], practice: { eating: 4, exploration: 12 } },
       },
     };
-    const { view } = await viewOf(gathering);
+    const address = fakeAddress("#/");
+    const { view } = await viewOf(gathering, address);
     const ala = rowOf(root, "Ala");
     await press(buttonNamed(ala, "Zatrzymaj"));
     assert.ok(!shown(byClass(ala, "team-member-loop")[0]));
@@ -2724,12 +2809,20 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
       stopped.textContent,
       "Pętla zatrzymana · wprawa: Eksploracja +12, Jedzenie +4",
     );
-    assert.equal(buttonLabelled(ala, "Wyślij: Ala, mapa Las").disabled, false);
     assert.ok(!shown(byClass(rowOf(root, "Ola"), "team-member-stopped")[0]));
 
-    // The next start clears the line.
-    await press(buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las"));
+    // On the screen Mapy the character may enter again, and the next start clears the line.
+    await follow(address, "#/mapy/forest");
+    assert.equal(
+      buttonLabelled(whoOf(root, "Ala"), "Wejdź: Ala, mapa Las").disabled,
+      false,
+    );
+    await press(
+      buttonLabelled(whoOf(root, "Ala"), "Puść w pętlę: Ala, mapa Las"),
+    );
+    await follow(address, "#/");
     assert.ok(!shown(stopped));
+    assert.ok(shown(byClass(ala, "team-member-loop")[0]));
     await inAct(() => view.dispose());
   });
 
@@ -2765,8 +2858,10 @@ test("a game built from a state with a stopped loop shows the line of the stop i
 });
 
 // Catches the chest inside the key of the rows (spec section 12): a deposit, or a take at another
-// character's start, rebuilt every row, so a list open in a row and the focus on „Zatrzymaj” went.
-test("a change of the chest redraws the chest alone: the rows, their lists and the focus on „Zatrzymaj” stay", async () => {
+// character's start, rebuilt every row of Siedziba and every block of „Kto idzie”, so a list open
+// at a character went. The start is made on the screen Mapy, where the characters are sent from, and
+// Siedziba, hidden meanwhile, draws the chest on.
+test("a change of the chest redraws the chest alone: the rows of Siedziba and the blocks of „Kto idzie” stay, with their lists", async () => {
   await onPage(async ({ root }) => {
     const solved = { ...eatingPoint(), solvedMaps: ["forest"] };
     const stocked = {
@@ -2779,13 +2874,11 @@ test("a change of the chest redraws the chest alone: the rows, their lists and t
     }).state;
     const team = createCharacter(taking, "Ola").state;
     const begun = startLoop(team, { mapId: "forest", characterId: 1 }, 5).state;
-    const { view } = await viewOf(begun);
-    const ala = rowOf(root, "Ala");
-    const ola = rowOf(root, "Ola");
-    const stop = buttonNamed(ala, "Zatrzymaj");
-    const list = listLabelled(ala, "Program: Ala");
-    stop.focus();
-    assert.equal(pageDocument().activeElement, stop);
+    const { view } = await viewOf(begun, fakeAddress("#/mapy/forest"));
+    const row = rowOf(root, "Ala");
+    const stop = buttonNamed(row, "Zatrzymaj");
+    const who = whoOf(root, "Ala");
+    const list = listLabelled(who, "Program: Ala");
     const chestText = () =>
       childrenOf(byClass(root, "chest-list")[0]).map(
         (item) => item.textContent,
@@ -2796,21 +2889,22 @@ test("a change of the chest redraws the chest alone: the rows, their lists and t
     assert.ok(heading().startsWith("Skrzynka 7/"));
 
     // Ola's start takes three sticks out of the chest.
-    await press(buttonLabelled(ola, "Puść w pętlę: Ola, mapa Las"));
+    await press(
+      buttonLabelled(whoOf(root, "Ola"), "Puść w pętlę: Ola, mapa Las"),
+    );
     assert.deepEqual(chestText(), ["patyk: 4"]);
     assert.ok(heading().startsWith("Skrzynka 4/"));
-    assert.equal(rowOf(root, "Ala"), ala, "the row is the same element");
-    assert.equal(buttonNamed(ala, "Zatrzymaj"), stop);
-    assert.equal(listLabelled(ala, "Program: Ala"), list);
-    await settle();
-    assert.equal(pageDocument().activeElement, stop, "the focus stays");
+    assert.equal(rowOf(root, "Ala"), row, "the row is the same element");
+    assert.equal(buttonNamed(row, "Zatrzymaj"), stop);
+    assert.equal(whoOf(root, "Ala"), who, "the block is the same element");
+    assert.equal(listLabelled(who, "Program: Ala"), list);
     await inAct(() => view.dispose());
   });
 });
 
-// D-251, To do 18. Catches a mark in the wrong place or role, a mark at a map not yet solved, and a
-// mark that ignores the chest.
-test("the mark of a rehearsal the loop cannot repeat stands under „Wyślij” of a solved map, and only where the chest lacks what the list takes", async () => {
+// D-251, To do 18; D-329. Catches a mark in the wrong place or role, a mark at a map not yet solved,
+// and a mark that ignores the chest.
+test("the mark of a rehearsal the loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest lacks what the list takes", async () => {
   const MARK =
     "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
   /** Ala with the forest solved, a take list of three sticks and `held` sticks in the chest. */
@@ -2826,24 +2920,28 @@ test("the mark of a rehearsal the loop cannot repeat stands under „Wyślij” 
     }).state;
   };
   await onPage(async ({ root }) => {
-    const { view } = await viewOf(holding(2));
-    const row = rowOf(root, "Ala");
-    const marks = byClass(row, "rehearsal-mark");
-    assert.equal(marks.length, 2, "one under each map's „Wyślij”");
-    const [forest, deep] = marks;
-    assert.ok(shown(forest));
-    assert.equal(forest.textContent, MARK);
-    assert.ok(!shown(deep), "the map not yet solved has no mark");
-    assert.ok(
-      childrenOf(row).indexOf(forest) >
-        childrenOf(row).indexOf(buttonLabelled(row, "Wyślij: Ala, mapa Las")),
-      "under „Wyślij”",
+    const address = fakeAddress("#/mapy/forest");
+    const { view } = await viewOf(holding(2), address);
+    const who = whoOf(root, "Ala");
+    const marks = byClass(who, "rehearsal-mark");
+    assert.equal(marks.length, 1, "one under „Wejdź”");
+    assert.ok(shown(marks[0]));
+    assert.equal(marks[0].textContent, MARK);
+    assertInOrder(root, [
+      buttonLabelled(who, "Wejdź: Ala, mapa Las"),
+      marks[0],
+    ]);
+    await follow(address, "#/mapy/forestDeep");
+    assert.equal(
+      byClass(whoOf(root, "Ala"), "rehearsal-mark").length,
+      0,
+      "the map not yet solved has no mark",
     );
     await inAct(() => view.dispose());
   });
   await onPage(async ({ root }) => {
-    const { view } = await viewOf(holding(3));
-    assert.ok(!shown(byClass(rowOf(root, "Ala"), "rehearsal-mark")[0]));
+    const { view } = await viewOf(holding(3), fakeAddress("#/mapy/forest"));
+    assert.equal(byClass(whoOf(root, "Ala"), "rehearsal-mark").length, 0);
     await inAct(() => view.dispose());
   });
 });
@@ -2911,7 +3009,9 @@ function renewing(at, left) {
 
 // To do 19, 20; spec decisions 7 and 8; D-207. Catches a headquarters that draws the passing of
 // real time only when the game state changes, one that rewrites a line that did not change, and a
-// tick that makes a new state, which the saver would send.
+// tick that makes a new state, which the saver would send. The screen is drawn in React since
+// Slice 9, so the writes of the line are counted as the changes of its text the page's document
+// records, and a tick that changes the text runs in act.
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
   await onPage(async ({ root }) => {
     const T = 1_760_000_000_000;
@@ -2933,36 +3033,47 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       const [label] = byClass(root, "team-member-generation");
       assert.equal(label.textContent, "pokolenie 2");
 
-      let writes = 0;
-      let written = line.textContent;
-      Object.defineProperty(line, "textContent", {
-        configurable: true,
-        get: () => written,
-        set: (text) => {
-          writes += 1;
-          written = String(text);
-        },
+      let recorded = 0;
+      const watcher = new globalThis.window.MutationObserver((records) => {
+        recorded += records.length;
       });
+      watcher.observe(line, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+      });
+      /** The changes of the line's text since the last call; the observer reports them at the next await. */
+      const writes = async () => {
+        await settle();
+        const count = recorded;
+        recorded = 0;
+        return count;
+      };
       // 20 s on: 59 min 10 s left is 60 minutes still; the tick writes nothing.
       current = T + 20_000;
-      mock.timers.tick(200);
-      assert.equal(writes, 0);
+      await inAct(() => mock.timers.tick(200));
+      assert.equal(await writes(), 0);
       // 31 s on: 58 min 59 s left rounds up to 59 minutes.
       current = T + 31_000;
-      mock.timers.tick(200);
-      assert.equal(writes, 1);
+      await inAct(() => mock.timers.tick(200));
+      assert.equal(await writes(), 1);
       assert.equal(
         line.textContent,
         `Wskrzeszenie za 59 min czasu realnego${warning}`,
       );
-      mock.timers.tick(200);
-      assert.equal(writes, 1, "a tick in the same minute writes nothing");
+      await inAct(() => mock.timers.tick(200));
+      assert.equal(
+        await writes(),
+        0,
+        "a tick in the same minute writes nothing",
+      );
       // At the moment of readiness the line turns ready, within one tick, and loses `danger`.
       current = T + 3_570_000;
-      mock.timers.tick(200);
+      await inAct(() => mock.timers.tick(200));
       assert.equal(line.textContent, "Wskrzeszenie gotowe");
       assert.ok(!line.classList.contains("danger"));
-      assert.equal(writes, 2);
+      assert.equal(await writes(), 1);
+      watcher.disconnect();
 
       // Nothing was saved: the ticks made no new state, and the saver's own check finds none.
       mock.timers.tick(60_000);
@@ -3547,6 +3658,7 @@ function shownScreen(root) {
     return element !== undefined && shown(element);
   };
   if (shows("character-screen")) return "character";
+  if (shows("maps-screen")) return "maps";
   // Task ekran-przejscia, To do 2 and 8: the screen of a map run holds no column of its own.
   if (shows("run-screen")) return "run";
   if (shows("headquarters")) return "headquarters";
@@ -3674,6 +3786,7 @@ test("a reload at #/postac/1 while the save holds a map run opens the screen Pos
     assert.equal(address.entries.length, 1);
     assert.deepEqual(barItems(root), [
       ["Siedziba", "#/", "page"],
+      ["Mapy", "#/mapy", null],
       ["Programy", "#/programy", null],
       ["Wróć do przejścia · Las · minuta 0", RUN_ADDRESS, null],
     ]);
@@ -3683,10 +3796,12 @@ test("a reload at #/postac/1 while the save holds a map run opens the screen Pos
 
 // To do 2, D-281. Catches an address of the five that opens another screen, or one the page
 // rewrites although it names an existing screen.
-test("a reload at each of the five addresses opens its screen and leaves the address as it is", async () => {
+test("a reload at each of the seven addresses opens its screen and leaves the address as it is", async () => {
   for (const [hash, screen] of [
     ["#/", "headquarters"],
     ["#/postac/1", "character"],
+    ["#/mapy", "maps"],
+    ["#/mapy/forest", "maps"],
     ["#/programy", "programs"],
     ["#/programy/2", "programs"],
     [RUN_ADDRESS, "run"],
@@ -3701,6 +3816,48 @@ test("a reload at each of the five addresses opens its screen and leaves the add
   }
 });
 
+// To do 2 and 3, questions 8 and 9, D-281, D-331. Catches a reload that leaves Mapy for another
+// screen, a map picked at `#/mapy` before the player picks one, a card that is not the map the
+// address names, and the name of a character in „Kto idzie” that is no link to its screen Postać.
+test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none, and the name of a character is a link to its screen Postać", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/mapy/forest", fullGame());
+    assert.equal(shownScreen(root), "maps");
+    assert.deepEqual(address.entries, ["#/mapy/forest"], "no new entry");
+    assert.equal(byClass(root, "maps-card-name")[0].textContent, "Las");
+    assert.deepEqual(
+      byClass(root, "maps-list-item").map((item) => [
+        item.textContent,
+        item.getAttribute("aria-current"),
+      ]),
+      [["Las", "page"]],
+    );
+    const names = byClass(root, "maps-who-name");
+    assert.deepEqual(
+      names.map((name) => [name.textContent, name.getAttribute("href")]),
+      [
+        ["Ala", "#/postac/1"],
+        ["Ola", "#/postac/2"],
+      ],
+    );
+    // The link of a name leads on: the page opens the screen the link names.
+    await follow(address, names[0].getAttribute("href"));
+    assert.equal(shownScreen(root), "character");
+    assert.equal(byClass(root, "maps-screen-host").length, 0);
+  });
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await reloadedAt(held, "#/mapy", fullGame());
+    assert.equal(shownScreen(root), "maps");
+    assert.equal(byClass(root, "maps-card").length, 0, "no card before a pick");
+    assert.equal(
+      byClass(root, "maps-card-empty")[0].textContent,
+      "Wybierz mapę z listy.",
+    );
+  });
+});
+
 // To do 2 (the browser's back and forward), D-280, D-281. Catches a link that opens no screen, a
 // back or forward that leaves the screen where it was, and a mark of the bar that lags behind.
 test("the items of the bar lead to their screens, and back and forward walk the screens the player visited, the bar marking each", async () => {
@@ -3712,6 +3869,33 @@ test("the items of the bar lead to their screens, and back and forward walk the 
         .filter(([, , current]) => current === "page")
         .map(([text]) => text);
     assert.equal(shownScreen(root), "headquarters");
+    assert.deepEqual(marked(), ["Siedziba"]);
+
+    // The item „Mapy” leads to #/mapy and marks Mapy there and under the address of a map.
+    const maps = byClass(root, "menu-bar-item").find(
+      (item) => item.textContent === "Mapy",
+    );
+    assert.ok(maps, "the bar holds „Mapy”");
+    await follow(address, maps.getAttribute("href"));
+    assert.equal(address.hash(), "#/mapy");
+    assert.equal(shownScreen(root), "maps");
+    assert.deepEqual(marked(), ["Mapy"]);
+    assert.equal(
+      pageDocument().activeElement,
+      byClass(root, "maps-screen-host")[0],
+      "with focus on nothing the screen takes it",
+    );
+    await follow(address, "#/mapy/forest");
+    assert.equal(shownScreen(root), "maps");
+    assert.deepEqual(marked(), ["Mapy"]);
+    assert.equal(byClass(root, "maps-card-name")[0].textContent, "Las");
+    await goBack(address);
+    await goBack(address);
+    assert.equal(shownScreen(root), "headquarters");
+    await goForward(address);
+    await goForward(address);
+    assert.equal(address.hash(), "#/mapy/forest");
+    await follow(address, "#/");
     assert.deepEqual(marked(), ["Siedziba"]);
 
     await follow(address, "#/programy");
@@ -3743,7 +3927,14 @@ test("the items of the bar lead to their screens, and back and forward walk the 
     );
     await goForward(address);
     assert.equal(shownScreen(root), "programs");
-    assert.deepEqual(address.entries, ["#/", "#/programy", "#/postac/1"]);
+    assert.deepEqual(address.entries, [
+      "#/",
+      "#/mapy",
+      "#/mapy/forest",
+      "#/",
+      "#/programy",
+      "#/postac/1",
+    ]);
     assert.deepEqual(
       waitingCalls(held),
       [],
@@ -3772,6 +3963,13 @@ test("an address that leads to no existing screen opens the nearest one and has 
       "headquarters",
       "#/",
     ],
+    [
+      "a map before its opener is solved",
+      "#/mapy/forestDeep",
+      "headquarters",
+      "#/",
+    ],
+    ["a map the data lacks", "#/mapy/nowhere", "headquarters", "#/"],
     ["a long fragment", `#/postac/${"1".repeat(5000)}`, "headquarters", "#/"],
     ["a confirmation link's fragment", LINK, "headquarters", "#/"],
     ["a reset link's fragment", RESET_LINK, "headquarters", "#/"],
@@ -3804,17 +4002,23 @@ test("an address that leads to no existing screen opens the nearest one and has 
   }
 });
 
-// To do 6, question 6, D-53, D-280. Catches a send that leaves the player on Siedziba, „Zakończ”
-// that leads to Siedziba, either without an entry of the history, and the back button after
-// „Zakończ” landing on a screen of a map run that is gone.
+// To do 6 and 7, question 6, D-53, D-280, D-329. Catches a send that leaves the player on the screen
+// Mapy, „Zakończ” that leads to Siedziba, either without an entry of the history, a screen of Mapy
+// left standing under the map run, and the back button after „Zakończ” landing on a screen of a map
+// run that is gone.
 test("a send leads to the screen of the map run and „Zakończ” to the screen Postać of that character, each with a new entry, and back after „Zakończ” lands on Postać", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
-    const address = await reloadedAt(held, "#/", twoPrograms());
-    await press(buttonLabelled(root, "Wyślij: Ala, mapa Las"));
+    const address = await reloadedAt(held, "#/mapy/forest", twoPrograms());
+    await press(buttonLabelled(root, "Wejdź: Ala, mapa Las"));
     assert.equal(shownScreen(root), "run");
-    assert.deepEqual(address.entries, ["#/", RUN_ADDRESS]);
-    // „Wyślij” left with Siedziba, so the screen opened takes the keyboard's focus.
+    assert.deepEqual(address.entries, ["#/mapy/forest", RUN_ADDRESS]);
+    assert.equal(
+      byClass(root, "maps-screen-host").length,
+      0,
+      "the screen Mapy is gone",
+    );
+    // „Wejdź” left with the screen Mapy, so the screen opened takes the keyboard's focus.
     assert.equal(pageDocument().activeElement, byClass(root, "run-screen")[0]);
     assert.equal(
       returnItem(root),
@@ -3823,7 +4027,7 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
     );
     assert.deepEqual(
       barItems(root).map(([, , current]) => current),
-      [null, null],
+      [null, null, null],
       "no item marked on the screen of a map run",
     );
     await held.answer("saveGame", { kind: "saved", revision: 5 });
@@ -3831,7 +4035,11 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
     await press(buttonNamed(root, "Zakończ"));
     assert.equal(shownScreen(root), "character");
     assert.equal(byClass(root, "character-screen-name")[0]?.textContent, "Ala");
-    assert.deepEqual(address.entries, ["#/", RUN_ADDRESS, "#/postac/1"]);
+    assert.deepEqual(address.entries, [
+      "#/mapy/forest",
+      RUN_ADDRESS,
+      "#/postac/1",
+    ]);
     assert.equal(
       pageDocument().activeElement,
       byClass(root, "character-screen-host")[0],
@@ -3844,10 +4052,62 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
     assert.equal(shownScreen(root), "character");
     assert.deepEqual(
       address.entries,
-      ["#/", "#/postac/1", "#/postac/1"],
+      ["#/mapy/forest", "#/postac/1", "#/postac/1"],
       "the entry of the map run gone is replaced with the nearest screen",
     );
     assert.deepEqual(waitingCalls(held), []);
+  });
+});
+
+// The acceptance criterion; To do 1, 5 and 7; D-280, D-330. Catches a way from Siedziba to the first
+// map run that takes more than three clicks, a first click that is no item of the bar, a row of the
+// list that leads elsewhere than to its map, and „Wejdź” that does not send the one character with
+// the program its list shows. A click on a link is the address changing, which the case makes with
+// `follow` on the address the link itself holds.
+test("a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Las and „Wejdź” to the screen of the map run in three clicks", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/", withCharacter());
+    assert.equal(shownScreen(root), "headquarters");
+    assert.deepEqual(
+      tagged(byClass(root, "headquarters")[0], "button")
+        .filter(shown)
+        .map((button) => button.textContent),
+      ["Załóż"],
+      "no button of Siedziba leads to the maps or sends",
+    );
+
+    // First click: the item „Mapy” of the bar.
+    const bar = byClass(root, "menu-bar-item").find(
+      (item) => item.textContent === "Mapy",
+    );
+    await follow(address, bar.getAttribute("href"));
+    assert.equal(shownScreen(root), "maps");
+    assert.equal(
+      byClass(root, "maps-card-empty")[0].textContent,
+      "Wybierz mapę z listy.",
+    );
+
+    // Second click: the row of Las.
+    const [row] = byClass(root, "maps-list-item");
+    assert.equal(row.textContent, "Las");
+    await follow(address, row.getAttribute("href"));
+    assert.equal(byClass(root, "maps-card-name")[0].textContent, "Las");
+
+    // Third click: „Wejdź” at the character.
+    await press(buttonLabelled(root, "Wejdź: Ala, mapa Las"));
+    assert.equal(shownScreen(root), "run");
+    assert.match(statusTextOf(root), /^Minuta 0/);
+    assert.deepEqual(address.entries, [
+      "#/",
+      "#/mapy",
+      "#/mapy/forest",
+      RUN_ADDRESS,
+    ]);
+    const [sent] = argsOf(held, "saveGame");
+    assert.equal(sent.game.run.mapId, "forest");
+    assert.equal(sent.game.run.character.id, 1);
+    assert.equal(sent.game.run.copy.programId, 1);
   });
 });
 
@@ -4389,7 +4649,7 @@ test("the page's sentence above the first screen leaves at the first change of s
 // Question 9, D-280, D-277. Catches „Wróć do przejścia” missing on a screen, standing on the map
 // run's own screen, gone after the character's death, with the clock written otherwise than the
 // status row writes it, or an item marked on the screen of a map run.
-test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Postać and Programy while a map run waits or has ended, leads to its screen and is gone there", async () => {
+test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Postać, Programy and Mapy while a map run waits or has ended, leads to its screen and is gone there", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/", passing());
@@ -4399,12 +4659,16 @@ test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Pos
     assert.deepEqual(returnItem(root), entry);
     await follow(address, "#/programy");
     assert.deepEqual(returnItem(root), entry);
-    assert.deepEqual(barItems(root)[1], ["Programy", "#/programy", "page"]);
+    assert.deepEqual(barItems(root)[2], ["Programy", "#/programy", "page"]);
+    await follow(address, "#/mapy/forest");
+    assert.deepEqual(returnItem(root), entry);
+    assert.deepEqual(barItems(root)[1], ["Mapy", "#/mapy", "page"]);
 
     await follow(address, entry[1]);
     assert.equal(shownScreen(root), "run");
     assert.deepEqual(barItems(root), [
       ["Siedziba", "#/", null],
+      ["Mapy", "#/mapy", null],
       ["Programy", "#/programy", null],
     ]);
   });
@@ -4424,9 +4688,10 @@ test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Pos
 });
 
 // The orchestrator's ruling (record Q14), To do 12, D-217: a reading of the clock rewrites the
-// resurrection lines of Siedziba and of Postać whenever they show, also while a manual map run
-// waits. Catches the lines refreshed only without a map run, as before, and a tick that saves.
-test("a clock tick rewrites the resurrection line of Siedziba and of Postać while a manual map run waits, and saves nothing", async () => {
+// resurrection lines of Siedziba, of Postać and of the characters in „Kto idzie” of the screen Mapy
+// whenever they show, also while a manual map run waits. Catches the lines refreshed only without a
+// map run, as before, a screen that draws its line at the moment it was built, and a tick that saves.
+test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, and saves nothing", async () => {
   const T = 1_760_000_000_000;
   const warning = " — śmierć zabierze wprawę i wykupione stopnie";
   /** Ala at generation 2 with a paused map run, her resurrection 59 min 30 s away at `T`. */
@@ -4437,6 +4702,7 @@ test("a clock tick rewrites the resurrection line of Siedziba and of Postać whi
   for (const [hash, lineClass] of [
     ["#/", "team-member-resurrection"],
     ["#/postac/1", "character-screen-resurrection"],
+    ["#/mapy/forest", "maps-who-resurrection"],
   ]) {
     await onPage(async ({ root }) => {
       let current = T;
@@ -4474,12 +4740,14 @@ test("a clock tick rewrites the resurrection line of Siedziba and of Postać whi
 
 // The plan: Postać is created on entering it and disposed on leaving; the DOM screens are built
 // once. Catches a screen Postać left in the page after the player left it, or two of them.
-test("the screen Postać is built on entering it and gone on leaving, while Siedziba and Programy are built once and hidden", async () => {
+test("the screens Postać and Mapy are built on entering them and gone on leaving, while Siedziba and Programy are built once and hidden", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/", withCharacter());
     const hosts = () => byClass(root, "character-screen-host").length;
+    const mapsHosts = () => byClass(root, "maps-screen-host").length;
     assert.equal(hosts(), 0);
+    assert.equal(mapsHosts(), 0);
     const [headquarters] = byClass(root, "headquarters");
     await follow(address, "#/postac/1");
     assert.equal(hosts(), 1);
@@ -4492,6 +4760,22 @@ test("the screen Postać is built on entering it and gone on leaving, while Sied
     assert.equal(hosts(), 0);
     assert.equal(byClass(root, "headquarters")[0], headquarters, "the same");
     assert.ok(shown(headquarters));
+
+    // Mapy is one screen under both of its addresses: a pick of a map does not build it again.
+    await follow(address, "#/mapy");
+    assert.equal(mapsHosts(), 1);
+    assert.ok(!shown(headquarters));
+    const [host] = byClass(root, "maps-screen-host");
+    await follow(address, "#/mapy/forest");
+    assert.equal(mapsHosts(), 1);
+    assert.equal(byClass(root, "maps-screen-host")[0], host, "the same");
+    await follow(address, "#/programy");
+    assert.equal(mapsHosts(), 0, "gone on leaving");
+    await goBack(address);
+    assert.equal(mapsHosts(), 1);
+    await follow(address, "#/");
+    assert.equal(mapsHosts(), 0);
+    assert.equal(byClass(root, "headquarters")[0], headquarters, "the same");
   });
 });
 
@@ -4620,12 +4904,13 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
       items.map((item) => [item.textContent, item.getAttribute("href")]),
       [
         ["Siedziba", "#/"],
+        ["Mapy", "#/mapy"],
         ["Programy", "#/programy"],
       ],
     );
     assert.deepEqual(
       items.map((item) => item.getAttribute("aria-current")),
-      ["page", null],
+      ["page", null, null],
       "the bar marks Siedziba",
     );
     assert.ok(accountButton(root), "„Konto” stands");

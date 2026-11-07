@@ -15,6 +15,7 @@ import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 
 const HEADQUARTERS = { kind: "headquarters" };
 const PROGRAMS = { kind: "programs" };
+const MAPS_SCREEN = { kind: "maps" };
 
 /** A game whose team holds the characters 1 and 2, whose programs are 1 and 3, and no map run. */
 function explicitGame() {
@@ -74,6 +75,20 @@ const NO_SCREEN_FRAGMENTS = [
   ],
   ["a percent-encoded number", "#/postac/%31"],
   ["an upper-case address", "#/POSTAC/1"],
+  ["a map address with no map", "#/mapy/"],
+  [
+    "a map address with a hyphen in place of the identifier",
+    "#/mapy/forest-deep",
+  ],
+  ["a map address with a Polish name of the map", "#/mapy/las-glebiej"],
+  ["a map address with a capital letter", "#/mapy/Forest"],
+  ["a map address with a percent-encoded identifier", "#/mapy/%66orest"],
+  ["a map address with a fragment after the identifier", "#/mapy/forest/x"],
+  ["a map address with a hash after the identifier", "#/mapy/forest#x"],
+  ["a map address naming a prototype property", "#/mapy/__proto__"],
+  ["a map address naming an inherited property", "#/mapy/constructor"],
+  ["an upper-case map address", "#/MAPY"],
+  ["a map address with a trailing slash", "#/mapy/forest/"],
   ["a hash alone", "#"],
   ["the empty fragment", ""],
 ];
@@ -113,6 +128,21 @@ test("the address of a program reads as its screen, by the number of the program
   });
 });
 
+test("the address of the maps reads as the maps screen", () => {
+  assert.deepEqual(readScreenAddress("#/mapy"), MAPS_SCREEN);
+});
+
+test("the address of a map reads as its screen, by the identifier of the map in the data", () => {
+  assert.deepEqual(readScreenAddress("#/mapy/forest"), {
+    kind: "map",
+    mapId: "forest",
+  });
+  assert.deepEqual(readScreenAddress("#/mapy/forestDeep"), {
+    kind: "map",
+    mapId: "forestDeep",
+  });
+});
+
 test("every screen writes the address that reads back to it", () => {
   for (const [screen, address] of [
     [HEADQUARTERS, "#/"],
@@ -120,6 +150,9 @@ test("every screen writes the address that reads back to it", () => {
     [PROGRAMS, "#/programy"],
     [{ kind: "program", programId: 4 }, "#/programy/4"],
     [{ kind: "run", characterId: 2 }, "#/postac/2/przejscie"],
+    [MAPS_SCREEN, "#/mapy"],
+    [{ kind: "map", mapId: "forest" }, "#/mapy/forest"],
+    [{ kind: "map", mapId: "forestDeep" }, "#/mapy/forestDeep"],
   ]) {
     assert.equal(screenAddress(screen), address);
     assert.deepEqual(readScreenAddress(address), screen);
@@ -186,6 +219,32 @@ test("no screen named gives Siedziba", () => {
   assert.deepEqual(resolveScreen(null, explicitGame()), HEADQUARTERS);
 });
 
+test("the maps screen stays", () => {
+  assert.deepEqual(resolveScreen(MAPS_SCREEN, explicitGame()), MAPS_SCREEN);
+});
+
+test("a map off the list of open maps gives Siedziba: a map whose opening map is not solved", () => {
+  assert.deepEqual(
+    resolveScreen({ kind: "map", mapId: "forestDeep" }, explicitGame()),
+    HEADQUARTERS,
+  );
+});
+
+test("a map with no opening map stays, although no map is solved", () => {
+  assert.deepEqual(
+    resolveScreen({ kind: "map", mapId: "forest" }, explicitGame()),
+    { kind: "map", mapId: "forest" },
+  );
+});
+
+test("a map whose opening map is solved stays", () => {
+  const game = { ...explicitGame(), solvedMaps: ["forest"] };
+  assert.deepEqual(resolveScreen({ kind: "map", mapId: "forestDeep" }, game), {
+    kind: "map",
+    mapId: "forestDeep",
+  });
+});
+
 test("Siedziba and the screen of a character mark the headquarters item of the menu bar", () => {
   assert.equal(markedMenuItem(HEADQUARTERS), "headquarters");
   assert.equal(
@@ -201,6 +260,11 @@ test("Programy and a program of Programy mark the programs item of the menu bar"
 
 test("the screen of a map run marks no item of the menu bar", () => {
   assert.equal(markedMenuItem({ kind: "run", characterId: 2 }), null);
+});
+
+test("the maps screen and a map's screen mark the maps item of the menu bar", () => {
+  assert.equal(markedMenuItem(MAPS_SCREEN), "maps");
+  assert.equal(markedMenuItem({ kind: "map", mapId: "forest" }), "maps");
 });
 
 test("with no map run in the game state, the return entry is absent", () => {

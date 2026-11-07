@@ -1,3 +1,8 @@
+/**
+ * The pure texts of the report on earning loops (D-246): the titles, the sentence of a full chest
+ * and the lines of the report as the screen Siedziba draws them. The screen, `headquarters.tsx`,
+ * draws them; nothing here touches the document. Nothing runs when the module is imported.
+ */
 import { BALANCE } from "../sim/data/balance.js";
 import { ITEMS } from "../sim/data/items.js";
 import { SKILLS, type SkillId } from "../sim/data/skills.js";
@@ -9,7 +14,6 @@ import type {
   GameState,
   ItemId,
 } from "../sim/types.js";
-import { createButton } from "./controls/button.js";
 
 /** The title while the report holds a line of a return (D-246). */
 export const AWAY_TITLE = "Gdy cię nie było";
@@ -98,64 +102,4 @@ export function reportEntries(
 /** Whether the chest holds as many pieces as it can; read at drawing, never stored. Pure. */
 export function reportChestFull(chest: Chest): boolean {
   return pieceCount(chest.pieces) >= BALANCE.chestCapacity;
-}
-
-export type AwayReport = {
-  element: HTMLElement;
-  /** Draws the report of the given game state; the section is hidden while the report is empty. */
-  update(state: Pick<GameState, "awayReport" | "team">): void;
-  /** Whether the section stands on the screen. */
-  shown(): boolean;
-};
-
-/**
- * Builds the section of the report on earning loops (D-246): its title, one line for each entry
- * with the loops that stopped in `danger`, „Skrzynka jest pełna.” in `warning` where the chest is
- * full, and one button „Zamknij” that asks `close` to empty the whole report. The button is made
- * once; the lines are rebuilt only when the report or the names changed.
- */
-export function createAwayReport(close: () => void): AwayReport {
-  const element = document.createElement("section");
-  element.className = "headquarters-section away-report";
-  const heading = document.createElement("h3");
-  const list = document.createElement("ul");
-  list.className = "away-report-list";
-  const full = document.createElement("p");
-  full.className = "away-report-full";
-  full.textContent = CHEST_FULL_TEXT;
-  const closeButton = createButton("Zamknij");
-  closeButton.addEventListener("click", close);
-  element.append(heading, list, full, closeButton);
-  element.hidden = true;
-
-  let shownKey = "";
-  return {
-    element,
-    shown: () => !element.hidden,
-    update(state): void {
-      const entries = reportEntries(state);
-      element.hidden = entries.length === 0;
-      if (entries.length === 0) {
-        shownKey = "";
-        return;
-      }
-      full.hidden = !reportChestFull(state.team.chest);
-      const title = reportTitle(state.awayReport);
-      const key = JSON.stringify([title, entries]);
-      if (key !== shownKey) {
-        shownKey = key;
-        heading.textContent = title;
-        list.replaceChildren(
-          ...entries.map(({ text, danger }) => {
-            const item = document.createElement("li");
-            item.className = danger
-              ? "away-report-line danger"
-              : "away-report-line";
-            item.textContent = text;
-            return item;
-          }),
-        );
-      }
-    },
-  };
 }

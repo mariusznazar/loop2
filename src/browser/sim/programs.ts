@@ -354,9 +354,10 @@ export function teamProgram(state: GameState): SavedProgram {
 }
 
 /**
- * The program of a character's headquarters row (D-170): the first still on the list of the
- * program picked on that row, the character's program used last, the program with which a
- * character last entered a map and the first program of the list.
+ * The program a character enters a map with when the send names none (D-170): the first still on
+ * the list of the program picked for that character in „Kto idzie” on the card of a map, the
+ * character's program used last, the program with which a character last entered a map and the
+ * first program of the list.
  */
 export function rowProgram(
   state: GameState,
@@ -529,8 +530,9 @@ export function editProgram(
 }
 
 /**
- * Picks the program of a character's headquarters row, kept until that character is sent; throws
- * on a character not in the team and on a program not on the list.
+ * Picks the program a character enters a map with, in „Kto idzie” on the card of a map (D-170), kept
+ * until that character is sent; throws on a character not in the team and on a program not on the
+ * list.
  */
 export function pickProgram(
   state: GameState,

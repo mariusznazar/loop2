@@ -1,4 +1,4 @@
-// The headquarters' pure parts, tested without a browser. Importing the module must not touch
+// The team lines' pure functions, tested without a browser. Importing the module must not touch
 // the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -8,16 +8,13 @@ import {
   chestLines,
   generationLabel,
   loopLine,
-  mapLabel,
   programPositions,
   resurrectionLine,
   runWaitingSentence,
-  sendMaps,
-  solvingSentence,
   stoppedLoopLine,
-} from "../../dist/browser/view/headquarters.js";
+} from "../../dist/browser/view/team-lines.js";
 
-test("importing the headquarters touches no DOM: Node has no document and the import succeeded", () => {
+test("importing the team lines touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");
   assert.equal(typeof chestLines, "function");
 });
@@ -34,30 +31,6 @@ test("a chest holding pieces shows a line per resource held, in the order of the
   ]);
 });
 
-test("a map's label is „Mapa: {name}”, with „ · rozwiązana” once solved, the name from the data", () => {
-  assert.equal(mapLabel("forest", false), "Mapa: Las");
-  assert.equal(mapLabel("forest", true), "Mapa: Las · rozwiązana");
-});
-
-test("the condition sentence is the map's name, a dash and the solving text of its data", () => {
-  assert.equal(
-    solvingSentence("forest"),
-    "Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
-  );
-});
-
-test("the headquarters hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
-  assert.deepEqual(sendMaps(), ["forest", "forestDeep"]);
-  assert.deepEqual(sendMaps([]), ["forest"]);
-  assert.deepEqual(sendMaps(["forest"]), ["forest", "forestDeep"]);
-});
-
-const PROGRAMS = [
-  { id: 1, name: "Program", program: { rules: [] } },
-  { id: 4, name: "Las nocą", program: { rules: [] } },
-  { id: 7, name: "program", program: { rules: [] } },
-];
-
 test("the row of a character that has not gone shows the first program of the list", () => {
   const state = createCharacter(newGame(), "Ala").state;
   const id = state.team.characters[0].id;
@@ -65,6 +38,12 @@ test("the row of a character that has not gone shows the first program of the li
   assert.equal(positions.value, String(state.programs[0].id));
   assert.equal(positions.options[0][1], state.programs[0].name);
 });
+
+const PROGRAMS = [
+  { id: 1, name: "Program", program: { rules: [] } },
+  { id: 4, name: "Las nocą", program: { rules: [] } },
+  { id: 7, name: "program", program: { rules: [] } },
+];
 
 test("the positions of a row's list are the programs' names in list order, valued by their numbers", () => {
   assert.deepEqual(programPositions(PROGRAMS, PROGRAMS[0]).options, [

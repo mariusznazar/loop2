@@ -1,6 +1,6 @@
 /**
  * The menu bar (D-280): at the top of every screen of a signed-in player, and alone with the game's
- * name on a waiting screen (D-262). Over the game it holds the items Siedziba and Programy, as
+ * name on a waiting screen (D-262). Over the game it holds the items Siedziba, Mapy and Programy, as
  * links to their screens and with no icons, the item of the place the player is at marked (D-277),
  * where the page gives it „Wróć do przejścia · {mapa} · minuta {m}”, and the menu „Konto” with the
  * account's address, „Wyloguj” and, for an unconfirmed address, the sentence about it with
@@ -72,6 +72,11 @@ const ITEMS: readonly {
     item: "headquarters",
     text: "Siedziba",
     address: screenAddress({ kind: "headquarters" }),
+  },
+  {
+    item: "maps",
+    text: "Mapy",
+    address: screenAddress({ kind: "maps" }),
   },
   {
     item: "programs",

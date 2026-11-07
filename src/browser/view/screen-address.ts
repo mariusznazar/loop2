@@ -1,5 +1,6 @@
 import { MAPS } from "../sim/data/maps.js";
-import type { CharacterId, GameState, ProgramId } from "../sim/types.js";
+import { canSendMap } from "../sim/game.js";
+import type { CharacterId, GameState, MapId, ProgramId } from "../sim/types.js";
 
 /** A screen the address names, or the screen an address leads to (D-281). */
 export type Screen =
@@ -7,10 +8,12 @@ export type Screen =
   | { readonly kind: "character"; readonly characterId: CharacterId }
   | { readonly kind: "programs" }
   | { readonly kind: "program"; readonly programId: ProgramId }
-  | { readonly kind: "run"; readonly characterId: CharacterId };
+  | { readonly kind: "run"; readonly characterId: CharacterId }
+  | { readonly kind: "maps" }
+  | { readonly kind: "map"; readonly mapId: MapId };
 
 /** The items of the menu bar that a screen can mark (D-280, D-277). */
-export type MenuItem = "headquarters" | "programs";
+export type MenuItem = "headquarters" | "programs" | "maps";
 
 /** The menu bar's entry back to the map run, with the address it leads to (D-280). */
 export type ReturnEntry = { readonly text: string; readonly address: string };
@@ -18,11 +21,17 @@ export type ReturnEntry = { readonly text: string; readonly address: string };
 const CHARACTER = /^#\/postac\/([1-9][0-9]*)$/;
 const CHARACTER_RUN = /^#\/postac\/([1-9][0-9]*)\/przejscie$/;
 const PROGRAM = /^#\/programy\/([1-9][0-9]*)$/;
+const MAP = /^#\/mapy\/(.+)$/;
 
 /** The number a decimal digit string names, or null where it names no safe whole number. */
 function number(digits: string): number | null {
   const value = Number(digits);
   return Number.isSafeInteger(value) ? value : null;
+}
+
+/** The identifier of a map in the data, or null where the text names no map of the data. */
+function mapId(name: string): MapId | null {
+  return Object.hasOwn(MAPS, name) ? (name as MapId) : null;
 }
 
 /**
@@ -34,6 +43,12 @@ function number(digits: string): number | null {
 export function readScreenAddress(hash: string): Screen | null {
   if (hash === "#/") return { kind: "headquarters" };
   if (hash === "#/programy") return { kind: "programs" };
+  if (hash === "#/mapy") return { kind: "maps" };
+  const map = MAP.exec(hash);
+  if (map) {
+    const id = mapId(map[1]);
+    return id === null ? null : { kind: "map", mapId: id };
+  }
   const run = CHARACTER_RUN.exec(hash);
   if (run) {
     const characterId = number(run[1]);
@@ -62,14 +77,20 @@ function hasCharacter(state: GameState, characterId: CharacterId): boolean {
  * The existing screen nearest the named one (D-281): a map run screen with no map run of its
  * character gives that character's screen; a character screen or a map run screen of a number no
  * character carries gives Siedziba; a program screen of a number no program carries gives Programy;
- * no named screen gives Siedziba. Pure.
+ * a map screen of a map off the list of open maps gives Siedziba, the list being the maps whose
+ * opening map the game has solved (D-149); no named screen gives Siedziba. Pure.
  */
 export function resolveScreen(named: Screen | null, state: GameState): Screen {
   if (named === null) return { kind: "headquarters" };
   switch (named.kind) {
     case "headquarters":
     case "programs":
+    case "maps":
       return named;
+    case "map":
+      return canSendMap(state.solvedMaps, named.mapId)
+        ? named
+        : { kind: "headquarters" };
     case "character":
       return hasCharacter(state, named.characterId)
         ? named
@@ -99,13 +120,17 @@ export function screenAddress(screen: Screen): string {
       return `#/programy/${screen.programId}`;
     case "run":
       return `#/postac/${screen.characterId}/przejscie`;
+    case "maps":
+      return "#/mapy";
+    case "map":
+      return `#/mapy/${screen.mapId}`;
   }
 }
 
 /**
  * The item of the menu bar that marks a screen (D-277, D-280): Siedziba on Siedziba and on the
- * character's screen, Programy on the programs screen and on a program's, and none on a map run's
- * screen. Pure.
+ * character's screen, Programy on the programs screen and on a program's, Mapy on the maps screen
+ * and on a map's, and none on a map run's screen. Pure.
  */
 export function markedMenuItem(screen: Screen): MenuItem | null {
   switch (screen.kind) {
@@ -115,6 +140,9 @@ export function markedMenuItem(screen: Screen): MenuItem | null {
     case "programs":
     case "program":
       return "programs";
+    case "maps":
+    case "map":
+      return "maps";
     case "run":
       return null;
   }

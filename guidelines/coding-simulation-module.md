@@ -21,6 +21,7 @@ wytyczne kodowania.
 | `src/browser/sim/hex.ts` | copy | — |
 | `src/browser/sim/layout.ts` | copy | — |
 | `src/browser/sim/loop.ts` | do not copy | — |
+| `src/browser/sim/map-card.ts` | copy | — |
 | `src/browser/sim/program.ts` | copy | — |
 | `src/browser/sim/programs.ts` | copy | — |
 | `src/browser/sim/random.ts` | copy | — |

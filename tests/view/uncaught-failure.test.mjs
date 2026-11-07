@@ -442,6 +442,43 @@ test("after an error nothing handled, an act of the player changes no state and 
   });
 });
 
+// invariant: uncaught-failure-game-state
+// D-323; task karty-i-katalog-map, handoff item 2. The screen Mapy sends characters, so its buttons are
+// acts of the player like „Pauza”. Catches a button of the screen Mapy that, after an error nothing
+// handled, still starts an earning loop, enters a map or moves the page, and so changes a state that
+// the page must hold as it was.
+test("after an error nothing handled, the buttons of the screen Mapy change no state, start no save and open no map run", async () => {
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = fakeAddress("#/mapy/forest");
+    const state = {
+      ...createCharacter(newGame(), "Ala").state,
+      solvedMaps: ["forest"],
+    };
+    await startPage(held, address);
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(state, 4));
+    await settle();
+    assert.ok(
+      buttonNamed(root, "Wejdź"),
+      "precondition: the screen Mapy stands",
+    );
+    assert.deepEqual(waitingCalls(held), [], "precondition: no save waits");
+
+    await inAct(() => reportError(new TypeError(QUOTED)));
+    await press(buttonNamed(root, "Puść w pętlę"));
+    await press(buttonNamed(root, "Wejdź"));
+    await settle();
+
+    assert.deepEqual(waitingCalls(held), [], "no act started a save");
+    assert.ok(
+      buttonNamed(root, "Puść w pętlę"),
+      "no earning loop took the button",
+    );
+    assert.equal(address.current, "#/mapy/forest", "no map run was opened");
+  });
+});
+
 // --- the line in the console ------------------------------------------------------------------
 
 // D-323, D-253, D-252; task napis-o-awarii, To do 4. Catches an event left uncancelled, which the
