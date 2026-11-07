@@ -377,7 +377,7 @@ export type GameState = {
   programs: SavedProgram[];
   /** The number the next created program takes. */
   nextProgramId: ProgramId;
-  /** Per character, the program picked on its headquarters row and not yet sent with. */
+  /** Per character, the program picked for it in „Kto idzie” on the card of a map, not yet sent with (D-170). */
   pickedPrograms: Partial<Record<CharacterId, ProgramId>>;
   /** Per character, the program it used last. */
   lastUsedPrograms: Partial<Record<CharacterId, ProgramId>>;

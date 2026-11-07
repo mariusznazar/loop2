@@ -356,8 +356,10 @@ export function createCharacter(state: GameState, name: string): GameResult {
 
 /**
  * Sends a character of the team to a map with the program numbered `programId`, or without one with
- * its headquarters row's program, `rowProgram`: a new map run at minute 0, seeded from the last
- * seed and real time, its character carrying its own copy of the traits of the team's character
+ * the program `rowProgram` gives that character (D-170): the one picked for it in „Kto idzie” on the
+ * card of a map, else the one it used last, else the one with which a character last entered a map,
+ * else the first of the list. A new map run at minute 0, seeded from the last seed and real time,
+ * its character carrying its own copy of the traits of the team's character
  * sent, carrying out a copy of that program whose base is the program's content. That program
  * becomes the character's program used last and the one a character last entered a map with, and
  * the character's pick is cleared and its entry of `stoppedLoops` goes. Throws while a map run is in

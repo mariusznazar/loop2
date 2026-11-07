@@ -49,7 +49,7 @@ export type MapDef = {
   attackers?: MapAttackerDef[];
   /** The solving condition of the map. */
   solving: SolvingDef;
-  /** The condition as a sentence without the map's name; the headquarters shows it after the name. */
+  /** The condition as a sentence without the map's name; the card of the map shows it after the name (D-133). */
   solvingText: string;
   /** The whole text the status row shows after a completion, agreeing with the name. */
   completionText: string;
