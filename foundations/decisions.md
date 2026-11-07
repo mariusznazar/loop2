@@ -1087,11 +1087,11 @@ screen Postać of that character.
     screen other than the screen Postać of that character
 - **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-53 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7
 
-*Rationale:* the card of a map shows what the map asks and what enters from the trip plan, so a
-character goes out to a game map from the card, where the map is read. Coming back to the character
-leads on to what the map run gave it and to the next choice.
-*Rejected:* sending from the headquarters — the player would read what a map asks on one screen and
-send a character from another.
+*Rationale:* a character goes out from the card that says what the map asks, on a screen where the
+player sees the map and who goes. Coming back to the character leads on to what the map run gave it
+and to the next choice.
+*Rejected:* sending from the headquarters beside each character — it needs a long row for each
+character and the map's demands stand nowhere; two buttons „Wejdź”, as in loop.
 
 ### D-54 — In what order do the characters of the team stand?
 
@@ -2558,8 +2558,8 @@ From the first completion of a map by any of the player's characters, the list a
     card; the mark gone once a later map run on Las ends in death
 - **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "7. Gdzie gracz widzi, że Las jest rozwiązany?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-134 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3
 
-*Rationale:* a solved map stays solved, so the player sees on the list and the card of the screen
-Mapy, from which characters go out, which maps a program has solved.
+*Rationale:* a solved map stays solved, so the player sees where maps stand which of them a program
+has solved.
 *Rejected:* the solving seen at the moment of the completion alone — the player would not see later
 which maps are solved.
 
@@ -2811,8 +2811,8 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
   - violates: the simulation sending to Las — głębiej before Las is solved; Las — głębiej standing on the list before Las is solved
 - **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-149 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3
 
-*Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the player finds the next map on the list when the screen Mapy is next opened.
-*Rejected:* showing the locked map with an inactive send — reveals it before opening; a new-map message on completion — adds another announcement; filtering in the view alone — allows sending to an unavailable map through the simulation.
+*Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the end of the map run that opens a map names the way to it.
+*Rejected:* showing the locked map with an inactive send — reveals it before opening; filtering in the view alone — allows sending to an unavailable map through the simulation.
 
 ### D-150 — Which character skills open the current combat actions?
 
@@ -3123,8 +3123,8 @@ The player picks the program a character enters a map with on the select list �
   - violates: more than one select list of programs at one character in „Kto idzie”; a new character showing the first program of the list after another character entered a map with „Program 2”; a pick at a character lost when the section „Kto idzie” is drawn again
 - **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Gdzie gracz wybiera program przy wysłaniu postaci i który program jest domyślny dla postaci, która jeszcze nie chodziła?" and "Q13. Który program jest domyślny przy następnym wysłaniu postaci, która w trakcie przejścia została przełączona na inny program?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-170 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5
 
-*Rationale:* the player picks the program where the character is sent from, and the program that stands first keeps a character with the program it went with last, so a send repeats the last attempt unless the player picks another; a character that has not gone yet takes the program the team went with last.
-*Rejected:* a step after „Wejdź” for picking the program — one more move at every send; a list for each map — the same pick repeated once for each map.
+*Rationale:* the player picks the program where the character is sent from, and the program that stands first keeps a character with the program it went with last, so a send repeats the last attempt unless the player picks another.
+*Rejected:* a step after „Wejdź” for picking the program — one more move at every send.
 
 ### D-171 — How does the program panel show the copy and its unsaved changes?
 
@@ -3297,7 +3297,7 @@ The screen Programy shows a section „Plan wyprawy” folded to a line of icons
   - violates: the card of a map showing the take list as the program asks it, with no account of what the map and the character let in
 - **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-180 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 11 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3
 
-*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. Accepted with it: the plan of the copy is not changed during a map run. The card of a map shows what of the plan enters, so the player reads before a send what the map lets in.
+*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. Accepted with it: the plan of the copy is not changed during a map run.
 *Rejected:* the section under the rule groups on the screen of a map run — it takes the space of what the player watches; the plan in the headquarters character row.
 
 ### D-181 — Which entries does a trip list accept?
@@ -3402,7 +3402,7 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 - **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10", part b · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-188
 
 *Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places.
-*Rejected:* a warning confined to the card of a map — omits the next restart.
+*Rejected:* a warning confined to the card — omits the next restart.
 
 ### D-189 — What pays, and what takes from the chest?
 
@@ -4854,13 +4854,11 @@ currently inactive, and the player stops the earning loop first.
     loop by itself; „Puść w pętlę” at a map not yet solved; a start leaving the pick standing
 - **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q1 and Q3, and § Settlements to record, rows 1, 2 and 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-243 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5
 
-*Rationale:* a character goes to earn from the place it is sent from, on the program its list already
+*Rationale:* a character goes to earn from the place it is sent from, on the program it already
 shows, so a tuned program goes out with one click. Stopping first keeps the backpack of the map run
-going on from being lost by a click on another button. Accepted with it: one more button at each
-character, and one click more before a send.
-*Rejected:* a section „Pętle” of the headquarters with a pick of character, map and program — a second
-place for sending characters and several times the view; „Wejdź” stopping the earning loop by itself
-— one click silently loses the backpack of the map run going on.
+going on from being lost by a click on another button.
+*Rejected:* a section „Pętle” with a pick of character, map and program — a second place for sending
+characters; „Wejdź” stopping the earning loop by itself — one click silently loses the backpack.
 
 ### D-244 — What does the player see of an earning loop?
 
@@ -7066,8 +7064,8 @@ The screen Mapy holds on the left the list of the maps open to the player, and o
   - violates: a map that is not open yet standing on the list, locked or inactive; a card of a map without its section „Kto idzie”
 - **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What does the screen Mapy show?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 to 5
 
-*Rationale:* the player learns what a map asks before sending a character rather than through a death.
-*Rejected:* a map shown locked with an inactive send — it reveals the map before it opens.
+*Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. Empty places wait for maps the game does not have yet.
+*Rejected:* empty places for maps that do not exist yet — they promise content that is not there; a map shown locked with an inactive send — it reveals the map before it opens.
 
 ### D-326 — What does the game say before an earning loop that earns nothing?
 
@@ -7081,8 +7079,8 @@ Where the bring list of the program picked is empty, „Pętla nic nie zarobi do
   - violates: the sentence standing beside „Puść w pętlę” where the list „Wynieś” holds an item; „Puść w pętlę” inactive, or asking a question, where the list „Wynieś” is empty; the sentence in a role other than `warning`
 - **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What does the game say before an earning loop that earns nothing?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6
 
-*Rationale:* an earning loop started with an empty list „Wynieś” brings nothing to the chest, and the player would learn it only after the fact, so the sentence says it before the click.
-*Rejected:* unknown
+*Rationale:* a week of an earning loop with an empty list brings nothing into the chest, and the player who missed the list learns of it only afterwards.
+*Rejected:* a new program bringing everything by default — a less conscious choice of what to bring.
 
 ### D-327 — What does the card of a map hold?
 
