@@ -1,9 +1,0 @@
-
-> loop2@0.0.0 test
-> python -B scripts/test.py tests/agent_workflow/test_loop2_play_skill.py
-
-........
-----------------------------------------------------------------------
-Ran 8 tests in 0.279s
-
-OK
