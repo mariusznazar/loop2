@@ -315,7 +315,8 @@ Błąd, którego nie obsłużył żaden kod gry, trafia do `installLastResort` z
 który `startApp` instaluje na oknie: zdarzenia `error` i `unhandledrejection` są
 anulowane, w konsoli staje jeden wiersz `uncaught kind=… code=… place=…`, a `halt()`
 gry sprawia, że magazyn stanu odrzuca każdy kolejny wynik symulacji i zegar staje,
-więc zapis dalej wysyła ostatni cały stan, czytany bez odczytu zegara (D-323, D-253).
+więc zapis dalej wysyła ostatni cały stan, czytany bez odczytu zegara; po błędzie strona
+nie buduje już gry, a logowanie kończy się na ekranie oczekiwania ze zdaniem (D-323, D-253).
 Zdanie o awarii stoi w wierszu pod paskiem menu obok wiersza zapisu; korzenie Reacta
 bez własnej obsługi przekazują błąd oknu przez `reportError`.
 

@@ -152,7 +152,8 @@ function createPageNotice(sentence: string): HTMLElement {
  * „Coś w grze się zepsuło — odśwież stronę.” until the page is reloaded: on the line under the bar,
  * beside the line of saving, on every screen with the header; in the card, under the form; and,
  * where React has taken the card down, alone in its place. The game then takes no change but goes
- * on saving the state it held (D-323, D-262).
+ * on saving the state it held, and no game is built after the error: a sign-in stays at the waiting
+ * screen with the sentence (D-323, D-262).
  */
 export function startApp(
   root: HTMLElement,
@@ -368,6 +369,13 @@ export function startApp(
     start: GameStart,
     saveAtOnce: boolean,
   ): void {
+    if (failed) {
+      // After an error nothing handled no game is built, so no catch-up passes time and nothing is
+      // saved: the page stays at the waiting screen with the sentence of the failure (D-323).
+      leaveWaiting();
+      showPage(check);
+      return;
+    }
     dropGame();
     const conflict = afterConflict && start.refused === null;
     afterConflict = false;
@@ -386,7 +394,6 @@ export function startApp(
       onSignedOut: () => whenNotLoggingOut(view, () => expire()),
     });
     game = view;
-    if (failed) view.halt();
     account = owner;
     barMessage = message;
     view.saveLine.classList.add("save-line");

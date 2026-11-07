@@ -9,10 +9,12 @@ import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
 import { mock, test } from "node:test";
 import {
   createCharacter,
+  mapRunEnded,
   newGame,
   send,
   withSaveTime,
 } from "../../dist/browser/sim/game.js";
+import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import { savedGame } from "../../dist/browser/sim/saved-game.js";
 import { createAccountCard } from "../../dist/browser/view/account-card.js";
 
@@ -289,6 +291,24 @@ const passing = () =>
     { mapId: "forest", characterId: 1 },
     0,
   ).state;
+
+/**
+ * Ala in an earning loop in Las, one game minute from the end of her first map run: a game built
+ * from a save of her catches up a minute, which ends the run and, taken, is a change to save.
+ */
+function loopingAla() {
+  const made = {
+    ...createCharacter(newGame(), "Ala").state,
+    solvedMaps: ["forest"],
+  };
+  const started = startLoop(made, { mapId: "forest", characterId: 1 }, 5).state;
+  const whole = advanceLoopRun(started, 1, 100_000);
+  assert.ok(
+    mapRunEnded(whole.state.loops[1].run),
+    "precondition: the run of the loop ends",
+  );
+  return advanceLoopRun(started, 1, whole.passed - 1).state;
+}
 
 /** The arguments of the oldest call of `name` still waiting. */
 function argsOf(held, name) {
@@ -577,8 +597,43 @@ test("an error while the card stands puts the sentence in the card under the but
   });
 });
 
-test("the sentence stays until the page is reloaded: a card built after the error and a game built after it both show it, the game taking no change", async () => {
-  await onPage(async ({ root }) => {
+/** Signs in on the card that stands, and gives the load the save `loaded`. */
+async function signInOn(held, root, loaded) {
+  const card = cardOf(root);
+  const [address, password] = tagged(card, "input");
+  await typeInto(address, "ala@example.com");
+  await typeInto(password, "dwanaście znaków");
+  await inAct(() => {
+    const { Event } = globalThis.window;
+    tagged(card, "form")[0].dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+  });
+  await held.answer("login", ACCOUNT);
+  await held.answer("loadSavedGame", loaded);
+}
+
+/** The page waits as it does while it asks the server, with the sentence under the bar, and no game. */
+function assertWaitingWithSentence(root, intervals, reason) {
+  assert.equal(sentencesShown(root).length, 1, `${reason}: one sentence`);
+  assert.ok(headerOf(root).contains(sentencesShown(root)[0]), reason);
+  assert.ok(shown(byClass(root, "session-check")[0]), `${reason}: waiting`);
+  assert.equal(cardOf(root), undefined, `${reason}: no card`);
+  assert.equal(
+    byClass(root, "program-panel").length +
+      byClass(root, "headquarters").length,
+    0,
+    `${reason}: no game`,
+  );
+  assert.equal(intervals.size, 0, `${reason}: no clock and no saver`);
+}
+
+// invariant: uncaught-failure-game-state
+// D-323, D-247, D-211, D-207; task napis-o-awarii, To do 3. Catches a game built after the error
+// that catches up the earning loops of a loaded save, takes the result and saves a state the
+// error came before.
+test("after an error nothing handled no game is built: a card built after it shows the sentence, and a sign-in on it stays at the waiting screen and saves nothing", async () => {
+  await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await playing(held);
     await inAct(() => reportError(new TypeError(QUOTED)));
@@ -588,30 +643,35 @@ test("the sentence stays until the page is reloaded: a card built after the erro
     await settle();
     await held.answer("saveGame", { kind: "saved", revision: 6 });
     await held.answer("logout", { ok: true, value: null });
-    const card = cardOf(root);
-    assert.ok(card, "the card stands");
-    assert.equal(sentencesShown(root).length, 1);
-    assert.ok(card.contains(sentencesShown(root)[0]), "in the new card");
-
-    const [address, password] = tagged(card, "input");
-    await typeInto(address, "ala@example.com");
-    await typeInto(password, "dwanaście znaków");
-    await inAct(() => {
-      const { Event } = globalThis.window;
-      tagged(card, "form")[0].dispatchEvent(
-        new Event("submit", { bubbles: true, cancelable: true }),
-      );
-    });
-    await held.answer("login", ACCOUNT);
-    await held.answer("loadSavedGame", saveOf(passing(), 6));
+    assert.ok(cardOf(root), "the card stands");
     assert.equal(sentencesShown(root).length, 1);
     assert.ok(
-      headerOf(root).contains(sentencesShown(root)[0]),
-      "in the header",
+      cardOf(root).contains(sentencesShown(root)[0]),
+      "in the new card",
     );
-    await press(buttonNamed(root, "Wznów"));
+
+    // The save of the account holds an earning loop whose map run ends in the catch-up.
+    await signInOn(held, root, saveOf(loopingAla(), 6));
+    assertWaitingWithSentence(root, intervals, "after the sign-in");
+    mock.timers.tick(60_000);
     await settle();
-    assert.deepEqual(waitingCalls(held), [], "the new game takes no change");
+    assert.deepEqual(waitingCalls(held), [], "nothing is saved");
+  });
+});
+
+test("an error on the waiting screen before the first game leaves a sign-in that loads a save at the waiting screen, with no game built and no save sent", async () => {
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    await startPage(held);
+    await inAct(() => reportError(new TypeError(QUOTED)));
+
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(loopingAla(), 3));
+
+    assertWaitingWithSentence(root, intervals, "after the load");
+    mock.timers.tick(60_000);
+    await settle();
+    assert.deepEqual(waitingCalls(held), [], "nothing is saved");
   });
 });
 
