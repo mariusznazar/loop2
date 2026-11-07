@@ -195,7 +195,8 @@ header .failure-line {
 /*
  * A screen of the game (D-280, D-282): a grid whose columns are areas of their own, each a block on
  * `panel` with text in `text`, so a narrower layout places them one under the other. Programy has
- * two, the list of programs and the program panel, with the list the narrower; Siedziba holds the
+ * two, the list of programs and the program panel, with the list the narrower, and Mapy has two of the
+ * same widths, the list of maps and the card of the map picked; Siedziba holds the
  * headquarters alone; the screen of a map run holds its header over a grid of three areas of its
  * own, below. The screens that do not show are hidden with `[hidden]`.
  */
@@ -206,7 +207,8 @@ header .failure-line {
   align-items: start;
 }
 
-.screen.programs-screen {
+.screen.programs-screen,
+.screen.maps-screen {
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
@@ -231,6 +233,7 @@ header .failure-line {
 
 @media (max-width: 720px) {
   .screen.programs-screen,
+  .screen.maps-screen,
   .screen.programs-screen.with-rule-panel {
     grid-template-columns: 1fr;
   }
@@ -1882,4 +1885,211 @@ footer {
   align-items: baseline;
   gap: var(--space-xs) var(--space-s);
   margin-bottom: var(--space-xs);
+}
+
+/*
+ * The screen Mapy (D-325, D-331, D-327, D-329; styleguide rule "The screen Mapy"): two areas as the
+ * columns of Programy (above), one under the other in a window under 720 px. The list of maps is
+ * drawn as the list of programs is: each row a link in `text`, the picked one in `text-strong` with a
+ * bar in `selected` at its left, a row under the pointer on `highlight`; „rozwiązana” after the name
+ * in `positive` (D-134). Focus is the one :focus-visible rule above.
+ */
+.maps-list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.maps-list-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-s);
+  padding: var(--space-2xs) var(--space-s);
+  color: var(--text);
+  text-decoration: none;
+  border-left: var(--bar-width) solid transparent;
+}
+
+.maps-list-item[aria-current="page"] {
+  color: var(--text-strong);
+  border-left-color: var(--selected);
+}
+
+.maps-list-item:hover {
+  background: var(--highlight);
+}
+
+.maps-list-solved {
+  color: var(--positive);
+}
+
+/* The sentence on the right before a map is picked: a description, so `text-secondary` (D-331). */
+.maps-card-empty {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/*
+ * The card of a map: the name in `text-strong`, „rozwiązana” in `positive` and „odsłania ją {mapa}”
+ * in `text-secondary` beside it (D-327); the names of its parts in `text-label`, their content in
+ * `text`. A step note is a note, so `text-secondary`; „nie odnawia się” and the caps are what the
+ * player must not miss, so `warning` (D-39).
+ */
+.maps-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.maps-card-name {
+  margin: 0;
+  font-size: var(--font-size-map-title);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.maps-card-solved {
+  color: var(--positive);
+}
+
+.maps-card-opened-by {
+  color: var(--text-secondary);
+}
+
+.maps-card-part {
+  margin-bottom: var(--space-s);
+}
+
+.maps-card-part p {
+  margin: 0;
+}
+
+.maps-card-part-name {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.maps-card-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.maps-card-note {
+  color: var(--text-secondary);
+}
+
+.maps-card-warning {
+  color: var(--warning);
+}
+
+/* A resource's icon, as tall as the line it stands in, as the trip plan's icons are. */
+.maps-card-icon {
+  height: 1lh;
+  aspect-ratio: 1;
+  vertical-align: bottom;
+  margin-right: var(--space-xs);
+}
+
+/*
+ * The section „Kto idzie” under the card (D-329): its name in `text-label` and, at each character,
+ * the lines from the top. A divider tells one character from the next and the section from the card
+ * (D-40). The name is a name, so `text-strong`; the resurrection line is `text-secondary`, in
+ * `danger` when not ready (D-217); the loop's line is `text` (D-244); „Wejdzie: …” is
+ * `text-secondary`; the sentence of a waiting map run is `text-secondary` as in Siedziba (D-287);
+ * the clipped-plan line and the rehearsal mark are the `warning` lines `trip-warning` and
+ * `rehearsal-mark` draw (D-188, D-251).
+ */
+.maps-who {
+  border-top: var(--frame-width) solid var(--divider);
+  margin-top: var(--space-m);
+  padding-top: var(--space-m);
+}
+
+.maps-who-heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.maps-who-empty {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.maps-who-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.maps-who-member {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-s) 0;
+  border-top: var(--frame-width) solid var(--divider);
+}
+
+.maps-who-member:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.maps-who-name {
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.maps-who-resurrection,
+.maps-who-enters,
+.maps-who-run-note {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.maps-who-resurrection.danger {
+  color: var(--danger);
+}
+
+.maps-who-loop,
+.maps-who-program,
+.maps-who-actions,
+.maps-who-loop-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+}
+
+.maps-who-actions {
+  align-items: flex-start;
+}
+
+.maps-who-loop-line {
+  margin: 0;
+  color: var(--text);
+}
+
+.maps-who-program-label {
+  color: var(--text-label);
+}
+
+/* „Wejdź” with the rehearsal mark under it. */
+.maps-who-enter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+/* The sentence beside „Puść w pętlę” when the list „Wynieś” is empty, in `warning` (D-326). */
+.maps-who-empty-loop {
+  color: var(--warning);
 }
