@@ -754,38 +754,96 @@ test("an edit of the copy leaves the question unless the copy then equals its pr
   });
 });
 
-// Row 4 and D-122. Catches the question standing above the band of a discovery, in the panel, or
-// not under the band after a completion in the minute of a discovery, where the band has no „Wznów”.
-test("the question stands in the program's area under the band of a discovery and above the program panel, also after a completion in the minute of a discovery", async () => {
+/**
+ * What stands in the program's area and in the program panel of the screen of a map run, as the
+ * classes of the children of each, in the order they stand.
+ */
+function placeOf(root) {
+  const area = byClass(runScreenOf(root), "run-program")[0];
+  const panel = byClass(area, "program-panel")[0];
+  const classes = (parent) =>
+    [...parent.children].map((child) => child.className);
+  return { area: classes(area), panel: classes(panel), panelElement: panel };
+}
+
+// Row 4 and row 8, D-122, D-173. Catches the question standing above the band of a discovery, above
+// the list „Program:” and „Nowy program” (the program panel's first controls, which stay where
+// they were), under the heading of the copy, or not under the band after a completion in the minute
+// of a discovery, where the band has no „Wznów”: it stands in the panel, just above the heading of
+// the copy „Kopia: …” and its line.
+test("the question stands under the band of a discovery and directly above the heading of the copy, after the list „Program:” and „Nowy program”, also after a completion in the minute of a discovery", async () => {
+  const order = [
+    "program-list",
+    "program-actions",
+    "end-question",
+    "copy-section",
+    "program-editing",
+  ];
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(atDiscovery()));
     await press(headerButton(root, "Zakończ"));
-    const area = byClass(runScreenOf(root), "run-program")[0];
-    assert.deepEqual(
-      [...area.children].map((child) => child.className),
-      ["discovery-band", "end-question", "run-program-place"],
+    const place = placeOf(root);
+    assert.deepEqual(place.area, ["discovery-band", "run-program-place"]);
+    assert.deepEqual(place.panel, order);
+    const question = questionOf(root);
+    const heading = byClass(place.panelElement, "copy-heading")[0];
+    assert.equal(heading.textContent, "Kopia: Program");
+    assert.ok(
+      question.nextElementSibling.contains(heading),
+      "the heading of the copy is the next thing under the question",
     );
     await inAct(() => view.dispose());
   });
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(completed(atDiscovery())));
     await press(headerButton(root, "Zakończ"));
-    const area = byClass(runScreenOf(root), "run-program")[0];
-    assert.deepEqual(
-      [...area.children].map((child) => child.className),
-      ["discovery-band", "end-question", "run-program-place"],
-    );
-    const band = byClass(area, "discovery-band")[0];
+    const place = placeOf(root);
+    assert.deepEqual(place.area, ["discovery-band", "run-program-place"]);
+    assert.deepEqual(place.panel, order);
+    const band = byClass(runScreenOf(root), "discovery-band")[0];
     assert.equal(buttonIn(band, "Wznów"), undefined, "no „Wznów” in the band");
     await inAct(() => view.dispose());
   });
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(paused()));
     await press(headerButton(root, "Zakończ"));
-    const area = byClass(runScreenOf(root), "run-program")[0];
-    assert.deepEqual(
-      [...area.children].map((child) => child.className),
-      ["end-question", "run-program-place"],
+    const place = placeOf(root);
+    assert.deepEqual(place.area, ["run-program-place"]);
+    assert.deepEqual(place.panel, order);
+    await inAct(() => view.dispose());
+  });
+});
+
+// Row 7 with row 4. Catches the question tied to the copy being shown: a player who picks another
+// program on the list „Program:” while it stands must still see it (the map run waits for the
+// answer), standing in the same place, and it must not move into the panel of Programy.
+test("the question stays in its place while the panel shows another program, and never stands on Programy", async () => {
+  await onPage(async ({ root }) => {
+    const { view, address } = await viewOf(renamed(paused()));
+    await press(headerButton(root, "Zakończ"));
+    const list = all(runScreenOf(root)).find(
+      (element) =>
+        element.localName === "select" &&
+        element.getAttribute("aria-label") === "Program:",
+    );
+    list.value = "2";
+    await inAct(() => fire(list, "change"));
+    assert.equal(
+      byClass(runScreenOf(root), "copy-section").length,
+      0,
+      "precondition: the panel shows a saved program",
+    );
+    assert.ok(questionOf(root), "the question stands");
+    const place = placeOf(root);
+    assert.equal(
+      place.panel.indexOf("end-question") >
+        place.panel.indexOf("program-actions"),
+      true,
+    );
+    await inAct(() => address.follow("#/programy"));
+    assert.equal(
+      byClass(byClass(root, "programs-screen")[0], "end-question").length,
+      0,
     );
     await inAct(() => view.dispose());
   });
