@@ -26,7 +26,7 @@ import {
   loopLine,
   resurrectionLine,
   stoppedLoopLine,
-} from "./headquarters.js";
+} from "./team-lines.js";
 import { ReactButton } from "./controls/react-button.js";
 
 /** What the page gives the screen; every call of `update` gives it whole. */

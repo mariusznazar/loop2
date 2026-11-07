@@ -3,146 +3,39 @@ import { BALANCE } from "../sim/data/balance.js";
 import { pieceCount } from "../sim/trip.js";
 import { rehearsalMark, tripWarning } from "./trip-lines.js";
 import { MAPS } from "../sim/data/maps.js";
-import { ITEMS } from "../sim/data/items.js";
-import { canSendMap, characterName, resurrectionReady } from "../sim/game.js";
+import { characterName } from "../sim/game.js";
 import { rowProgram } from "../sim/programs.js";
-import { SKILLS, type SkillId } from "../sim/data/skills.js";
 import type {
-  Character,
   CharacterId,
   Chest,
-  EarningLoop,
   GameState,
   MapId,
-  Practice,
   ProgramId,
   SavedProgram,
-  ItemId,
   Team,
 } from "../sim/types.js";
 import { createAwayReport } from "./away-report.js";
 import { screenAddress } from "./screen-address.js";
 import { createButton } from "./controls/button.js";
-import { createSelectList, type SelectOption } from "./controls/select-list.js";
+import { createSelectList } from "./controls/select-list.js";
 import { createTextField } from "./controls/text-field.js";
+import {
+  chestLines,
+  generationLabel,
+  loopLine,
+  programPositions,
+  resurrectionLine,
+  runWaitingSentence,
+  stoppedLoopLine,
+} from "./team-lines.js";
+import { sendMaps, solvingSentence } from "./map-lines.js";
 
 /** The message under the name field when the name typed is empty once trimmed. */
 export const EMPTY_NAME_MESSAGE = "Wpisz imię postaci.";
 
-/** The maps a character can be sent to, in the data's order. Pure. */
-export function sendMaps(solvedMaps?: readonly MapId[]): MapId[] {
-  const maps = Object.keys(MAPS) as MapId[];
-  return solvedMaps === undefined
-    ? maps
-    : maps.filter((mapId) => canSendMap(solvedMaps, mapId));
-}
-
 /** The map's name in a character's row: „Mapa: {name}”, with „ · rozwiązana” once the map is solved. Pure. */
 export function mapLabel(mapId: MapId, solved: boolean): string {
   return `Mapa: ${MAPS[mapId].name}${solved ? " · rozwiązana" : ""}`;
-}
-
-/** The map's solving condition as a sentence: „{name} — {solvingText}”, both from the map's data. Pure. */
-export function solvingSentence(mapId: MapId): string {
-  return `${MAPS[mapId].name} — ${MAPS[mapId].solvingText}`;
-}
-
-/**
- * The sentence under a character's sending while a manual map run waits or has ended (To do 8,
- * question 3): why „Wyślij” and „Puść w pętlę” are inactive, the map's name from the data. Pure.
- */
-export function runWaitingSentence(mapId: MapId): string {
-  return `Przejście na mapie ${MAPS[mapId].name} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.`;
-}
-
-/**
- * What the chest shows: one line „{name}: {count}” for each item it holds some of, in the
- * order of the items' data; no line for an empty chest. Pure.
- */
-export function chestLines(chest: Chest): string[] {
-  return (Object.keys(ITEMS) as ItemId[]).flatMap((id) => {
-    const count = chest.pieces[id] ?? 0;
-    return count > 0 ? [`${ITEMS[id].name}: ${count}`] : [];
-  });
-}
-
-/** One row's „Program:” list (D-170): the positions and the value shown. */
-export type ProgramPositions = {
-  options: SelectOption[];
-  value: string;
-};
-
-/**
- * The positions of a row's program list, the names of `programs` in list order with the program's
- * number as the value, and the value of the program the row shows. Pure.
- */
-export function programPositions(
-  programs: readonly SavedProgram[],
-  shown: SavedProgram,
-): ProgramPositions {
-  return {
-    options: programs.map((saved) => [String(saved.id), saved.name]),
-    value: String(shown.id),
-  };
-}
-
-const MS_PER_MINUTE = 60_000;
-const MINUTES_PER_HOUR = 60;
-
-/** The label of a character's generation number: „pokolenie {n}” from 2 up, nothing at 1. Pure. */
-export function generationLabel(generation: number): string | null {
-  return generation >= 2 ? `pokolenie ${generation}` : null;
-}
-
-/** A character's resurrection line: its text, and whether it stands in `danger`. */
-export type ResurrectionLine = {
-  text: string;
-  danger: boolean;
-};
-
-/**
- * The resurrection line of a character at the real moment `nowMs` (D-217): „Wskrzeszenie gotowe”
- * once ready, else a warning with the time left, „za {g} godz. {m} min czasu realnego” and below an
- * hour „za {m} min czasu realnego”. The time left is rounded up to whole minutes first, then divided
- * into hours and minutes, so the line never promises sooner than the real time. A clock set back
- * gives more time left. Pure.
- */
-export function resurrectionLine(
-  character: Character,
-  nowMs: number,
-): ResurrectionLine {
-  if (resurrectionReady(character, nowMs))
-    return { text: "Wskrzeszenie gotowe", danger: false };
-  const minutes = Math.ceil(
-    (character.resurrectionReadyAtMs - nowMs) / MS_PER_MINUTE,
-  );
-  const hours = Math.floor(minutes / MINUTES_PER_HOUR);
-  const left =
-    hours === 0
-      ? `za ${minutes} min czasu realnego`
-      : `za ${hours} godz. ${minutes % MINUTES_PER_HOUR} min czasu realnego`;
-  return {
-    text: `Wskrzeszenie ${left} — śmierć zabierze wprawę i wykupione stopnie`,
-    danger: true,
-  };
-}
-
-/** The line of a character in an earning loop (D-244): the map, the run, its minute, runs completed. Pure. */
-export function loopLine(loop: EarningLoop): string {
-  return `Pętla: ${MAPS[loop.run.mapId].name} · przejście ${loop.runNumber} · minuta ${loop.run.minute} · domknięte ${loop.completed}`;
-}
-
-/**
- * The line of a character whose earning loop was stopped (D-245): „Pętla zatrzymana” and, where the
- * loop gathered practice, „ · wprawa: {skill} +{n}, …” in the order of the skills' data. Pure.
- */
-export function stoppedLoopLine(practice: Practice): string {
-  const gains = (Object.keys(SKILLS) as SkillId[])
-    .filter((id) => (practice[id] ?? 0) > 0)
-    .map((id) => `${SKILLS[id].name} +${practice[id]}`);
-  return gains.length
-    ? `Pętla zatrzymana · wprawa: ${gains.join(", ")}`
-    : "Pętla zatrzymana";
 }
 
 /** What the headquarters asks for; the app turns each into a simulation call. */
