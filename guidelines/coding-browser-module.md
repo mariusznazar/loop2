@@ -41,6 +41,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/game-saver.ts` | do not copy | — |
 | `src/browser/view/game-view.ts` | do not copy | — |
 | `src/browser/view/headquarters.ts` | do not copy | — |
+| `src/browser/view/last-resort.ts` | copy | — |
 | `src/browser/view/menu-bar.tsx` | copy | — |
 | `src/browser/view/password-reset.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | do not copy | — |
@@ -202,9 +203,12 @@ podające pliki.
 w DOM a ekranem jest `createAccountCard`: tworzy korzeń, rysuje synchronicznie
 przez `flushSync` i zwraca element, `focus()` i `dispose()`. Strona wywołuje
 ją z obsługi zdarzenia albo z kontynuacji odpowiedzi, nigdy z rysowania ani
-z Efektu. Każdy formularz jest komponentem, który trzyma wpisane wartości jako
-własny stan (`useField`), więc zmiana stanu karty odmontowuje formularz razem
-z wpisanym tekstem i komunikatami.
+z Efektu. Korzeń karty ma własną obsługę błędu, którego nic nie obsłużyło
+(`onUncaughtError`): gdy React zdejmie kartę, na jej miejscu staje samo zdanie
+o awarii poza Reactem, a strona dostaje błąd przez `onUncaught`; `fail()` stawia to
+zdanie w działającej karcie, pod formularzem (D-323, D-262). Każdy formularz jest
+komponentem, który trzyma wpisane wartości jako własny stan (`useField`), więc
+zmiana stanu karty odmontowuje formularz razem z wpisanym tekstem i komunikatami.
 
 Wspólną blokadę karty na czas oczekiwania na serwer trzyma własny Hook
 `useCardLock`. Wyłączona kontrolka traci fokus, więc `focusAfterCommit` zapisuje
@@ -299,13 +303,21 @@ przeglądarki; po 401 stan gry zostaje w pamięci strony dla tego samego konta
 (D-209).
 
 `createGameView` z `game-view.ts` zwraca element gry, wiersz zapisu (`saveLine`)
-do ustawienia w nagłówku pod paskiem menu, metody zapisu (`saveNow`, `saveBeforeLogout`, `keep`)
-i `dispose()`, które zatrzymuje zegar (`dispose()` z `clock.ts`) i zapisującego,
+do ustawienia w nagłówku pod paskiem menu, metody zapisu (`saveNow`, `saveBeforeLogout`, `keep`),
+`halt()` i `dispose()`, które zatrzymuje zegar (`dispose()` z `clock.ts`) i zapisującego,
 a element gry i wiersz zapisu zdejmuje ze strony, razem z ich obsługą zdarzeń;
 moduł, który tworzy grę, wywołuje `dispose()`, zanim ją porzuci. Wynik zapisu
 dociera do strony wywołaniami `onConflict`, `onOutdated` i `onSignedOut`. „Wyloguj” stoi
 w menu „Konto” na pasku menu w nagłówku (`menu-bar.tsx`); pasek tylko je zgłasza, a
 `app.ts` najpierw zapisuje grę przez `saveBeforeLogout`, dopiero potem kończy sesję.
+
+Błąd, którego nie obsłużył żaden kod gry, trafia do `installLastResort` z `last-resort.ts`,
+który `startApp` instaluje na oknie: zdarzenia `error` i `unhandledrejection` są
+anulowane, w konsoli staje jeden wiersz `uncaught kind=… code=… place=…`, a `halt()`
+gry sprawia, że magazyn stanu odrzuca każdy kolejny wynik symulacji i zegar staje,
+więc zapis dalej wysyła ostatni cały stan, czytany bez odczytu zegara (D-323, D-253).
+Zdanie o awarii stoi w wierszu pod paskiem menu obok wiersza zapisu; korzenie Reacta
+bez własnej obsługi przekazują błąd oknu przez `reportError`.
 
 Każde żądanie ekranu dostaje kolejny numer, a odpowiedź działa tylko wtedy, gdy
 jej numer jest ostatni, więc spóźniona odpowiedź nie buduje gry ani nie

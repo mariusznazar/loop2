@@ -5135,28 +5135,46 @@ value with a space or a new line breaks a search.
 
 Each process that touches the data of accounts — the server, `account-block` and `account-backup` —
 has one last-resort handler of its own, which writes the kind, the code and the place of what no code
-handled, because the runtime's default print could quote values. A script run by hand or by the test
-gate that touches none of those data meets the rule on the last resort through the default print of
-Node.js or Python, which writes what nothing handled. `account-database-check`, `measure-passwords`,
-`deploy/loop2-backup` and `scripts/restore-trial.mjs` already have a last-resort handling of their
-own, and the two sentences above ask no more of them, though the last two touch those data and write
-no kind or code.
+handled, because the runtime's default print could quote values. The page in the browser has one
+too: it cancels the event of an error that no code handled, so that the browser prints nothing
+itself, and writes in the console, as plain text, one line of the kind, the code and the place of the
+handler, never the error's message or stack, the same line once until the page is reloaded. A script
+run by hand or by the test gate that touches none of those data meets the rule on the last resort
+through the default print of Node.js or Python, which writes what nothing handled, and
+`account-database-check`, `measure-passwords`, `deploy/loop2-backup` and `scripts/restore-trial.mjs`
+already have a last-resort handling of their own, which the sentences above ask no more of, though
+the last two touch those data and write no kind or code.
 
-- **Scope:** account-server · build-tools · deployment
-- **Based on:** node-uncaught-default-print · python-uncaught-default-print
+- **Scope:** browser-view · account-server · build-tools · deployment
+- **Based on:** node-uncaught-default-print · python-uncaught-default-print · html-exception-reporting
 - **Relations:** derives from D-252
 - **Verification:** an agent compares a change with the decision:
   - complies: a new command that opens the account database installing the handler before its work;
-    a script of the test gate that ends on an uncaught error with its runtime's default print
+    a script of the test gate that ends on an uncaught error with its runtime's default print; an
+    error thrown in a timer of the page leaving in the console one line `uncaught kind=TypeError
+    code=none place=…` and nothing else of the browser
   - violates: the message or the stack of an uncaught error printed by a process that touches the
-    data of accounts; a handler of its own added to a script that touches none
-- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
+    data of accounts; a handler of its own added to a script that touches none; the event of an
+    error nothing handled left uncancelled, so that the browser prints its text and stack; the text
+    of an error in a line of the page
+- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2 · napis_o_awarii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
 
 *Rationale:* a process that reads accounts can fail on an error that quotes an address or a stored
 value, and its default print would write it. A person at a terminal reads the default print of a
-script that touches no account, and it already says what went wrong.
+script that touches no account, and it already says what went wrong. The browser prints an error
+that the page does not cancel with its text and stack, which can quote a value from a save or a
+request; cancelling it leaves the page's line the only one, and an agent that reads it learns that
+the error came and of what kind, then reproduces it locally or in a simulation run in Node.js, where
+the text shows.
 *Rejected:* a handler of its own in every script — it does what the default print does and only adds
-code.
+code; the page's line without cancelling the event, so that the browser goes on printing the text and
+the stack — an agent reads the text, but the console is a log in the sense of D-252, whose logs hold
+no secret, and the text of an error can quote a value, so the way needs a departure in the coding
+guidelines and in D-252; cancelling and a line with the places of the stack, file, line and column,
+without its first line — an agent gets a position in the bundled file of the same commit, but the
+coding guidelines would have to give up reading never the message or the stack, and cutting the text
+from the stack breaks when the text has several lines, so it is worth returning to when the first
+real error shows that the kind alone does not suffice.
 
 ### D-254 — How does an agent operate the game as a player does?
 
@@ -5360,16 +5378,19 @@ switch — one click removes „Gra została zaktualizowana. Odśwież stronę.�
 Nothing stands on the screen of the login card but the card, neither header nor footer. The waiting
 screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and
 the moment after a sign-in that succeeded — stand outside the card, with the header and the footer,
-for a signed-in player too.
+for a signed-in player too. When React takes the card down after an exception no code of the game
+handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” stands alone in the card's place
+(D-323).
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · narrows D-156
 - **Verification:** an agent compares a change with the decision:
   - complies: a reload showing „Sprawdzanie logowania…” with the header and the footer, and then the
-    card alone or the game
+    card alone or the game; a card whose drawing threw replaced by „Coś w grze się zepsuło — odśwież
+    stronę.” alone, with neither header nor footer
   - violates: the card standing under the header; „Sprawdzanie logowania…” written inside the card
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row S4
+- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row S4 · napis_o_awarii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 5
 
 *Rationale:* a signed-in player passes through the waiting screens at every reload, and they say
 nothing about signing in, so they stay what they are. Accepted with it: at each entry a signed-out
@@ -6986,3 +7007,18 @@ from a pause, and a completion shows in the scene as a stop does.
 game time stands still, which loop avoided on purpose; the scene as at the player's pause after a
 death — the end of a game would look like a pause; a ready sheet of the mage's death — part of what
 the effects of a death are to bring would come into the scene.
+
+### D-323 — What does the game do, and what does the player read, after an error that no code of the game handled?
+
+After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock. Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262). The page writes the line of the error as D-253 gives it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-252
+- **Verification:** invariants: uncaught-failure-game-state. An agent compares a change with the decision:
+  - complies: an error thrown in the clock's reading at a tick, then the sentence once under the menu bar beside „Nie udało się zapisać postępu. Gra spróbuje ponownie.” when a save has failed, buttons that change nothing, and „Wyloguj” sending the state from before the tick; the login card showing the sentence in the card under its form
+  - violates: the sentence standing instead of the sentence of a failed save; the sentence standing above the card or above the game; a save after the error that reads the clock again; the sentence standing twice for two errors; the game going on changing its state after the error
+- **Origin:** napis_o_awarii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 2 and 3, and § Settlements to record, row 1
+
+*Rationale:* a game that goes on after an error nobody handled can lose a character unseen behind a screen that no longer redraws, and an error in the clock's reading would come back at every tick and every save. Stopping the changes and saving the last whole state is a degraded mode, which the coding guidelines allow only where a task sets it as a decision of the product, and it leaves a line in the console. At most the time from the error to the reload is lost, and, when a save did not arrive, what happened since the last save that did. The sentence tells the player what to do, reload, and stands once whatever the number of errors. Accepted with it: the sentence may show with no fault or blink (a hypothesis).
+*Rejected:* the game going on, clock, saving and buttons as before, with the sentence asking for a reload — least code, but an error in the clock's reading comes back every 200 ms and game time stands, and an error in the drawing lets a manual map run go on behind a screen that does not redraw, so that a character may die unseen; and going on is a degraded mode that would need its own decision; the game stopping whole, clock, changes and every save, the save at „Wyloguj” included — more code, a minor error and a false alarm would stop the whole game and lose what happened since the last save, and D-207 would get an exception; „W grze wystąpił błąd. Odśwież stronę.” — two sentences, so the aim of one sentence would stop being true; „Coś w grze się zepsuło.” — no advice, so the player does not know whether to wait or to reload; the sentence only in the row under the menu bar, with the screen of the card leaving the error in the console alone — a dead button on the card tells the player nothing; the sentence in the row under the menu bar and in the card under the form, with nothing for a card React takes down — React takes the sentence down with the card and the player sees an empty screen; the sentence always at the very top of the page, above the card or the bar and outside every root of React — it breaks D-262, since something that is no card stands above the card, and D-286, since a sentence above the game stays after a change of screen.
