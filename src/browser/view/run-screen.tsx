@@ -1,13 +1,15 @@
 /**
  * The screen of a manual map run in React, Przejście (D-311, D-280, D-281, D-282, D-19, D-122, D-313;
- * task ekran-przejscia, To do 1 to 8): one header — the character's name, the map's name and the
- * status row — over three areas side by side, each a `screen-area` element a narrower layout can
- * rearrange: the world on the left, the program in the middle, the band of a discovery above the
- * program panel, and on the right one content at a time, the table of revealed tiles or, while a
- * rule or a group is open, the rule panel. The page holds the screen behind one boundary,
- * `createRunScreen`, as it holds the screen Postać: an element of its own for the page to place, a
- * first render that is synchronous, `update(state, run, events)` and `focus()`, called from an event
- * handler or the clock, never from render or an effect. The screen takes its map run as a
+ * task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1): one header — the
+ * character's name, the map's name and the status row — over three areas side by side, each a
+ * `screen-area` element a narrower layout can rearrange: the world on the left, the program in the
+ * middle, the band of a discovery and, under it, the question „Zapisać, odrzucić, wrócić?” while
+ * the game view asks it, both above the program panel, and on the right one content at a time, the
+ * table of revealed tiles or, while a rule or a group is open, the rule panel. The page holds the
+ * screen behind one boundary, `createRunScreen`, as it holds the screen Postać: an element of its
+ * own for the page to place, a first render that is synchronous, `update(state, run, events)`,
+ * `setQuestion(open)` and `focus()`, called from an event handler or the clock, never from render
+ * or an effect. The screen takes its map run as a
  * parameter and reads no map run of the game state by itself (D-281): it draws from a game state
  * holding the map run it is given, and hands the program panel that state. The program panel keeps
  * its own root; the screen puts its element into the program's area and the host of its rule panel
@@ -21,6 +23,7 @@ import { createRoot } from "react-dom/client";
 import type { GameEvent } from "../sim/game.js";
 import type { GameMapRun, GameState } from "../sim/types.js";
 import { DiscoveryBand } from "./discovery-band.js";
+import { EndQuestion, type EndQuestionControls } from "./end-question.js";
 import type { ProgramPanel } from "./program-panel.js";
 import { RunHeader } from "./run-header.js";
 import type { StatusRowControls } from "./status-row.js";
@@ -39,6 +42,14 @@ export type RunScreen = {
   update(state: GameState, run: GameMapRun, events: readonly GameEvent[]): void;
   /** Moves keyboard focus to the screen, for the page to call when a send opens it. */
   focus(): void;
+  /**
+   * Shows the question „Zapisać, odrzucić, wrócić?” under the band of a discovery while `open`, and
+   * takes it away otherwise; the game view decides when it stands (D-173). Showing what is shown
+   * changes nothing. The question is drawn from the game state the latest `update` gave.
+   */
+  setQuestion(open: boolean): void;
+  /** Moves keyboard focus to the first answer of the question, where it stands. */
+  focusQuestion(): void;
 };
 
 /** What the screen needs of the program panel of the screen of a map run. */
@@ -81,7 +92,9 @@ type RunScreenViewProps = {
   state: GameState | null;
   /** The events of the simulation call that returned `state`; none before the first `update`. */
   events: readonly GameEvent[];
-  controls: StatusRowControls;
+  controls: StatusRowControls & EndQuestionControls;
+  /** Whether the question „Zapisać, odrzucić, wrócić?” stands under the band of a discovery. */
+  questionOpen: boolean;
   /** The program panel's element, which keeps its own root. */
   panelElement: HTMLElement;
   /** The host of the rule panel, which the program panel draws into through its portal. */
@@ -101,6 +114,7 @@ function RunScreenView({
   state,
   events,
   controls,
+  questionOpen,
   panelElement,
   ruleHost,
   ruleOpen,
@@ -144,6 +158,9 @@ function RunScreenView({
               onResume={() => controls.togglePause()}
             />
           )}
+          {state === null || !questionOpen ? null : (
+            <EndQuestion state={state} controls={controls} />
+          )}
           <div className="run-program-place" ref={panelPlace} />
         </section>
         <section className="screen-area run-right">
@@ -167,7 +184,7 @@ function RunScreenView({
  */
 export function createRunScreen(
   panel: RunScreenPanel,
-  controls: StatusRowControls,
+  controls: StatusRowControls & EndQuestionControls,
 ): RunScreen {
   const element = document.createElement("section");
   element.className = "screen run-screen";
@@ -178,14 +195,20 @@ export function createRunScreen(
   panel.placeRulePanel(ruleHost, (open) => ruleOpen.set(open));
   const onAddRule = () => panel.addDiscoveredRule();
   const root = createRoot(element);
+  // What the latest `update` gave and whether the question stands; a change of the question redraws
+  // from them.
+  let drawnState: GameState | null = null;
+  let drawnEvents: readonly GameEvent[] = [];
+  let questionOpen = false;
 
-  function draw(state: GameState | null, events: readonly GameEvent[]): void {
+  function draw(): void {
     flushSync(() => {
       root.render(
         <RunScreenView
-          state={state}
-          events={events}
+          state={drawnState}
+          events={drawnEvents}
           controls={controls}
+          questionOpen={questionOpen}
           panelElement={panel.element}
           ruleHost={ruleHost}
           ruleOpen={ruleOpen}
@@ -194,7 +217,7 @@ export function createRunScreen(
       );
     });
   }
-  draw(null, []);
+  draw();
 
   return {
     element,
@@ -204,11 +227,21 @@ export function createRunScreen(
       events: readonly GameEvent[],
     ): void {
       const shown: GameState = state.run === run ? state : { ...state, run };
-      draw(shown, events);
+      drawnState = shown;
+      drawnEvents = events;
+      draw();
       panel.update(shown, events);
     },
     focus(): void {
       element.focus();
+    },
+    setQuestion(open: boolean): void {
+      if (open === questionOpen) return;
+      questionOpen = open;
+      draw();
+    },
+    focusQuestion(): void {
+      element.querySelector<HTMLElement>(".end-question button")?.focus();
     },
   };
 }

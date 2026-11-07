@@ -4318,7 +4318,9 @@ test("after „Zakończ” `#/programy` shows the first program once the copy's 
       RUN_ADDRESS,
       deleteProgram(endedOnSecondProgram(), 2).state,
     );
+    // The copy of a deleted program holds unsaved changes (D-168), so „Zakończ” asks first (D-173).
     await press(buttonNamed(root, "Zakończ"));
+    await press(buttonNamed(root, "Odrzuć"));
     await held.answer("saveGame", { kind: "saved", revision: 5 });
     await follow(address, "#/programy");
     assert.deepEqual(programsShown(root), [

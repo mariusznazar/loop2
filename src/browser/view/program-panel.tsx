@@ -261,6 +261,14 @@ function savedShown(
     : { kind: "saved", programId: state.programs[0].id };
 }
 
+/**
+ * The line beside the save buttons of the copy, and under the question of „Zakończ”, when the
+ * program `name` the copy belongs to holds changes the copy lacks (D-172, task pytanie-przy-zakoncz).
+ */
+export function copyLacksSentence(name: string): string {
+  return `Program ${name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.`;
+}
+
 /** The sentence above the editor of Programy while the game state holds a map run (D-166). */
 function runNoteText(run: NonNullable<GameState["run"]>): string {
   return `Zmiany tutaj nie dotykają przejścia na mapie ${MAPS[run.mapId].name}.`;
@@ -584,9 +592,7 @@ export function ProgramPanelView({
                 />
               ) : null}
               {lacks && owner ? (
-                <p className="copy-line">
-                  {`Program ${owner.name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.`}
-                </p>
+                <p className="copy-line">{copyLacksSentence(owner.name)}</p>
               ) : null}
             </div>
           </div>
