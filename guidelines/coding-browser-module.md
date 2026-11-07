@@ -15,7 +15,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/account-card.tsx` | exemplar | D-36 |
 | `src/browser/view/account-rules.ts` | copy | — |
 | `src/browser/view/app.ts` | do not copy | — |
-| `src/browser/view/away-report.ts` | do not copy | — |
+| `src/browser/view/away-report.ts` | copy | — |
 | `src/browser/view/body-row.ts` | do not copy | — |
 | `src/browser/view/character-screen.tsx` | copy | — |
 | `src/browser/view/character-skills.ts` | do not copy | — |
@@ -40,8 +40,10 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/footer.ts` | do not copy | — |
 | `src/browser/view/game-saver.ts` | do not copy | — |
 | `src/browser/view/game-view.ts` | do not copy | — |
-| `src/browser/view/headquarters.ts` | do not copy | — |
+| `src/browser/view/headquarters.tsx` | copy | — |
 | `src/browser/view/last-resort.ts` | copy | — |
+| `src/browser/view/map-lines.ts` | copy | — |
+| `src/browser/view/maps-screen.tsx` | copy | — |
 | `src/browser/view/menu-bar.tsx` | copy | — |
 | `src/browser/view/password-reset.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | do not copy | — |
@@ -55,6 +57,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/scene.tsx` | copy | — |
 | `src/browser/view/screen-address.ts` | copy | — |
 | `src/browser/view/status-row.ts` | do not copy | — |
+| `src/browser/view/team-lines.ts` | copy | — |
 | `src/browser/view/terrain-drawing.tsx` | copy | — |
 | `src/browser/view/terrain-picture.ts` | copy | — |
 | `src/browser/view/tile-list.ts` | do not copy | — |
@@ -234,9 +237,9 @@ nie woła go z rysowania ani z Efektu.
 Ekran nie wykonuje działań sam: kupno gałęzi i zatrzymanie pętli wychodzą przez `onBuy` i
 `onStop`, a `game-view.ts` zamienia je na wywołania symulacji. Gdy w stanie gry stoi
 przejście na mapie (`run !== null`), przycisk „Kup” jest wyłączony, a ekran pisze, że
-stopnie kupi się po jego zakończeniu. Funkcje układające tekst, `loopLine` z `headquarters.ts`
-i `branchText` z `character-skills.ts`, są czystymi funkcjami modułów DOM; nic nie rysują,
-więc ekran może je importować (D-265).
+stopnie kupi się po jego zakończeniu. Funkcje układające tekst, `loopLine` z `team-lines.ts`
+i `branchText` z `character-skills.ts`, są czystymi funkcjami; nic nie rysują, więc ekran
+może je importować (D-265).
 
 ### Pasek menu w Reactcie
 
@@ -255,19 +258,18 @@ wymaga D-267. „Wyślij ponownie” pasek wysyła sam przez `client`.
 
 ### Kontrolki w DOM i ich aktualizacja
 
-Ten akapit o `headquarters.ts` dotyczy utrzymania ekranu, który zostaje w DOM,
-nie budowy nowego ekranu (D-265).
+Ten akapit o `app.ts` dotyczy utrzymania ekranu, który zostaje w DOM, nie budowy
+nowego ekranu (D-265).
 
-`src/browser/view/headquarters.ts` tworzy pole imienia nowej postaci i przycisk
-„Załóż” raz, a przy zmianie stanu aktualizuje istniejące elementy: `update`
-ustawia `disabled` przycisków „Wyślij” i „Puść w pętlę”, a `setLine` zapisuje
-tekst i widoczność wiersza tylko tam, gdzie się zmieniły. Dzięki temu pole
-i przycisk zachowują fokus. Listę postaci odbudowuje tylko wtedy, gdy zmieni się
-drużyna, rozwiązane mapy albo numery i nazwy programów. Obsługa kliknięć
-przekazuje działania do aplikacji przez `HeadquartersControls`; aplikacja
-wywołuje symulację. Taki podział jest przykładem dla edytowalnych kontrolek
-ekranu, który zostaje w DOM. Każdy moduł nie musi mieć `update()`, a elementy
-statyczne mogą być przebudowywane.
+`src/browser/view/app.ts` tworzy w `startApp` elementy sprawdzania logowania raz:
+tekst „Sprawdzanie logowania…”, ostrzeżenie i przycisk „Spróbuj ponownie”. Przy
+zmianie stanu zmienia istniejące elementy, a nie buduje ich od nowa: `waitForServer`
+przełącza `hidden` tekstu albo zmienia napis przycisku przez `setButtonWaiting`,
+a `askingFailed` ustawia ostrzeżenie, pokazuje przycisk i przenosi na niego fokus.
+Elementy zostają te same, więc fokus przenosi się na przycisk, który już stoi na
+stronie. Taki podział jest przykładem dla edytowalnych kontrolek ekranu, który
+zostaje w DOM. Każdy moduł nie musi mieć `update()`, a elementy statyczne mogą być
+przebudowywane.
 
 Wspólne kontrolki w `src/browser/view/controls/` budują ekrany; kontrolka, która
 czeka na serwer, zmienia się w miejscu. W postaci DOM `setButtonWaiting`
@@ -336,6 +338,6 @@ o ponowieniu.
 - `src/browser/view/`
 - `src/browser/view/account-card.tsx`
 - `src/browser/view/controls/`
-- `src/browser/view/headquarters.ts`
+- `src/browser/view/headquarters.tsx`
 - `src/browser/kitchen-sink/`
 - `tests/view/react-controls.test.mjs`
