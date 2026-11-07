@@ -1073,24 +1073,25 @@ a name keeping white space at its start or end — it looks on the list as the s
 
 ### D-53 — Where does the player send a character from, and where does „Zakończ” lead?
 
-The player sends a character to a game map from the headquarters, and „Zakończ” returns to the
+The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the
 screen Postać of that character.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: the button „Wyślij” beside each character of the headquarters; „Zakończ” of a map
-    run opening the screen Postać of the character that made it
-  - violates: a panel for sending characters standing apart from the headquarters; „Zakończ”
-    leading to the headquarters or to any screen other than the screen Postać of that character
-- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-53 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6
+  - complies: the button „Wejdź” beside each character in the section „Kto idzie” of the card of a
+    map; „Zakończ” of a map run opening the screen Postać of the character that made it
+  - violates: a panel for sending characters standing apart from the card of a map; a button that
+    sends a character standing in the headquarters; „Zakończ” leading to the headquarters or to any
+    screen other than the screen Postać of that character
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-53 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7
 
-*Rationale:* the headquarters is the screen the game opens on when the saved game state holds no
-manual map run, so a character goes out to a game map from it. Coming back to the character leads on
-to what the map run gave it and to the next choice.
-*Rejected:* a screen for sending characters of its own beside the headquarters — the player would
-send from one screen and see the team on another.
+*Rationale:* the card of a map shows what the map asks and what enters from the trip plan, so a
+character goes out to a game map from the card, where the map is read. Coming back to the character
+leads on to what the map run gave it and to the next choice.
+*Rejected:* sending from the headquarters — the player would read what a map asks on one screen and
+send a character from another.
 
 ### D-54 — In what order do the characters of the team stand?
 
@@ -1120,8 +1121,9 @@ sends no other on a manual map run.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: `send` refusing a second character while a manual map run goes on; „Wyślij” beside the
-    other characters inactive wherever the headquarters shows during a manual map run
+  - complies: `send` refusing a second character while a manual map run goes on; „Wejdź” of the
+    other characters in the section „Kto idzie” of the card of a map inactive on the screen Mapy
+    during a manual map run and after its end, until „Restart” or „Zakończ”
   - violates: a second character sent on a manual map run while the first one's goes on
 - **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Czy kilka postaci drużyny może naraz być w ręcznym przejściu mapy?" and "12. Czy po zadaniu 18 ręczne przejście dalej ma trwać jedno naraz?"
 
@@ -2522,43 +2524,42 @@ the state of the map run that solved the map.
 
 ### D-133 — Where does the player see a map run's streak and a map's solving condition?
 
-During a map run the status row in the header of the screen of a map run shows progress for the requirements present in the map's solving condition beside the game minute and the character's activity: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present, as „Minuta 312 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2”. The headquarters shows by each available map the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu” or „Las — głębiej — 540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka”.
+During a map run the status row in the header of the screen of a map run shows progress for the requirements present in the map's solving condition beside the game minute and the character's activity: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present, as „Minuta 312 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2”. The card of each open map shows the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu” or „Las — głębiej — 540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: a paused map run reading „Minuta 312 · Eksploruje · Passa 120/480 (pauza)” in the
-    header of the screen of the map run; the sentence of Las standing by the map in the row of each
-    character in the headquarters
+    header of the screen of the map run; the sentence of Las standing on the card of Las, in its
+    part „Żąda”
   - violates: a progress bar in place of „Passa 120/480”; „Passa 120/480” standing in the world area
     under the header; a streak target shown for a map that asks for beaten attacks alone; the
-    sentence of the condition written in the code of the headquarters
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 3
+    sentence of the condition written in the code of the screen Mapy
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 3 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4
 
 *Rationale:* the player sees during a map run how far the program has come towards the map's
-condition, and in the headquarters what each map asks before sending a character. Accepted with it:
+condition, and on the card of each open map what it asks before sending a character. Accepted with it:
 a longer status row, and a new text in each map's data.
 *Rejected:* a progress bar, or the streak with no number of the condition beside it — the player
 would not read how many game minutes the condition still asks for.
 
 ### D-134 — Where does the player see that a map is solved?
 
-From the first completion of a map by any of the player's characters, the headquarters shows by
-that map „Mapa: {map} · rozwiązana”, such as „Mapa: Las · rozwiązana”, in the role `positive`.
+From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”, in the role `positive`.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: after the first completion of Las, the row of each character naming Las reading
-    „Mapa: Las · rozwiązana” in `positive`, also after a later map run on Las ends in death
-  - violates: the mark shown on the screen after the completion and missing from the headquarters;
-    the mark gone once a later map run on Las ends in death
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "7. Gdzie gracz widzi, że Las jest rozwiązany?"
+  - complies: after the first completion of Las, the row of Las on the list and the card of Las
+    reading „rozwiązana” in `positive`, also after a later map run on Las ends in death
+  - violates: the mark shown on the screen after the completion and missing from the list and the
+    card; the mark gone once a later map run on Las ends in death
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "7. Gdzie gracz widzi, że Las jest rozwiązany?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-134 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3
 
-*Rationale:* a solved map stays solved, so the player sees in the headquarters, from which
-characters go out, which maps a program has solved.
+*Rationale:* a solved map stays solved, so the player sees on the list and the card of the screen
+Mapy, from which characters go out, which maps a program has solved.
 *Rejected:* the solving seen at the moment of the completion alone — the player would not see later
 which maps are solved.
 
@@ -2798,19 +2799,19 @@ An attacking creature currently appears in the encounter’s text, and the terra
 *Rationale:* The text supplies the behaviour and result the player needs to write a counter; the terrain stays a picture of its existing contents.
 *Rejected:* adding the wolf to the terrain drawing — adds a visual feature outside the accepted presentation.
 
-### D-149 — When does the headquarters offer a map opened by another map?
+### D-149 — When does the game offer a map opened by another map?
 
-A map whose opening map is still unsolved is currently absent from the headquarters, and from the opening map’s first completion each character has „Mapa: {map}”, „Wyślij” and its solving-condition sentence beside that map. The same availability determined from the game’s solved maps governs sending in the simulation, and a map that requires an unsolved opening map refuses a send.
+A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character. The same availability determined from the game’s solved maps governs sending in the simulation, and a map that requires an unsolved opening map refuses a send.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-53
 - **Verification:** an agent compares a change with the decision:
-  - complies: solving Las opening Las — głębiej for every character
-  - violates: the simulation sending to Las — głębiej before Las is solved
-- **Origin:** none
+  - complies: solving Las opening Las — głębiej, which then stands on the list of the screen Mapy with its card for every character
+  - violates: the simulation sending to Las — głębiej before Las is solved; Las — głębiej standing on the list before Las is solved
+- **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-149 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3
 
-*Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the player learns of the next map on returning to headquarters.
+*Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the player finds the next map on the list when the screen Mapy is next opened.
 *Rejected:* showing the locked map with an inactive send — reveals it before opening; a new-map message on completion — adds another announcement; filtering in the view alone — allows sending to an unavailable map through the simulation.
 
 ### D-150 — Which character skills open the current combat actions?
@@ -3032,15 +3033,15 @@ Programs belong to the player, as one list shared by all characters; a character
 
 ### D-165 — How does the game state tell one program from another?
 
-Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included. Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked on a character's row of the headquarters, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number.
+Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last, so the numbers of two programs of one game differ, a deleted program's number included. Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked for a character, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” renamed „Las nocą” and „Program” deleted, the copy's program, the program its character used last and a row's pick still naming program 2; a program created after program 3 was deleted taking the number 4
+  - complies: „Program 2” renamed „Las nocą” and „Program” deleted, the copy's program, the program its character used last and a character's pick still naming program 2; a program created after program 3 was deleted taking the number 4
   - violates: a record naming a program by its name or by its place on the list; a number given again to a program created after a deletion
-- **Origin:** none
+- **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-165
 
 *Rationale:* a rename changes no record that names a program, and a deleted program's number comes to mean no other program, so a record left naming it finds no program. The name a copy keeps once its program is deleted stands in the copy's heading and names no program. Counting up keeps the number out of the simulation's randomness, as it does for characters (D-56). A later change of how programs are told apart would touch every record naming one and, once the game state is saved, saved games.
 *Rejected:* the name — a rename would cut every record naming the program, and names are compared regardless of letter case; the place on the list — a deletion before a program shifts it; a number drawn at random — every random draw of the simulation comes from the generators of a map run.
@@ -3112,18 +3113,18 @@ The program of a new game is named „Program”, and a new program „Program 2
 
 ### D-170 — Where does the player pick the program a character enters a map with, and which one stands there first?
 
-The player picks the program a character enters a map with on the select list „Program: {name}” in that character's row of the headquarters, beside „Mapa: …” and „Wyślij”, one list for each row whatever the number of maps. The list shows the first program still on the player's list of these: the program picked on that row before the character is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list.
+The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map. The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-53
 - **Verification:** an agent compares a change with the decision:
-  - complies: a character that entered Las with „Program 2” showing „Program: Program 2” in its row afterwards; a character switched to „Program 3” during its map run showing „Program 3”; a new character showing the program the last character sent entered with; „Program 3” picked on a row and kept through the creation of another character until that character is sent; „Program 2” deleted while it is a character's program used last, its row showing the program with which a character last entered a map
-  - violates: a select list of programs for each map of a row; a new character showing the first program of the list after another character entered a map with „Program 2”; a pick on a row lost when the team's rows are drawn again
-- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Gdzie gracz wybiera program przy wysłaniu postaci i który program jest domyślny dla postaci, która jeszcze nie chodziła?" and "Q13. Który program jest domyślny przy następnym wysłaniu postaci, która w trakcie przejścia została przełączona na inny program?"
+  - complies: a character that entered Las with „Program 2” showing „Program: Program 2” at it in „Kto idzie” afterwards; a character switched to „Program 3” during its map run showing „Program 3”; a new character showing the program the last character sent entered with; „Program 3” picked at a character and kept through the creation of another character until that character is sent; „Program 2” deleted while it is a character's program used last, the character showing the program with which a character last entered a map
+  - violates: more than one select list of programs at one character in „Kto idzie”; a new character showing the first program of the list after another character entered a map with „Program 2”; a pick at a character lost when the section „Kto idzie” is drawn again
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Gdzie gracz wybiera program przy wysłaniu postaci i który program jest domyślny dla postaci, która jeszcze nie chodziła?" and "Q13. Który program jest domyślny przy następnym wysłaniu postaci, która w trakcie przejścia została przełączona na inny program?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-170 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5
 
 *Rationale:* the player picks the program where the character is sent from, and the program that stands first keeps a character with the program it went with last, so a send repeats the last attempt unless the player picks another; a character that has not gone yet takes the program the team went with last.
-*Rejected:* a step after „Wyślij” for picking the program — one more move at every send; a list for each map of a row — the same pick repeated once for each map.
+*Rejected:* a step after „Wejdź” for picking the program — one more move at every send; a list for each map — the same pick repeated once for each map.
 
 ### D-171 — How does the program panel show the copy and its unsaved changes?
 
@@ -3133,7 +3134,7 @@ During a map run the program panel shows the copy under the heading „Kopia: {p
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-39
 - **Verification:** invariants: copy-save. An agent compares a change with the decision:
-  - complies: a program rule added to the copy showing „Niezapisane zmiany w kopii.” in `warning` under „Kopia: Program”, with the three buttons active; „Zapisz jako nowy program” offering „Program 2”, after which the heading reads „Kopia: Program 2” and the character's row in the headquarters shows „Program 2”
+  - complies: a program rule added to the copy showing „Niezapisane zmiany w kopii.” in `warning` under „Kopia: Program”, with the three buttons active; „Zapisz jako nowy program” offering „Program 2”, after which the heading reads „Kopia: Program 2” and the list „Program:” at the character in the section „Kto idzie” of the card of a map shows „Program 2”
   - violates: the three buttons active while the copy is the same as its program; the copy still belonging to „Program” after it was saved as „Program 2”
 - **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Co panel programu pokazuje w trakcie przejścia, jak gracz widzi niezapisane zmiany kopii, gdzie stoją „Zapisz w programie”, „Zapisz jako nowy program” i „Porzuć zmiany” i co dzieje się po zapisie jako nowy program?"
 
@@ -3286,15 +3287,17 @@ The trip plan is a field of the program, both its lists are bound at the start o
 
 ### D-180 — Where does the player arrange the trip plan?
 
-The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”. Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list.
+The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”. Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list. The card of a map shows what of the plan enters.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-166 · derives from D-173 · derives from D-179
-- **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-180 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 11
+- **Verification:** an agent compares a change with the decision:
+  - complies: the card of Las showing, at a character whose chosen program takes patyk 6 and jagoda 4 in its take list, what of them enters
+  - violates: the card of a map showing the take list as the program asks it, with no account of what the map and the character let in
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-180 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 11 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3
 
-*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. Accepted with it: the plan of the copy is not changed during a map run.
+*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. Accepted with it: the plan of the copy is not changed during a map run. The card of a map shows what of the plan enters, so the player reads before a send what the map lets in.
 *Rejected:* the section under the rule groups on the screen of a map run — it takes the space of what the player watches; the plan in the headquarters character row.
 
 ### D-181 — Which entries does a trip list accept?
@@ -3390,16 +3393,16 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
 
 ### D-188 — Where does the player learn that a map cuts the trip plan?
 
-In the headquarters, at a character's map, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that row's chosen program and the character's carrying capacity. The same line stands in the status row beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is currently absent.
+On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity. The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is currently absent.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-170 · derives from D-179 · derives from D-187
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10", part b
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10", part b · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-188
 
 *Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places.
-*Rejected:* a warning confined to the headquarters — omits the next restart.
+*Rejected:* a warning confined to the card of a map — omits the next restart.
 
 ### D-189 — What pays, and what takes from the chest?
 
@@ -4033,13 +4036,13 @@ unaware of the lost progress.
 
 ### D-217 — What does the game show of a character's resurrection?
 
-The card and the screen of a character show, from its creation, „Wskrzeszenie gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
+The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-190 · derives from D-219
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-217
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-217 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4
 
 *Rationale:* the player sees the stake before paying it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. Accepted with it: the screens have to refresh as time passes.
 *Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; a bare ready or not ready — the player does not know how long to wait; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes.
@@ -4833,48 +4836,47 @@ split of a span would change who gets the chest, and `minute-span-split` would n
 
 ### D-243 — How does the player start an earning loop?
 
-The player currently starts an earning loop with „Puść w pętlę”, which stands in the character's row
-of the headquarters at each solved map, beside „Wyślij”, takes the program of that row's list
-„Program:” and acts at once on the click. For that list the start counts as a send: the program
-becomes the one the character used last and the one with which a character last entered a map, and
-the pick on the row clears. At a character in an earning loop „Wyślij” and „Puść w pętlę” are
+The player currently starts an earning loop with „Puść w pętlę”, which stands at each character in
+the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that
+character's list „Program:” and acts at once on the click. For that list the start counts as a send:
+the program becomes the one the character used last and the one with which a character last entered
+a map, and the pick clears. At a character in an earning loop „Wejdź” and „Puść w pętlę” are
 currently inactive, and the player stops the earning loop first.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-53 · derives from D-170 · derives from D-239
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Puść w pętlę” at Las starting the character at once on the program its row shows, the
-    row afterwards showing that program as after a send; a pick on the list of a character in an
-    earning loop reaching its next send or start and leaving the running earning loop as it is
-  - violates: a question for a program or a map before the start; „Wyślij” stopping the earning
-    loop by itself; „Puść w pętlę” at a map not yet solved; a start leaving the pick on the row
-    standing
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q1 and Q3, and § Settlements to record, rows 1, 2 and 5
+  - complies: „Puść w pętlę” at Las starting the character at once on the program its list shows,
+    the list afterwards showing that program as after a send; a pick on the list of a character in
+    an earning loop reaching its next send or start and leaving the running earning loop as it is
+  - violates: a question for a program or a map before the start; „Wejdź” stopping the earning
+    loop by itself; „Puść w pętlę” at a map not yet solved; a start leaving the pick standing
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q1 and Q3, and § Settlements to record, rows 1, 2 and 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-243 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5
 
-*Rationale:* a character goes to earn from the place it is sent from, on the program its row already
+*Rationale:* a character goes to earn from the place it is sent from, on the program its list already
 shows, so a tuned program goes out with one click. Stopping first keeps the backpack of the map run
-going on from being lost by a click on another button. Accepted with it: one more button in a long
-row, and one click more before a send.
+going on from being lost by a click on another button. Accepted with it: one more button at each
+character, and one click more before a send.
 *Rejected:* a section „Pętle” of the headquarters with a pick of character, map and program — a second
-place for sending characters and several times the view; „Wyślij” stopping the earning loop by itself
+place for sending characters and several times the view; „Wejdź” stopping the earning loop by itself
 — one click silently loses the backpack of the map run going on.
 
 ### D-244 — What does the player see of an earning loop?
 
-A running earning loop currently shows on the card and the screen of its character as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
+A running earning loop currently shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-239 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
 - **Verification:** an agent compares a change with the decision:
   - complies: a line reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2” on the
-    character's card on Siedziba and on its screen Postać, moving with each game minute of the
-    earning loop; the counts of the last manual map run staying as they were after an earning loop
+    character's card on Siedziba, on its screen Postać and at that character in „Kto idzie” of the
+    card of Las, moving with each game minute of the earning loop; the counts of the last manual map run staying as they were after an earning loop
     starts; the program editor staying on the player's programs while earning loops pass
   - violates: a button that opens the map of an earning loop's map run; firing counts gathered in an
     earning loop's map run; the start of an earning loop clearing the counts
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-244
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-244 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5
 
 *Rationale:* the player checks a program in a manual map run and reads an earning loop by what it brings, so one line says what it does and how far it has come. The screen of a map run takes its map run as a parameter, so a preview can come later as an addition. Accepted with it: the player sees neither what the character does nor why it died, and the rule that a map run counts its firings takes an exception.
 *Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of map-run screen and a large piece of work.
@@ -5072,22 +5074,22 @@ words "time stands still" of the screens after an end speak of it.
 *Rejected:* the screen after an end stopping the earning loops of other characters — looking at the
 result holds up what they earn.
 
-### D-251 — How does the list of maps mark a rehearsal the loop cannot repeat?
+### D-251 — How does the card of a map mark a rehearsal the loop cannot repeat?
 
-At a solved map, in the character's row, when an item of the take list of the row's program, clipped
-by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas,
-którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wyślij” in the role
-`warning`.
+At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its
+program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest,
+„Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under
+„Wejdź” in the role `warning`.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-188 · derives from D-189
 - **Verification:** an agent compares a change with the decision:
   - complies: a program taking three pieces of an item the chest holds two of showing the line under
-    „Wyślij” at Las once Las is solved; the same program at a map not yet solved showing no line
+    „Wejdź” at Las once Las is solved; the same program at a map not yet solved showing no line
   - violates: the line measured against the take list before its clipping; the line in a role other
     than `warning`
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 18, Questions to settle, Q14, and § Settlements to record, row 21
+- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 18, Questions to settle, Q14, and § Settlements to record, row 21 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-251 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5
 
 *Rationale:* a manual map run of a solved map takes its equipment from nowhere (D-189), so it can go
 where an earning loop, bound to the chest, goes cut, and the mark names that one price before the
@@ -5740,11 +5742,13 @@ boundary ending the deferral — a test at the task that first adds a picture, a
 that the tasks bring no test files, and a change of the plan; new files ending it, and a change of
 the build not — the same costs.
 
-### D-274 — What does the main button of a form look like?
+### D-274 — What does a main button look like, and which buttons have it?
 
 The button that sends a form, marked as its submit button, is that form's main button, one to a
 form: its text in `text-strong`, a frame in the colour of that text and no fill, with no role of
-colour of its own. The main look covers only a button that sends a form, and an action outside a
+colour of its own. „Wejdź” at each character in the section „Kto idzie” of the card of a map has
+the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button.
+Beyond these, the main look covers only a button that sends a form, and any other action outside a
 form keeps the button D-44 gives it.
 
 - **Scope:** browser-view
@@ -5752,11 +5756,12 @@ form keeps the button D-44 gives it.
 - **Relations:** derives from D-44 · derives from D-279
 - **Verification:** an agent compares a change with the decision:
   - complies: „Zaloguj się” under the login form with its text in `text-strong`, framed in the same
-    colour and unfilled, on `highlight` under the pointer; an action of the headquarters made with
-    the plain shared button
+    colour and unfilled, on `highlight` under the pointer; „Wejdź” at each character in „Kto idzie”
+    in the main look, beside „Puść w pętlę” made with the plain shared button; an action of the
+    headquarters made with the plain shared button
   - violates: a form with two buttons in the main look; a main button filled, or framed in
     `selected` or in a colour other than its text's; a role of colour added for the main button
-- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 1
+- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 1 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6
 
 *Rationale:* a visitor tells the button that sends a form from the ways around it, and the next
 screens take their layout from the login card. The look is that of the main button of loop, a light
@@ -5764,10 +5769,11 @@ frame and strong text, and it needs no colour, so the roles and their contrast s
 frame takes the colour of its text rather than `selected`, which means only the one chosen in its
 group. The submit mark the shared button already carries tells which button is the main one, so the
 main button is no new control. Accepted with it: the difference from a plain button is smaller than
-a fill would give, and the main actions outside forms take their look in the tasks of their
-screens.
+a fill would give, the main look reaches beyond forms to „Wejdź”, with several characters several
+buttons in the main look stand on a screen at once, and any other main action outside a form takes
+its look in the task of its screen.
 *Rejected:* leaving every button as it is — four alike buttons, and the next screens repeat the
-layout; the main button unchanged and only the secondary actions as text — the form „Załóż konto”
+layout; „Wejdź” as a plain button — „Wejdź” and „Puść w pętlę” would look alike; the main button unchanged and only the secondary actions as text — the form „Załóż konto”
 holds no secondary action, so nothing would change there; a light fill with dark text — the
 strongest difference, but three new colour entries, a change of the rules of colour and of the
 contrast test and a divergence from the project definition's entries, with GOV.UK alone as a model,
@@ -5909,31 +5915,35 @@ more entry the task that writes that decision has to keep in mind.
 
 ### D-280 — Which screens does the game have, and how does the player move between them?
 
-The game has the screens Siedziba, Postać, Programy and Przejście, all of one content width under
-one menu bar: at most 1344 px, and the full width of a narrower window. The menu bar holds at its
-left the game's name, which stands alone on the waiting screens (D-262), and over the game the
-items Siedziba and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and
+The game has the screens Siedziba, Postać, Mapy, Programy and Przejście, all of one content width
+under one menu bar: at most 1344 px, and the full width of a narrower window. The menu bar holds at
+its left the game's name, which stands alone on the waiting screens (D-262), and over the game the
+items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and
 outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or
 „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of
 that map run, its minute being the map run's game minute as the status row writes it. The name of a
 character on its card on Siedziba leads to the screen Postać of that character, on which the menu
-bar marks Siedziba, and on the screen of a map run the menu bar marks no item.
+bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on
+the screen of a map run the menu bar marks no item. A player reaches a first map run from Siedziba in
+at most three clicks: the choice of a map, the map's row and „Wejdź”.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-277
 - **Verification:** an agent compares a change with the decision:
   - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide and as
-    wide as a window 1000 px wide; after the player leaves a map run of Las at game minute 212,
+    wide as a window 1000 px wide; the menu bar holding Siedziba, Mapy and Programy in that order,
+    with Mapy marked on `#/mapy` and on `#/mapy/{map}`; after the player leaves a map run of Las at game minute 212,
     „Wróć do przejścia · Las · minuta 212” on Siedziba, Postać and Programy, still there after the
     character's death until „Restart” or „Zakończ”, and none on the screen of that map run;
     „Sprawdzanie logowania…” under a menu bar holding the game's name alone; on the screen Postać
-    the item Siedziba marked
+    the item Siedziba marked; a player with one character, who has picked nothing before, reaching
+    the first map run from Siedziba by „Mapy”, the row of a map and „Wejdź”
   - violates: an item of the menu bar with an icon; an inactive item Mapy on the menu bar;
     „Wróć do przejścia” gone after a death before „Zakończ”; an item marked on the screen of a map
     run; the clock of „Wróć do przejścia” written as „03:32”; content wider on Programy than on
     Siedziba
-- **Origin:** zakres_mvp2_loop2.md and rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), parts A.3 and A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 7, 9 and 11, and § Settlements to record, rows 2, 3, 4, 6 and 9
+- **Origin:** zakres_mvp2_loop2.md and rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), parts A.3 and A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 7, 9 and 11, and § Settlements to record, rows 2, 3, 4, 6 and 9 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "Which screens does the game have, and how does the player move between them?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 7
 
 *Rationale:* the player reads the game by where things stand: one page holding the program, the
 character, the map, the trees and the chest is what makes the game unreadable. The division follows
@@ -5953,12 +5963,13 @@ notation of time the game does not have.
 
 ### D-281 — How does an address name a screen?
 
-An address names a screen in the fragment after `#`: `#/`, `#/postac/{n}`, `#/programy`,
-`#/programy/{n}` and `#/postac/{n}/przejscie`, {n} being the number of a character (D-56) or of a
-program (D-165) and the last address naming a map run by the number of its character, and an
-address that leads to no existing screen silently opens the nearest one: `#/postac/{n}/przejscie`
-with no map run the screen Postać of that character, `#/programy/{n}` with no such program
-`#/programy`, and any other Siedziba. The screen of a map run takes its map run as a parameter and
+An address names a screen in the fragment after `#`: `#/`, `#/postac/{n}`, `#/mapy`,
+`#/mapy/{map}`, `#/programy`, `#/programy/{n}` and `#/postac/{n}/przejscie`, {n} being the number of
+a character (D-56) or of a program (D-165), {map} the identifier of a map (D-332) and the last
+address naming a map run by the number of its character, and an address that leads to no existing
+screen silently opens the nearest one: `#/postac/{n}/przejscie` with no map run the screen Postać of
+that character, `#/programy/{n}` with no such program `#/programy`, and any other Siedziba, the
+address of a map that is not on the list of open maps included. The screen of a map run takes its map run as a parameter and
 reads no map run of the game state by itself. The fragments of emailed links (D-156, D-224) stand
 apart from these, and after them the page opens Siedziba.
 
@@ -5970,10 +5981,12 @@ apart from these, and after them the page opens Siedziba.
     `#/postac/2/przejscie` with no map run of character 2 opening the screen Postać of character 2;
     `#/programy/9` with no program 9 opening `#/programy`; `#/nieznany` opening Siedziba; a page
     opened at `#confirm-email=…` confirming as D-156 gives and opening Siedziba for a signed-in
-    player
+    player; a reload at `#/mapy/forest` opening Mapy with Las picked; the address of a map that does
+    not exist, or of Las — głębiej before Las is solved, opening Siedziba
   - violates: an address in the path, such as `/programy`; a screen „Nie ma takiego miejsca”; the
-    screen of a map run reading the map run from the game state rather than from its parameter
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8
+    screen of a map run reading the map run from the game state rather than from its parameter; the
+    address of a map off the list of open maps opening `#/mapy`
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "How does an address name a screen?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Questions to settle, questions 9 and 10
 
 *Rationale:* the server hands out files, so a screen reached by the fragment survives a refresh, and
 the fragments of emailed links keep prefixes of their own. A number in the address and a map run as
@@ -5996,8 +6009,9 @@ and its target after it.
 - **Verification:** an agent compares a change with the decision:
   - complies: the world, the program and the right area of the screen of a map run each an area of
     its own, which a narrower layout can place one above the other; on Programy the list of
-    programs, the program editor and the rule panel each an area of its own; the team on Siedziba
-    under the heading „Drużyna”; the rule panel offering „Zbierz” and, once it is picked, the targets
+    programs, the program editor and the rule panel each an area of its own; on Mapy the list of
+    maps and the card of a map each an area of its own; the team on Siedziba, drawn in React, under
+    the heading „Drużyna”; the rule panel offering „Zbierz” and, once it is picked, the targets
     of „Zbierz” in a field after it
   - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
     the characters of Siedziba as a bare list with no heading; one flat pick holding „Zbierz —
@@ -6093,31 +6107,33 @@ Accepted with it: a player who clicks in the menu at once may not read it.
 *Rejected:* the sentence standing above every screen until a reload — a sentence from the moment of
 entry hangs above Programy and Postać.
 
-### D-287 — What do Siedziba and the screen Postać allow, and say, while a manual map run waits or has ended?
+### D-287 — What do Siedziba, the screen Postać and the screen Mapy allow, and say, while a manual map run waits or has ended?
 
 While the game state holds a manual map run that waits in a pause, or that has ended and waits for
-„Restart” or „Zakończ”, Siedziba and the screen Postać keep active what the simulation allows, while
-„Wyślij”, „Puść w pętlę” at that map run's character and „Kup” stand inactive. Beside the inactive
-buttons of Siedziba stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ,
-żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest
-niezakończone. Stopnie kupisz po jego zakończeniu.”
+„Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the
+simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand
+inactive. Under the inactive buttons of each character in the section „Kto idzie” of the card of a
+map stands „Przejście na mapie {mapa} jest niezakończone. Wróć do niego i je zakończ, żeby wysłać
+postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone. Stopnie
+kupisz po jego zakończeniu.”
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-55 · derives from D-200
 - **Verification:** an agent compares a change with the decision:
   - complies: after a death in a map run of Las, before „Zakończ”, „Puść w pętlę” of another
-    character starting its earning loop, while „Wyślij” stands inactive beside „Przejście na mapie
-    Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.”
-  - violates: „Wyślij” or „Kup” inactive with no sentence beside it; „Puść w pętlę” of another
+    character starting its earning loop, while „Wejdź” of each character in „Kto idzie” stands
+    inactive above „Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby
+    wysłać postać.”
+  - violates: „Wejdź” or „Kup” inactive with no sentence by it; „Puść w pętlę” of another
     character inactive while a manual map run waits
-- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 3, and § Settlements to record, row 1
+- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 3, and § Settlements to record, row 1 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, and Questions to settle, question 3
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
 do not act and what the player does to free them, and what the simulation allows stays open.
-*Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba and the screen
-Postać for viewing alone — the player could not start the earning loop of another character, and
-the code would have to block what the simulation allows.
+*Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba, the screen
+Postać and the screen Mapy for viewing alone — the player could not start the earning loop of
+another character, and the code would have to block what the simulation allows.
 
 ### D-288 — How does the player write a program rule?
 
@@ -7037,3 +7053,123 @@ While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map
 
 *Rationale:* a question over a map run that goes on would ask about a screen that keeps changing, since the character may die or solve the map while the player decides, so it holds the map run as „Pauza” does, and „Wróć” gives back what the player had instead of costing one more click to go on. The rest of the screen stays usable, so a player may save the copy under a name of their own with „Zapisz jako nowy program” and only then end the map run, and the question goes when it would ask about changes that are no longer there, since it would otherwise stand over a map run that goes on or ask about nothing. The question is a memory of the page, so a reload or a leaving of the screen costs one click, „Zakończ”, to ask again, and the game state and the save hold nothing of it. Accepted with it: the page remembers whether the map run went on before the question; several cases to build and check.
 *Rejected:* the question pausing the map run and „Wróć” leaving it paused — one click more after „Wróć”, though the simplest to build; time going on while the question stands — the character may die or solve the map while the player decides, and the screen under the question changes during the decision; the rest of the screen inactive while the question stands — the buttons of the header and of the panel of the copy inactive and the copy not editable, only the three answers and the leaving of the screen working: an inactive state to build for many buttons at once, a screen that behaves like a window without covering anything, and a player who wants to name a new program has to click „Wróć” first; the question standing until the player answers — the simplest to build, but after „Wznów” the question stays over a map run that goes on though it was to hold it, and after a save in the panel or an edit that undoes the last change it asks about changes that are gone.
+
+### D-325 — What does the screen Mapy show?
+
+The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź” and „Puść w pętlę”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-53 · derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on the right the card of Las with its parts and under it the section „Kto idzie” holding each character with its „Program:”, „Wejdzie: …”, „Wejdź” and, as Las is solved, „Puść w pętlę”
+  - violates: a map that is not open yet standing on the list, locked or inactive; a card of a map without its section „Kto idzie”
+- **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What does the screen Mapy show?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 to 5
+
+*Rationale:* the player learns what a map asks before sending a character rather than through a death.
+*Rejected:* a map shown locked with an inactive send — it reveals the map before it opens.
+
+### D-326 — What does the game say before an earning loop that earns nothing?
+
+Where the bring list of the program picked is empty, „Pętla nic nie zarobi do skrzynki” stands in `warning` beside „Puść w pętlę”, and the button still acts.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-39 · derives from D-243
+- **Verification:** an agent compares a change with the decision:
+  - complies: a character at a solved Las whose program picked has an empty list „Wynieś”, with „Pętla nic nie zarobi do skrzynki” in `warning` beside its „Puść w pętlę”, and a click on that button starting the earning loop
+  - violates: the sentence standing beside „Puść w pętlę” where the list „Wynieś” holds an item; „Puść w pętlę” inactive, or asking a question, where the list „Wynieś” is empty; the sentence in a role other than `warning`
+- **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What does the game say before an earning loop that earns nothing?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6
+
+*Rationale:* an earning loop started with an empty list „Wynieś” brings nothing to the chest, and the player would learn it only after the fact, so the sentence says it before the click.
+*Rejected:* unknown
+
+### D-327 — What does the card of a map hold?
+
+The card of a map follows the card of the predecessor game, loop, with its numbers taken from the map's data, and a part the map lacks stands nowhere: the heading names the map and, once it is solved, „rozwiązana” in `positive`, and for a map that another map opens „odsłania ją {mapa}” in `text-secondary`; „Żąda” holds the sentence of the map's solving condition (D-133); „Teren” holds the grid, the entry, the step, with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other than the usual one, and the minutes without fire with the temperature of the surroundings; „Leży tu” holds each resource with its icon, the approximate number of tiles that hold it, its stock and its renewal, or „nie odnawia się” in `warning`; „Czyha” holds the creature with its health and blow, the chance of an attack in a minute, the quiet time and one total number, the mean gap between attacks counted with that quiet time; „Odbiera” holds the entry cap and the exit cap, each in `warning`. It departs from the card of the predecessor game in five things only: the line of an attack gives that one total number in place of the quiet time and the mean gap after it, an unsolved map shows no „otwarta”, „Odbiera” has no „gasi: {umiejętność}”, the creature stands with no icon, and „Żąda” is the one sentence of the condition from the data. The usual step is the step most maps' data give, the first of the data's order on a tie.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-133 · derives from D-134 · derives from D-136 · derives from D-187 · derives from D-325
+- **Verification:** an agent compares a change with the decision:
+  - complies: the card of Las with „Żąda” reading „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu”, in „Teren” „siatka 4 × 4”, „wejście stałe”, „krok 5 min” and „bez ognia 83 min — otoczenie 25 °C”, in „Leży tu” „patyk — ≈ 11 z 16 kafelków, po 12, +1 co 30 min”, and neither „Czyha” nor „Odbiera”; the card of Las — głębiej with the heading naming „odsłania ją Las”, „bez ognia 33 min — otoczenie 7 °C”, „wilk · 24 zdrowia · cios 7” and under it „1 % szansy na minutę, 180 min spokoju od wejścia i po każdej walce — średnio co ≈ 280 min”
+  - violates: a part the map lacks standing empty; the line of an attack giving the quiet time and the mean gap after it apart; „otwarta” beside the name of an unsolved map; „gasi: {umiejętność}” in „Odbiera”; „nie odnawia się” in a role other than `warning`
+- **Origin:** karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 1, and § Settlements to record, row 1
+
+*Rationale:* the player reads on the card what a map asks before sending a character, and a number such as „bez ognia 33 min” tells the player that without supplies the fire will not be made in time. Accepted with it: the game computes new numbers from the map's data — the minutes without fire, the approximate number of tiles that hold a resource and the mean gap between attacks with the quiet time — which follow a change of balance by themselves; „≈ 11 z 16” and „≈ 280 min” are means, so a given map run may fall out otherwise; the player knows the health and the blow of the wolf before its first attack.
+*Rejected:* the line of an attack as in the predecessor game, with the numbers of the game: „1 % szansy na minutę, potem 3 h karencji — średnio raz na ≈ 2 h” — the player sees apart how long they are safe and how often the wolf comes after it, but „≈ 2 h” is 100 minutes rounded up and „potem” does not say that the quiet time counts from the entry too; a short card with „Żąda”, „Teren” with the temperature alone, „Leży tu” and „Czyha” with the names alone — the player would not read „bez ognia 33 min”, which says by itself that without supplies the fire will not be made in time, nor the strength of the wolf, and the card would be worse than the card of the predecessor game; „Żąda” alone, which is what Siedziba shows — the player would still learn a map through a death.
+
+### D-328 — Does the card of a map show what the player has not discovered?
+
+The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it: the program editor still offers no action or condition that the player has not discovered.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-118 · derives from D-325
+- **Verification:** an agent compares a change with the decision:
+  - complies: the card of Las — głębiej showing „wilk · 24 zdrowia · cios 7” to a player whose Understanding holds no wolf, the Understanding still holding no wolf afterwards and the program editor offering no condition about the wolf
+  - violates: a resource or a creature missing from the card because the player has not met it; the card writing a creature or an item into the Understanding
+- **Origin:** karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2, and § Settlements to record, row 2
+
+*Rationale:* the player learns what a map asks before sending a character rather than through a death, so the card says in text what the discovery of D-118 leaves to play. Accepted with it: the player knows the names and the strength of the wolf before meeting it, so the first wolf surprises less.
+*Rejected:* what the player has not discovered standing with its numbers but with no name, as „coś nieznanego” — a new kind of line, and the player knows that something lurks and how strong it is but not what; the card showing only what is discovered — on the first map „Leży tu” and „Czyha” would be empty, and the player would still learn a map through a death.
+
+### D-329 — What stands at each character in the section „Kto idzie”, and in what order?
+
+At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać, the line of the resurrection and, at a character in an earning loop, the line of the loop, „Program:” with its list, „Wejdzie: …” in `text-secondary` always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and „Puść w pętlę” with their warnings, the characters standing in the order of D-54. „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card. A team with no character has in the section the sentence „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-54 · derives from D-170 · derives from D-180 · derives from D-325
+- **Verification:** an agent compares a change with the decision:
+  - complies: a character at a solved Las whose program picked takes patyk 6 and jagoda 4 showing from the top its name as a link, „Wskrzeszenie gotowe”, „Program:”, „Wejdzie: patyk 6, jagoda 4”, „Wejdź” and „Puść w pętlę”; the same character with an empty take list showing „Wejdzie: nic”; a click on „Puść w pętlę” leaving the player on the card; a team with no character reading „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.” in the section
+  - violates: „Wejdzie: …” standing only where the plan enters clipped; a section with its heading alone for a team with no character; „Puść w pętlę” taking the player to the screen of a map run
+- **Origin:** karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, question 3, and § Settlements to record, row 3
+
+*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
+*Rejected:* „Wejdzie: …” only where less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters, and with a plan that enters whole the words of D-180 „the card of a map shows what of it enters” and of D-325 „what enters from the trip plan” would not hold; the rest as it stands but with no sentence for a team with no character — the section would have its heading alone, an empty area with no hint where to make a character.
+
+### D-330 — What is the first of the three clicks from Siedziba to the first map run?
+
+The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar, and the row of the map and „Wejdź” follow it; no button at a character in Siedziba leads to the screen Mapy.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280 · derives from D-325
+- **Verification:** an agent compares a change with the decision:
+  - complies: a player with one character reaching the first map run from Siedziba by „Mapy”, the row of Las and „Wejdź”; a character in Siedziba holding its name as a link to the screen Postać and no button that leads to the screen Mapy
+  - violates: a button „Wybierz mapę” at a character in Siedziba that leads to the screen Mapy
+- **Origin:** karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, question 7, and § Settlements to record, row 4
+
+*Rationale:* the way to the maps is one item of the menu bar, with no new button. Accepted with it: from a character in Siedziba the player goes to the maps through the menu bar.
+*Rejected:* „Wybierz mapę” as well at each character in Siedziba, leading to the screen Mapy, as in a sketch of the screen — a new button at each character, and it is open whether the screen Mapy would then show only that character in „Kto idzie”, a state of the screen that no address carries and that would make the words „a section „Kto idzie” with the characters” of D-325 untrue; the gain is a way straight from the character.
+
+### D-331 — What does the screen Mapy show before a map is picked, and how does a row of the list look?
+
+Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right in `text-secondary`. A row of the list is a link to `#/mapy/{map}` with the name of the map and, at a solved map, „rozwiązana” in `positive` after it, and the picked row looks as the picked program on the list of programs does: its text in `text-strong` and a bar in `selected` at its left.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-134 · derives from D-281 · derives from D-325
+- **Verification:** an agent compares a change with the decision:
+  - complies: `#/mapy` with the list of the open maps on the left and „Wybierz mapę z listy.” on the right; at `#/mapy/forest` the row of Las with its text in `text-strong` and a bar in `selected` at its left
+  - violates: `#/mapy` showing the card of the first map of the list; the right area empty before a pick; a row of the list that is no link
+- **Origin:** karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, Questions to settle, question 8, and § Settlements to record, row 5
+
+*Rationale:* the player sees at once that the list is for picking from, and the card stands only after a pick. Accepted with it: one more sentence on the screen.
+*Rejected:* `#/mapy` showing at once the card of the first map of the list — two addresses would show the same, and the row of the first map would not be needed; the gain is two clicks to the first map run; the right area empty, as in the predecessor game — an empty area looks as if it had not loaded, which is why an empty trip plan says „Plan wyprawy: pusty” (D-307).
+
+### D-332 — What does {map} name in `#/mapy/{map}`?
+
+In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands, such as `#/mapy/forestDeep`, and the address is built from the map's data.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-281
+- **Verification:** an agent compares a change with the decision:
+  - complies: `#/mapy/forest` and `#/mapy/forestDeep` for Las and Las — głębiej, built from the identifiers the data gives
+  - violates: `#/mapy/forest-deep`; `#/mapy/las-glebiej`; a TypeScript file of the view outside the game's data naming a map by its identifier to build an address
+- **Origin:** karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and § Settlements to record, row 6
+
+*Rationale:* the view names no map by its identifier, so an address built from the data needs nothing in the code of the view and nothing new in the data. Accepted with it: an English word with a capital letter in an address that is otherwise Polish and in lower case.
+*Rejected:* the same identifier in lower case with a hyphen, `#/mapy/forest-deep` — a rule of conversion and a guard that two maps do not give one address; the Polish name without diacritics, `#/mapy/las-glebiej` — a new field in the data of each map, or an address that changes with the name of the map.
