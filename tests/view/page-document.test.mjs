@@ -534,3 +534,19 @@ test("a line the product writes itself fails no case and still reaches the conso
     consoleError.mock.restore();
   }
 });
+
+test("the line of the page's last-resort handling fails no case either and still reaches the console", async () => {
+  const line =
+    "uncaught kind=TypeError code=none place=view/last-resort.installLastResort";
+  const consoleError = mock.method(console, "error", () => {});
+  try {
+    await withPage(() => console.error(line));
+
+    assert.deepEqual(
+      consoleError.mock.calls.map((call) => call.arguments),
+      [[line]],
+    );
+  } finally {
+    consoleError.mock.restore();
+  }
+});

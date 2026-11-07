@@ -31,6 +31,11 @@ import {
   type KeptGame,
   type ScreenPlace,
 } from "./game-view.js";
+import {
+  errorWords,
+  FAILURE_SENTENCE,
+  installLastResort,
+} from "./last-resort.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
 import { screenAddress } from "./screen-address.js";
@@ -49,8 +54,6 @@ const REFUSED_LOAD: Readonly<Record<SavedGameRefusal, string>> = {
 };
 /** The sentence of a load that met an error of the code: it refused nothing, so nothing is replaced. */
 const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
-/** What of an error may stand in a console line; its message may quote what the save holds. */
-const LINE_WORD = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
 
 /** The server's answer that this browser has no valid session: the player is signed out. */
 function signedOut(failure: AccountFailure): boolean {
@@ -64,18 +67,11 @@ type GameStart = {
   readonly refused: SavedGameRefusal | null;
 };
 
-function lineWord(value: unknown): string {
-  return typeof value === "string" && LINE_WORD.test(value) ? value : "none";
-}
-
 /** The console line of a load that met an error of the code: its kind and code, never its text. */
 function recordLoadFailure(error: unknown, accountId: string): void {
-  const { name, code } = (error instanceof Error ? error : {}) as {
-    name?: unknown;
-    code?: unknown;
-  };
+  const { kind, code } = errorWords(error);
   console.error(
-    `saved-game-load kind=${lineWord(name)} code=${lineWord(code)} place=view/app.startFrom accountId=${accountId}`,
+    `saved-game-load kind=${kind} code=${code} place=view/app.startFrom accountId=${accountId}`,
   );
 }
 
@@ -150,6 +146,14 @@ function createPageNotice(sentence: string): HTMLElement {
  * nothing, builds no game and saves nothing, whoever is signed in, until the form ends (D-225). A
  * save answered with no session keeps the game state in this page only, for a sign-in to the same
  * account (D-211).
+ *
+ * An error that no code of the game handled — an exception, a rejected promise — reaches the
+ * window; the page cancels it, writes one line of it in the console (`last-resort.ts`) and says
+ * „Coś w grze się zepsuło — odśwież stronę.” until the page is reloaded: on the line under the bar,
+ * beside the line of saving, on every screen with the header; in the card, under the form; and,
+ * where React has taken the card down, alone in its place. The game then takes no change but goes
+ * on saving the state it held, and no game is built after the error: a sign-in stays at the waiting
+ * screen with the sentence (D-323, D-262).
  */
 export function startApp(
   root: HTMLElement,
@@ -210,6 +214,27 @@ export function startApp(
   let deferred: (() => void) | null = null;
   // Each request of the page takes the next number; an answer counts only while it is the last.
   let latest = 0;
+  // An error nothing handled came: the game takes no change and the sentence stands, until the page
+  // is reloaded (D-323).
+  let failed = false;
+  // The sentence of that error in the row under the bar, above the line of saving (D-323, D-208);
+  // it comes with the error and stays on every screen with the header.
+  let failureLine: HTMLElement | null = null;
+
+  /** An error nothing handled: the page stops the game and says so, its line already written. */
+  function onUncaught(): void {
+    failed = true;
+    if (failureLine === null) {
+      const warning = createFormWarning();
+      warning.set(FAILURE_SENTENCE);
+      failureLine = warning.element;
+      failureLine.classList.add("failure-line");
+      bar.element.after(failureLine);
+    }
+    game?.halt();
+    card?.fail();
+  }
+  const lastResort = installLastResort({ target: window, onUncaught });
 
   /** The notice to stand on the screen about to be shown, once; nothing after that. */
   function takeNotice(): ConfirmationNotice | null {
@@ -242,6 +267,10 @@ export function startApp(
         pendingMessage = message;
         entry = "sign-in";
         enter(named);
+      },
+      failed,
+      onUncaught(error): void {
+        lastResort.report(error, "view/account-card.createAccountCard");
       },
     });
     header.hidden = true;
@@ -340,6 +369,13 @@ export function startApp(
     start: GameStart,
     saveAtOnce: boolean,
   ): void {
+    if (failed) {
+      // After an error nothing handled no game is built, so no catch-up passes time and nothing is
+      // saved: the page stays at the waiting screen with the sentence of the failure (D-323).
+      leaveWaiting();
+      showPage(check);
+      return;
+    }
     dropGame();
     const conflict = afterConflict && start.refused === null;
     afterConflict = false;

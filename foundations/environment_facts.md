@@ -607,6 +607,24 @@ The terms of the Pixel Crawler pack ask for no credit, allow its arts to be alte
 
 - **Source:** https://github.com/mariusznazar/loop/blob/8072ce6c02ad58d64f3eedc5a4b1e71c556b58e7/assets/pixel-crawler/Terms.txt § points 1, 2, 3 and 4 — "It is not necessary to credit the author for any use of the arts, but if it is done it is appreciated." · "The arts present can be altered in any shape, color or pattern" · "These arts cannot be sold as a final product, only the author can sell the assets" · "You can use these assets in creating commercial products, study or any other project where they are functional"; read 2026-11-02
 
+## html-exception-reporting
+
+In the HTML Standard, the steps that report an exception and that notify about rejected promises let the user agent report the exception, or the reason of the rejection, to a developer console only after the `error` or `unhandledrejection` event the user agent fired for it was not cancelled by the page.
+
+- **Source:** https://raw.githubusercontent.com/whatwg/html/5fcc2318395821db61e353705e6368ad9a000af5/source § report an exception — "Let notHandled be true." · "If global implements EventTarget, then set notHandled to the result of firing an event named error at global, using ErrorEvent, with the cancelable attribute initialized to true, and additional attributes initialized according to errorInfo." · "If notHandled is true:" · "Otherwise, the user agent may report exception to a developer console." · § notify about rejected promises — "Let notCanceled be the result of firing an event named unhandledrejection at global, using PromiseRejectionEvent, with the cancelable attribute initialized to true, the promise attribute initialized to p, and the reason attribute initialized to p.[[PromiseResult]]." · "If notCanceled is true, then the user agent may report p.[[PromiseResult]] to a developer console."; read 2026-11-07
+
+## react-uncaught-render-error
+
+React 19.3.1 unmounts a root by rendering null when an error thrown in its tree is caught by no error boundary, and then hands the error to the `onUncaughtError` of that root.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react-reconciler/src/ReactFiberThrow.js § createRootErrorUpdate — "Unmount the root by rendering null." · "update.payload = {element: null};" · https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react-reconciler/src/ReactFiberErrorLogger.js § logUncaughtError — "const onUncaughtError = root.onUncaughtError;"; read 2026-11-07
+
+## react-default-uncaught-report
+
+React 19.3.1, by default, reports an error that no error boundary caught to the browser through `reportError`, which fires an `error` event at the window.
+
+- **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react-reconciler/src/ReactFiberErrorLogger.js § defaultOnUncaughtError — "reportGlobalError(error);" · https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/shared/reportGlobalError.js § reportGlobalError — "In modern browsers, reportError will dispatch an error event," · "emulating an uncaught JavaScript error."; read 2026-11-07
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

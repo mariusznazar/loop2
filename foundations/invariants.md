@@ -1226,6 +1226,16 @@ The background, the bar and the reason a program rule or rule group shows come f
 - **Part:** simulation · browser-view
 - **Violated:** no
 
+## uncaught-failure-game-state
+
+After an error that no code of the game handled, the game state held in the page changes no more until the page is reloaded, and every save the page sends carries the game state as it stood before the error.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-323
+- **Part:** browser-view
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

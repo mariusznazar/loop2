@@ -154,7 +154,7 @@ pakietów systemowych ani zależności spoza npm.
 
 ### Recording a failure
 
-- **Decision:** D-252
+- **Decision:** D-252 · D-253
 - **Invariant:** none
 - **Good:** none
 - **Bad:** none
@@ -174,8 +174,11 @@ bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręc
 albo przez bramkę testów, które tych danych nie dotykają, regułę spełnia domyślny
 wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. `account-database-check`,
 `measure-passwords`, `deploy/loop2-backup` i `scripts/restore-trial.mjs` już ją
-mają. Reguła obowiązuje też przeglądarkę, gdzie tej obsługi jeszcze nie ma, oraz
-`deploy/loop2-deploy`, który nie zostawia wiersza końcowego, gdy zostanie zabity.
+mają. Przeglądarka też ją ma: `installLastResort` z `src/browser/view/last-resort.ts`
+anuluje zdarzenie błędu, którego nic nie obsłużyło, i zapisuje w konsoli zwykłym
+tekstem jeden wiersz z rodzajem, kodem i miejscem obsługi, bez treści i stosu błędu,
+ten sam wiersz raz do odświeżenia strony. Reguła obowiązuje też `deploy/loop2-deploy`,
+który nie zostawia wiersza końcowego, gdy zostanie zabity.
 
 ### Hiding a failure
 
