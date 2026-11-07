@@ -15,6 +15,8 @@ import { emptyProgram } from "../../dist/browser/sim/programs.js";
 import { tripCount, tripChoices } from "../../dist/browser/view/trip-editor.js";
 import {
   deathSettlementLine,
+  emptyLoopMark,
+  entersLine,
   rehearsalMark,
   solvedRunText,
   tripTexts,
@@ -230,6 +232,71 @@ test("the mark shows at a solved map when a take entry cut by capacity and the e
   );
   // An empty list asks for nothing.
   assert.equal(rehearsalMark(true, take(), 15, MAPS.forest, chest({})), null);
+});
+
+// D-180, D-189, To do 5 item 4: the line names what a send takes, which is the cut the send makes.
+// Catches a line that writes the take list as asked, not as cut; a solved map that reads the chest
+// where the run takes from nowhere; and an empty take that stands without „nic”.
+test("the enter line gives what a send takes, cut by the chest, the capacity and the entry cap", () => {
+  const take = (...entries) => ({ take: entries, bring: [] });
+  const stocked = { pieces: { stick: 10, berry: 10 } };
+  assert.equal(
+    entersLine(
+      take(entry("stick", 6), entry("berry", 4)),
+      stocked,
+      15,
+      MAPS.forest,
+    ),
+    "Wejdzie: patyk 6, jagoda 4",
+  );
+  // The chest holds no berry: the berry is not taken, so it is not listed.
+  assert.equal(
+    entersLine(
+      take(entry("stick", 6), entry("berry", 4)),
+      { pieces: { stick: 10 } },
+      15,
+      MAPS.forest,
+    ),
+    "Wejdzie: patyk 6",
+  );
+  assert.equal(
+    entersLine(take(entry("stick", 6)), { pieces: {} }, 15, MAPS.forest),
+    "Wejdzie: nic",
+  );
+  // The entry cap of 3 cuts the stick to 3 and leaves the berry nothing.
+  assert.equal(
+    entersLine(take(entry("stick", 6), entry("berry", 4)), stocked, 15, {
+      ...MAPS.forest,
+      carryIn: 3,
+    }),
+    "Wejdzie: patyk 3",
+  );
+  // A solved map takes from nowhere (chest null), cut by the capacity 5: the stick 5, the berry none.
+  assert.equal(
+    entersLine(
+      take(entry("stick", 6), entry("berry", 4)),
+      null,
+      5,
+      MAPS.forest,
+    ),
+    "Wejdzie: patyk 5",
+  );
+  assert.equal(entersLine(take(), null, 15, MAPS.forest), "Wejdzie: nic");
+});
+
+// To do 6, D-326: a program whose bring list is empty earns nothing for the chest, so the loop mark
+// stands; a list with an item in it does not. Catches the mark on a non-empty list, and no mark on
+// an empty one.
+test("the loop mark stands when the bring list is empty, and only then", () => {
+  assert.equal(
+    emptyLoopMark({ take: [entry("stick", 5)], bring: [] }),
+    "Pętla nic nie zarobi do skrzynki",
+  );
+  assert.equal(emptyLoopMark({ take: [], bring: [entry("stick", 3)] }), null);
+  assert.equal(
+    emptyLoopMark({ take: [entry("stick", 5)], bring: [entry("stick", 3)] }),
+    null,
+  );
 });
 
 const SOLVED_LINE =
