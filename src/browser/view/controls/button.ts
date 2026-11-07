@@ -1,8 +1,9 @@
 /**
  * The shared button (D-44): the button, the destructive button, the button selected in its group,
- * the secondary action and the tab are one `<button>` of five kinds, which `styles.css` draws from
- * the class this module sets. The button that sends a form has the main look on top of its kind,
- * which `styles.css` draws from its `type="submit"`, so the main look needs no kind of its own.
+ * the secondary action, the tab and the main button outside a form are one `<button>` of six kinds,
+ * which `styles.css` draws from the class this module sets. The button that sends a form has the
+ * main look on top of its kind, which `styles.css` draws from its `type="submit"`; the kind `main`
+ * gives the same look to a button that sends no form (D-274).
  * A button that sends a form to a server can wait for the answer (`setButtonWaiting`).
  * Nothing here runs when the module is imported.
  */
@@ -12,10 +13,11 @@
  * at the focus; „selected” — chosen in its group;
  * „secondary” — an underlined text without a frame, for an action that opens or leaves the state
  * of a form and stands under it; „tab” — a button of a group drawn as a tab, whose group sets
- * which one is selected with `setButtonSelected`.
+ * which one is selected with `setButtonSelected`; „main” — the main look of a button that sends
+ * no form, such as „Wejdź” at a character in the card of a map, which stays of the type `button`.
  */
 export type ButtonKind =
-  "plain" | "destructive" | "selected" | "secondary" | "tab";
+  "plain" | "destructive" | "selected" | "secondary" | "tab" | "main";
 
 export type ButtonOptions = {
   kind?: ButtonKind;
@@ -47,6 +49,7 @@ export function createButton(
   if (options.kind === "destructive") element.classList.add("destructive");
   if (options.kind === "secondary") element.classList.add("secondary");
   if (options.kind === "tab") element.classList.add("tab");
+  if (options.kind === "main") element.classList.add("main");
   if (options.kind === "selected") setButtonSelected(element, true);
   if (options.expanded !== undefined)
     setButtonExpanded(element, options.expanded);

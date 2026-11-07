@@ -70,6 +70,8 @@ const NOT_APPLYING = {
     "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz; akcja poboczna jest wtedy wyłączona (D-275).",
   tabLoading:
     "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz; zakładka jest wtedy wyłączona, z linią wyboru (D-276).",
+  mainLoading:
+    "Nie dotyczy: na serwer czeka tylko przycisk, który wysyła formularz; ten przycisk nie wysyła formularza, a wyłączony wygląda jak każdy wyłączony (D-274).",
   listLoading:
     "Nie dotyczy: żaden formularz, który czeka na serwer, nie ma listy wyboru (D-44).",
   pickError: "Nie dotyczy: komórka nie ma wpisu, który mógłby być błędny.",
@@ -205,8 +207,9 @@ function fieldSample(
 
 /**
  * The shared controls of D-44 and the pick cell of D-288, each with the maker of its samples, and
- * beside the button the two looks other kinds of it have: the main button of D-274, the one that sends a form, and the
- * tab of D-276, which is the button selected in its group drawn as a tab. The password field is
+ * beside the button the looks other kinds of it have: the main button of D-274, the one that sends
+ * a form and, as the kind `main`, the one that sends none, and the tab of D-276, which is the
+ * button selected in its group drawn as a tab. The password field is
  * the text field with its entry hidden.
  */
 const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
@@ -220,6 +223,10 @@ const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
       "Zaloguj się",
       "Logowanie…",
     ]),
+  ],
+  [
+    "Przycisk główny poza formularzem",
+    buttonSample("Wejdź", { kind: "main" }, NOT_APPLYING.mainLoading),
   ],
   [
     "Przycisk niszczący",

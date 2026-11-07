@@ -309,7 +309,7 @@ header .failure-line {
  * control that waits for a server: the button disabled under a changed text and the fields of its
  * form disabled, which the disabled rules below draw (D-44). The button has four looks beside the
  * plain one: the destructive button, the button selected in its group, the secondary action and
- * the tab, each below, and the main look of the button that sends a form.
+ * the tab, each below, and the main look of the button that sends a form or is of the kind `main`.
  */
 .button,
 .select-list,
@@ -348,13 +348,16 @@ header .failure-line {
 }
 
 /*
- * The main look, of the button that sends its form, recognised by its type, one on a form: the
- * background of the card, text in `text-strong` at the emphasis weight and a frame in the colour of
- * that text, so the frame is part of the text (D-40). Under the pointer it gets the background
- * `highlight` from the rule below, its frame and text unchanged. While it waits it looks as every
- * disabled button does, which the rule after the disabled rule below draws.
+ * The main look, of the button that sends its form, recognised by its type, one on a form, and of
+ * the button of the kind `main`, which sends no form (D-274, „Wejdź” at a character in the card of a
+ * map): the background of the card, text in `text-strong` at the emphasis weight and a frame in the
+ * colour of that text, so the frame is part of the text (D-40). Under the pointer it gets the
+ * background `highlight` from the rule below, its frame and text unchanged. While it waits or is
+ * disabled it looks as every disabled button does, which the rule after the disabled rule below
+ * draws.
  */
-.button[type="submit"] {
+.button[type="submit"],
+.button.main {
   color: var(--text-strong);
   font-weight: var(--font-weight-emphasis);
   border-color: currentColor;
@@ -424,8 +427,9 @@ header .failure-line {
   cursor: default;
 }
 
-/* The main button while it waits: text in `text-disabled` at the normal weight, frame in `control-border`. */
-.button[type="submit"]:disabled {
+/* The main button while it waits or is disabled: text in `text-disabled` at the normal weight, frame in `control-border`. */
+.button[type="submit"]:disabled,
+.button.main:disabled {
   font-weight: var(--font-weight-body);
   border-color: var(--control-border);
 }

@@ -8,9 +8,10 @@ import type { MouseEventHandler, Ref } from "react";
 
 /**
  * „destructive” — neutral at rest, its text in `danger` under the pointer and at the focus;
- * „secondary” — the secondary action; „tab” — a button of a group drawn as a tab.
+ * „secondary” — the secondary action; „tab” — a button of a group drawn as a tab; „main” — the
+ * main look of a button that sends no form, which stays of the type `button` (D-274).
  */
-export type ReactButtonKind = "destructive" | "secondary" | "tab";
+export type ReactButtonKind = "destructive" | "secondary" | "tab" | "main";
 
 export type ReactButtonProps = {
   text: string;
@@ -42,7 +43,7 @@ export type ReactButtonProps = {
   buttonRef?: Ref<HTMLButtonElement>;
 };
 
-/** A button of the shared look: plain, secondary, selected in its group or a tab of it. */
+/** A button of the shared look: plain, secondary, main, selected in its group or a tab of it. */
 export function ReactButton({
   text,
   kind,

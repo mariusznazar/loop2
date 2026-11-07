@@ -263,6 +263,42 @@ test("a destructive button with an accessible name is the same element in both f
   });
 });
 
+// The kind `main` (D-274): the main look of a button that sends no form, such as „Wejdź” at a
+// character in the card of a map. It is a button of the type `button`, never `submit`, with the
+// class `main`, which styles.css draws as it draws a form's submit button.
+test("a main button outside a form is the same element in both forms, of the type button with the class main", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Wejdź", kind: "main" }),
+    );
+    const { firstElementChild: drawnButton } = drawing.container;
+    assert.equal(drawnButton.getAttribute("type"), "button");
+    assert.equal(drawnButton.getAttribute("class"), "button main");
+    const expected = createButton("Wejdź", { kind: "main" });
+    assert.equal(expected.getAttribute("type"), "button");
+    assert.equal(expected.getAttribute("class"), "button main");
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
+test("a main button locked with its text is the same element in both forms", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, {
+        text: "Wejdź",
+        kind: "main",
+        disabled: true,
+      }),
+    );
+    const expected = createButton("Wejdź", { kind: "main" });
+    expected.disabled = true;
+    assert.equal(drawing.container.firstElementChild.disabled, true);
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
 // The open state (D-44): a button that opens and closes the block below it, the menu „Konto”
 // first, carries `aria-expanded` with the value given; left out, it carries none, and the state
 // has no look of its own, so the class stays `button` in both cases.
