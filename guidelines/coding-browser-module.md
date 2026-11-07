@@ -279,8 +279,9 @@ przez `input.disabled`, a zdanie odmowy albo braku połączenia pokazuje
 `createFormWarning` z `text-field.ts`, a zdanie spokojne, które nie jest odmową,
 `createFormNote` z tego samego pliku. Pole hasła to `createPasswordField`,
 a przycisk, który wysyła formularz, dostaje `submit: true`. Rodzaj przycisku
-ustawia `kind` w obu postaciach, a akcja poboczna i zakładka to rodzaje `secondary`
-i `tab`. Postacie Reacta to `ReactButton` (`kind`, `waitingText`, `selected`,
+ustawia `kind` w obu postaciach, a akcja poboczna, zakładka i główny wygląd poza
+formularzem („Wejdź” w „Kto idzie”) to rodzaje `secondary`, `tab` i `main`.
+Postacie Reacta to `ReactButton` (`kind`, `waitingText`, `selected`,
 `submit`) oraz `ReactTextField`, `ReactPasswordField`, `ReactFormWarning`,
 `ReactFormNote`, `ReactSelectList`, `ReactNumberField` i `ReactPickCell`.
 Wyłączony przycisk traci fokus, więc ekran po odpowiedzi ustawia go na

@@ -384,8 +384,9 @@ States of shared controls.
   w sekcji „Kto idzie” karty mapy ma ten sam główny wygląd, choć formularza
   nie wysyła (D-274): ekran daje mu rodzaj `main` wspólnego przycisku
   (`createButton(text, { kind: "main" })`, w React `<ReactButton kind="main">`,
-  klasa `main`). Wyłączony „Wejdź” wygląda tak samo (D-287), a „Puść w pętlę”
-  obok zostaje zwykłym przyciskiem. Działanie poza formularzem i poza
+  klasa `main`). Wyłączony „Wejdź” (D-287) traci główny wygląd i wygląda jak
+  każdy wyłączony przycisk (reguła States of shared controls), a „Puść w
+  pętlę” obok zostaje zwykłym przyciskiem. Działanie poza formularzem i poza
   „Wejdź” zostaje przy przycisku, który daje mu D-44.
 - Akcją poboczną (`kind: "secondary"`) jest tylko działanie, które otwiera
   albo opuszcza stan formularza i stoi pod tym formularzem — dziś „Nie
@@ -514,19 +515,18 @@ listę otwartych map, po prawej kartę wybranej mapy.
   zwykle” albo „— taniej niż zwykle”, w `text-secondary`; „nie odnawia się” w
   `warning`; „wnosisz najwyżej {n}” i „wynosisz najwyżej {n}” w `warning`.
   Części, której mapa nie ma, nie rysuje się wcale.
-- Sekcja „Kto idzie” pod kartą (D-329, D-330): nagłówek w `text-label`. Przy
+- Sekcja „Kto idzie” pod kartą (D-329): nagłówek w `text-label`. Przy
   każdej postaci, z góry: imię jako odnośnik do jej ekranu Postać w
   `text-strong`; wiersz wskrzeszenia w `text-secondary`, a gdy wskrzeszenie
   nie jest gotowe, w `danger` (D-217); przy postaci w pętli zarobkowej wiersz
-  pętli w `text` z „Zatrzymaj” (D-244), a po zatrzymaniu wiersz „Pętla
-  zatrzymana …” w `text-secondary`; „Program:” w `text-label` z listą
+  pętli w `text` z „Zatrzymaj” (D-244); „Program:” w `text-label` z listą
   programów; „Wejdzie: …” i „Wejdzie: nic” w `text-secondary`; ostrzeżenie
   o przyciętym planie w `warning` (D-188); „Wejdź” w głównym wyglądzie (D-274);
   pod nim „Próba weźmie zapas, …” w `warning` (D-251); „Puść w pętlę” zwykłym
   przyciskiem, a obok „Pętla nic nie zarobi do skrzynki” w `warning`, gdy
   lista „Wynieś” jest pusta (D-326); zdanie o przejściu ręcznym, które czeka
-  albo się skończyło, pod wyłączonymi przyciskami, w `text-secondary`, jak na
-  Siedzibie (D-287).
+  albo się skończyło, pod wyłączonymi przyciskami każdej postaci, w
+  `text-secondary` (D-287).
 - Drużyna bez postaci: „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
   w `text-secondary`.
 
