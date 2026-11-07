@@ -1377,6 +1377,41 @@ header .failure-line {
   color: var(--discovery);
 }
 
+/*
+ * The question „Zapisać, odrzucić, wrócić?” of „Zakończ” above the program on the screen of a map
+ * run, under the band of a discovery where that stands (D-173): its sentence in the role `warning`
+ * (D-39) with a bar at its left in the colour of that text (D-279), as the band of a discovery
+ * writes its text, then the three shared buttons; the line of D-172 stands under the sentence, in
+ * the same role.
+ */
+.end-question {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-s) 0;
+}
+
+.end-question-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.end-question-text {
+  margin: 0;
+  margin-right: auto;
+  padding-left: var(--space-s);
+  border-left: var(--bar-width) solid currentColor;
+  color: var(--warning);
+}
+
+.end-question-note {
+  margin: 0;
+  padding-left: calc(var(--space-s) + var(--bar-width));
+  color: var(--warning);
+}
+
 .combat-line {
   margin: var(--space-xs) 0 0;
   color: var(--text);

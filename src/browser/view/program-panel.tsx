@@ -4,7 +4,9 @@
  * that edit programs, behind the boundary `createProgramPanel` that `createAccountCard` and
  * `createProgramList` give the page: an element of its own, a first render that is synchronous,
  * `update(state, events)`, `showProgram`, `addDiscoveredRule` and `dispose()`, called from an event
- * handler or the continuation of an answer, never from render or an effect. The panel holds the rule
+ * handler or the continuation of an answer, never from render or an effect. On the screen of a map
+ * run the panel also draws the question „Zapisać, odrzucić, wrócić?” of „Zakończ” (D-173), just above
+ * the heading of the copy, while the screen tells it to (`setQuestion`). The panel holds the rule
  * list and, beside it, the rule panel, the open rule a state of the panel; where the screen places a
  * host element for the rule panel (`placeRulePanel`), the panel draws it there, through a portal of
  * its own React tree, and tells the screen whether it stands. It asks the
@@ -37,6 +39,11 @@ import { ReactSelectList } from "./controls/react-select-list.js";
 import type { SelectOption } from "./controls/select-list.js";
 import { ReactTextField } from "./controls/react-text-field.js";
 import { discoveryRule } from "./discovery-rule.js";
+import {
+  copyLacksSentence,
+  EndQuestion,
+  type EndQuestionControls,
+} from "./end-question.js";
 import { offeredItems } from "./program-editor.js";
 import { RuleListView, type RuleListTarget } from "./rule-list.js";
 import { RulePanelView, type RulePanelOpen } from "./rule-panel.js";
@@ -147,6 +154,13 @@ export type ProgramPanel = {
    * nothing.
    */
   addDiscoveredRule(): void;
+  /**
+   * Shows the question „Zapisać, odrzucić, wrócić?” of „Zakończ” (D-173) in the panel of a map run,
+   * just above the heading of the copy and under the band of a discovery the screen draws above the
+   * panel, with `answers` for its three buttons; null takes it away. The panel of Programy never
+   * draws it. Setting what is set changes nothing.
+   */
+  setQuestion(answers: EndQuestionControls | null): void;
   /** Unmounts the panel and takes it out of the page. */
   dispose(): void;
 };
@@ -304,6 +318,8 @@ type ProgramPanelViewProps = {
   ruleHost?: HTMLElement | null;
   /** Told, after each commit, whether a rule or a group stands open in the rule panel. */
   onRuleOpen?: (open: boolean) => void;
+  /** The answers of the question of „Zakończ” while it stands in a panel of a map run; else null. */
+  question?: EndQuestionControls | null;
   /**
    * A rule the boundary asks to open, „Dodaj regułę z tym”'s; each request a new object, opened at
    * the first draw that gives it, as a click on its row would open it.
@@ -325,6 +341,7 @@ export function ProgramPanelView({
   folding,
   ruleHost = null,
   onRuleOpen,
+  question = null,
   opening = null,
 }: ProgramPanelViewProps) {
   const key = shownValue(shown);
@@ -547,6 +564,9 @@ export function ProgramPanelView({
             </>
           )}
         </div>
+        {question === null ? null : (
+          <EndQuestion state={state} controls={question} />
+        )}
         {copyShown && run ? (
           <div className="copy-section">
             <h2 className="copy-heading">
@@ -584,9 +604,7 @@ export function ProgramPanelView({
                 />
               ) : null}
               {lacks && owner ? (
-                <p className="copy-line">
-                  {`Program ${owner.name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.`}
-                </p>
+                <p className="copy-line">{copyLacksSentence(owner.name)}</p>
               ) : null}
             </div>
           </div>
@@ -681,6 +699,8 @@ export function createProgramPanel(
   let disposed = false;
   let ruleHost: HTMLElement | null = null;
   let onRuleOpen: ((open: boolean) => void) | undefined;
+  // The answers of the question of „Zakończ” while it stands; null while none does.
+  let question: EndQuestionControls | null = null;
   // The rule „Dodaj regułę z tym” asked the view to open last; null until it asks.
   let opening: RulePanelOpen | null = null;
 
@@ -697,6 +717,7 @@ export function createProgramPanel(
           folding={folding}
           ruleHost={ruleHost}
           onRuleOpen={onRuleOpen}
+          question={question}
           opening={opening}
         />,
       );
@@ -780,6 +801,11 @@ export function createProgramPanel(
       // A new object at each call, which the view opens once, at the draw that first gives it.
       opening = found.open;
       controls.editCopy(found.program);
+      draw();
+    },
+    setQuestion(answers: EndQuestionControls | null): void {
+      if (answers === question) return;
+      question = answers;
       draw();
     },
     dispose(): void {

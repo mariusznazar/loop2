@@ -123,6 +123,9 @@ async function wiredScreen({ root }, start) {
         game.acts.push("end");
         game.apply(end(game.state));
       },
+      saveAndEnd: unused("saveAndEnd"),
+      discardAndEnd: unused("discardAndEnd"),
+      back: unused("back"),
     }),
   );
   root.append(game.screen.element);
@@ -242,6 +245,36 @@ test("at a discovery the band stands in the program's area, above the program pa
       "the band above the panel",
     );
     assert.equal(panel.contains(band), false, "the band is not the panel's");
+  });
+});
+
+// D-173, task pytanie-przy-zakoncz, To do 1 and question 8. Catches the question standing before the
+// screen asks for it, in the world or the right area, above the band of a discovery, outside the
+// program panel or not directly above the heading of the copy, or kept after `setQuestion(false)`.
+test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it", async () => {
+  await withPage(async (page) => {
+    const { screen } = await wiredScreen(page, firstChill());
+    const [world, program, right] = areasOf(screen.element);
+    assert.equal(byClass(screen.element, "end-question").length, 0);
+    await inAct(() => screen.setQuestion(true));
+    assert.equal(byClass(world, "end-question").length, 0);
+    assert.equal(byClass(right, "end-question").length, 0);
+    assert.deepEqual(
+      [...program.children].map((child) => child.className),
+      ["discovery-band", "run-program-place"],
+      "the band of a discovery, then the program panel",
+    );
+    const panel = byClass(program, "program-panel")[0];
+    const question = byClass(panel, "end-question")[0];
+    assert.ok(question, "the question stands in the panel");
+    assert.ok(
+      question.nextElementSibling.classList.contains("copy-section"),
+      "directly above the heading of the copy",
+    );
+    await inAct(() => screen.setQuestion(true));
+    assert.equal(byClass(program, "end-question").length, 1, "shown once");
+    await inAct(() => screen.setQuestion(false));
+    assert.equal(byClass(screen.element, "end-question").length, 0);
   });
 });
 

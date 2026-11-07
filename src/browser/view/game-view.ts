@@ -12,6 +12,7 @@ import {
   type GameResult,
 } from "../sim/game.js";
 import {
+  copyHasUnsavedChanges,
   createProgram,
   deleteProgram,
   discardCopyChanges,
@@ -21,6 +22,7 @@ import {
   renameProgram,
   saveCopyAsNewProgram,
   saveCopyIntoProgram,
+  suggestedProgramName,
   switchProgram,
 } from "../sim/programs.js";
 import { closeAwayReport, stopLoop } from "../sim/loop.js";
@@ -159,11 +161,18 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * link Siedziba; the view writes that screen's fragment into the address with no new entry of the
  * history. A fragment that names no existing screen opens the nearest one and is replaced the same
  * way. A send leads to Przejście and „Zakończ” to Postać of that character, each with a new entry
- * (D-53); the browser's back and forward and the bar's links reach the view through the address's
- * listener. Leaving Przejście by any change of screen pauses a map run that goes on as „Pauza” does,
+ * (D-53), unless the copy holds unsaved changes: then „Zakończ” asks „Zapisać, odrzucić, wrócić?”
+ * and acts on the answer (D-173); the browser's back and forward and the bar's links reach the view
+ * through the address's listener. Leaving Przejście by any change of screen pauses a map run that goes on as „Pauza” does,
  * a moment of saving (D-283, D-207); coming back resumes nothing (D-284). The view tells the page its
  * place through `onScreen`, at the first screen and at each change, with the bar's „Wróć do
  * przejścia” where a map run waits outside its screen.
+ *
+ * The question of „Zakończ” is a memory of the view alone, never of the game state or of a save
+ * (D-173): it pauses a map run that goes on as „Pauza” does and remembers that it did, so „Wróć”
+ * puts the map run back as it was; it closes at „Wróć”, at „Wznów” and „Restart”, at the leaving of
+ * Przejście and whenever the copy stops holding unsaved changes, and after `halt()` it changes
+ * nothing (D-323).
  *
  * Every act of the player whose result changed the state, every game minute that ends the map run
  * in a death or a completion and every result in which a loop's map run ended is a moment of saving
@@ -177,6 +186,12 @@ export function createGameView(options: GameViewOptions): GameView {
   let state: GameState = options.state;
   /** The game takes no change any more: an error nothing handled stopped it (D-323). */
   let halted = false;
+  /**
+   * The question „Zapisać, odrzucić, wrócić?” of „Zakończ”, null while none stands (D-173):
+   * `resume` is whether „Wróć” sets the map run going again, which is so when the question paused a
+   * map run that went on. It lives in the memory of the page only.
+   */
+  let question: { readonly resume: boolean } | null = null;
 
   const element = document.createElement("div");
   element.className = "game-view";
@@ -253,6 +268,8 @@ export function createGameView(options: GameViewOptions): GameView {
         (event) => event.kind === "loopRunEnded",
       );
       state = result.state;
+      // The question has no sense once the copy holds no unsaved changes; it does not come back.
+      if (question !== null && !copyHasUnsavedChanges(state)) question = null;
       programsPanel.update(state, result.events);
       renderScreens(result.events);
       // A game minute that ends the map run in a death or a completion, and a result in which a
@@ -333,9 +350,34 @@ export function createGameView(options: GameViewOptions): GameView {
   programsScreen.className = "screen programs-screen";
   programsScreen.tabIndex = -1;
 
+  /**
+   * Closes the question without a word to the map run: „Wznów”, „Restart”, the leaving of the
+   * screen and the end of the map run each do their own act after it. Nothing after `halt()`.
+   */
+  function closeQuestion(): void {
+    if (halted || question === null) return;
+    question = null;
+    runScreen.setQuestion(false);
+  }
+
+  /**
+   * Ends the map run with `result`, which is `end` of the state or `end` of the state after a save,
+   * and leads to the screen Postać of its character, with a new entry (D-53, D-62, D-132).
+   */
+  function endRun(result: (before: GameState) => GameResult): void {
+    const run = state.run;
+    if (run === null) return;
+    const characterId = run.character.id;
+    question = null;
+    act(result(state));
+    show({ kind: "character", characterId }, "go");
+    characterScreen?.focus();
+  }
+
   const runScreen = createRunScreen(runPanel, {
     togglePause() {
       clock.flush();
+      closeQuestion();
       act(setPaused(state, !state.paused));
     },
     // Real time elapsed before the click is passed at the old pace.
@@ -345,16 +387,65 @@ export function createGameView(options: GameViewOptions): GameView {
     },
     restart() {
       clock.flush();
+      closeQuestion();
       if (state.run) act(restart(state));
     },
-    // „Zakończ” leads to the screen Postać of the character, with a new entry (D-53, D-62, D-132).
+    // „Zakończ” leads to the screen Postać of the character, with a new entry (D-53, D-62, D-132);
+    // with unsaved changes in the copy it asks first (D-173). A second click leaves the question.
     end() {
       clock.flush();
       if (state.run === null) return;
-      const characterId = state.run.character.id;
-      act(end(state));
-      show({ kind: "character", characterId }, "go");
-      characterScreen?.focus();
+      if (!copyHasUnsavedChanges(state)) {
+        endRun(end);
+        return;
+      }
+      if (halted || question !== null) return;
+      const run = state.run;
+      // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
+      const resume = !mapRunEnded(run) && !state.paused;
+      question = { resume };
+      if (resume) act(setPaused(state, true));
+      runScreen.setQuestion(true);
+      runScreen.focusQuestion();
+    },
+    // „Zapisz”: the copy goes into its program, or, its program gone, into a new program under the
+    // first free name, and the map run ends (D-173, D-171, D-172).
+    saveAndEnd() {
+      if (halted || question === null) return;
+      clock.flush();
+      if (state.run === null || !copyHasUnsavedChanges(state)) return;
+      endRun((before) => {
+        const saved =
+          programById(before.programs, before.run?.copy.programId) === undefined
+            ? saveCopyAsNewProgram(
+                before,
+                suggestedProgramName(before.programs),
+              )
+            : saveCopyIntoProgram(before);
+        const ended = end(saved.state);
+        return {
+          state: ended.state,
+          events: [...saved.events, ...ended.events],
+        };
+      });
+    },
+    // „Odrzuć”: the map run ends and the copy's unsaved changes go with it (D-173).
+    discardAndEnd() {
+      if (halted || question === null) return;
+      clock.flush();
+      endRun(end);
+    },
+    // „Wróć”: the map run stays as it was before „Zakończ” (D-173).
+    back() {
+      if (halted || question === null) return;
+      const { resume } = question;
+      closeQuestion();
+      if (resume) {
+        clock.flush();
+        if (state.run !== null && !mapRunEnded(state.run) && state.paused)
+          act(setPaused(state, false));
+      }
+      focusShownScreen();
     },
   });
   element.append(headquartersScreen, programsScreen, runScreen.element);
@@ -511,7 +602,10 @@ export function createGameView(options: GameViewOptions): GameView {
    */
   function show(next: Screen, how: "go" | "replace" | "none"): void {
     if (!sameScreen(current, next)) commitProgramsScreen();
-    if (current.kind === "run" && next.kind !== "run") pauseOnLeaving();
+    if (current.kind === "run" && next.kind !== "run") {
+      closeQuestion();
+      pauseOnLeaving();
+    }
     const hash = screenAddress(next);
     if (how === "go") address.go(hash);
     else if (how === "replace") address.replace(hash);
@@ -559,6 +653,7 @@ export function createGameView(options: GameViewOptions): GameView {
    */
   function renderScreens(events: readonly GameEvent[]): void {
     headquarters.update(state, clock.moment());
+    runScreen.setQuestion(question !== null);
     if (state.run !== null) runScreen.update(state, state.run, events);
     characterScreen?.update(characterProps(characterScreen.characterId));
     drawPrograms();
