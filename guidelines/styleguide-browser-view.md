@@ -179,7 +179,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47
+- **Decision:** D-38 · D-44 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -230,7 +230,8 @@ Kontrolki odstępujące od tej listy stanów:
   wpisu. Przycisk niszczący w spoczynku jest neutralny, z tekstem w `text`,
   a pod kursorem i przy fokusie ma tekst w `danger` (D-44, D-39), w obu
   postaciach przycisku; są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
-  „Przełącz postać na ten program” i „Zatrzymaj” (D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
+  „Przełącz postać na ten program” i „Zatrzymaj” (D-44) oraz „Odrzuć” pytania
+  „Zapisać, odrzucić, wrócić?” (D-173, D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
   Loading dotyczy tylko zwykłego przycisku, który czeka na odpowiedź
   serwera, także w głównym wyglądzie; przycisk niszczący i przycisk wybrany
