@@ -235,13 +235,15 @@ Kontrolki odstępujące od tej listy stanów:
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
   Loading dotyczy tylko zwykłego przycisku, który czeka na odpowiedź
   serwera, także w głównym wyglądzie; przycisk niszczący i przycisk wybrany
-  w grupie nie czekają na serwer. Przycisk, który wysyła formularz, ma na
-  swoim rodzaju główny wygląd (D-274): tekst w `text-strong` o wadze
-  `--font-weight-emphasis` i ramka w kolorze tego tekstu (`currentColor`),
-  bez wypełnienia, więc widać tło pod nim; pod kursorem tło `highlight`,
-  ramka i tekst bez zmiany; czekając na serwer wygląda jak każdy wyłączony
-  przycisk — tekst w `text-disabled` o wadze `--font-weight-body`, ramka
-  w `control-border`.
+  w grupie nie czekają na serwer. Główny wygląd ma przycisk, który wysyła
+  formularz, i „Wejdź” przy każdej postaci w sekcji „Kto idzie” karty mapy
+  (D-274; reguła Main button, secondary action and tab): tekst w `text-strong`
+  o wadze `--font-weight-emphasis` i ramka w kolorze tego tekstu
+  (`currentColor`), bez wypełnienia, więc widać tło pod nim; pod kursorem tło
+  `highlight`, ramka i tekst bez zmiany; czekając na serwer albo wyłączony
+  (także „Wejdź” przy przejściu ręcznym, które czeka albo się skończyło, D-287)
+  wygląda jak każdy wyłączony przycisk — tekst w `text-disabled` o wadze
+  `--font-weight-body`, ramka w `control-border`.
 - `src/browser/view/controls/button.ts` — akcja poboczna (D-275): error
   i empty nie dotyczą, jak przycisku; loading nie dotyczy, bo na serwer czeka
   tylko przycisk, który wysyła formularz, a akcja poboczna jest wtedy
@@ -366,21 +368,25 @@ tylko jej zostaje w tym module, bo w `src/browser/view/` trafiłby do wyniku
 
 ### Main button, secondary action and tab
 
-- **Decision:** D-274 · D-275 · D-276 · D-277
+- **Decision:** D-274 · D-275 · D-276 · D-277 · D-287
 - **Invariant:** none
-- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem.
+- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem; „Wejdź” przy postaci w „Kto idzie” w głównym wyglądzie, a „Puść w pętlę” obok — zwykłym.
 - **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie.
 
 Główny wygląd, akcja poboczna i zakładka to wyglądy wspólnego przycisku,
 każdy na swoim miejscu, które podaje ta reguła; ich stany podaje reguła
 States of shared controls.
 
-- Główny wygląd ma tylko przycisk, który wysyła formularz, jeden na
+- Główny wygląd ma przycisk, który wysyła formularz, jeden na
   formularz (D-274). Wygląd bierze się z samego wysyłania formularza
   (`createButton(text, { submit: true })`, w React `<ReactButton submit>`),
-  więc ekran nie daje mu rodzaju ani klasy. Działanie poza formularzem
-  zostaje przy przycisku, który daje mu D-44; o wyglądzie głównych działań
-  poza formularzami, jak „Wejdź”, rozstrzyga zadanie ich ekranu.
+  więc ekran nie daje mu rodzaju ani klasy. „Wejdź” przy każdej postaci
+  w sekcji „Kto idzie” karty mapy ma ten sam główny wygląd, choć formularza
+  nie wysyła (D-274): ekran daje mu rodzaj `main` wspólnego przycisku
+  (`createButton(text, { kind: "main" })`, w React `<ReactButton kind="main">`,
+  klasa `main`). Wyłączony „Wejdź” wygląda tak samo (D-287), a „Puść w pętlę”
+  obok zostaje zwykłym przyciskiem. Działanie poza formularzem i poza
+  „Wejdź” zostaje przy przycisku, który daje mu D-44.
 - Akcją poboczną (`kind: "secondary"`) jest tylko działanie, które otwiera
   albo opuszcza stan formularza i stoi pod tym formularzem — dziś „Nie
   pamiętam hasła”, „Wróć do logowania” i „Anuluj” karty logowania (D-275).
@@ -424,7 +430,7 @@ czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
 ### Menu bar, the menu „Konto” and the list of programs
 
-- **Decision:** D-280 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47
+- **Decision:** D-280 · D-330 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47
 - **Invariant:** none
 - **Good:** Pozycja „Programy” na ekranie Programy w `text-strong` z linią w `selected` u dołu, a „Wyloguj” w menu „Konto”, które po odpowiedzi serwera stoi otwarte ze zdaniem wyniku.
 - **Bad:** Pozycja paska z ikoną, zaznaczona zielenią albo tłem; „Wróć do przejścia” zaznaczone na ekranie przejścia; menu „Konto” zamykające się samo po odpowiedzi serwera.
@@ -438,17 +444,18 @@ Pasek:
 
 - po lewej stoi nazwa gry w `text-strong` (rola nazwy, D-40); na ekranach
   oczekiwania (D-262) stoi sama, bez pozycji i bez menu „Konto” (D-280);
-- pozycje to „Siedziba”, „Programy” i, poza ekranem przejścia, „Wróć do
+- pozycje to „Siedziba”, „Mapy”, „Programy” i, poza ekranem przejścia, „Wróć do
   przejścia · {mapa} · minuta {m}”, bez ikon (D-280); każda jest odnośnikiem do
   ekranu (D-281), nie przyciskiem — przeciwnie niż akcja poboczna, która adresu
-  nie ma (D-275);
+  nie ma (D-275); „Mapy” to pierwsze z trzech kliknięć do pierwszego przejścia,
+  a przy postaci w Siedzibie nie stoi przycisk prowadzący na ekran Mapy (D-330);
 - pozycja jest narysowana jak zakładka (D-276, D-277), bez ramki: pozycja
   miejsca, w którym jest gracz, ma tekst w `text-strong` i linię u dołu
   w `selected` o grubości `--bar-width`, każda inna — tekst w `text-label`;
   pod kursorem tło `highlight`, a rola tekstu zostaje; fokus rysuje reguła
   Visible focus bez dodatku (D-47);
-- na ekranie Postać pasek znaczy Siedzibę, a na ekranie przejścia nie znaczy
-  żadnej pozycji (D-280);
+- na ekranie Postać pasek znaczy Siedzibę, na ekranie Mapy pod każdym jego
+  adresem znaczy Mapy, a na ekranie przejścia nie znaczy żadnej pozycji (D-280);
 - pasek nie ma pozycji nieaktywnych (D-280), więc stan disabled nie dotyczy
   pozycji; error, empty i loading też nie, bo pozycja nie ma wpisu, listy
   i nie czeka na serwer;
@@ -481,6 +488,47 @@ Lista programów na ekranie Programy: pozycja jest odnośnikiem do programu
 `--bar-width` po lewej, każda inna — tekst w `text`; pod kursorem tło
 `highlight` (D-40, D-280). Przegląd zmiany czyta pozycje paska, menu i listy
 wobec tej reguły i wobec strony wszystkich stanów.
+
+### The screen Mapy
+
+- **Decision:** D-325 · D-326 · D-327 · D-328 · D-329 · D-331 · D-134 · D-188 · D-217 · D-244 · D-251 · D-274 · D-287 · D-39 · D-40
+- **Invariant:** none
+- **Good:** Wiersz „Las” na liście z „rozwiązana” w `positive` po nazwie; wybrany wiersz z tekstem w `text-strong` i belką w `selected` po lewej; przed wyborem po prawej „Wybierz mapę z listy.” w `text-secondary`.
+- **Bad:** Prawa część przed wyborem pusta; pułap „wnosisz najwyżej {n}” w `text`, a nie w `warning`; sekcja „Kto idzie” bez nagłówka; „Wejdź” w zwykłym wyglądzie obok „Puść w pętlę” w tym samym wyglądzie.
+
+Ekran Mapy (`#/mapy` i `#/mapy/{map}`, D-325, D-331) ma dwa obszary: po lewej
+listę otwartych map, po prawej kartę wybranej mapy.
+
+- Lista: każdy wiersz to odnośnik do `#/mapy/{map}` z nazwą mapy w `text`; przy
+  mapie rozwiązanej po nazwie stoi „rozwiązana” w `positive` (D-134). Wybrany
+  wiersz ma tekst w `text-strong` i belkę w `selected` o grubości `--bar-width`
+  po lewej, jak wybrany program na liście programów (D-331, D-40); niewybrany
+  wygląda jak niewybrany program na tej liście; pod kursorem tło `highlight`.
+  Przed wyborem mapy, pod `#/mapy`, po prawej stoi „Wybierz mapę z listy.” w
+  `text-secondary` (D-331).
+- Karta mapy (D-327): nagłówek z nazwą mapy w `text-strong`, a przy mapie
+  rozwiązanej obok „rozwiązana” w `positive`; przy mapie otwieranej przez inną
+  mapę „odsłania ją {mapa}” w `text-secondary`. Nazwy części — „Żąda”, „Teren”,
+  „Leży tu”, „Czyha”, „Odbiera” — stoją w `text-label` (nazwy sekcji, D-40);
+  ich treść w `text`; dopisek przy kroku innym niż zwykły, „— drożej niż
+  zwykle” albo „— taniej niż zwykle”, w `text-secondary`; „nie odnawia się” w
+  `warning`; „wnosisz najwyżej {n}” i „wynosisz najwyżej {n}” w `warning`.
+  Części, której mapa nie ma, nie rysuje się wcale.
+- Sekcja „Kto idzie” pod kartą (D-329, D-330): nagłówek w `text-label`. Przy
+  każdej postaci, z góry: imię jako odnośnik do jej ekranu Postać w
+  `text-strong`; wiersz wskrzeszenia w `text-secondary`, a gdy wskrzeszenie
+  nie jest gotowe, w `danger` (D-217); przy postaci w pętli zarobkowej wiersz
+  pętli w `text` z „Zatrzymaj” (D-244), a po zatrzymaniu wiersz „Pętla
+  zatrzymana …” w `text-secondary`; „Program:” w `text-label` z listą
+  programów; „Wejdzie: …” i „Wejdzie: nic” w `text-secondary`; ostrzeżenie
+  o przyciętym planie w `warning` (D-188); „Wejdź” w głównym wyglądzie (D-274);
+  pod nim „Próba weźmie zapas, …” w `warning` (D-251); „Puść w pętlę” zwykłym
+  przyciskiem, a obok „Pętla nic nie zarobi do skrzynki” w `warning`, gdy
+  lista „Wynieś” jest pusta (D-326); zdanie o przejściu ręcznym, które czeka
+  albo się skończyło, pod wyłączonymi przyciskami, w `text-secondary`, jak na
+  Siedzibie (D-287).
+- Drużyna bez postaci: „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
+  w `text-secondary`.
 
 ### Program editor
 
