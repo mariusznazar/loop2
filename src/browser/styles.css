@@ -1292,13 +1292,6 @@ header .failure-line {
   color: var(--text);
 }
 
-/* The sentence why the sending is inactive while a manual map run waits, under the row's sending, in `text-secondary`. */
-.team-member-run-note {
-  flex-basis: 100%;
-  margin: 0;
-  color: var(--text-secondary);
-}
-
 /* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */
 .team-member-stopped {
   flex-basis: 100%;
@@ -1311,10 +1304,6 @@ header .failure-line {
   flex-basis: 100%;
   margin: 0;
   color: var(--warning);
-}
-
-.team-member-program-label {
-  color: var(--text-label);
 }
 
 .character-creation-label {
@@ -1356,11 +1345,6 @@ header .failure-line {
 }
 
 .run-header-status.positive {
-  color: var(--positive);
-}
-
-/* A map solved in the headquarters, beside the character's row (D-39). */
-.map-label.solved {
   color: var(--positive);
 }
 

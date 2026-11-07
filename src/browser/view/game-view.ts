@@ -154,12 +154,12 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * lines need and the state never holds.
  *
  * The view shows one screen at a time, the one the address names (D-280, D-281): Siedziba, the
- * headquarters alone; Postać, built on entering it and disposed on leaving; Mapy, built on entering
- * `#/mapy` or `#/mapy/{map}` and disposed on leaving, the card of the map the address names beside
- * the list of open maps (D-325); Programy, the list of programs beside a program panel that shows
+ * headquarters alone, built once; Postać, built on entering it and disposed on leaving; Mapy, built
+ * on entering `#/mapy` or `#/mapy/{map}` and disposed on leaving, the card of the map the address
+ * names beside the list of open maps (D-325); Programy, the list of programs beside a program panel that shows
  * the saved program the address names, never the copy (D-166), and with no number the program the
  * copy belonged to after „Zakończ” (D-173); and Przejście, a program panel that shows the copy
- * beside the column of the map run. The DOM screens are built once and hidden while another shows.
+ * beside the column of the map run. The screens built once are hidden while another shows.
  * The two program panels are two, so the program each shows stays its own: a panel that moved
  * between the screens would carry the program shown on one into the other. The first screen is the
  * entry's (D-96, D-212, D-225): after the sign-in form and at a reload with no fragment Siedziba or
@@ -292,7 +292,7 @@ export function createGameView(options: GameViewOptions): GameView {
   // tick.
   const clock = startClock(store, () => {
     if (current.kind === "headquarters")
-      headquarters.tick(state, clock.moment());
+      headquarters.update(headquartersProps());
     characterScreen?.update(characterProps(characterScreen.characterId));
     drawMapsScreen();
   });
@@ -356,20 +356,28 @@ export function createGameView(options: GameViewOptions): GameView {
     },
   };
 
+  function headquartersProps() {
+    return { state, nowMs: clock.moment() };
+  }
+
+  // What Siedziba asks for: the three acts of its screen. Each goes to the simulation, which checks
+  // it; the reading of the clock is made first where the act depends on real time.
   const headquarters = createHeadquarters({
-    create(name) {
-      act(createCharacter(state, name));
+    controls: {
+      create(name) {
+        act(createCharacter(state, name));
+      },
+      stop(characterId) {
+        clock.flush();
+        act(stopLoop(state, characterId));
+      },
+      closeReport() {
+        clock.flush();
+        act(closeAwayReport(state));
+      },
     },
-    stop(characterId) {
-      clock.flush();
-      act(stopLoop(state, characterId));
-    },
-    closeReport() {
-      clock.flush();
-      act(closeAwayReport(state));
-    },
+    props: headquartersProps(),
   });
-  headquarters.element.classList.add("screen-area");
   // Siedziba: the headquarters alone.
   const headquartersScreen = document.createElement("section");
   headquartersScreen.className = "screen headquarters-screen";
@@ -746,7 +754,7 @@ export function createGameView(options: GameViewOptions): GameView {
    * showed, hidden, until the next send.
    */
   function renderScreens(events: readonly GameEvent[]): void {
-    headquarters.update(state, clock.moment());
+    headquarters.update(headquartersProps());
     runScreen.setQuestion(question !== null);
     if (state.run !== null) runScreen.update(state, state.run, events);
     characterScreen?.update(characterProps(characterScreen.characterId));
@@ -825,6 +833,7 @@ export function createGameView(options: GameViewOptions): GameView {
       saver.dispose();
       closeCharacterScreen();
       closeMapsScreen();
+      headquarters.dispose();
       programList.dispose();
       runPanel.dispose();
       programsPanel.dispose();

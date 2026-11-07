@@ -2609,12 +2609,16 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
     assert.ok(buttonNamed(ala, "Zatrzymaj").classList.contains("destructive"));
     assert.ok(!shown(byClass(ola, "team-member-loop")[0]));
     assert.ok(!shown(buttonNamed(ola, "Zatrzymaj")));
-    // Siedziba sends nobody: no list of programs and no button of sending in a row (To do 8).
-    for (const row of [ala, ola]) {
+    // Siedziba sends nobody: no list of programs and no button of sending in a row (To do 8). The
+    // screen is drawn in React since Slice 9, so a character in no loop has no „Zatrzymaj” at all.
+    for (const [row, buttons] of [
+      [ala, ["Zatrzymaj"]],
+      [ola, []],
+    ]) {
       assert.equal(tagged(row, "select").length, 0);
       assert.deepEqual(
         tagged(row, "button").map((button) => button.textContent),
-        ["Zatrzymaj"],
+        buttons,
       );
     }
 
@@ -3005,7 +3009,9 @@ function renewing(at, left) {
 
 // To do 19, 20; spec decisions 7 and 8; D-207. Catches a headquarters that draws the passing of
 // real time only when the game state changes, one that rewrites a line that did not change, and a
-// tick that makes a new state, which the saver would send.
+// tick that makes a new state, which the saver would send. The screen is drawn in React since
+// Slice 9, so the writes of the line are counted as the changes of its text the page's document
+// records, and a tick that changes the text runs in act.
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
   await onPage(async ({ root }) => {
     const T = 1_760_000_000_000;
@@ -3027,36 +3033,47 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       const [label] = byClass(root, "team-member-generation");
       assert.equal(label.textContent, "pokolenie 2");
 
-      let writes = 0;
-      let written = line.textContent;
-      Object.defineProperty(line, "textContent", {
-        configurable: true,
-        get: () => written,
-        set: (text) => {
-          writes += 1;
-          written = String(text);
-        },
+      let recorded = 0;
+      const watcher = new globalThis.window.MutationObserver((records) => {
+        recorded += records.length;
       });
+      watcher.observe(line, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+      });
+      /** The changes of the line's text since the last call; the observer reports them at the next await. */
+      const writes = async () => {
+        await settle();
+        const count = recorded;
+        recorded = 0;
+        return count;
+      };
       // 20 s on: 59 min 10 s left is 60 minutes still; the tick writes nothing.
       current = T + 20_000;
-      mock.timers.tick(200);
-      assert.equal(writes, 0);
+      await inAct(() => mock.timers.tick(200));
+      assert.equal(await writes(), 0);
       // 31 s on: 58 min 59 s left rounds up to 59 minutes.
       current = T + 31_000;
-      mock.timers.tick(200);
-      assert.equal(writes, 1);
+      await inAct(() => mock.timers.tick(200));
+      assert.equal(await writes(), 1);
       assert.equal(
         line.textContent,
         `Wskrzeszenie za 59 min czasu realnego${warning}`,
       );
-      mock.timers.tick(200);
-      assert.equal(writes, 1, "a tick in the same minute writes nothing");
+      await inAct(() => mock.timers.tick(200));
+      assert.equal(
+        await writes(),
+        0,
+        "a tick in the same minute writes nothing",
+      );
       // At the moment of readiness the line turns ready, within one tick, and loses `danger`.
       current = T + 3_570_000;
-      mock.timers.tick(200);
+      await inAct(() => mock.timers.tick(200));
       assert.equal(line.textContent, "Wskrzeszenie gotowe");
       assert.ok(!line.classList.contains("danger"));
-      assert.equal(writes, 2);
+      assert.equal(await writes(), 1);
+      watcher.disconnect();
 
       // Nothing was saved: the ticks made no new state, and the saver's own check finds none.
       mock.timers.tick(60_000);
