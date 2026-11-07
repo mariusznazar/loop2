@@ -33,6 +33,26 @@ export function clipTrip(
   return result;
 }
 
+/**
+ * The entries a send takes into a manual map run, the one rule both starts use (To do 5, item 4).
+ * At a map not solved the take list is cut by the chest's stock, the carrying capacity and the
+ * map's entry cap in list order. A manual run of a solved map has no chest (`null`) and takes the
+ * take list from nowhere, cut by the carrying capacity and the entry cap only (D-189, D-214).
+ */
+export function sendTake(
+  plan: TripPlan,
+  chest: Chest | null,
+  capacity: number,
+  map: MapDef,
+): TripEntry[] {
+  if (chest === null) return clippedTake(plan, capacity, map);
+  return clipTrip(
+    plan.take,
+    chest.pieces,
+    Math.min(capacity, map.carryIn ?? Infinity),
+  );
+}
+
 /** Equipment leaves the chest before the first action is chosen. */
 export function takeTrip(
   plan: TripPlan,
@@ -43,11 +63,7 @@ export function takeTrip(
   chest: Chest;
   backpack: Backpack;
 } {
-  const taken = clipTrip(
-    plan.take,
-    chest.pieces,
-    Math.min(capacity, map.carryIn ?? Infinity),
-  );
+  const taken = sendTake(plan, chest, capacity, map);
   const pieces = { ...chest.pieces };
   const backpack = newBackpack();
   for (const { item, count } of taken) {
@@ -84,7 +100,7 @@ export function takeFromNowhere(
   map: MapDef,
 ): Backpack {
   const backpack = newBackpack();
-  for (const { item, count } of clippedTake(plan, capacity, map))
+  for (const { item, count } of sendTake(plan, null, capacity, map))
     backpack[item] = count;
   return backpack;
 }
