@@ -23,11 +23,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { emptyProgram } from "../../dist/browser/sim/programs.js";
 import { TileTable } from "../../dist/browser/view/tile-table.js";
-import {
-  SCENE_SCALE,
-  WorldArea,
-  sceneSize,
-} from "../../dist/browser/view/world-area.js";
+import { WorldArea } from "../../dist/browser/view/world-area.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -405,18 +401,36 @@ test("the line of a death that used a resurrection is not in danger, and a death
   });
 });
 
-// Catches a scene of a size the constant does not give, a text on the picture or a background other
+// Catches a second size of the scene (D-349) — one that follows the width of the window or the game
+// state — a size other than 672 × 304 on the background, a text on the picture or a background other
 // than the file of the forest. The scene is no longer one `img`: since the task scena-z-ludzikiem
 // (To do 1 and 7) it is a frame that holds the forest as its background image and the props, the
 // campfire, the mage and the badge over it (D-316, D-320), so the case reads the size and the source
-// from the background and the absence of text from the whole frame. The sizes are the two the task
-// ekran-przejscia puts to the human (question 1).
-test("the scene is the picture of the forest at the size of the scale, with no text inside or over it", async () => {
-  assert.deepEqual(sceneSize(1), { width: 336, height: 152 });
-  assert.deepEqual(sceneSize(2), { width: 672, height: 304 });
-  assert.ok(SCENE_SCALE === 1 || SCENE_SCALE === 2, "the scale is one of two");
-  await withPage(async ({ document }) => {
-    const { container } = await draw(document, sent());
+// from the background and the absence of text from the whole frame. The one size is twice the
+// picture of 336 × 152 (D-349, task proporcje-sceny-i-programu, To do 4).
+test("the scene is the picture of the forest at the one size of D-349, with no text inside or over it", async () => {
+  await withPage(async ({ window, document }) => {
+    const { container, show } = await draw(document, sent());
+    // The one size holds in a narrow window and in a wide one, and for another state of the game.
+    for (const [width, state] of [
+      [800, completed(sent())],
+      [1920, sent()],
+    ]) {
+      Object.defineProperty(window, "innerWidth", {
+        value: width,
+        configurable: true,
+      });
+      await inAct(() => window.dispatchEvent(new window.Event("resize")));
+      await show(state);
+      const picture = worldOf(container).querySelector(".scene-background");
+      assert.equal(picture.getAttribute("width"), "672", `in ${width} px`);
+      assert.equal(picture.getAttribute("height"), "304", `in ${width} px`);
+      assert.equal(
+        worldOf(container).querySelector(".scene").getAttribute("style"),
+        null,
+        "the frame is sized by its picture alone",
+      );
+    }
     const world = worldOf(container);
     const scene = world.firstElementChild;
     assert.equal(scene.className, "scene");
@@ -424,14 +438,8 @@ test("the scene is the picture of the forest at the size of the scale, with no t
     const background = scene.querySelector(".scene-background");
     assert.equal(background.nodeName, "IMG");
     assert.equal(background.getAttribute("src"), "/sprites/forest-scene.png");
-    assert.equal(
-      background.getAttribute("width"),
-      String(sceneSize(SCENE_SCALE).width),
-    );
-    assert.equal(
-      background.getAttribute("height"),
-      String(sceneSize(SCENE_SCALE).height),
-    );
+    assert.equal(background.getAttribute("width"), "672");
+    assert.equal(background.getAttribute("height"), "304");
     assert.equal(
       background.getAttribute("alt"),
       "",
@@ -653,7 +661,7 @@ test("the notes stand after the end of a map run, on the state at the stopped mi
 
 // Catches the paragraph of the last encounter drawn in the world area, at its old place under „Teraz”
 // and „Potem” or anywhere else, while the map run holds a record of one (task kronika-z-filtrami,
-// To do 6; D-311, D-147): it stands in the chronicle of the right area alone.
+// To do 6; D-311, D-147): it stands in the chronicle in the area with the tabs alone.
 test("the world area draws no paragraph of the last encounter, with a record of one or without", async () => {
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, sent());

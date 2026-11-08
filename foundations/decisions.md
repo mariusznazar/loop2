@@ -426,16 +426,17 @@ character's tile, never on the drawing.
   shown only by a real browser, which the repository does not declare, an agent compares the change
   with the decision:
   - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
-    marks the tile, while the tab „Teren” of the right area of the screen of a map run is picked
-    (D-311)
+    marks the tile, while the tab „Teren” of the area under the world on the screen of a map run is
+    picked (D-311)
   - violates: a click on a tile that sends the character there or changes the program
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
+- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Decisions in play
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
 character's tile against numbers the list shows, and the list keeps the stock of every resource of
 a tile readable where numbers written into the tiles would not be; hovering ties a tile to its
-numbers without writing them on it. The list stands in the right area, which the editing of a rule
-takes, so the line under the drawing keeps the numbers beside the program while the player writes.
+numbers without writing them on it. The list stands under a tab of the area under the world, which
+may show the chronicle instead, so the line under the drawing keeps the numbers beside the program
+while the player writes.
 *Rejected:* the grid drawn without the list and its numbers — the player would write that condition
 without seeing the number it compares; numbers written into the tiles — unreadable where a tile
 holds several resources.
@@ -3068,20 +3069,20 @@ Each program of the player carries a number the game gives it when the program i
 
 ### D-166 — Where does the player see the player's programs and pick the one to edit?
 
-The screen Programy holds on the left the list of the player's programs and in the middle the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
+The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” picked on the list of Programy showing that program in the editor in the
-    middle of the screen, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
+  - complies: „Program 2” picked on the list of Programy showing that program in the editor on the
+    right of the screen, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
     saved program with „Zmiany tutaj nie dotykają przejścia na mapie Las.” above the editor; on the
     screen of a map run the select list reading „Kopia w przejściu”, „Program”, „Program 2”
   - violates: „Kopia w przejściu” on the list of Programy; „Przełącz postać na ten program” on
     Programy; a list during a map run on which the copy stands below the saved programs; the program
     panel standing beside Siedziba
-- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-166 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 5 and 15 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 4 and 13
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-166 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 5 and 15 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 4 and 13 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, and Questions to settle, question 3
 
 *Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero.
 *Rejected:* a panel standing beside every screen — the program mixes with everything else; a list during a map run on which the copy stands below the saved programs; „Kopia w przejściu” on the list of Programy — the list and the address would have to handle the copy; „Programy” leading to the screen of a waiting map run — the player could not write a saved program while a map run waits.
@@ -6028,16 +6029,17 @@ and its target after it.
 - **Based on:** none
 - **Relations:** derives from D-280
 - **Verification:** an agent compares a change with the decision:
-  - complies: the world, the program and the right area of the screen of a map run each an area of
-    its own, which a narrower layout can place one above the other; on Programy the list of
-    programs, the program editor and the rule panel each an area of its own; on Mapy the list of
+  - complies: the world, the program and the area with the tabs „Kronika” and „Teren” of the screen
+    of a map run each an area of its own, which a narrower layout can place one above the other in
+    that order; on Programy the list of programs and the program editor each an area of its own,
+    the rule panel opening in place in the editor (D-288); on Mapy the list of
     maps and the card of a map each an area of its own; the team on Siedziba, drawn in React, under
     the heading „Drużyna”; the rule panel offering „Zbierz” and, once it is picked, the targets
     of „Zbierz” in a field after it
   - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
     the characters of Siedziba as a bare list with no heading; one flat pick holding „Zbierz —
     patyk” and „Zbierz — jagoda” as cells of their own
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What do the screens leave room for from the start?"
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What do the screens leave room for from the start?" · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 3, and Decisions in play
 
 *Rationale:* a layout for a phone, several teams and actions with targets of their own come later,
 and these three shapes make each of them an addition. They cost a decision and no code.
@@ -6159,11 +6161,13 @@ another character, and the code would have to block what the simulation allows.
 ### D-288 — How does the player write a program rule?
 
 One program editor stands on Programy and on the screen of a map run. A rule's row reads as a
-sentence and a rule panel beside the rows changes it: each pick moves on to the next field,
-conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions
-in two columns, and what the player may not pick stands greyed with its reason. Rules move by a
-handle with a line showing where they land, by arrows, and between groups, and whole rule groups
-move by a handle with such a line, with no arrows in the header of a rule group.
+sentence and a rule panel changes it, opening in place on the list under the row of the rule or the
+header of the rule group it changes, on both screens, and taking no column of its own: each pick
+moves on to the next field, conditions, actions and targets stand as cells in groups that the
+keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed
+with its reason. Rules move by a handle with a line showing where they land, by arrows, and between
+groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a
+rule group.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -6171,26 +6175,38 @@ move by a handle with such a line, with no arrows in the header of a rule group.
 - **Verification:** an agent compares a change with the decision:
   - complies: one editor component drawing the program on Programy and the copy on the screen of a
     map run; a click on the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” opening the rule panel
-    beside the rows; a program rule dragged by its handle into another rule group, a line showing
-    where it lands; a rule group dragged by its handle above another
-  - violates: a native select list in a rule's row; the rule panel opened over the rows; „↑” and
-    „↓” in the header of a rule group; a discovered action the player may not pick left out of the
-    pick rather than greyed with its reason
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P2 · rozpoznanie_projektant.md, part B.3 · research_edytor_programu_wow.md, „Pisanie” · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "How does the player write a program rule?" · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 8
+    under that row, on Programy and on the screen of a map run, and a click on the header of a rule
+    group opening it under that header, Programy keeping its two columns, the list of programs and
+    the editor; a program rule dragged by its handle into another rule group, a line showing where
+    it lands; a rule group dragged by its handle above another
+  - violates: a native select list in a rule's row; the rule panel opened over the rows, beside
+    them or in a column of its own on either screen; „↑” and „↓” in the header of a rule group; a
+    discovered action the player may not pick left out of the pick rather than greyed with its
+    reason
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P2 · rozpoznanie_projektant.md, part B.3 · research_edytor_programu_wow.md, „Pisanie” · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "How does the player write a program rule?" · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 8 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 3, Questions to settle, questions 1 and 3, and § Settlements to record, row 1
 
-*Rationale:* the player writes while seeing the world, so the pick stands beside the program rather
-than over it, and a row is for reading while the panel is for changing. Writing a program without
+*Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
+opens in place on the list rather than over it or in a column of its own, which would take width
+from the program; a row is for reading while the panel is for changing. Writing a program without
 grimacing is what the project is judged by. Cells give a condition one click and keep one control
 for every pick. Arrows suit moving a single rule up or down, and they do not suit reordering groups.
 Accepted with it: the pickers need keyboard handling that native lists gave for free, long names of
-conditions wrap into two lines, and rule groups cannot be moved from the keyboard.
+conditions wrap into two lines, rule groups cannot be moved from the keyboard, and on Programy,
+where width is not wanting, the panel opens in place all the same, so the editor has one way of
+opening it on both screens.
 *Rejected:* native select lists in each row — a form, the source of the game's look of paperwork;
 the pick in a window in the middle, as in loop — it covers the world and the program; hiding what
 may not be picked — the player asks where it went; a select list for conditions in the panel — two
 clicks and the look of a form; a list of conditions of its own, as in loop — a second control and a
 second keyboard handling; rule groups moved by arrows alone — reordering by arrows does not work; a
 way from the keyboard for rule groups with no arrows in the header, such as keys on the handle —
-keyboard handling of its own in the largest task.
+keyboard handling of its own in the largest task; the panel in a column beside the rows on the
+screen of a map run, with the split of widths unchanged — the program stays narrow, and each new
+line at a rule wraps further; the panel beside the editor on Programy alone — the editor has two
+ways of opening the panel by screen, the player sees the same rule edited beside it once and on the
+list another time, and in a narrow window of Programy the panel still lands under the whole editor;
+the right column wrapped under the world in a narrower window, with the panel opening under the
+whole area of the world — a part of the way that shrinks the scene, which D-349 rejects.
 
 ### D-289 — What does the rule panel show greyed, and with which reason?
 
@@ -6695,13 +6711,14 @@ the human chooses to correct — the human corrected no row.
 
 ### D-311 — How is the screen of a map run laid out?
 
-The screen of a map run has three areas under one header: the world on the left, the program in
-the middle, and on the right one content at a time, the editing of a program rule or a rule group
-while one is open and otherwise the chronicle or the table of revealed tiles, as the player picks
-with the tabs „Kronika” and „Teren”, „Kronika” picked when the character is sent to the map. The
-world holds, from the top, the scene, „Teraz” and „Potem”, the line of the end of the map run
-(D-185, D-216), the body row with the minutes each need lasts, with the backpack and the lines below
-them, the drawing of the map and the line of a tile under it. The header holds the character's
+The screen of a map run has two columns under one header: on the left the world and, under the
+drawing of the map and the line of a tile that end it, an area with the tabs „Kronika” and „Teren”
+holding one content at a time, the chronicle or the table of revealed tiles, as the player picks,
+„Kronika” picked when the character is sent to the map; on the right the program, in which the
+editing of a rule or a rule group opens in place under its row (D-288). The world holds, from the
+top, the scene, „Teraz” and „Potem”, the line of the end of the map run (D-185, D-216), the body row
+with the minutes each need lasts, with the backpack and the lines below them, the drawing of the map
+and the line of a tile under it. The header holds the character's
 name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
 „Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”.
 
@@ -6711,29 +6728,37 @@ name, the map's name, the clock, a bar of the solving condition with its numbers
 - **Verification:** an agent compares a change with the decision:
   - complies: on the screen of a map run of Las the character's name, „Las”, „Minuta 212”, the bar
     „Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the header, and
-    under it the world, the program and the right area side by side, the right area holding the tabs
-    „Kronika” and „Teren” with the chronicle under „Kronika”, picked when the character was sent;
-    „Teraz” and „Potem” under the scene, and the paragraph of the last encounter standing in the
-    chronicle; a rule opened from its row standing in the right area in the place of the tabs and
-    their content, and „✕” bringing back the tab picked; after a completion the line „Do skrzynki:
-    …” under „Teraz” and „Potem” in the world area, the right area keeping the tab picked
+    under it the world and the program side by side, the area with the tabs „Kronika” and „Teren”
+    under the drawing of the map and the line of a tile in the left column, with the chronicle under
+    „Kronika”, picked when the character was sent; „Teraz” and „Potem” under the scene, and the
+    paragraph of the last encounter standing in the chronicle; a rule opened from its row standing
+    under that row in the program, the tabs and the tab picked staying where they were, and no third
+    column appearing; after a completion the line „Do skrzynki: …” under „Teraz” and „Potem” in the
+    world area, the area with the tabs keeping the tab picked
   - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
-    body row; the rule panel opened over the program or under the tabs; the table of revealed tiles
-    standing under the drawing in the world area; the paragraph of the last encounter standing in
-    the world area; the chronicle and the table standing one under the other; the line „Do skrzynki:
-    …” in the right area; „Restart” and „Zakończ” standing in the world area
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 8, Questions to settle, questions 5, 6 and 11, and Decisions in play
+    body row; the rule panel opened over the program, beside the rows or in a column of its own; the
+    tabs standing in the column of the program; the table of revealed tiles standing in the world
+    area itself, with the drawing; the paragraph of the last encounter standing in the world area;
+    the chronicle and the table standing one under the other; the line „Do skrzynki: …” in the area
+    with the tabs; „Restart” and „Zakończ” standing in the world area
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 8, Questions to settle, questions 5, 6 and 11, and Decisions in play · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 2, Questions to settle, questions 1, 2 and 6, and § Settlements to record, row 2
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
 Needs and the goal stand high, because they stay readable at a fast pace when moments no longer do,
-and „Teraz” and „Potem” stand right under the scene. The chronicle shares the right area with the
-table of revealed tiles under two tabs, so each keeps the whole height of the area, and „Kronika” is
-picked first, since the chronicle is what the player is to read; the paragraph of the last
-encounter stands in the chronicle alone, so its text stands in one place. The header is where the
-player steers the map run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header,
-which with the bar of the solving condition and three buttons may break in a narrower window; the
-table of revealed tiles one click away while „Kronika” is picked; and, while the end of the map run
-does not stand in the right area, after a death in combat the paragraph read only in the chronicle.
+and „Teraz” and „Potem” stand right under the scene. The program takes the whole right column,
+since the player reads and writes it for most of a map run: a rule and the buttons of the program
+wrap into fewer lines, and a rule opened in place (D-288) takes no column of its own. The chronicle
+shares the area under the world with the table of revealed tiles under two tabs, so each keeps the
+whole area, and „Kronika” is picked first, since the chronicle is what the player is to read; the
+paragraph of the last encounter stands in the chronicle alone, so its text stands in one place. The
+area with the tabs stands under the world, so its place does not depend on the length of the
+program and the player sees it beside the program. The header is where the player steers the map
+run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of
+the solving condition and three buttons may break in a narrower window; the table of revealed tiles
+one click away while „Kronika” is picked; in a low window, such as 1280 × 720, the area with the
+tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; and,
+while the end of the map run does not carry it, after a death in combat the paragraph read only in
+the chronicle.
 *Rejected:* the pick of an action in a window over the screen, as in loop — it hides what the
 character needs; the end of a map run below an open editor of a rule, as in loop — its buttons fall
 under the edge of the window; the needs below two drawings of one place, as in loop; the trip plan
@@ -6744,9 +6769,18 @@ heading of the copy — the player looks for them in a new place, and the questi
 would move into that row and push the program down in a narrow column; „Teraz” and „Potem” under the paragraph of the last encounter and the line of the
 end of the map run — they move down at each attack as the paragraph grows; „Teren” picked when the
 character is sent — the chronicle the player is to read stays hidden until it is opened; the
-chronicle and the table one under the other — both shorter, and the right area holding two contents
-at once; the paragraph of the last encounter under the scene as well as in the chronicle — the same
-text in two places.
+chronicle and the table one under the other — both shorter, and the area holding two contents at
+once; the paragraph of the last encounter under the scene as well as in the chronicle — the same
+text in two places; three columns, the world, the program and a right column for the tabs and the
+rule opened — the program stays narrow, and each new line at a rule wraps further; the tabs under
+the program in a joined column, as in loop in a narrower window — the place of the chronicle depends
+on the length of the program, so with several groups it falls far down and jumps when the player
+opens a rule panel or folds a group; the tabs „Program”, „Kronika” and „Teren” at the top of the
+joined column — the program and the chronicle are not seen together, while the player reads them
+together to check why the character did what it did, and to edit the player has to go back to
+„Program”; the end of the map run first in the area under the world — in a low window it stands
+under the lower edge, the kind of place the rejection of loop above names, and its place would be
+fixed before it is known what the end holds and how much room it takes.
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
@@ -7254,7 +7288,7 @@ the death, such as „Minuta 312”.
   - violates: a progress bar under „Teraz”; „Zbiera: patyk” in „Teraz”; the number of the combat
     rule beside „Walczy z wilkiem”; „Mag zamarzł” in `danger`; „Teraz” still naming the last action
     after a death; the word „Teraz” written in the row before the icon, as „Potem” is in its row
-- **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 1, 8, 9 and 14, and § Settlements to record, rows 1, 4 and 8
+- **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 1, 8, 9 and 14, and § Settlements to record, rows 1, 4 and 8 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
 
 *Rationale:* the player reads what the character does in the words of the rule that makes it do
 so, with that rule's number, so the action leads to its rule in the program. The minutes in the
@@ -7271,7 +7305,7 @@ head, which shows the same; the words of the character's activity the header sho
 the rule, and the player does not know which rule the action comes from and how long it lasts;
 „Walczy z wilkiem” with the number of the combat rule the turn would choose at its right, a click
 scrolling to that rule — the same number stands twice, in „Teraz” and a row below in „Potem”; no
-„Teraz” after the end of a map run — until the end of the map run stands in the right area, the
+„Teraz” after the end of a map run — until the end of the map run stands on the screen, the
 player reads nowhere why the map run ended; „Teraz” staying on the last action after a death — it
 reads as something the mage still does, and the cause stands nowhere.
 
@@ -7381,7 +7415,8 @@ the values they concern.
 
 A manual map run keeps a chronicle of what happened in it, each entry with its game minute:
 discoveries, the character's actions, combat, the player's changes of the program, and each loss
-of the streak with its cause. The player filters it by these kinds in the right area of the screen.
+of the streak with its cause. The player filters it by these kinds in the area with the tabs under
+the world on the screen.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -7393,7 +7428,7 @@ of the streak with its cause. The player filters it by these kinds in the right 
   - violates: an entry of the chronicle with no game minute; a streak above zero falling to zero
     with no entry of the chronicle; a change of the copy leaving no entry of the chronicle; the
     chronicle standing in the world area of the screen of a map run
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P8 and NG7 · rozpoznanie_projektant.md, proposal 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does the chronicle of a map run hold?” · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P8 and NG7 · rozpoznanie_projektant.md, proposal 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does the chronicle of a map run hold?” · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Decisions in play
 
 *Rationale:* a line of discoveries that goes at „Wznów” and a streak that falls without a word leave
 the player nothing to read afterwards, and the player's complaint is not knowing what happened.
@@ -7534,7 +7569,7 @@ copy after it, with more tests.
 *Rejected:* one general entry „Zmieniono kopię programu” — the player does not know what was
 changed, less than loop gave.
 
-### D-343 — How does the chronicle stand in the right area, and how does the player filter it?
+### D-343 — How does the chronicle stand in the area with the tabs, and how does the player filter it?
 
 Over the list of the chronicle stands a row of filter buttons in the look of the pace buttons
 (D-130), one picked at a time — „Wszystko”, „Odkrycia”, „Czynności”, „Walka”, „Moje zmiany”,
@@ -7557,7 +7592,7 @@ chronicle and a filter that shows no entry read „Nic tu jeszcze nie ma.”.
   - violates: two filters picked at once; the filter buttons drawn as tabs (D-276); the newest entry
     at the bottom; „Minuta 212” or „03:32” beside an entry; every entry in one colour; an empty list
     with no sentence
-- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 9, Questions to settle, questions 7 and 8, and § Settlements to record, rows 7 and 8
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 9, Questions to settle, questions 7 and 8, and § Settlements to record, rows 7 and 8 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Decisions in play
 
 *Rationale:* one filter at a time, as in loop, and the newest entry on top, as in loop, so the
 current moment needs no scrolling in a long chronicle; the game minute as a number alone keeps the
@@ -7619,38 +7654,39 @@ game wrote a program rule, by „Gra dopisała regułę w grupie „{nazwa grupy
   - violates: „Odkryto: Patyk” and „Odkryto: Zbierz” as two entries of one game minute; „Dodaj
     regułę z tym” in the entry; the sentence of the rule left out of the entry of a discovery at
     which the game wrote one
-- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and § Settlements to record, row 10
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and § Settlements to record, row 10 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Decisions in play
 
 *Rationale:* the entry keeps the division of the band the player has just read, one game minute in
-one entry. Accepted with it: a long entry that wraps over several lines in the right area.
+one entry. Accepted with it: a long entry that wraps over several lines in the area with the tabs.
 *Rejected:* one entry for each thing of the band in the same game minute, as „Odkryto: Patyk” and
 „Odkryto: Zbierz” — several entries in one game minute, divided otherwise than the band the player
 has just read.
 
 ### D-346 — How long does the pick of „Kronika” or „Teren” hold on the screen of a map run?
 
-The tab „Kronika” or „Teren” the player picks in the right area of the screen of a map run stays
-picked through the whole map run, through leaving its screen and coming back, and through
-„Restart”.
+The tab „Kronika” or „Teren” the player picks in the area under the world on the screen of a map
+run stays picked through the whole map run, through leaving its screen and coming back, and through
+„Restart”, and a rule panel opened or closed in the program leaves it as it was.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-311
 - **Verification:** an agent compares a change with the decision:
   - complies: „Teren” picked, then Siedziba and back to the map run, „Teren” still picked; „Teren”
-    picked before „Restart” and still picked after it; a rule panel closed with „✕” giving back
-    „Teren”
+    picked before „Restart” and still picked after it; a rule panel opened and closed with „✕”
+    with „Teren” still picked and its table still standing
   - violates: „Kronika” picked again after „Restart” where the player had picked „Teren”; the pick
-    lost at a return from the headquarters
-- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 14
+    lost at a return from the headquarters; the tabs replaced by the rule panel while it is open and
+    „Teren” given back when it closes
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 14 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Decisions in play
 
-*Rationale:* the right area keeps what the player chose to read through the map run and its
-restarts, so the player does not pick it again at each return to the screen or each „Restart”.
+*Rationale:* the area under the world keeps what the player chose to read through the map run and
+its restarts, so the player does not pick it again at each return to the screen or each „Restart”.
 Accepted with it: while „Kronika” is picked the table of revealed tiles is one click away, and a
 tile of the drawing under the pointer marks its row of the table only while „Teren” is picked.
 *Rejected:* „Teren” picked at the start — the chronicle the player is to read stays hidden until it
-is opened; the chronicle and the table one under the other — both shorter, and the right area would
-hold two contents at once, against D-311.
+is opened; the chronicle and the table one under the other — both shorter, and the area would hold
+two contents at once, against D-311.
 
 ### D-347 — How does an agent learn what went wrong in the running game?
 
@@ -7727,3 +7763,61 @@ player moved, so it would take the editor's hint or describe some swaps wrongly,
 describe facts the view already holds exactly; the program editor describing every edit at each of
 its places, with no comparison of the copies — many more places to keep right; the comparison
 alone, a swap decided by a fixed rule — „↓” on 2.1 reading in half the cases as 2.2 moving up.
+
+### D-349 — What size is the scene on the screen of a map run?
+
+The scene has one size, 672 × 304 px, twice the size of its picture, and the game keeps no second
+scale of it. Whatever the scene draws is drawn for this size alone.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-311 · derives from D-316
+- **Verification:** an agent compares a change with the decision:
+  - complies: the scene of a map run 672 × 304 px in a window 1280 px wide and in one 1920 px wide,
+    drawn at twice its picture; an effect of the scene made for that size
+  - violates: a second size of the scene, such as 336 × 152 px, chosen by a constant, by a style
+    rule or by the width of the window; the scene drawn at a fraction of twice its picture, such as
+    one and a half times
+- **Origin:** zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 1, and § Settlements to record, row 3
+
+*Rationale:* the width of the program comes from the rule panel opening in place (D-288) and from
+the two columns of the screen (D-311), not from a smaller scene, so the scene stays as large as it
+is. A pixel picture drawn at twice its size keeps all its pixels equal, and one drawn at a
+fraction of that has unequal pixels and shakes in motion; one size also leaves the effects of the
+scene a single size to be made for.
+*Rejected:* the scene at 336 × 152 px with the split of widths unchanged — it does not solve what
+the change is for, a program too narrow to write in; the scene at three quarters or four fifths of
+its size with the content wider than D-280 gives and the right column wrapped under the world in a
+narrower window — a pixel picture at a scale of one and a half or one and six tenths has unequal
+pixels and the mage shakes in motion, it changes the limit of the content width of D-280, and the
+panel of a rule then opens under the whole area of the world; a large scene in a wide window and a
+small one in a narrower window — the content is at most 1344 px wide, so with the large scene the
+program never has more than a narrow column, and the way ends in a small scene all the same.
+
+### D-350 — Where does the rule panel stand while the rule group of its rule is folded?
+
+A rule panel open on a rule whose rule group is folded stands directly under the header of that
+group, where the row of the rule is not drawn. Folding or unfolding that group, or every group at
+once, closes no panel and changes no field of it, and the panel stands under the row again when the
+group unfolds.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288 · derives from D-295
+- **Verification:** an agent compares a change with the decision:
+  - complies: the rule panel open on rule 2.1 at its field „Czynność”, then „Zwiń grupę” on group
+    2: the panel under the header of group 2 with the field „Czynność” still shown, and „Rozwiń
+    grupę” bringing it under the row of rule 2.1; „zwiń wszystkie” with a panel open leaving it
+    under the header of its group
+  - violates: the panel closing when its group folds; the group unfolding to show the panel; the
+    panel standing under no header and no row, such as at the end of the list
+- **Origin:** none
+
+*Rationale:* folding arranges the player's view of a program and changes nothing the player is
+writing (D-294), so the rule being changed stays changeable, and the panel goes to the one place of
+its group that is drawn. A folded group keeps the list where it stood under the pointer (D-295), so
+the panel does not unfold it.
+*Rejected:* closing the panel when its group folds — D-306 names what closes it, „✕”, Escape and
+opening another rule, and a fold is none of them, so the player would lose the field and the rule
+being written; unfolding the group for the panel — the group the player folded opens again and the
+list runs from under the pointer.

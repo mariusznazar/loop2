@@ -1,9 +1,10 @@
 // The screen of a map run in React (task ekran-przejscia, To do 2, 3, 5, 7 and 8; D-311, D-281,
 // D-282, D-19, D-122, D-313) on jsdom through tests/view/page-document.mjs (D-264): the header over
-// three areas — the world, the program with the band of a discovery above the program panel, and on
-// the right the tabs „Kronika” and „Teren” with the chronicle or the table of revealed tiles, or the
-// rule panel (task kronika-z-filtrami, To do 8; D-346) — drawn from the map run the screen is
-// given, and the one hovered tile the screen holds for the drawing, its line and the table. The
+// three areas — the world, the program with the band of a discovery above the program panel, and
+// third the area under the drawing with the tabs „Kronika” and „Teren” and the chronicle or the table
+// of revealed tiles (task kronika-z-filtrami, To do 8; D-346; task proporcje-sceny-i-programu, To do
+// 1 and 2) — drawn from the map run the screen is given, and the one hovered tile the screen holds
+// for the drawing, its line and the table. A rule panel opens in the program, under its row. The
 // screen is built here as the game view builds it, with a program panel of its own and controls
 // that make the real simulation calls. Real events, focus and the look are checked in the browser
 // (D-88). Every comparison is of plain data or of a handful of words (D-268).
@@ -205,9 +206,10 @@ function withTiles() {
 }
 
 // D-311, D-282, task items 1 and 2. Catches the header standing inside an area, two areas drawn as
-// one block, the areas out of the order world, program, right, and a part standing in another
-// area: the drawing beside the program, the program panel or the table in the world.
-test("the header stands above three areas of their own in the order world, program and right, holding the world, the program panel and the tabs with the chronicle", async () => {
+// one block, the areas out of the order world, program, tabs, a part standing in another area: the
+// drawing beside the program, the program panel or the table in the world, and a host for the rule
+// panel standing in the screen, which the panel opening in the program no longer has.
+test("the header stands above three areas of their own in the order world, program and tabs, holding the world, the program panel and the tabs with the chronicle, and no host for the rule panel", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -238,6 +240,11 @@ test("the header stands above three areas of their own in the order world, progr
     assert.deepEqual(holding("tile-list"), [false, false, false]);
     // D-311: the clock stands in the header (class `run-header-clock`), in no area.
     assert.deepEqual(holding("run-header-clock"), [false, false, false]);
+    assert.equal(
+      byClass(element, "run-rule-host").length,
+      0,
+      "the rule panel has no host of its own",
+    );
   });
 });
 
@@ -246,9 +253,9 @@ test("the header stands above three areas of their own in the order world, progr
 test("at a discovery the band stands in the program's area, above the program panel", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, firstChill());
-    const [world, program, right] = areasOf(screen.element);
+    const [world, program, tabs] = areasOf(screen.element);
     assert.equal(byClass(world, "discovery-band").length, 0);
-    assert.equal(byClass(right, "discovery-band").length, 0);
+    assert.equal(byClass(tabs, "discovery-band").length, 0);
     const band = byClass(program, "discovery-band")[0];
     const panel = byClass(program, "program-panel")[0];
     assert.ok(band && panel, "the program's area holds the band and the panel");
@@ -261,16 +268,16 @@ test("at a discovery the band stands in the program's area, above the program pa
 });
 
 // D-173, task pytanie-przy-zakoncz, To do 1 and question 8. Catches the question standing before the
-// screen asks for it, in the world or the right area, above the band of a discovery, outside the
+// screen asks for it, in the world or the area under the drawing, above the band of a discovery, outside the
 // program panel or not directly above the heading of the copy, or kept after `setQuestion(false)`.
 test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, firstChill());
-    const [world, program, right] = areasOf(screen.element);
+    const [world, program, tabs] = areasOf(screen.element);
     assert.equal(byClass(screen.element, "end-question").length, 0);
     await inAct(() => screen.setQuestion(true));
     assert.equal(byClass(world, "end-question").length, 0);
-    assert.equal(byClass(right, "end-question").length, 0);
+    assert.equal(byClass(tabs, "end-question").length, 0);
     assert.deepEqual(
       [...program.children].map((child) => child.className),
       ["discovery-band", "run-program-place"],
@@ -331,55 +338,65 @@ test("the screen draws the map run it was given, the copy of that map run in its
   });
 });
 
-// Task item 3, D-311, D-282, task edytor-programu, To do 3 and question 3; kronika-z-filtrami, To do 8,
-// D-346. Catches the rule panel standing under the rows or in the world area instead of in the right
-// area in the place of the tabs and their content, the tabs standing beside an open panel, the
-// drawing leaving with them, and „✕” not bringing back the tab that was picked, whichever it was.
-test("an open rule panel stands in the right area in the place of the tabs and their content, the drawing stays in the world area, and „✕” brings back the tab picked", async () => {
+// Task item 3, D-311, D-282, D-288, D-346; task proporcje-sceny-i-programu, To do 1 and 2. Catches the
+// rule panel standing in the area under the drawing or in the world instead of in the program under
+// the header it changes, the tabs and their content leaving while it is open, the drawing leaving
+// with them, and „✕” changing the tab picked, whichever it was.
+test("an open rule panel stands in the program under its header, the tabs and their content and the drawing stay where they were, and „✕” leaves the tab picked as it was", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
-    const [world, program, right] = areasOf(element);
+    const [world, program, area] = areasOf(element);
     const drawing = () => byClass(world, "terrain-drawing")[0];
-    const tabs = () => byClass(right, "tabs").find(shown);
-    const table = () => byClass(right, "tile-list").find(shown);
-    const chronicle = () => byClass(right, "chronicle").find(shown);
+    const tabs = () => byClass(area, "tabs").find(shown);
+    const table = () => byClass(area, "tile-list").find(shown);
+    const chronicle = () => byClass(area, "chronicle").find(shown);
     assert.ok(tabs() && chronicle(), "the tabs and the chronicle stand");
     assert.equal(table(), undefined, "Kronika is picked first");
     assert.equal(byClass(element, "rule-panel").length, 0);
 
     for (const picked of ["Kronika", "Teren"]) {
       await press(page.window, buttonNamed(tabs(), picked));
-      await press(
-        page.window,
-        byClass(program, "rule-list-header").find(shown),
-      );
+      const header = byClass(program, "rule-list-header").find(shown);
+      await press(page.window, header);
       const panels = byClass(element, "rule-panel");
       assert.equal(panels.length, 1, `${picked}: the panel is open`);
-      assert.ok(right.contains(panels[0]), "in the right area");
-      assert.ok(shown(panels[0]));
-      assert.equal(tabs(), undefined, "the panel takes the tabs' place");
-      assert.equal(table(), undefined);
-      assert.equal(chronicle(), undefined);
-      assert.ok(drawing() && shown(drawing()), "the drawing stays");
-      assert.equal(
-        byClass(program, "rule-panel").length,
-        0,
-        "not under the rows",
+      assert.ok(
+        byClass(program, "program-panel")[0].contains(panels[0]),
+        "in the program panel",
       );
-
-      await press(page.window, buttonLabelled(right, "Zamknij panel"));
-      assert.equal(byClass(element, "rule-panel").length, 0);
-      assert.ok(tabs(), `${picked}: the tabs are back`);
+      assert.ok(
+        header.nextElementSibling.contains(panels[0]),
+        "right under the header it changes",
+      );
+      assert.ok(shown(panels[0]));
+      assert.equal(area.contains(panels[0]), false, "not in the tabs' area");
+      assert.ok(tabs(), `${picked}: the tabs stand beside the open panel`);
       assert.equal(
         buttonNamed(tabs(), picked).getAttribute("aria-pressed"),
         "true",
-        `${picked}: the tab picked is the one back`,
+        `${picked}: the tab picked is the one picked`,
       );
       assert.equal(
         Boolean(table()),
         picked === "Teren",
-        `${picked}: its content is back`,
+        `${picked}: its content stands`,
+      );
+      assert.equal(Boolean(chronicle()), picked === "Kronika");
+      assert.ok(drawing() && shown(drawing()), "the drawing stays");
+
+      await press(page.window, buttonLabelled(program, "Zamknij panel"));
+      assert.equal(byClass(element, "rule-panel").length, 0);
+      assert.ok(tabs(), `${picked}: the tabs stand`);
+      assert.equal(
+        buttonNamed(tabs(), picked).getAttribute("aria-pressed"),
+        "true",
+        `${picked}: „✕” changed no tab`,
+      );
+      assert.equal(
+        Boolean(table()),
+        picked === "Teren",
+        `${picked}: its content stands`,
       );
       assert.equal(Boolean(chronicle()), picked === "Kronika");
       assert.ok(shown(drawing()));
@@ -387,10 +404,11 @@ test("an open rule panel stands in the right area in the place of the tabs and t
   });
 });
 
-// Task item 7, D-313, D-131. Catches „Dodaj regułę z tym” not reaching the panel, the rule added
-// to a saved program or to a group of its own, the panel opened outside the right area or on the
-// condition, the table left beside it, and the streak left as it stood.
-test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group, opens its panel in the right area on the action, and the streak goes to zero", async () => {
+// Task item 7, D-313, D-131; task proporcje-sceny-i-programu, To do 1. Catches „Dodaj regułę z tym”
+// not reaching the panel, the rule added to a saved program or to a group of its own, the panel
+// opened outside the program, not under the new rule's row, or on the condition, the tabs taken away
+// by it, and the streak left as it stood.
+test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group, opens its panel in the program under the new rule on the action, the tabs stand, and the streak goes to zero", async () => {
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -407,7 +425,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
       ...chilled,
       run: { ...chilled.run, streak: 40 },
     });
-    const [, program, right] = areasOf(game.screen.element);
+    const [, program, area] = areasOf(game.screen.element);
     await press(page.window, buttonNamed(program, "Dodaj regułę z tym"));
 
     assert.deepEqual(game.acts, ["editCopy"]);
@@ -418,13 +436,24 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
       [ALWAYS_EXPLORE, ALWAYS_EXPLORE],
     );
     assert.equal(game.state.run.streak, 0);
-    const panel = byClass(right, "rule-panel")[0];
-    assert.ok(panel && shown(panel), "the panel stands in the right area");
+    const panel = byClass(program, "rule-panel")[0];
+    assert.ok(panel && shown(panel), "the panel stands in the program");
     assert.equal(
       panel.querySelector(".rule-panel-heading")?.textContent,
       "Reguła 1.2",
     );
-    assert.equal(byClass(right, "tabs").length, 0, "in the place of the tabs");
+    assert.ok(
+      program
+        .querySelector('[data-rule="2"]')
+        .nextElementSibling.contains(panel),
+      "right under the row of the new rule",
+    );
+    assert.equal(
+      byClass(area, "rule-panel").length,
+      0,
+      "not in the tabs' area",
+    );
+    assert.ok(byClass(area, "tabs").find(shown), "the tabs stand beside it");
     const focused = page.document.activeElement;
     assert.ok(panel.contains(focused), "the focus is in the panel");
     assert.equal(
@@ -453,14 +482,14 @@ test("„Wznów” of the band goes on as the header's „Wznów” does, and th
 
 // D-19, task item 5, kronika-z-filtrami, To do 8, D-346. Catches the hovered tile kept by the drawing
 // alone, so that the table in another area marks no row, its line shows no numbers, and a hovered row marks no tile.
-test("a hovered tile of the drawing marks its row in the table of the right area and the line gives its numbers; a hovered row marks its tile", async () => {
+test("a hovered tile of the drawing marks its row in the table of the area under the drawing and the line gives its numbers; a hovered row marks its tile", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, withTiles());
-    const [world, , right] = areasOf(screen.element);
+    const [world, , area] = areasOf(screen.element);
     // The table stands under „Teren”; under „Kronika” there is no row to link.
-    await press(page.window, buttonNamed(right, "Teren"));
+    await press(page.window, buttonNamed(area, "Teren"));
     const markedRows = () =>
-      [...right.querySelectorAll("tbody tr.hovered")].map((row) =>
+      [...area.querySelectorAll("tbody tr.hovered")].map((row) =>
         row.getAttribute("data-tile"),
       );
     const markedTiles = () =>
@@ -475,11 +504,11 @@ test("a hovered tile of the drawing marks its row in the table of the right area
       '.terrain-drawing [data-tile="1,0"] polygon',
     );
     await inAct(() => fire(page.window, polygon, "pointerover"));
-    assert.deepEqual(markedRows(), ["1,0"], "its row in the right area");
+    assert.deepEqual(markedRows(), ["1,0"], "its row in the table");
     assert.deepEqual(markedTiles(), ["1,0"]);
     assert.equal(line(), "(1, 0): patyk 12 · jagoda — · mech 6 · włókno —");
 
-    const cell = right.querySelector('tbody tr[data-tile="0,1"] td');
+    const cell = area.querySelector('tbody tr[data-tile="0,1"] td');
     await inAct(() => fire(page.window, cell, "pointerover"));
     assert.deepEqual(markedTiles(), ["0,1"], "a row marks its tile");
     assert.deepEqual(markedRows(), ["0,1"]);

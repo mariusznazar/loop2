@@ -643,16 +643,9 @@ export function createGameView(options: GameViewOptions): GameView {
     props: { programs: state.programs, chosenId: null },
   });
   programList.element.classList.add("screen-area");
-  // The rule panel is the third area of Programy, at the right of the editor while a rule or a group is
-  // open, and nothing while none is; a narrower layout sets it under the editor (D-282).
-  const ruleArea = document.createElement("section");
-  ruleArea.className = "rule-panel-area screen-area";
-  ruleArea.hidden = true;
-  programsPanel.placeRulePanel(ruleArea, (open) => {
-    ruleArea.hidden = !open;
-    programsScreen.classList.toggle("with-rule-panel", open);
-  });
-  programsScreen.append(programList.element, programsPanel.element, ruleArea);
+  // Programy has two areas, the list and the program panel; an open rule's panel stands in the panel's
+  // rule list, under the row or header it changes (D-288, D-282).
+  programsScreen.append(programList.element, programsPanel.element);
   /** What the list was last drawn from, so a game minute that changes no program redraws nothing. */
   let drawnPrograms: {
     programs: GameState["programs"];

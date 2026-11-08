@@ -212,34 +212,11 @@ header .failure-line {
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
-/*
- * Programy while a rule or a group is open: the list, the editor and the rule panel are three areas
- * side by side; a window under 1100 px sets the rule panel under the editor (D-282), and one under
- * 720 px sets every area on its own line.
- */
-.screen.programs-screen.with-rule-panel {
-  grid-template-columns: 1fr 3fr 2fr;
-}
-
-@media (max-width: 1100px) {
-  .screen.programs-screen.with-rule-panel {
-    grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
-  }
-
-  .screen.programs-screen.with-rule-panel > .rule-panel-area {
-    grid-column: 2;
-  }
-}
-
+/* A window under 720 px sets the areas of Programy and Mapy on one line each (D-282). */
 @media (max-width: 720px) {
   .screen.programs-screen,
-  .screen.maps-screen,
-  .screen.programs-screen.with-rule-panel {
+  .screen.maps-screen {
     grid-template-columns: 1fr;
-  }
-
-  .screen.programs-screen.with-rule-panel > .rule-panel-area {
-    grid-column: auto;
   }
 }
 
@@ -251,65 +228,75 @@ header .failure-line {
   min-height: 120px;
 }
 
-/* The rule panel draws its own frame, so the area that holds it draws none. */
-.screen-area.rule-panel-area {
-  background: none;
-  border: none;
-  padding: 0;
-  min-height: 0;
-}
-
 /*
- * The screen of a map run (D-311, D-282, D-280; task ekran-przejscia, To do 2): under its header the
- * world, the program and the right area side by side, each an area of its own. The sizes are layout
- * dimensions, which D-43 leaves out, chosen from the scene's width, the width the rule panel takes
- * and the content of at most 1344 px (D-280); the screen sets the scale of the scene from its one
- * constant, `SCENE_SCALE` of world-area.tsx, as `data-scene-scale`, and the rules of each scale are
- * keyed by it, so the choice of one scale deletes the rules of the other.
+ * The screen of a map run (D-311, D-282, D-280, D-349; task ekran-przejscia, To do 2; task
+ * proporcje-sceny-i-programu, To do 1 and 2): under its header three areas of their own, in the
+ * document in the order world, program, tabs. In a window wide enough they stand in two columns by
+ * named grid areas: on the left the world and, under it, the area with the tabs „Kronika” and
+ * „Teren”, and on the right the program, as tall as the two together; narrower, one under the other
+ * in the order of the document. The areas are not moved in the document and not nested. The sizes
+ * are layout dimensions, which D-43 leaves out, chosen from the scene's width and the content of at
+ * most 1344 px (D-280); the scene is drawn at its one size, 672 px wide (D-349).
  *
- * - The world's column is the scene's width with the area's padding and frame, 2 × 16 px and
- *   2 × 1 px: 336 + 34 = 370 px at the scale 1, 672 + 34 = 706 px at the scale 2.
- * - The right area's column is 336 px at both scales, the width of the scene of the scale 1: the
- *   rule panel takes 276 px of it inside the area's padding and frame, four cells of its pick to a
- *   line, and the table of revealed tiles of Las fits it with the narrower padding of its cells.
- * - The program takes the rest, at least 170 px; with the gaps of 16 px between the areas that is
- *   606 px at the scale 1 and 270 px at the scale 2 in content 1344 px wide, and in a window 1280 px
- *   wide, the content 1248 px, 510 px and 174 px.
- * - The three stand side by side from the window width that holds the world's column, the right
- *   area's, the program's 170 px, the two gaps and the page's padding of 2 × 16 px: 940 px at the
- *   scale 1 and 1276 px at the scale 2. Below it the areas stand one under the other in their order,
- *   the world, the program and the right area, each the width of the content.
+ * - The left column is the scene's width with the area's padding and frame, 2 × 16 px and 2 × 1 px:
+ *   672 + 34 = 706 px.
+ * - The program takes the rest of the content, at least 320 px; with the gap of 16 px between the
+ *   columns that is 622 px in content 1344 px wide, and in a window 1280 px wide, the content
+ *   1248 px, 526 px. The rule panel opens in the program under its row and takes no column of its own.
+ *   The 320 px and the 526 px hold in a browser that draws no classic scrollbar. A media query counts
+ *   a classic scrollbar of 15 to 17 px in the window's width, so with one the program is that much
+ *   narrower: about 511 px in a window 1280 px wide, and under 320 px from 1074 px up to about 1090 px.
+ * - The two columns stand from the window width that holds the left column, the gap, the program's
+ *   320 px and the page's padding of 2 × 16 px: 706 + 16 + 320 + 32 = 1074 px.
+ * - The rows are `auto` for the world and `1fr` for the tabs' area: the program, which spans both,
+ *   adds the height it needs beyond the two to the second row alone, so the tabs' area stays
+ *   directly under the world with the gap of the grid between them.
  */
 .run-screen-areas {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "world"
+    "program"
+    "tabs";
   gap: var(--space-l);
   align-items: start;
 }
 
-@media (min-width: 940px) {
-  .run-screen-areas[data-scene-scale="1"] {
-    grid-template-columns: 370px minmax(0, 1fr) 336px;
-  }
+.run-world {
+  grid-area: world;
 }
 
-@media (min-width: 1276px) {
-  .run-screen-areas[data-scene-scale="2"] {
-    grid-template-columns: 706px minmax(0, 1fr) 336px;
-  }
+.run-program {
+  grid-area: program;
 }
 
 /* The table of revealed tiles keeps its numbers on one line, so a table wider than its area scrolls. */
-.screen-area.run-right {
+.screen-area.run-tabs {
+  grid-area: tabs;
   overflow-x: auto;
 }
 
+@media (min-width: 1074px) {
+  .run-screen-areas {
+    grid-template-columns: 706px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "world program"
+      "tabs program";
+  }
+
+  .screen-area.run-program {
+    align-self: stretch;
+  }
+}
+
 /*
- * The right area while no rule is open (D-311, D-346): the tabs „Kronika” and „Teren” over the
- * chronicle or the table of revealed tiles. The class `tabs` draws the thin line under the group; the
- * space under it separates the tabs from their content.
+ * The area under the drawing (D-311, D-346): the tabs „Kronika” and „Teren” over the chronicle or
+ * the table of revealed tiles. The class `tabs` draws the thin line under the group; the space under
+ * it separates the tabs from their content.
  */
-.right-tabs {
+.run-tabs-row {
   margin-bottom: var(--space-s);
 }
 
@@ -827,19 +814,13 @@ header .failure-line {
 }
 
 /*
- * The rule list and, once a rule or a group is open, the rule panel at its right, each a block of its
- * own that a narrower place sets one above the other (D-282): the columns of the layout are as wide as
- * the place allows, and the rule list takes the whole line while no panel stands.
+ * The rule panel in the rule list (D-288): directly under the row of the rule it changes, as an item
+ * of the list of rules, or directly under the header of the group it changes. The panel draws its own
+ * frame and padding, so the place adds only the gap that parts it from the rows around it.
  */
-.program-editor-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-m);
-  align-items: start;
-}
-
-.program-editor-layout.with-panel {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+.rule-list-panel {
+  list-style: none;
+  margin: var(--space-xs) 0;
 }
 
 /* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */
@@ -1666,8 +1647,8 @@ header .failure-line {
  *
  * The scene (D-316, D-320, D-322; task scena-z-ludzikiem): the forest picture sets the frame's size
  * from its width and height attributes, and every other part lies over it at the place and size
- * TypeScript gives as percentages of the frame, so the stylesheet holds no length of a sprite and the
- * scene is right at either scale. A sheet holds all frames of a picture side by side; `--frames` is
+ * TypeScript gives as percentages of the frame, so the stylesheet holds no length of a sprite. A sheet
+ * holds all frames of a picture side by side; `--frames` is
  * their number, and the sheet shows one of them, the first where it stands still. The scene's motion
  * stands in the rules after the badge.
  */
@@ -1746,10 +1727,11 @@ header .failure-line {
  * The badge over the mage's head (D-320): a solid `panel` with the icon of the action drawn as the
  * mask of `.action-icon` in `text-strong`, though no text stands beside it, and under it the bar of
  * the progress, the fill in `positive` on a track in `highlight`. It sits just above the head, at the
- * middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen at
- * each scale by viewing the scene (16 at the scale 1, 32 at the scale 2: about two thirds of the
- * width of the mage's figure, 25 pixels of the picture, at either scale); the padding and the gap
- * are steps of the spacing scale, the bar's thickness is `--bar-width`, doubled at the scale 2.
+ * middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen by
+ * viewing the scene at its one size: 32 px, about two thirds of the width of the mage's figure, 25
+ * pixels of the picture drawn at twice its size; the padding and the gap are steps of the spacing
+ * scale, and the bar's thickness is `--bar-width` doubled, as the whole scene is drawn at twice its
+ * picture (D-349), so the bar keeps its proportion.
  */
 .scene-badge {
   position: absolute;
@@ -1765,23 +1747,14 @@ header .failure-line {
   color: var(--text-strong);
 }
 
-.run-screen-areas[data-scene-scale="1"] .scene-badge .action-icon {
-  height: 16px;
-}
-
-.run-screen-areas[data-scene-scale="2"] .scene-badge .action-icon {
+.scene-badge .action-icon {
   height: 32px;
 }
 
 .scene-badge-bar {
   display: block;
-  height: var(--bar-width);
-  background: var(--highlight);
-}
-
-/* At the scale 2 the bar is twice the token, as the whole scene is, so it keeps its proportion. */
-.run-screen-areas[data-scene-scale="2"] .scene-badge-bar {
   height: calc(var(--bar-width) * 2);
+  background: var(--highlight);
 }
 
 .scene-badge-fill {
@@ -1946,7 +1919,7 @@ header .failure-line {
   font-variant-numeric: tabular-nums;
 }
 
-/* The cells keep a narrow padding, so the table of Las fits the right area (the rule above). */
+/* The cells keep a narrow padding, so the table of Las fits the area under the drawing. */
 .tile-list th,
 .tile-list td {
   padding: var(--space-2xs) var(--space-xs);

@@ -1,7 +1,8 @@
 /**
- * The right area of the screen of a map run while no rule or group is open, in React (D-311, D-338,
- * D-343, D-344, D-346, D-147, D-276, D-130, D-46; task kronika-z-filtrami, To do 6, 8 and 9; spec D5,
- * D6, D7, D9): the tabs „Kronika” and „Teren” — shared buttons of the kind `tab` in a container of
+ * The area under the drawing of the screen of a map run, in React (D-311, D-338, D-343, D-344, D-346,
+ * D-147, D-276, D-130, D-46; task kronika-z-filtrami, To do 6, 8 and 9; spec D5, D6, D7, D9; task
+ * proporcje-sceny-i-programu, To do 2; the module and the component keep the name they had when the
+ * area stood on the right): the tabs „Kronika” and „Teren” — shared buttons of the kind `tab` in a container of
  * the class `tabs` — and under the one picked either the chronicle or the table of revealed tiles.
  * The chronicle is a row of the seven filter buttons, shared buttons selected in their group as the
  * pace buttons are, and under it the list of the entries of the filter, newest first, each row the
@@ -12,9 +13,8 @@
  * grow with the chronicle, and a row is drawn again only when its own entry changed (spec D7).
  *
  * The picked tab and filter are the chronicle memory's, not the area's: a click tells the memory, and
- * the area reads the memory as an external store, so the pick outlives the area and comes back after
- * a rule panel closes (D-346). The rule panel taking the whole area is the screen's concern. Nothing
- * runs when the module is imported.
+ * the area reads the memory as an external store, so the pick outlives the area (D-346). A rule panel
+ * opened in the program leaves the area as it is. Nothing runs when the module is imported.
  */
 import { memo, useMemo, useState, useSyncExternalStore } from "react";
 import type { GameState, LastCombat } from "../sim/types.js";
@@ -181,7 +181,7 @@ const ChronicleView = memo(function ChronicleView({
   );
 });
 
-/** The right area: the tabs, and under the one picked the chronicle or the table of revealed tiles. */
+/** The area under the drawing: the tabs, and under the one picked the chronicle or the table of revealed tiles. */
 export function RightArea({
   state,
   chronicle,
@@ -194,7 +194,7 @@ export function RightArea({
   );
   return (
     <>
-      <div className="right-tabs tabs">
+      <div className="run-tabs-row tabs">
         {TABS.map(([tab, text]) => (
           <ReactButton
             key={tab}

@@ -4274,42 +4274,51 @@ test("a game built again after a conflict stays on the screen the address names,
   });
 });
 
-// Task edytor-programu, row E2, D-282. Catches the rule panel of Programy standing inside the
-// editor's area, where a narrower layout cannot set it apart, and its area standing empty while
-// nothing is open.
-test("on Programy the list, the editor and the open rule panel are three areas of the screen, and the area of the panel stands only while a rule is open", async () => {
+// Task proporcje-sceny-i-programu, To do 3; D-288, D-282. Catches the rule panel of Programy kept as a
+// third area beside the list and the editor, or drawn outside the program panel, and an area of the
+// panel left standing while nothing is open.
+test("on Programy the list and the editor are the two areas, and an open group draws its panel inside the program panel, directly under its header", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     await reloadedAt(held, "#/programy", twoPrograms());
     const screen = programsScreenOf(root);
-    const area = byClass(screen, "rule-panel-area")[0];
-    assert.ok(area, "the screen holds the area of the panel");
-    assert.equal(shown(area), false, "nothing is open");
+    assert.equal(
+      byClass(screen, "rule-panel-area").length,
+      0,
+      "no area of its own for the panel",
+    );
+    assert.equal(byClass(screen, "rule-panel").length, 0, "nothing is open");
     assert.equal(screen.classList.contains("with-rule-panel"), false);
 
-    await press(
-      byClass(screen, "rule-list-header").find((element) => shown(element)),
+    const header = byClass(screen, "rule-list-header").find((element) =>
+      shown(element),
     );
+    await press(header);
     const panel = byClass(screen, "rule-panel")[0];
-    assert.ok(panel, "a rule opens the panel");
-    assert.equal(panel.parentElement, area, "in the area of its own");
-    assert.ok(shown(area));
-    assert.ok(screen.classList.contains("with-rule-panel"));
+    assert.ok(panel, "a group opens the panel");
+    assert.ok(
+      header.nextElementSibling.classList.contains("rule-list-panel"),
+      "the panel's item stands directly under the header",
+    );
+    assert.ok(
+      header.nextElementSibling.contains(panel),
+      "the panel stands in that item",
+    );
     const areas = childrenOf(screen).filter((child) => shown(child));
     assert.deepEqual(
       areas.map((child) => child.classList.contains("screen-area")),
-      [true, true, true],
-      "three areas: the list, the editor, the panel",
+      [true, true],
+      "two areas: the list and the editor",
     );
     assert.equal(
       byClass(byClass(screen, "program-panel")[0], "rule-panel").length,
-      0,
-      "the panel is outside the editor's area",
+      1,
+      "the panel is inside the program panel",
     );
 
     await press(buttonLabelled(screen, "Zamknij panel"));
-    assert.equal(shown(area), false);
-    assert.equal(screen.classList.contains("with-rule-panel"), false);
+    assert.equal(byClass(screen, "rule-panel").length, 0, "closed");
+    assert.equal(byClass(screen, "rule-list-panel").length, 0);
   });
 });
 

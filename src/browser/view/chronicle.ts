@@ -18,7 +18,7 @@ import {
   type CopyAct,
 } from "./chronicle-entries.js";
 
-/** The tab picked in the right area of the screen of a map run: „Kronika” or „Teren” (D-346). */
+/** The tab picked in the area with the tabs of the screen of a map run: „Kronika” or „Teren” (D-346). */
 export type ChronicleTab = "chronicle" | "terrain";
 
 /** The filter picked: „Wszystko”, or one kind of entry (D-343). */

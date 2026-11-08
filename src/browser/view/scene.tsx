@@ -5,7 +5,7 @@
  * icon of the current action drawn as the mask of `.action-icon` and under it the bar of the action's
  * progress. Its files, places and frame counts come from `sceneDrawing`, the view names none. A place
  * and a size are percentages of the frame and a frame count a custom property, so the stylesheet holds
- * no length of a sprite and the scene is right at either scale.
+ * no length of a sprite and the scene is right at its one size.
  *
  * The scene moves by CSS alone, at a beat apart from the pace, with no interval, timer or animation
  * frame of its own (D-316, D-319): the stylesheet runs the frames of the sheets and of the burning

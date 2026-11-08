@@ -11,19 +11,32 @@
  * `createRuleList`, as the program list does, calling it from an event handler or the continuation
  * of an answer, never from render or an effect. Nothing runs when the module is imported.
  *
+ * Where the page hands it the rule panel (`panel`), the list draws it in place, under the row of the
+ * rule it changes or under the header of the group it changes, so the player edits a rule where it
+ * stands (D-288). The panel is one element that the list moves from place to place, never one built
+ * again at each: a fold of the group of the open rule, or a move of the rule to another group, then
+ * leaves the panel on the field the player chose and the focus where the player put it.
+ *
  * Where the page gives it the signs of the copy of a map run (`signs`, from `ruleSigns` of the
  * simulation; task stan-i-powod-przy-regule) a row stands on the background `rule-winning` when it
  * wins now and on `rule-running` when its action is being carried out and another rule wins, and
  * every row and header carries the bar of its condition and, in a row, the reason it cannot start.
  */
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type {
   CSSProperties,
   DragEvent,
   KeyboardEvent,
   MouseEvent,
+  ReactNode,
 } from "react";
-import { flushSync } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ACTIONS } from "../sim/data/actions.js";
 import type { RuleSigns } from "../sim/game.js";
@@ -62,6 +75,14 @@ export type RuleListProps = {
   folded: readonly GroupId[];
   /** The row or the header whose panel stands open; null where none does. */
   open: { groupId: GroupId; ruleId: number | null } | null;
+  /**
+   * The rule panel of the open row or header, for the list to draw in place (D-288): directly under
+   * that row, or directly under the header of its group where the open rule is a group's own or sits
+   * in a folded group, whose row is not drawn. It stands beside the row's item, never inside it, so a
+   * click, a key or a drag in the panel reaches no handler of the row, and the panel is no drop
+   * target: a rule dragged over it shows no drop line. Null or left out, the list draws none.
+   */
+  panel?: ReactNode;
   /**
    * What the rows and headers show of the condition of each rule and group: only for the copy of a
    * map run, otherwise null or left out.
@@ -195,6 +216,7 @@ export function RuleListView({
   counts,
   folded,
   open,
+  panel = null,
   signs = null,
   onCommit,
   onOpen,
@@ -207,6 +229,16 @@ export function RuleListView({
   // The keys the focus goes to once the program an edit made is drawn, in the order tried.
   const pendingFocus = useRef<string[] | null>(null);
   const canAddRule = offeredActionKinds(state).length > 0;
+  // The element the one rule panel is drawn into, moved to the place of the open row or header. The
+  // panel is mounted in it once, so its field and its focus outlive a change of place.
+  const [panelHost] = useState(() => document.createElement("div"));
+  const seatPanel = useCallback(
+    (place: HTMLElement | null): void => {
+      if (place !== null && panelHost.parentNode !== place)
+        place.appendChild(panelHost);
+    },
+    [panelHost],
+  );
 
   // A control that holds focus and leaves (a moved rule's row, a deleted rule's button) loses it, so
   // the focus goes to the control the edit names once the new program is drawn.
@@ -365,6 +397,12 @@ export function RuleListView({
     setLanding(null);
   }
 
+  /** A drag over the panel: it is no drop target, so the line of a landing elsewhere goes. */
+  function overPanel(event: DragEvent<HTMLElement>): void {
+    if (event.target instanceof Element && panelHost.contains(event.target))
+      setLanding(null);
+  }
+
   function move(group: RuleGroup, index: number, offset: -1 | 1): void {
     const next = moveRule(program, group.id, index, offset);
     if (next === null) return;
@@ -429,7 +467,13 @@ export function RuleListView({
     </div>
   );
 
-  function renderRule(group: RuleGroup, groupIndex: number, index: number) {
+  /** The row of a rule and, where the open panel stands under it, the item that holds the panel. */
+  function renderRule(
+    group: RuleGroup,
+    groupIndex: number,
+    index: number,
+    panelHere: boolean,
+  ) {
     const each = group.rules[index];
     const sentence = ruleSentence(each);
     const time = actionTime(state, each.action.kind);
@@ -445,7 +489,7 @@ export function RuleListView({
           : signs.running === each.id
             ? " running"
             : "";
-    return (
+    const row = (
       <li
         key={each.id}
         className={`rule-list-row${isOpen ? " open" : ""}${standing}${
@@ -528,6 +572,18 @@ export function RuleListView({
         </span>
       </li>
     );
+    return panelHere
+      ? [
+          row,
+          // Not an item of the list of rules to assistive technology: the rules are counted without it.
+          <li
+            key={`panel-${each.id}`}
+            className="rule-list-panel"
+            role="presentation"
+            ref={seatPanel}
+          />,
+        ]
+      : [row];
   }
 
   function renderGroup(group: RuleGroup, groupIndex: number) {
@@ -538,13 +594,25 @@ export function RuleListView({
     const bar = signs?.judgement.groups[group.id];
     const lands = landing?.kind === "rule" && landing.groupId === group.id;
     const lineAt = lands ? landing.beforeId : undefined;
+    // The panel stands under the open rule's row; under the header where the group's own is open, or
+    // where the rule's row is not drawn because the group is folded.
+    const panelOpenHere = panel !== null && open?.groupId === group.id;
+    const panelUnderRow =
+      panelOpenHere &&
+      !isFolded &&
+      group.rules.some((each) => each.id === open.ruleId);
     const rows = group.rules.flatMap((each, index) => [
       lands && lineAt === each.id ? (
         <li key={`line-${each.id}`} className="drop-line" aria-hidden="true">
           tu wyląduje
         </li>
       ) : null,
-      renderRule(group, groupIndex, index),
+      ...renderRule(
+        group,
+        groupIndex,
+        index,
+        panelUnderRow && open.ruleId === each.id,
+      ),
     ]);
     return (
       <section
@@ -612,6 +680,9 @@ export function RuleListView({
             />
           </span>
         </div>
+        {panelOpenHere && !panelUnderRow ? (
+          <div className="rule-list-panel" ref={seatPanel} />
+        ) : null}
         {isFolded ? (
           lands ? (
             line
@@ -645,6 +716,11 @@ export function RuleListView({
     );
   }
 
+  // The panel is drawn where the open row or header stands, so only where that group is drawn.
+  const panelSeated =
+    panel !== null &&
+    open !== null &&
+    program.groups.some((group) => group.id === open.groupId);
   const groupLine = landing?.kind === "group" ? landing.beforeId : undefined;
   const groupLanding = landing?.kind === "group";
   const children = program.groups.flatMap((group, index) => [
@@ -660,6 +736,7 @@ export function RuleListView({
       ref={root}
       onDragLeave={leave}
       onDragEnd={clearDrag}
+      onDragOver={overPanel}
     >
       <div className="rule-list-top">
         <h3 className="rule-list-heading">sprawdzane od góry</h3>
@@ -683,6 +760,8 @@ export function RuleListView({
           onClick={addWholeGroup}
         />
       </div>
+      {/* After the groups, so that the places they draw hold the host before the panel takes focus. */}
+      {panelSeated ? createPortal(panel, panelHost) : null}
     </div>
   );
 }

@@ -719,16 +719,17 @@ test("the buttons of the panel work while the question stands, and it goes when 
   }
 });
 
-/** Types `text` into the name field of the rule panel of group 1 and leaves the field, as a player does. */
+/**
+ * Types `text` into the name field of the rule panel of group 1, which stands in the program panel
+ * under the header of the group, and leaves the field, as a player does.
+ */
 async function renameGroupTo(root, text) {
-  const host = byClass(runScreenOf(root), "run-rule-host")[0];
-  let input = host.querySelector('input[aria-label="Nazwa grupy"]');
+  const panel = panelOf(root);
+  let input = panel.querySelector('input[aria-label="Nazwa grupy"]');
   if (input === null) {
-    const header = panelOf(root).querySelector(
-      '[data-group="1"] .rule-list-header',
-    );
+    const header = panel.querySelector('[data-group="1"] .rule-list-header');
     await press(header);
-    input = host.querySelector('input[aria-label="Nazwa grupy"]');
+    input = panel.querySelector('input[aria-label="Nazwa grupy"]');
   }
   await inAct(() => input.focus());
   await typeInto(input, text);
