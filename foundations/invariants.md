@@ -423,7 +423,7 @@ No `.py` or `.pyi` file Ruff 0.17.1 finds under `ruff.toml` breaks a rule that f
 - **Method:** test
 - **Rests on:** ruff-default-rules
 - **Derives from:** D-30
-- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
 - **Violated:** no
 
 ## shellcheck-source-rules
