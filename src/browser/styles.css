@@ -1312,9 +1312,10 @@ header .failure-line {
 
 /*
  * The header of the screen of a map run (D-311): the character's name and the map's name, in
- * `text-strong` as names are (D-40), then the clock and the buttons in their order. The clock stays
- * in Geist Mono (D-46) and in `text` also after a death and a completion, since the text of a
- * completion is „Teraz”'s (D-132). The warning of a cut trip plan is the shared `trip-warning`.
+ * `text-strong` as names are (D-40), then the clock, the bar of the solving condition and the
+ * buttons in their order. The clock stays in Geist Mono (D-46) and in `text` also after a death and
+ * a completion, since the text of a completion is „Teraz”'s (D-132). The warning of a cut trip plan
+ * is the shared `trip-warning`.
  */
 .run-header {
   display: flex;
@@ -1343,6 +1344,62 @@ header .failure-line {
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text);
+}
+
+/*
+ * The bar of the solving condition after the clock (D-133): one part for each requirement, its
+ * name and numbers in `text`, then its bar, the track in `highlight` and the fill in `text` while
+ * the requirement is not met, though the fill is no text (D-40); once met, the name, the numbers and
+ * the fill are in `positive` (D-39). The bar's thickness is `--bar-width` and its length a layout
+ * dimension (D-43); the fill is as long as the share the header gives in `--share`. The group
+ * takes the space the clock gives up, so the buttons stay at the right edge.
+ */
+.run-header-clock:has(+ .run-header-solving) {
+  margin-right: 0;
+}
+
+.run-header-solving {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m);
+  margin-right: auto;
+}
+
+.run-header-requirement {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  color: var(--text);
+}
+
+.run-header-requirement.positive {
+  color: var(--positive);
+}
+
+.run-header-requirement-text {
+  margin: 0;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.run-header-requirement-bar {
+  display: block;
+  width: 8em;
+  height: var(--bar-width);
+  background-color: var(--highlight);
+}
+
+.run-header-requirement-fill {
+  display: block;
+  width: calc(var(--share) * 100%);
+  height: 100%;
+  background-color: var(--text);
+}
+
+.run-header-requirement.positive .run-header-requirement-fill {
+  background-color: var(--positive);
 }
 
 /*

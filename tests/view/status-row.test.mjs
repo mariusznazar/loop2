@@ -1,7 +1,8 @@
-// The clock in the header of the screen of a map run (task teraz-i-potem, To do 3; D-311, D-122,
-// D-132, D-62): „Minuta {game minute}”, „ (pauza)” after it at every pause, the stop at a discovery
-// included, and at the game minute of the end, with no „ (pauza)”, after a death and a completion;
-// the character's action and the streak are not in it. And the text of a pause button and of a
+// The clock and the bar of the solving condition in the header of the screen of a map run (task
+// teraz-i-potem, To do 3; D-311, D-122, D-132, D-62, D-133): „Minuta {game minute}”, „ (pauza)” after
+// it at every pause, the stop at a discovery included, and at the game minute of the end, with no
+// „ (pauza)”, after a death and a completion; the character's action and the streak are not in it.
+// The words and the share of each requirement of the solving condition. And the text of a pause button and of a
 // discovery (task ognisko-i-jedzenie, To do 3; task odkrywanie, To do 5).
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -15,10 +16,13 @@ import {
   setPaused,
   setProgram,
 } from "../../dist/browser/sim/game.js";
+import { solvingRequirements } from "../../dist/browser/sim/run.js";
 import {
   clockText,
   discoveryText,
   pauseLabel,
+  requirementShare,
+  requirementText,
 } from "../../dist/browser/view/status-row.js";
 import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
@@ -271,4 +275,61 @@ test("no pause button after a completion, as after death", () => {
     pauseLabel(completed(setPaused(running, true).state, 480)),
     null,
   );
+});
+
+/** The requirements of a map as the simulation gives them for a map run of the given counts. */
+function requirementsOf(mapId, counts) {
+  const base = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const run = { ...base.run, mapId, ...counts };
+  return solvingRequirements(run, MAPS[mapId]);
+}
+
+// D-133. Catches words in the wrong form, a requirement left out and the two out of their order.
+test("the words of Las read „Passa {streak}/{required}” and those of Las — głębiej read the passa before the beaten attacks", () => {
+  assert.deepEqual(
+    requirementsOf("forest", { streak: 120 }).map(requirementText),
+    ["Passa 120/480"],
+  );
+  assert.deepEqual(
+    requirementsOf("forestDeep", { streak: 120, defeatedAttacks: 1 }).map(
+      requirementText,
+    ),
+    ["Passa 120/540", "Pokonane napaści 1/2"],
+  );
+});
+
+// D-133: one met requirement does not make the other met. The words carry the numbers, not the role.
+test("on Las — głębiej a requirement that is met reads its own numbers while the other stays unmet", () => {
+  const requirements = requirementsOf("forestDeep", {
+    streak: 120,
+    defeatedAttacks: 2,
+  });
+  assert.deepEqual(requirements.map(requirementText), [
+    "Passa 120/540",
+    "Pokonane napaści 2/2",
+  ]);
+  assert.deepEqual(
+    requirements.map((requirement) => requirement.met),
+    [false, true],
+  );
+});
+
+// D-135: the bar shows the streak as it stands, which a death of cold or hunger has set to zero.
+test("the words after a death of cold show the streak at zero", () => {
+  assert.deepEqual(
+    requirementsOf("forest", { streak: 0 }).map(requirementText),
+    ["Passa 0/480"],
+  );
+});
+
+// D-39, D-40: the fill is as long as the share of the count in the number required, never more
+// than whole. Catches a share that exceeds 1, one that is a percentage and one that is inverted.
+test("the share of a requirement is the count over the number required, never above 1", () => {
+  const share = (mapId, counts, index = 0) =>
+    requirementShare(requirementsOf(mapId, counts)[index]);
+  assert.equal(share("forest", { streak: 0 }), 0);
+  assert.equal(share("forest", { streak: 120 }), 0.25);
+  assert.equal(share("forest", { streak: 480 }), 1);
+  assert.equal(share("forestDeep", { streak: 600 }), 1);
+  assert.equal(share("forestDeep", { streak: 0, defeatedAttacks: 1 }, 1), 0.5);
 });
