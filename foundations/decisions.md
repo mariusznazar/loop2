@@ -7237,7 +7237,7 @@ the death, such as „Minuta 312”.
     what stands under „Teraz” keeping its place as the text of „Teraz” changes
   - violates: a progress bar under „Teraz”; „Zbiera: patyk” in „Teraz”; the number of the combat
     rule beside „Walczy z wilkiem”; „Mag zamarzł” in `danger`; „Teraz” still naming the last action
-    after a death
+    after a death; the word „Teraz” written in the row before the icon, as „Potem” is in its row
 - **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 1, 8, 9 and 14, and § Settlements to record, rows 1, 4 and 8
 
 *Rationale:* the player reads what the character does in the words of the rule that makes it do
@@ -7296,7 +7296,9 @@ player cannot tell „the same” from „nothing”.
 A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program
 once so that the program rule the row names stands in its middle, or, for a rule in a folded rule
 group, the header of that group, after which the program does not follow that rule by itself; a row
-that names no rule scrolls nothing.
+that names no rule scrolls nothing. While the program panel shows a saved program picked on its list
+during the map run (D-174) in place of the copy, the click scrolls nothing and the saved program
+stays shown.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -7305,17 +7307,24 @@ that names no rule scrolls nothing.
   - complies: a click on „Teraz” reading „reguła 2.1” bringing rule 2.1 to the middle of the
     program, which then stays where the player scrolls it; Enter on „Potem” reached with Tab doing
     the same for its rule; the header of a folded rule group brought to the middle for a rule inside
-    it
+    it; a click on „Teraz” while the panel shows a saved program leaving that program shown where it
+    stood
   - violates: the program following the rule by itself after the click; a row the keyboard cannot
     reach; a click on „Walczy z wilkiem” or on „Czeka — żadna reguła nie pasuje” scrolling the
-    program
+    program; a click on „Potem” while the panel shows a saved program putting the copy back in its
+    place
 - **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, question 3, and § Settlements to record, row 3
 
 *Rationale:* as in loop, the player goes from what the character does, or will do, to the rule
 behind it in a long program, with the mouse or the keyboard; the scroll happens once, and a row
-with no rule leads nowhere, as in loop.
+with no rule leads nowhere, as in loop. The rows name rules of the copy, which the map run carries
+out, while a saved program the player picked during the map run is another program, even where its
+rules carry the same numbers, so the click leaves what the player chose to look at as it is. Accepted with it: a player who shows a saved program during a map run clicks „Teraz” or
+„Potem” and sees nothing happen.
 *Rejected:* the rows as text alone, the rule found by its background and its number — it takes away
-a way loop gave and gives nothing for it.
+a way loop gave and gives nothing for it; the click putting the copy back into the program panel
+in place of a saved program and then scrolling — it changes what the panel shows, which a click on
+a row under the scene does not ask for.
 
 ### D-337 — What does the body row show of how long each need lasts?
 
