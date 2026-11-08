@@ -7688,10 +7688,10 @@ The chronicle learns what happened in a game minute from the events the simulati
 with its game minute — among them a streak above zero falling to zero, with the streak before the
 loss and its cause, wherever it falls, and a campfire whose minutes of burning run out — save the
 paragraph of the last encounter, composed from the facts the map run keeps (D-147), and the game
-state holds none of these events. The browser view describes a change the player makes to the copy
-from the copy before the act and the copy after it, together with the program rule or rule group
-the player moved where the program editor names it, which never enters the simulation, and no event
-of the simulation describes such a change.
+state holds none of these events. The browser view describes an act of the player on the copy from
+what the act was and, for an edit, from the copy before the act and the copy after it, together with
+the program rule or rule group the player moved where the program editor names it, which never
+enters the simulation, and no event of the simulation describes such a change.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -7701,7 +7701,8 @@ of the simulation describes such a change.
     clock that passes several game minutes, the simulation returning one event of the loss at that
     game minute with 391 and cold; a campfire burning out in a game minute of an encounter returning
     its event; „↓” on program rule 2.1 giving „Przesunięto regułę 2.1 na 2.2: …” alone, though the
-    copies alone could read the rule below it moving up
+    copies alone could read the rule below it moving up; „Porzuć zmiany” giving „Porzucono zmiany
+    kopii” alone, whatever it reverted
   - violates: the view finding a loss of the streak or a campfire gone out by comparing two readings
     of the game state; a field of the game state, and with it of the save, holding the losses of the
     streak; an edit of the copy returning from the simulation an event that describes the change; the
@@ -7713,9 +7714,9 @@ of the simulation describes such a change.
 browser held back passes many, so a comparison of readings loses the game minute of a loss of the
 streak, its cause where the body recovered within the span, and a campfire lit again within it; the
 simulation alone knows these, and one shape of the event of a loss serves every place the streak
-falls. Each act on the copy is one call the view makes, so the copies before and after it describe
-the change exactly, and only which of two neighbours that swapped places the player moved is known
-to the program editor alone. Accepted with it: a new way of setting a streak above zero to zero
+falls. Each act on the copy is one call the view makes, so the view knows what the act was, the
+copies before and after an edit describe its changes exactly, and only which of two neighbours that
+swapped places the player moved is known to the program editor alone. Accepted with it: a new way of setting a streak above zero to zero
 leaves a loss the chronicle never shows unless it returns the event; a new place of the editor that
 moves a rule or a group and names none gives a swap described from the copies alone, which may name
 the other one.
