@@ -7923,3 +7923,29 @@ logs to learn of a failure; the session write refused for another cause still is
 stays.
 *Rejected:* leaving the breaking off of a body as a failure — every connection a player drops gives
 an alarm; leaving the refusal of the session write at a block as a failure — a rare false alarm.
+
+### D-354 — Is the sentence by which a service command answers the operator a log line?
+
+The sentence by which a service command of the account server, `account-block` or `account-backup`,
+answers the operator is no log line: the log line of such a command is its JSON line of D-252
+alone, and the sentence stays beside it. A failure of the command written as that line and followed
+by that sentence is one failure recorded once.
+
+- **Scope:** account-server
+- **Based on:** none
+- **Relations:** derives from D-137 · derives from D-252
+- **Verification:** an agent compares a change with the decision:
+  - complies: a failed run of `account-backup` writing one JSON line of the failure and after it one
+    sentence for the operator; a refusal of `account-block` leaving its sentence in the terminal
+  - violates: the sentence removed, so that after a block or its refusal the operator sees only
+    JSON; the JSON line removed, so that a failure of the command reaches no log; the sentence
+    counted as a second record of the failure
+- **Origin:** zadanie_loop2_porzadki_z_uwag_pr.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Co jest awarią, a co zwykłym przebiegiem: przeglądarka zrywająca wysyłanie, blokada konta w trakcie rejestracji i zdanie dla operatora po wierszu JSON?”, and § Settlements to record, row 3
+
+*Rationale:* the operator at a terminal reads the sentence, and whatever searches the logs reads the
+JSON line; each does its own work, so neither is a copy of the other. Counting the sentence as a
+second record of the failure would lead to removing it or moving it, and then the operator would
+see nothing but JSON, against D-137.
+*Rejected:* removing the sentence for the operator — after a block or its refusal the operator sees
+only JSON in the terminal, against D-137; removing the JSON line — a failure of the command reaches
+no log, against D-252.
