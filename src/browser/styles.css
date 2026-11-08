@@ -229,25 +229,23 @@ header .failure-line {
 }
 
 /*
- * The screen of a map run (D-311, D-282, D-280; task ekran-przejscia, To do 2): under its header the
- * world, the program and the right area side by side, each an area of its own. The sizes are layout
- * dimensions, which D-43 leaves out, chosen from the scene's width, the width the rule panel takes
- * and the content of at most 1344 px (D-280); the screen sets the scale of the scene from its one
- * constant, `SCENE_SCALE` of world-area.tsx, as `data-scene-scale`, and the rules of each scale are
- * keyed by it, so the choice of one scale deletes the rules of the other.
+ * The screen of a map run (D-311, D-282, D-280, D-349; task ekran-przejscia, To do 2): under its header
+ * the world, the program and the right area side by side, each an area of its own. The sizes are
+ * layout dimensions, which D-43 leaves out, chosen from the scene's width, the width the rule panel
+ * takes and the content of at most 1344 px (D-280); the scene is drawn at its one size, 672 px wide
+ * (D-349).
  *
  * - The world's column is the scene's width with the area's padding and frame, 2 × 16 px and
- *   2 × 1 px: 336 + 34 = 370 px at the scale 1, 672 + 34 = 706 px at the scale 2.
- * - The right area's column is 336 px at both scales, the width of the scene of the scale 1: the
- *   rule panel takes 276 px of it inside the area's padding and frame, four cells of its pick to a
- *   line, and the table of revealed tiles of Las fits it with the narrower padding of its cells.
+ *   2 × 1 px: 672 + 34 = 706 px.
+ * - The right area's column is 336 px, the width of the scene's picture: the rule panel takes 276 px
+ *   of it inside the area's padding and frame, four cells of its pick to a line, and the table of
+ *   revealed tiles of Las fits it with the narrower padding of its cells.
  * - The program takes the rest, at least 170 px; with the gaps of 16 px between the areas that is
- *   606 px at the scale 1 and 270 px at the scale 2 in content 1344 px wide, and in a window 1280 px
- *   wide, the content 1248 px, 510 px and 174 px.
+ *   270 px in content 1344 px wide, and in a window 1280 px wide, the content 1248 px, 174 px.
  * - The three stand side by side from the window width that holds the world's column, the right
- *   area's, the program's 170 px, the two gaps and the page's padding of 2 × 16 px: 940 px at the
- *   scale 1 and 1276 px at the scale 2. Below it the areas stand one under the other in their order,
- *   the world, the program and the right area, each the width of the content.
+ *   area's, the program's 170 px, the two gaps and the page's padding of 2 × 16 px: 1276 px. Below it
+ *   the areas stand one under the other in their order, the world, the program and the right area,
+ *   each the width of the content.
  */
 .run-screen-areas {
   display: grid;
@@ -256,14 +254,8 @@ header .failure-line {
   align-items: start;
 }
 
-@media (min-width: 940px) {
-  .run-screen-areas[data-scene-scale="1"] {
-    grid-template-columns: 370px minmax(0, 1fr) 336px;
-  }
-}
-
 @media (min-width: 1276px) {
-  .run-screen-areas[data-scene-scale="2"] {
+  .run-screen-areas {
     grid-template-columns: 706px minmax(0, 1fr) 336px;
   }
 }
@@ -1629,8 +1621,8 @@ header .failure-line {
  *
  * The scene (D-316, D-320, D-322; task scena-z-ludzikiem): the forest picture sets the frame's size
  * from its width and height attributes, and every other part lies over it at the place and size
- * TypeScript gives as percentages of the frame, so the stylesheet holds no length of a sprite and the
- * scene is right at either scale. A sheet holds all frames of a picture side by side; `--frames` is
+ * TypeScript gives as percentages of the frame, so the stylesheet holds no length of a sprite. A sheet
+ * holds all frames of a picture side by side; `--frames` is
  * their number, and the sheet shows one of them, the first where it stands still. The scene's motion
  * stands in the rules after the badge.
  */
@@ -1709,10 +1701,11 @@ header .failure-line {
  * The badge over the mage's head (D-320): a solid `panel` with the icon of the action drawn as the
  * mask of `.action-icon` in `text-strong`, though no text stands beside it, and under it the bar of
  * the progress, the fill in `positive` on a track in `highlight`. It sits just above the head, at the
- * middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen at
- * each scale by viewing the scene (16 at the scale 1, 32 at the scale 2: about two thirds of the
- * width of the mage's figure, 25 pixels of the picture, at either scale); the padding and the gap
- * are steps of the spacing scale, the bar's thickness is `--bar-width`, doubled at the scale 2.
+ * middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen by
+ * viewing the scene at its one size: 32 px, about two thirds of the width of the mage's figure, 25
+ * pixels of the picture drawn at twice its size; the padding and the gap are steps of the spacing
+ * scale, and the bar's thickness is `--bar-width` doubled, as the whole scene is drawn at twice its
+ * picture (D-349), so the bar keeps its proportion.
  */
 .scene-badge {
   position: absolute;
@@ -1728,23 +1721,14 @@ header .failure-line {
   color: var(--text-strong);
 }
 
-.run-screen-areas[data-scene-scale="1"] .scene-badge .action-icon {
-  height: 16px;
-}
-
-.run-screen-areas[data-scene-scale="2"] .scene-badge .action-icon {
+.scene-badge .action-icon {
   height: 32px;
 }
 
 .scene-badge-bar {
   display: block;
-  height: var(--bar-width);
-  background: var(--highlight);
-}
-
-/* At the scale 2 the bar is twice the token, as the whole scene is, so it keeps its proportion. */
-.run-screen-areas[data-scene-scale="2"] .scene-badge-bar {
   height: calc(var(--bar-width) * 2);
+  background: var(--highlight);
 }
 
 .scene-badge-fill {

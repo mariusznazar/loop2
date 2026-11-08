@@ -1,6 +1,6 @@
 /**
  * The world area of the screen of a map run in React (D-311, D-19, D-70, D-147, D-185, D-186, D-201,
- * D-215, D-216, D-272, D-314, D-316, D-320 to D-322, D-334, D-335, D-337; tasks ekran-przejscia, To do 4, 5
+ * D-215, D-216, D-272, D-314, D-316, D-320 to D-322, D-334, D-335, D-337, D-349; tasks ekran-przejscia, To do 4, 5
  * and 6, scena-z-ludzikiem and teraz-i-potem, To do 1, 2 and 4 to 6, kronika-z-filtrami, To do 6): from
  * the top the scene, the rows „Teraz” and „Potem”, the lines of the
  * end of the map run — the deposit and the settlement of a death — the body row, each value in a
@@ -25,21 +25,12 @@ import { TerrainDrawing } from "./terrain-drawing.js";
 import { tileLine } from "./tile-list.js";
 import { deathSettlementLine, solvedRunText, tripTexts } from "./trip-lines.js";
 
-/** The scene's frame, the forest of D-314, is 336 × 152 pixels, shown at a whole multiple. */
-const SCENE_WIDTH = 336;
-const SCENE_HEIGHT = 152;
-
 /**
- * The scale of the scene: 1 for 336 × 152, 2 for 672 × 304. The one place the size of the scene is
- * switched; the human's choice between the two (task ekran-przejscia, question 1) changes this
- * constant alone. Committed as 2 until that choice.
+ * The one size the scene is drawn at, 672 × 304 pixels, twice its picture of 336 × 152, the forest of
+ * D-314 (D-349): a whole multiple, so every pixel of the picture stays equal in size.
  */
-export const SCENE_SCALE = 2;
-
-/** The size the scene is drawn at for a scale, whole multiples of its picture. */
-export function sceneSize(scale: number): { width: number; height: number } {
-  return { width: SCENE_WIDTH * scale, height: SCENE_HEIGHT * scale };
-}
+const SCENE_WIDTH = 672;
+const SCENE_HEIGHT = 304;
 
 /** What the screen gives the world area; every render gives it whole. */
 export type WorldAreaProps = {
@@ -71,7 +62,6 @@ export function WorldArea({
 }: WorldAreaProps) {
   const run = state.run;
   if (run === null) return null;
-  const scene = sceneSize(SCENE_SCALE);
   const trip = tripTexts(state);
   const settlement = deathSettlementLine(state);
   const solved = solvedRunText(state);
@@ -81,8 +71,8 @@ export function WorldArea({
     <div className="world-area">
       <Scene
         state={state}
-        width={scene.width}
-        height={scene.height}
+        width={SCENE_WIDTH}
+        height={SCENE_HEIGHT}
         events={events}
       />
       <NowRows state={state} onShowRule={onShowRule} />

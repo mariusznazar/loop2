@@ -23,11 +23,8 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { emptyProgram } from "../../dist/browser/sim/programs.js";
 import { TileTable } from "../../dist/browser/view/tile-table.js";
-import {
-  SCENE_SCALE,
-  WorldArea,
-  sceneSize,
-} from "../../dist/browser/view/world-area.js";
+import * as worldArea from "../../dist/browser/view/world-area.js";
+import { WorldArea } from "../../dist/browser/view/world-area.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -405,16 +402,24 @@ test("the line of a death that used a resurrection is not in danger, and a death
   });
 });
 
-// Catches a scene of a size the constant does not give, a text on the picture or a background other
+// Catches a second size of the scene, a scale or a function of a scale exported beside the one size
+// (D-349), a size other than 672 × 304 on the background, a text on the picture or a background other
 // than the file of the forest. The scene is no longer one `img`: since the task scena-z-ludzikiem
 // (To do 1 and 7) it is a frame that holds the forest as its background image and the props, the
 // campfire, the mage and the badge over it (D-316, D-320), so the case reads the size and the source
-// from the background and the absence of text from the whole frame. The sizes are the two the task
-// ekran-przejscia puts to the human (question 1).
-test("the scene is the picture of the forest at the size of the scale, with no text inside or over it", async () => {
-  assert.deepEqual(sceneSize(1), { width: 336, height: 152 });
-  assert.deepEqual(sceneSize(2), { width: 672, height: 304 });
-  assert.ok(SCENE_SCALE === 1 || SCENE_SCALE === 2, "the scale is one of two");
+// from the background and the absence of text from the whole frame. The one size is twice the
+// picture of 336 × 152 (D-349, task proporcje-sceny-i-programu, To do 4).
+test("the scene is the picture of the forest at the one size of D-349, with no text inside or over it", async () => {
+  assert.equal(
+    "SCENE_SCALE" in worldArea,
+    false,
+    "no scale of the scene is exported",
+  );
+  assert.equal(
+    "sceneSize" in worldArea,
+    false,
+    "no function of a scale is exported",
+  );
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     const world = worldOf(container);
@@ -424,14 +429,8 @@ test("the scene is the picture of the forest at the size of the scale, with no t
     const background = scene.querySelector(".scene-background");
     assert.equal(background.nodeName, "IMG");
     assert.equal(background.getAttribute("src"), "/sprites/forest-scene.png");
-    assert.equal(
-      background.getAttribute("width"),
-      String(sceneSize(SCENE_SCALE).width),
-    );
-    assert.equal(
-      background.getAttribute("height"),
-      String(sceneSize(SCENE_SCALE).height),
-    );
+    assert.equal(background.getAttribute("width"), "672");
+    assert.equal(background.getAttribute("height"), "304");
     assert.equal(
       background.getAttribute("alt"),
       "",

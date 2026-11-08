@@ -32,7 +32,7 @@ import { RightArea } from "./right-area.js";
 import { RunHeader } from "./run-header.js";
 import type { EndQuestionControls } from "./end-question.js";
 import type { StatusRowControls } from "./status-row.js";
-import { SCENE_SCALE, WorldArea } from "./world-area.js";
+import { WorldArea } from "./world-area.js";
 
 export type RunScreen = {
   /** The screen, for the game view to show and hide. */
@@ -151,7 +151,7 @@ function RunScreenView({
   return (
     <>
       {state === null ? null : <RunHeader state={state} controls={controls} />}
-      <div className="run-screen-areas" data-scene-scale={SCENE_SCALE}>
+      <div className="run-screen-areas">
         <section className="screen-area run-world">
           {state === null ? null : (
             <WorldArea
