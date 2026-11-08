@@ -3,73 +3,48 @@ import { CAMPFIRE } from "../sim/data/campfire.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
-import { MAPS, type MapDef } from "../sim/data/maps.js";
-import { RESOURCES } from "../sim/data/resources.js";
 import { SKILLS } from "../sim/data/skills.js";
-import type {
-  Activity,
-  CreatureId,
-  DeathCause,
-  GameState,
-  MapRun,
-  Pace,
-  Understanding,
-} from "../sim/types.js";
+import type { GameState, MapRun, Pace, Understanding } from "../sim/types.js";
 import { mapRunEnded } from "../sim/game.js";
+import type { SolvingRequirement } from "../sim/run.js";
 
-const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
 const PAUSED_SUFFIX = " (pauza)";
-/** What the status row says of a map run ended in death, by its cause (D-61, D-62). */
-const DEATH_TEXTS: Record<DeathCause, string> = {
-  cold: "Mag zamarzł",
-  hunger: "Mag umarł z głodu",
-  combat: "Mag zginął w walce",
-};
 
 /**
- * What the character is doing, in the words the player reads: the action's status text from the
- * data, followed by its target's name where the action takes one.
+ * The clock in the header: „Minuta {game minute}”, with „ (pauza)” after it at every pause, the stop
+ * at a discovery included (D-311, D-122); after a character's death and after a completion the game
+ * minute of the end with no „ (pauza)”, since time stands still and „Pauza” is gone (D-62, D-132).
+ * The character's action, the cause of a death and the text of a completion are „Teraz”'s (D-334),
+ * not the clock's. Pure.
  */
-function activityText(activity: Activity): string {
-  if (activity.kind === "wait") return WAIT_TEXT;
-  const action = activity.action;
-  const status = ACTIONS[action.kind].status;
-  if ("resource" in action)
-    return `${status}: ${RESOURCES[action.resource].name}`;
-  return status;
+export function clockText(run: MapRun, paused: boolean): string {
+  if (run.death) return `Minuta ${run.death.minute}`;
+  if (run.completion) return `Minuta ${run.completion.minute}`;
+  return `Minuta ${run.minute}${paused ? PAUSED_SUFFIX : ""}`;
+}
+
+const REQUIREMENT_NAMES = {
+  streak: "Passa",
+  defeatedAttacks: "Pokonane napaści",
+} as const;
+
+/**
+ * The words of a requirement of the solving condition in the header: its name and its numbers,
+ * „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten
+ * attacks (D-133). The count is the map run's current one, so after a death of cold the streak
+ * reads 0 and never the longest one (D-135). Pure.
+ */
+export function requirementText(requirement: SolvingRequirement): string {
+  return `${REQUIREMENT_NAMES[requirement.kind]} ${requirement.count}/${requirement.required}`;
 }
 
 /**
- * The status row's text: „Minuta {minute} · {activity} · Passa {streak}/{streak requirement of the
- * map}”, with „ (pauza)” at its end while paused; after the character's death „Minuta {minute of
- * death} · {cause}”, and after a completion „Minuta {minute of completion} · {completionText of the
- * map}”, both never paused. Pure.
+ * The share of a requirement's count in the number required, from 0 to 1, the length of the fill
+ * of its bar (D-40); a count above the number required fills the bar whole and no further. Pure.
  */
-export function statusText(run: MapRun, paused: boolean): string {
-  if (run.death)
-    return `Minuta ${run.death.minute} · ${DEATH_TEXTS[run.death.cause]}`;
-  const map: MapDef = MAPS[run.mapId];
-  if (run.completion)
-    return `Minuta ${run.completion.minute} · ${map.completionText}`;
-  const progress = [
-    map.solving.streak === undefined
-      ? null
-      : `Passa ${run.streak}/${map.solving.streak}`,
-    map.solving.defeatedAttacks === undefined
-      ? null
-      : `Pokonane napaści ${run.defeatedAttacks}/${map.solving.defeatedAttacks}`,
-  ].filter((part): part is string => part !== null);
-  const combat =
-    run.activeCombat ||
-    (run.lastCombat?.result && run.lastCombat.resolveMinute === run.minute
-      ? run.lastCombat
-      : null);
-  const activity = combat
-    ? `Walczy z ${creatureAfterZ(combat.creatureId)}`
-    : run.current
-      ? activityText(run.current.activity)
-      : WAIT_TEXT;
-  return `Minuta ${run.minute} · ${activity} · ${progress.join(" · ")}${paused ? PAUSED_SUFFIX : ""}`;
+export function requirementShare(requirement: SolvingRequirement): number {
+  if (requirement.required <= 0) return 1;
+  return Math.min(1, Math.max(0, requirement.count / requirement.required));
 }
 
 /**
@@ -96,11 +71,6 @@ function discoveredCreatureName(
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-function creatureAfterZ(id: CreatureId): string {
-  const name = CREATURES[id].name;
-  return name.endsWith("k") ? `${name.slice(0, -1)}kiem` : name;
-}
-
 /** A condition's label, followed for a condition that takes a number by „ … ” and its unit. */
 function discoveredConditionText(kind: Understanding["conditions"][number]) {
   const condition: ConditionDef = CONDITIONS[kind];
@@ -115,9 +85,9 @@ function closed(sentence: string): string {
 }
 
 /**
- * The line under the status row for what a game minute revealed: „Odkryto: ” and the labels of the
- * actions and the names of the items, the campfire's included, then „ W regułach można teraz
- * sprawdzić: ” and the conditions; a part with nothing revealed is left out. Pure.
+ * The text of the band of a discovery for what a game minute revealed: „Odkryto: ” and the labels
+ * of the actions and the names of the items, the campfire's included, then „ W regułach można
+ * teraz sprawdzić: ” and the conditions; a part with nothing revealed is left out. Pure.
  */
 export function discoveryText(discovery: Understanding): string {
   const found = [
@@ -136,7 +106,7 @@ export function discoveryText(discovery: Understanding): string {
   return sentences.join(" ");
 }
 
-/** What the status row's buttons ask for; the app turns each into a simulation call. */
+/** What the header's buttons ask for; the app turns each into a simulation call. */
 export type StatusRowControls = {
   /** „Pauza” or „Wznów”: pauses a running map run, resumes a paused one. */
   togglePause(): void;

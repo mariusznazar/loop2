@@ -36,9 +36,12 @@ import {
   type GameEvent,
 } from "./run.js";
 import type {
+  Action,
   Character,
   CharacterId,
   CharacterSkills,
+  CreatureId,
+  DeathCause,
   GameMapRun,
   GameState,
   MapId,
@@ -183,6 +186,76 @@ export function ruleSigns(state: GameState): RuleSigns | null {
   return {
     judgement,
     running: carried === judgement.winner?.id ? null : carried,
+  };
+}
+
+/**
+ * What „Teraz” names: an action under way with the rule it comes from, the game minutes left to it
+ * and the game minutes in all; a wait; the creature fought in the minutes of an attack; the cause of
+ * the character's death; the completion with the text of the map.
+ */
+export type NowLine =
+  | {
+      kind: "action";
+      ruleId: RuleId;
+      action: Action;
+      minutesLeft: number;
+      minutes: number;
+    }
+  | { kind: "wait" }
+  | { kind: "combat"; creatureId: CreatureId }
+  | { kind: "death"; cause: DeathCause }
+  | { kind: "completion"; text: string };
+
+/** What „Potem” names: the rule that wins in the judgement of `ruleSigns`, or none. */
+export type NextLine =
+  { kind: "rule"; ruleId: RuleId; action: Action } | { kind: "none" };
+
+/** What the rows „Teraz” and „Potem” of the screen of a map run name. */
+export type NowAndNext = { now: NowLine; next: NextLine };
+
+/**
+ * What the rows „Teraz” and „Potem” of the screen of a map run name, null without a map run. „Teraz”,
+ * in this precedence: after a death its cause; after a completion the completion with the text of the
+ * map; from the minute of an attack through the minute of its resolution, also where an ordinary
+ * action starts in the latter, the creature fought; otherwise the action under way, as the pick that
+ * started it left it in `current` (D-147). The game minutes left to an action run from the game minute
+ * of the map run to its end, so a paused map run reads as a running one at the same minute, and its
+ * minutes in all from its start to its end; a wait names no rule and no minutes. „Potem” is the winner
+ * of the judgement `ruleSigns` gives for the same state, the combat rule the turn would choose in the
+ * minutes of an attack and the rule that wins at the stopped minute after the end, or none; it is
+ * taken from that one judgement, never from a second pick (D-308, D-309). Inputs are not changed.
+ */
+export function nowAndNext(state: GameState): NowAndNext | null {
+  const run = state.run;
+  const signs = ruleSigns(state);
+  if (!run || !signs) return null;
+  const winner = signs.judgement.winner;
+  const next: NextLine = winner
+    ? { kind: "rule", ruleId: winner.id, action: { ...winner.action } }
+    : { kind: "none" };
+  return { now: nowLine(run), next };
+}
+
+/** The row „Teraz” of a map run, as `nowAndNext` gives it. */
+function nowLine(run: GameMapRun): NowLine {
+  if (run.death) return { kind: "death", cause: run.death.cause };
+  if (run.completion)
+    return { kind: "completion", text: mapOf(run.mapId).completionText };
+  const fought =
+    run.activeCombat ??
+    (run.lastCombat?.result && run.lastCombat.resolveMinute === run.minute
+      ? run.lastCombat
+      : null);
+  if (fought) return { kind: "combat", creatureId: fought.creatureId };
+  const current = run.current;
+  if (current?.activity.kind !== "rule") return { kind: "wait" };
+  return {
+    kind: "action",
+    ruleId: current.activity.ruleId,
+    action: { ...current.activity.action },
+    minutesLeft: Math.max(0, current.endMinute - run.minute),
+    minutes: current.endMinute - current.startMinute,
   };
 }
 

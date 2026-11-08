@@ -1312,9 +1312,10 @@ header .failure-line {
 
 /*
  * The header of the screen of a map run (D-311): the character's name and the map's name, in
- * `text-strong` as names are (D-40), then the status row in its order. The clock stays in Geist Mono
- * (D-46) and the text of a completion in `positive` (D-39, D-132). The warning of a cut trip plan is
- * the shared `trip-warning`.
+ * `text-strong` as names are (D-40), then the clock, the bar of the solving condition and the
+ * buttons in their order. The clock stays in Geist Mono (D-46) and in `text` also after a death and
+ * a completion, since the text of a completion is „Teraz”'s (D-132). The warning of a cut trip plan
+ * is the shared `trip-warning`.
  */
 .run-header {
   display: flex;
@@ -1337,15 +1338,67 @@ header .failure-line {
   color: var(--text-strong);
 }
 
-.run-header-status {
+.run-header-clock {
   margin: 0;
   margin-right: auto;
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 
-.run-header-status.positive {
+/*
+ * The bar of the solving condition after the clock (D-133): one part for each requirement, its
+ * name and numbers in `text`, then its bar, the track in `highlight` and the fill in `text` while
+ * the requirement is not met, though the fill is no text (D-40); once met, the name, the numbers and
+ * the fill are in `positive` (D-39). The bar's thickness is `--bar-width` and its length a layout
+ * dimension (D-43); the fill is as long as the share the header gives in `--share`. The group
+ * takes the space the clock gives up, so the buttons stay at the right edge.
+ */
+.run-header-clock:has(+ .run-header-solving) {
+  margin-right: 0;
+}
+
+.run-header-solving {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m);
+  margin-right: auto;
+}
+
+.run-header-requirement {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  color: var(--text);
+}
+
+.run-header-requirement.positive {
   color: var(--positive);
+}
+
+.run-header-requirement-text {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.run-header-requirement-bar {
+  display: block;
+  width: 8em;
+  height: var(--bar-width);
+  background-color: var(--highlight);
+}
+
+.run-header-requirement-fill {
+  display: block;
+  width: calc(var(--share) * 100%);
+  height: 100%;
+  background-color: var(--text);
+}
+
+.run-header-requirement.positive .run-header-requirement-fill {
+  background-color: var(--positive);
 }
 
 /*
@@ -1403,13 +1456,92 @@ header .failure-line {
   color: var(--warning);
 }
 
+/*
+ * The rows „Teraz” and „Potem” under the scene (D-334, D-335). „Teraz” has a fixed height of one line,
+ * a layout dimension (D-43), and cuts a longer text instead of wrapping it, so a change of its text
+ * moves nothing below it. The text stands in `text`, in `positive` after a completion and in `warning`
+ * for „Potem” with no winning rule; the label „Potem” and the text at the right stand in `text-label`,
+ * as the number and the time of a rule's row do. The icon of the action takes the colour of the text
+ * beside it (D-291).
+ */
+.now-row,
+.next-row {
+  display: flex;
+  align-items: center;
+  column-gap: var(--space-s);
+  margin-top: var(--space-xs);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.now-row {
+  height: 1lh;
+}
+
+/*
+ * A row that names a rule of the copy has a tab stop and is a control (D-336): under the pointer it
+ * stands on `highlight` with its text in `text`, as a control under the pointer does (D-40), and its
+ * focus is the one :focus-visible rule above (D-47). The padding gives the background room round the
+ * text, and the equal negative margin keeps the text where the rows without a rule have it.
+ */
+.now-row,
+.next-row {
+  padding-inline: var(--space-xs);
+  margin-inline: calc(-1 * var(--space-xs));
+}
+
+.now-row[tabindex],
+.next-row[tabindex] {
+  cursor: pointer;
+}
+
+.now-row[tabindex]:hover,
+.next-row[tabindex]:hover {
+  background: var(--highlight);
+  color: var(--text);
+}
+
+.next-label,
+.now-right {
+  flex: none;
+  color: var(--text-label);
+}
+
+.now-main {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  column-gap: var(--space-xs);
+  min-width: 0;
+  color: var(--text);
+}
+
+.now-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.now-text.positive {
+  color: var(--positive);
+}
+
+.now-text.warning {
+  color: var(--warning);
+}
+
 .combat-line {
   margin: var(--space-xs) 0 0;
   color: var(--text);
   overflow-wrap: anywhere;
 }
 
-/* The row of the body and the backpack under the status row. */
+/*
+ * The row of the body and the backpack under the rows „Teraz” and „Potem”. Each value stands in a
+ * cell of its own; under temperature and under satiety a note says the minutes the need lasts, in
+ * the smaller size of descriptions and in `text-secondary`, in `danger` for „marznie” and „głoduje”
+ * (D-337, D-39, D-40).
+ */
 .body-row {
   display: flex;
   flex-wrap: wrap;
@@ -1417,14 +1549,31 @@ header .failure-line {
   margin-top: var(--space-xs);
 }
 
-.body-text,
+.body-cells {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-l);
+}
+
+.body-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.body-cells,
 .backpack-text {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
+.body-note {
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
 /* A value below the threshold of chill or hunger: the character may be lost (D-39). */
-.body-value.danger {
+.body-value.danger,
+.body-note.danger {
   color: var(--danger);
 }
 

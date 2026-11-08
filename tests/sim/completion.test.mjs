@@ -18,7 +18,10 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import { sameHex } from "../../dist/browser/sim/hex.js";
-import { meetsSolving } from "../../dist/browser/sim/run.js";
+import {
+  meetsSolving,
+  solvingRequirements,
+} from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
@@ -286,6 +289,102 @@ test("solving requirements present in data are all required and absent ones are 
     true,
   );
   assert.equal(meetsSolving({ ...run, streak: 480 }, MAPS.forest), true);
+});
+
+test("Las gives the one requirement it has, the streak, with the count of the map run, met only at the number required", () => {
+  const run = sent().run;
+  assert.deepEqual(solvingRequirements({ ...run, streak: 120 }, MAPS.forest), [
+    { kind: "streak", count: 120, required: 480, met: false },
+  ]);
+  assert.deepEqual(solvingRequirements({ ...run, streak: 479 }, MAPS.forest), [
+    { kind: "streak", count: 479, required: 480, met: false },
+  ]);
+  assert.deepEqual(solvingRequirements({ ...run, streak: 480 }, MAPS.forest), [
+    { kind: "streak", count: 480, required: 480, met: true },
+  ]);
+});
+
+test("Las - deeper gives both requirements, the streak first and the beaten attacks second, each met on its own", () => {
+  const run = { ...sent().run, mapId: "forestDeep" };
+  const deep = MAPS.forestDeep;
+  assert.deepEqual(
+    solvingRequirements({ ...run, streak: 540, defeatedAttacks: 1 }, deep),
+    [
+      { kind: "streak", count: 540, required: 540, met: true },
+      { kind: "defeatedAttacks", count: 1, required: 2, met: false },
+    ],
+  );
+  assert.deepEqual(
+    solvingRequirements({ ...run, streak: 120, defeatedAttacks: 2 }, deep),
+    [
+      { kind: "streak", count: 120, required: 540, met: false },
+      { kind: "defeatedAttacks", count: 2, required: 2, met: true },
+    ],
+  );
+});
+
+test("a requirement the data of the map leaves out is not given, and the other one stands alone", () => {
+  const run = {
+    ...sent().run,
+    mapId: "forestDeep",
+    streak: 300,
+    defeatedAttacks: 1,
+  };
+  assert.deepEqual(
+    solvingRequirements(run, {
+      ...MAPS.forestDeep,
+      solving: { defeatedAttacks: 2 },
+    }),
+    [{ kind: "defeatedAttacks", count: 1, required: 2, met: false }],
+  );
+  assert.deepEqual(
+    solvingRequirements(run, { ...MAPS.forestDeep, solving: { streak: 540 } }),
+    [{ kind: "streak", count: 300, required: 540, met: false }],
+  );
+  assert.deepEqual(
+    solvingRequirements(run, { ...MAPS.forestDeep, solving: {} }),
+    [],
+  );
+});
+
+test("the requirements of a map run that ended stand on the stopped minute: the streak 0 after a death of cold, the streak 480 after a completion", () => {
+  const dying = withRun({
+    body: { temperature: 34, satiety: 50, health: 0.7 },
+    streak: 5,
+  });
+  const died = advanceMinutes(dying, 30).state.run;
+  assert.equal(
+    died.death.cause,
+    "cold",
+    "precondition: the map run ended in a death of cold",
+  );
+  assert.deepEqual(solvingRequirements(died, MAPS.forest), [
+    { kind: "streak", count: 0, required: 480, met: false },
+  ]);
+
+  const solved = advanceMinutes(oneShort(), 1).state.run;
+  assert.deepEqual(solvingRequirements(solved, MAPS.forest), [
+    { kind: "streak", count: 480, required: 480, met: true },
+  ]);
+});
+
+test("solvingRequirements changes neither the map run nor the map", () => {
+  const run = {
+    ...sent().run,
+    mapId: "forestDeep",
+    streak: 200,
+    defeatedAttacks: 1,
+  };
+  const map = {
+    ...MAPS.forestDeep,
+    solving: { streak: 540, defeatedAttacks: 2 },
+  };
+  const runBefore = structuredClone(run);
+  const mapBefore = structuredClone(map);
+  const given = solvingRequirements(run, map);
+  given[0].count = 999;
+  assert.deepEqual(run, runBefore);
+  assert.deepEqual(map, mapBefore);
 });
 
 test("a map is sendable only after each map it opens after is solved", () => {

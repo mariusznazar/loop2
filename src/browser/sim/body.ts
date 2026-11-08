@@ -1,6 +1,7 @@
 import { BALANCE } from "./data/balance.js";
 import type { MapDef } from "./data/maps.js";
-import type { Body, DeathCause } from "./types.js";
+import type { Body, DeathCause, MapRun } from "./types.js";
+import { warmthAt } from "./world.js";
 
 /** Decimal places the body's numbers keep, so a threshold falls where decimal arithmetic puts it. */
 const SCALE = 1e6;
@@ -102,4 +103,85 @@ export function bodyMinute(
     };
   }
   return { body: { temperature, satiety, health }, death: null, lostHealth };
+}
+
+/** What the note under the temperature of the body row says. */
+export type TemperatureNote =
+  | { kind: "chilled" }
+  | { kind: "fire" }
+  | { kind: "not-cooling" }
+  | { kind: "minutes"; minutes: number };
+
+/** What the note under the satiety of the body row says. */
+export type SatietyNote =
+  { kind: "starving" } | { kind: "minutes"; minutes: number };
+
+/** The notes of the two needs that the body row shows. */
+export type NeedNotes = { temperature: TemperatureNote; satiety: SatietyNote };
+
+/**
+ * The game minutes `body` lasts on `map` with no warmth before the game minute in which it is first
+ * chilled, counted as `bodyMinute` cools it: the minutes whose end leaves it at or above the
+ * threshold of chill, so a body already below it, or at it, lasts 0. Null where the map does not
+ * cool the body below the threshold at all (D-333).
+ */
+export function minutesUntilChilled(body: Body, map: MapDef): number | null {
+  let current = body;
+  let minutes = 0;
+  for (;;) {
+    const next = bodyMinute(current, 0, map).body;
+    if (next.temperature < BALANCE.body.chilledBelow) return minutes;
+    // Stops where the body no longer cools, also on a value that is not a number, so it cannot loop.
+    if (!(next.temperature < current.temperature)) return null;
+    current = next;
+    minutes += 1;
+  }
+}
+
+/**
+ * The game minutes the satiety of `body` lasts before the game minute in which the character first
+ * starves, counted as `bodyMinute` lets satiety fall: the minutes whose end leaves it at or above
+ * the threshold of hunger, so a body already starving lasts 0. Satiety falls whatever the map, and
+ * `map` serves only the step.
+ */
+export function minutesUntilStarving(body: Body, map: MapDef): number {
+  let current = body;
+  let minutes = 0;
+  for (;;) {
+    const next = bodyMinute(current, 0, map).body;
+    // Written as `>=` so that a value that is not a number stops the count instead of looping.
+    if (!(next.satiety >= BALANCE.body.starvingBelow)) return minutes;
+    current = next;
+    minutes += 1;
+  }
+}
+
+/**
+ * The notes under the temperature and the satiety of the body row for a map run on `map`.
+ * Temperature reads, in this order: chilled where the body is below the threshold of chill; by fire
+ * where something burns on the character's tile (`warmthAt` above 0, as the body's step reads it);
+ * not cooling where the map does not cool the body below the threshold; otherwise the minutes it
+ * lasts. Satiety reads starving below the threshold of hunger, otherwise the minutes it lasts. The
+ * minutes are whole, rounded down by the counting.
+ */
+export function needNotes(
+  run: Pick<MapRun, "body" | "character" | "campfires" | "burningItems">,
+  map: MapDef,
+): NeedNotes {
+  const rules = BALANCE.body;
+  let temperature: TemperatureNote;
+  if (run.body.temperature < rules.chilledBelow) {
+    temperature = { kind: "chilled" };
+  } else if (warmthAt(run, run.character.at) > 0) {
+    temperature = { kind: "fire" };
+  } else {
+    const minutes = minutesUntilChilled(run.body, map);
+    temperature =
+      minutes === null ? { kind: "not-cooling" } : { kind: "minutes", minutes };
+  }
+  const satiety: SatietyNote =
+    run.body.satiety < rules.starvingBelow
+      ? { kind: "starving" }
+      : { kind: "minutes", minutes: minutesUntilStarving(run.body, map) };
+  return { temperature, satiety };
 }

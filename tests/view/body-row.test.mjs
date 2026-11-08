@@ -1,17 +1,32 @@
-// The row of the body and the backpack under the status row (spec Decision 3, "What the player
+// The row of the body and the backpack under the scene (spec Decision 3, "What the player
 // reads beside it"; task, To do 14): values cut down, never rounded, with a decimal comma; a value
 // below the threshold of chill or hunger in `danger`; the backpack's pieces of its cap. The row
 // ends with „Energia natury {n}”, cut down to a whole number, never in `danger` (task plomyk,
-// plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania, To do 6, line 23, and Q5).
+// plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania, To do 6, line 23, and Q5). Under
+// temperature and satiety stands a note of the minutes the need lasts (task teraz-i-potem, To do 4
+// to 6, D-337); health and nature energy stand with none.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { backpackText, bodyValues } from "../../dist/browser/view/body-row.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
+import {
+  backpackText,
+  bodyCells,
+  bodyValues,
+  satietyNoteText,
+  temperatureNoteText,
+} from "../../dist/browser/view/body-row.js";
 
-/** The texts of the body row joined as the row shows them. */
-function joined(body, natureEnergy = 100) {
-  return bodyValues(body, natureEnergy)
-    .map((value) => value.text)
-    .join(" · ");
+const LAS = MAPS.forest;
+
+/** A map run of „Ala” on Las at game minute zero, her body and nature energy and fields replaced. */
+function runOf(body, natureEnergy = 100, fields = {}) {
+  const state = send(
+    createCharacter(newGame(), "Ala").state,
+    { mapId: "forest", characterId: 1 },
+    1760000000000,
+  ).state;
+  return { ...state.run, body, natureEnergy, ...fields };
 }
 
 /** The character of a map run with the given backpack and carrying capacity. */
@@ -24,12 +39,30 @@ function character(backpack, carryingCapacity = 15) {
   };
 }
 
-test("the body row reads temperature, satiety, health and nature energy as the task's example", () => {
-  // Task plomyk, To do 6: „Temperatura 36,9 °C · Sytość 82 % · Zdrowie 100 · Energia natury 90”.
-  assert.equal(
-    joined({ temperature: 36.9, satiety: 82, health: 100 }, 90),
-    "Temperatura 36,9 °C · Sytość 82 % · Zdrowie 100 · Energia natury 90",
+// Row 7 of the task and the new example of D-178 replace the case that joined the four values by
+// „ · ”: the values now stand in cells of their own, each with its own note (D-337), so no joined
+// line is checked any more.
+test("the body row reads temperature, satiety, health and nature energy in cells, with the minutes under the first two, as D-178 gives for Las", () => {
+  // D-178: „Temperatura 36,9 °C” with „bez ognia 79 min”, „Sytość 82 %” with „bez jedzenia 86 min”,
+  // „Zdrowie 100” and „Energia natury 90”; the minutes are worked out by hand in tests/sim/body.test.mjs.
+  const cells = bodyCells(
+    runOf({ temperature: 36.9, satiety: 82, health: 100 }, 90),
+    LAS,
   );
+  assert.deepEqual(cells, [
+    {
+      text: "Temperatura 36,9 °C",
+      danger: false,
+      note: { text: "bez ognia 79 min", danger: false },
+    },
+    {
+      text: "Sytość 82 %",
+      danger: false,
+      note: { text: "bez jedzenia 86 min", danger: false },
+    },
+    { text: "Zdrowie 100", danger: false, note: null },
+    { text: "Energia natury 90", danger: false, note: null },
+  ]);
 });
 
 test("nature energy is cut down to a whole number and never stands in danger, at zero too", () => {
@@ -102,4 +135,115 @@ test("a backpack holding items reads its count, its cap and each held item in th
 
 test("the cap is the character's carrying capacity", () => {
   assert.equal(backpackText(character({ moss: 2 }, 20)), "Plecak 2/20: mech 2");
+});
+
+test("the words of the note under temperature, one for each state", () => {
+  // D-337: „marznie” in red; otherwise „przy ogniu”, „nie stygnie” or „bez ognia {n} min”.
+  assert.deepEqual(temperatureNoteText({ kind: "chilled" }), {
+    text: "marznie",
+    danger: true,
+  });
+  assert.deepEqual(temperatureNoteText({ kind: "fire" }), {
+    text: "przy ogniu",
+    danger: false,
+  });
+  assert.deepEqual(temperatureNoteText({ kind: "not-cooling" }), {
+    text: "nie stygnie",
+    danger: false,
+  });
+  assert.deepEqual(temperatureNoteText({ kind: "minutes", minutes: 79 }), {
+    text: "bez ognia 79 min",
+    danger: false,
+  });
+  assert.deepEqual(temperatureNoteText({ kind: "minutes", minutes: 0 }), {
+    text: "bez ognia 0 min",
+    danger: false,
+  });
+});
+
+test("the words of the note under satiety, one for each state", () => {
+  // D-337: „głoduje” in red; otherwise „bez jedzenia {n} min”.
+  assert.deepEqual(satietyNoteText({ kind: "starving" }), {
+    text: "głoduje",
+    danger: true,
+  });
+  assert.deepEqual(satietyNoteText({ kind: "minutes", minutes: 86 }), {
+    text: "bez jedzenia 86 min",
+    danger: false,
+  });
+  assert.deepEqual(satietyNoteText({ kind: "minutes", minutes: 0 }), {
+    text: "bez jedzenia 0 min",
+    danger: false,
+  });
+});
+
+test("each note at its threshold: 35,0 °C and 30 % still read minutes, 34,99 °C and 29,99 % read chilled and starving", () => {
+  // Thresholds of the body: chilled below 35.0 °C, starving below 30 (D-337, D-39).
+  const notesAt = (temperature, satiety) => {
+    const [t, s] = bodyCells(runOf({ temperature, satiety, health: 50 }), LAS);
+    return [t.note, s.note];
+  };
+  assert.deepEqual(notesAt(35, 30), [
+    { text: "bez ognia 0 min", danger: false },
+    { text: "bez jedzenia 0 min", danger: false },
+  ]);
+  assert.deepEqual(notesAt(34.99, 29.99), [
+    { text: "marznie", danger: true },
+    { text: "głoduje", danger: true },
+  ]);
+});
+
+test("by a fire the note under temperature reads „przy ogniu” and the note under satiety keeps its minutes", () => {
+  const run = runOf({ temperature: 36.5, satiety: 82, health: 100 });
+  const at = run.character.at;
+  const cells = bodyCells(
+    { ...run, campfires: [{ at, minutesLeft: 40 }] },
+    LAS,
+  );
+  assert.deepEqual(cells[0].note, { text: "przy ogniu", danger: false });
+  assert.deepEqual(cells[1].note, {
+    text: "bez jedzenia 86 min",
+    danger: false,
+  });
+});
+
+test("a chilled body by the fire still reads „marznie” in danger", () => {
+  const run = runOf({ temperature: 34.5, satiety: 82, health: 100 });
+  const at = run.character.at;
+  const cells = bodyCells(
+    { ...run, campfires: [{ at, minutesLeft: 40 }] },
+    LAS,
+  );
+  assert.deepEqual(cells[0].note, { text: "marznie", danger: true });
+});
+
+test("on a map that does not cool the body the note under temperature reads „nie stygnie”", () => {
+  const warm = { ...LAS, ambientTemperature: 37 };
+  const cells = bodyCells(
+    runOf({ temperature: 37, satiety: 82, health: 100 }),
+    warm,
+  );
+  assert.deepEqual(cells[0].note, { text: "nie stygnie", danger: false });
+});
+
+test("health and nature energy stand with no note, at their lowest too", () => {
+  const cells = bodyCells(
+    runOf({ temperature: 34, satiety: 10, health: 1 }, 0),
+    LAS,
+  );
+  assert.deepEqual(
+    cells.map((cell) => cell.note !== null),
+    [true, true, false, false],
+  );
+});
+
+test("the cells keep the danger of their values: a value below its threshold in danger, the others not", () => {
+  const cells = bodyCells(
+    runOf({ temperature: 34.99, satiety: 82, health: 40 }, 90),
+    LAS,
+  );
+  assert.deepEqual(
+    cells.map((cell) => cell.danger),
+    [true, false, false, false],
+  );
 });

@@ -51,7 +51,7 @@ export type MapDef = {
   solving: SolvingDef;
   /** The condition as a sentence without the map's name; the card of the map shows it after the name (D-133). */
   solvingText: string;
-  /** The whole text the status row shows after a completion, agreeing with the name. */
+  /** The whole text „Teraz” shows after a completion, agreeing with the name. */
   completionText: string;
   /** The map that must be solved before this one can be sent to. */
   opensAfter?: string;

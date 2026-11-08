@@ -1218,11 +1218,11 @@ The loop2 container built from the repository serves, at the path `/sprites/<fil
 
 ## rule-state-from-pick
 
-The background, the bar and the reason a program rule or rule group shows come from the function of the simulation that picks the rule a character carries out.
+The background, the bar and the reason a program rule or rule group shows, and what „Teraz” and „Potem” name, come from the function of the simulation that picks the rule a character carries out, except that, as D-147 gives, „Teraz” reads „Walczy z wilkiem” in the minutes of an attack and names the cause of the death after a character's death and the map's completion text after a completion.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-308 · D-309 · D-310
+- **Derives from:** D-308 · D-309 · D-310 · D-147 · D-334 · D-335
 - **Part:** simulation · browser-view
 - **Violated:** no
 

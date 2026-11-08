@@ -398,16 +398,52 @@ export function mapRunEnded(run: MapRun): boolean {
   return run.death !== null || run.completion !== null;
 }
 
+/** The solving requirements of a map, in the order the condition is written (D-133). */
+export type SolvingRequirementKind = "streak" | "defeatedAttacks";
+
+/** One requirement of a map's solving condition, with the map run's count of it. */
+export type SolvingRequirement = {
+  kind: SolvingRequirementKind;
+  /** The map run's count: its current streak or its beaten attacks. */
+  count: number;
+  /** The number the map's solving condition requires. */
+  required: number;
+  met: boolean;
+};
+
+/**
+ * Each requirement present in the map's solving condition, streak first and beaten attacks second,
+ * with the map run's count of it. A requirement the map's data leaves out is not given. It reads
+ * the map run as it stands, also after its end. Inputs stay unchanged.
+ */
+export function solvingRequirements(
+  run: MapRun,
+  map: MapDef,
+): SolvingRequirement[] {
+  const { streak, defeatedAttacks } = map.solving;
+  const requirements: SolvingRequirement[] = [];
+  if (streak !== undefined)
+    requirements.push({
+      kind: "streak",
+      count: run.streak,
+      required: streak,
+      met: run.streak >= streak,
+    });
+  if (defeatedAttacks !== undefined)
+    requirements.push({
+      kind: "defeatedAttacks",
+      count: run.defeatedAttacks,
+      required: defeatedAttacks,
+      met: run.defeatedAttacks >= defeatedAttacks,
+    });
+  return requirements;
+}
+
 /**
  * Whether the map run meets every solving requirement the map data defines.
  */
 export function meetsSolving(run: MapRun, map: MapDef): boolean {
-  const requirements = map.solving;
-  return (
-    (requirements.streak === undefined || run.streak >= requirements.streak) &&
-    (requirements.defeatedAttacks === undefined ||
-      run.defeatedAttacks >= requirements.defeatedAttacks)
-  );
+  return solvingRequirements(run, map).every((requirement) => requirement.met);
 }
 
 /** The streak after a game minute's body step: one more where no health was lost, otherwise 0. */

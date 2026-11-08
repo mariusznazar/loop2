@@ -7,6 +7,7 @@ import {
   advanceMinutes,
   createCharacter,
   end,
+  nowAndNext,
   passRealTime,
   restart,
   send,
@@ -15,7 +16,6 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { nextRandom } from "../../dist/browser/sim/random.js";
-import { statusText } from "../../dist/browser/view/status-row.js";
 import { terrainPicture } from "../../dist/browser/view/terrain-picture.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
@@ -309,10 +309,15 @@ test("M+5 starts ordinary work immediately, counts every combat action once and 
   assert.equal(result.state.run.current.endMinute, 191);
   assert.equal(result.events.at(-2).kind, "combatEnded");
   assert.equal(result.events.at(-1).kind, "activityStarted");
-  assert.match(statusText(result.state.run, false), /Walczy/);
+  // D-147: „Teraz” keeps naming the fight in the resolution minute, and names the action in the next.
+  assert.deepEqual(nowAndNext(result.state).now, {
+    kind: "combat",
+    creatureId: "wolf",
+  });
   const next = advanceMinutes(result.state, 1).state;
   assert.equal(next.run.body.satiety, 99.4);
-  assert.doesNotMatch(statusText(next.run, false), /Walczy/);
+  assert.equal(nowAndNext(next).now.kind, "action");
+  assert.equal(nowAndNext(next).now.ruleId, 2);
 });
 
 test("editing during the wait preserves encounter state and resolves with the newly written program", () => {

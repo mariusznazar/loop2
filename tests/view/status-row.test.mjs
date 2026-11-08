@@ -1,5 +1,9 @@
-// The status row's text (spec section 5): „Minuta {minute} · {activity}”, „ (pauza)” while paused;
-// at death the minute and the cause, with no pause button (task ognisko-i-jedzenie, To do 3).
+// The clock and the bar of the solving condition in the header of the screen of a map run (task
+// teraz-i-potem, To do 3; D-311, D-122, D-132, D-62, D-133): „Minuta {game minute}”, „ (pauza)” after
+// it at every pause, the stop at a discovery included, and at the game minute of the end, with no
+// „ (pauza)”, after a death and a completion; the character's action and the streak are not in it.
+// The words and the share of each requirement of the solving condition. And the text of a pause button and of a
+// discovery (task ognisko-i-jedzenie, To do 3; task odkrywanie, To do 5).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -7,14 +11,18 @@ import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import {
   advanceMinutes,
   createCharacter,
+  newGame,
   send,
   setPaused,
   setProgram,
 } from "../../dist/browser/sim/game.js";
+import { solvingRequirements } from "../../dist/browser/sim/run.js";
 import {
+  clockText,
   discoveryText,
   pauseLabel,
-  statusText,
+  requirementShare,
+  requirementText,
 } from "../../dist/browser/view/status-row.js";
 import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
@@ -44,165 +52,6 @@ function doing(state, action) {
   return { ...state, run: { ...state.run, current } };
 }
 
-/** The same game with its map run's streak set. */
-function withStreak(state, streak) {
-  return { ...state, run: { ...state.run, streak } };
-}
-
-test("a running map run on the forest with a streak of 120 reads the minute, the activity and the streak against 480", () => {
-  const state = withStreak(
-    advanceMinutes(
-      sent([{ condition: ALWAYS, action: { kind: "explore" } }]),
-      3,
-    ).state,
-    120,
-  );
-  const run = { ...state.run, minute: 312 };
-  assert.equal(
-    statusText(run, false),
-    "Minuta 312 · Eksploruje · Passa 120/480",
-  );
-  assert.equal(
-    statusText(run, true),
-    "Minuta 312 · Eksploruje · Passa 120/480 (pauza)",
-  );
-});
-
-test("progress text shows only the solving requirements present in the map data", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  const deep = {
-    ...state,
-    run: {
-      ...state.run,
-      mapId: "forestDeep",
-      streak: 120,
-      defeatedAttacks: 1,
-    },
-  };
-  assert.equal(
-    statusText(deep.run, false),
-    "Minuta 0 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2",
-  );
-});
-
-test("the encounter takes the activity label through its resolution minute, before the next ordinary action", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  const lastCombat = {
-    creatureId: "wolf",
-    attackMinute: 10,
-    resolveMinute: 15,
-    result: null,
-  };
-  const active = {
-    ...state.run,
-    mapId: "forestDeep",
-    minute: 12,
-    activeCombat: lastCombat,
-    current: null,
-  };
-  assert.equal(
-    statusText(active, false),
-    "Minuta 12 · Walczy z wilkiem · Passa 0/540 · Pokonane napaści 0/2",
-  );
-  const resolved = {
-    ...active,
-    minute: 15,
-    activeCombat: null,
-    current: {
-      activity: ruleActivity({ kind: "explore" }),
-      startMinute: 15,
-      endMinute: 35,
-      stepTo: null,
-    },
-    lastCombat: { ...lastCombat, result: { outcome: "creatureDefeated" } },
-  };
-  assert.equal(
-    statusText(resolved, false),
-    "Minuta 15 · Walczy z wilkiem · Passa 0/540 · Pokonane napaści 0/2",
-  );
-  assert.equal(
-    statusText({ ...resolved, death: { minute: 15, cause: "combat" } }, false),
-    "Minuta 15 · Mag zginął w walce",
-  );
-});
-
-test("exploring shows the minute and „Eksploruje”", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  assert.equal(
-    statusText(state.run, state.paused),
-    "Minuta 0 · Eksploruje · Passa 0/480",
-  );
-});
-
-test("the minute shown is the map run's game minute", () => {
-  const state = advanceMinutes(
-    sent([{ condition: ALWAYS, action: { kind: "explore" } }]),
-    7,
-  ).state;
-  assert.equal(state.run.minute, 7);
-  assert.equal(
-    statusText(state.run, state.paused),
-    "Minuta 7 · Eksploruje · Passa 7/480",
-  );
-});
-
-test("wandering shows „Wędruje”", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "wander" } }]);
-  assert.equal(state.run.current.activity.action.kind, "wander");
-  assert.equal(
-    statusText(state.run, state.paused),
-    "Minuta 0 · Wędruje · Passa 0/480",
-  );
-});
-
-test("walking to a resource shows „Idzie po: ” and the resource's name from data, for each resource", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  const ids = Object.keys(RESOURCES);
-  assert.ok(ids.length > 1);
-  for (const id of ids) {
-    const walking = doing(state, { kind: "walkTo", resource: id });
-    assert.equal(
-      statusText(walking.run, false),
-      `Minuta 0 · Idzie po: ${RESOURCES[id].name} · Passa 0/480`,
-    );
-  }
-  assert.equal(
-    statusText(doing(state, { kind: "walkTo", resource: ids[0] }).run, false),
-    "Minuta 0 · Idzie po: patyk · Passa 0/480",
-  );
-});
-
-test("waiting because no rule applies shows „Czeka — żadna reguła nie pasuje”", () => {
-  const state = sent([]);
-  assert.equal(state.run.current.activity.kind, "wait");
-  assert.equal(
-    statusText(state.run, state.paused),
-    "Minuta 0 · Czeka — żadna reguła nie pasuje · Passa 0/480",
-  );
-});
-
-test("a paused map run gets „ (pauza)” appended, and loses it when resumed", () => {
-  const running = advanceMinutes(
-    sent([{ condition: ALWAYS, action: { kind: "explore" } }]),
-    3,
-  ).state;
-  const paused = setPaused(running, true).state;
-  assert.equal(
-    statusText(paused.run, paused.paused),
-    "Minuta 3 · Eksploruje · Passa 3/480 (pauza)",
-  );
-  const waiting = setPaused(sent([]), true).state;
-  assert.equal(
-    statusText(waiting.run, waiting.paused),
-    "Minuta 0 · Czeka — żadna reguła nie pasuje · Passa 0/480 (pauza)",
-  );
-  const resumed = setPaused(paused, false).state;
-  assert.equal(
-    statusText(resumed.run, resumed.paused),
-    "Minuta 3 · Eksploruje · Passa 3/480",
-  );
-});
-
 /** The same game with its map run ended in a completion at the given minute. */
 function completed(state, minute) {
   return {
@@ -219,60 +68,114 @@ function dead(state, minute, cause) {
   };
 }
 
-test("gathering shows „Zbiera: ” and the resource's name from data, for each resource", () => {
+// D-311, D-122. Catches a clock that is the old status row (the minute followed by the activity
+// and the streak) or that leaves out „ (pauza)” at a pause.
+test("a running map run reads „Minuta {game minute}” and a paused one adds „ (pauza)”", () => {
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  for (const id of Object.keys(RESOURCES)) {
-    const gathering = doing(state, { kind: "gather", resource: id });
-    assert.equal(
-      statusText(gathering.run, false),
-      `Minuta 0 · Zbiera: ${RESOURCES[id].name} · Passa 0/480`,
-    );
-  }
-  assert.equal(
-    statusText(doing(state, { kind: "gather", resource: "berry" }).run, false),
-    "Minuta 0 · Zbiera: jagoda · Passa 0/480",
-  );
+  const run = { ...state.run, minute: 312 };
+  assert.equal(clockText(run, false), "Minuta 312");
+  assert.equal(clockText(run, true), "Minuta 312 (pauza)");
 });
 
-test("an action without a target shows its status text from data alone", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  const expected = {
-    walkToCampfire: "Idzie do ogniska",
-    craftCampfire: "Wytwarza ognisko",
-    lightCampfire: "Zapala ognisko",
-    lightItem: "Zapala patyk",
-    feedCampfire: "Zasila ognisko",
-    eat: "Je jagodę",
-  };
-  for (const [kind, text] of Object.entries(expected)) {
-    assert.equal(
-      statusText(doing(state, { kind }).run, false),
-      `Minuta 0 · ${text} · Passa 0/480`,
-    );
-  }
-});
-
-test("a death of cold reads „Minuta <n> · Mag zamarzł”, of hunger „Mag umarł z głodu”", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  assert.equal(
-    statusText(dead(state, 312, "cold").run, false),
-    "Minuta 312 · Mag zamarzł",
-  );
-  assert.equal(
-    statusText(dead(state, 287, "hunger").run, false),
-    "Minuta 287 · Mag umarł z głodu",
-  );
-});
-
-test("after death no „ (pauza)” is appended, even to a paused game", () => {
-  const state = setPaused(
+test("the minute shown is the map run's game minute", () => {
+  const state = advanceMinutes(
     sent([{ condition: ALWAYS, action: { kind: "explore" } }]),
-    true,
+    7,
   ).state;
-  assert.equal(
-    statusText(dead(state, 312, "cold").run, true),
-    "Minuta 312 · Mag zamarzł",
+  assert.equal(state.run.minute, 7);
+  assert.equal(clockText(state.run, state.paused), "Minuta 7");
+});
+
+// D-311: the character's action is no longer in the header, and the streak is the bar's (slice 8).
+// The activities are the ones the status row once worded one by one: exploring, wandering, walking
+// to and gathering each resource, a step to the campfire, waiting, an encounter.
+test("the clock names no activity, resource, creature or streak, whatever the character does", () => {
+  const base = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const withStreak = {
+    ...base,
+    run: { ...base.run, streak: 120, defeatedAttacks: 1 },
+  };
+  const actions = [
+    { kind: "explore" },
+    { kind: "wander" },
+    { kind: "walkToCampfire" },
+    { kind: "eat" },
+    ...Object.keys(RESOURCES).flatMap((resource) => [
+      { kind: "walkTo", resource },
+      { kind: "gather", resource },
+    ]),
+  ];
+  for (const action of actions) {
+    const run = doing(withStreak, action).run;
+    assert.equal(clockText(run, false), "Minuta 0", JSON.stringify(action));
+    assert.equal(clockText(run, true), "Minuta 0 (pauza)");
+  }
+  const waiting = sent([]);
+  assert.equal(waiting.run.current.activity.kind, "wait");
+  assert.equal(clockText(waiting.run, false), "Minuta 0");
+  const encounter = {
+    ...withStreak.run,
+    mapId: "forestDeep",
+    minute: 12,
+    activeCombat: {
+      creatureId: "wolf",
+      attackMinute: 10,
+      resolveMinute: 15,
+      result: null,
+    },
+    current: null,
+  };
+  assert.equal(clockText(encounter, false), "Minuta 12");
+});
+
+test("a paused map run gets „ (pauza)” appended, and loses it when resumed", () => {
+  const running = advanceMinutes(
+    sent([{ condition: ALWAYS, action: { kind: "explore" } }]),
+    3,
+  ).state;
+  const paused = setPaused(running, true).state;
+  assert.equal(clockText(paused.run, paused.paused), "Minuta 3 (pauza)");
+  const waiting = setPaused(sent([]), true).state;
+  assert.equal(clockText(waiting.run, waiting.paused), "Minuta 0 (pauza)");
+  const resumed = setPaused(paused, false).state;
+  assert.equal(clockText(resumed.run, resumed.paused), "Minuta 3");
+});
+
+// D-122: the stop at a discovery is the same pause, so its clock reads „ (pauza)” too. The game is
+// stopped by the simulation at the first chill, game minute 84 (the minute the case of the screen
+// of a map run, tests/view/run-screen.test.mjs, relies on).
+test("at a stop at a discovery the clock reads „ (pauza)” as at the player's pause, and loses it at „Wznów”", () => {
+  const started = send(
+    createCharacter(newGame(), "Ala").state,
+    { ...SENT, mapId: "forest" },
+    1760000000000,
   );
+  const stopped = advanceMinutes(started.state, 100).state;
+  assert.equal(stopped.run.minute, 84, "precondition: the first chill");
+  assert.ok(stopped.discovery !== null, "precondition: a discovery is held");
+  assert.equal(clockText(stopped.run, stopped.paused), "Minuta 84 (pauza)");
+  const resumed = setPaused(stopped, false).state;
+  assert.equal(clockText(resumed.run, resumed.paused), "Minuta 84");
+});
+
+// D-62, D-334: the cause of the death is „Teraz”'s (tests/view/now-lines.test.mjs), the clock only
+// stands at the game minute of the death.
+test("after a death the clock stands at the minute of the death, with no cause and no „ (pauza)”, paused or not", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  assert.equal(clockText(dead(state, 312, "cold").run, false), "Minuta 312");
+  assert.equal(clockText(dead(state, 287, "hunger").run, false), "Minuta 287");
+  assert.equal(clockText(dead(state, 15, "combat").run, false), "Minuta 15");
+  const paused = setPaused(state, true).state;
+  assert.equal(clockText(dead(paused, 312, "cold").run, true), "Minuta 312");
+});
+
+// D-132: the completion text is „Teraz”'s, the clock only stands at the game minute of the
+// completion.
+test("after a completion the clock stands at the minute of the completion, with no completion text and no „ (pauza)”, paused or not", () => {
+  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const done = completed(state, 480);
+  assert.equal(clockText(done.run, false), "Minuta 480");
+  assert.equal(clockText(done.run, true), "Minuta 480");
 });
 
 test("„Pauza” while running, „Wznów” while paused, and no pause button after death", () => {
@@ -284,14 +187,14 @@ test("„Pauza” while running, „Wznów” while paused, and no pause button 
   assert.equal(pauseLabel(dead(paused, 312, "hunger")), null);
 });
 
-test("a mage left without a program dies, and the status row reads the minute of its death", () => {
+test("a mage left without a program dies, and the clock reads the minute of its death", () => {
   const ended = advanceMinutes(sent([]), 1000).state;
   assert.ok(ended.run.death, "the mage died within 1000 minutes");
   assert.ok(ended.run.death.minute < 1000);
   assert.equal(ended.run.death.cause, "cold");
   assert.equal(
-    statusText(ended.run, ended.paused),
-    `Minuta ${ended.run.minute} · Mag zamarzł`,
+    clockText(ended.run, ended.paused),
+    `Minuta ${ended.run.death.minute}`,
   );
   assert.equal(pauseLabel(ended), null);
 });
@@ -365,13 +268,6 @@ test("a condition that takes no number is named without a unit, and a discovery 
   );
 });
 
-test("after a completion the status reads the minute and the map's completion text, and no pause is appended", () => {
-  const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
-  const done = completed(state, 480);
-  assert.equal(statusText(done.run, false), "Minuta 480 · Las rozwiązany");
-  assert.equal(statusText(done.run, true), "Minuta 480 · Las rozwiązany");
-});
-
 test("no pause button after a completion, as after death", () => {
   const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(pauseLabel(completed(running, 480)), null);
@@ -379,4 +275,61 @@ test("no pause button after a completion, as after death", () => {
     pauseLabel(completed(setPaused(running, true).state, 480)),
     null,
   );
+});
+
+/** The requirements of a map as the simulation gives them for a map run of the given counts. */
+function requirementsOf(mapId, counts) {
+  const base = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
+  const run = { ...base.run, mapId, ...counts };
+  return solvingRequirements(run, MAPS[mapId]);
+}
+
+// D-133. Catches words in the wrong form, a requirement left out and the two out of their order.
+test("the words of Las read „Passa {streak}/{required}” and those of Las — głębiej read the passa before the beaten attacks", () => {
+  assert.deepEqual(
+    requirementsOf("forest", { streak: 120 }).map(requirementText),
+    ["Passa 120/480"],
+  );
+  assert.deepEqual(
+    requirementsOf("forestDeep", { streak: 120, defeatedAttacks: 1 }).map(
+      requirementText,
+    ),
+    ["Passa 120/540", "Pokonane napaści 1/2"],
+  );
+});
+
+// D-133: one met requirement does not make the other met. The words carry the numbers, not the role.
+test("on Las — głębiej a requirement that is met reads its own numbers while the other stays unmet", () => {
+  const requirements = requirementsOf("forestDeep", {
+    streak: 120,
+    defeatedAttacks: 2,
+  });
+  assert.deepEqual(requirements.map(requirementText), [
+    "Passa 120/540",
+    "Pokonane napaści 2/2",
+  ]);
+  assert.deepEqual(
+    requirements.map((requirement) => requirement.met),
+    [false, true],
+  );
+});
+
+// D-135: the bar shows the streak as it stands, which a death of cold or hunger has set to zero.
+test("the words after a death of cold show the streak at zero", () => {
+  assert.deepEqual(
+    requirementsOf("forest", { streak: 0 }).map(requirementText),
+    ["Passa 0/480"],
+  );
+});
+
+// D-39, D-40: the fill is as long as the share of the count in the number required, never more
+// than whole. Catches a share that exceeds 1, one that is a percentage and one that is inverted.
+test("the share of a requirement is the count over the number required, never above 1", () => {
+  const share = (mapId, counts, index = 0) =>
+    requirementShare(requirementsOf(mapId, counts)[index]);
+  assert.equal(share("forest", { streak: 0 }), 0);
+  assert.equal(share("forest", { streak: 120 }), 0.25);
+  assert.equal(share("forest", { streak: 480 }), 1);
+  assert.equal(share("forestDeep", { streak: 600 }), 1);
+  assert.equal(share("forestDeep", { streak: 0, defeatedAttacks: 1 }, 1), 0.5);
 });

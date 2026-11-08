@@ -45,6 +45,8 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/map-lines.ts` | copy | — |
 | `src/browser/view/maps-screen.tsx` | copy | — |
 | `src/browser/view/menu-bar.tsx` | copy | — |
+| `src/browser/view/now-lines.ts` | copy | — |
+| `src/browser/view/now-rows.tsx` | copy | — |
 | `src/browser/view/password-reset.ts` | copy | — |
 | `src/browser/view/program-editor.ts` | do not copy | — |
 | `src/browser/view/program-list.tsx` | copy | — |
