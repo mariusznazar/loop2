@@ -7610,3 +7610,57 @@ one entry. Accepted with it: a long entry that wraps over several lines in the r
 *Rejected:* one entry for each thing of the band in the same game minute, as „Odkryto: Patyk” and
 „Odkryto: Zbierz” — several entries in one game minute, divided otherwise than the band the player
 has just read.
+
+### D-346 — How long does the pick of „Kronika” or „Teren” hold on the screen of a map run?
+
+The tab „Kronika” or „Teren” the player picks in the right area of the screen of a map run stays
+picked through the whole map run, through leaving its screen and coming back, and through
+„Restart”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-311
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Teren” picked, then Siedziba and back to the map run, „Teren” still picked; „Teren”
+    picked before „Restart” and still picked after it; a rule panel closed with „✕” giving back
+    „Teren”
+  - violates: „Kronika” picked again after „Restart” where the player had picked „Teren”; the pick
+    lost at a return from the headquarters
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 14
+
+*Rationale:* the right area keeps what the player chose to read through the map run and its
+restarts, so the player does not pick it again at each return to the screen or each „Restart”.
+Accepted with it: while „Kronika” is picked the table of revealed tiles is one click away, and a
+tile of the drawing under the pointer marks its row of the table only while „Teren” is picked.
+*Rejected:* „Teren” picked at the start — the chronicle the player is to read stays hidden until it
+is opened; the chronicle and the table one under the other — both shorter, and the right area would
+hold two contents at once, against D-311.
+
+### D-347 — How does an agent learn what went wrong in the running game?
+
+An agent learns what went wrong in the running game from what a player reads, the screen and the
+chronicle, and from the browser's console, through the browser it operates, with no outside
+service.
+
+- **Scope:** browser-view, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-254
+- **Verification:** an agent compares a change with the decision:
+  - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the
+    chronicle why the streak fell, and reading in the console the line of an error no code handled
+    (D-253) beside the sentence of D-323 on the screen
+  - violates: Sentry or GlitchTip added to the game; a route of the server's own that receives
+    reports of the browser's errors; a check that looks in the server's output for what went wrong
+    in the browser
+- **Origin:** technologia_zapis_dzialania_gry.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2) · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How does an agent learn what went wrong in the running game?” · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
+
+*Rationale:* the game is computed in the browser, and an agent is to know what went wrong as a person
+playing does; how an exception shows on the screen and in the console D-323 and D-253 give. Lacks of
+the option chosen: an earning loop has no chronicle, an agent learns of a fault in the owner's own
+game only from the owner, and a state loaded from a save holds a chronicle only if the chronicle
+enters the save. Risks taken, each a hypothesis: logs of the console kept on disk may hold a real
+password-reset token; an agent may learn to ignore a console in which the browser writes ordinary
+refusals; a tab left overnight may slow down under a growing chronicle.
+*Rejected:* the server's output — the game does not run there; a route of the server's own for
+reports — code in two parts and a limit of requests for a game with one player; Sentry — an outside
+service and data in a foreign cloud; GlitchTip — a service, a database and a copy of it to keep.
