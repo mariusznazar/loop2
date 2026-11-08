@@ -229,48 +229,71 @@ header .failure-line {
 }
 
 /*
- * The screen of a map run (D-311, D-282, D-280, D-349; task ekran-przejscia, To do 2): under its header
- * the world, the program and the right area side by side, each an area of its own. The sizes are
- * layout dimensions, which D-43 leaves out, chosen from the scene's width, the width the rule panel
- * takes and the content of at most 1344 px (D-280); the scene is drawn at its one size, 672 px wide
- * (D-349).
+ * The screen of a map run (D-311, D-282, D-280, D-349; task ekran-przejscia, To do 2; task
+ * proporcje-sceny-i-programu, To do 1 and 2): under its header three areas of their own, in the
+ * document in the order world, program, tabs. In a window wide enough they stand in two columns by
+ * named grid areas: on the left the world and, under it, the area with the tabs „Kronika” and
+ * „Teren”, and on the right the program, as tall as the two together; narrower, one under the other
+ * in the order of the document. The areas are not moved in the document and not nested. The sizes
+ * are layout dimensions, which D-43 leaves out, chosen from the scene's width and the content of at
+ * most 1344 px (D-280); the scene is drawn at its one size, 672 px wide (D-349).
  *
- * - The world's column is the scene's width with the area's padding and frame, 2 × 16 px and
- *   2 × 1 px: 672 + 34 = 706 px.
- * - The right area's column is 336 px, the width of the scene's picture: the rule panel takes 276 px
- *   of it inside the area's padding and frame, four cells of its pick to a line, and the table of
- *   revealed tiles of Las fits it with the narrower padding of its cells.
- * - The program takes the rest, at least 170 px; with the gaps of 16 px between the areas that is
- *   270 px in content 1344 px wide, and in a window 1280 px wide, the content 1248 px, 174 px.
- * - The three stand side by side from the window width that holds the world's column, the right
- *   area's, the program's 170 px, the two gaps and the page's padding of 2 × 16 px: 1276 px. Below it
- *   the areas stand one under the other in their order, the world, the program and the right area,
- *   each the width of the content.
+ * - The left column is the scene's width with the area's padding and frame, 2 × 16 px and 2 × 1 px:
+ *   672 + 34 = 706 px.
+ * - The program takes the rest of the content, at least 320 px; with the gap of 16 px between the
+ *   columns that is 622 px in content 1344 px wide, and in a window 1280 px wide, the content
+ *   1248 px, 526 px. The rule panel opens in the program under its row and takes no column of its own.
+ * - The two columns stand from the window width that holds the left column, the gap, the program's
+ *   320 px and the page's padding of 2 × 16 px: 706 + 16 + 320 + 32 = 1074 px.
+ * - The rows are `auto` for the world and `1fr` for the tabs' area: the program, which spans both,
+ *   adds the height it needs beyond the two to the second row alone, so the tabs' area stays
+ *   directly under the world with the gap of the grid between them.
  */
 .run-screen-areas {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "world"
+    "program"
+    "tabs";
   gap: var(--space-l);
   align-items: start;
 }
 
-@media (min-width: 1276px) {
-  .run-screen-areas {
-    grid-template-columns: 706px minmax(0, 1fr) 336px;
-  }
+.run-world {
+  grid-area: world;
+}
+
+.run-program {
+  grid-area: program;
 }
 
 /* The table of revealed tiles keeps its numbers on one line, so a table wider than its area scrolls. */
-.screen-area.run-right {
+.screen-area.run-tabs {
+  grid-area: tabs;
   overflow-x: auto;
 }
 
+@media (min-width: 1074px) {
+  .run-screen-areas {
+    grid-template-columns: 706px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "world program"
+      "tabs program";
+  }
+
+  .screen-area.run-program {
+    align-self: stretch;
+  }
+}
+
 /*
- * The right area while no rule is open (D-311, D-346): the tabs „Kronika” and „Teren” over the
- * chronicle or the table of revealed tiles. The class `tabs` draws the thin line under the group; the
- * space under it separates the tabs from their content.
+ * The area under the drawing (D-311, D-346): the tabs „Kronika” and „Teren” over the chronicle or
+ * the table of revealed tiles. The class `tabs` draws the thin line under the group; the space under
+ * it separates the tabs from their content.
  */
-.right-tabs {
+.run-tabs-row {
   margin-bottom: var(--space-s);
 }
 
@@ -1893,7 +1916,7 @@ header .failure-line {
   font-variant-numeric: tabular-nums;
 }
 
-/* The cells keep a narrow padding, so the table of Las fits the right area (the rule above). */
+/* The cells keep a narrow padding, so the table of Las fits the area under the drawing. */
 .tile-list th,
 .tile-list td {
   padding: var(--space-2xs) var(--space-xs);

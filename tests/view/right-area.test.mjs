@@ -1,5 +1,6 @@
-// The right area of the screen of a map run in React (task kronika-z-filtrami, To do 6, 8 and 9;
-// D-311, D-343, D-344, D-346, D-147, D-276, D-130; spec D5, D6, D7, D9) on jsdom through
+// The area under the drawing of the screen of a map run, `RightArea` in right-area.tsx, in React
+// (task kronika-z-filtrami, To do 6, 8 and 9; task proporcje-sceny-i-programu, To do 2; D-311,
+// D-343, D-344, D-346, D-147, D-276, D-130; spec D5, D6, D7, D9) on jsdom through
 // tests/view/page-document.mjs (D-264): the tabs „Kronika” and „Teren”, under „Kronika” the seven
 // filter buttons and the list of the chronicle, newest first, each row the game minute alone in a
 // column and the entry's text in the role of its kind, the paragraph of the last encounter at its
@@ -108,8 +109,8 @@ function record(chronicle, state, events) {
 }
 
 /**
- * Draws the right area of `state` over `chronicle` in a root of its own; `show(state)` draws it
- * again with a new props object, as the screen does at each reading of the clock.
+ * Draws the area under the drawing of `state` over `chronicle` in a root of its own; `show(state)`
+ * draws it again with a new props object, as the screen does at each reading of the clock.
  */
 async function draw(document, chronicle, state, extra = {}) {
   const container = document.createElement("div");
@@ -150,7 +151,7 @@ const pressedIn = (container) =>
 // D-311, D-346, task item 8. Catches the tabs missing or in another order, „Teren” picked at the
 // start, both contents standing at once, a pick the memory is not told, and a pick that does not
 // bring the other content.
-test("the right area holds the tabs Kronika and Teren with Kronika picked first, and a click on a tab tells the chronicle and shows its content alone", async () => {
+test("the area under the drawing holds the tabs Kronika and Teren with Kronika picked first, and a click on a tab tells the chronicle and shows its content alone", async () => {
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -185,7 +186,7 @@ test("the right area holds the tabs Kronika and Teren with Kronika picked first,
   });
 });
 
-// D-346. Catches the tab picked outside the right area (a click on the memory made elsewhere) not
+// D-346. Catches the tab picked outside the area under the drawing (a click on the memory made elsewhere) not
 // reaching the screen, which reads the memory.
 test("a tab picked in the memory outside the screen is the tab the area shows", async () => {
   await withPage(async ({ document }) => {

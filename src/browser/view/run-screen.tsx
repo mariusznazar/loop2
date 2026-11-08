@@ -1,26 +1,28 @@
 /**
  * The screen of a manual map run in React, Przejście (D-311, D-280, D-281, D-282, D-19, D-122, D-313;
- * task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1): one header — the
- * character's name, the map's name, the clock, the bar of the solving condition and the buttons —
- * over three areas side by side, each a `screen-area` element a narrower layout can
- * rearrange: the world on the left, the program in the middle, the band of a discovery above the
- * program panel, and on the right one content at a time, the tabs „Kronika” and „Teren” with the
- * chronicle or the table of revealed tiles under the tab picked or, while a rule or a group is open,
- * the rule panel (D-311, D-346). The question „Zapisać, odrzucić, wrócić?” of „Zakończ”
- * is the program panel's: it stands inside the panel, just above the heading of the copy, and the
- * screen only tells the panel when to show it (`setQuestion`). The page holds the screen behind one
- * boundary, `createRunScreen`, as it holds the screen Postać: an element of its own for the page to
- * place, a first render that is synchronous, `update(state, run, events)`, `setQuestion(open)` and
- * `focus()`, called from an event handler or the clock, never from render or an effect. The screen takes its map run as a
- * parameter and reads no map run of the game state by itself (D-281): it draws from a game state
- * holding the map run it is given, and hands the program panel that state. The program panel keeps
- * its own root; the screen puts its element into the program's area and the host of its rule panel
- * into the right area. The screen holds the hovered tile's key, which the drawing, the line under it
- * and the table share, and hands the events of each update to the world area for its scene (D-04). A click on „Teraz” or
- * „Potem” in the world area asks the program panel to scroll to the rule the row names (D-336).
- * Nothing runs when the module is imported.
+ * task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1; task
+ * proporcje-sceny-i-programu, To do 1 and 2): one header — the character's name, the map's name, the
+ * clock, the bar of the solving condition and the buttons — over three areas, each a `screen-area`
+ * element a narrower layout can rearrange, in this order in the document: the world, the program,
+ * the band of a discovery above the program panel, and the area under the drawing, with the tabs
+ * „Kronika” and „Teren” and the chronicle or the table of revealed tiles under the tab picked (D-311,
+ * D-346). The stylesheet puts the world and, under it, the area with the tabs in the left column and
+ * the program in the right one, and one under the other in a narrow window. A rule panel opens in the
+ * program panel, under its row (D-288), and changes neither the tabs nor the tab picked. The
+ * question „Zapisać, odrzucić, wrócić?” of „Zakończ” is the program panel's: it stands inside the
+ * panel, just above the heading of the copy, and the screen only tells the panel when to show it
+ * (`setQuestion`). The page holds the screen behind one boundary, `createRunScreen`, as it holds the
+ * screen Postać: an element of its own for the page to place, a first render that is synchronous,
+ * `update(state, run, events)`, `setQuestion(open)` and `focus()`, called from an event handler or
+ * the clock, never from render or an effect. The screen takes its map run as a parameter and reads
+ * no map run of the game state by itself (D-281): it draws from a game state holding the map run it
+ * is given, and hands the program panel that state. The program panel keeps its own root; the screen
+ * puts its element into the program's area. The screen holds the hovered tile's key, which the
+ * drawing, the line under it and the table share, and hands the events of each update to the world
+ * area for its scene (D-04). A click on „Teraz” or „Potem” in the world area asks the program panel
+ * to scroll to the rule the row names (D-336). Nothing runs when the module is imported.
  */
-import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import type { GameEvent } from "../sim/game.js";
@@ -59,42 +61,8 @@ export type RunScreen = {
 /** What the screen needs of the program panel of the screen of a map run. */
 export type RunScreenPanel = Pick<
   ProgramPanel,
-  | "element"
-  | "update"
-  | "placeRulePanel"
-  | "addDiscoveredRule"
-  | "setQuestion"
-  | "scrollToRule"
+  "element" | "update" | "addDiscoveredRule" | "setQuestion" | "scrollToRule"
 >;
-
-/**
- * Whether the rule panel stands open in the right area, as the program panel tells it through
- * `onOpen`: a value outside the screen's tree, which the screen reads with `useSyncExternalStore`.
- */
-type RuleOpen = {
-  get: () => boolean;
-  subscribe: (listener: () => void) => () => void;
-  set: (open: boolean) => void;
-};
-
-function createRuleOpen(): RuleOpen {
-  let open = false;
-  const listeners = new Set<() => void>();
-  return {
-    get: () => open,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-    set(next) {
-      if (next === open) return;
-      open = next;
-      for (const listener of [...listeners]) listener();
-    },
-  };
-}
 
 type RunScreenViewProps = {
   /** The game state with the map run the screen was given; null until the first `update`. */
@@ -104,10 +72,7 @@ type RunScreenViewProps = {
   controls: StatusRowControls;
   /** The program panel's element, which keeps its own root. */
   panelElement: HTMLElement;
-  /** The host of the rule panel, which the program panel draws into through its portal. */
-  ruleHost: HTMLElement;
-  ruleOpen: RuleOpen;
-  /** The chronicle memory of the map run, which the right area reads and tells the picks (D-346). */
+  /** The chronicle memory of the map run, which the area under the drawing reads and tells the picks (D-346). */
   chronicle: Chronicle;
   /** „Dodaj regułę z tym” of the band. */
   onAddRule: () => void;
@@ -117,36 +82,29 @@ type RunScreenViewProps = {
 
 /**
  * The screen: the header over the three areas. The areas stand from the first render, so the
- * program panel's element and the rule panel's host are in place before the panel first draws.
- * The right area holds the tabs and their content while no rule is open and the host always, empty
- * while none is, so the focus the rule panel takes when it opens lands in an element that is shown.
+ * program panel's element is in place before the panel first draws. The area with the tabs holds the
+ * tabs and their content whenever the screen has a state, whether a rule is open in the program or not.
  */
 function RunScreenView({
   state,
   events,
   controls,
   panelElement,
-  ruleHost,
-  ruleOpen,
   chronicle,
   onAddRule,
   onShowRule,
 }: RunScreenViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
-  const open = useSyncExternalStore(ruleOpen.subscribe, ruleOpen.get);
   const panelPlace = useRef<HTMLDivElement>(null);
-  const rulePlace = useRef<HTMLDivElement>(null);
 
-  // The program panel and the host of its rule panel are elements outside this tree: the effect
-  // puts them into their areas and takes them out again at cleanup.
+  // The program panel is an element outside this tree: the effect puts it into its area and takes it
+  // out again at cleanup.
   useLayoutEffect(() => {
     panelPlace.current?.append(panelElement);
-    rulePlace.current?.append(ruleHost);
     return () => {
       panelElement.remove();
-      ruleHost.remove();
     };
-  }, [panelElement, ruleHost]);
+  }, [panelElement]);
 
   return (
     <>
@@ -173,8 +131,8 @@ function RunScreenView({
           )}
           <div className="run-program-place" ref={panelPlace} />
         </section>
-        <section className="screen-area run-right">
-          {state === null || open ? null : (
+        <section className="screen-area run-tabs">
+          {state === null ? null : (
             <RightArea
               state={state}
               chronicle={chronicle}
@@ -182,7 +140,6 @@ function RunScreenView({
               onHover={setHovered}
             />
           )}
-          <div className="run-rule-place" ref={rulePlace} />
         </section>
       </div>
     </>
@@ -191,13 +148,13 @@ function RunScreenView({
 
 /**
  * Builds the screen once: `panel` is the program panel of this screen, which the screen places in
- * its program's area, gives the host of the right area for its rule panel and updates with its map
- * run (the game view holds a second program panel, for Programy). The header's controls go to the
- * game view, which turns each into a simulation call; „Wznów” of the band is the header's
+ * its program's area and updates with its map run (the game view holds a second program panel, for
+ * Programy); the panel draws its rule panel under the row it changes. The header's controls go to
+ * the game view, which turns each into a simulation call; „Wznów” of the band is the header's
  * `togglePause`, and „Dodaj regułę z tym” the panel's `addDiscoveredRule`. The chronicle memory is
- * the game view's: the right area reads it and tells it the tab and the filter picked, and the
- * game view records into it (D-339). The render is synchronous, so the areas stand in the element
- * when this returns.
+ * the game view's: the area with the tabs reads it and tells it the tab and the filter picked, and
+ * the game view records into it (D-339). The render is synchronous, so the areas stand in the
+ * element when this returns.
  */
 export function createRunScreen(
   panel: RunScreenPanel,
@@ -207,10 +164,6 @@ export function createRunScreen(
   const element = document.createElement("section");
   element.className = "screen run-screen";
   element.tabIndex = -1;
-  const ruleHost = document.createElement("div");
-  ruleHost.className = "run-rule-host";
-  const ruleOpen = createRuleOpen();
-  panel.placeRulePanel(ruleHost, (open) => ruleOpen.set(open));
   const onAddRule = () => panel.addDiscoveredRule();
   const onShowRule = (ruleId: RuleId) => panel.scrollToRule(ruleId);
   const root = createRoot(element);
@@ -223,8 +176,6 @@ export function createRunScreen(
           events={events}
           controls={controls}
           panelElement={panel.element}
-          ruleHost={ruleHost}
-          ruleOpen={ruleOpen}
           chronicle={chronicle}
           onAddRule={onAddRule}
           onShowRule={onShowRule}
