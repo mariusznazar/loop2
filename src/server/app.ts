@@ -97,7 +97,9 @@ export function createApp(
         status = 415;
       else if (
         error.type === "entity.parse.failed" ||
-        error.type === "entity.verify.failed"
+        error.type === "entity.verify.failed" ||
+        // A browser that breaks off sending its body (D-353).
+        error.type === "request.aborted"
       )
         status = 400;
     }

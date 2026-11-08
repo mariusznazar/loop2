@@ -4247,6 +4247,47 @@ test(
 );
 
 test(
+  "a browser that breaks off sending a request body is refused and leaves no failure line",
+  { timeout: 20000 },
+  async (t) => {
+    // D-353: a break-off is an expected refusal, like a body too large or
+    // broken. Faults: the break-off answered as a server failure, with its
+    // line written by the error handler; a server that never reads the
+    // partial body, which the arrival wait below would show as a hang.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const arrived = new Promise((resolve) =>
+      f.listening.once("request", resolve),
+    );
+    const outgoing = request({
+      hostname: "127.0.0.1",
+      port: f.to,
+      path: "/api/session",
+      method: "POST",
+      agent: false,
+      headers: { ...logoutHeaders, "Content-Length": 64 },
+    });
+    // The client's own error on the broken connection is the case, not a fault.
+    outgoing.on("error", () => {});
+    outgoing.write('{"email":"first@example.test"');
+    await arrived;
+    outgoing.destroy();
+    await waitFor(
+      async () => (await f.connections()) === 0,
+      "connection closed",
+    );
+    assert.deepEqual(
+      failureLines(logged),
+      [],
+      "no failure line for a break-off",
+    );
+    // The server still answers after the break-off.
+    const after = await f.send("/api/account", { headers: proxyHeaders });
+    assert.equal(after.status, 401);
+  },
+);
+
+test(
   "every failure the server handles leaves a line of its kind, code and place, with the account's number, and no text of the error or the request",
   { timeout: 30000 },
   async (t) => {
