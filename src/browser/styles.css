@@ -305,6 +305,92 @@ header .failure-line {
 }
 
 /*
+ * The right area while no rule is open (D-311, D-346): the tabs „Kronika” and „Teren” over the
+ * chronicle or the table of revealed tiles. The class `tabs` draws the thin line under the group; the
+ * space under it separates the tabs from their content.
+ */
+.right-tabs {
+  margin-bottom: var(--space-s);
+}
+
+/*
+ * The chronicle (D-343, D-46; spec D5, D9): the filter row and the list on `panel`, the list and its
+ * empty sentence in Geist Mono at the size the token file gives the chronicle. The filter buttons keep
+ * the font of the shared button, whose look they take from the pace buttons. The row of filters wraps
+ * to the lines the width of the area needs.
+ */
+.chronicle {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.chronicle-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-s);
+}
+
+/*
+ * The list scrolls inside its own height, so the window of entries it draws grows by the scroll (spec
+ * D7); the height is a layout dimension. A row is the minute alone in a column on the left and the
+ * entry's text beside it, which wraps.
+ */
+.chronicle-list,
+.chronicle-empty {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-detail);
+}
+
+.chronicle-list {
+  max-height: 70vh;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.chronicle-row {
+  display: grid;
+  grid-template-columns: 5ch minmax(0, 1fr);
+  gap: var(--space-s);
+  padding: var(--space-2xs) 0;
+}
+
+.chronicle-minute {
+  color: var(--text-label);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.chronicle-text {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* The text of an entry takes the role of its kind (D-39, D-343, D-344). */
+.chronicle-text.discovery {
+  color: var(--discovery);
+}
+
+.chronicle-text.player-change {
+  color: var(--player-change);
+}
+
+.chronicle-text.danger {
+  color: var(--danger);
+}
+
+.chronicle-text.positive {
+  color: var(--positive);
+}
+
+.chronicle-empty {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/*
  * The shared controls of src/browser/view/controls/ in their states (styleguide rule "States of
  * shared controls", D-44): no background of their own, text in `text`, frame in `control-border`;
  * under the pointer the background `highlight` with frame and text role unchanged; focus by the
@@ -1528,12 +1614,6 @@ header .failure-line {
 
 .now-text.warning {
   color: var(--warning);
-}
-
-.combat-line {
-  margin: var(--space-xs) 0 0;
-  color: var(--text);
-  overflow-wrap: anywhere;
 }
 
 /*

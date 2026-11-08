@@ -60,7 +60,14 @@ export type Chronicle = {
   pickTab(tab: ChronicleTab): void;
   /** The player picks a filter. */
   pickFilter(filter: ChronicleFilter): void;
-  snapshot(): ChronicleSnapshot;
+  snapshot: () => ChronicleSnapshot;
+  /**
+   * Calls `listener` after each change of the chronicle, the tab or the filter — once for a result
+   * recorded, however many entries it gave — and returns the way to stop; the screen reads the
+   * memory with it as an external store, which takes `subscribe` and `snapshot` as functions
+   * apart from the memory.
+   */
+  subscribe: (listener: () => void) => () => void;
   /**
    * The rows of the filter's `size` newest entries, newest first; for „Wszystko” with the paragraph
    * at its place where the window reaches it, and for „Walka” the paragraph alone.
@@ -112,6 +119,11 @@ export function createChronicle(state: GameState): Chronicle {
   let filter: ChronicleFilter = "all";
   let version = 0;
   let snapshot: ChronicleSnapshot | null = null;
+  const listeners = new Set<() => void>();
+
+  function notify(): void {
+    for (const listener of [...listeners]) listener();
+  }
 
   function changed(): void {
     version += 1;
@@ -139,7 +151,15 @@ export function createChronicle(state: GameState): Chronicle {
     changed();
   }
 
+  /** A pick the player makes: the listeners hear of it where it changed anything. */
+  function picked(nextTab: ChronicleTab, nextFilter: ChronicleFilter): void {
+    const from = version;
+    pick(nextTab, nextFilter);
+    if (version !== from) notify();
+  }
+
   function record(result: GameResult, before: GameState, act?: CopyAct) {
+    const from = version;
     if (act)
       for (const entry of actEntries(act, before, result.state)) add(entry);
     let ended = false;
@@ -170,6 +190,7 @@ export function createChronicle(state: GameState): Chronicle {
         }
       }
     }
+    if (version !== from) notify();
   }
 
   function window(shown: ChronicleFilter, size: number): ChronicleWindow {
@@ -200,8 +221,14 @@ export function createChronicle(state: GameState): Chronicle {
 
   return {
     record,
-    pickTab: (next) => pick(next, filter),
-    pickFilter: (next) => pick(tab, next),
+    pickTab: (next) => picked(next, filter),
+    pickFilter: (next) => picked(tab, next),
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     snapshot() {
       snapshot ??= { version, tab, filter, paragraph };
       return snapshot;

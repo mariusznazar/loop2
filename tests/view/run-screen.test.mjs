@@ -1,7 +1,8 @@
 // The screen of a map run in React (task ekran-przejscia, To do 2, 3, 5, 7 and 8; D-311, D-281,
 // D-282, D-19, D-122, D-313) on jsdom through tests/view/page-document.mjs (D-264): the header over
 // three areas — the world, the program with the band of a discovery above the program panel, and on
-// the right the table of revealed tiles or the rule panel — drawn from the map run the screen is
+// the right the tabs „Kronika” and „Teren” with the chronicle or the table of revealed tiles, or the
+// rule panel (task kronika-z-filtrami, To do 8; D-346) — drawn from the map run the screen is
 // given, and the one hovered tile the screen holds for the drawing, its line and the table. The
 // screen is built here as the game view builds it, with a program panel of its own and controls
 // that make the real simulation calls. Real events, focus and the look are checked in the browser
@@ -22,6 +23,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
 import { createRunScreen } from "../../dist/browser/view/run-screen.js";
 
@@ -81,7 +83,9 @@ async function wiredScreen({ root }, start) {
   const game = {
     acts: [],
     state: start,
+    chronicle: createChronicle(start),
     apply(result) {
+      game.chronicle.record(result, game.state);
       game.state = result.state;
       if (game.state.run !== null)
         game.screen.update(game.state, game.state.run, result.events);
@@ -107,27 +111,31 @@ async function wiredScreen({ root }, start) {
   );
   // Inside act: the screen draws its first render as it is built.
   game.screen = await inAct(() =>
-    createRunScreen(game.panel, {
-      togglePause() {
-        game.acts.push("togglePause");
-        game.apply(setPaused(game.state, !game.state.paused));
+    createRunScreen(
+      game.panel,
+      {
+        togglePause() {
+          game.acts.push("togglePause");
+          game.apply(setPaused(game.state, !game.state.paused));
+        },
+        setPace(pace) {
+          game.acts.push("setPace");
+          game.apply(setPace(game.state, pace));
+        },
+        restart() {
+          game.acts.push("restart");
+          game.apply(restart(game.state));
+        },
+        end() {
+          game.acts.push("end");
+          game.apply(end(game.state));
+        },
+        saveAndEnd: unused("saveAndEnd"),
+        discardAndEnd: unused("discardAndEnd"),
+        back: unused("back"),
       },
-      setPace(pace) {
-        game.acts.push("setPace");
-        game.apply(setPace(game.state, pace));
-      },
-      restart() {
-        game.acts.push("restart");
-        game.apply(restart(game.state));
-      },
-      end() {
-        game.acts.push("end");
-        game.apply(end(game.state));
-      },
-      saveAndEnd: unused("saveAndEnd"),
-      discardAndEnd: unused("discardAndEnd"),
-      back: unused("back"),
-    }),
+      game.chronicle,
+    ),
   );
   root.append(game.screen.element);
   await inAct(() => game.screen.update(game.state, game.state.run, []));
@@ -199,7 +207,7 @@ function withTiles() {
 // D-311, D-282, task items 1 and 2. Catches the header standing inside an area, two areas drawn as
 // one block, the areas out of the order world, program, right, and a part standing in another
 // area: the drawing beside the program, the program panel or the table in the world.
-test("the header stands above three areas of their own in the order world, program and right, holding the world, the program panel and the table of revealed tiles", async () => {
+test("the header stands above three areas of their own in the order world, program and right, holding the world, the program panel and the tabs with the chronicle", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -225,7 +233,9 @@ test("the header stands above three areas of their own in the order world, progr
     assert.deepEqual(holding("world-area"), [true, false, false]);
     assert.deepEqual(holding("terrain-drawing"), [true, false, false]);
     assert.deepEqual(holding("program-panel"), [false, true, false]);
-    assert.deepEqual(holding("tile-list"), [false, false, true]);
+    assert.deepEqual(holding("tabs"), [false, false, true]);
+    assert.deepEqual(holding("chronicle"), [false, false, true]);
+    assert.deepEqual(holding("tile-list"), [false, false, false]);
     // D-311: the clock stands in the header (class `run-header-clock`), in no area.
     assert.deepEqual(holding("run-header-clock"), [false, false, false]);
   });
@@ -321,38 +331,59 @@ test("the screen draws the map run it was given, the copy of that map run in its
   });
 });
 
-// Task item 3, D-311, D-282, task edytor-programu, To do 3 and question 3; moved here from
-// tests/view/account-screen.test.mjs, where it read the terrain panel. Catches the rule panel
-// standing under the rows or in the world area instead of in the right area in the place of the
-// table, the table standing beside an open panel, the drawing leaving with the table, and the
-// table not coming back at „✕”.
-test("an open rule panel stands in the right area in the place of the table of revealed tiles, the drawing stays in the world area, and the table comes back at „✕”", async () => {
+// Task item 3, D-311, D-282, task edytor-programu, To do 3 and question 3; kronika-z-filtrami, To do 8,
+// D-346. Catches the rule panel standing under the rows or in the world area instead of in the right
+// area in the place of the tabs and their content, the tabs standing beside an open panel, the
+// drawing leaving with them, and „✕” not bringing back the tab that was picked, whichever it was.
+test("an open rule panel stands in the right area in the place of the tabs and their content, the drawing stays in the world area, and „✕” brings back the tab picked", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
     const [world, program, right] = areasOf(element);
     const drawing = () => byClass(world, "terrain-drawing")[0];
+    const tabs = () => byClass(right, "tabs").find(shown);
     const table = () => byClass(right, "tile-list").find(shown);
-    assert.ok(table(), "the table stands while no rule is open");
+    const chronicle = () => byClass(right, "chronicle").find(shown);
+    assert.ok(tabs() && chronicle(), "the tabs and the chronicle stand");
+    assert.equal(table(), undefined, "Kronika is picked first");
     assert.equal(byClass(element, "rule-panel").length, 0);
 
-    await press(page.window, byClass(program, "rule-list-header").find(shown));
-    const panels = byClass(element, "rule-panel");
-    assert.equal(panels.length, 1, "the panel is open");
-    assert.ok(right.contains(panels[0]), "in the right area");
-    assert.ok(shown(panels[0]));
-    assert.equal(table(), undefined, "the table gives the panel its place");
-    assert.ok(drawing() && shown(drawing()), "the drawing stays");
-    assert.equal(
-      byClass(program, "rule-panel").length,
-      0,
-      "not under the rows",
-    );
+    for (const picked of ["Kronika", "Teren"]) {
+      await press(page.window, buttonNamed(tabs(), picked));
+      await press(
+        page.window,
+        byClass(program, "rule-list-header").find(shown),
+      );
+      const panels = byClass(element, "rule-panel");
+      assert.equal(panels.length, 1, `${picked}: the panel is open`);
+      assert.ok(right.contains(panels[0]), "in the right area");
+      assert.ok(shown(panels[0]));
+      assert.equal(tabs(), undefined, "the panel takes the tabs' place");
+      assert.equal(table(), undefined);
+      assert.equal(chronicle(), undefined);
+      assert.ok(drawing() && shown(drawing()), "the drawing stays");
+      assert.equal(
+        byClass(program, "rule-panel").length,
+        0,
+        "not under the rows",
+      );
 
-    await press(page.window, buttonLabelled(right, "Zamknij panel"));
-    assert.equal(byClass(element, "rule-panel").length, 0);
-    assert.ok(table(), "the table is back");
-    assert.ok(shown(drawing()));
+      await press(page.window, buttonLabelled(right, "Zamknij panel"));
+      assert.equal(byClass(element, "rule-panel").length, 0);
+      assert.ok(tabs(), `${picked}: the tabs are back`);
+      assert.equal(
+        buttonNamed(tabs(), picked).getAttribute("aria-pressed"),
+        "true",
+        `${picked}: the tab picked is the one back`,
+      );
+      assert.equal(
+        Boolean(table()),
+        picked === "Teren",
+        `${picked}: its content is back`,
+      );
+      assert.equal(Boolean(chronicle()), picked === "Kronika");
+      assert.ok(shown(drawing()));
+    }
   });
 });
 
@@ -393,7 +424,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
       panel.querySelector(".rule-panel-heading")?.textContent,
       "Reguła 1.2",
     );
-    assert.equal(byClass(right, "tile-list").length, 0, "in the table's place");
+    assert.equal(byClass(right, "tabs").length, 0, "in the place of the tabs");
     const focused = page.document.activeElement;
     assert.ok(panel.contains(focused), "the focus is in the panel");
     assert.equal(
@@ -420,12 +451,14 @@ test("„Wznów” of the band goes on as the header's „Wznów” does, and th
   });
 });
 
-// D-19, task item 5. Catches the hovered tile kept by the drawing alone, so that the table in
-// another area marks no row, its line shows no numbers, and a hovered row marks no tile.
+// D-19, task item 5, kronika-z-filtrami, To do 8, D-346. Catches the hovered tile kept by the drawing
+// alone, so that the table in another area marks no row, its line shows no numbers, and a hovered row marks no tile.
 test("a hovered tile of the drawing marks its row in the table of the right area and the line gives its numbers; a hovered row marks its tile", async () => {
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, withTiles());
     const [world, , right] = areasOf(screen.element);
+    // The table stands under „Teren”; under „Kronika” there is no row to link.
+    await press(page.window, buttonNamed(right, "Teren"));
     const markedRows = () =>
       [...right.querySelectorAll("tbody tr.hovered")].map((row) =>
         row.getAttribute("data-tile"),

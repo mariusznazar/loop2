@@ -610,3 +610,33 @@ test("the number changes at every change of the chronicle, the tab or the filter
   recordEvents(chronicle, state, [attacked(5)]);
   assert.equal(changed(), true, "the paragraph placed");
 });
+
+// Catches a screen left stale (no call at a change of the chronicle or at a pick), a call for each
+// entry of one result (the screen would draw again for each), a call where nothing changed, and a
+// listener that goes on being called after it stopped. The screen reads the memory through this.
+test("a listener is called once for a result that changed the chronicle and once for a pick that changed it, and never after it stopped", () => {
+  const { chronicle, state } = sentChronicle();
+  let calls = 0;
+  const stop = chronicle.subscribe(() => {
+    calls += 1;
+  });
+  recordEvents(chronicle, state, [
+    started(3, { kind: "explore" }),
+    started(4, { kind: "wander" }),
+  ]);
+  assert.equal(calls, 1, "two entries of one result, one call");
+  recordEvents(chronicle, state, [
+    { kind: "activityFinished", minute: 5, activity: { kind: "wait" } },
+  ]);
+  assert.equal(calls, 1, "an event that gives no entry, no call");
+  chronicle.pickFilter("action");
+  assert.equal(calls, 2, "a filter picked");
+  chronicle.pickFilter("action");
+  assert.equal(calls, 2, "the same filter picked again");
+  chronicle.pickTab("terrain");
+  assert.equal(calls, 3, "a tab picked");
+  stop();
+  chronicle.pickTab("chronicle");
+  recordEvents(chronicle, state, [started(6, { kind: "explore" })]);
+  assert.equal(calls, 3, "no call after the listener stopped");
+});

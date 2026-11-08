@@ -1,6 +1,6 @@
 // The world area of the screen of a map run in React (task ekran-przejscia, To do 4, 5 and 6; D-311,
 // D-19, D-70, D-147, D-185, D-186, D-201, D-215, D-216, D-272, D-314) on jsdom through
-// tests/view/page-document.mjs (D-264): the scene, the last-encounter paragraph, the lines of the
+// tests/view/page-document.mjs (D-264): the scene, the lines of the
 // end, the body row with the backpack, the lines between the backpack and the drawing, the drawing
 // and the line of a tile under it, and the table of revealed tiles that stands in another area
 // and shares the hovered tile with the drawing. Real events and the look are checked in the
@@ -174,9 +174,10 @@ const rowOf = (container, key) =>
   container.querySelector(`.tile-list tbody tr[data-tile="${key}"]`);
 
 // Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene
-// (below the encounter paragraph or the lines of the end, where they would move as those grow), or a
+// (below the lines of the end, where they would move as those grow), a paragraph of the last encounter
+// standing in the world area, which the chronicle holds since task kronika-z-filtrami, To do 6, or a
 // part out of the order of task item 4 and of task teraz-i-potem, To do 2 (D-311).
-test("the world area stands from the top: the scene, Teraz, Potem, the encounter, the lines of the end, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile", async () => {
+test("the world area stands from the top: the scene, Teraz, Potem, the lines of the end, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no paragraph of the last encounter", async () => {
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -188,7 +189,6 @@ test("the world area stands from the top: the scene, Teraz, Potem, the encounter
       "scene",
       "now-row",
       "next-row",
-      "combat-line",
       "body-row",
       "trip-result",
       "run-practice",
@@ -197,21 +197,23 @@ test("the world area stands from the top: the scene, Teraz, Potem, the encounter
       "tile-line",
     ]);
     const parts = partsOf(container);
-    assert.equal(parts[3][1], WOLF_TEXT);
+    assert.ok(
+      parts.every(([, text]) => !text.includes(WOLF_TEXT)),
+      "the paragraph of the last encounter stands nowhere in the world area",
+    );
     assert.equal(
-      parts[5][1],
+      parts[4][1],
       "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
     );
-    assert.equal(parts[6][1], "Wprawa w tym przejściu: Eksploracja +12");
-    assert.equal(parts[7][1], "Wyniesie: nic");
+    assert.equal(parts[5][1], "Wprawa w tym przejściu: Eksploracja +12");
+    assert.equal(parts[6][1], "Wyniesie: nic");
 
-    // Completed: the deposit stands under the encounter, above the body row; the preview is gone.
+    // Completed: the deposit stands under „Potem”, above the body row; the preview is gone.
     await show(withRun(completed(solvedSent()), { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
       "scene",
       "now-row",
       "next-row",
-      "combat-line",
       "trip-result",
       "body-row",
       "trip-result",
@@ -219,25 +221,18 @@ test("the world area stands from the top: the scene, Teraz, Potem, the encounter
       "tile-line",
     ]);
     const ended = partsOf(container);
-    assert.equal(ended[4][1], "Do skrzynki nic nie trafiło.");
+    assert.equal(ended[3][1], "Do skrzynki nic nie trafiło.");
     assert.equal(
-      ended[6][1],
+      ended[5][1],
       "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
     );
 
-    // Dead, the resurrection not ready: the settlement under the encounter, in `danger`.
+    // Dead, the resurrection not ready: the settlement under „Potem”, in `danger`.
     await show(withRun(died(sent(), 9_000_000), { lastCombat: WOLF }));
-    const [scene, now, next, combat, settlement, body] = partsOf(container);
+    const [scene, now, next, settlement, body] = partsOf(container);
     assert.deepEqual(
-      [scene[0], now[0], next[0], combat[0], settlement[0], body[0]],
-      [
-        "scene",
-        "now-row",
-        "next-row",
-        "combat-line",
-        "trip-result danger",
-        "body-row",
-      ],
+      [scene[0], now[0], next[0], settlement[0], body[0]],
+      ["scene", "now-row", "next-row", "trip-result danger", "body-row"],
     );
     assert.equal(
       settlement[1],
@@ -656,16 +651,33 @@ test("the notes stand after the end of a map run, on the state at the stopped mi
   });
 });
 
-// Catches a paragraph kept after the record is gone, or one that does not appear with it.
-test("the encounter paragraph is absent without a record and present when one appears", async () => {
+// Catches the paragraph of the last encounter drawn in the world area, at its old place under „Teraz”
+// and „Potem” or anywhere else, while the map run holds a record of one (task kronika-z-filtrami,
+// To do 6; D-311, D-147): it stands in the chronicle of the right area alone.
+test("the world area draws no paragraph of the last encounter, with a record of one or without", async () => {
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, sent());
     const paragraph = () => container.querySelector(".combat-line");
+    const wordsOfWorld = () => worldOf(container).textContent;
     assert.equal(paragraph(), null);
     await show(withRun(sent(), { lastCombat: WOLF }));
-    assert.equal(paragraph().textContent, WOLF_TEXT);
-    await show(withRun(sent(), { lastCombat: null }));
     assert.equal(paragraph(), null);
+    assert.ok(!wordsOfWorld().includes("Napada wilk"));
+    const resolved = withRun(sent(), {
+      lastCombat: {
+        ...WOLF,
+        result: {
+          characterHealth: 93,
+          creatureHealth: 24,
+          outcome: "creatureDeparted",
+          ruleStarts: {},
+          exchanges: [],
+        },
+      },
+    });
+    await show(resolved);
+    assert.equal(paragraph(), null);
+    assert.ok(!wordsOfWorld().includes("Wilk"));
   });
 });
 

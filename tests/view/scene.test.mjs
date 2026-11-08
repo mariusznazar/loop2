@@ -19,6 +19,7 @@ import {
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
+import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { createRunScreen } from "../../dist/browser/view/run-screen.js";
 import { Scene } from "../../dist/browser/view/scene.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
@@ -427,9 +428,11 @@ test("a click on the scene, on any part of it, does nothing", async () => {
       placeRulePanel: () => {},
       addDiscoveredRule: () => asked.push("addDiscoveredRule"),
     };
-    const screen = await inAct(() => createRunScreen(panel, controls));
-    root.append(screen.element);
     const state = withFire(42, doing(GATHER_STICK));
+    const screen = await inAct(() =>
+      createRunScreen(panel, controls, createChronicle(state)),
+    );
+    root.append(screen.element);
     await inAct(() => screen.update(state, state.run, []));
 
     const scene = one(screen.element, ".scene");
@@ -745,7 +748,9 @@ test("the screen of a map run hands the events of each update to the scene", asy
     const before = doingFrom({ kind: "gather", resource: "berry" }, 0, 4);
     const restarted = restart(before);
     const mageAfter = async (events) => {
-      const screen = await inAct(() => createRunScreen(panel(), controls));
+      const screen = await inAct(() =>
+        createRunScreen(panel(), controls, createChronicle(before)),
+      );
       root.append(screen.element);
       await inAct(() => screen.update(before, before.run, []));
       await inAct(() =>

@@ -4,8 +4,9 @@
  * character's name, the map's name, the clock, the bar of the solving condition and the buttons —
  * over three areas side by side, each a `screen-area` element a narrower layout can
  * rearrange: the world on the left, the program in the middle, the band of a discovery above the
- * program panel, and on the right one content at a time, the table of revealed tiles or, while a
- * rule or a group is open, the rule panel. The question „Zapisać, odrzucić, wrócić?” of „Zakończ”
+ * program panel, and on the right one content at a time, the tabs „Kronika” and „Teren” with the
+ * chronicle or the table of revealed tiles under the tab picked or, while a rule or a group is open,
+ * the rule panel (D-311, D-346). The question „Zapisać, odrzucić, wrócić?” of „Zakończ”
  * is the program panel's: it stands inside the panel, just above the heading of the copy, and the
  * screen only tells the panel when to show it (`setQuestion`). The page holds the screen behind one
  * boundary, `createRunScreen`, as it holds the screen Postać: an element of its own for the page to
@@ -24,12 +25,13 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import type { GameEvent } from "../sim/game.js";
 import type { GameMapRun, GameState, RuleId } from "../sim/types.js";
+import type { Chronicle } from "./chronicle.js";
 import { DiscoveryBand } from "./discovery-band.js";
 import type { ProgramPanel } from "./program-panel.js";
+import { RightArea } from "./right-area.js";
 import { RunHeader } from "./run-header.js";
 import type { EndQuestionControls } from "./end-question.js";
 import type { StatusRowControls } from "./status-row.js";
-import { TileTable } from "./tile-table.js";
 import { SCENE_SCALE, WorldArea } from "./world-area.js";
 
 export type RunScreen = {
@@ -105,6 +107,8 @@ type RunScreenViewProps = {
   /** The host of the rule panel, which the program panel draws into through its portal. */
   ruleHost: HTMLElement;
   ruleOpen: RuleOpen;
+  /** The chronicle memory of the map run, which the right area reads and tells the picks (D-346). */
+  chronicle: Chronicle;
   /** „Dodaj regułę z tym” of the band. */
   onAddRule: () => void;
   /** A click on „Teraz” or „Potem”: the program panel scrolls to the rule the row names (D-336). */
@@ -114,8 +118,8 @@ type RunScreenViewProps = {
 /**
  * The screen: the header over the three areas. The areas stand from the first render, so the
  * program panel's element and the rule panel's host are in place before the panel first draws.
- * The right area holds the table while no rule is open and the host always, empty while none is,
- * so the focus the rule panel takes when it opens lands in an element that is shown.
+ * The right area holds the tabs and their content while no rule is open and the host always, empty
+ * while none is, so the focus the rule panel takes when it opens lands in an element that is shown.
  */
 function RunScreenView({
   state,
@@ -124,6 +128,7 @@ function RunScreenView({
   panelElement,
   ruleHost,
   ruleOpen,
+  chronicle,
   onAddRule,
   onShowRule,
 }: RunScreenViewProps) {
@@ -170,7 +175,12 @@ function RunScreenView({
         </section>
         <section className="screen-area run-right">
           {state === null || open ? null : (
-            <TileTable state={state} hovered={hovered} onHover={setHovered} />
+            <RightArea
+              state={state}
+              chronicle={chronicle}
+              hovered={hovered}
+              onHover={setHovered}
+            />
           )}
           <div className="run-rule-place" ref={rulePlace} />
         </section>
@@ -184,12 +194,15 @@ function RunScreenView({
  * its program's area, gives the host of the right area for its rule panel and updates with its map
  * run (the game view holds a second program panel, for Programy). The header's controls go to the
  * game view, which turns each into a simulation call; „Wznów” of the band is the header's
- * `togglePause`, and „Dodaj regułę z tym” the panel's `addDiscoveredRule`. The render is
- * synchronous, so the areas stand in the element when this returns.
+ * `togglePause`, and „Dodaj regułę z tym” the panel's `addDiscoveredRule`. The chronicle memory is
+ * the game view's: the right area reads it and tells it the tab and the filter picked, and the
+ * game view records into it (D-339). The render is synchronous, so the areas stand in the element
+ * when this returns.
  */
 export function createRunScreen(
   panel: RunScreenPanel,
   controls: StatusRowControls & EndQuestionControls,
+  chronicle: Chronicle,
 ): RunScreen {
   const element = document.createElement("section");
   element.className = "screen run-screen";
@@ -212,6 +225,7 @@ export function createRunScreen(
           panelElement={panel.element}
           ruleHost={ruleHost}
           ruleOpen={ruleOpen}
+          chronicle={chronicle}
           onAddRule={onAddRule}
           onShowRule={onShowRule}
         />,

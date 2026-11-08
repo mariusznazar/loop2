@@ -433,80 +433,85 @@ export function createGameView(options: GameViewOptions): GameView {
     characterScreen?.focus();
   }
 
-  const runScreen = createRunScreen(runPanel, {
-    togglePause() {
-      clock.flush();
-      closeQuestion();
-      act(setPaused(state, !state.paused));
-    },
-    // Real time elapsed before the click is passed at the old pace.
-    setPace(pace) {
-      clock.flush();
-      act(setPace(state, pace));
-    },
-    restart() {
-      clock.flush();
-      closeQuestion();
-      if (state.run) act(restart(state));
-    },
-    // „Zakończ” leads to the screen Postać of the character, with a new entry (D-53, D-62, D-132);
-    // with unsaved changes in the copy it asks first (D-173). A second click leaves the question.
-    end() {
-      clock.flush();
-      if (state.run === null) return;
-      if (!copyHasUnsavedChanges(state)) {
-        endRun(end);
-        return;
-      }
-      if (halted || question !== null) return;
-      const run = state.run;
-      // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
-      const resume = !mapRunEnded(run) && !state.paused;
-      question = { resume };
-      if (resume) act(setPaused(state, true));
-      runScreen.setQuestion(true);
-      runScreen.focusQuestion();
-    },
-    // „Zapisz”: the copy goes into its program, or, its program gone, into a new program under the
-    // first free name, and the map run ends (D-173, D-171, D-172).
-    saveAndEnd() {
-      if (halted || question === null) return;
-      clock.flush();
-      if (state.run === null || !copyHasUnsavedChanges(state)) return;
-      endRun((before) => {
-        const saved =
-          programById(before.programs, before.run?.copy.programId) === undefined
-            ? saveCopyAsNewProgram(
-                before,
-                suggestedProgramName(before.programs),
-              )
-            : saveCopyIntoProgram(before);
-        const ended = end(saved.state);
-        return {
-          state: ended.state,
-          events: [...saved.events, ...ended.events],
-        };
-      });
-    },
-    // „Odrzuć”: the map run ends and the copy's unsaved changes go with it (D-173).
-    discardAndEnd() {
-      if (halted || question === null) return;
-      clock.flush();
-      endRun(end);
-    },
-    // „Wróć”: the map run stays as it was before „Zakończ” (D-173).
-    back() {
-      if (halted || question === null) return;
-      const { resume } = question;
-      closeQuestion();
-      if (resume) {
+  const runScreen = createRunScreen(
+    runPanel,
+    {
+      togglePause() {
         clock.flush();
-        if (state.run !== null && !mapRunEnded(state.run) && state.paused)
-          act(setPaused(state, false));
-      }
-      focusShownScreen();
+        closeQuestion();
+        act(setPaused(state, !state.paused));
+      },
+      // Real time elapsed before the click is passed at the old pace.
+      setPace(pace) {
+        clock.flush();
+        act(setPace(state, pace));
+      },
+      restart() {
+        clock.flush();
+        closeQuestion();
+        if (state.run) act(restart(state));
+      },
+      // „Zakończ” leads to the screen Postać of the character, with a new entry (D-53, D-62, D-132);
+      // with unsaved changes in the copy it asks first (D-173). A second click leaves the question.
+      end() {
+        clock.flush();
+        if (state.run === null) return;
+        if (!copyHasUnsavedChanges(state)) {
+          endRun(end);
+          return;
+        }
+        if (halted || question !== null) return;
+        const run = state.run;
+        // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
+        const resume = !mapRunEnded(run) && !state.paused;
+        question = { resume };
+        if (resume) act(setPaused(state, true));
+        runScreen.setQuestion(true);
+        runScreen.focusQuestion();
+      },
+      // „Zapisz”: the copy goes into its program, or, its program gone, into a new program under the
+      // first free name, and the map run ends (D-173, D-171, D-172).
+      saveAndEnd() {
+        if (halted || question === null) return;
+        clock.flush();
+        if (state.run === null || !copyHasUnsavedChanges(state)) return;
+        endRun((before) => {
+          const saved =
+            programById(before.programs, before.run?.copy.programId) ===
+            undefined
+              ? saveCopyAsNewProgram(
+                  before,
+                  suggestedProgramName(before.programs),
+                )
+              : saveCopyIntoProgram(before);
+          const ended = end(saved.state);
+          return {
+            state: ended.state,
+            events: [...saved.events, ...ended.events],
+          };
+        });
+      },
+      // „Odrzuć”: the map run ends and the copy's unsaved changes go with it (D-173).
+      discardAndEnd() {
+        if (halted || question === null) return;
+        clock.flush();
+        endRun(end);
+      },
+      // „Wróć”: the map run stays as it was before „Zakończ” (D-173).
+      back() {
+        if (halted || question === null) return;
+        const { resume } = question;
+        closeQuestion();
+        if (resume) {
+          clock.flush();
+          if (state.run !== null && !mapRunEnded(state.run) && state.paused)
+            act(setPaused(state, false));
+        }
+        focusShownScreen();
+      },
     },
-  });
+    chronicle,
+  );
   element.append(headquartersScreen, programsScreen, runScreen.element);
 
   /** The screen Postać, which stands only while the player is on it, with its character's number. */
