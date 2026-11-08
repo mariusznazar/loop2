@@ -81,7 +81,7 @@ D-133). Ta reguła nie mówi, czy któryś z tych torów potrzebuje roli tekstu.
 
 ### No value in place of a design token
 
-- **Decision:** D-43 · D-46 · D-48
+- **Decision:** D-43 · D-46 · D-48 · D-349
 - **Invariant:** browser-view-token-values
 - **Good:** Odstęp w arkuszu stylów zapisany przez `var()` z tokenu skali odstępów.
 - **Bad:** Moduł TypeScript wpisuje do stylu elementu kolor zapisany szesnastkowo.
@@ -126,7 +126,7 @@ nie jest kolorem, nazwą czcionki ani wartością w `px`, `rem` lub `em` spoza
 wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w TypeScripcie
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
 kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`,
-bo scena ma jeden rozmiar. Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
+przy jednym rozmiarze sceny (D-349). Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
 ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga i paska) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
 sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach. D-43 ich też
@@ -576,7 +576,7 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ### The scene of a map run
 
-- **Decision:** D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-39 · D-40 · D-43
+- **Decision:** D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-39 · D-40 · D-43
 - **Invariant:** none
 - **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi.
 - **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę.
@@ -594,7 +594,7 @@ czynności, tę samą co przy regule w wierszu edytora (D-291), w `text-strong`,
 choć obok niej nie ma tekstu (D-40, D-43). Pod ikoną stoi pasek postępu tej
 czynności: wypełnienie w `positive` na torze w `highlight`, z co najmniej 3:1
 wobec tła, na którym stoi (D-39, D-40). Pasek ma grubość `--bar-width` podwojoną,
-`calc(var(--bar-width) * 2)`, bo cała scena jest rysowana w dwukrotności swojego obrazu.
+`calc(var(--bar-width) * 2)`; cała scena jest rysowana w dwukrotności swojego obrazu (D-349).
 Plakietki nie ma przy czekaniu, w walce,
 po śmierci i po rozwiązaniu mapy (D-320, D-322).
 
