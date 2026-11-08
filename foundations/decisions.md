@@ -7866,3 +7866,32 @@ of the page into source files and break with each change of it, and it would cat
 since each such file and what it refers to belong to the browser view; skipping an import the test
 cannot match — a silent hole, since every import through the build folder to a `.tsx` file would
 pass unchecked, and by that road an import of the view came into a test of the simulation.
+
+### D-352 — What does a page whose game is open do when the fragment of an emailed link appears in its address?
+
+When the fragment of an emailed link (D-156, D-224), `#confirm-email=<token>` or
+`#reset-password=<token>`, appears in the address of a tab whose game is open, the page reloads and
+then does what a page opened by that link does.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96 · derives from D-156 · derives from D-224 · derives from D-281
+- **Verification:** an agent compares a change with the decision:
+  - complies: a link from a mail typed into the address bar of a signed-in tab with the game open
+    reloading the page, which then shows the confirmation of D-156 or the form „Ustaw nowe hasło”
+    of D-225
+  - violates: the fragment of such a link resolved as the address of a screen and replaced with
+    Siedziba; the open game handling the link itself, without a reload
+- **Origin:** zadanie_loop2_porzadki_z_uwag_pr.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Co robi otwarta gra, gdy do jej karty wklei się link z maila?”, and § Settlements to record, row 1
+
+*Rationale:* a page opened by a link already confirms the address or shows the form of a reset, so
+an open game takes that road by reloading and has no second one beside the start of the page. A
+signed-in player who pastes the link into the tab no longer loses it without a word. Accepted with
+it: the reload of a game in a manual map run rests on the save made when the page becomes hidden,
+which D-207 gives no guarantee of reaching the server, so in the bad case up to 30 real seconds of
+the map run are lost.
+*Rejected:* the open game handling the link itself, with no reload — nothing is lost, but a second
+road for the link grows beside the start of the page, with more code and more tests, and the game
+has to vanish at the form of a reset (D-96); leaving it as it is, with D-281 saying that an open
+game takes the link of a mail for an address with no screen — no code, but the player still loses
+the link without a word.
