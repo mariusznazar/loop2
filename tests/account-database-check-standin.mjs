@@ -13,9 +13,13 @@ import { registerHooks } from "node:module";
 // a stand-in that was used from one that was not. With the mode "uncaught" or
 // "rejected", opening a database sets off an error no code of the program can
 // catch, its message quoting a value, for the last-resort handlers' tests.
+// The same file also stands in for `mkdtemp` and `rm` of node:fs/promises in
+// the backup command (account-backup.js), where the mode "cleanup-fails" makes
+// the removal of its temporary directory fail with a message quoting the path.
 
 const role = "?standin";
 const sqlite = process.getBuiltinModule("node:sqlite");
+const fsPromises = process.getBuiltinModule("node:fs/promises");
 
 function faultOutsideAnyHandler(mode) {
   const fault = Object.assign(
@@ -34,6 +38,18 @@ export class DatabaseSync extends sqlite.DatabaseSync {
     super(...args);
     faultOutsideAnyHandler(process.env.LOOP2_CHECK_STANDIN);
   }
+}
+
+export function mkdtemp(prefix, options) {
+  return fsPromises.mkdtemp(prefix, options);
+}
+
+export async function rm(path, options) {
+  if (process.env.LOOP2_CHECK_STANDIN === "cleanup-fails")
+    throw Object.assign(new Error(`EBUSY: ${path} is busy`), {
+      code: "EBUSY",
+    });
+  return fsPromises.rm(path, options);
 }
 
 export async function backup(source, path, options) {
@@ -68,6 +84,11 @@ if (!import.meta.url.endsWith(role)) {
       if (
         specifier === "node:sqlite" &&
         context.parentURL?.endsWith("/dist/server/database.js")
+      )
+        return { url: standIn, shortCircuit: true };
+      if (
+        specifier === "node:fs/promises" &&
+        context.parentURL?.endsWith("/dist/server/account-backup.js")
       )
         return { url: standIn, shortCircuit: true };
       return nextResolve(specifier, context);
