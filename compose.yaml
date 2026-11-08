@@ -26,6 +26,8 @@ services:
     mem_limit: 512m
     restart: unless-stopped
     init: true
+    logging:
+      driver: local
 
   cloudflared:
     container_name: loop2-cloudflared
@@ -53,6 +55,8 @@ services:
       timeout: 3s
       start_period: 5s
       retries: 3
+    logging:
+      driver: local
 
 secrets:
   cloudflare_tunnel_token:

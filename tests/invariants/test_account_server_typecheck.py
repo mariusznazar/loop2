@@ -69,7 +69,8 @@ ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT,
                "deploy/cloudflared.Dockerfile")
 # Files of `deploy/` that start no image: the backup script is read by a test of its own below.
 BACKUP_SCRIPT = "deploy/loop2-backup"
-NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron")
+LOGROTATE_CONFIG = "deploy/loop2-app.logrotate"
+NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron", LOGROTATE_CONFIG)
 
 TYPECHECK_COMMAND = ["npm", "run", "typecheck"]
 BUILT_OUTPUT = "dist"
