@@ -1,7 +1,7 @@
 /**
  * The rule panel of the program editor in React (D-288, D-289, D-290, D-293, D-296, D-299, D-300,
- * D-302, D-306; task edytor-programu, To do 3 to 5 and 8). It stands beside the rule list and changes
- * one program rule, or one rule group: for a rule its fields condition, number, target of the
+ * D-302, D-306; task edytor-programu, To do 3 to 5 and 8). It stands in the rule list, under the row or
+ * header it changes, and changes one program rule, or one rule group: for a rule its fields condition, number, target of the
  * condition, action and target of the action, each standing only where the rule has it; for a group
  * its name and its condition with the condition's number and target. One field at a time shows its
  * pick, a grid of pick cells in the groups and sections of the data, the others their value, so the
@@ -10,9 +10,10 @@
  * too. In a grid the arrow keys move among the cells, a greyed one included so that its reason can be
  * read, Enter picks and does nothing on a greyed cell, and only one cell of the grid is in the order
  * of Tab, so Tab leaves the grid. „✕” and Escape ask the page to close the panel through `onClose`;
- * opening another rule is the page's, by `open`. The page holds the panel behind `createRulePanel`, as
- * it holds the rule list, calling it from an event handler or the continuation of an answer, never
- * from render or an effect. Nothing runs when the module is imported.
+ * opening another rule is the page's, by `open`. The rule list draws the panel in place, through
+ * `RulePanelView`; `createRulePanel` builds it in an element of its own for a caller that places that
+ * element itself. Each is called from an event handler or the continuation of an answer, never from
+ * render or an effect. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent } from "react";

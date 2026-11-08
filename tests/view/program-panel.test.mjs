@@ -294,7 +294,7 @@ test("an edit of the trip plan on Programy goes to the program shown, and anothe
 
 // --- the rule panel under its row or header ------------------------------------------------------
 // To do 3 and 8, D-282, D-288; task proporcje-sceny-i-programu, To do 1 and 3. Catches the panel
-// standing beside the rows, at the end of the list or nowhere, a row that holds its own panel, a
+// standing anywhere but under its row or header, at the end of the list or nowhere, a row that holds its own panel, a
 // header that opens no panel, the focus left outside the panel on opening, and a closed panel that
 // takes no focus back to the row.
 for (const mode of ["programs", "run"]) {
@@ -319,7 +319,7 @@ for (const mode of ["programs", "run"]) {
         game.root.querySelectorAll(".program-editor-layout, .with-panel")
           .length,
         0,
-        "no layout puts the panel beside the rows",
+        "no layout gives the panel a column of its own",
       );
       assert.equal(
         game.root.querySelector(".rule-panel-heading").textContent,
@@ -965,77 +965,6 @@ test("Enter in the number field is consumed, so the press cannot reach the cell 
   });
 });
 
-/** Gives the panel of `game` a host for its rule panel on the page, as a screen does; `told` keeps what it is told. */
-async function withHost(page, game) {
-  const host = page.document.createElement("div");
-  page.root.append(host);
-  const told = [];
-  await inAct(() => game.panel.placeRulePanel(host, (open) => told.push(open)));
-  return { host, told };
-}
-
-// Task edytor-programu, To do 3, question 3, slice 13. Catches the rule panel drawn beside the rows
-// when the screen gave it a host, a screen not told that the panel opened or closed, and a panel
-// left in the host after it closed.
-test("a rule panel given a host stands in it and not beside the rows, and the screen is told when it opens and closes", async () => {
-  await withPage(async (page) => {
-    const game = await wiredPanel(page, runWithNumber());
-    const { host, told } = await withHost(page, game);
-    assert.deepEqual(told, [false], "nothing is open at the start");
-    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
-    assert.deepEqual(told, [false, true]);
-    assert.ok(
-      host.querySelector(".rule-panel"),
-      "the panel stands in the host",
-    );
-    assert.equal(
-      game.root.querySelectorAll(".rule-panel").length,
-      0,
-      "none beside the rows",
-    );
-    assert.equal(game.root.querySelectorAll(".with-panel").length, 0);
-    await click(buttonNamed(host, "✕"));
-    assert.deepEqual(told, [false, true, false]);
-    assert.equal(host.querySelector(".rule-panel"), null, "the host is empty");
-    assert.equal(
-      page.document.activeElement,
-      rowOf(game.root, 1),
-      "the focus goes back to the row",
-    );
-    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
-    await inAct(() => game.panel.dispose());
-    assert.equal(told.at(-1), false, "a panel taken out says nothing is open");
-  });
-});
-
-// Task edytor-programu, Acceptance criteria 1, slice 13: the number typed into the panel in the
-// host, which stands outside the panel's own element, keeps its text and focus at 16×.
-test("a number typed into the rule panel in its host keeps its text and the focus over three seconds of redraws at 16×", async () => {
-  await withPage(async (page) => {
-    const game = await wiredPanel(page, runWithNumber());
-    const { host } = await withHost(page, game);
-    await game.change(setPace(game.state, 16));
-    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
-    const number = host.querySelector('input[aria-label="Liczba"]');
-    assert.ok(number, "the panel in the host holds the number");
-    await inAct(() => number.focus());
-    await typeInto(number, "12");
-    const minutes = game.state.run.minute;
-    for (let frame = 0; frame < 15; frame += 1)
-      await game.change(passRealTime(game.state, 200));
-    assert.ok(game.state.run.minute > minutes, "the game went on");
-    assert.equal(host.querySelector('input[aria-label="Liczba"]'), number);
-    assert.equal(number.value, "12");
-    assert.equal(page.document.activeElement, number);
-    await key(number, "Enter");
-    assert.deepEqual(game.state.run.copy.program.groups[0].rules[0].condition, {
-      kind: "itemBelow",
-      item: "stick",
-      value: 12,
-    });
-  });
-});
-
 // --- „Dodaj regułę z tym”: the panel adds the discovered rule --------------------------------------
 // Task ekran-przejscia, To do 7, questions 5 and 10; D-313, D-124, D-131, D-166, D-306. Which rule a
 // discovery writes is the case of tests/view/discovery-rule.test.mjs; these cases hold what the panel
@@ -1056,10 +985,9 @@ const rulesOfGroup = (group) =>
   group.rules.map(({ condition, action }) => ({ condition, action }));
 
 // Catches the call handing the game no edit or an edit of a saved program, the rule panel left closed,
-// opened beside the rows though the screen gave it a host, opened on the condition after the button
-// filled the action, the screen not told it opened, the focus left outside the field, and the streak
-// left as it stood.
-test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group „Program”, opens it in the host on the action with the focus there, and the streak goes to zero", async () => {
+// opened anywhere but under the new rule's row, opened on the condition after the button filled the
+// action, the focus left outside the field, and the streak left as it stood.
+test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group „Program”, opens it under the new row on the action with the focus there, and the streak goes to zero", async () => {
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -1078,7 +1006,6 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
       ...chilled,
       run: { ...chilled.run, streak: 40 },
     });
-    const { host, told } = await withHost(page, game);
     await inAct(() => game.panel.addDiscoveredRule());
 
     assert.deepEqual(game.acts, [["editCopy"]]);
@@ -1086,22 +1013,25 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
     assert.equal(group.name, "Program");
     assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_EXPLORE]);
     assert.equal(game.state.run.streak, 0);
-    assert.deepEqual(
-      told,
-      [false, true],
-      "the screen is told the panel opened",
-    );
     assert.equal(
-      host.querySelector(".rule-panel-heading")?.textContent,
+      game.root.querySelector(".rule-panel-heading")?.textContent,
       "Reguła 1.2",
     );
-    assert.equal(classed(game.root, "rule-panel").length, 0, "none beside");
+    assert.ok(
+      rowOf(game.root, group.rules[1].id).nextElementSibling.contains(
+        game.root.querySelector(".rule-panel"),
+      ),
+      "the panel stands right under the new rule's row",
+    );
     assert.equal(
       rowOf(game.root, group.rules[1].id).getAttribute("aria-current"),
       "true",
     );
     const focused = page.document.activeElement;
-    assert.ok(host.contains(focused), "the focus is in the panel in the host");
+    assert.ok(
+      game.root.querySelector(".rule-panel").contains(focused),
+      "the focus is in the panel",
+    );
     assert.equal(
       focused.closest('[role="group"]')?.getAttribute("aria-label"),
       "Czynność",
@@ -1177,16 +1107,13 @@ test("with no discovery held, and on Programy, „Dodaj regułę z tym” change
       send(gameWithRule(), SENT, REAL_MS).state,
     );
     assert.equal(game.state.discovery, null, "precondition: no discovery");
-    const { host, told } = await withHost(page, game);
     await pick(game.root, "1");
     const before = game.state;
     await inAct(() => game.panel.addDiscoveredRule());
     assert.deepEqual(game.acts, []);
     assert.equal(game.state, before);
     assert.equal(programList(game.root).value, "1", "the program shown stays");
-    assert.equal(host.querySelector(".rule-panel"), null);
     assert.equal(classed(game.root, "rule-panel").length, 0);
-    assert.deepEqual(told, [false]);
   });
   await withPage(async (page) => {
     const game = await wiredPanel(page, firstChill(), "programs");

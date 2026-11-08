@@ -8,15 +8,13 @@
  * run the panel also draws the question „Zapisać, odrzucić, wrócić?” of „Zakończ” (D-173), just above
  * the heading of the copy, while the screen tells it to (`setQuestion`). The panel holds the rule
  * list, which draws the rule panel in place, under the row or header it changes, the open rule a state
- * of the panel; where the screen places a host element for the rule panel (`placeRulePanel`), the
- * panel draws it there instead, through a portal of its own React tree, and tells the screen whether
- * it stands. It asks the
- * game for every change through `ProgramPanelControls` and never writes the game state. Which program it shows is the boundary's, changed by picking on the list and by the
+ * of the panel. It asks the game for every change through `ProgramPanelControls` and never writes the
+ * game state. Which program it shows is the boundary's, changed by picking on the list and by the
  * operations of the game. The folding of rule groups is one memory of the page, `createFolding`, which
  * the page makes once and gives to both panels. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
-import { createPortal, flushSync } from "react-dom";
+import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
 import { ruleSigns, type GameEvent } from "../sim/game.js";
@@ -144,20 +142,11 @@ export type ProgramPanel = {
    */
   showProgram(programId: ProgramId): void;
   /**
-   * Places the rule panel in `host`, an element of the screen outside this panel, instead of under
-   * the row or header it changes: the panel draws it there through a portal, so it stays in this
-   * panel's React tree.
-   * `onOpen(true)` is called when a rule or a group opens and `onOpen(false)` when none is open any
-   * more, so the screen can hide what the panel takes the place of and show `host` meanwhile. Left
-   * unplaced, the panel draws the rule panel in the rule list, under its row or header.
-   */
-  placeRulePanel(host: HTMLElement, onOpen: (open: boolean) => void): void;
-  /**
    * „Dodaj regułę z tym” (D-313), for the screen of a map run to call from an event handler: the rule
    * the discovery held by the game state last given writes (`discoveryRule`) goes to the copy through
    * `editCopy`, as every edit of the copy goes, so the streak goes to zero (D-131); the copy is shown
-   * where a saved program was, and the rule panel opens on the new rule and the field the discovery
-   * filled, in the host the screen placed, telling it through `onOpen`, with the focus on that field.
+   * where a saved program was, and the rule panel opens under the new rule's row on the field the
+   * discovery filled, with the focus on that field.
    * Where the game holds no discovery or the copy no rule group, and in the panel of Programy, it does
    * nothing.
    */
@@ -331,10 +320,6 @@ type ProgramPanelViewProps = {
   shown: ShownProgram;
   actions: PanelActions;
   folding: Folding;
-  /** Where the rule panel stands when the screen gives it a place of its own; null beside the rows. */
-  ruleHost?: HTMLElement | null;
-  /** Told, after each commit, whether a rule or a group stands open in the rule panel. */
-  onRuleOpen?: (open: boolean) => void;
   /** The answers of the question of „Zakończ” while it stands in a panel of a map run; else null. */
   question?: EndQuestionControls | null;
   /**
@@ -356,8 +341,6 @@ export function ProgramPanelView({
   shown,
   actions,
   folding,
-  ruleHost = null,
-  onRuleOpen,
   question = null,
   opening = null,
 }: ProgramPanelViewProps) {
@@ -439,12 +422,6 @@ export function ProgramPanelView({
     (open.target.ruleId === null ||
       openGroup.rules.some((rule) => rule.id === open.target.ruleId));
   const folded = memory.get(key) ?? NO_GROUPS;
-
-  // The screen hides what the rule panel takes the place of while it stands. The effect only passes
-  // the fact on to the screen's elements, outside this tree, and runs again when the fact changes.
-  useLayoutEffect(() => {
-    onRuleOpen?.(panelStands);
-  }, [panelStands, onRuleOpen]);
 
   const checked =
     naming === null
@@ -669,16 +646,13 @@ export function ProgramPanelView({
           counts={content.counts}
           folded={folded}
           open={open === null ? null : open.target}
-          panel={ruleHost === null ? rulePanel : null}
+          panel={rulePanel}
           signs={copyShown ? ruleSigns(state) : null}
           onCommit={actions.edit}
           onOpen={(target) => setOpen({ key, target })}
           onFoldedChange={(groups) => folding.set(key, groups)}
         />
       </div>
-      {ruleHost !== null && rulePanel !== null
-        ? createPortal(rulePanel, ruleHost)
-        : null}
     </>
   );
 }
@@ -702,8 +676,6 @@ export function createProgramPanel(
   let state: GameState | null = null;
   let shown: ShownProgram = { kind: "saved", programId: 1 };
   let disposed = false;
-  let ruleHost: HTMLElement | null = null;
-  let onRuleOpen: ((open: boolean) => void) | undefined;
   // The answers of the question of „Zakończ” while it stands; null while none does.
   let question: EndQuestionControls | null = null;
   // The rule „Dodaj regułę z tym” asked the view to open last; null until it asks.
@@ -720,8 +692,6 @@ export function createProgramPanel(
           shown={shown}
           actions={actions}
           folding={folding}
-          ruleHost={ruleHost}
-          onRuleOpen={onRuleOpen}
           question={question}
           opening={opening}
         />,
@@ -736,10 +706,7 @@ export function createProgramPanel(
   function commitEditor(): void {
     const active = element.ownerDocument.activeElement;
     const area = element.querySelector(".program-editing");
-    if (
-      active instanceof HTMLElement &&
-      (area?.contains(active) === true || ruleHost?.contains(active) === true)
-    )
+    if (active instanceof HTMLElement && area?.contains(active) === true)
       active.blur();
   }
 
@@ -790,11 +757,6 @@ export function createProgramPanel(
       if (shownValue(resolved) === shownValue(shown)) return;
       show(resolved);
     },
-    placeRulePanel(host: HTMLElement, onOpen: (open: boolean) => void): void {
-      ruleHost = host;
-      onRuleOpen = onOpen;
-      draw();
-    },
     addDiscoveredRule(): void {
       if (mode !== "run" || state === null) return;
       // Text typed and not yet committed goes first to the program it was typed into, so the rule
@@ -828,7 +790,6 @@ export function createProgramPanel(
     dispose(): void {
       disposed = true;
       root.unmount();
-      onRuleOpen?.(false);
       element.remove();
     },
   };

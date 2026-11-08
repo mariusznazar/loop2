@@ -652,7 +652,7 @@ test("the notes stand after the end of a map run, on the state at the stopped mi
 
 // Catches the paragraph of the last encounter drawn in the world area, at its old place under „Teraz”
 // and „Potem” or anywhere else, while the map run holds a record of one (task kronika-z-filtrami,
-// To do 6; D-311, D-147): it stands in the chronicle of the right area alone.
+// To do 6; D-311, D-147): it stands in the chronicle in the area with the tabs alone.
 test("the world area draws no paragraph of the last encounter, with a record of one or without", async () => {
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, sent());

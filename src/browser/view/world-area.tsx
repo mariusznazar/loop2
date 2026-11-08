@@ -49,7 +49,7 @@ export type WorldAreaProps = {
 /**
  * The world area. The scene is a picture drawn from the game state, with no text on it or over it
  * and nothing in it to take a click or the keyboard (D-272, D-321). The paragraph of the last encounter
- * stands in the chronicle of the right area, not here (D-311, D-147). A value of the body row below its threshold stands
+ * stands in the chronicle in the area with the tabs, not here (D-311, D-147). A value of the body row below its threshold stands
  * in `danger`, as do „marznie” and „głoduje” under it and the settlement of a death that took the
  * progress (D-39); the other notes stand in `text-secondary`. The line under the drawing gives the hovered tile's numbers, else the character's tile's.
  */

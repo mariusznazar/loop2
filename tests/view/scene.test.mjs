@@ -76,7 +76,7 @@ const doing = (action, patch = {}) =>
 const withFire = (minutesLeft, state = sent()) =>
   withRun(state, { campfires: [{ at: state.run.character.at, minutesLeft }] });
 
-/** Draws the scene of a state at the size of the scale 2 and returns its element. */
+/** Draws the scene of a state at its one size, 672 × 304, and returns its element. */
 async function drawn({ document }, state) {
   const container = document.createElement("div");
   document.body.append(container);
@@ -165,7 +165,7 @@ test("a scene going on draws the background, the three props and the mage with i
 });
 
 // Catches a prop or the mage drawn at a place other than the data's, in percentages of the frame
-// (336 × 152 pixels), so that the picture is right at either scale.
+// (336 × 152 pixels), so that the picture is right at its one size.
 test("the props and the mage stand at the places of the data, as percentages of the frame", async () => {
   await withPage(async (page) => {
     const scene = await drawn(page, doing(GATHER_STICK));
@@ -425,7 +425,6 @@ test("a click on the scene, on any part of it, does nothing", async () => {
     const panel = {
       element: document.createElement("div"),
       update: () => {},
-      placeRulePanel: () => {},
       addDiscoveredRule: () => asked.push("addDiscoveredRule"),
     };
     const state = withFire(42, doing(GATHER_STICK));
@@ -742,7 +741,6 @@ test("the screen of a map run hands the events of each update to the scene", asy
     const panel = () => ({
       element: document.createElement("div"),
       update: () => {},
-      placeRulePanel: () => {},
       addDiscoveredRule: () => {},
     });
     const before = doingFrom({ kind: "gather", resource: "berry" }, 0, 4);
