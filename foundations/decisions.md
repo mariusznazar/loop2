@@ -3069,14 +3069,14 @@ Each program of the player carries a number the game gives it when the program i
 
 ### D-166 — Where does the player see the player's programs and pick the one to edit?
 
-The screen Programy holds on the left the list of the player's programs and in the middle the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
+The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there. That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone. On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” picked on the list of Programy showing that program in the editor in the
-    middle of the screen, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
+  - complies: „Program 2” picked on the list of Programy showing that program in the editor on the
+    right of the screen, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
     saved program with „Zmiany tutaj nie dotykają przejścia na mapie Las.” above the editor; on the
     screen of a map run the select list reading „Kopia w przejściu”, „Program”, „Program 2”
   - violates: „Kopia w przejściu” on the list of Programy; „Przełącz postać na ten program” on
