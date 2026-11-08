@@ -56,8 +56,8 @@ functions, of which those that pass game time take a game state and a span of ga
 return the next game state together with the events it produced, and real time enters the
 simulation only as an argument. The browser view draws the game only from the game state, the
 game's content data, the moment of the browser's clock, which it reads and passes to the
-simulation, and, for the scene, its previous reading of the game state and the events the
-simulation returned, and changes the game state only through functions of the simulation, to which it passes
+simulation, and, for the scene and the chronicle, its previous reading of the game state and the
+events the simulation returned, and changes the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
 the server or kept in the page's memory after a save found no session (D-211).
 
@@ -77,15 +77,17 @@ the server or kept in the page's memory after a save found no session (D-211).
     line drawn from a stored moment of readiness and the clock's reading; a game state storing the
     moment of an event, such as the moment a resurrection is ready or the moment of a save; the
     scene comparing the game state it is given with its previous reading to find the place where the
-    mage stands, or to find the start of a map run
+    mage stands, or to find the start of a map run; the chronicle writing the entry of a change of
+    the copy from the copy before the player's act and the copy after it, and the entry of a loss of
+    the streak from an event the simulation returned
   - violates: a screen of the game written as a Godot scene, or a script of the game's own code that
     the browser loads, written directly in JavaScript instead of compiled from TypeScript; a
     simulation function that reads the system time or the page; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
     reading written into the game state on each reading; a field added to the game state, and with
-    it to the save, for what the scene's motion needs
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-04 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
+    it to the save, for what the scene's motion or the chronicle needs
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-04 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play and Questions to settle, question 1
 
 *Rationale:* text code and tests give the most leverage in work with AI agents. A simulation of
 pure functions makes progress while away plain arithmetic and the save a JSON document, and runs on
@@ -103,7 +105,10 @@ state holds. The moment of the browser's clock stands apart from it too: the gam
 moment of an event, written once at the event, and the view compares it with its latest reading, so
 real time passing at the headquarters makes no new game state to save. The scene's motion needs
 what one reading of the game state does not say, such as the place where the mage stood, and its
-previous reading and the events give it, so no state of a drawing enters the save.
+previous reading and the events give it, so no state of a drawing enters the save. The chronicle
+records what happened between two readings, such as a loss of the streak in a game minute the
+reading passed over or a change the player made to the copy, which one reading does not say either,
+and its previous reading and the events give it, so the chronicle does not enter the save (D-339).
 *Rejected:* Godot — slower to work on with AI agents; a browser view that draws from the game state
 and changes nothing in it — the player changes the game state from the browser view; loading
 counted as a choice of the player, signing in, with this decision left as it stood — a strained
