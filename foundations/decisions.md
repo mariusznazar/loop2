@@ -7296,9 +7296,9 @@ player cannot tell „the same” from „nothing”.
 A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program
 once so that the program rule the row names stands in its middle, or, for a rule in a folded rule
 group, the header of that group, after which the program does not follow that rule by itself; a row
-that names no rule scrolls nothing. While the program panel shows a saved program picked on its list
-during the map run (D-174) in place of the copy, the click scrolls nothing and the saved program
-stays shown.
+that names no rule scrolls nothing. While the program panel shows a saved program in place of the
+copy, however it came to be shown — picked on its list (D-174) or made with „Nowy program” (D-167) —
+the click scrolls nothing and the saved program stays shown.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -7318,7 +7318,7 @@ stays shown.
 *Rationale:* as in loop, the player goes from what the character does, or will do, to the rule
 behind it in a long program, with the mouse or the keyboard; the scroll happens once, and a row
 with no rule leads nowhere, as in loop. The rows name rules of the copy, which the map run carries
-out, while a saved program the player picked during the map run is another program, even where its
+out, while a saved program the panel shows in place of the copy is another program, even where its
 rules carry the same numbers, so the click leaves what the player chose to look at as it is. Accepted with it: a player who shows a saved program during a map run clicks „Teraz” or
 „Potem” and sees nothing happen.
 *Rejected:* the rows as text alone, the rule found by its background and its number — it takes away
