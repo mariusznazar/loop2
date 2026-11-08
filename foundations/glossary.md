@@ -244,3 +244,9 @@ A secondary action is an action of the browser view that opens or leaves a state
 stands under that form, a button drawn as underlined text without a frame.
 
 - **Not:** none
+
+## chronicle
+
+The chronicle is the record a manual map run keeps for the player to read, each entry with its game minute.
+
+- **Not:** the events a function of the simulation returns, which a screen reads as they pass and which no map run keeps — "events"
