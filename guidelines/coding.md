@@ -34,8 +34,9 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 - **Good:** Nowe pliki spełniają blokujące reguły bez komentarzy wyciszających.
 - **Bad:** Kod narusza blokującą regułę albo wycisza ją komentarzem lub w konfiguracji.
 
-Przegląd każdej zmiany `eslint.config.mjs` pilnuje według D-29 zestawów reguł
-i zakresu plików.
+Wzorce plików `eslint.config.mjs` obejmują każdy katalog z kodem browser-view,
+simulation, account-server i build-tools. Tego pilnuje przegląd każdej zmiany
+konfiguracji według D-29.
 
 Test `shellcheck-source-rules` wymienia skrypty po nazwie: nowy skrypt Bash
 dopisz do listy w `tests/quality/test_quality_invariants.py`. Dyrektywa
@@ -158,10 +159,11 @@ albo zadania w tle do jej końca, niesie te identyfikatory z listy
 tą samą w każdym wierszu, tak aby wyszukiwanie znalazło całą sprawę. W kodzie
 Node.js stałe pola wiersza to `event` albo `failure`, `kind`, `code`, `place`
 i identyfikatory z listy; dalsze pole, takie jak `linkPurpose`, jest polem,
-a nie pozycją listy. Wiersz spoza przebiegu sprawy, taki jak wiersz przy starcie
-procesu albo skryptu budowania, nie niesie żadnego identyfikatora. Wiersz obsługi
-ostatniej szansy nie musi nieść żadnego, bo ta obsługa zwykle nie wie, jaka to
-była sprawa.
+a nie pozycją listy. W konsoli przeglądarki wiersz jest zwykłym tekstem,
+a skrypty Bash zostają przy swoim tekście. Wiersz spoza przebiegu sprawy, taki
+jak wiersz przy starcie procesu albo skryptu budowania, nie niesie żadnego
+identyfikatora. Wiersz obsługi ostatniej szansy nie musi nieść żadnego, bo ta
+obsługa zwykle nie wie, jaka to była sprawa.
 
 ### Business events
 
@@ -287,6 +289,8 @@ Zagnieżdżone warunki mogą pokazywać dwa osobne etapy sprawdzania.
 
 Zasady testowania, wzorce według poziomów i przykład jawnego czasu określa
 `guidelines/testing.md`.
+Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce
+budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone.
 Wzorzec zapisu gry wskazuje rodzaj `saved-game`, a wzorzec poczty rodzaj
 `mail-sending` w tabeli rodzajów.
 
