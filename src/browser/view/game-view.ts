@@ -644,7 +644,7 @@ export function createGameView(options: GameViewOptions): GameView {
   });
   programList.element.classList.add("screen-area");
   // Programy has two areas, the list and the program panel; an open rule's panel stands in the panel's
-  // rule list, under the row or header it changes (D-288, D-282), so no host is placed for it here.
+  // rule list, under the row or header it changes (D-288, D-282).
   programsScreen.append(programList.element, programsPanel.element);
   /** What the list was last drawn from, so a game minute that changes no program redraws nothing. */
   let drawnPrograms: {

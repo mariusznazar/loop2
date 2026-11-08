@@ -243,6 +243,9 @@ header .failure-line {
  * - The program takes the rest of the content, at least 320 px; with the gap of 16 px between the
  *   columns that is 622 px in content 1344 px wide, and in a window 1280 px wide, the content
  *   1248 px, 526 px. The rule panel opens in the program under its row and takes no column of its own.
+ *   The 320 px and the 526 px hold in a browser that draws no classic scrollbar. A media query counts
+ *   a classic scrollbar of 15 to 17 px in the window's width, so with one the program is that much
+ *   narrower: about 511 px in a window 1280 px wide, and under 320 px from 1074 px up to about 1090 px.
  * - The two columns stand from the window width that holds the left column, the gap, the program's
  *   320 px and the page's padding of 2 × 16 px: 706 + 16 + 320 + 32 = 1074 px.
  * - The rows are `auto` for the world and `1fr` for the tabs' area: the program, which spans both,
