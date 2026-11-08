@@ -173,8 +173,10 @@ const tileOf = (container, key) =>
 const rowOf = (container, key) =>
   container.querySelector(`.tile-list tbody tr[data-tile="${key}"]`);
 
-// Catches a scene that is not the first part, or a part out of the order of task item 4.
-test("the world area stands from the top: the scene, the encounter, the lines of the end, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile", async () => {
+// Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene
+// (below the encounter paragraph or the lines of the end, where they would move as those grow), or a
+// part out of the order of task item 4 and of task teraz-i-potem, To do 2 (D-311).
+test("the world area stands from the top: the scene, Teraz, Potem, the encounter, the lines of the end, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile", async () => {
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -184,6 +186,8 @@ test("the world area stands from the top: the scene, the encounter, the lines of
     const { container, show } = await draw(document, going);
     assert.deepEqual(classesOf(container), [
       "scene",
+      "now-row",
+      "next-row",
       "combat-line",
       "body-row",
       "trip-result",
@@ -193,18 +197,20 @@ test("the world area stands from the top: the scene, the encounter, the lines of
       "tile-line",
     ]);
     const parts = partsOf(container);
-    assert.equal(parts[1][1], WOLF_TEXT);
+    assert.equal(parts[3][1], WOLF_TEXT);
     assert.equal(
-      parts[3][1],
+      parts[5][1],
       "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
     );
-    assert.equal(parts[4][1], "Wprawa w tym przejściu: Eksploracja +12");
-    assert.equal(parts[5][1], "Wyniesie: nic");
+    assert.equal(parts[6][1], "Wprawa w tym przejściu: Eksploracja +12");
+    assert.equal(parts[7][1], "Wyniesie: nic");
 
     // Completed: the deposit stands under the encounter, above the body row; the preview is gone.
     await show(withRun(completed(solvedSent()), { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
       "scene",
+      "now-row",
+      "next-row",
       "combat-line",
       "trip-result",
       "body-row",
@@ -213,23 +219,178 @@ test("the world area stands from the top: the scene, the encounter, the lines of
       "tile-line",
     ]);
     const ended = partsOf(container);
-    assert.equal(ended[2][1], "Do skrzynki nic nie trafiło.");
+    assert.equal(ended[4][1], "Do skrzynki nic nie trafiło.");
     assert.equal(
-      ended[4][1],
+      ended[6][1],
       "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
     );
 
     // Dead, the resurrection not ready: the settlement under the encounter, in `danger`.
     await show(withRun(died(sent(), 9_000_000), { lastCombat: WOLF }));
-    const [scene, combat, settlement, body] = partsOf(container);
+    const [scene, now, next, combat, settlement, body] = partsOf(container);
     assert.deepEqual(
-      [scene[0], combat[0], settlement[0], body[0]],
-      ["scene", "combat-line", "trip-result danger", "body-row"],
+      [scene[0], now[0], next[0], combat[0], settlement[0], body[0]],
+      [
+        "scene",
+        "now-row",
+        "next-row",
+        "combat-line",
+        "trip-result danger",
+        "body-row",
+      ],
     );
     assert.equal(
       settlement[1],
       "Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 2.",
     );
+  });
+});
+
+/** A map run of „Ala” on Las under a program of these rules, in a game that knows every action. */
+function sentUnder(...rules) {
+  const program = setProgram(
+    newKnowingGame(),
+    programFromRules(...rules),
+  ).state;
+  return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
+}
+
+const rowsOf = (container) => ({
+  now: container.querySelector(".world-area > .now-row"),
+  next: container.querySelector(".world-area > .next-row"),
+});
+const textsOf = (row) => ({
+  text: row.querySelector(".now-text").textContent,
+  right: row.querySelector(".now-right")?.textContent ?? null,
+  icon: row.querySelector(".action-icon")?.style.getPropertyValue("--icon"),
+});
+
+// Catches rows that name a rule other than the one under way and the one that wins, an icon of the
+// wrong file, minutes that do not follow the game minute, a label of Potem other than its word, or a
+// Teraz that grows a progress bar (D-334: none).
+test("Teraz and Potem name the action under way with its rule and minutes and the rule that wins, and follow the game minute", async () => {
+  await withPage(async ({ document }) => {
+    const rules = [
+      { condition: ALWAYS, action: { kind: "explore" } },
+      { condition: ALWAYS, action: { kind: "wander" } },
+    ];
+    const started = sentUnder(...rules);
+    const { container, show } = await draw(document, started);
+    const { now, next } = rowsOf(container);
+    assert.deepEqual(textsOf(now), {
+      text: "Eksploruj",
+      right: "reguła 1.1 · zostało 20 z 20 min",
+      icon: 'url("/icons/binoculars.svg")',
+    });
+    assert.equal(next.querySelector(".next-label").textContent, "Potem");
+    assert.deepEqual(textsOf(next), {
+      text: "Eksploruj",
+      right: "reguła 1.1",
+      icon: 'url("/icons/binoculars.svg")',
+    });
+    assert.equal(
+      now.querySelector("progress, [role='progressbar'], .bar"),
+      null,
+      "no progress bar in Teraz",
+    );
+
+    // Five game minutes on: the minutes left fall, the rows stay the same elements in the same place.
+    await show(advanceMinutes(started, 5).state);
+    assert.equal(rowsOf(container).now, now);
+    assert.equal(textsOf(now).right, "reguła 1.1 · zostało 15 z 20 min");
+    assert.deepEqual(classesOf(container).slice(0, 3), [
+      "scene",
+      "now-row",
+      "next-row",
+    ]);
+  });
+});
+
+// Catches a wait that names a rule or minutes, or Potem that keeps the rule of a condition that does
+// not hold; and the line of no winner in a role other than `warning` (D-335).
+test("Teraz says the wait alone, and Potem with no winning rule says the character will stand in the role warning", async () => {
+  await withPage(async ({ document }) => {
+    const never = { kind: "hereBelow", resource: r[0], value: 0 };
+    const { container } = await draw(
+      document,
+      sentUnder({ condition: never, action: { kind: "explore" } }),
+    );
+    const { now, next } = rowsOf(container);
+    assert.deepEqual(textsOf(now), {
+      text: "Czeka — żadna reguła nie pasuje",
+      right: null,
+      icon: undefined,
+    });
+    assert.deepEqual(textsOf(next), {
+      text: "żadna reguła nie pasuje — postać stanie",
+      right: null,
+      icon: undefined,
+    });
+    assert.equal(next.querySelector(".now-text").className, "now-text warning");
+    assert.equal(now.querySelector(".now-text").className, "now-text");
+  });
+});
+
+// Catches the cause of a death in `danger` (D-334) or worded alike for two causes, a completion not in
+// `positive` (task teraz-i-potem, question 9), and rows that vanish after the end (D-335, D-334).
+test("after a death Teraz says its cause in the role text, after a completion the text of the map in positive, and Potem stays", async () => {
+  await withPage(async ({ document }) => {
+    const rules = [{ condition: ALWAYS, action: { kind: "explore" } }];
+    const { container, show } = await draw(document, sentUnder(...rules));
+    const causes = [
+      ["cold", "Mag zamarzł"],
+      ["hunger", "Mag umarł z głodu"],
+      ["combat", "Mag zginął w walce"],
+    ];
+    for (const [cause, words] of causes) {
+      const dead = withRun(sentUnder(...rules), {
+        death: { minute: 5, cause },
+      });
+      await show(dead);
+      const { now, next } = rowsOf(container);
+      assert.equal(now.querySelector(".now-text").textContent, words);
+      assert.equal(now.querySelector(".now-text").className, "now-text");
+      assert.equal(now.querySelector(".action-icon"), null);
+      assert.equal(now.querySelector(".now-right"), null);
+      assert.equal(next.querySelector(".next-label").textContent, "Potem");
+    }
+
+    await show(completed(solvedSent()));
+    const { now, next } = rowsOf(container);
+    assert.equal(now.querySelector(".now-text").textContent, "Las rozwiązany");
+    assert.equal(now.querySelector(".now-text").className, "now-text positive");
+    assert.equal(next.querySelector(".next-label").textContent, "Potem");
+  });
+});
+
+// Catches a fight with an icon, a rule or minutes beside it (D-334, D-147), and a Potem that names no
+// rule for the minutes of an attack when a combat rule would be chosen (D-335, D-309).
+test("in the minutes of an attack Teraz says the fight alone and Potem names the combat rule the turn would choose", async () => {
+  await withPage(async ({ document }) => {
+    const state = withRun(
+      sentUnder(
+        { condition: ALWAYS, action: { kind: "explore" } },
+        { condition: ALWAYS, action: { kind: "kick" } },
+      ),
+      {
+        current: null,
+        activeCombat: { creatureId: "wolf", attackMinute: 0, resolveMinute: 5 },
+        lastCombat: { ...WOLF, attackMinute: 0, resolveMinute: 5 },
+      },
+    );
+    const { container } = await draw(document, state);
+    const { now, next } = rowsOf(container);
+    assert.equal(
+      now.querySelector(".now-text").textContent,
+      "Walczy z wilkiem",
+    );
+    assert.equal(now.querySelector(".action-icon"), null);
+    assert.equal(now.querySelector(".now-right"), null);
+    assert.deepEqual(textsOf(next), {
+      text: "Kopnij",
+      right: "reguła 1.2",
+      icon: 'url("/icons/boot-kick.svg")',
+    });
   });
 });
 

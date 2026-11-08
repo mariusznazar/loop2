@@ -1,7 +1,8 @@
 /**
  * The world area of the screen of a map run in React (D-311, D-19, D-70, D-147, D-185, D-186, D-201,
- * D-215, D-216, D-272, D-314, D-316, D-320 to D-322; tasks ekran-przejscia, To do 4, 5 and 6, and
- * scena-z-ludzikiem): from the top the scene, the paragraph of the last encounter, the lines of the
+ * D-215, D-216, D-272, D-314, D-316, D-320 to D-322, D-334, D-335; tasks ekran-przejscia, To do 4, 5
+ * and 6, scena-z-ludzikiem and teraz-i-potem, To do 1 and 2): from the top the scene, the rows
+ * „Teraz” and „Potem”, the paragraph of the last encounter, the lines of the
  * end of the map run — the deposit and the settlement of a death — the body row with the backpack,
  * the lines of a solved map, of the practice and of the preview of the bring plan between the
  * backpack and the drawing, the drawing of the game map and the line of a tile under it. Each part
@@ -17,6 +18,7 @@ import type { GameState } from "../sim/types.js";
 import { bodyValues, backpackText } from "./body-row.js";
 import { practiceText } from "./character-skills.js";
 import { combatText } from "./combat-line.js";
+import { NowRows } from "./now-rows.js";
 import { Scene } from "./scene.js";
 import { TerrainDrawing } from "./terrain-drawing.js";
 import { tileLine } from "./tile-list.js";
@@ -77,6 +79,7 @@ export function WorldArea({ state, events, hovered, onHover }: WorldAreaProps) {
         height={scene.height}
         events={events}
       />
+      <NowRows state={state} />
       {run.lastCombat ? (
         <p className="combat-line">{combatText(run.lastCombat)}</p>
       ) : null}

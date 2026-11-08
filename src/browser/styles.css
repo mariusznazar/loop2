@@ -1403,6 +1403,57 @@ header .failure-line {
   color: var(--warning);
 }
 
+/*
+ * The rows „Teraz” and „Potem” under the scene (D-334, D-335). „Teraz” has a fixed height of one line,
+ * a layout dimension (D-43), and cuts a longer text instead of wrapping it, so a change of its text
+ * moves nothing below it. The text stands in `text`, in `positive` after a completion and in `warning`
+ * for „Potem” with no winning rule; the label „Potem” and the text at the right stand in `text-label`,
+ * as the number and the time of a rule's row do. The icon of the action takes the colour of the text
+ * beside it (D-291).
+ */
+.now-row,
+.next-row {
+  display: flex;
+  align-items: center;
+  column-gap: var(--space-s);
+  margin-top: var(--space-xs);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.now-row {
+  height: 1lh;
+}
+
+.next-label,
+.now-right {
+  flex: none;
+  color: var(--text-label);
+}
+
+.now-main {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  column-gap: var(--space-xs);
+  min-width: 0;
+  color: var(--text);
+}
+
+.now-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.now-text.positive {
+  color: var(--positive);
+}
+
+.now-text.warning {
+  color: var(--warning);
+}
+
 .combat-line {
   margin: var(--space-xs) 0 0;
   color: var(--text);
