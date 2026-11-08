@@ -311,7 +311,11 @@ test("a switch gives the map run a fresh copy of the other program, with the str
   assert.equal(state.run.defeatedAttacks, 0);
   assert.deepEqual(state.ruleCounts, { 1: 0 });
   assert.equal(state.lastUsedPrograms[1], 3);
-  assert.deepEqual(events, []);
+  // Changed by the task "kronika-z-filtrami" (To do 4, D-341): a switch that sets a streak above
+  // zero to zero now returns the loss of the streak, at the map run's minute, as its one event.
+  assert.deepEqual(events, [
+    { kind: "streakLost", minute: 10, streak: 10, cause: "programSwitched" },
+  ]);
 });
 
 test("a switch to a program of the same rules zeroes the streak as well", () => {
@@ -390,4 +394,92 @@ test("no operation changes the state it is given", () => {
   assert.doesNotThrow(() => saveCopyIntoProgram(ended));
   assert.doesNotThrow(() => copyHasUnsavedChanges(edited));
   assert.doesNotThrow(() => programHasChangesCopyLacks(edited));
+});
+
+// The loss of the streak as an event (task kronika-z-filtrami, To do 4; D-341, D-131): one
+// `streakLost` where an act sets a streak above zero to zero, none where it leaves it or where it
+// stood at zero. Every expected streak and minute is written out from the fixtures above.
+
+const lossesIn = (events) =>
+  events.filter((event) => event.kind === "streakLost");
+const entry = (item, count) => ({ item, count });
+
+test("an edit of the copy that changes its rules, at a streak above zero, returns one loss of the streak with the cause of the change", () => {
+  const running = advanceMinutes(sentWith(EXPLORING), 10).state;
+  assert.equal(running.run.streak, 10, "precondition: a streak of 10");
+  const { state, events } = setProgram(running, EXPLORING_THEN_WANDERING);
+  assert.equal(state.run.streak, 0);
+  assert.deepEqual(events, [
+    { kind: "streakLost", minute: 10, streak: 10, cause: "programChanged" },
+  ]);
+});
+
+test("an edit of the copy that changes a rule group's name or a rule's action returns the loss too", () => {
+  const running = advanceMinutes(sentWith(EXPLORING), 10).state;
+  const renamed = {
+    ...EXPLORING,
+    groups: [{ ...EXPLORING.groups[0], name: "Inna" }],
+  };
+  assert.equal(lossesIn(setProgram(running, renamed).events).length, 1);
+  assert.equal(lossesIn(setProgram(running, WANDERING).events).length, 1);
+});
+
+test("an edit of the copy at a streak of zero returns no loss", () => {
+  const sent = sentWith(EXPLORING);
+  assert.equal(sent.run.streak, 0, "precondition: a streak of 0");
+  const { state, events } = setProgram(sent, EXPLORING_THEN_WANDERING);
+  assert.equal(state.run.streak, 0);
+  assert.deepEqual(events, []);
+});
+
+test("an edit of the copy that leaves its rules and rule groups, or changes only the trip plan, returns no loss", () => {
+  const running = advanceMinutes(sentWith(EXPLORING), 10).state;
+  const same = setProgram(running, EXPLORING);
+  assert.equal(same.state.run.streak, 10);
+  assert.deepEqual(same.events, []);
+  const tripOnly = {
+    ...EXPLORING,
+    tripPlan: { take: [entry("moss", 5)], bring: [entry("stick", 4)] },
+  };
+  const trip = setProgram(running, tripOnly);
+  assert.equal(trip.state.run.streak, 10);
+  assert.deepEqual(trip.events, []);
+});
+
+test("an edit of the copy after the end of the map run returns no loss, the streak standing", () => {
+  const { state, events } = setProgram(died(editedAndRunning()), EXPLORING);
+  assert.equal(state.run.streak, 7);
+  assert.deepEqual(events, []);
+});
+
+test("„Porzuć zmiany” at a streak above zero returns one loss of the streak, none at a streak of zero or after the end", () => {
+  const before = editedAndRunning();
+  assert.equal(before.run.streak, 10, "precondition: a streak of 10");
+  const { events } = discardCopyChanges(before);
+  assert.deepEqual(events, [
+    { kind: "streakLost", minute: 10, streak: 10, cause: "programChanged" },
+  ]);
+  const atZero = setProgram(sentWith(EXPLORING), EXPLORING_THEN_WANDERING);
+  assert.deepEqual(discardCopyChanges(atZero.state).events, []);
+  assert.deepEqual(discardCopyChanges(died(before)).events, []);
+});
+
+test("a save of the copy, as it is or as a new program, and an edit of a saved program return no loss of the streak", () => {
+  const before = withOthers(editedAndRunning());
+  assert.deepEqual(saveCopyIntoProgram(before).events, []);
+  assert.deepEqual(saveCopyAsNewProgram(before, "Nocna").events, []);
+  assert.deepEqual(editProgram(before, 3, EXPLORING).events, []);
+});
+
+test("a switch at a streak of zero returns no loss of the streak", () => {
+  const sent = withOthers(sentWith(EXPLORING));
+  assert.equal(sent.run.streak, 0, "precondition: a streak of 0");
+  assert.deepEqual(switchProgram(sent, 3).events, []);
+});
+
+test("a switch to a program of the same rules at a streak above zero returns the loss", () => {
+  const running = advanceMinutes(withOthers(sentWith(EXPLORING)), 10).state;
+  assert.deepEqual(switchProgram(running, 4).events, [
+    { kind: "streakLost", minute: 10, streak: 10, cause: "programSwitched" },
+  ]);
 });

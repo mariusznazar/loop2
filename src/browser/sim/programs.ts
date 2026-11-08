@@ -2,7 +2,7 @@ import { ITEMS } from "./data/items.js";
 import { MAPS, type MapDef } from "./data/maps.js";
 import type { GameResult } from "./game.js";
 import { conditionNumber, onStep } from "./program.js";
-import { mapRunEnded } from "./run.js";
+import { mapRunEnded, type GameEvent } from "./run.js";
 import type {
   Action,
   CharacterId,
@@ -564,28 +564,43 @@ export function zeroCounts(program: Program): GameState["ruleCounts"] {
  * The state with the map run's copy replaced by `program`, already checked: the counts are
  * reconciled with it and, where it differs from the copy before it — groups and rules in order with
  * their identities, conditions and actions, and the identity counters — the streak and the beaten
- * attacks of a map run not ended become 0, paused or not. A trip-plan-only change leaves that
+ * attacks of a map run not ended become 0, paused or not, and a streak that stood above zero is
+ * reported as one event of its loss, at the map run's minute. A trip-plan-only change leaves that
  * progress and the counts. The copy's program number and base stay.
  */
 export function withCopyProgram(
   state: GameState,
   run: GameMapRun,
   program: Program,
-): GameState {
+): GameResult {
   const previous = run.copy.program;
   const ruleContentChanged = !sameData(
     [previous.groups, previous.nextGroupId, previous.nextRuleId],
     [program.groups, program.nextGroupId, program.nextRuleId],
   );
   const zeroed = !mapRunEnded(run) && ruleContentChanged;
+  const events: GameEvent[] =
+    zeroed && run.streak > 0
+      ? [
+          {
+            kind: "streakLost",
+            minute: run.minute,
+            streak: run.streak,
+            cause: "programChanged",
+          },
+        ]
+      : [];
   return {
-    ...state,
-    ruleCounts: reconcileCounts(state.ruleCounts, run.copy.program, program),
-    run: {
-      ...run,
-      copy: { ...run.copy, program },
-      ...(zeroed && { streak: 0, defeatedAttacks: 0 }),
+    state: {
+      ...state,
+      ruleCounts: reconcileCounts(state.ruleCounts, run.copy.program, program),
+      run: {
+        ...run,
+        copy: { ...run.copy, program },
+        ...(zeroed && { streak: 0, defeatedAttacks: 0 }),
+      },
     },
+    events,
   };
 }
 
@@ -691,7 +706,8 @@ export function saveCopyAsNewProgram(
 /**
  * Discards the changes of the map run's copy: the copy becomes its base, as an edit of the copy
  * does — the counts are reconciled and the streak and the beaten attacks of a map run not ended
- * become 0 where the copy changes. Allowed also in a map run ended in death or a completion. Throws
+ * become 0 where the copy changes, a streak above zero being reported as its loss. Allowed also in a
+ * map run ended in death or a completion. Throws
  * without a map run, without unsaved changes and with the copy's program gone.
  */
 export function discardCopyChanges(state: GameState): GameResult {
@@ -700,7 +716,7 @@ export function discardCopyChanges(state: GameState): GameResult {
     throw new Error("discardCopyChanges: the copy's program is gone");
   if (!copyHasUnsavedChanges(state))
     throw new Error("discardCopyChanges: the copy has no unsaved changes");
-  return { state: withCopyProgram(state, run, run.copy.base), events: [] };
+  return withCopyProgram(state, run, run.copy.base);
 }
 
 /**
@@ -708,7 +724,8 @@ export function discardCopyChanges(state: GameState): GameResult {
  * fresh copy record of that program, the streak and the beaten attacks become 0, every count of
  * the new copy's rules starts from zero and the character's program used last becomes it. The seed,
  * the minute, the map, the body, the backpack, the action in progress and the pause, a pause at a
- * discovery included, stay as they are. Throws without a map run, with a map run ended in death or
+ * discovery included, stay as they are. A streak above zero is reported as its loss, at the map
+ * run's minute. Throws without a map run, with a map run ended in death or
  * a completion, on a program not on the list and on the program the copy belongs to.
  */
 export function switchProgram(
@@ -740,6 +757,16 @@ export function switchProgram(
         defeatedAttacks: 0,
       },
     },
-    events: [],
+    events:
+      run.streak > 0
+        ? [
+            {
+              kind: "streakLost",
+              minute: run.minute,
+              streak: run.streak,
+              cause: "programSwitched",
+            },
+          ]
+        : [],
   };
 }
