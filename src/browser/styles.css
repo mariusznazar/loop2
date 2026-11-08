@@ -212,34 +212,11 @@ header .failure-line {
   grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
 }
 
-/*
- * Programy while a rule or a group is open: the list, the editor and the rule panel are three areas
- * side by side; a window under 1100 px sets the rule panel under the editor (D-282), and one under
- * 720 px sets every area on its own line.
- */
-.screen.programs-screen.with-rule-panel {
-  grid-template-columns: 1fr 3fr 2fr;
-}
-
-@media (max-width: 1100px) {
-  .screen.programs-screen.with-rule-panel {
-    grid-template-columns: minmax(200px, 1fr) minmax(320px, 3fr);
-  }
-
-  .screen.programs-screen.with-rule-panel > .rule-panel-area {
-    grid-column: 2;
-  }
-}
-
+/* A window under 720 px sets the areas of Programy and Mapy on one line each (D-282). */
 @media (max-width: 720px) {
   .screen.programs-screen,
-  .screen.maps-screen,
-  .screen.programs-screen.with-rule-panel {
+  .screen.maps-screen {
     grid-template-columns: 1fr;
-  }
-
-  .screen.programs-screen.with-rule-panel > .rule-panel-area {
-    grid-column: auto;
   }
 }
 
@@ -249,14 +226,6 @@ header .failure-line {
   border: var(--frame-width) solid var(--divider);
   padding: var(--space-m) var(--space-l);
   min-height: 120px;
-}
-
-/* The rule panel draws its own frame, so the area that holds it draws none. */
-.screen-area.rule-panel-area {
-  background: none;
-  border: none;
-  padding: 0;
-  min-height: 0;
 }
 
 /*
