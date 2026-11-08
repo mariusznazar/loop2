@@ -14,14 +14,15 @@
  * holding the map run it is given, and hands the program panel that state. The program panel keeps
  * its own root; the screen puts its element into the program's area and the host of its rule panel
  * into the right area. The screen holds the hovered tile's key, which the drawing, the line under it
- * and the table share, and hands the events of each update to the world area for its scene (D-04).
+ * and the table share, and hands the events of each update to the world area for its scene (D-04). A click on „Teraz” or
+ * „Potem” in the world area asks the program panel to scroll to the rule the row names (D-336).
  * Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import type { GameEvent } from "../sim/game.js";
-import type { GameMapRun, GameState } from "../sim/types.js";
+import type { GameMapRun, GameState, RuleId } from "../sim/types.js";
 import { DiscoveryBand } from "./discovery-band.js";
 import type { ProgramPanel } from "./program-panel.js";
 import { RunHeader } from "./run-header.js";
@@ -55,7 +56,12 @@ export type RunScreen = {
 /** What the screen needs of the program panel of the screen of a map run. */
 export type RunScreenPanel = Pick<
   ProgramPanel,
-  "element" | "update" | "placeRulePanel" | "addDiscoveredRule" | "setQuestion"
+  | "element"
+  | "update"
+  | "placeRulePanel"
+  | "addDiscoveredRule"
+  | "setQuestion"
+  | "scrollToRule"
 >;
 
 /**
@@ -100,6 +106,8 @@ type RunScreenViewProps = {
   ruleOpen: RuleOpen;
   /** „Dodaj regułę z tym” of the band. */
   onAddRule: () => void;
+  /** A click on „Teraz” or „Potem”: the program panel scrolls to the rule the row names (D-336). */
+  onShowRule: (ruleId: RuleId) => void;
 };
 
 /**
@@ -116,6 +124,7 @@ function RunScreenView({
   ruleHost,
   ruleOpen,
   onAddRule,
+  onShowRule,
 }: RunScreenViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
   const open = useSyncExternalStore(ruleOpen.subscribe, ruleOpen.get);
@@ -144,6 +153,7 @@ function RunScreenView({
               events={events}
               hovered={hovered}
               onHover={setHovered}
+              onShowRule={onShowRule}
             />
           )}
         </section>
@@ -188,6 +198,7 @@ export function createRunScreen(
   const ruleOpen = createRuleOpen();
   panel.placeRulePanel(ruleHost, (open) => ruleOpen.set(open));
   const onAddRule = () => panel.addDiscoveredRule();
+  const onShowRule = (ruleId: RuleId) => panel.scrollToRule(ruleId);
   const root = createRoot(element);
 
   function draw(state: GameState | null, events: readonly GameEvent[]): void {
@@ -201,6 +212,7 @@ export function createRunScreen(
           ruleHost={ruleHost}
           ruleOpen={ruleOpen}
           onAddRule={onAddRule}
+          onShowRule={onShowRule}
         />,
       );
     });

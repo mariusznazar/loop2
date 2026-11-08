@@ -33,6 +33,7 @@ import type {
   Program,
   ProgramId,
   ProgramNameRefusal,
+  RuleId,
 } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
 import { ReactSelectList } from "./controls/react-select-list.js";
@@ -161,6 +162,15 @@ export type ProgramPanel = {
    * draws it. Setting what is set changes nothing.
    */
   setQuestion(answers: EndQuestionControls | null): void;
+  /**
+   * A click on „Teraz” or „Potem” (D-336), for the screen of a map run to call from an event handler:
+   * scrolls the program once so that the row of the rule numbered `ruleId` stands in the middle of the
+   * window, or, where the group that holds it is folded and its row is not drawn, the header of that
+   * group. It does so only while the panel shows the copy of the map run; while it shows a saved
+   * program, and where the copy holds no such rule, it does nothing. The program does not follow the
+   * rule afterwards.
+   */
+  scrollToRule(ruleId: RuleId): void;
   /** Unmounts the panel and takes it out of the page. */
   dispose(): void;
 };
@@ -807,6 +817,18 @@ export function createProgramPanel(
       if (answers === question) return;
       question = answers;
       draw();
+    },
+    scrollToRule(ruleId: RuleId): void {
+      if (mode !== "run" || state === null || shown.kind !== "copy") return;
+      const groups = state.run?.copy.program.groups ?? [];
+      const group = groups.find((each) =>
+        each.rules.some((rule) => rule.id === ruleId),
+      );
+      if (group === undefined) return;
+      const target =
+        element.querySelector(`[data-rule="${ruleId}"]`) ??
+        element.querySelector(`[data-group="${group.id}"] .rule-list-header`);
+      target?.scrollIntoView({ block: "center" });
     },
     dispose(): void {
       disposed = true;

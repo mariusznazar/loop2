@@ -21,6 +21,7 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
+import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
 import { createRunScreen } from "../../dist/browser/view/run-screen.js";
 
@@ -446,5 +447,269 @@ test("a hovered tile of the drawing marks its row in the table of the right area
     await inAct(() => fire(page.window, cell, "pointerover"));
     assert.deepEqual(markedTiles(), ["0,1"], "a row marks its tile");
     assert.deepEqual(markedRows(), ["0,1"]);
+  });
+});
+
+// --- „Teraz” and „Potem” take the program to their rule (D-336, task teraz-i-potem, To do 1) -------
+
+const NEVER = { kind: "hereBelow", resource: r[0], value: 0 };
+
+/** A program of these groups, each `{ id, rules }` of rules `{ id, condition, action }`. */
+function programOf(...groups) {
+  const rules = groups.flatMap((group) => group.rules);
+  return {
+    groups: groups.map((group) => ({
+      id: group.id,
+      name: `Grupa ${group.id}`,
+      condition: { kind: "always" },
+      rules: group.rules,
+    })),
+    tripPlan: { take: [], bring: [] },
+    nextGroupId: groups.length + 1,
+    nextRuleId: Math.max(...rules.map((rule) => rule.id)) + 1,
+  };
+}
+
+const EXPLORE = { id: 1, ...ALWAYS_EXPLORE };
+const WANDER = {
+  id: 2,
+  condition: ALWAYS_EXPLORE.condition,
+  action: { kind: "wander" },
+};
+const THREE = {
+  id: 3,
+  condition: ALWAYS_EXPLORE.condition,
+  action: { kind: "kick" },
+};
+
+/**
+ * A paused map run of Ala under the copy of a program of two groups: „Teraz” names rule 1.1 (the
+ * group 1 holds it), and while it stands, „Potem” names it too.
+ */
+function underway() {
+  const program = programOf(
+    { id: 1, rules: [EXPLORE] },
+    { id: 2, rules: [WANDER, THREE] },
+  );
+  const game = setProgram(newKnowingGame(), program).state;
+  const sentRun = send(createCharacter(game, "Ala").state, SENT, REAL_MS).state;
+  return setPaused(sentRun, true).state;
+}
+
+/** The same map run after the player made rule 1.1 never hold: „Potem” names rule 2.1 now, „Teraz” still 1.1. */
+function diverged() {
+  const state = underway();
+  const program = programOf(
+    { id: 1, rules: [{ ...EXPLORE, condition: NEVER }] },
+    { id: 2, rules: [WANDER, THREE] },
+  );
+  return setProgram(state, program).state;
+}
+
+/** A recorder of what the screen scrolls: jsdom has no `scrollIntoView`, so the page gets one that notes it. */
+function recordScrolls(window) {
+  const scrolls = [];
+  window.Element.prototype.scrollIntoView = function scrollIntoView(options) {
+    scrolls.push({ element: this, options });
+  };
+  return scrolls;
+}
+
+const rowsOf = (screen) => ({
+  now: byClass(screen.element, "now-row")[0],
+  next: byClass(screen.element, "next-row")[0],
+});
+
+function key(window, target, name) {
+  return inAct(() =>
+    target.dispatchEvent(
+      new window.KeyboardEvent("keydown", {
+        key: name,
+        bubbles: true,
+        cancelable: true,
+      }),
+    ),
+  );
+}
+
+/** The `data-rule` or, for a header, `data-group` of what a scroll was asked for, with its options. */
+function scrolledTo(scroll) {
+  const rule = scroll.element.getAttribute("data-rule");
+  const group = scroll.element
+    .closest("[data-group]")
+    ?.getAttribute("data-group");
+  return {
+    ...(rule === null ? { header: group } : { rule }),
+    options: scroll.options,
+  };
+}
+
+// D-336. Catches rows that are no control (no tab stop), a click or Enter that does nothing, a row
+// that scrolls the rule of the other row, and a scroll that puts the rule anywhere but the middle.
+test("a click on Teraz and on Potem, and Enter and Space on them, scroll the row of their rule to the middle of the window", async () => {
+  await withPage(async (page) => {
+    const scrolls = recordScrolls(page.window);
+    const { screen } = await wiredScreen(page, diverged());
+    const { now, next } = rowsOf(screen);
+    assert.equal(now.tabIndex, 0, "Teraz is reached by the keyboard");
+    assert.equal(next.tabIndex, 0, "Potem is reached by the keyboard");
+    assert.match(
+      textOf(now, "now-right"),
+      /^reguła 1\.1 /,
+      "precondition: Teraz",
+    );
+    assert.equal(
+      textOf(next, "now-right"),
+      "reguła 2.1",
+      "precondition: Potem",
+    );
+    assert.equal(scrolls.length, 0, "nothing scrolls by itself");
+
+    await press(page.window, now);
+    await press(page.window, next);
+    await key(page.window, now, "Enter");
+    await key(page.window, next, " ");
+    const middle = { block: "center" };
+    assert.deepEqual(scrolls.map(scrolledTo), [
+      { rule: "1", options: middle },
+      { rule: "2", options: middle },
+      { rule: "1", options: middle },
+      { rule: "2", options: middle },
+    ]);
+    assert.ok(
+      scrolls.every((scroll) => scroll.element.localName === "li"),
+      "the row of the rule is scrolled",
+    );
+
+    await key(page.window, now, "a");
+    assert.equal(scrolls.length, 4, "another key asks for nothing");
+  });
+});
+
+// D-336, D-295. Catches a rule of a folded group looked for as a row that is not drawn, and a header
+// of another group.
+test("for a rule of a folded group Teraz and Potem scroll the header of that group", async () => {
+  await withPage(async (page) => {
+    const scrolls = recordScrolls(page.window);
+    const { screen } = await wiredScreen(page, diverged());
+    const [, program] = areasOf(screen.element);
+    const foldButtons = [
+      ...program.querySelectorAll('button[aria-label="Zwiń grupę"]'),
+    ];
+    assert.equal(foldButtons.length, 2, "precondition: two groups");
+    await press(page.window, foldButtons[1]);
+    assert.equal(
+      program.querySelector('[data-rule="2"]'),
+      null,
+      "precondition: the row of rule 2.1 is not drawn",
+    );
+
+    await press(page.window, rowsOf(screen).next);
+    assert.equal(scrolls.length, 1);
+    assert.deepEqual(scrolledTo(scrolls[0]), {
+      header: "2",
+      options: { block: "center" },
+    });
+    assert.ok(scrolls[0].element.classList.contains("rule-list-header"));
+
+    await press(page.window, rowsOf(screen).now);
+    assert.deepEqual(scrolledTo(scrolls[1]), {
+      rule: "1",
+      options: { block: "center" },
+    });
+  });
+});
+
+// D-336, D-267. Catches a program that follows the rule (a scroll made by an effect on every update)
+// instead of a scroll once per click.
+test("the program scrolls once per click and does not follow the rule when the game goes on", async () => {
+  await withPage(async (page) => {
+    const scrolls = recordScrolls(page.window);
+    const game = await wiredScreen(page, diverged());
+    await press(page.window, rowsOf(game.screen).now);
+    assert.equal(scrolls.length, 1);
+    const later = advanceMinutes(diverged(), 3).state;
+    await inAct(() => game.screen.update(later, later.run, []));
+    await inAct(() => game.screen.update(later, later.run, []));
+    assert.equal(scrolls.length, 1, "no scroll without a click");
+  });
+});
+
+// D-336, task To do 1. Catches a wait, a fight, a death, a completion and a Potem without a winner
+// being a tab stop or scrolling, and an action whose rule the copy no longer holds scrolling to nothing.
+test("a row that names no rule is no control: the keyboard does not reach it and it scrolls nothing", async () => {
+  await withPage(async (page) => {
+    const scrolls = recordScrolls(page.window);
+    const waitingState = setProgram(
+      underway(),
+      programOf({ id: 1, rules: [{ ...EXPLORE, condition: NEVER }] }),
+    ).state;
+    const waiting = {
+      ...waitingState,
+      run: { ...waitingState.run, current: null },
+    };
+    const fighting = {
+      ...underway(),
+      run: {
+        ...underway().run,
+        current: null,
+        activeCombat: { creatureId: "wolf", attackMinute: 0, resolveMinute: 5 },
+      },
+    };
+    const dead = {
+      ...underway(),
+      run: { ...underway().run, death: { minute: 5, cause: "cold" } },
+    };
+    // The action of rule 1 goes on after the player removed the rule from the copy.
+    const dropped = setProgram(
+      underway(),
+      programOf({ id: 1, rules: [WANDER] }),
+    ).state;
+    const cases = [
+      ["the wait", waiting, ["now", "next"], "Czeka — żadna reguła nie pasuje"],
+      ["the fight", fighting, ["now"], "Walczy z wilkiem"],
+      ["the death", dead, ["now"], "Mag zamarzł"],
+      ["an action whose rule the copy lacks", dropped, ["now"], "Eksploruj"],
+    ];
+    for (const [name, state, rows, says] of cases) {
+      const { screen } = await wiredScreen(page, state);
+      assert.equal(
+        textOf(rowsOf(screen).now, "now-text"),
+        says,
+        `precondition: ${name}`,
+      );
+      for (const row of rows) {
+        const element = rowsOf(screen)[row];
+        assert.equal(element.tabIndex, -1, `${name}: ${row} is no tab stop`);
+        assert.equal(element.hasAttribute("tabindex"), false, name);
+        await press(page.window, element);
+        await key(page.window, element, "Enter");
+        await key(page.window, element, " ");
+      }
+      screen.element.remove();
+    }
+    assert.equal(scrolls.length, 0, "nothing was asked to scroll");
+  });
+});
+
+// D-336, D-166. Catches a scroll in the program panel while it shows a saved program, whose rows
+// carry the same numbers as the copy's.
+test("while the program panel shows a saved program a click on Teraz scrolls nothing", async () => {
+  await withPage(async (page) => {
+    const scrolls = recordScrolls(page.window);
+    const game = await wiredScreen(page, diverged());
+    await inAct(() => game.panel.showProgram(1));
+    assert.ok(
+      byClass(game.screen.element, "rule-list-row").length > 0,
+      "precondition: the saved program's rows are drawn",
+    );
+    assert.equal(
+      byClass(game.screen.element, "copy-heading").length,
+      0,
+      "precondition: the copy is not shown",
+    );
+    await press(page.window, rowsOf(game.screen).now);
+    await key(page.window, rowsOf(game.screen).next, "Enter");
+    assert.equal(scrolls.length, 0);
   });
 });

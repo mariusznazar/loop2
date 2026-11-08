@@ -1425,6 +1425,29 @@ header .failure-line {
   height: 1lh;
 }
 
+/*
+ * A row that names a rule of the copy has a tab stop and is a control (D-336): under the pointer it
+ * stands on `highlight` with its text in `text`, as a control under the pointer does (D-40), and its
+ * focus is the one :focus-visible rule above (D-47). The padding gives the background room round the
+ * text, and the equal negative margin keeps the text where the rows without a rule have it.
+ */
+.now-row,
+.next-row {
+  padding-inline: var(--space-xs);
+  margin-inline: calc(-1 * var(--space-xs));
+}
+
+.now-row[tabindex],
+.next-row[tabindex] {
+  cursor: pointer;
+}
+
+.now-row[tabindex]:hover,
+.next-row[tabindex]:hover {
+  background: var(--highlight);
+  color: var(--text);
+}
+
 .next-label,
 .now-right {
   flex: none;

@@ -9,12 +9,12 @@
  * shows and hides as its DOM module does. It draws from props: the screen gives the game state with
  * its map run in place, the events of the simulation call that returned it, which it hands to the
  * scene (D-04), and, for the hovered tile, the key and its setter, which it shares with the table of
- * revealed tiles in another area. It imports the pure functions of the DOM modules and
+ * revealed tiles in another area; a click on „Teraz” or „Potem” goes out through `onShowRule` (D-336). It imports the pure functions of the DOM modules and
  * keeps the classes those modules give, so the rules of the stylesheet apply (D-265). Nothing runs
  * when the module is imported.
  */
 import type { GameEvent } from "../sim/game.js";
-import type { GameState } from "../sim/types.js";
+import type { GameState, RuleId } from "../sim/types.js";
 import { bodyValues, backpackText } from "./body-row.js";
 import { practiceText } from "./character-skills.js";
 import { combatText } from "./combat-line.js";
@@ -53,6 +53,8 @@ export type WorldAreaProps = {
   hovered: string | null;
   /** Called with the key of the tile under the pointer, or null when the pointer is over none. */
   onHover: (key: string | null) => void;
+  /** Called with the number of the rule a click on „Teraz” or „Potem” names (D-336). */
+  onShowRule: (ruleId: RuleId) => void;
 };
 
 /**
@@ -62,7 +64,13 @@ export type WorldAreaProps = {
  * in `danger`, as does the settlement of a death that took the progress (D-39). The line under the
  * drawing gives the hovered tile's numbers, else the character's tile's.
  */
-export function WorldArea({ state, events, hovered, onHover }: WorldAreaProps) {
+export function WorldArea({
+  state,
+  events,
+  hovered,
+  onHover,
+  onShowRule,
+}: WorldAreaProps) {
   const run = state.run;
   if (run === null) return null;
   const scene = sceneSize(SCENE_SCALE);
@@ -79,7 +87,7 @@ export function WorldArea({ state, events, hovered, onHover }: WorldAreaProps) {
         height={scene.height}
         events={events}
       />
-      <NowRows state={state} />
+      <NowRows state={state} onShowRule={onShowRule} />
       {run.lastCombat ? (
         <p className="combat-line">{combatText(run.lastCombat)}</p>
       ) : null}
