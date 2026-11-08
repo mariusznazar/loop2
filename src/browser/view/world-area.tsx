@@ -1,10 +1,11 @@
 /**
  * The world area of the screen of a map run in React (D-311, D-19, D-70, D-147, D-185, D-186, D-201,
- * D-215, D-216, D-272, D-314, D-316, D-320 to D-322, D-334, D-335; tasks ekran-przejscia, To do 4, 5
- * and 6, scena-z-ludzikiem and teraz-i-potem, To do 1 and 2): from the top the scene, the rows
+ * D-215, D-216, D-272, D-314, D-316, D-320 to D-322, D-334, D-335, D-337; tasks ekran-przejscia, To do 4, 5
+ * and 6, scena-z-ludzikiem and teraz-i-potem, To do 1, 2 and 4 to 6): from the top the scene, the rows
  * „Teraz” and „Potem”, the paragraph of the last encounter, the lines of the
- * end of the map run — the deposit and the settlement of a death — the body row with the backpack,
- * the lines of a solved map, of the practice and of the preview of the bring plan between the
+ * end of the map run — the deposit and the settlement of a death — the body row, each value in a
+ * cell of its own with the minutes its need lasts under temperature and satiety (D-337), with the
+ * backpack, the lines of a solved map, of the practice and of the preview of the bring plan between the
  * backpack and the drawing, the drawing of the game map and the line of a tile under it. Each part
  * shows and hides as its DOM module does. It draws from props: the screen gives the game state with
  * its map run in place, the events of the simulation call that returned it, which it hands to the
@@ -13,9 +14,10 @@
  * keeps the classes those modules give, so the rules of the stylesheet apply (D-265). Nothing runs
  * when the module is imported.
  */
+import { MAPS } from "../sim/data/maps.js";
 import type { GameEvent } from "../sim/game.js";
 import type { GameState, RuleId } from "../sim/types.js";
-import { bodyValues, backpackText } from "./body-row.js";
+import { bodyCells, backpackText } from "./body-row.js";
 import { practiceText } from "./character-skills.js";
 import { combatText } from "./combat-line.js";
 import { NowRows } from "./now-rows.js";
@@ -40,9 +42,6 @@ export function sceneSize(scale: number): { width: number; height: number } {
   return { width: SCENE_WIDTH * scale, height: SCENE_HEIGHT * scale };
 }
 
-/** Between the values of the body row. */
-const SEPARATOR = " · ";
-
 /** What the screen gives the world area; every render gives it whole. */
 export type WorldAreaProps = {
   /** The game state the area draws; it draws nothing while the state holds no map run. */
@@ -61,8 +60,8 @@ export type WorldAreaProps = {
  * The world area. The scene is a picture drawn from the game state, with no text on it or over it
  * and nothing in it to take a click or the keyboard (D-272, D-321). The encounter paragraph is drawn
  * only while the map run holds a record of one. A value of the body row below its threshold stands
- * in `danger`, as does the settlement of a death that took the progress (D-39). The line under the
- * drawing gives the hovered tile's numbers, else the character's tile's.
+ * in `danger`, as do „marznie” and „głoduje” under it and the settlement of a death that took the
+ * progress (D-39); the other notes stand in `text-secondary`. The line under the drawing gives the hovered tile's numbers, else the character's tile's.
  */
 export function WorldArea({
   state,
@@ -100,18 +99,26 @@ export function WorldArea({
         </p>
       )}
       <div className="body-row">
-        <p className="body-text">
-          {bodyValues(run.body, run.natureEnergy).map((value, index) => (
-            <span key={index}>
-              {index > 0 ? SEPARATOR : null}
+        <div className="body-cells">
+          {bodyCells(run, MAPS[run.mapId]).map((cell, index) => (
+            <div key={index} className="body-cell">
               <span
-                className={value.danger ? "body-value danger" : "body-value"}
+                className={cell.danger ? "body-value danger" : "body-value"}
               >
-                {value.text}
+                {cell.text}
               </span>
-            </span>
+              {cell.note === null ? null : (
+                <span
+                  className={
+                    cell.note.danger ? "body-note danger" : "body-note"
+                  }
+                >
+                  {cell.note.text}
+                </span>
+              )}
+            </div>
           ))}
-        </p>
+        </div>
         <p className="backpack-text">{backpackText(run.character)}</p>
       </div>
       {solved === null ? null : <p className="trip-result">{solved}</p>}

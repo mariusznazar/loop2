@@ -486,9 +486,17 @@ test("only the value below its threshold stands in danger, and the backpack read
       container.querySelector(".backpack-text").textContent,
       "Plecak 7/15: patyk 5, jagoda 2",
     );
+    // The case that read the four values joined by „ · ” in one line changes with row 7 of the task
+    // (D-337): each value stands in a cell of its own, and no separator stands between the cells.
+    const cells = [...container.querySelectorAll(".body-cell")];
+    assert.equal(cells.length, 4);
+    assert.ok(
+      cells.every((cell) => cell.querySelector(".body-value") !== null),
+      "every cell holds its value",
+    );
     assert.equal(
-      container.querySelector(".body-text").textContent,
-      "Temperatura 34,9 °C · Sytość 82 % · Zdrowie 40 · Energia natury 90",
+      container.querySelector(".body-cells").textContent.includes(" · "),
+      false,
     );
 
     await show(
@@ -507,6 +515,144 @@ test("only the value below its threshold stands in danger, and the backpack read
       container.querySelector(".backpack-text").textContent,
       "Plecak 0/15",
     );
+  });
+});
+
+/** The notes of the body row on the screen: the text of a cell's note and whether it stands in danger. */
+const notesOf = (container) =>
+  [...container.querySelectorAll(".body-cell")].map((cell) => {
+    const note = cell.querySelector(".body-note");
+    return note === null
+      ? null
+      : [note.textContent, note.classList.contains("danger")];
+  });
+
+// Catches a note in the same line as its value (D-337 rejects it), a note under health or nature
+// energy, notes missing at game minute zero before anything is discovered (D-125), or minutes that
+// differ from the game's: on Las from the starting body (37 °C, 100 %) the 83rd minute ends at
+// 37 − 83 × 0.024 = 35.008 °C and the 116th at 100 − 116 × 0.6 = 30.4 %, worked out by hand as in
+// tests/sim/body.test.mjs.
+test("the body row stands in cells with the minutes of the needs under temperature and satiety from game minute zero, none under health and nature energy", async () => {
+  await withPage(async ({ document }) => {
+    const started = sent();
+    assert.equal(started.run.minute, 0, "precondition: game minute zero");
+    const { container } = await draw(document, started);
+    const cells = [...container.querySelectorAll(".body-cell")];
+    assert.deepEqual(
+      cells.map((cell) => cell.querySelector(".body-value").textContent),
+      [
+        "Temperatura 37,0 °C",
+        "Sytość 100 %",
+        "Zdrowie 100",
+        "Energia natury 100",
+      ],
+    );
+    assert.deepEqual(notesOf(container), [
+      ["bez ognia 83 min", false],
+      ["bez jedzenia 116 min", false],
+      null,
+      null,
+    ]);
+    // A note stands under its value in the same cell, not after it in the line of the value.
+    assert.equal(
+      cells[0].querySelector(".body-value").textContent.includes("min"),
+      false,
+    );
+  });
+});
+
+// Catches „marznie” or „głoduje” not in danger, a note in danger above its threshold, and the minutes
+// kept past the threshold. At 35,0 °C and 30 % the character is not yet chilled or starving.
+test("a note under temperature and one under satiety read „marznie” and „głoduje” in danger below their thresholds and the minutes at them", async () => {
+  await withPage(async ({ document }) => {
+    const base = sent();
+    const { container, show } = await draw(
+      document,
+      withRun(base, {
+        body: { temperature: 34.99, satiety: 29.99, health: 50 },
+      }),
+    );
+    assert.deepEqual(notesOf(container), [
+      ["marznie", true],
+      ["głoduje", true],
+      null,
+      null,
+    ]);
+    await show(
+      withRun(base, { body: { temperature: 35, satiety: 30, health: 50 } }),
+    );
+    assert.deepEqual(notesOf(container), [
+      ["bez ognia 0 min", false],
+      ["bez jedzenia 0 min", false],
+      null,
+      null,
+    ]);
+  });
+});
+
+// Catches „bez ognia {n} min” beside a fire on the character's tile, and an unlit map shown as cooling.
+test("by a fire the note under temperature reads „przy ogniu”, and the notes follow the game minute", async () => {
+  await withPage(async ({ document }) => {
+    const base = sent();
+    const at = base.run.character.at;
+    const { container, show } = await draw(
+      document,
+      withRun(base, { campfires: [{ at, minutesLeft: 40 }] }),
+    );
+    assert.deepEqual(notesOf(container)[0], ["przy ogniu", false]);
+    assert.deepEqual(notesOf(container)[1], ["bez jedzenia 116 min", false]);
+    // The fire gone, the same state again reads minutes.
+    await show(base);
+    assert.deepEqual(notesOf(container)[0], ["bez ognia 83 min", false]);
+  });
+});
+
+// Catches notes dropped after the end of a map run (D-337): after a death the notes read the state at
+// the stopped minute — „marznie” after a death of cold, „głoduje” after one of hunger — and after a
+// completion the minutes of the body at game minute 480.
+test("the notes stand after the end of a map run, on the state at the stopped minute", async () => {
+  await withPage(async ({ document }) => {
+    const base = sent();
+    const { container, show } = await draw(
+      document,
+      withRun(base, {
+        body: { temperature: 34.2, satiety: 60, health: 0 },
+        death: { minute: 5, cause: "cold" },
+      }),
+    );
+    assert.deepEqual(notesOf(container)[0], ["marznie", true]);
+    assert.deepEqual(notesOf(container)[1], ["bez jedzenia 50 min", false]);
+
+    await show(
+      withRun(base, {
+        body: { temperature: 36, satiety: 20, health: 0 },
+        death: { minute: 5, cause: "hunger" },
+      }),
+    );
+    assert.deepEqual(notesOf(container)[1], ["głoduje", true]);
+
+    // The real thing: a map run played to a death on the default program and settled. It ends in
+    // cold with the body below both thresholds, so both notes stand in danger.
+    const dead = died(sent(), 9_000_000);
+    assert.equal(dead.run.death.cause, "cold", "precondition: died of cold");
+    assert.ok(dead.run.body.temperature < 35 && dead.run.body.satiety < 30);
+    await show(dead);
+    assert.deepEqual(notesOf(container), [
+      ["marznie", true],
+      ["głoduje", true],
+      null,
+      null,
+    ]);
+
+    // A completion: one game minute from 479 leaves 36.976 °C and 99.4 %; 82 more minutes keep the
+    // body at or above 35.0 (82 × 0.024 = 1.968), 115 keep satiety at or above 30 (115 × 0.6 = 69).
+    await show(completed(sent()));
+    assert.deepEqual(notesOf(container), [
+      ["bez ognia 82 min", false],
+      ["bez jedzenia 115 min", false],
+      null,
+      null,
+    ]);
   });
 });
 

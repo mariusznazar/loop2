@@ -1537,7 +1537,12 @@ header .failure-line {
   overflow-wrap: anywhere;
 }
 
-/* The row of the body and the backpack under the status row. */
+/*
+ * The row of the body and the backpack under the rows „Teraz” and „Potem”. Each value stands in a
+ * cell of its own; under temperature and under satiety a note says the minutes the need lasts, in
+ * the smaller size of descriptions and in `text-secondary`, in `danger` for „marznie” and „głoduje”
+ * (D-337, D-39, D-40).
+ */
 .body-row {
   display: flex;
   flex-wrap: wrap;
@@ -1545,14 +1550,31 @@ header .failure-line {
   margin-top: var(--space-xs);
 }
 
-.body-text,
+.body-cells {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-l);
+}
+
+.body-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.body-cells,
 .backpack-text {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
+.body-note {
+  font-size: var(--font-size-detail);
+  color: var(--text-secondary);
+}
+
 /* A value below the threshold of chill or hunger: the character may be lost (D-39). */
-.body-value.danger {
+.body-value.danger,
+.body-note.danger {
   color: var(--danger);
 }
 
