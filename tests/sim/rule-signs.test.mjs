@@ -8,6 +8,7 @@ import { sameHex } from "../../dist/browser/sim/hex.js";
 import {
   advanceMinutes,
   createCharacter,
+  nowAndNext,
   programOf,
   ruleSigns,
   send,
@@ -756,4 +757,329 @@ test("after a death in combat no action is running", () => {
   assert.equal(signs.running, null);
   assert.equal(signs.judgement.rules[11].bar, "blocked");
   assert.equal(signs.judgement.rules[11].reason, "tylko w walce");
+});
+
+// What „Teraz” and „Potem” name (task teraz-i-potem, To do 1, questions 1, 2, 8, 9, 14 and 15; D-334,
+// D-335, D-147): the one function beside `ruleSigns`. The expected values are written out from the
+// task's examples and from the data (the explore action takes 20 game minutes).
+const NOW_WOLF = { kind: "combat", creatureId: "wolf" };
+
+/** The state of a rule's action in its sixth game minute: 5 of 5 minutes at the start, 3 at minute 12. */
+function underWay(overrides = {}) {
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
+  return {
+    ...started,
+    ...overrides,
+    run: {
+      ...started.run,
+      minute: 12,
+      current: {
+        activity: { kind: "rule", ruleId: 7, action: act("explore") },
+        startMinute: 10,
+        endMinute: 15,
+        stepTo: null,
+      },
+    },
+  };
+}
+
+/** The state after a death of hunger in the next game minute, the activity of the death still on. */
+function diedOfHunger() {
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
+  const starving = {
+    ...started,
+    run: {
+      ...started.run,
+      body: { temperature: 37, satiety: 20, health: 0.1 },
+    },
+  };
+  const fallen = advanceMinutes(starving, 1).state;
+  assert.equal(fallen.run.death?.cause, "hunger", "precondition");
+  return fallen;
+}
+
+const KICK_OR_WANDER = [
+  group(1, ALWAYS, [
+    rule(11, ALWAYS, act("kick")),
+    rule(12, ALWAYS, act("wander")),
+  ]),
+];
+
+test("no map run, nothing for Teraz and Potem to name", () => {
+  assert.equal(nowAndNext(newKnowingGame()), null);
+});
+
+test("Teraz names the action under way with its rule, the minutes left and the minutes in all, as at the start of a map run", () => {
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
+  assert.deepEqual(nowAndNext(started).now, {
+    kind: "action",
+    ruleId: 7,
+    action: act("explore"),
+    minutesLeft: 20,
+    minutes: 20,
+  });
+  const later = advanceMinutes(started, 2).state;
+  assert.equal(later.run.minute, 2, "precondition");
+  assert.deepEqual(nowAndNext(later).now, {
+    kind: "action",
+    ruleId: 7,
+    action: act("explore"),
+    minutesLeft: 18,
+    minutes: 20,
+  });
+});
+
+test("Teraz reads 3 of 5 minutes at game minute 12 of an action from 10 to 15, paused or not", () => {
+  const expected = {
+    kind: "action",
+    ruleId: 7,
+    action: act("explore"),
+    minutesLeft: 3,
+    minutes: 5,
+  };
+  assert.deepEqual(nowAndNext(underWay()).now, expected);
+  assert.deepEqual(nowAndNext(underWay({ paused: true })).now, expected);
+});
+
+test("an action picked in the minute the last one ended has all its minutes left, and one fewer a minute later", () => {
+  // Explore takes 20 game minutes and reveals the tile, which turns the rule below it, wander, on.
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE, WANDER_RULE])]);
+  const picked = advanceMinutes(started, 20).state;
+  assert.equal(picked.run.minute, 20, "precondition");
+  assert.equal(picked.run.current.startMinute, 20, "precondition");
+  const now = nowAndNext(picked).now;
+  assert.equal(now.kind, "action");
+  assert.equal(now.ruleId, 8);
+  assert.equal(now.minutesLeft, now.minutes);
+  const next = nowAndNext(advanceMinutes(picked, 1).state).now;
+  assert.equal(next.ruleId, 8);
+  assert.equal(next.minutesLeft, now.minutes - 1);
+  assert.equal(next.minutes, now.minutes);
+});
+
+test("Teraz names a wait without a rule or minutes, and Potem names no rule", () => {
+  const waiting = sentWith([
+    group(1, ALWAYS, [rule(7, NEVER, act("explore"))]),
+  ]);
+  assert.equal(waiting.run.current.activity.kind, "wait", "precondition");
+  assert.deepEqual(nowAndNext(waiting), {
+    now: { kind: "wait" },
+    next: { kind: "none" },
+  });
+});
+
+test("Teraz names the creature fought in every minute of an attack, the minute of the attack and the minute of the resolution included, though an ordinary action starts in the latter", () => {
+  let state = fighting(KICK_OR_WANDER);
+  assert.equal(state.run.minute, 181, "precondition: the minute of the attack");
+  for (let minute = 181; minute <= 185; minute += 1) {
+    assert.equal(state.run.minute, minute);
+    assert.deepEqual(nowAndNext(state).now, NOW_WOLF, `minute ${minute}`);
+    state = advanceMinutes(state, 1).state;
+  }
+  assert.equal(state.run.minute, 186, "precondition: the resolution minute");
+  assert.equal(state.run.activeCombat, null, "precondition");
+  assert.equal(state.run.death, null, "precondition");
+  assert.equal(state.run.current.startMinute, 186, "precondition");
+  assert.equal(state.run.current.activity.ruleId, 12, "precondition");
+  assert.deepEqual(nowAndNext(state).now, NOW_WOLF);
+  const after = advanceMinutes(state, 1).state;
+  assert.equal(after.run.minute, 187);
+  assert.deepEqual(nowAndNext(after).now, {
+    kind: "action",
+    ruleId: 12,
+    action: act("wander"),
+    minutesLeft: after.run.current.endMinute - 187,
+    minutes: after.run.current.endMinute - 186,
+  });
+});
+
+test("Teraz names the cause of a death of cold, of hunger and in combat", () => {
+  assert.deepEqual(nowAndNext(diedOfCold()).now, {
+    kind: "death",
+    cause: "cold",
+  });
+  assert.deepEqual(nowAndNext(diedOfHunger()).now, {
+    kind: "death",
+    cause: "hunger",
+  });
+  const state = fighting([group(1, ALWAYS, [rule(11, ALWAYS, act("kick"))])]);
+  const fallen = advanceMinutes(
+    {
+      ...state,
+      run: {
+        ...state.run,
+        minute: 184,
+        body: { temperature: 37, satiety: 100, health: 5 },
+      },
+    },
+    2,
+  ).state;
+  assert.equal(fallen.run.death?.cause, "combat", "precondition");
+  assert.equal(fallen.run.lastCombat.resolveMinute, 186, "precondition");
+  assert.equal(
+    fallen.run.minute,
+    fallen.run.lastCombat.resolveMinute,
+    "precondition: the death is in the resolution minute",
+  );
+  assert.deepEqual(nowAndNext(fallen).now, { kind: "death", cause: "combat" });
+});
+
+test("a death after an encounter names its cause, not the fight", () => {
+  const state = fighting(KICK_OR_WANDER);
+  const resolved = advanceMinutes(state, 5).state;
+  const later = {
+    ...advanceMinutes(resolved, 1).state,
+  };
+  const dying = {
+    ...later,
+    run: {
+      ...later.run,
+      body: { temperature: 34, satiety: 100, health: 0.1 },
+    },
+  };
+  const fallen = advanceMinutes(dying, 1).state;
+  assert.equal(fallen.run.death?.cause, "cold", "precondition");
+  assert.notEqual(fallen.run.lastCombat, null, "precondition");
+  assert.deepEqual(nowAndNext(fallen).now, { kind: "death", cause: "cold" });
+});
+
+test("Teraz names the completion with the text of the map, also while an action goes on and in a resolution minute", () => {
+  const started = sentWith([group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])]);
+  const completed = {
+    ...started,
+    run: {
+      ...started.run,
+      minute: 50,
+      completion: { minute: 50 },
+      current: {
+        activity: { kind: "rule", ruleId: 7, action: act("explore") },
+        startMinute: 30,
+        endMinute: 60,
+        stepTo: null,
+      },
+    },
+  };
+  assert.deepEqual(nowAndNext(completed).now, {
+    kind: "completion",
+    text: "Las rozwiązany",
+  });
+  // The resolution minute of an attack on the second map, the map run complete in it.
+  const deep = send(
+    {
+      ...setProgram(
+        createCharacter({ ...newKnowingGame(), solvedMaps: ["forest"] }, "Ala")
+          .state,
+        program(...KICK_OR_WANDER),
+      ).state,
+    },
+    { mapId: "forestDeep", characterId: 1 },
+    T0,
+  ).state;
+  const activeCombat = {
+    creatureId: "wolf",
+    attackMinute: 181,
+    resolveMinute: 186,
+  };
+  const fought = advanceMinutes(
+    {
+      ...deep,
+      run: {
+        ...deep.run,
+        minute: 181,
+        current: null,
+        activeCombat,
+        lastCombat: { ...activeCombat, result: null },
+      },
+    },
+    5,
+  ).state;
+  assert.equal(fought.run.lastCombat.resolveMinute, fought.run.minute);
+  assert.deepEqual(
+    nowAndNext({
+      ...fought,
+      run: { ...fought.run, completion: { minute: 186 } },
+    }).now,
+    { kind: "completion", text: "Las — głębiej rozwiązany" },
+  );
+});
+
+test("Potem names the winner of the judgement the signs show: the rule that wins now, which is not the rule under way", () => {
+  const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
+  assert.deepEqual(nowAndNext(started).next, {
+    kind: "rule",
+    ruleId: 7,
+    action: act("explore"),
+  });
+  const edited = setProgram(
+    started,
+    program(group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])),
+  ).state;
+  const named = nowAndNext(edited);
+  assert.equal(named.now.ruleId, 7, "Teraz stays with the rule that started");
+  assert.deepEqual(named.next, {
+    kind: "rule",
+    ruleId: 8,
+    action: act("wander"),
+  });
+  assert.equal(named.next.ruleId, ruleSigns(edited).judgement.winner.id);
+});
+
+test("Potem names no rule where none wins, in the minutes of an attack too", () => {
+  const idle = sentWith([group(1, ALWAYS, [rule(7, NEVER, act("explore"))])]);
+  assert.deepEqual(nowAndNext(idle).next, { kind: "none" });
+  const fight = fighting([group(1, ALWAYS, [rule(7, ALWAYS, act("explore"))])]);
+  const named = nowAndNext(fight);
+  assert.deepEqual(named.now, NOW_WOLF);
+  assert.deepEqual(named.next, { kind: "none" });
+});
+
+test("in the minutes of an attack Potem names the combat rule the turn would choose, not the rule an ordinary pick would take", () => {
+  const state = fighting([
+    group(1, ALWAYS, [
+      rule(11, ALWAYS, act("explore")),
+      rule(
+        12,
+        { kind: "opponentHealthBelow", value: WOLF_HEALTH },
+        act("dodge"),
+      ),
+      rule(13, ALWAYS, act("kick")),
+    ]),
+  ]);
+  assert.equal(
+    chooseActivity(state.run, MAPS.forest, state.run.copy.program).ruleId,
+    11,
+    "precondition: an ordinary pick takes the first rule",
+  );
+  const named = nowAndNext(state);
+  assert.deepEqual(named.now, NOW_WOLF);
+  assert.deepEqual(named.next, {
+    kind: "rule",
+    ruleId: 13,
+    action: act("kick"),
+  });
+  assert.equal(named.next.ruleId, ruleSigns(state).judgement.winner.id);
+});
+
+test("after a death Potem names the rule that wins at the stopped minute", () => {
+  const fallen = diedOfCold();
+  const edited = setProgram(
+    fallen,
+    program(group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])),
+  ).state;
+  const named = nowAndNext(edited);
+  assert.deepEqual(named.now, { kind: "death", cause: "cold" });
+  assert.deepEqual(named.next, {
+    kind: "rule",
+    ruleId: 8,
+    action: act("wander"),
+  });
+  assert.equal(named.next.ruleId, ruleSigns(edited).judgement.winner.id);
+});
+
+test("Teraz and Potem change nothing in the state they read", () => {
+  for (const state of [underWay(), fighting(KICK_OR_WANDER), diedOfCold()]) {
+    const before = structuredClone(state);
+    nowAndNext(state);
+    assert.deepEqual(state, before);
+  }
 });
