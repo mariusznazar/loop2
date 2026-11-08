@@ -13,7 +13,8 @@ import { actionSentence, ruleNumber } from "./program-editor.js";
 /** The word that opens the row „Potem”. */
 export const NEXT_LABEL = "Potem";
 
-const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
+/** What „Teraz” says of a wait, and the chronicle at the start of one (D-334, D-340). */
+export const WAIT_TEXT = "Czeka — żadna reguła nie pasuje";
 const NO_WINNER_TEXT = "żadna reguła nie pasuje — postać stanie";
 /** What „Teraz” says of a map run ended in death, by its cause (D-334). */
 const DEATH_TEXTS: Record<DeathCause, string> = {
@@ -21,6 +22,14 @@ const DEATH_TEXTS: Record<DeathCause, string> = {
   hunger: "Mag umarł z głodu",
   combat: "Mag zginął w walce",
 };
+
+/**
+ * The words of a death by its cause, as „Teraz” says them after the death and the chronicle in the
+ * entry of the death (D-334, D-344).
+ */
+export function deathText(cause: DeathCause): string {
+  return DEATH_TEXTS[cause];
+}
 /** Between the parts at the right of a row. */
 const SEPARATOR = " · ";
 
@@ -94,7 +103,7 @@ function nowRow(line: NowLine, program: Program): NowRow {
     case "death":
       return {
         icon: null,
-        text: DEATH_TEXTS[line.cause],
+        text: deathText(line.cause),
         role: "text",
         right: null,
       };

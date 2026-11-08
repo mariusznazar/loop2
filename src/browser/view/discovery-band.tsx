@@ -4,18 +4,15 @@
  * program rule the game wrote where the copy holds it, „Dodaj regułę z tym” and „Wznów”. It is a
  * component with no boundary of its own: the screen of a map run renders it above the program from
  * the game state it was given and answers its two callbacks, which are the screen's to carry out.
- * It imports the pure functions of the DOM modules (`discoveryText`, `chillRuleGroupName`,
- * `discoveryRule`) and builds no element after their pattern (D-265). Nothing runs when the module
- * is imported.
+ * Its text is `discoveryBandText`, which the chronicle writes into the entry of the discovery too
+ * (D-345). It imports the pure functions of the DOM modules (`discoveryRule`) and builds no element
+ * after their pattern (D-265). Nothing runs when the module is imported.
  */
-import { ACTIONS } from "../sim/data/actions.js";
-import { CONDITIONS } from "../sim/data/conditions.js";
 import { mapRunEnded } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";
-import { chillRuleGroupName } from "../sim/understanding.js";
 import { ReactButton } from "./controls/react-button.js";
+import { discoveryBandText } from "./discovery-band-text.js";
 import { discoveryRule } from "./discovery-rule.js";
-import { discoveryText } from "./status-row.js";
 
 /** What the screen gives the band; every render gives it whole. */
 export type DiscoveryBandProps = {
@@ -26,18 +23,6 @@ export type DiscoveryBandProps = {
   /** „Wznów”: the one resumption the „Wznów” of the header makes too (D-122). */
   onResume: () => void;
 };
-
-/**
- * The sentence about the rule the game wrote at the discovery, naming the group of the copy that
- * holds it now and giving the rule no number (D-312); null where the discovery wrote no rule or no
- * group of the copy holds it any more.
- */
-function writtenRuleSentence(state: GameState): string | null {
-  const name = chillRuleGroupName(state);
-  if (name === null) return null;
-  const rule = `${CONDITIONS.always.label} → ${ACTIONS.explore.label}`;
-  return `Gra dopisała regułę w grupie „${name}”: ${rule}.`;
-}
 
 /**
  * The band: the text of the discovery held by the game state, then the sentence about the rule the
@@ -51,10 +36,8 @@ export function DiscoveryBand({
   onAddRule,
   onResume,
 }: DiscoveryBandProps) {
-  if (state.discovery === null) return null;
-  const text = [discoveryText(state.discovery), writtenRuleSentence(state)]
-    .filter((part) => part !== null && part !== "")
-    .join(" ");
+  const text = discoveryBandText(state);
+  if (text === null) return null;
   const ended = state.run !== null && mapRunEnded(state.run);
   return (
     <div className="discovery-band">
