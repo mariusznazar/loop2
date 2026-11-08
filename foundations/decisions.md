@@ -5223,9 +5223,10 @@ after an hour, the text of a page shows no motion, and images cost tokens. Risks
 hypothesis: a drag may catch a select list instead of a handle; an agent judging motion from a few
 frames may report that a scene works while a person sees it jerk at 16×.
 *Rejected:* Playwright MCP as the first way — more tokens and a command sent at each tab where the
-CLI reads one file of the repository; Chrome DevTools MCP and agent-browser — no clock, and their frames unchecked; Puppeteer, Selenium,
-WebdriverIO, Cypress and Stagehand — nothing above Playwright; computer use, direct calls to the
-API, a document model and a person clicking — an agent does not check the running product this way.
+CLI reads one file of the repository; Chrome DevTools MCP and agent-browser — no clock, and their
+frames unchecked; Puppeteer, Selenium, WebdriverIO, Cypress and Stagehand — nothing above
+Playwright; computer use, direct calls to the API, a document model and a person clicking — an agent
+does not check the running product this way.
 
 ### D-255 — Where does the data an agent checks the game on come from?
 
