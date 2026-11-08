@@ -13,14 +13,22 @@
  *
  * Where the page hands it the rule panel (`panel`), the list draws it in place, under the row of the
  * rule it changes or under the header of the group it changes, so the player edits a rule where it
- * stands (D-288).
+ * stands (D-288). The panel is one element that the list moves from place to place, never one built
+ * again at each: a fold of the group of the open rule, or a move of the rule to another group, then
+ * leaves the panel on the field the player chose and the focus where the player put it.
  *
  * Where the page gives it the signs of the copy of a map run (`signs`, from `ruleSigns` of the
  * simulation; task stan-i-powod-przy-regule) a row stands on the background `rule-winning` when it
  * wins now and on `rule-running` when its action is being carried out and another rule wins, and
  * every row and header carries the bar of its condition and, in a row, the reason it cannot start.
  */
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type {
   CSSProperties,
   DragEvent,
@@ -28,7 +36,7 @@ import type {
   MouseEvent,
   ReactNode,
 } from "react";
-import { flushSync } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ACTIONS } from "../sim/data/actions.js";
 import type { RuleSigns } from "../sim/game.js";
@@ -71,8 +79,8 @@ export type RuleListProps = {
    * The rule panel of the open row or header, for the list to draw in place (D-288): directly under
    * that row, or directly under the header of its group where the open rule is a group's own or sits
    * in a folded group, whose row is not drawn. It stands beside the row's item, never inside it, so a
-   * click, a key or a drag in the panel reaches no handler of the row. Null or left out, the list
-   * draws none and the page places the panel itself.
+   * click, a key or a drag in the panel reaches no handler of the row, and the panel is no drop
+   * target: a rule dragged over it shows no drop line. Null or left out, the list draws none.
    */
   panel?: ReactNode;
   /**
@@ -221,6 +229,16 @@ export function RuleListView({
   // The keys the focus goes to once the program an edit made is drawn, in the order tried.
   const pendingFocus = useRef<string[] | null>(null);
   const canAddRule = offeredActionKinds(state).length > 0;
+  // The element the one rule panel is drawn into, moved to the place of the open row or header. The
+  // panel is mounted in it once, so its field and its focus outlive a change of place.
+  const [panelHost] = useState(() => document.createElement("div"));
+  const seatPanel = useCallback(
+    (place: HTMLElement | null): void => {
+      if (place !== null && panelHost.parentNode !== place)
+        place.appendChild(panelHost);
+    },
+    [panelHost],
+  );
 
   // A control that holds focus and leaves (a moved rule's row, a deleted rule's button) loses it, so
   // the focus goes to the control the edit names once the new program is drawn.
@@ -377,6 +395,12 @@ export function RuleListView({
     if (into instanceof Element && root.current?.contains(into) === true)
       return;
     setLanding(null);
+  }
+
+  /** A drag over the panel: it is no drop target, so the line of a landing elsewhere goes. */
+  function overPanel(event: DragEvent<HTMLElement>): void {
+    if (event.target instanceof Element && panelHost.contains(event.target))
+      setLanding(null);
   }
 
   function move(group: RuleGroup, index: number, offset: -1 | 1): void {
@@ -551,9 +575,13 @@ export function RuleListView({
     return panelHere
       ? [
           row,
-          <li key={`panel-${each.id}`} className="rule-list-panel">
-            {panel}
-          </li>,
+          // Not an item of the list of rules to assistive technology: the rules are counted without it.
+          <li
+            key={`panel-${each.id}`}
+            className="rule-list-panel"
+            role="presentation"
+            ref={seatPanel}
+          />,
         ]
       : [row];
   }
@@ -653,7 +681,7 @@ export function RuleListView({
           </span>
         </div>
         {panelOpenHere && !panelUnderRow ? (
-          <div className="rule-list-panel">{panel}</div>
+          <div className="rule-list-panel" ref={seatPanel} />
         ) : null}
         {isFolded ? (
           lands ? (
@@ -688,6 +716,11 @@ export function RuleListView({
     );
   }
 
+  // The panel is drawn where the open row or header stands, so only where that group is drawn.
+  const panelSeated =
+    panel !== null &&
+    open !== null &&
+    program.groups.some((group) => group.id === open.groupId);
   const groupLine = landing?.kind === "group" ? landing.beforeId : undefined;
   const groupLanding = landing?.kind === "group";
   const children = program.groups.flatMap((group, index) => [
@@ -703,6 +736,7 @@ export function RuleListView({
       ref={root}
       onDragLeave={leave}
       onDragEnd={clearDrag}
+      onDragOver={overPanel}
     >
       <div className="rule-list-top">
         <h3 className="rule-list-heading">sprawdzane od góry</h3>
@@ -726,6 +760,8 @@ export function RuleListView({
           onClick={addWholeGroup}
         />
       </div>
+      {/* After the groups, so that the places they draw hold the host before the panel takes focus. */}
+      {panelSeated ? createPortal(panel, panelHost) : null}
     </div>
   );
 }
