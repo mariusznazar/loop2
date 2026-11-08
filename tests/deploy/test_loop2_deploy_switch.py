@@ -147,18 +147,33 @@ class FailedStart(DeploySwitchTestCase):
                 self.fixture.answer("docker", exit_code=1, stdout=failure + "\n",
                                     match="compose * up *")
                 self.fixture.answer("docker", stdout="LAST-CONTAINER-LINE listening failed\n",
+                                    match="compose * logs * --tail 50 *")
+                self.fixture.answer("docker", stdout="DUMPED-CONTAINER-LINE\n",
                                     match="compose * logs *")
                 result = self.deploy()
                 self.assert_failed_start(result)
                 self.assertEqual([c for c in result.calls["docker"] if c[:1] == ["exec"]], [], result)
+                # Two `logs` calls: the dump before the start (no --tail) and the failed start's
+                # last lines (--tail 50), the second after the failed `up`.
                 logs = self.compose_calls(result, "logs")
-                self.assertEqual(len(logs), 1, result)
-                self.assertEqual(logs[0][:5], ["compose", "--project-name", "loop2", "-f",
-                                               support.shell_path(self.fixture.checkout)
-                                               + "/compose.yaml"])
-                self.assertEqual(logs[0][-2:], ["app", "cloudflared"])
+                self.assertEqual(len(logs), 2, result)
+                for call in logs:
+                    self.assertEqual(call[:5], ["compose", "--project-name", "loop2", "-f",
+                                                support.shell_path(self.fixture.checkout)
+                                                + "/compose.yaml"])
+                    self.assertEqual(call[-2:], ["app", "cloudflared"])
+                dump, last_lines = logs
+                self.assertNotIn("--tail", dump)
+                self.assertEqual(last_lines[5:8], ["logs", "--no-color", "--tail"], last_lines)
+                self.assertEqual(last_lines[8], "50", last_lines)
+                docker = result.calls["docker"]
+                self.assertLess(docker.index(dump), docker.index(self.compose_calls(result, "up")[0]))
+                self.assertLess(docker.index(self.compose_calls(result, "up")[0]),
+                                docker.index(last_lines))
                 self.assertIn("LAST-CONTAINER-LINE", self.fixture.log_text())
                 self.assertNotIn("LAST-CONTAINER-LINE", result.output)
+                self.assertNotIn("DUMPED-CONTAINER-LINE", self.fixture.log_text())
+                self.assertNotIn("DUMPED-CONTAINER-LINE", result.output)
                 self.assertNotIn("unhealthy", result.output)
 
     def test_failed_probe_exits_8_with_the_restore_line(self):

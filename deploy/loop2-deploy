@@ -15,7 +15,8 @@
 # names, sizes and states only; git's own messages go to the log file alone.
 #
 # Docker's own output goes to the log file alone as well; of the old game's container `loop` the
-# script only reads the name, status and health.
+# script only reads the name, status and health. The log of the two loop2 services goes to the
+# dump file alone, and the console gets the byte counts of that append, never its content.
 #
 # Exit codes: 0 deployed · 2 input · 3 commit on no accepted branch · 4 lock · 5 resource gate
 #             6 fetch or checkout · 7 build or type check · 8 start or probe
@@ -31,13 +32,18 @@ readonly CHECKOUT_DIR=/srv/loop2
 readonly INSTALLED_SCRIPT=/usr/local/bin/loop2-deploy
 readonly INSTALLED_BACKUP_SCRIPT=/usr/local/bin/loop2-backup
 readonly INSTALLED_BACKUP_SCHEDULE=/etc/cron.d/loop2-backup
+readonly INSTALLED_WATCH_SCRIPT=/usr/local/bin/loop2-watch
+readonly INSTALLED_WATCH_SCHEDULE=/etc/cron.d/loop2-watch
+readonly INSTALLED_LOGROTATE=/etc/logrotate.d/loop2-app
 readonly LOG_FILE=/var/log/loop2-deploy.log
+readonly DUMP_FILE=/var/log/loop2-app.log
 readonly LOCK_FILE=/run/loop2-deploy.lock
 readonly MEMINFO_FILE=/proc/meminfo
 readonly MIN_MEM_AVAILABLE_MIB=1024
 readonly MIN_DOCKER_FREE_GIB=4
 readonly LOCK_WAIT_SECONDS=900
 readonly HEALTH_WAIT_SECONDS=120
+readonly DUMP_TIMEOUT_SECONDS=300
 readonly BRANCH=main
 readonly COMPOSE_PROJECT=loop2
 readonly COMPOSE_SERVICE=app
@@ -219,10 +225,14 @@ compare_installed_copy() {
 }
 
 compare_installed_script() {
-  # The three installed copies: the deploy script, the backup script and the backup schedule.
+  # The six installed copies: the deploy script, the backup script and its schedule, the failure
+  # watcher and its schedule, and the logrotate configuration of the dump file.
   compare_installed_copy "$INSTALLED_SCRIPT" deploy/loop2-deploy
   compare_installed_copy "$INSTALLED_BACKUP_SCRIPT" deploy/loop2-backup
   compare_installed_copy "$INSTALLED_BACKUP_SCHEDULE" deploy/loop2-backup.cron
+  compare_installed_copy "$INSTALLED_WATCH_SCRIPT" deploy/loop2-watch
+  compare_installed_copy "$INSTALLED_WATCH_SCHEDULE" deploy/loop2-watch.cron
+  compare_installed_copy "$INSTALLED_LOGROTATE" deploy/loop2-app.logrotate
 }
 
 # --- 8. resource gate ---------------------------------------------------------------------------
@@ -316,6 +326,41 @@ build_image() {
   log "resources after the build: MemAvailable $(as_mib "$(mem_available_kb)")"
 }
 
+# --- 9b. dump of the log of both services -------------------------------------------------------
+
+dump_file_size() {
+  # Size of the dump file in bytes; 0 when it does not exist or cannot be read.
+  local size
+  size=$(stat -c %s -- "$DUMP_FILE" 2>/dev/null) || size=0
+  [[ $size =~ ^[0-9]+$ ]] || size=0
+  printf '%s' "$size"
+}
+
+append_logs_to_dump() {
+  # Its standard output is the dump file; its standard error is collected by the caller. A header
+  # of commit names first, then the whole log of both services, bounded in time.
+  printf '%s loop2-deploy | previous commit %s, new commit %s
+' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$PREVIOUS_COMMIT" "$REQUESTED"
+  timeout "$DUMP_TIMEOUT_SECONDS" docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" logs --no-color --timestamps "$COMPOSE_SERVICE" "$TUNNEL_SERVICE"
+}
+
+dump_container_logs() {
+  # Runs after the build and before the containers are recreated, which removes their log. It
+  # changes no container. A dump that fails is a warning, never a failure of the deployment. The
+  # deploy log and the console get byte counts and the exit status, never any dumped content.
+  local before after status errors
+  before=$(dump_file_size)
+  errors=$(append_logs_to_dump 2>&1 >>"$DUMP_FILE")
+  status=$?
+  after=$(dump_file_size)
+  append_to_log "$errors"
+  if (( status != 0 )); then
+    log "warning: the dump of the log of both loop2 services to $DUMP_FILE failed (exit $status; any message is in $LOG_FILE); this deployment goes on and the log of the containers it replaces is not kept"
+    return 0
+  fi
+  log "dump: the size of $DUMP_FILE went from $before to $after bytes"
+}
+
 # --- 10. switch ---------------------------------------------------------------------------------
 
 start_container() {
@@ -384,6 +429,7 @@ main() {
   compare_installed_script
   check_resources
   build_image
+  dump_container_logs
   start_container
   probe_origin
   log_old_game_state
