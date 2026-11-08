@@ -34,17 +34,18 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 - **Good:** Nowe pliki spełniają blokujące reguły bez komentarzy wyciszających.
 - **Bad:** Kod narusza blokującą regułę albo wycisza ją komentarzem lub w konfiguracji.
 
-Przegląd każdej zmiany konfiguracji ESLint pilnuje według D-29 jej reguł
+Przegląd każdej zmiany `eslint.config.mjs` pilnuje według D-29 zestawów reguł
 i zakresu plików.
 
-Test wymienia skrypty po nazwie: nowy skrypt Bash dopisz do listy
-w `tests/quality/test_quality_invariants.py`. Dyrektywa `# shellcheck disable=…`
-działa, więc jej nie dodawaj; przegląd ją odrzuca.
+Test `shellcheck-source-rules` wymienia skrypty po nazwie: nowy skrypt Bash
+dopisz do listy w `tests/quality/test_quality_invariants.py`. Dyrektywa
+`# shellcheck disable=…` działa, więc jej nie dodawaj; przegląd ją odrzuca.
 
 Naprawiaj zgłoszenie w pliku, zamiast wyciszać blokującą regułę. Zmiana zestawu
-wymaga zaakceptowanej przez człowieka zmiany odpowiedniej decyzji. Wersje
-narzędzi przypinają deklaracje wskazane w Where in code; testy uruchamiają
-lokalne kopie, bez pobierania narzędzia przy kontroli.
+reguł ESLint, Ruffa albo ShellChecka wymaga zaakceptowanej przez człowieka
+zmiany odpowiedniej decyzji. Wersje ESLint, Ruffa i ShellChecka przypinają
+deklaracje wskazane w Where in code; testy uruchamiają lokalne kopie, bez
+pobierania narzędzia przy kontroli.
 
 ```good eslint-source-rules scripts/guideline-case.mjs
 export function doubled(value) {
@@ -104,12 +105,9 @@ export const values=[1,2]
 - **Good:** Zmieniony plik blokady nie wnosi ostrzeżenia od poziomu low, którego nie było w `{fork-point}`.
 - **Bad:** Nowa wersja zależności wnosi ostrzeżenie od poziomu low, którego nie było w `{fork-point}`.
 
-Gdy `package-lock.json` jest taki sam jak w `{fork-point}`, audyt przechodzi
-bez sieci. W przeciwnym razie `scripts/audit_dependencies.py` uruchamia lokalny
-npm 12.2.1 (`npm audit --package-lock-only` przez publiczny rejestr npm) dla
-bieżącego pliku blokady i dla jego wersji z `{fork-point}` i oblewa na każde
-ostrzeżenie npm/GitHub Advisory Database od poziomu low, którego nie było na
-początku zmiany; info nie blokuje.
+Audyt porównuje plik blokady ze stanem z `{fork-point}` i oblewa każde
+ostrzeżenie od poziomu low, którego tam nie było; plik taki sam jak w
+`{fork-point}` przechodzi bez sieci.
 
 ### Recording a failure
 
@@ -129,8 +127,11 @@ a porażkę bez pierwotnego błędu nazywa kodem `ReasonedFailure`.
 Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która zapisuje
 to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
 serwer, `account-block` i `account-backup` — mają własną, `installLastResort`,
-bo domyślny wypis mógłby zacytować wartości. Reguła obowiązuje też
-`deploy/loop2-deploy`, który nie zostawia wiersza końcowego, gdy zostanie zabity.
+bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręcznie
+albo przez bramkę testów, które tych danych nie dotykają, regułę spełnia domyślny
+wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. Reguła obowiązuje
+też `deploy/loop2-deploy`, który nie zostawia wiersza końcowego, gdy zostanie
+zabity.
 
 ### Hiding a failure
 
@@ -157,10 +158,10 @@ albo zadania w tle do jej końca, niesie te identyfikatory z listy
 tą samą w każdym wierszu, tak aby wyszukiwanie znalazło całą sprawę. W kodzie
 Node.js stałe pola wiersza to `event` albo `failure`, `kind`, `code`, `place`
 i identyfikatory z listy; dalsze pole, takie jak `linkPurpose`, jest polem,
-a nie pozycją listy. Wiersz spoza przebiegu sprawy, taki
-jak wiersz przy starcie procesu albo skryptu budowania, nie niesie żadnego
-identyfikatora. Wiersz obsługi ostatniej szansy nie musi nieść żadnego, bo ta
-obsługa zwykle nie wie, jaka to była sprawa.
+a nie pozycją listy. Wiersz spoza przebiegu sprawy, taki jak wiersz przy starcie
+procesu albo skryptu budowania, nie niesie żadnego identyfikatora. Wiersz obsługi
+ostatniej szansy nie musi nieść żadnego, bo ta obsługa zwykle nie wie, jaka to
+była sprawa.
 
 ### Business events
 
