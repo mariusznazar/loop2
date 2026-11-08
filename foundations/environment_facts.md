@@ -631,6 +631,24 @@ Playwright CLI has a command, `console`, that lists console messages.
 
 - **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Commands, DevTools — "playwright-cli console [min-level] # list console messages"; read 2026-11-08
 
+## docker-container-log-removal
+
+In Moby v28.1.1, removing a container deletes the container's root directory, in which the `json-file` and `local` log drivers keep the container's log, so the log goes with the container.
+
+- **Source:** https://raw.githubusercontent.com/moby/moby/v28.1.1/daemon/delete.go § cleanupContainer — "err := containerfs.EnsureRemoveAll(container.Root)"; read 2026-11-08 · https://raw.githubusercontent.com/moby/moby/v28.1.1/container/container.go § StartLogger — "info.LogPath, err = container.GetRootResourcePath(fmt.Sprintf(" · "logDir, err := container.GetRootResourcePath(" · "info.LogPath = filepath.Join(logDir," · § GetRootResourcePath — "return symlink.FollowSymlinkInScope(filepath.Join(container.Root, cleanPath), container.Root)"; read 2026-11-08
+
+## github-scheduled-workflow-disabling
+
+GitHub automatically disables the scheduled workflows of a public repository when no repository activity has occurred in it for 60 days.
+
+- **Source:** https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (archived: https://web.archive.org/web/20261031092549/https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows, 2026-10-31) § schedule — "In a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in 60 days."; read 2026-11-08
+
+## loop2-repository-visibility
+
+The GitHub repository `mariusznazar/loop2` is public.
+
+- **Source:** https://api.github.com/repos/mariusznazar/loop2 (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-08) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-08
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
