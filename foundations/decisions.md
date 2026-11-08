@@ -7423,3 +7423,190 @@ several hundred entries in a long map run, and a save above 64 KiB is not sent (
 would stop saving; with it, a limit of entries at which the oldest go would leave the chronicle
 without part of what happened in the map run, against D-338, and raising the server's limit
 changes D-104 and D-207 and is work in the account and save server.
+
+### D-340 — Which actions of the character give an entry of the chronicle, and how does it read?
+
+The start of each action of the character gives an entry of the chronicle in the words in which
+„Teraz” names the action, those of the row of its program rule, such as „Zbierz — Patyk”, „Idź —
+Jagoda”, „Eksploruj” or „Zjedz — jagoda”, with no number of a rule and no outcome of the action. A
+wait gives one entry of the same kind when it starts, „Czeka — żadna reguła nie pasuje”, and none
+for the game minutes it lasts.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-334
+- **Verification:** an agent compares a change with the decision:
+  - complies: the mage starting to gather a stick at game minute 212 giving „Zbierz — Patyk” at 212
+    once, however many game minutes the gathering lasts; a wait from game minute 40 to 47 giving one
+    entry „Czeka — żadna reguła nie pasuje” at 40
+  - violates: „Zbiera: patyk” in the chronicle; „Zbierz — Patyk · reguła 2.1”; an entry „Wrócił z
+    niczym: patyk” at the end of an action; an entry of the wait in every game minute it lasts
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, Questions to settle, question 2, and § Settlements to record, row 2
+
+*Rationale:* the player reads in the chronicle the words of „Teraz” and of the row of the rule, so an
+entry leads to its rule, and the entry of a wait shows when the character stood because no rule fit.
+Accepted with it: the chronicle does not show which rule started an action, nor that a gathering
+brought nothing; why a rule did not start is told by the bar at the rule (D-308).
+*Rejected:* entries of actions with no entry of a wait — the chronicle does not show when the
+character stood because no rule fit; the number of the rule in the entry, as „Zbierz — Patyk ·
+reguła 2.1” — numbers change when rules move, so an old entry would point to another rule, and the
+lines grow longer; an entry at the start and another with the outcome, as in loop („Wrócił z niczym:
+patyk”, „Zjedzono: jagoda”) — the end of an action does not say how it ended, so the simulation
+would get new work, and every action would give two entries.
+
+### D-341 — When does a loss of the streak give an entry of the chronicle, and how does it read?
+
+A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero,
+in the game minute of the loss, that of a death of cold or hunger included, reading „Passa {passa}
+przerwana: {przyczyna}” in the role `danger`, {passa} being the streak before the loss and
+{przyczyna} „zdrowie spadło od zimna”, „zdrowie spadło od głodu”, „zdrowie spadło od zimna i
+głodu”, „zmiana programu” or „przełączenie na inny program”. A change of the program that sets the
+streak to zero gives in its game minute two entries, the change and the loss of the streak, each
+under its own filter, and a game minute of lost health while the streak stands at zero gives none.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-39 · derives from D-131
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Passa 391 przerwana: zdrowie spadło od zimna” in `danger` in the game minute the mage
+    loses health from cold at a streak of 391; a program rule deleted at a streak of 120 giving its
+    entry under „Moje zmiany” and „Passa 120 przerwana: zmiana programu” under „Passa” in the same
+    game minute; the next game minutes of cold at a streak of zero giving no entry
+  - violates: an entry of a loss of the streak in each game minute of cold; „Passa przerwana:
+    zdrowie spadło od zimna” with no number; the loss written in `text`; an entry of a loss where
+    „↑” on the first program rule left the streak as it stood
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 3, and § Settlements to record, row 3
+
+*Rationale:* the player sees what was lost, how much and why, in the game minute it happened, and
+`danger` reads here as a sign of progress lost after the fact too, as D-39 gives it to progress that
+may be lost. Accepted with it: while a chill lasts, the game minutes of lost health after the loss
+give no entries, since the streak already stands at zero.
+*Rejected:* an entry in every game minute of lost health — dozens of the same entries in a long
+cold; the entry with no number of the streak lost — the player does not see how much was lost.
+
+### D-342 — Which changes of the program give an entry of the chronicle, and how does it read?
+
+Each change of the copy a map run carries out gives an entry of the chronicle in the role
+`player-change`, an entry about a program rule naming its number and its sentence at the moment of
+the change and one about a rule group its name: „Dodano regułę 2.3: Zawsze → Wędruj”, „Usunięto
+regułę 1.2: …”, „Zmieniono regułę 2.1: … → …”, „Przesunięto regułę 2.1 na 1.3: …”, the same for rule
+groups, such as „Dodano grupę „Ogień””, „Zmieniono plan wyprawy”, „Porzucono zmiany kopii”,
+„Zapisano kopię w programie „…””, „Zapisano kopię jako nowy program „…”” and „Przełączono postać na
+program „…””. Such entries are given after the end of the map run too, until „Restart” or
+„Zakończ”, at the game minute of the end, and an edit of a saved program, which changes no map run,
+gives none.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-39 · derives from D-173 · derives from D-292
+- **Verification:** an agent compares a change with the decision:
+  - complies: a program rule „Zawsze → Wędruj” added after the two rules of group 2 giving
+    „Dodano regułę 2.3: Zawsze → Wędruj” in `player-change`; a program rule fixed after a death of
+    cold at game minute 312 giving its entry at 312; „Program 2” edited during a map run on the copy
+    of „Program” giving no entry
+  - violates: one entry „Zmieniono kopię programu” for every change; the entry of a change in
+    `discovery`; „Porzuć zmiany” giving no entry; an edit of the copy after a completion giving no
+    entry; an edit of „Program 2” giving an entry while the copy belongs to „Program”
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, question 4, and § Settlements to record, row 4
+
+*Rationale:* the player reads what was changed in the program and when, as in loop, so a loss of the
+streak stands beside the change that caused it; the copy stays open to changes after the end of the
+map run (D-173), so those changes enter the chronicle too, while an edit of a saved program changes
+no map run. Accepted with it: the game describes every kind of change, though the program editor
+hands the simulation the whole program at once, so the copy before a change is compared with the
+copy after it, with more tests.
+*Rejected:* one general entry „Zmieniono kopię programu” — the player does not know what was
+changed, less than loop gave.
+
+### D-343 — How does the chronicle stand in the right area, and how does the player filter it?
+
+Over the list of the chronicle stands a row of filter buttons in the look of the pace buttons
+(D-130), one picked at a time — „Wszystko”, „Odkrycia”, „Czynności”, „Walka”, „Moje zmiany”,
+„Passa” and „Świat” — each but „Wszystko” showing the entries of one kind and „Wszystko” all of
+them, „Wszystko” picked when the character is sent to the map. The entries stand newest at the top,
+each with its game minute as a number alone in a column on the left in the role `text-label` and
+its text beside it, such as „212  Zbierz — Patyk”, on the background `panel`, the text in the role
+of its kind: a discovery in `discovery`, a change of the player in `player-change`, a loss of the
+streak in `danger`, an action and combat in `text`, and the kind „Świat” as D-344 gives. An empty
+chronicle and a filter that shows no entry read „Nic tu jeszcze nie ma.”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-39 · derives from D-40 · derives from D-130
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Passa” picked among the seven filter buttons, each made with the shared button
+    selected in its group, showing the losses of the streak alone, the newest at the top; „212” in
+    `text-label` in the column beside „Zbierz — Patyk” in `text`; the text of the band of a discovery
+    in `discovery`; „Nic tu jeszcze nie ma.” under „Walka” before any attack
+  - violates: two filters picked at once; the filter buttons drawn as tabs (D-276); the newest entry
+    at the bottom; „Minuta 212” or „03:32” beside an entry; every entry in one colour; an empty list
+    with no sentence
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 9, Questions to settle, questions 7 and 8, and § Settlements to record, rows 7 and 8
+
+*Rationale:* one filter at a time, as in loop, and the newest entry on top, as in loop, so the
+current moment needs no scrolling in a long chronicle; the game minute as a number alone keeps the
+lines short and brings no new notation of time, and the colours of the kinds let a discovery and a
+loss of the streak be picked out. The empty chronicle says so in the words of loop.
+*Rejected:* several kinds picked at once — more clicking, while loop picked one; the newest entry at
+the bottom — a long chronicle has to be scrolled to the current moment; „Minuta 212” in every entry
+— longer lines; „03:32”, as in loop — a new notation of time, which D-311 rejects; every entry in
+one colour — a discovery and a loss of the streak are harder to pick out.
+
+### D-344 — What does the kind „Świat” of the chronicle hold, and how do its entries read?
+
+Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own:
+„Ognisko wygasło” when a campfire goes out, the character's death and the completion of the map
+run, the death and the completion in the words in which „Teraz” says them in the same game minute,
+„Mag zamarzł”, „Mag umarł z głodu”, „Mag zginął w walce”, „Las rozwiązany” or „Las — głębiej
+rozwiązany”. The entry of a completion stands in the role `positive`, as in „Teraz”, and the
+entries of a death and of „Ognisko wygasło” in `text`.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-334 · derives from D-132 · derives from D-39
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Ognisko wygasło” under „Świat” in the game minute the last minute of burning of a
+    campfire passes; „Mag zamarzł” in `text` in the game minute „Teraz” reads it, beside „Passa 391
+    przerwana: zdrowie spadło od zimna” where the streak stood at 391; „Las rozwiązany” in
+    `positive` at game minute 480
+  - violates: „Postać zamarzła.” in the chronicle while „Teraz” reads „Mag zamarzł”; the entry of a
+    death in `danger`; „Ognisko wygasło” under „Odkrycia”; the entry of a completion in `text`
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 8 and 12, and § Settlements to record, row 9
+
+*Rationale:* a chronicle with no entry of a campfire going out is worse than loop's, which had one,
+and the player reads in the chronicle the words of „Teraz”, the completion in green as in „Teraz”
+and at the end of a map run (D-132). Accepted with it: the simulation gets the work of reporting a
+campfire going out; a death stands out by no colour, the loss of the streak beside it standing in
+`danger` only where the streak was above zero.
+*Rejected:* the five kinds of D-338 alone — no entry „Ognisko wygasło”, which loop had, and a
+campfire going out shows only in the table of revealed tiles, as „ognisko — wygasłe”, and in the
+cause „od zimna”, which tells of lost health, not of the fire; the entry of a death in `danger` —
+two red entries in one game minute at a death of cold, and a death that has already happened read
+as what D-39 calls something that may be lost; the words of loop, „Postać zamarzła.”, „Postać
+zagłodziła się.”, „Postać zginęła w walce.”, „Program utrzymał się bez ciebie — mapa rozwiązana.”
+— two wordings of one thing on one screen, „Teraz” reading „Mag zamarzł” in the same game minute.
+
+### D-345 — What does the entry of a discovery say in the chronicle?
+
+The discoveries of one game minute give one entry of the chronicle holding the whole text of the
+band of that discovery without its buttons (D-122), such as „Odkryto: Idź, Zbierz, Patyk, Jagoda. W
+regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.”, followed, where the
+game wrote a program rule, by „Gra dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”
+(D-312).
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-122 · derives from D-312
+- **Verification:** an agent compares a change with the decision:
+  - complies: the first chill of a new game giving one entry with what was discovered and „Gra
+    dopisała regułę w grupie „Program”: Zawsze → Eksploruj.”, standing after „Wznów”
+  - violates: „Odkryto: Patyk” and „Odkryto: Zbierz” as two entries of one game minute; „Dodaj
+    regułę z tym” in the entry; the sentence of the rule left out of the entry of a discovery at
+    which the game wrote one
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and § Settlements to record, row 10
+
+*Rationale:* the entry keeps the division of the band the player has just read, one game minute in
+one entry. Accepted with it: a long entry that wraps over several lines in the right area.
+*Rejected:* one entry for each thing of the band in the same game minute, as „Odkryto: Patyk” and
+„Odkryto: Zbierz” — several entries in one game minute, divided otherwise than the band the player
+has just read.
