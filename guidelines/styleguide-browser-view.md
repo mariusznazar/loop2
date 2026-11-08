@@ -15,7 +15,7 @@ bez odstępstw zgodnie z D-38.
 |---|---|---|---|---|
 | `page` | background | Tu jest gra. | `text` | D-40 |
 | `panel` | background | To osobny, wydzielony blok, także plakietka nad głową postaci. | `text` | D-40 |
-| `highlight` | background | Ten wiersz albo tor, także tor paska nad głową postaci, jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
+| `highlight` | background | Ten wiersz albo tor, także tor paska nad głową postaci i tor paska wymagania warunku mapy w nagłówku, jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
 | `rule-winning` | background | Ta reguła programu wygrywa teraz. | `text` | D-40 |
 | `rule-running` | background | Czynność tej reguły programu trwa teraz. | `text` | D-40 |
 | `divider` | other | Tu kończy się jedna sekcja, a zaczyna następna. | — | D-40 |
@@ -23,13 +23,13 @@ bez odstępstw zgodnie z D-38.
 | `selected` | other | To jest wybrane w swojej grupie. | — | D-40 |
 | `condition-unmet` | other | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu. | — | D-40 |
 | `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, choć obok niej nie ma tekstu. | — | D-40 |
-| `text` | text | Treść do przeczytania. | — | D-40 |
-| `text-secondary` | text | Opis, wyjaśnienie albo dopisek. | — | D-40 |
+| `text` | text | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem. | — | D-40 |
+| `text-secondary` | text | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”. | — | D-40 |
 | `text-label` | text | Nazwa pola albo sekcji, albo data. | — | D-40 |
 | `text-disabled` | text | Tego teraz nie da się użyć. | — | D-40 |
-| `positive` | text | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, oraz jako wypełnienie paska postępu nad głową postaci. | — | D-39 |
-| `warning` | text | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć. | — | D-39 |
-| `danger` | text | Grozi utrata postaci, postępu albo danych. | — | D-39 |
+| `positive` | text | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, oraz jako wypełnienie paska postępu nad głową postaci; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | — | D-39 |
+| `warning` | text | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć. | — | D-39 |
+| `danger` | text | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała. | — | D-39 |
 | `discovery` | text | Odkryto coś nowego. | — | D-39 |
 | `player-change` | text | To zrobił gracz. | — | D-39 |
 | `character` | other | Tu jest postać i tu właśnie idzie; cel kroku odróżnia kształt — cienka linia przerywana zamiast grubej ciągłej — nigdy kolor. | — | D-41 |
@@ -74,8 +74,10 @@ na wszystkich pięciu (D-39, D-40): przycisk niszczący pod kursorem ma dalej
 tekst w `danger`, a przycisk wybrany w grupie — w `text-strong`. Wartości każdej pary trzyma
 w kodzie reguła Contrast of every pair. Przegląd zmiany tabeli Roles czyta
 każde tło z jego tekstem. Tor paska postępu nad głową postaci (`highlight`)
-nie ma tekstu i kod nie ustawia na nim żadnej roli tekstu; ta reguła nie mówi,
-czy tor go potrzebuje.
+nie ma tekstu i kod nie ustawia na nim żadnej roli tekstu. Tor paska wymagania
+warunku mapy w nagłówku (`highlight`) też nie ma tekstu: jego wypełnienie
+w `text` nie jest tekstem, a nazwa i liczby wymagania stoją obok paska (D-40,
+D-133). Ta reguła nie mówi, czy któryś z tych torów potrzebuje roli tekstu.
 
 ### No value in place of a design token
 
