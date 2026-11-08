@@ -1970,6 +1970,118 @@ test(
   },
 );
 
+// The session write that ends a registration's response, refused while the
+// registration waits on its message. A block is meant to stop the account's
+// sessions (D-137), so its refusal leaves no failure line; a refusal for any
+// other cause is a failure and keeps its line (D-353).
+/** Starts a registration whose message is held and returns once the message
+ * is handed on, so the account's first session is stored and its link
+ * recorded; `settled` is the registration's answer, still to come. */
+async function startWaitingRegistration(f, email, address) {
+  f.mailer.held.length = 0;
+  f.mailer.outcome = "hold";
+  const settled = register(f, email, { address }).then(
+    (response) => response,
+    (error) => error,
+  );
+  await waitFor(() => f.mailer.held.length === 1, "message handed on");
+  assert.equal(sessionCount(f), 1, "precondition: the first store");
+  return { settled };
+}
+
+/** Answers the held message and returns the registration's response and the
+ * lines of failure the server has written once the response has ended. */
+async function endWaitingRegistration(f, { settled }, logged) {
+  for (const answer of f.mailer.held) answer("sent");
+  const response = await settled;
+  // The library reports a failed write in the turn after its response; a later
+  // request is answered after that turn.
+  await f.send("/api/account", { headers: proxyHeaders });
+  return { response, lines: failureLines(logged) };
+}
+
+test(
+  "a block committed while a registration waits on its message leaves no line of failure, and the answer stays 201",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: blocked-account-access
+    // Fault: the refusal of the session write that the block intends logged
+    // as a failure of the session, a false alarm for whoever reads the log
+    // for failures (D-353).
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const email = "blocked-waiting@example.test";
+    const waiting = await startWaitingRegistration(f, email, "198.51.100.97");
+    try {
+      assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
+      assert.equal(sessionCount(f), 0, "the block deleted it");
+    } finally {
+      for (const answer of f.mailer.held) answer("sent");
+    }
+    const { response, lines } = await endWaitingRegistration(
+      f,
+      waiting,
+      logged,
+    );
+    assert.equal(response.status, 201, "the registration still answers");
+    assert.equal(sessionCount(f), 0, "nothing is stored for the blocked");
+    assert.deepEqual(lines, [], "no failure line for the block's refusal");
+    const { cookie } = issuedSession(response, "registration");
+    assertRefusal(await readAccount(f, cookie), 401, "its cookie");
+  },
+);
+
+test(
+  "a session write at the end of a registration refused for another cause than a block leaves its line of failure",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-ends-sessions
+    // Fault: the block's exemption made too wide, so that a password replaced
+    // meanwhile or a failing database hides a failure of the session (D-353).
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+
+    // The password replaced while the message is on its way.
+    const reset = "replaced-waiting-line@example.test";
+    const replaced = await startWaitingRegistration(f, reset, "198.51.100.98");
+    resetDirectly(f, reset, await hashPassword("a password set by the reset"));
+    const afterReset = await endWaitingRegistration(f, replaced, logged);
+    assert.equal(afterReset.response.status, 201, "still answers");
+    assert.equal(sessionCount(f), 0, "the reset's refusal stores nothing");
+    assert.deepEqual(afterReset.lines, [
+      {
+        failure: "session",
+        kind: "Error",
+        code: "none",
+        place: "app.sessions",
+        accountId: storedAccount(f, reset).id,
+      },
+    ]);
+
+    // The database refusing the write, as a trigger does.
+    logged.length = 0;
+    const failing = "database-fault-waiting@example.test";
+    const faulted = await startWaitingRegistration(f, failing, "198.51.100.99");
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_end_write BEFORE UPDATE ON sessions
+      BEGIN SELECT RAISE(ABORT, 'synthetic ${failing}'); END;
+    `);
+    const afterFault = await endWaitingRegistration(f, faulted, logged);
+    assert.equal(afterFault.response.status, 201, "still answers");
+    assert.deepEqual(afterFault.lines, [
+      {
+        failure: "session",
+        kind: "Error",
+        code: "ERR_SQLITE_ERROR",
+        errcode: 1811,
+        place: "app.sessions",
+        accountId: storedAccount(f, failing).id,
+      },
+    ]);
+    assertPlainLines(logged, [`synthetic ${failing}`, failing]);
+  },
+);
+
 // Email confirmation (task potwierdzenie-adresu). The routes, bodies and the
 // one refusal of a link come from spec Decision 4 and D-156; the link's form
 // from spec Decision 2; its 24 hours from D-155; the limits from D-105.

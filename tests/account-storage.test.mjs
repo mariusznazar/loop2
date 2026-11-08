@@ -9,7 +9,10 @@ import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
 import { spawn } from "node:child_process";
 import session from "express-session";
-import { AccountDatabase } from "../dist/server/database.js";
+import {
+  AccountDatabase,
+  BlockedSessionRefusal,
+} from "../dist/server/database.js";
 import { SqliteSessionStore } from "../dist/server/session-store.js";
 
 async function fixture(t, options = {}) {
@@ -1638,6 +1641,74 @@ test("a session write whose expected password hash no longer holds stores nothin
   store.expectPasswordHash(fresh, "new-hash");
   await call(store, "set", "after", fresh);
   assert.equal((await call(store, "get", "after")).accountId, account.id);
+});
+
+// invariant: account-session-storage
+// A block is meant to stop the account's sessions (D-137), so the refusal of a
+// session write it causes is told from a refusal for any other cause (D-353):
+// by the error's type, from the state the writing statement saw.
+test("a session write refused because the account is blocked says so; one refused for another cause does not", async (t) => {
+  const { store, database, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "other-hash");
+  const refusal = async (id, value) => {
+    try {
+      await call(store, "set", id, value);
+    } catch (error) {
+      return error;
+    }
+    assert.fail(`the write of ${id} stored`);
+  };
+
+  // A password replaced meanwhile: refused, and no block to blame.
+  const replaced = data(account.id);
+  store.expectPasswordHash(replaced, "an-older-hash");
+  const hash = await refusal("replaced", replaced);
+  assert.ok(!(hash instanceof BlockedSessionRefusal), "password hash");
+  assert.match(hash.message, /cannot be replaced/);
+
+  // A held identifier of another account: refused, and no block to blame.
+  await call(store, "set", "held", data(other.id));
+  const held = await refusal("held", data(account.id));
+  assert.ok(!(held instanceof BlockedSessionRefusal), "identifier of another");
+  assert.match(held.message, /cannot be replaced/);
+
+  // The block, with or without an expectation, also when the hash has moved.
+  assert.equal(database.blockAccount("player@example.test").outcome, "blocked");
+  const bare = await refusal("blocked-bare", data(account.id));
+  assert.ok(bare instanceof BlockedSessionRefusal, "no expectation");
+  assert.match(bare.message, /cannot be replaced/);
+  const guarded = data(account.id);
+  store.expectPasswordHash(guarded, "encoded-hash");
+  assert.ok(
+    (await refusal("blocked-guarded", guarded)) instanceof
+      BlockedSessionRefusal,
+    "an expectation that holds",
+  );
+  const moved = data(account.id);
+  store.expectPasswordHash(moved, "an-older-hash");
+  assert.ok(
+    (await refusal("blocked-moved", moved)) instanceof BlockedSessionRefusal,
+    "an expectation that no longer holds",
+  );
+  assert.equal(
+    raw
+      .prepare("SELECT count(*) AS n FROM sessions WHERE id LIKE 'blocked-%'")
+      .get().n,
+    0,
+    "nothing is stored for the blocked",
+  );
+
+  // Unblocked, the same write is refused for the hash alone.
+  assert.equal(
+    database.unblockAccount("player@example.test").outcome,
+    "unblocked",
+  );
+  assert.ok(
+    !(
+      (await refusal("unblocked-moved", moved)) instanceof BlockedSessionRefusal
+    ),
+    "unblocked",
+  );
 });
 
 // invariant: account-session-storage
