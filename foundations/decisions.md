@@ -3082,7 +3082,7 @@ The screen Programy holds on the left the list of the player's programs and on t
   - violates: „Kopia w przejściu” on the list of Programy; „Przełącz postać na ten program” on
     Programy; a list during a map run on which the copy stands below the saved programs; the program
     panel standing beside Siedziba
-- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-166 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 5 and 15 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 4 and 13
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1. Gdzie gracz widzi listę swoich programów i jak wybiera, który program edytuje?" and "Q6. Czy w trakcie przejścia gracz może edytować zapisane programy, także ten, z którego wzięto kopię, i w jakiej postaci gra ogłasza zapis kopii nad programem zmienionym od startu przejścia?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-166 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 5 and 15 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 4 and 13 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, and Questions to settle, question 3
 
 *Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero.
 *Rejected:* a panel standing beside every screen — the program mixes with everything else; a list during a map run on which the copy stands below the saved programs; „Kopia w przejściu” on the list of Programy — the list and the address would have to handle the copy; „Programy” leading to the screen of a waiting map run — the player could not write a saved program while a map run waits.
@@ -7793,3 +7793,31 @@ pixels and the mage shakes in motion, it changes the limit of the content width 
 panel of a rule then opens under the whole area of the world; a large scene in a wide window and a
 small one in a narrower window — the content is at most 1344 px wide, so with the large scene the
 program never has more than a narrow column, and the way ends in a small scene all the same.
+
+### D-350 — Where does the rule panel stand while the rule group of its rule is folded?
+
+A rule panel open on a rule whose rule group is folded stands directly under the header of that
+group, where the row of the rule is not drawn. Folding or unfolding that group, or every group at
+once, closes no panel and changes no field of it, and the panel stands under the row again when the
+group unfolds.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-288 · derives from D-295
+- **Verification:** an agent compares a change with the decision:
+  - complies: the rule panel open on rule 2.1 at its field „Czynność”, then „Zwiń grupę” on group
+    2: the panel under the header of group 2 with the field „Czynność” still shown, and „Rozwiń
+    grupę” bringing it under the row of rule 2.1; „zwiń wszystkie” with a panel open leaving it
+    under the header of its group
+  - violates: the panel closing when its group folds; the group unfolding to show the panel; the
+    panel standing under no header and no row, such as at the end of the list
+- **Origin:** none
+
+*Rationale:* folding arranges the player's view of a program and changes nothing the player is
+writing (D-294), so the rule being changed stays changeable, and the panel goes to the one place of
+its group that is drawn. A folded group keeps the list where it stood under the pointer (D-295), so
+the panel does not unfold it.
+*Rejected:* closing the panel when its group folds — D-306 names what closes it, „✕”, Escape and
+opening another rule, and a fold is none of them, so the player would lose the field and the rule
+being written; unfolding the group for the panel — the group the player folded opens again and the
+list runs from under the pointer.
