@@ -1241,7 +1241,7 @@ After an error that no code of the game handled, the game state held in the page
 No file of a part imports a file of another part, unless the *Depends on* of the importing file's part names the other part, the importing file stands under `tests/` and the imported file belongs to the part `test-helpers`, or an invariant "the part `<X>` does not depend on `<Y>`" reading `Violated: yes` says that the part `<X>` of the importing file depends on the part `<Y>` of the imported file today.
 
 - **Method:** test
-- **Rests on:** none
+- **Rests on:** TODO
 - **Derives from:** D-351
 - **Part:** every
 - **Violated:** no

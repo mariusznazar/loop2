@@ -1,8 +1,8 @@
 """Invariant cross-part-imports: No file of a part imports a file of another part, unless the
-*Depends on* of its part names that part, the importing file stands under `tests/` and the
-imported file belongs to the part `test-helpers`, or an invariant "the part `<X>` does not depend
-on `<Y>`" reading `Violated: yes` says that the part `<X>` of the importing file depends on the
-part `<Y>` of the imported file today.
+*Depends on* of the importing file's part names the other part, the importing file stands under
+`tests/` and the imported file belongs to the part `test-helpers`, or an invariant "the part
+`<X>` does not depend on `<Y>`" reading `Violated: yes` says that the part `<X>` of the importing
+file depends on the part `<Y>` of the imported file today.
 
 The parts come from the part map: git matches the *Files* patterns of `foundations/part_map.md` to
 every file the repository holds (`file_owners` of `loop2_invariant_support.py`), and the *Depends
@@ -524,8 +524,6 @@ class CrossPartImports(unittest.TestCase):
         self.assertIn("src/browser/sim/game.ts", texts, "the check reads no code of the game")
         self.assertIn("tests/sim/encounters.test.mjs", texts)
         self.assertEqual(import_failures(texts, tracked, owners, dependencies, accepted), [])
-
-
 
 
 # --- controls --------------------------------------------------------------------------------
