@@ -543,7 +543,7 @@ campfire — the simulation chooses, not the program.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: program-rule-pick · action-in-progress · program-closed-lists. For a
-  condition written as an expression, since a sentence naming what a kind of condition may take
+  condition written as an expression, since a sentence of this decision naming what a kind of condition may take
   would also bind which kinds the closed list holds, which this decision leaves open, an agent
   compares the change with the decision:
   - complies: a condition picker listing the conditions of the closed list, each with the resource
@@ -1907,11 +1907,11 @@ Attempt histories live in bounded process memory, with at most 10,000 live email
 - **Based on:** none
 - **Relations:** derives from D-102
 - **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
-  - complies: a full gate refuses immediately and a disconnected request retains its slot until native work finishes
+  - complies: a full password gate refuses immediately and a disconnected request retains its slot until native work finishes
   - violates: registration and login using independent unbounded hash pools or dropping a live limiter key to make room
 - **Origin:** none
 
-*Rationale:* Bounded histories and native work prevent untrusted input from consuming unbounded memory; a restart loses the restrictions and a full table can refuse legitimate newcomers. The measured gate shares the host processor with other workloads.
+*Rationale:* Bounded histories and native work prevent untrusted input from consuming unbounded memory; a restart loses the restrictions and a full table can refuse legitimate newcomers. The measured password gate shares the host processor with other workloads.
 *Rejected:* Durable counters — write on every attempt and survive a restart at additional storage cost; unbounded maps or a waiting queue — move denial of service into memory; evicting a live restriction — permits bypass by filling the table.
 
 ### D-104 — Which request origin and body may change account state?
@@ -1992,7 +1992,7 @@ A visitor may create an account or attempt credential login subject to the trans
 - **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 4, and § Settlements to record, row 2
 
 *Rationale:* Server-held identity keeps browser input from selecting another account, so the stored session alone selects the saved game state a request reads or replaces, and waiting for persistence prevents a success response with no usable session. Errors can leave a newly created account usable for later login even when its first session could not be stored. A link shows control of its own address without a session and opens no other operation of the account, and a session that asks for a message gets it sent only to its account's own address. A request for a password-reset link proves nothing of who sends it, so all it can do is have a link sent to an address whose control was already shown; a player who forgot the password has no session, and the link stands in for the password because only that mailbox receives it.
-*Rejected:* Request-supplied identity — lets a caller select another account; responding before session persistence or destruction — reports success without the promised state; deleting an account after its session fails — races with a later valid login; a confirmation that needs a session — a player who opens the link in another browser or signed out could not confirm; a request of its own that checks a password-reset link before its form is shown, with „Sprawdzanie odnośnika…” — a second new route without a session, answering anyone whether a token works, one more state of the page with its tests, and one more sentence here; a third form standing for good beside the other two, in place of a state of the screen — the entry screen of every visitor holds three forms, and a mistake between them is easier.
+*Rejected:* Request-supplied identity — lets a caller select another account; responding before session persistence or destruction — reports success without the promised state; deleting an account after its session fails — races with a later valid login; a confirmation that needs a session — a player who opens the link in another browser or signed out could not confirm; a request of its own that checks a password-reset link before its form is shown, with „Sprawdzanie odnośnika…” — a second new route without a session, answering anyone whether a token works, one more state of the page with its tests, and one more sentence in this decision; a third form standing for good beside the other two, in place of a state of the screen — the entry screen of every visitor holds three forms, and a mistake between them is easier.
 
 ### D-110 — Which proxy information identifies an account request?
 
@@ -2181,7 +2181,7 @@ tile, is open to every character, and an archetype never filters items.
 the pair of verb and target names the character skill the action belongs to. Items are things of
 the world: a character eats, burns and carries what it would not make itself, and without that the
 team's chest would mean nothing.
-*Rejected:* reading the predisposition condition as only necessary while leaving the sentence unchanged — its plain reading would admit „Obchód” without buying the branch; a filter on verbs — cannot express „Wytwórz”; a filter on items — an item is a thing of
+*Rejected:* reading the predisposition condition as only necessary while leaving this decision's sentence unchanged — its plain reading would admit „Obchód” without buying the branch; a filter on verbs — cannot express „Wytwórz”; a filter on items — an item is a thing of
 the world, not a capacity of the character.
 
 ### D-121 — What brings each action, item and condition of Las into the Understanding?
@@ -5164,7 +5164,7 @@ handler, never the error's message or stack, the same line once until the page i
 run by hand or by the test gate that touches none of those data meets the rule on the last resort
 through the default print of Node.js or Python, which writes what nothing handled, and
 `account-database-check`, `measure-passwords`, `deploy/loop2-backup` and `scripts/restore-trial.mjs`
-already have a last-resort handling of their own, which the sentences above ask no more of, though
+already have a last-resort handling of their own, which the sentences of this decision above ask no more of, though
 the last two touch those data and write no kind or code.
 
 - **Scope:** browser-view · account-server · build-tools · deployment
@@ -6679,7 +6679,7 @@ walce”.
 the words are those of loop. Accepted with it: the turns that follow may choose another rule, and
 outside a fight every combat rule whose condition holds shows amber.
 *Rejected:* no rule on the background of the rule that wins during the minutes of an attack — it is not
-seen what the mage will start the fight with, and the approved sentence gets an exception; the words
+seen what the mage will start the fight with, and the approved sentence of D-308 gets an exception; the words
 „czynność walki — tylko przy napaści” and „trwa walka — działają tylko reguły walki” — a longer text in
 a narrow column.
 
