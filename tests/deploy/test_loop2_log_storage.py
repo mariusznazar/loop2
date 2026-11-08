@@ -20,6 +20,7 @@ LOGROTATE_DIRECTIVES = sorted([
     "weekly",
     "maxsize 100M",
     "rotate 4",
+    "compress",
     "delaycompress",
     "missingok",
     "notifempty",
