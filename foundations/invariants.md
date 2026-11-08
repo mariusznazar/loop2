@@ -1246,6 +1246,36 @@ No file of a part imports a file of another part, unless the *Depends on* of the
 - **Part:** every
 - **Violated:** no
 
+## loop2-deploy-log-dump
+
+A deployment through `loop2-deploy` appends the log of the containers it replaces to `/var/log/loop2-app.log` before it starts the new ones, and when that append fails it says so in the deploy log and goes on.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-352
+- **Part:** deployment
+- **Violated:** no
+
+## failure-watcher-message
+
+Every message the failure watcher sends through `pusher` has a fixed subject and a fixed text that say only which kind of trouble it found, with nothing of a player and nothing of a tool's output.
+
+- **Method:** test
+- **Rests on:** mikrus-pusher-mail
+- **Derives from:** D-353
+- **Part:** deployment
+- **Violated:** no
+
+## browser-failure-report
+
+The server writes a failure report of the browser only as a kind, a code and a place of the allowed form, with an `accountId` taken from the session and never from the body of the request.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-353
+- **Part:** account-server
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
