@@ -1,23 +1,13 @@
-import { bodyMinute, startingBody } from "./body.js";
-import { BALANCE } from "./data/balance.js";
+import { minutesUntilChilled, startingBody } from "./body.js";
 import type { MapAttackerDef, MapDef, MapResourceDef } from "./data/maps.js";
 
 /**
  * The game minutes a body stays at or above the chill threshold with no warmth, from its starting
- * temperature on the map's ambient temperature, counted as `bodyMinute` cools it; null where the
- * body does not cool below the threshold at all (D-327).
+ * temperature on the map's ambient temperature; null where the body does not cool below the
+ * threshold at all (D-327). The cooling is counted once, by `minutesUntilChilled` (D-333).
  */
 export function minutesWithoutFire(map: MapDef): number | null {
-  let body = startingBody();
-  let minutes = 0;
-  for (;;) {
-    const next = bodyMinute(body, 0, map).body;
-    if (next.temperature < BALANCE.body.chilledBelow) return minutes;
-    // Stops where the body no longer cools, also on a value that is not a number, so it cannot loop.
-    if (!(next.temperature < body.temperature)) return null;
-    body = next;
-    minutes += 1;
-  }
+  return minutesUntilChilled(startingBody(), map);
 }
 
 /**
