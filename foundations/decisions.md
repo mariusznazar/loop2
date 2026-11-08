@@ -7895,3 +7895,31 @@ road for the link grows beside the start of the page, with more code and more te
 has to vanish at the form of a reset (D-96); leaving it as it is, with D-281 saying that an open
 game takes the link of a mail for an address with no screen — no code, but the player still loses
 the link without a word.
+
+### D-353 — Which refusals of the account server are an expected course and leave no failure line?
+
+A browser that breaks off sending the body of a request is an expected refusal, like a body that is
+too large or broken, and a session write refused because the account was blocked while its
+registration was in progress is the intended effect of the block; neither leaves a failure line. A
+session write that fails for any other reason stays a failure.
+
+- **Scope:** account-server
+- **Based on:** none
+- **Relations:** derives from D-137 · derives from D-252
+- **Verification:** an agent compares a change with the decision:
+  - complies: a request whose body the browser stopped sending, refused with no line of `failure`;
+    a block committed while a registration waits, leaving no failure line of the session write; a
+    session write that fails because the password was replaced meanwhile or the database failed,
+    leaving its line
+  - violates: a line of `failure` for a body the browser broke off; a line of `failure` for the
+    session write that a block refused; a session write that fails for another cause left without
+    its line
+- **Origin:** zadanie_loop2_porzadki_z_uwag_pr.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Co jest awarią, a co zwykłym przebiegiem: przeglądarka zrywająca wysyłanie, blokada konta w trakcie rejestracji i zdanie dla operatora po wierszu JSON?”, and § Settlements to record, row 2
+
+*Rationale:* a browser breaks off a body when a player closes the tab or loses the connection, and a
+block is meant to stop the session of the account, so in neither case did the server fail to do what
+it was to do. Each line of `failure` that is not one would be a false alarm for whoever reads the
+logs to learn of a failure; the session write refused for another cause still is one, and its line
+stays.
+*Rejected:* leaving the breaking off of a body as a failure — every connection a player drops gives
+an alarm; leaving the refusal of the session write at a block as a failure — a rare false alarm.
