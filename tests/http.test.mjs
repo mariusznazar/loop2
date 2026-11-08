@@ -320,6 +320,9 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
     beforeIssue: null,
     beforeSave: null,
     beforeFind: null,
+    // Runs once a lookup of an account by email has returned, before the
+    // login's password check is answered.
+    afterFind: null,
     beforeReset: null,
   };
   const database = new Proxy(runtime.database, {
@@ -335,7 +338,9 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
       if (!hook) return value.bind(target);
       return (...parameters) => {
         hooks[hook]?.();
-        return value.apply(target, parameters);
+        const result = value.apply(target, parameters);
+        if (name === "findAccountByEmail") hooks.afterFind?.();
+        return result;
       };
     },
   });
@@ -777,6 +782,26 @@ async function waitFor(condition, label) {
     if (Date.now() > deadline) throw new Error(`${label}: deadline exceeded`);
     await new Promise((resolve) => setTimeout(resolve, 5));
   }
+}
+
+// Resolves when the next login has read its account and its password check
+// is not yet answered: an action taken then is in the check's window, however
+// fast the check is. Fails after the same five seconds as waitFor.
+function nextAccountRead(f, label) {
+  let timer;
+  const read = new Promise((resolve) => {
+    f.hooks.afterFind = () => {
+      f.hooks.afterFind = null;
+      resolve();
+    };
+  });
+  const deadline = new Promise((_resolve, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`${label}: deadline exceeded`)),
+      5000,
+    );
+  });
+  return Promise.race([read, deadline]).finally(() => clearTimeout(timer));
 }
 
 // Both native password slots stay busy for the action, so any password work
@@ -1375,11 +1400,25 @@ test(
       },
     });
     abandoned.on("error", () => {});
+    // The attempt's password work waits until the test lets it finish, so it
+    // outlives the disconnect however fast the check is.
+    const realVerify = argon2.verify;
+    let letVerifyFinish;
+    const mayFinish = new Promise((resolve) => {
+      letVerifyFinish = resolve;
+    });
+    argon2.verify = (...parameters) =>
+      mayFinish.then(() => realVerify.apply(argon2, parameters));
+    t.after(() => {
+      argon2.verify = realVerify;
+      letVerifyFinish();
+    });
+    const read = nextAccountRead(f, "fifth attempt read its account");
     abandoned.end(
       JSON.stringify({ email: "drop@example.test", password: `${password}!` }),
     );
     try {
-      await waitFor(() => f.policy.inFlight === 1, "fifth attempt admitted");
+      await read;
     } finally {
       abandoned.destroy();
     }
@@ -1393,6 +1432,7 @@ test(
       await login(f, "drop@example.test", password),
       "the disconnected attempt still holds its reservation",
     );
+    letVerifyFinish();
     await waitFor(() => f.policy.inFlight === 0, "abandoned work completed");
     assertLimited(
       await login(f, "drop@example.test", password),
@@ -1833,10 +1873,9 @@ test(
         await login(f, email, `${password}!`),
         `failure ${attempt}`,
       );
+    const read = nextAccountRead(f, "login read its account");
     const pending = login(f, email, password);
-    // The account is read before the password work starts, in the same turn
-    // that admits the attempt (as in the disconnected-login case above).
-    await waitFor(() => f.policy.inFlight === 1, "login admitted");
+    await read;
     assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
     assertMessage(await pending, 403, blockedMessage, "blocked meanwhile");
     assert.equal(sessionCount(f), 0, "no session is stored");
@@ -1889,8 +1928,9 @@ test(
         `failure ${attempt}`,
       );
     assert.equal(sessionCount(f), 1, "precondition: the registration's own");
+    const read = nextAccountRead(f, "login read its account");
     const pending = login(f, email, password);
-    await waitFor(() => f.policy.inFlight === 1, "login admitted");
+    await read;
     resetDirectly(f, email, replacement);
     assertLoginRefused(await pending, "replaced meanwhile");
     assert.equal(sessionCount(f), 0, "no session is stored");

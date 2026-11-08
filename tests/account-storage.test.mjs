@@ -1817,6 +1817,10 @@ test("persisted cookies must be usable after database expiry replacement and pac
     ],
   ]) {
     await t.test(name, async (t) => {
+      // The library's Cookie copy reads the clock twice (maxAge, then expires),
+      // so a real clock lets a millisecond between the reads move the expiry
+      // (loop2#043-28). A frozen clock keeps the expected value exact.
+      t.mock.timers.enable({ apis: ["Date"], now: 1000 });
       const { store, raw, account } = await fixture(t);
       const valid = data(account.id);
       valid.cookie.path = "/accounts";
@@ -1881,6 +1885,8 @@ test("set and touch refuse unusable cookie input without changing stored session
     ],
   ]) {
     await t.test(name, async (t) => {
+      // Frozen clock, as in the loop above: the load's expiry must stay exact (loop2#043-28).
+      t.mock.timers.enable({ apis: ["Date"], now: 1000 });
       const { store, raw, account } = await fixture(t);
       await call(store, "set", "one", data(account.id));
       const invalid = data(account.id, 5000);

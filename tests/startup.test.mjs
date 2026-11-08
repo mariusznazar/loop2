@@ -117,7 +117,9 @@ test("exits with an error instead of reporting ready when its listening port is 
   try {
     const result = spawnSync(process.execPath, [entryPoint], {
       encoding: "utf8",
-      timeout: 5000,
+      // A bound on the wait, not a speed claim: a loaded computer may take
+      // longer than 5 s to start the process (loop2#050-21).
+      timeout: 20000,
       env: {
         ...cleanEnvironment(),
         LOOP2_LISTEN_HOST: "127.0.0.1",
