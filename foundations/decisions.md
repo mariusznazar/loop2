@@ -7660,7 +7660,7 @@ service. An exception in the game shows on the screen as a sentence that somethi
 to the console.
 
 - **Scope:** browser-view, agent-workflow
-- **Based on:** none
+- **Based on:** playwright-cli-console-messages
 - **Relations:** derives from D-254 · derives from D-323 · derives from D-253
 - **Verification:** an agent compares a change with the decision:
   - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the
