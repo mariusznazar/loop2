@@ -285,6 +285,8 @@ Zagnieżdżone warunki mogą pokazywać dwa osobne etapy sprawdzania.
 
 ### Odłożone rodzaje i formatowanie
 
+Zasady testowania, wzorce według poziomów i przykład jawnego czasu określa
+`guidelines/testing.md`.
 Wzorzec zapisu gry wskazuje rodzaj `saved-game`, a wzorzec poczty rodzaj
 `mail-sending` w tabeli rodzajów.
 
