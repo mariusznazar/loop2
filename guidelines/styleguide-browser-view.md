@@ -125,8 +125,8 @@ Wyjątki ze sceny przepuszcza test `browser-view-token-values`, bo żaden z nich
 nie jest kolorem, nazwą czcionki ani wartością w `px`, `rem` lub `em` spoza
 wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w TypeScripcie
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
-kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`
-przy każdej skali. Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
+kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`,
+bo scena ma jeden rozmiar. Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
 ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga i paska) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
 sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach. D-43 ich też
@@ -398,8 +398,8 @@ States of shared controls.
   przycisku, który daje mu D-44.
 - Zakładka (`kind: "tab"`) to przycisk wybrany w grupie narysowany bez
   ramki — dziś przełącznik „Zaloguj się” i „Załóż konto” karty logowania
-  (D-276) oraz dwa przyciski „Kronika” i „Teren” nad prawym obszarem ekranu
-  przejścia, gdy nie stoi w nim otwarty edytor reguły (D-311). „Zakładka”
+  (D-276) oraz dwa przyciski „Kronika” i „Teren” nad treścią obszaru pod światem
+  na ekranie przejścia; otwarty panel reguły ich nie zastępuje (D-311). „Zakładka”
   znaczy w wytycznych wygląd: element, atrybut
   `aria-pressed` i klawiatura zostają jak przy przycisku wybranym w grupie —
   Tab przechodzi przez każdą, Enter albo Spacja przełącza — bez strzałek
@@ -593,8 +593,9 @@ Plakietka stoi nad głową maga na tle `panel` (D-320). Niesie ikonę bieżącej
 czynności, tę samą co przy regule w wierszu edytora (D-291), w `text-strong`,
 choć obok niej nie ma tekstu (D-40, D-43). Pod ikoną stoi pasek postępu tej
 czynności: wypełnienie w `positive` na torze w `highlight`, z co najmniej 3:1
-wobec tła, na którym stoi (D-39, D-40). Pasek ma grubość `--bar-width`, a przy
-skali 2 — `calc(var(--bar-width) * 2)`. Plakietki nie ma przy czekaniu, w walce,
+wobec tła, na którym stoi (D-39, D-40). Pasek ma grubość `--bar-width` podwojoną,
+`calc(var(--bar-width) * 2)`, bo cała scena jest rysowana w dwukrotności swojego obrazu.
+Plakietki nie ma przy czekaniu, w walce,
 po śmierci i po rozwiązaniu mapy (D-320, D-322).
 
 Ruch daje CSS, bez pętli rysowania: klatki maga i ognia zmieniają się w stałym
@@ -623,8 +624,8 @@ design token”).
 - **Good:** Wpis „Zbierz — Patyk” w `text`, minuta „212” w `text-label` i odkrycie w `discovery`; pusta kronika w `text-secondary`.
 - **Bad:** Minuta „Minuta 212” przy wpisie; wszystkie wpisy w jednym kolorze; filtry narysowane jako zakładki.
 
-Prawy obszar ekranu przejścia, gdy nie stoi w nim otwarty edytor reguły, ma
-zakładki „Kronika” i „Teren”, a na starcie przejścia wybrana jest „Kronika”
+Obszar pod światem na ekranie przejścia, pod rysunkiem mapy i linią kafelka,
+ma zakładki „Kronika” i „Teren”, a na starcie przejścia wybrana jest „Kronika”
 (D-311). Kronika stoi tak:
 
 - Rząd siedmiu przycisków filtra — „Wszystko”, „Odkrycia”, „Czynności”, „Walka”,
