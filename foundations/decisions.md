@@ -7656,11 +7656,12 @@ hold two contents at once, against D-311.
 
 An agent learns what went wrong in the running game from what a player reads, the screen and the
 chronicle, and from the browser's console, through the browser it operates, with no outside
-service.
+service. An exception in the game shows on the screen as a sentence that something broke and goes
+to the console.
 
 - **Scope:** browser-view, agent-workflow
 - **Based on:** none
-- **Relations:** derives from D-254
+- **Relations:** derives from D-254 · derives from D-323 · derives from D-253
 - **Verification:** an agent compares a change with the decision:
   - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the
     chronicle why the streak fell, and reading in the console the line of an error no code handled
@@ -7671,12 +7672,12 @@ service.
 - **Origin:** technologia_zapis_dzialania_gry.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2) · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How does an agent learn what went wrong in the running game?” · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
 
 *Rationale:* the game is computed in the browser, and an agent is to know what went wrong as a person
-playing does; how an exception shows on the screen and in the console D-323 and D-253 give. Lacks of
-the option chosen: an earning loop has no chronicle, an agent learns of a fault in the owner's own
-game only from the owner, and a state loaded from a save holds a chronicle only if the chronicle
-enters the save. Risks taken, each a hypothesis: logs of the console kept on disk may hold a real
-password-reset token; an agent may learn to ignore a console in which the browser writes ordinary
-refusals; a tab left overnight may slow down under a growing chronicle.
+playing does. Lacks of the option chosen: an earning loop has no chronicle, an agent learns of a
+fault in the owner's own game only from the owner, and a state loaded from a save holds a chronicle
+only if the chronicle enters the save. Risks taken, each a hypothesis: the sentence may show with no
+fault or blink; logs of the console kept on disk may hold a real password-reset token; an agent may
+learn to ignore a console in which the browser writes ordinary refusals; a tab left overnight may
+slow down under a growing chronicle.
 *Rejected:* the server's output — the game does not run there; a route of the server's own for
 reports — code in two parts and a limit of requests for a game with one player; Sentry — an outside
 service and data in a foreign cloud; GlitchTip — a service, a database and a copy of it to keep.
