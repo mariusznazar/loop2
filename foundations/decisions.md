@@ -845,32 +845,32 @@ Loop2 adopts the styleguide template of its pinned the-way, with no departure, f
 
 ### D-39 — What do the signal colours of the browser view mean?
 
-In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it. `positive` also stands as the fill of the progress bar over the mage's head, on a track in `highlight` in a badge on `panel`, with a contrast ratio of at least 3:1 against what it stands on; `warning` stands in no progress bar.
+In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it. `positive` also stands as the fill of the progress bar over the mage's head, on a track in `highlight` in a badge on `panel`, with a contrast ratio of at least 3:1 against what it stands on; `warning` stands in no progress bar. `positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`;
-  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 10, Questions to settle, questions 2 and G · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 13
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the fill of the bar of „Passa 480/480” in the header in `positive` on a track in `highlight`;
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the bar of a met requirement of the solving condition filled in `warning`.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Jakie znaczenia niosą kolory sygnałowe?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point B · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 10, Questions to settle, questions 2 and G · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 13 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 and 6, Questions to settle, question 5
 
-*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row. The fill of the progress bar over the mage's head says that the action is going on, which `positive` says in text, and it keeps the threshold of a part that is no text, against what it stands on.
+*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row. The fill of the progress bar over the mage's head says that the action is going on, which `positive` says in text, and it keeps the threshold of a part that is no text, against what it stands on. The bar of a requirement of the solving condition turns `positive` once the requirement is met, as in loop, since the requirement is then in order.
 *Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss; a role of its own for each colour of the bar, two of them equal to colours of text — pairs of roles with equal values that drift apart when one of them changes; the fill of the progress bar over the mage's head in `text-strong` — the bar would not tell from the icon above it.
 
 ### D-40 — What do the neutral roles of the browser view mean?
 
-In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with. The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it.
+In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with. The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it. The bar of a requirement of the solving condition in the header has its track in `highlight` and, while the requirement is not met, its fill in `text`, though it is no text.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`;
-  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 8 and 10, Questions to settle, questions 1 and 2 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 12, and § Settlements to record, row 9
+  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`; the bar of „Passa 120/480” in the header with its track in `highlight` and its fill in `text`;
+  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`; the bar of a requirement of the solving condition not yet met filled in `positive`.
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 8 and 10, Questions to settle, questions 1 and 2 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 12, and § Settlements to record, row 9 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 and 6, Questions to settle, question 5
 
-*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. Accepted with it: the backgrounds of the two rules are paler than loop's, so that the text on them keeps the contrast the product holds, and the dark bar is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. Accepted with it: a role of the kind text stands at something that is no text.
+*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. Accepted with it: the backgrounds of the two rules are paler than loop's, so that the text on them keeps the contrast the product holds, and the dark bar is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. The track of the bar of a requirement of the solving condition is marked as well, and while the requirement is not met its fill takes `text`, as the light fill of that bar does in loop. Accepted with it: a role of the kind text stands at something that is no text.
 *Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings; the rule that wins marked by `highlight` — that background already says that a row is marked or under the pointer; the backgrounds of the two rules in loop's colours on the page background — on the panel the row comes out darker than its surroundings, like a greenish hole; a dark bar of a value visible on every background, at least 3:1 — a clear grey bar at most rules, a busier program and a departure from loop; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well.
 
 ### D-41 — What do the roles of the terrain grid and of keyboard focus mean?
@@ -956,7 +956,7 @@ The fonts of the browser view are Geist and Geist Mono, whose web-font files and
 - **Based on:** geist-licence · npm package `geist` 1.8.2, its peer dependencies (https://registry.npmjs.org/geist/1.8.2 § peerDependencies — "{"next":">=13.2.0"}"; read 2026-10-23)
 - **Relations:** none
 - **Verification:** invariants: font-file-provenance. An agent compares a change with the decision:
-  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the status row of the header of the screen of a map run set in Geist Mono;
+  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the header of the screen of a map run set in Geist Mono;
   - violates: a stylesheet that loads a font from Google Fonts or another CDN; font files taken from the npm package `geist`; the headings of the panels set in Geist Mono.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jakie czcionki, rozmiary i odstępy?"
 
@@ -1168,7 +1168,7 @@ A character's warmth is its body temperature in degrees Celsius, counted with te
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: the body row reading „Temperatura 36,8 °C”; a program rule whose condition „Temperatura poniżej N °C” takes 35.5;
+  - complies: the cell of temperature of the body row reading „Temperatura 36,8 °C”; a program rule whose condition „Temperatura poniżej N °C” takes 35.5;
   - violates: warmth shown as points or as a percentage; a condition on warmth that refuses 35.5 as no whole number.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8. Jak działają ciepło, sytość i zdrowie — w jakiej jednostce gracz widzi ciepło i z jakimi liczbami?"
 
@@ -1243,7 +1243,7 @@ After a character's death the screen stays on the state of the game minute of de
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: after a death of cold in game minute 312 the status row reads „Minuta 312 · Mag zamarzł”, „Pauza” and the pace buttons are gone, the game minute stays at 312, and „Restart” starts game minute zero on the same seed;
+  - complies: after a death of cold in game minute 312 „Teraz” reads „Mag zamarzł” and the clock „Minuta 312”, „Pauza” and the pace buttons are gone, the game minute stays at 312, and „Restart” starts game minute zero on the same seed;
   - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20
 
@@ -2214,7 +2214,8 @@ conditions on the campfire come with the first crafted campfire, later than in l
 ### D-122 — What does a map run do, and what does the player see, when something is discovered?
 
 When something is discovered in a map run the player starts, the map run stops in the same pause
-as after „Pauza”: the status row adds „ (pauza)”, and the player goes on with „Wznów”. A band in
+as after „Pauza”: the clock in the header reads „Minuta {game minute} (pauza)”, and the player goes
+on with „Wznów”. A band in
 the role `discovery` above the program names what was discovered and the program rule the game
 wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose
 „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the
@@ -2226,18 +2227,18 @@ takes the place of the pause, and the band stands, with no „Wznów”, until �
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-118
 - **Verification:** invariants: player-map-run-pace. An agent compares a change with the decision:
-  - complies: after the first finished exploration the status row ending in „ (pauza)” and above
+  - complies: after the first finished exploration the clock „Minuta {game minute} (pauza)” and above
     the program the band „Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu
     leży mniej niż … szt., Zapas poniżej … szt.” with „Dodaj regułę z tym” and „Wznów”, gone once
     the player presses „Wznów” in the band or in the header; a completion of Las in the game minute
-    of a discovery showing „Minuta 480 · Las rozwiązany” with no „ (pauza)” and the band of that
+    of a discovery showing „Teraz” „Las rozwiązany” and the clock „Minuta 480” with no „ (pauza)” and the band of that
     discovery, with no „Wznów”, until „Restart”; the scene in its colours while the band stands
   - violates: a „Wznów” of the band that does anything other than the „Wznów” of the header; the
-    band still standing after „Wznów”; the band standing under the status row in the world area; two
+    band still standing after „Wznów”; the band standing in the world area; two
     discoveries of one game minute in two bands; a completion in the game minute of a discovery
     leaving the map run paused with „Wznów”; the band of that discovery gone from the screen after
     the completion before „Restart” or „Zakończ”; the scene greyed at a stop at a discovery
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 5 and 12
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
 whatever treats a paused map run treats a map run stopped by a discovery the same, the scene
@@ -2499,22 +2500,23 @@ an act that changes nothing; keeping beaten attacks through a changed program �
 ### D-132 — What does the screen show, and what can the player do, after a completion?
 
 After a completion the screen stays on the state of the game minute of the completion and time
-stands still for that map run, and the status row reads, in Las, „Minuta {game minute} · Las rozwiązany”, such as
-„Minuta 480 · Las rozwiązany”, and in Las — głębiej „Minuta {game minute} · Las — głębiej rozwiązany”, in the role `positive`. „Pauza” and the pace buttons are gone, and the
+stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany”
+and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header
+standing at that game minute, such as „Minuta 480”. „Pauza” and the pace buttons are gone, and the
 player has „Restart” and „Zakończ” as after a character's death.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: after a completion in game minute 480 of Las the status row reads „Minuta 480 · Las
-    rozwiązany” in `positive`, „Pauza” and the pace buttons are gone, the game minute stays at 480,
+  - complies: after a completion in game minute 480 of Las „Teraz” reads „Las rozwiązany” in
+    `positive` and the clock „Minuta 480”, „Pauza” and the pace buttons are gone, the game minute stays at 480,
     „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać of
     that character
   - violates: the game going back to the headquarters with a message the moment the map run
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
     written in a role other than `positive`
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 9 and 12
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
 which the program met the map's condition, can repeat the same seed with „Restart” and returns with
@@ -2524,25 +2526,37 @@ the state of the map run that solved the map.
 
 ### D-133 — Where does the player see a map run's streak and a map's solving condition?
 
-During a map run the status row in the header of the screen of a map run shows progress for the requirements present in the map's solving condition beside the game minute and the character's activity: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present, as „Minuta 312 · Eksploruje · Passa 120/540 · Pokonane napaści 1/2”. The card of each open map shows the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu” or „Las — głębiej — 540 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu oraz dwie pokonane napaści wilka”.
+During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present. A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`, and the bar stands on the screen after the end of the map run too, on the state of its stopped game minute and with the streak as it stands then, such as „Passa 0/480” after a death of cold. The card of each open map shows the sentence of its solving condition from the map's data, as „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: a paused map run reading „Minuta 312 · Eksploruje · Passa 120/480 (pauza)” in the
-    header of the screen of the map run; the sentence of Las standing on the card of Las, in its
-    part „Żąda”
-  - violates: a progress bar in place of „Passa 120/480”; „Passa 120/480” standing in the world area
-    under the header; a streak target shown for a map that asks for beaten attacks alone; the
-    sentence of the condition written in the code of the screen Mapy
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 3 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4
+  - complies: a paused map run of Las with the clock „Minuta 312 (pauza)” and the bar „Passa
+    120/480” in the header of the screen of the map run; on Las — głębiej „Passa 120/540” before
+    „Pokonane napaści 1/2”, each with its bar; „Pokonane napaści 2/2” with its name, its numbers and
+    its fill in `positive` while „Passa 120/540” beside it stays unmet; after a death of cold the bar
+    „Passa 0/480” in the header; the sentence of Las standing on the card of Las, in its part
+    „Żąda”, and that of Las — głębiej, „Las — głębiej — 540 minut bez utraty zdrowia od zimna i
+    głodu i bez zmiany programu oraz dwie pokonane napaści wilka”, on its card
+  - violates: a bar with no numbers beside it; „Passa 120/480” standing in the world area under the
+    header; a streak target shown for a map that asks for beaten attacks alone; the bar gone from the
+    header after the end of a map run; a met requirement whose fill turns green while its name and
+    numbers do not; the sentence of the condition written in the code of the screen Mapy
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 3 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-133 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 and 6, Questions to settle, question 5, and § Settlements to record, rows 5 and 6
 
 *Rationale:* the player sees during a map run how far the program has come towards the map's
-condition, and on the card of each open map what it asks before sending a character. Accepted with it:
-a longer status row, and a new text in each map's data.
-*Rejected:* a progress bar, or the streak with no number of the condition beside it — the player
-would not read how many game minutes the condition still asks for.
+condition, at any pace and at a glance, and on the card what each map asks before sending a
+character. A met requirement turns green with its name and numbers, as in loop, so on a map with
+two requirements the player sees which one is met, and the bar stays after the end, as in loop, so
+the player sees how far the map run came while reading why it ended. Accepted with it: a new text in
+each map's data, and after a death of cold or hunger a bar that shows a streak of zero.
+*Rejected:* the streak with no number of the condition beside it — the player would not read how
+many game minutes the condition still asks for; the numbers alone in a line of text — the goal
+stands hidden in small print; the fill always green, as the bar over the mage's head — on a map
+with two requirements it is not seen which one is already met; no bar after the end of a map run —
+the player would not see how far the map run came towards the map's condition just when reading
+why it ended.
 
 ### D-134 — Where does the player see that a map is solved?
 
@@ -2572,11 +2586,11 @@ after its end.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: the screen after a death of cold reading „Minuta 312 · Mag zamarzł”, with no streak
+  - complies: the screen after a death of cold reading „Teraz” „Mag zamarzł” and „Passa 0/480”, with no longest streak
   - violates: the screen after a death showing the longest streak the map run reached
 - **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?"
 
-*Rationale:* the streak a map's solving condition counts is the one the status row shows. Accepted
+*Rationale:* the streak a map's solving condition counts is the one the bar of the solving condition in the header shows. Accepted
 with it: at a death of cold or hunger the streak stands at zero, so the screen after death does not
 tell how near the map run came to its map's condition.
 *Rejected:* the longest streak of a map run kept, as the predecessor game, loop, kept it, and shown
@@ -2771,15 +2785,15 @@ The encounter ends immediately when either side reaches zero health: a creature 
 
 ### D-147 — What record of an encounter does the player read?
 
-From an attack the map run keeps its last encounter’s facts and shows a wrapping paragraph in `text` in the world area of the screen of a map run, under the scene and above the body row and backpack: before the turns it gives the creature’s starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter’s result. The line stands through „Wznów”, editing and the frozen death or completion screen until another attack replaces it or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. The status activity is „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Minuta {minute} · Mag zginął w walce”.
+From an attack the map run keeps its last encounter’s facts and shows a wrapping paragraph in `text` in the world area of the screen of a map run, under the scene and above the body row and backpack: before the turns it gives the creature’s starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter’s result. The line stands through „Wznów”, editing and the frozen death or completion screen until another attack replaces it or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. „Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
   - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them
   - violates: a completion before the turns displaying an invented victory, defeat or departure
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-147 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 8, 9 and 15
 
 *Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph.
 *Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; putting it above discovery — moves the explanation of the pause.
@@ -3258,8 +3272,9 @@ from game minute zero, in the role `text` at every value of the energy, zero inc
 - **Based on:** none
 - **Relations:** derives from D-125
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Temperatura 36,9 °C · Sytość 82 % · Zdrowie 100 · Energia natury 90”; „Energia
-    natury 0” in the role `text`
+  - complies: the body row in Las with the cells „Temperatura 36,9 °C” with the note „bez ognia 79
+    min”, „Sytość 82 %” with the note „bez jedzenia 86 min”, „Zdrowie 100” and „Energia natury 90”;
+    „Energia natury 0” in the role `text`
   - violates: „Energia natury 0” in the role `danger`; 89.5 nature energy shown as „Energia natury
     90”; the energy left out of the body row until „Energia natury poniżej” is discovered
 - **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Czy i jak wiersz ciała pokazuje energię natury maga?"
@@ -5919,7 +5934,8 @@ its left the game's name, which stands alone on the waiting screens (D-262), and
 items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and
 outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or
 „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of
-that map run, its minute being the map run's game minute as the status row writes it. The name of a
+that map run, its minute being the map run's game minute as the clock in the header of that screen
+writes it. The name of a
 character on its card on Siedziba leads to the screen Postać of that character, on which the menu
 bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on
 the screen of a map run the menu bar marks no item. A player reaches a first map run from Siedziba in
@@ -5948,7 +5964,8 @@ character, the map, the trees and the chest is what makes the game unreadable. T
 the predecessor game, loop, which the player already finds readable, and improves on it where it was
 weak. A player who leaves a map run keeps one way back to it, and a map run that has ended stays
 until „Restart” or „Zakończ”, so the way back stays after its end too. The minute beside „Wróć do
-przejścia” stands still, since the map run waits in its pause, and it reads as the status row does.
+przejścia” stands still, since the map run waits in its pause, and it reads as the clock in the
+header of the screen of the map run does.
 *Rejected:* one page holding everything — unreadable; the width of the content changing between
 screens, as in loop — the logo and the menu jump; another largest width — it changes that one
 dimension alone; the skill trees shown on two screens, as in loop; Mapy and Wiedza standing on the
@@ -6235,20 +6252,20 @@ conditions of its own, as in loop — a second control and a second keyboard han
 
 ### D-291 — Which icon stands for an action?
 
-Each action has one icon, which stands for it in a program rule's row, in its cell of the pick and
-over the mage's head; an action with a target shows the icon of the action, never one of its
-target.
+Each action has one icon, which stands for it in a program rule's row, in its cell of the pick,
+over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target
+shows the icon of the action, never one of its target.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-27 · derives from D-288
 - **Verification:** an agent compares a change with the decision:
   - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk”, in the
-    cell „Zbierz” and over the head of the mage gathering; „Idź” and „Idź — ognisko” sharing one
-    icon
+    cell „Zbierz”, over the head of the mage gathering and before „Zbierz — Patyk” in „Teraz”; „Idź”
+    and „Idź — ognisko” sharing one icon
   - violates: the icon of a stick in the row of „Zbierz — Patyk”; a greyed cell drawn with no icon
     while a cell that may be picked has one; cells drawn as text alone while the rows show icons
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5, and § Settlements to record, row 3
+- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5, and § Settlements to record, row 3 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Settlements to record, rows 1 and 2
 
 *Rationale:* the sign of the action tells „Idź — patyk” from „Zbierz — patyk”, which a sign of the
 target would draw alike, and cells with icons give the pick what the pick of the predecessor game,
@@ -6675,36 +6692,45 @@ the human chooses to correct — the human corrected no row.
 The screen of a map run has three areas under one header: the world on the left, the program in
 the middle, and on the right one content at a time, the editing of a program rule or a rule group
 while one is open and the table of revealed tiles otherwise. The world holds, from the top, the
-scene, the paragraph of the last encounter, the line of the end of the map run (D-185, D-216), the
-body row with the backpack and the lines below them, the drawing of the map and the line of a tile
-under it. The header holds the character's name, the map's name and after them the whole status row
-in its order: the text of the game minute, the character's activity and the numbers of the solving
-condition, „Pauza” or „Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”.
+scene, „Teraz” and „Potem”, the paragraph of the last encounter, the line of the end of the map run
+(D-185, D-216), the body row with the minutes each need lasts, with the backpack and the lines below
+them, the drawing of the map and the line of a tile under it. The header holds the character's
+name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
+„Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-282
 - **Verification:** an agent compares a change with the decision:
-  - complies: on the screen of a map run of Las the character's name and „Las” before „Minuta 212 ·
-    Eksploruje · Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the
-    header, and under it the world, the program and the table of revealed tiles side by side; a rule
-    opened from its row standing in the right area in the place of the table, and „✕” bringing the
-    table back; after a completion the line „Do skrzynki: …” under the scene in the world area, the
-    table staying in the right area
-  - violates: the rule panel opened over the program or under the table; the table of revealed tiles
+  - complies: on the screen of a map run of Las the character's name, „Las”, „Minuta 212”, the bar
+    „Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the header, and
+    under it the world, the program and the table of revealed tiles side by side; „Teraz” and
+    „Potem” under the scene and above the paragraph of the last encounter; a rule opened from its row
+    standing in the right area in the place of the table, and „✕” bringing the table back; after a
+    completion the line „Do skrzynki: …” under the scene in the world area, the table staying in the
+    right area
+  - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
+    body row; the rule panel opened over the program or under the table; the table of revealed tiles
     standing under the drawing in the world area; the line „Do skrzynki: …” in the right area;
     „Restart” and „Zakończ” standing in the world area
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
-Accepted with it: a long header.
+Needs and the goal stand high, because they stay readable at a fast pace when moments no longer do,
+and „Teraz” and „Potem” stand right under the scene, so they do not move as the paragraph of the
+last encounter grows with each turn. The header is where the player steers the map run, so
+„Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of the
+solving condition and three buttons may break in a narrower window, and the paragraph of the last
+encounter two rows further from the scene.
 *Rejected:* the pick of an action in a window over the screen, as in loop — it hides what the
 character needs; the end of a map run below an open editor of a rule, as in loop — its buttons fall
 under the edge of the window; the needs below two drawings of one place, as in loop; the trip plan
-under the editor during a map run; a header with no activity of the character and a row of its own
-under the scene saying what the character does — work of another task of the project, and a change
-of its plan; the clock written as „03:32” — a new notation of time; „Wróć do przejścia” on the
-screen of a map run too — a link to the place the player already stands in.
+under the editor during a map run; the clock written as „03:32” — a new notation of time;
+„Wróć do przejścia” on the screen of a map run too — a link to the place the player already stands
+in; „Restart”, the warning of a cut trip plan and „Zakończ” in the program column, in a row over the
+heading of the copy — the player looks for them in a new place, and the question at „Zakończ”
+would move into that row and push the program down in a narrow column; „Teraz” and „Potem” under the paragraph of the last encounter and the line of the
+end of the map run — they move down at each attack as the paragraph grows.
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
@@ -7045,7 +7071,7 @@ While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map
 - **Based on:** none
 - **Relations:** derives from D-173 · derives from D-21 · derives from D-122 · derives from D-212 · derives from D-283
 - **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player clicks „Zakończ” with unsaved changes in the copy, the status row ending in „ (pauza)” and no game minute passing while the question stands, and „Wróć” bringing it back going on at 8×; a paused map run staying paused after „Wróć”; „Porzuć zmiany” taking the question away and leaving the map run paused, so that „Zakończ” then ends it at once; „Zapisz jako nowy program” used while the question stands, after which „Zakończ” ends the map run at once; a reload with the question standing opening the map run paused with no question
+  - complies: a map run of Las going on at 8× when the player clicks „Zakończ” with unsaved changes in the copy, the clock in the header ending in „ (pauza)” and no game minute passing while the question stands, and „Wróć” bringing it back going on at 8×; a paused map run staying paused after „Wróć”; „Porzuć zmiany” taking the question away and leaving the map run paused, so that „Zakończ” then ends it at once; „Zapisz jako nowy program” used while the question stands, after which „Zakończ” ends the map run at once; a reload with the question standing opening the map run paused with no question
   - violates: a map run passing its game minutes while the question stands; „Wróć” leaving a map run that went on paused, or setting going a map run that was paused before „Zakończ”; the question standing after „Wznów”, after „Restart” or over a copy with no unsaved changes; the question standing on the return to the screen of the map run; the question written into the game state or the save
 - **Origin:** pytanie_przy_zakoncz_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 6 and 7, and § Settlements to record, rows 5, 6 and 7
 
@@ -7186,3 +7212,142 @@ The numbers of the card of a map that follow a rule of the game are computed by 
 
 *Rationale:* the player reads on the card what a map asks, and the numbers come out of the rules of the game, the cooling of the body and the spacing of attacks, which stand in the simulation. Counted there once, the card follows a change of balance by itself. Accepted with it: the simulation holds functions that only the card uses, and a usual step that is the step most maps give changes when a map with another step arrives, the notes beside the steps moving with it.
 *Rejected:* the view counting the numbers — the cooling of the body and the spacing of attacks would be written twice and drift apart at the next change of balance; a value „usual step” in the balance data — a number no settled source gives; a constant of the view — a number of the game's content outside its data.
+
+### D-334 — What does „Teraz” say on the screen of a map run?
+
+Under the scene of the screen of a map run the row „Teraz” keeps one height whatever it holds, and
+while the character carries out an action it holds the icon of the action and the action as the row
+of its program rule writes it, such as „Zbierz — Patyk”, and at its right the number of the program
+rule the action comes from and the minutes of the action, such as „reguła 2.1 · zostało 3 z 5 min”,
+with no progress bar, and while the character waits „Czeka — żadna reguła nie pasuje”, with no rule
+and no minutes. In the minutes of an attack it holds „Walczy z wilkiem” alone, as D-147 gives, with
+no icon, no number of a rule and no minutes, and after a completion the completion text D-132 gives.
+After a character's death it reads the cause of the death in the role `text`, „Mag zamarzł”, „Mag
+umarł z głodu” or „Mag zginął w walce”, while the clock in the header stands at the game minute of
+the death, such as „Minuta 312”.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-311 · derives from D-291 · derives from D-292
+- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
+  - complies: the mage gathering a stick under rule 2.1 with the icon of „Zbierz”, „Zbierz — Patyk”
+    and „reguła 2.1 · zostało 3 z 5 min” in „Teraz”; the mage waiting with „Czeka — żadna reguła nie
+    pasuje” alone; „Walczy z wilkiem” alone in the minute an attack is resolved, though the next
+    action starts in it; after a death of cold „Mag zamarzł” in `text` and the clock „Minuta 312”;
+    what stands under „Teraz” keeping its place as the text of „Teraz” changes
+  - violates: a progress bar under „Teraz”; „Zbiera: patyk” in „Teraz”; the number of the combat
+    rule beside „Walczy z wilkiem”; „Mag zamarzł” in `danger`; „Teraz” still naming the last action
+    after a death
+- **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 1, 8, 9 and 14, and § Settlements to record, rows 1, 4 and 8
+
+*Rationale:* the player reads what the character does in the words of the rule that makes it do
+so, with that rule's number, so the action leads to its rule in the program. The minutes in the
+text say what a progress bar would, more exactly, and the bar over the mage's head stands in the
+same area, so a second moving bar would add nothing; one height keeps what stands below from moving
+as the action changes. In the minutes of an attack „Potem” just below already names the combat
+rule, so the same number a second time would give the player nothing. After a death the row says
+why the map run ended. Accepted with it: in combat the row leaves out what loop showed there, the
+number of the combat rule and the round, though the game counts no round.
+*Rejected:* the row with a progress bar under it, filled in `positive` on a track in `highlight`,
+as the bar over the mage's head — a second progress bar a few rows under the badge over the mage's
+head, which shows the same; the words of the character's activity the header showed, such as
+„Zbiera: patyk” and „Eksploruje”, with no rule and no minutes — the words do not match the row of
+the rule, and the player does not know which rule the action comes from and how long it lasts;
+„Walczy z wilkiem” with the number of the combat rule the turn would choose at its right, a click
+scrolling to that rule — the same number stands twice, in „Teraz” and a row below in „Potem”; no
+„Teraz” after the end of a map run — until the end of the map run stands in the right area, the
+player reads nowhere why the map run ended; „Teraz” staying on the last action after a death — it
+reads as something the mage still does, and the cause stands nowhere.
+
+### D-335 — What does „Potem” say on the screen of a map run?
+
+Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule
+that wins now and at its right its number, such as „reguła 2.1”; in the minutes of an attack that
+rule is the combat rule the turn would choose, as D-309 gives, and while no rule wins the row reads
+„żadna reguła nie pasuje — postać stanie” in the role `warning`. The row says the state of the
+current game minute, which may change before the action in progress ends, and on the screen after
+the end of a map run it names the rule that wins at the stopped game minute, as the background
+`rule-winning` does (D-308).
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-311 · derives from D-308 · derives from D-309 · derives from D-291 · derives from D-292
+- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
+  - complies: „Potem” with the icon of „Zasil”, „Zasil — Ognisko” and „reguła 4.1” while rule 4.1
+    stands on `rule-winning`; in the minutes of an attack „Potem” naming the combat rule on
+    `rule-winning`; after a death „Potem” naming the rule that wins at the stopped game minute; with
+    no rule that wins, „żadna reguła nie pasuje — postać stanie” in `warning`
+  - violates: „Potem” gone after the end of a map run; „Potem” gone while it names the same rule as
+    „Teraz”; „Potem” naming a rule other than the one on `rule-winning`; the line of no rule that
+    wins written in `danger`
+- **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, question 2, and § Settlements to record, row 2
+
+*Rationale:* beside what the character does, the player reads what it would start now, and the row
+names the rule the program shows as winning, so the two never disagree. After the end it names what
+the program shows at the stopped game minute, as the row did in loop. Accepted with it: after a
+death „Potem: Zbierz — Patyk” may read as something still to happen, the cost the background of the
+rule that wins already carries.
+*Rejected:* no „Potem” after the end of a map run — the world area after the end would lose a row
+its layout holds; „Potem” only where it differs from „Teraz” — the row goes and comes back, and the
+player cannot tell „the same” from „nothing”.
+
+### D-336 — What does a click on „Teraz” or „Potem” do?
+
+A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program
+once so that the program rule the row names stands in its middle, or, for a rule in a folded rule
+group, the header of that group, after which the program does not follow that rule by itself; a row
+that names no rule scrolls nothing.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-334 · derives from D-335
+- **Verification:** an agent compares a change with the decision:
+  - complies: a click on „Teraz” reading „reguła 2.1” bringing rule 2.1 to the middle of the
+    program, which then stays where the player scrolls it; Enter on „Potem” reached with Tab doing
+    the same for its rule; the header of a folded rule group brought to the middle for a rule inside
+    it
+  - violates: the program following the rule by itself after the click; a row the keyboard cannot
+    reach; a click on „Walczy z wilkiem” or on „Czeka — żadna reguła nie pasuje” scrolling the
+    program
+- **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, question 3, and § Settlements to record, row 3
+
+*Rationale:* as in loop, the player goes from what the character does, or will do, to the rule
+behind it in a long program, with the mouse or the keyboard; the scroll happens once, and a row
+with no rule leads nowhere, as in loop.
+*Rejected:* the rows as text alone, the rule found by its background and its number — it takes away
+a way loop gave and gives nothing for it.
+
+### D-337 — What does the body row show of how long each need lasts?
+
+The body row holds each of its values in a cell of its own, and under temperature and under
+satiety a note in smaller grey text, health and nature energy standing with no note. The note under
+temperature reads the first of these that holds: „marznie” in red below 35 °C, „przy ogniu” while
+something burns on the character's tile, „nie stygnie” on a map that does not cool the body, and
+„bez ognia {n} min”; the note under satiety reads „głoduje” in red below 30 and „bez jedzenia {n}
+min” otherwise. {n} is the whole game minutes, rounded down, left until the character starts to be
+chilled or to starve, and the notes stand from game minute zero and on the screen after the end of
+a map run, on the state of its stopped game minute.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-311 · derives from D-125
+- **Verification:** an agent compares a change with the decision:
+  - complies: the body row in Las with the cells „Temperatura 36,9 °C” with the note „bez ognia 79
+    min”, „Sytość 82 %” with the note „bez jedzenia 86 min”, „Zdrowie 100” and „Energia natury 90”;
+    „przy ogniu” while a campfire burns on the mage's tile; „marznie” in red at 34,9 °C; „głoduje”
+    in red under satiety on the screen after a death of hunger; the notes standing from game minute
+    zero, before anything is discovered
+  - violates: „(bez ognia 79 min)” after the value in the same line; a note under health;
+    „bez ognia {n} min” while a campfire burns on the mage's tile; the notes gone after the end of a
+    map run; „bez ognia 80 min” where the body is chilled after 79.6 game minutes
+- **Origin:** teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 6, and § Settlements to record, row 7
+
+*Rationale:* the minutes stand under the value they concern and read at a fast pace, and a value
+with no bar is the same number a bar only draws; the words and their order are those of loop. The
+minutes belong to the body row, which shows what the game state holds whatever the Understanding
+holds (D-125), so they stand from game minute zero.
+*Rejected:* the note in brackets after the value, in the same line — a longer row that wraps in a
+narrower window, and a departure from loop's bars; the cells with bars under the values, as in loop
+— four bars with a calm, a warm and an alarm colour, new uses of colours and more work; a line of
+its own under the body row, „Bez ognia 79 min · bez jedzenia 86 min” — the minutes stand away from
+the values they concern.
