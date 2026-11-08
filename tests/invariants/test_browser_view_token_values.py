@@ -74,7 +74,6 @@ import unittest
 from pathlib import Path
 
 import loop2_invariant_support as support
-from test_application_package_layout import file_owners
 
 PART = "browser-view"
 TOKEN_FILE = "src/browser/tokens.css"
@@ -403,7 +402,7 @@ def part_files():
     """The files git tracks or would track that the part map gives browser-view, with the
     extensions read here."""
     tracked = set(support.listed_files())
-    owners = file_owners(Path(support.ROOT), tracked)
+    owners = support.file_owners(Path(support.ROOT), tracked)
     return sorted(path for path, owner in owners.items()
                   if owner == PART and path.endswith(EXTENSIONS))
 
