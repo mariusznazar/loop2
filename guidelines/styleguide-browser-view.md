@@ -623,12 +623,24 @@ design token”).
 - **Good:** Wpis „Zbierz — Patyk” w `text`, minuta „212” w `text-label` i odkrycie w `discovery`; pusta kronika w `text-secondary`.
 - **Bad:** Minuta „Minuta 212” przy wpisie; wszystkie wpisy w jednym kolorze; filtry narysowane jako zakładki.
 
-Prawy obszar ekranu przejścia, gdy nie stoi w nim otwarty edytor reguły, ma zakładki „Kronika” i „Teren”, a na starcie przejścia wybrana jest „Kronika” (D-311). Kronika stoi tak:
+Prawy obszar ekranu przejścia, gdy nie stoi w nim otwarty edytor reguły, ma
+zakładki „Kronika” i „Teren”, a na starcie przejścia wybrana jest „Kronika”
+(D-311). Kronika stoi tak:
 
-- Rząd siedmiu przycisków filtra — „Wszystko”, „Odkrycia”, „Czynności”, „Walka”, „Moje zmiany”, „Passa”, „Świat” — ma wygląd przycisków tempa (D-130): przycisk wybrany w grupie, jeden naraz, „Wszystko” na starcie przejścia. Filtr nie jest zakładką (D-343), a jego tekst ma czcionkę wspólnego przycisku, nie Geist Mono.
-- Lista stoi na tle `panel` i cała jest w Geist Mono (D-46), a najnowszy wpis stoi u góry.
-- Minuta gry stoi sama, jako liczba, w kolumnie po lewej, w roli `text-label`; obok stoi tekst wpisu w roli jego rodzaju (D-343, D-344): odkrycie w `discovery`, zmiana gracza w `player-change`, utrata passy w `danger`, czynność i walka w `text`, śmierć i „Ognisko wygasło” w `text`, rozwiązanie mapy w `positive`.
-- Pusta kronika i filtr bez wpisów mówią „Nic tu jeszcze nie ma.” w `text-secondary`, jak „Wybierz mapę z listy.” na ekranie Mapy (D-343, D-331).
+- Rząd siedmiu przycisków filtra — „Wszystko”, „Odkrycia”, „Czynności”, „Walka”,
+  „Moje zmiany”, „Passa”, „Świat” — ma wygląd przycisków tempa (D-130): przycisk
+  wybrany w grupie, jeden naraz, „Wszystko” na starcie przejścia. Filtr nie jest
+  zakładką (D-343), a jego tekst ma czcionkę wspólnego przycisku, nie Geist
+  Mono.
+- Lista stoi na tle `panel` i cała jest w Geist Mono (D-46), a najnowszy wpis
+  stoi u góry.
+- Minuta gry stoi sama, jako liczba, w kolumnie po lewej, w roli `text-label`;
+  obok stoi tekst wpisu w roli jego rodzaju (D-343, D-344): odkrycie w
+  `discovery`, zmiana gracza w `player-change`, utrata passy w `danger`,
+  czynność i walka w `text`, śmierć i „Ognisko wygasło” w `text`, rozwiązanie
+  mapy w `positive`.
+- Pusta kronika i filtr bez wpisów mówią „Nic tu jeszcze nie ma.” w
+  `text-secondary`, jak „Wybierz mapę z listy.” na ekranie Mapy (D-343, D-331).
 
 Żadna z tych części nie dostaje nowej roli, barwy ani wartości; wartości stoją
 w pliku tokenów, a kod kroniki w `src/browser/view/right-area.tsx`.
@@ -656,5 +668,4 @@ wszystkich stanów. To przykład, nie reguła.
 
 - `src/browser/tokens.css`
 - `src/browser/view/controls/`
-- `src/browser/view/right-area.tsx`
 - `src/browser/kitchen-sink/index.html`
