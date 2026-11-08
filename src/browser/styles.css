@@ -1312,9 +1312,9 @@ header .failure-line {
 
 /*
  * The header of the screen of a map run (D-311): the character's name and the map's name, in
- * `text-strong` as names are (D-40), then the status row in its order. The clock stays in Geist Mono
- * (D-46) and the text of a completion in `positive` (D-39, D-132). The warning of a cut trip plan is
- * the shared `trip-warning`.
+ * `text-strong` as names are (D-40), then the clock and the buttons in their order. The clock stays
+ * in Geist Mono (D-46) and in `text` also after a death and a completion, since the text of a
+ * completion is „Teraz”'s (D-132). The warning of a cut trip plan is the shared `trip-warning`.
  */
 .run-header {
   display: flex;
@@ -1337,15 +1337,12 @@ header .failure-line {
   color: var(--text-strong);
 }
 
-.run-header-status {
+.run-header-clock {
   margin: 0;
   margin-right: auto;
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
-}
-
-.run-header-status.positive {
-  color: var(--positive);
+  color: var(--text);
 }
 
 /*

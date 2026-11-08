@@ -226,7 +226,8 @@ test("the header stands above three areas of their own in the order world, progr
     assert.deepEqual(holding("terrain-drawing"), [true, false, false]);
     assert.deepEqual(holding("program-panel"), [false, true, false]);
     assert.deepEqual(holding("tile-list"), [false, false, true]);
-    assert.deepEqual(holding("run-header-status"), [false, false, false]);
+    // D-311: the clock stands in the header (class `run-header-clock`), in no area.
+    assert.deepEqual(holding("run-header-clock"), [false, false, false]);
   });
 });
 
@@ -310,9 +311,11 @@ test("the screen draws the map run it was given, the copy of that map run in its
         found.getAttribute("aria-label") === "Program:",
     );
     assert.equal(list.value, "copy");
-    assert.match(
-      textOf(element, "run-header-status"),
-      /^Minuta 7 /,
+    // D-311, D-122: the clock of the header, class `run-header-clock`, reads the given map run's
+    // minute, and „ (pauza)” after it since the game state is paused.
+    assert.equal(
+      textOf(element, "run-header-clock"),
+      "Minuta 7 (pauza)",
       "the header reads the given map run",
     );
   });

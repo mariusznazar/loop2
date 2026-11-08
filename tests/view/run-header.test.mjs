@@ -1,8 +1,9 @@
-// The header of the screen of a map run in React (task ekran-przejscia, To do 1 and 8; D-311, D-130,
-// D-132, D-133, D-62, D-188, D-44, D-46) on jsdom through tests/view/page-document.mjs (D-264): the
-// character's name and the map's name before the whole status row in its order, the pace buttons,
-// the ends of a map run, the warning of a cut trip plan and the focus of a pace button across
-// updates. Real events, focus rings and the look are checked in the browser (D-88), so a focus case
+// The header of the screen of a map run in React (task ekran-przejscia, To do 1 and 8; task
+// teraz-i-potem, To do 3; D-311, D-130, D-132, D-133, D-122, D-62, D-188, D-44, D-46) on jsdom
+// through tests/view/page-document.mjs (D-264): the character's name and the map's name before the
+// clock, „Pauza” and the rest in their order with no action of the character, the pace buttons, the
+// ends of a map run with the clock at the minute of the end, the warning of a cut trip plan and the
+// focus of a pace button across updates. Real events, focus rings and the look are checked in the browser (D-88), so a focus case
 // here holds only what jsdom shows. Every comparison is of plain data or of a handful of words
 // (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
@@ -92,13 +93,15 @@ const buttonNamed = (container, name) =>
   buttons(container).find((b) => b.textContent === name);
 const paceButtons = (container) =>
   buttons(container).filter((b) => /^\d+×$/.test(b.textContent));
-const statusOf = (container) => container.querySelector(".run-header-status");
+const clockOf = (container) => container.querySelector(".run-header-clock");
 const click = (element) =>
   inAct(() => {
     element.click();
   });
 
-test("the header reads the character's name and the map's name before the whole status row, in its order", async () => {
+// D-311, task teraz-i-potem To do 3. Catches the character's action or the streak left in the
+// header, and the clock standing anywhere but after the map's name.
+test("the header reads the character's name, the map's name, the clock, „Pauza”, the paces, „Restart” and „Zakończ”, in that order, with no action of the character", async () => {
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     const header = container.querySelector(".run-header");
@@ -108,7 +111,7 @@ test("the header reads the character's name and the map's name before the whole 
       [
         "Ala",
         "Las",
-        "Minuta 0 · Eksploruje · Passa 0/480",
+        "Minuta 0",
         "Pauza",
         "1×",
         "2×",
@@ -141,20 +144,16 @@ test("the name is the one of the team member whose map run it is", async () => {
   });
 });
 
-test("the status text keeps the wording of the status row, „ (pauza)” at its end while paused, and „Wznów” takes the place of „Pauza”", async () => {
+// D-122: „ (pauza)” after the clock at every pause. Catches a clock that does not follow the pause or
+// keeps the action of the character.
+test("the clock reads the game minute, „ (pauza)” after it while paused, and „Wznów” takes the place of „Pauza”", async () => {
   await withPage(async ({ document }) => {
     const running = advanceMinutes(sent(), 3).state;
     const { container, show } = await draw(document, running);
-    assert.equal(
-      statusOf(container).textContent,
-      "Minuta 3 · Eksploruje · Passa 3/480",
-    );
+    assert.equal(clockOf(container).textContent, "Minuta 3");
     assert.equal(buttons(container)[0].textContent, "Pauza");
     await show(setPaused(running, true).state);
-    assert.equal(
-      statusOf(container).textContent,
-      "Minuta 3 · Eksploruje · Passa 3/480 (pauza)",
-    );
+    assert.equal(clockOf(container).textContent, "Minuta 3 (pauza)");
     assert.equal(buttons(container)[0].textContent, "Wznów");
   });
 });
@@ -227,35 +226,34 @@ test("a click on a pace button asks for that pace; the buttons stay while paused
   });
 });
 
-test("after a death the header reads the minute and the cause, „Pauza” and the paces are gone, and „Restart” and „Zakończ” stay", async () => {
+// D-62, D-334: the cause of the death is not the header's. Catches the cause left in the header and
+// a „ (pauza)” after the end.
+test("after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the paces are gone, and „Restart” and „Zakończ” stay", async () => {
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
     assert.equal(buttonNamed(container, "Pauza") !== undefined, true);
     await show(dead(running, 312, "cold"));
-    assert.equal(statusOf(container).textContent, "Minuta 312 · Mag zamarzł");
+    assert.equal(clockOf(container).textContent, "Minuta 312");
     assert.deepEqual(labels(container), ["Restart", "Zakończ"]);
+    await show(dead(setPaused(running, true).state, 312, "cold"));
+    assert.equal(clockOf(container).textContent, "Minuta 312");
   });
 });
 
-test("the status text is positive after a completion and only then; the paces and „Pauza” go, „Restart” and „Zakończ” stay", async () => {
+// D-132: the completion text is „Teraz”'s. Catches the completion text left in the header and a
+// „ (pauza)” after the end.
+test("after a completion the clock stands at the minute of the completion with no completion text and no „ (pauza)”; the paces and „Pauza” go, „Restart” and „Zakończ” stay", async () => {
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
-    const positive = () => statusOf(container).classList.contains("positive");
-    assert.equal(positive(), false);
     await show(completed(running, 480));
-    assert.equal(
-      statusOf(container).textContent,
-      "Minuta 480 · Las rozwiązany",
-    );
-    assert.equal(positive(), true);
+    assert.equal(clockOf(container).textContent, "Minuta 480");
     assert.deepEqual(labels(container), ["Restart", "Zakończ"]);
+    await show(completed(setPaused(running, true).state, 480));
+    assert.equal(clockOf(container).textContent, "Minuta 480");
     await show(running);
-    assert.equal(positive(), false);
     assert.equal(buttonNamed(container, "Pauza") !== undefined, true);
-    await show(dead(running, 312, "cold"));
-    assert.equal(positive(), false);
   });
 });
 
@@ -320,20 +318,43 @@ test("the header draws nothing while the game state holds no map run", async () 
   });
 });
 
-// D-46: the clock of the map run is set in Geist Mono. jsdom does not resolve a custom property, so
-// the case reads which token the rule of the status text lands on, through the real stylesheet.
-test("the status text stands in the mono face of the stylesheet, as the clock does", async () => {
+/** Puts the real stylesheet into the document; jsdom resolves the cascade, not a custom property. */
+function addStylesheet(document) {
+  const style = document.createElement("style");
+  style.textContent = readFileSync(
+    new URL("../../src/browser/styles.css", import.meta.url),
+    "utf8",
+  );
+  document.head.append(style);
+}
+
+// D-46: the clock of the map run is set in Geist Mono with tabular figures. jsdom does not resolve a
+// custom property, so the case reads which token the rule of the clock lands on, through the real
+// stylesheet.
+test("the clock stands in the mono face of the stylesheet, with tabular figures", async () => {
   await withPage(async ({ document, window }) => {
-    const style = document.createElement("style");
-    style.textContent = readFileSync(
-      new URL("../../src/browser/styles.css", import.meta.url),
-      "utf8",
-    );
-    document.head.append(style);
+    addStylesheet(document);
     const { container } = await draw(document, sent());
-    assert.equal(
-      window.getComputedStyle(statusOf(container)).fontFamily,
-      "var(--font-family-mono)",
-    );
+    const style = window.getComputedStyle(clockOf(container));
+    assert.equal(style.fontFamily, "var(--font-family-mono)");
+    assert.equal(style.fontVariantNumeric, "tabular-nums");
+  });
+});
+
+// D-311, D-132: the clock is in the role `text` after a death and after a completion, not in
+// `positive` as the old status text was after a completion. Catches the clock green after a
+// completion.
+test("the clock is in the role text while running, after a death and after a completion", async () => {
+  await withPage(async ({ document, window }) => {
+    addStylesheet(document);
+    const running = sent();
+    const { container, show } = await draw(document, running);
+    const colour = () => window.getComputedStyle(clockOf(container)).color;
+    assert.equal(colour(), "var(--text)");
+    await show(dead(running, 312, "cold"));
+    assert.equal(colour(), "var(--text)");
+    await show(completed(running, 480));
+    assert.equal(colour(), "var(--text)");
+    assert.equal(clockOf(container).classList.contains("positive"), false);
   });
 });

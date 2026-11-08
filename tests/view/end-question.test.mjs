@@ -165,8 +165,8 @@ const answersOf = (question) =>
 const answer = (root, text) => buttonIn(questionOf(root), text);
 const headerButton = (root, text) =>
   buttonIn(byClass(runScreenOf(root), "run-header")[0], text);
-const statusOf = (root) =>
-  byClass(runScreenOf(root), "run-header-status")[0].textContent;
+const clockOf = (root) =>
+  byClass(runScreenOf(root), "run-header-clock")[0].textContent;
 const noteOf = (root) => byClass(questionOf(root), "end-question-note")[0];
 
 function shownScreen(root) {
@@ -524,10 +524,10 @@ test("„Wróć” closes the question and puts the map run back as it was: one 
   await onPage(async ({ root, pass, reading }) => {
     const { view } = await viewOf(renamed(going()));
     await press(headerButton(root, "Zakończ"));
-    assert.match(statusOf(root), / \(pauza\)$/);
+    assert.match(clockOf(root), / \(pauza\)$/);
     await press(answer(root, "Wróć"));
     assert.equal(questionOf(root), undefined);
-    assert.doesNotMatch(statusOf(root), / \(pauza\)$/);
+    assert.doesNotMatch(clockOf(root), / \(pauza\)$/);
     assert.ok(headerButton(root, "Pauza"), "„Pauza” stands again");
     assert.equal(shownScreen(root), "run");
     assert.deepEqual((await heldState(view)).run.copy.program, RENAMED_PROGRAM);
@@ -545,7 +545,7 @@ test("„Wróć” closes the question and puts the map run back as it was: one 
     await press(headerButton(root, "Zakończ"));
     await press(answer(root, "Wróć"));
     assert.equal(questionOf(root), undefined);
-    assert.match(statusOf(root), / \(pauza\)$/);
+    assert.match(clockOf(root), / \(pauza\)$/);
     assert.ok(headerButton(root, "Wznów"), "it waits for „Wznów”");
     pass(3_000);
     await reading();
@@ -579,7 +579,7 @@ test("leaving the screen closes the question and the map run stays paused on the
     await inAct(() => address.follow(RUN_ADDRESS));
     assert.equal(shownScreen(root), "run");
     assert.equal(questionOf(root), undefined);
-    assert.match(statusOf(root), / \(pauza\)$/);
+    assert.match(clockOf(root), / \(pauza\)$/);
     pass(4_000);
     await reading();
     assert.equal((await heldState(view)).run.minute, 0);
@@ -603,7 +603,7 @@ test("the question lives in the page alone: a game built from the kept document 
     assert.equal(loaded.ok, true);
     const { view } = await viewOf(loaded.state);
     assert.equal(questionOf(root), undefined);
-    assert.match(statusOf(root), / \(pauza\)$/);
+    assert.match(clockOf(root), / \(pauza\)$/);
     assert.ok(headerButton(root, "Wznów"));
     await inAct(() => view.dispose());
   });

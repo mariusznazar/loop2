@@ -3682,9 +3682,9 @@ function returnItem(root) {
   return item ? [item.textContent, item.getAttribute("href")] : null;
 }
 
-// Task ekran-przejscia, To do 1 and 8: the status row stands in the header of the screen, in React.
-const statusTextOf = (root) =>
-  byClass(root, "run-header-status")[0]?.textContent;
+// Task ekran-przejscia, To do 1 and 8, and task teraz-i-potem, To do 3 (D-311, D-122): the clock
+// stands in the header of the screen, in React, as „Minuta {game minute}”, with „ (pauza)” at a pause.
+const clockTextOf = (root) => byClass(root, "run-header-clock")[0]?.textContent;
 
 /** A click on the link to `hash`, inside act: the bar redraws at a change of screen. */
 const follow = (address, hash) => inAct(() => address.follow(hash));
@@ -4097,7 +4097,7 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
     // Third click: „Wejdź” at the character.
     await press(buttonLabelled(root, "Wejdź: Ala, mapa Las"));
     assert.equal(shownScreen(root), "run");
-    assert.match(statusTextOf(root), /^Minuta 0/);
+    assert.equal(clockTextOf(root), "Minuta 0");
     assert.deepEqual(address.entries, [
       "#/",
       "#/mapy",
@@ -4123,7 +4123,7 @@ test("leaving the screen of a map run that goes on pauses it as „Pauza” does
       // The loaded map run came back paused (D-212); the player goes on.
       await press(buttonNamed(root, "Wznów"));
       await held.answer("saveGame", { kind: "saved", revision: 5 });
-      assert.doesNotMatch(statusTextOf(root), / \(pauza\)$/);
+      assert.doesNotMatch(clockTextOf(root), / \(pauza\)$/);
 
       await follow(address, "#/");
       assert.equal(shownScreen(root), "headquarters");
@@ -4142,7 +4142,7 @@ test("leaving the screen of a map run that goes on pauses it as „Pauza” does
       await settle();
       await goBack(address);
       assert.equal(shownScreen(root), "run");
-      assert.match(statusTextOf(root), /^Minuta 0 .* \(pauza\)$/);
+      assert.equal(clockTextOf(root), "Minuta 0 (pauza)");
       assert.ok(shown(buttonNamed(root, "Wznów")), "it waits for „Wznów”");
       assert.deepEqual(waitingCalls(held), [], "the return changes nothing");
 
