@@ -7681,3 +7681,48 @@ slow down under a growing chronicle.
 *Rejected:* the server's output — the game does not run there; a route of the server's own for
 reports — code in two parts and a limit of requests for a game with one player; Sentry — an outside
 service and data in a foreign cloud; GlitchTip — a service, a database and a copy of it to keep.
+
+### D-348 — From what does the chronicle learn what happened in a game minute and what the player changed in the copy?
+
+The chronicle learns what happened in a game minute from the events the simulation returns, each
+with its game minute — among them a streak above zero falling to zero, with the streak before the
+loss and its cause, wherever it falls, and a campfire whose minutes of burning run out — save the
+paragraph of the last encounter, composed from the facts the map run keeps (D-147), and the game
+state holds none of these events. The browser view describes a change the player makes to the copy
+from the copy before the act and the copy after it, together with the program rule or rule group
+the player moved where the program editor names it, which never enters the simulation, and no event
+of the simulation describes such a change.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-147 · derives from D-341 · derives from D-342 · derives from D-344
+- **Verification:** an agent compares a change with the decision:
+  - complies: at 16× a game minute of cold taking a streak of 391 to zero inside one reading of the
+    clock that passes several game minutes, the simulation returning one event of the loss at that
+    game minute with 391 and cold; a campfire burning out in a game minute of an encounter returning
+    its event; „↓” on program rule 2.1 giving „Przesunięto regułę 2.1 na 2.2: …” alone, though the
+    copies alone could read the rule below it moving up
+  - violates: the view finding a loss of the streak or a campfire gone out by comparing two readings
+    of the game state; a field of the game state, and with it of the save, holding the losses of the
+    streak; an edit of the copy returning from the simulation an event that describes the change; the
+    hint of a move passed to a function of the simulation; a new way of setting a streak above zero
+    to zero that returns no event of the loss
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, the first and second questions
+
+*Rationale:* at a fast pace one reading of the game state passes several game minutes, and a tab the
+browser held back passes many, so a comparison of readings loses the game minute of a loss of the
+streak, its cause where the body recovered within the span, and a campfire lit again within it; the
+simulation alone knows these, and one shape of the event of a loss serves every place the streak
+falls. Each act on the copy is one call the view makes, so the copies before and after it describe
+the change exactly, and only which of two neighbours that swapped places the player moved is known
+to the program editor alone. Accepted with it: a new way of setting a streak above zero to zero
+leaves a loss the chronicle never shows unless it returns the event; a new place of the editor that
+moves a rule or a group and names none gives a swap described from the copies alone, which may name
+the other one.
+*Rejected:* readings of the game state alone, each compared with the one before — the game minute of
+a loss and its cause, and a campfire lit again within one reading, are lost; every fact as an event,
+the changes of the copy included — the simulation does not know which of two swapped neighbours the
+player moved, so it would take the editor's hint or describe some swaps wrongly, and it would
+describe facts the view already holds exactly; the program editor describing every edit at each of
+its places, with no comparison of the copies — many more places to keep right; the comparison
+alone, a swap decided by a fixed rule — „↓” on 2.1 reading in half the cases as 2.2 moving up.
