@@ -1,7 +1,8 @@
 /**
  * The screen of a manual map run in React, Przejście (D-311, D-280, D-281, D-282, D-19, D-122, D-313;
- * task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1): one header — the character's name, the map's name and the
- * status row — over three areas side by side, each a `screen-area` element a narrower layout can
+ * task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1): one header — the
+ * character's name, the map's name, the clock, the bar of the solving condition and the buttons —
+ * over three areas side by side, each a `screen-area` element a narrower layout can
  * rearrange: the world on the left, the program in the middle, the band of a discovery above the
  * program panel, and on the right one content at a time, the table of revealed tiles or, while a
  * rule or a group is open, the rule panel. The question „Zapisać, odrzucić, wrócić?” of „Zakończ”

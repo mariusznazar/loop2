@@ -151,7 +151,7 @@ export function markedMenuItem(screen: Screen): MenuItem | null {
 /**
  * The menu bar's „Wróć do przejścia · {mapa} · minuta {m}” for a game state holding a manual map
  * run, going on or ended and waiting for „Restart” or „Zakończ” (D-280), with the address of its
- * screen; null where the game state holds no map run. The minute is the one the status row writes,
+ * screen; null where the game state holds no map run. The minute is the one the clock in the header of that screen writes,
  * and the map's name comes from the data. Pure.
  */
 export function returnToRunEntry(state: GameState): ReturnEntry | null {

@@ -290,8 +290,8 @@ każdej zmienionej kontrolki z tą listą i ze stroną wszystkich stanów.
 
 - **Decision:** D-38
 - **Invariant:** none
-- **Good:** Za ciasny wiersz stanu poprawiony w regułach tego wiersza innym stopniem skali odstępów.
-- **Bad:** Wartość stopnia skali odstępów zmieniona w pliku tokenów, żeby zmieścił się wiersz stanu.
+- **Good:** Za ciasny nagłówek ekranu przejścia poprawiony w regułach tego nagłówka innym stopniem skali odstępów.
+- **Bad:** Wartość stopnia skali odstępów zmieniona w pliku tokenów, żeby zmieścił się nagłówek ekranu przejścia.
 
 Token projektowy niesie znaczenie dla całego produktu. Zmiana znaczenia roli to
 nowa albo zmieniona decyzja (D-39, D-40, D-41); zmiana wartości, która

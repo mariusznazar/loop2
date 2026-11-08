@@ -509,3 +509,20 @@ test("after a completion the bar stands, met, at the minute of the completion", 
     assert.equal(part.classList.contains("positive"), true);
   });
 });
+
+// D-46: only the chronicle and the clock stand in Geist Mono, so the name and numbers of the bar of
+// the solving condition do not; tabular figures keep them from jittering in Geist too. Catches the
+// mono face set on the bar's words.
+test("the words of the bar of the solving condition are not in the mono face of the clock, and keep tabular figures", async () => {
+  await withPage(async ({ document, window }) => {
+    addStylesheet(document);
+    const { container } = await draw(document, sent());
+    const style = window.getComputedStyle(
+      requirementsOf(container)[0].querySelector(
+        ".run-header-requirement-text",
+      ),
+    );
+    assert.notEqual(style.fontFamily, "var(--font-family-mono)");
+    assert.equal(style.fontVariantNumeric, "tabular-nums");
+  });
+});

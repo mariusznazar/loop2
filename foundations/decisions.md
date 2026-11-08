@@ -4045,7 +4045,7 @@ was ready.
 no hours, since after a load such a number could already be false, and the second stands in `danger`
 because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
 game state remembers how each death was settled.
-*Rejected:* the same in the status row — a very long row and a change of its accepted wording;
+*Rejected:* the same in the status row, which the header then held — a very long row and a change of its accepted wording;
 nothing on this screen, the telling left to the headquarters — the player may press „Restart”
 unaware of the lost progress.
 

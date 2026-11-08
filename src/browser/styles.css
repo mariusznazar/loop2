@@ -1379,7 +1379,6 @@ header .failure-line {
 
 .run-header-requirement-text {
   margin: 0;
-  font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
   color: inherit;
 }
