@@ -97,8 +97,9 @@ type ListProps = {
 
 /**
  * The list of the filter picked. Its window is its own state, and the chronicle keys it by the
- * filter, so picking a filter starts the window anew (spec D7). The window is read from the memory
- * only when the memory, the filter or the window changed.
+ * filter and the number of the map run, so picking a filter and the start of a map run, by a send or
+ * by „Restart”, start the window anew (spec D7). The window is read from the memory only when the
+ * memory, the filter or the window changed.
  */
 function ChronicleList({ chronicle, snapshot, combat }: ListProps) {
   const [size, setSize] = useState(WINDOW_SIZE);
@@ -171,7 +172,7 @@ const ChronicleView = memo(function ChronicleView({
         ))}
       </div>
       <ChronicleList
-        key={snapshot.filter}
+        key={`${snapshot.filter}:${snapshot.runNumber}`}
         chronicle={chronicle}
         snapshot={snapshot}
         combat={combat}

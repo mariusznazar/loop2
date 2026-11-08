@@ -2,11 +2,11 @@
  * The chronicle memory of a manual map run (D-338, D-339, D-346, D-147; task kronika-z-filtrami,
  * To do 1–9; spec D2, D6, D7): the entries in the memory of the page, never in the game state or the
  * save, the place of the paragraph of the last encounter, whether the last start of an activity
- * recorded was a wait, the tab and the filter picked, and a number that changes at every change of
- * these, which a screen compares to draw nothing again where nothing changed. The game view creates
- * it from the game state it is built from and records into it every result, with the state before
- * it and, for an act on the copy, what the act was. It holds no React and no DOM; nothing runs when
- * the module is imported.
+ * recorded was a wait, the tab and the filter picked, the number of the map run, and a number that
+ * changes at every change of these, which a screen compares to draw nothing again where nothing
+ * changed. The game view creates it from the game state it is built from and records into it every
+ * result, with the state before it and, for an act on the copy, what the act was. It holds no React
+ * and no DOM; nothing runs when the module is imported.
  */
 import type { GameResult } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";
@@ -44,6 +44,8 @@ export type ChronicleWindow = { rows: ChronicleRow[]; more: boolean };
 /** What the screen compares and reads at each draw; the same object while the number stays. */
 export type ChronicleSnapshot = {
   readonly version: number;
+  /** How many map runs the memory has seen start, by a send or by „Restart”; a load counts none. */
+  readonly runNumber: number;
   readonly tab: ChronicleTab;
   readonly filter: ChronicleFilter;
   readonly paragraph: ParagraphPlace | null;
@@ -101,11 +103,11 @@ function emptyIndex(): KindIndex {
  *
  * Recording follows the events of each result in order: a map run ended — by „Zakończ”, or by
  * „Restart” before its new start — clears the entries, the paragraph and the wait; a map run started
- * clears them too and, with no map run ended in the same result, as at a send, picks „Kronika” and
- * „Wszystko” again, while „Restart” keeps the tab and the filter (D-343, D-346). The start of a wait
- * gives its entry only where the last start recorded was not a wait; an attack moves the paragraph to
- * the end of the order at its minute and ends the wait; every other event gives the entry
- * `eventEntry` gives it, or none.
+ * clears them too, counts one more map run in the snapshot and, with no map run ended in the same
+ * result, as at a send, picks „Kronika” and „Wszystko” again, while „Restart” keeps the tab and the
+ * filter (D-343, D-346). The start of a wait gives its entry only where the last start recorded was
+ * not a wait; an attack moves the paragraph to the end of the order at its minute and ends the wait;
+ * every other event gives the entry `eventEntry` gives it, or none.
  */
 export function createChronicle(state: GameState): Chronicle {
   let entries: ChronicleEntry[] = [];
@@ -118,6 +120,7 @@ export function createChronicle(state: GameState): Chronicle {
   let tab: ChronicleTab = "chronicle";
   let filter: ChronicleFilter = "all";
   let version = 0;
+  let runNumber = 0;
   let snapshot: ChronicleSnapshot | null = null;
   const listeners = new Set<() => void>();
 
@@ -171,6 +174,8 @@ export function createChronicle(state: GameState): Chronicle {
           break;
         case "mapRunStarted":
           clear();
+          runNumber += 1;
+          changed();
           if (!ended) pick("chronicle", "all");
           break;
         case "attacked":
@@ -230,7 +235,7 @@ export function createChronicle(state: GameState): Chronicle {
       };
     },
     snapshot() {
-      snapshot ??= { version, tab, filter, paragraph };
+      snapshot ??= { version, runNumber, tab, filter, paragraph };
       return snapshot;
     },
     window,

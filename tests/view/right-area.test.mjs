@@ -12,7 +12,13 @@ import { assert, inAct, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
-import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
+import {
+  createCharacter,
+  end,
+  newGame,
+  restart,
+  send,
+} from "../../dist/browser/sim/game.js";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { RightArea } from "../../dist/browser/view/right-area.js";
 
@@ -513,6 +519,89 @@ test("the list draws a bounded window of the newest entries, grows it on a scrol
       drawnAtFirst,
       "a filter picked starts the window anew",
     );
+  });
+});
+
+// D-343, spec D7. Catches a window grown in one map run staying as large in the next one, started by
+// a send or by „Restart” (the list would draw rows the player has not scrolled to), and a window that
+// starts anew whenever an entry arrives (the list would jump back while the player reads).
+test("the grown window starts anew at a send and at „Restart”, and stays where an entry only arrives", async () => {
+  await withPage(async ({ document }) => {
+    const { chronicle, state } = sentChronicle();
+    const { container } = await draw(document, chronicle, state);
+    const manyStarts = (count) =>
+      Array.from({ length: count }, (_, index) =>
+        started(index + 1, { kind: "explore" }),
+      );
+    // The wait of the send and 400 starts: 401 entries in the map run.
+    await record(chronicle, state, manyStarts(400));
+    const drawnAtFirst = rowsOf(container).length;
+    assert.ok(drawnAtFirst > 0 && drawnAtFirst < 400, "a bounded window");
+
+    const growOnce = () =>
+      scrollTo(byClass(container, "chronicle-list")[0], {
+        top: 4700,
+        height: 5000,
+        client: 300,
+      });
+    await growOnce();
+    const grown = rowsOf(container).length;
+    assert.ok(grown > drawnAtFirst, "precondition: the window has grown");
+
+    await record(chronicle, state, [started(401, { kind: "explore" })]);
+    assert.equal(rowsOf(container).length, grown, "an entry arrives");
+    assert.equal(rowsOf(container)[0].minute, "401");
+
+    const restarted = restart(state);
+    await inAct(() => chronicle.record(restarted, state));
+    await record(chronicle, restarted.state, manyStarts(400));
+    assert.equal(
+      rowsOf(container).length,
+      drawnAtFirst,
+      "the new map run started by „Restart”",
+    );
+
+    await growOnce();
+    assert.ok(rowsOf(container).length > drawnAtFirst, "grown again");
+    const ended = end(restarted.state);
+    await inAct(() => chronicle.record(ended, restarted.state));
+    const sent = send(ended.state, SENT, REAL_MS + 1);
+    await inAct(() => chronicle.record(sent, ended.state));
+    await record(chronicle, sent.state, manyStarts(400));
+    assert.equal(
+      rowsOf(container).length,
+      drawnAtFirst,
+      "the new map run started by a send",
+    );
+  });
+});
+
+// Spec D6, D7. Catches the paragraph of the last encounter composed again whenever the list draws
+// again (an entry recorded, a scroll), not only when the encounter changed. The encounter is a plain
+// record whose read of the creature is counted.
+test("the paragraph is composed once for an encounter however often the list draws again", async () => {
+  await withPage(async ({ document }) => {
+    const { chronicle, state } = sentChronicle();
+    let reads = 0;
+    const encounter = new Proxy(WOLF_BEFORE, {
+      get(target, key) {
+        if (key === "creatureId") reads += 1;
+        return target[key];
+      },
+    });
+    const fighting = { ...state, run: { ...state.run, lastCombat: encounter } };
+    await record(chronicle, fighting, [
+      { kind: "attacked", minute: 212, creature: "wolf" },
+    ]);
+    const { container } = await draw(document, chronicle, fighting);
+    assert.ok(textsOf(container).includes(WOLF_BEFORE_TEXT), "precondition");
+    const afterFirst = reads;
+    assert.ok(afterFirst >= 1, "precondition: the encounter is read");
+
+    await record(chronicle, fighting, [started(230, { kind: "eat" })]);
+    await record(chronicle, fighting, [started(240, { kind: "explore" })]);
+    assert.equal(rowsOf(container).length, 4, "the entries arrived");
+    assert.equal(reads, afterFirst, "two entries recorded, none composed");
   });
 });
 

@@ -611,6 +611,34 @@ test("the number changes at every change of the chronicle, the tab or the filter
   assert.equal(changed(), true, "the paragraph placed");
 });
 
+// Catches the number of the map run staying at a send or at „Restart” (a screen that starts its window
+// anew at a new map run would not hear of it), changing where only an entry, a tab, a filter or the
+// end of the map run comes (the window would start anew while the player reads), or not changing the
+// snapshot the screen compares.
+test("the number of the map run changes at a send and at „Restart”, and at nothing else", () => {
+  const { chronicle, state } = sentChronicle();
+  const first = chronicle.snapshot().runNumber;
+  recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
+  recordEvents(chronicle, state, [attacked(5)]);
+  chronicle.pickTab("terrain");
+  chronicle.pickFilter("action");
+  assert.equal(chronicle.snapshot().runNumber, first, "entries and picks");
+
+  const restarted = restart(state);
+  chronicle.record(restarted, state);
+  const second = chronicle.snapshot().runNumber;
+  assert.notEqual(second, first, "Restart");
+
+  const ended = end(restarted.state);
+  chronicle.record(ended, restarted.state);
+  assert.equal(chronicle.snapshot().runNumber, second, "Zakończ");
+  const sent = send(ended.state, SENT, REAL_MS + 1);
+  chronicle.record(sent, ended.state);
+  const third = chronicle.snapshot().runNumber;
+  assert.notEqual(third, second, "a send");
+  assert.notEqual(third, first);
+});
+
 // Catches a screen left stale (no call at a change of the chronicle or at a pick), a call for each
 // entry of one result (the screen would draw again for each), a call where nothing changed, and a
 // listener that goes on being called after it stopped. The screen reads the memory through this.
