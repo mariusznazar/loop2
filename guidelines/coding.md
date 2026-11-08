@@ -34,40 +34,19 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 - **Good:** Nowe pliki spełniają blokujące reguły bez komentarzy wyciszających.
 - **Bad:** Kod narusza blokującą regułę albo wycisza ją komentarzem lub w konfiguracji.
 
-TS/JS aplikacji, skryptów i testów w browser-view, simulation, account-server
-i build-tools sprawdza lokalny ESLint 10.12.0 z konfiguracją `eslint.config.mjs`:
-`recommended` z @eslint/js 10.0.1, a dla TS również `recommendedTypeChecked`
-z typescript-eslint 8.71.2, oba bez zmian. Parser używa API TypeScript 6.0.2
-oraz globals 17.13.0; kompilator aplikacji pozostaje TypeScript 7. Konfiguracja
-wyłącza komentarze konfiguracyjne w kodzie (`noInlineConfig`), a ESLint działa
-z `--max-warnings 0`, więc każdy komentarz `eslint-disable` albo `/* eslint … */`
-oblewa kontrolę. Konfiguracja nie ustawia własnych reguł, ignoruje tylko
-zależności, pliki wygenerowane, submoduł i wyniki tymczasowe, a jej wzorce plików
-obejmują każdy katalog z kodem tych części. Tego pilnuje przegląd każdej zmiany
-konfiguracji według D-29. Test uruchamia ESLint z własnym pustym plikiem
-wyciszeń (`--suppressions-location`), więc `eslint-suppressions.json`
-w repozytorium niczego nie wycisza.
+Wzorce plików `eslint.config.mjs` obejmują każdy katalog z kodem browser-view,
+simulation, account-server i build-tools. Tego pilnuje przegląd każdej zmiany
+konfiguracji według D-29.
 
-Python we wszystkich sześciu częściach z kodem sprawdza lokalny Ruff 0.17.1
-z konfiguracją `ruff.toml`: 393 reguły z domyślnego zestawu 407 reguł bez preview
-blokują, a czternaście wymienionych w Examples pozostaje przykładami. Ruff dostaje
-ten plik wprost i `--ignore-noqa`, więc inna konfiguracja Ruffa w repozytorium
-nie zmienia zestawu, a `# noqa` ani `# ruff: noqa` niczego nie wyciszają. Ruff
-sprawdza pliki `.py` i `.pyi`; skrypt Pythona bez rozszerzenia pomija.
-
-Samodzielne skrypty Bash we wszystkich częściach z kodem, również bez
-rozszerzenia, sprawdza lokalny ShellCheck 0.11.0 z `--norc --shell=bash
---extended-analysis=true`: domyślne nieopcjonalne kontrole i każdy poziom
-komunikatu, bez reguł przykładowych. Test wymienia skrypty po nazwie: nowy
-skrypt Bash dopisz do listy w `tests/quality/test_quality_invariants.py`.
-Dyrektywa `# shellcheck disable=…` działa, więc jej nie dodawaj; przegląd
-ją odrzuca. Polecenia wewnątrz YAML i literałów testów nie są samodzielnymi
-skryptami Bash.
+Test `shellcheck-source-rules` wymienia skrypty po nazwie: nowy skrypt Bash
+dopisz do listy w `tests/quality/test_quality_invariants.py`. Dyrektywa
+`# shellcheck disable=…` działa, więc jej nie dodawaj; przegląd ją odrzuca.
 
 Naprawiaj zgłoszenie w pliku, zamiast wyciszać blokującą regułę. Zmiana zestawu
-wymaga zaakceptowanej przez człowieka zmiany odpowiedniej decyzji. Wersje
-narzędzi przypinają deklaracje wskazane w Where in code; testy uruchamiają
-lokalne kopie, bez pobierania narzędzia przy kontroli.
+reguł ESLint, Ruffa albo ShellChecka wymaga zaakceptowanej przez człowieka
+zmiany odpowiedniej decyzji. Wersje ESLint, Ruffa i ShellChecka przypinają
+deklaracje wskazane w Where in code; testy uruchamiają lokalne kopie, bez
+pobierania narzędzia przy kontroli.
 
 ```good eslint-source-rules scripts/guideline-case.mjs
 export function doubled(value) {
@@ -110,17 +89,7 @@ printf '%s\n' $1
 - **Good:** Nowy plik ma układ pozostawiany przez Prettier z ustawieniami domyślnymi i końce linii LF.
 - **Bad:** Nowy plik ma inny układ, końce linii CRLF albo komentarz `prettier-ignore`.
 
-TS/JS aplikacji, skryptów i testów w browser-view, simulation, account-server
-i build-tools oraz HTML/CSS przeglądarki sprawdza `--check` lokalnego Prettiera
-3.9.10 z `--no-config --no-editorconfig --ignore-path .gitignore`: domyślne
-ustawienia bez opcji eksperymentalnych, czyli dwie spacje, średniki, preferowane
-podwójne cudzysłowy, docelowa szerokość 80 i LF. `.prettierignore` nie ukrywa
-pliku. Edytor korzysta z `prettier.config.mjs`, który nie ustawia żadnej opcji,
-więc formatuje tak samo; nie dodawaj do niego opcji. `.gitattributes` utrzymuje
-LF również na Windows. Zakres obejmuje nowe pliki w katalogach wzorców testu,
-bez historycznych wyjątków i bez komentarzy `prettier-ignore`, których pilnuje
-przegląd; nie obejmuje Markdown, ikon, plików wygenerowanych, zależności,
-submodułu i wyników tymczasowych.
+Nie dodawaj opcji do `prettier.config.mjs`.
 
 ```good prettier-source-format tests/quality/guideline-format.mjs
 export const values = [1, 2];
@@ -137,20 +106,9 @@ export const values=[1,2]
 - **Good:** Zmieniony plik blokady nie wnosi ostrzeżenia od poziomu low, którego nie było w `{fork-point}`.
 - **Bad:** Nowa wersja zależności wnosi ostrzeżenie od poziomu low, którego nie było w `{fork-point}`.
 
-Gdy `package-lock.json` jest taki sam jak w `{fork-point}`, audyt przechodzi
-bez sieci. W przeciwnym razie `scripts/audit_dependencies.py` uruchamia lokalny
-npm 12.2.1 (`npm audit --package-lock-only` przez publiczny rejestr npm) dla
-bieżącego pliku blokady i dla jego wersji z `{fork-point}` i oblewa na każde
-ostrzeżenie npm/GitHub Advisory Database od poziomu low, którego nie było na
-początku zmiany; info nie blokuje. Audyt obejmuje zależności bezpośrednie,
-pośrednie, produkcyjne, deweloperskie, opcjonalne i peer głównego pakietu npm;
-drugi, zagnieżdżony pakiet npm nie jest audytowany.
-
-Nieudane zapytanie albo nieczytelny raport nie dają pozytywnego wyniku. Nowe
-ostrzeżenie może zmienić wynik dla tego samego pliku blokady. Próg nie zmienia
-się automatycznie i nie ma terminu rewizji. Zapytanie wysyła nazwy i wersje
-pakietów bez kodu aplikacji. Audyt nie obejmuje runtime, obrazów kontenerów,
-pakietów systemowych ani zależności spoza npm.
+Audyt porównuje plik blokady ze stanem z `{fork-point}` i oblewa każde
+ostrzeżenie od poziomu low, którego tam nie było; plik taki sam jak w
+`{fork-point}` przechodzi bez sieci.
 
 ### Recording a failure
 
@@ -172,13 +130,9 @@ to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont �
 serwer, `account-block` i `account-backup` — mają własną, `installLastResort`,
 bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręcznie
 albo przez bramkę testów, które tych danych nie dotykają, regułę spełnia domyślny
-wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. `account-database-check`,
-`measure-passwords`, `deploy/loop2-backup` i `scripts/restore-trial.mjs` już ją
-mają. Przeglądarka też ją ma: `installLastResort` z `src/browser/view/last-resort.ts`
-anuluje zdarzenie błędu, którego nic nie obsłużyło, i zapisuje w konsoli zwykłym
-tekstem jeden wiersz z rodzajem, kodem i miejscem obsługi, bez treści i stosu błędu,
-ten sam wiersz raz do odświeżenia strony. Reguła obowiązuje też `deploy/loop2-deploy`,
-który nie zostawia wiersza końcowego, gdy zostanie zabity.
+wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. Reguła obowiązuje
+też `deploy/loop2-deploy`, który nie zostawia wiersza końcowego, gdy zostanie
+zabity.
 
 ### Hiding a failure
 
@@ -317,7 +271,6 @@ zamiast zamiany na dłuższą nazwę `re.DOTALL`.
 ### RUF100
 
 Istniejące `noqa: E402` może pozostać, choć E402 nie jest w blokującym zestawie.
-Nie uprawnia to do wyciszenia reguły blokującej.
 
 ### SIM117
 
@@ -335,17 +288,11 @@ Zagnieżdżone warunki mogą pokazywać dwa osobne etapy sprawdzania.
 ### Odłożone rodzaje i formatowanie
 
 Zasady testowania, wzorce według poziomów i przykład jawnego czasu określa
-`guidelines/testing.md`. Ogólne kontrole jakości kodu obejmują też pliki testów.
+`guidelines/testing.md`.
 Automatyczne formatowanie Python i Bash pozostaje odłożone. Osobne wzorce
-budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone. CSS nie ma własnego wzorca ani własnych wytycznych rodzaju; reguły
-arkuszy stylów, których pilnuje test, stoją w
-`guidelines/styleguide-browser-view.md`.
+budowania, wdrożenia, punktów uruchomienia, HTML i CSS również są odłożone.
 Wzorzec zapisu gry wskazuje rodzaj `saved-game`, a wzorzec poczty rodzaj
 `mail-sending` w tabeli rodzajów.
-Przed wyborem wzorca odłożonego istniejącego rodzaju porównuje się jego pliki.
-Ogólne kontrole nadal obejmują cały przyjęty zakres kodu. Dla przyjętych linterów
-obowiązują niezmienniki pełnej zgodności kodu, bez przejściowej kontroli
-„nie pogarszaj starego kodu”.
 
 ## Where in code
 
