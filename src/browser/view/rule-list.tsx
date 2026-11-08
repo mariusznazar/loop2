@@ -11,6 +11,10 @@
  * `createRuleList`, as the program list does, calling it from an event handler or the continuation
  * of an answer, never from render or an effect. Nothing runs when the module is imported.
  *
+ * Where the page hands it the rule panel (`panel`), the list draws it in place, under the row of the
+ * rule it changes or under the header of the group it changes, so the player edits a rule where it
+ * stands (D-288).
+ *
  * Where the page gives it the signs of the copy of a map run (`signs`, from `ruleSigns` of the
  * simulation; task stan-i-powod-przy-regule) a row stands on the background `rule-winning` when it
  * wins now and on `rule-running` when its action is being carried out and another rule wins, and
@@ -22,6 +26,7 @@ import type {
   DragEvent,
   KeyboardEvent,
   MouseEvent,
+  ReactNode,
 } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
@@ -62,6 +67,14 @@ export type RuleListProps = {
   folded: readonly GroupId[];
   /** The row or the header whose panel stands open; null where none does. */
   open: { groupId: GroupId; ruleId: number | null } | null;
+  /**
+   * The rule panel of the open row or header, for the list to draw in place (D-288): directly under
+   * that row, or directly under the header of its group where the open rule is a group's own or sits
+   * in a folded group, whose row is not drawn. It stands beside the row's item, never inside it, so a
+   * click, a key or a drag in the panel reaches no handler of the row. Null or left out, the list
+   * draws none and the page places the panel itself.
+   */
+  panel?: ReactNode;
   /**
    * What the rows and headers show of the condition of each rule and group: only for the copy of a
    * map run, otherwise null or left out.
@@ -195,6 +208,7 @@ export function RuleListView({
   counts,
   folded,
   open,
+  panel = null,
   signs = null,
   onCommit,
   onOpen,
@@ -429,7 +443,13 @@ export function RuleListView({
     </div>
   );
 
-  function renderRule(group: RuleGroup, groupIndex: number, index: number) {
+  /** The row of a rule and, where the open panel stands under it, the item that holds the panel. */
+  function renderRule(
+    group: RuleGroup,
+    groupIndex: number,
+    index: number,
+    panelHere: boolean,
+  ) {
     const each = group.rules[index];
     const sentence = ruleSentence(each);
     const time = actionTime(state, each.action.kind);
@@ -445,7 +465,7 @@ export function RuleListView({
           : signs.running === each.id
             ? " running"
             : "";
-    return (
+    const row = (
       <li
         key={each.id}
         className={`rule-list-row${isOpen ? " open" : ""}${standing}${
@@ -528,6 +548,14 @@ export function RuleListView({
         </span>
       </li>
     );
+    return panelHere
+      ? [
+          row,
+          <li key={`panel-${each.id}`} className="rule-list-panel">
+            {panel}
+          </li>,
+        ]
+      : [row];
   }
 
   function renderGroup(group: RuleGroup, groupIndex: number) {
@@ -538,13 +566,25 @@ export function RuleListView({
     const bar = signs?.judgement.groups[group.id];
     const lands = landing?.kind === "rule" && landing.groupId === group.id;
     const lineAt = lands ? landing.beforeId : undefined;
+    // The panel stands under the open rule's row; under the header where the group's own is open, or
+    // where the rule's row is not drawn because the group is folded.
+    const panelOpenHere = panel !== null && open?.groupId === group.id;
+    const panelUnderRow =
+      panelOpenHere &&
+      !isFolded &&
+      group.rules.some((each) => each.id === open.ruleId);
     const rows = group.rules.flatMap((each, index) => [
       lands && lineAt === each.id ? (
         <li key={`line-${each.id}`} className="drop-line" aria-hidden="true">
           tu wyląduje
         </li>
       ) : null,
-      renderRule(group, groupIndex, index),
+      ...renderRule(
+        group,
+        groupIndex,
+        index,
+        panelUnderRow && open.ruleId === each.id,
+      ),
     ]);
     return (
       <section
@@ -612,6 +652,9 @@ export function RuleListView({
             />
           </span>
         </div>
+        {panelOpenHere && !panelUnderRow ? (
+          <div className="rule-list-panel">{panel}</div>
+        ) : null}
         {isFolded ? (
           lands ? (
             line

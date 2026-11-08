@@ -7,9 +7,10 @@
  * handler or the continuation of an answer, never from render or an effect. On the screen of a map
  * run the panel also draws the question „Zapisać, odrzucić, wrócić?” of „Zakończ” (D-173), just above
  * the heading of the copy, while the screen tells it to (`setQuestion`). The panel holds the rule
- * list and, beside it, the rule panel, the open rule a state of the panel; where the screen places a
- * host element for the rule panel (`placeRulePanel`), the panel draws it there, through a portal of
- * its own React tree, and tells the screen whether it stands. It asks the
+ * list, which draws the rule panel in place, under the row or header it changes, the open rule a state
+ * of the panel; where the screen places a host element for the rule panel (`placeRulePanel`), the
+ * panel draws it there instead, through a portal of its own React tree, and tells the screen whether
+ * it stands. It asks the
  * game for every change through `ProgramPanelControls` and never writes the game state. Which program it shows is the boundary's, changed by picking on the list and by the
  * operations of the game. The folding of rule groups is one memory of the page, `createFolding`, which
  * the page makes once and gives to both panels. Nothing runs when the module is imported.
@@ -143,11 +144,12 @@ export type ProgramPanel = {
    */
   showProgram(programId: ProgramId): void;
   /**
-   * Places the rule panel in `host`, an element of the screen outside this panel, instead of beside
-   * the rows: the panel draws it there through a portal, so it stays in this panel's React tree.
+   * Places the rule panel in `host`, an element of the screen outside this panel, instead of under
+   * the row or header it changes: the panel draws it there through a portal, so it stays in this
+   * panel's React tree.
    * `onOpen(true)` is called when a rule or a group opens and `onOpen(false)` when none is open any
    * more, so the screen can hide what the panel takes the place of and show `host` meanwhile. Left
-   * unplaced, the panel draws the rule panel beside its rows.
+   * unplaced, the panel draws the rule panel in the rule list, under its row or header.
    */
   placeRulePanel(host: HTMLElement, onOpen: (open: boolean) => void): void;
   /**
@@ -346,7 +348,7 @@ type ProgramPanelViewProps = {
  * The panel drawn from the game state and the program shown. In `run` mode it holds the list
  * „Program:”, the actions of the list, the copy's section and the name field above the editor; in
  * `programs` mode the sentence of a waiting map run, the program's name and its trip plan. Both hold
- * the rule list with the rule panel beside it.
+ * the rule list, in which the rule panel opens under its row or header.
  */
 export function ProgramPanelView({
   mode,
@@ -661,30 +663,18 @@ export function ProgramPanelView({
             onCommit={actions.edit}
           />
         ) : null}
-        <div
-          className={
-            panelStands && ruleHost === null
-              ? "program-editor-layout with-panel"
-              : "program-editor-layout"
-          }
-        >
-          <div className="program-rules">
-            <RuleListView
-              state={state}
-              program={content.program}
-              counts={content.counts}
-              folded={folded}
-              open={open === null ? null : open.target}
-              signs={copyShown ? ruleSigns(state) : null}
-              onCommit={actions.edit}
-              onOpen={(target) => setOpen({ key, target })}
-              onFoldedChange={(groups) => folding.set(key, groups)}
-            />
-          </div>
-          {ruleHost === null && rulePanel !== null ? (
-            <div className="program-rule-panel">{rulePanel}</div>
-          ) : null}
-        </div>
+        <RuleListView
+          state={state}
+          program={content.program}
+          counts={content.counts}
+          folded={folded}
+          open={open === null ? null : open.target}
+          panel={ruleHost === null ? rulePanel : null}
+          signs={copyShown ? ruleSigns(state) : null}
+          onCommit={actions.edit}
+          onOpen={(target) => setOpen({ key, target })}
+          onFoldedChange={(groups) => folding.set(key, groups)}
+        />
       </div>
       {ruleHost !== null && rulePanel !== null
         ? createPortal(rulePanel, ruleHost)

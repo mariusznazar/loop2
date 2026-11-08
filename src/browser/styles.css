@@ -827,19 +827,13 @@ header .failure-line {
 }
 
 /*
- * The rule list and, once a rule or a group is open, the rule panel at its right, each a block of its
- * own that a narrower place sets one above the other (D-282): the columns of the layout are as wide as
- * the place allows, and the rule list takes the whole line while no panel stands.
+ * The rule panel in the rule list (D-288): directly under the row of the rule it changes, as an item
+ * of the list of rules, or directly under the header of the group it changes. The panel draws its own
+ * frame and padding, so the place adds only the gap that parts it from the rows around it.
  */
-.program-editor-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-m);
-  align-items: start;
-}
-
-.program-editor-layout.with-panel {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+.rule-list-panel {
+  list-style: none;
+  margin: var(--space-xs) 0;
 }
 
 /* „Przełącz postać na ten program” stands under the list, apart from the list's actions. */

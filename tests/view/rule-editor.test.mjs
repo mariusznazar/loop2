@@ -5,6 +5,7 @@
 // sends the events a drag sends.
 import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
+import { createElement } from "react";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   createCharacter,
@@ -1564,5 +1565,161 @@ test("opening another rule shows that rule on its condition", async () => {
     const shown = panelOf(page.root);
     assert.deepEqual(labelsIn(shown), ["Warunek", "Czynność"]);
     assert.equal(page.document.activeElement, cellNamed(shown, "Zawsze"));
+  });
+});
+
+// --- the rule panel under its row or header ------------------------------------------------------
+// Task proporcje-sceny-i-programu, To do 1 and 3; D-288, D-311. A panel the page hands the list
+// stands in the list, under the row or the header it changes, and is no part of that row.
+
+/** A stand-in for the rule panel the page hands the list: a field to focus and a button to click. */
+function probePanel() {
+  return createElement(
+    "div",
+    { className: "probe-panel", tabIndex: 0 },
+    createElement("button", null, "w panelu"),
+  );
+}
+const probeIn = (root) => root.querySelector(".probe-panel");
+
+// Catches the panel standing beside the list or at its end, and the panel inside the row's own item.
+test("a list given a panel draws it right after the open row and never inside the row's item", async () => {
+  await withPage(async (page) => {
+    await mount(page, twoGroups(), {
+      open: { groupId: 1, ruleId: 1 },
+      panel: probePanel(),
+    });
+    const row = rowOf(page.root, 1);
+    assert.equal(page.root.querySelectorAll(".probe-panel").length, 1);
+    assert.ok(
+      row.nextElementSibling.contains(probeIn(page.root)),
+      "the panel stands right after the open row",
+    );
+    assert.equal(row.contains(probeIn(page.root)), false, "not in the row");
+    assert.equal(
+      row.nextElementSibling.nextElementSibling,
+      rowOf(page.root, 2),
+      "the next row follows the panel",
+    );
+  });
+});
+
+// Catches a header whose panel stands under its rules and a header of a group other than the open one.
+test("a list given a panel draws it right after the open header, above the rules of that group", async () => {
+  await withPage(async (page) => {
+    await mount(page, twoGroups(), {
+      open: { groupId: 2, ruleId: null },
+      panel: probePanel(),
+    });
+    const header = headerOf(page.root, 2);
+    assert.equal(page.root.querySelectorAll(".probe-panel").length, 1);
+    assert.ok(
+      header.nextElementSibling.contains(probeIn(page.root)),
+      "the panel stands right after the open header",
+    );
+    assert.equal(header.contains(probeIn(page.root)), false);
+    assert.ok(
+      sectionOf(page.root, 2).contains(probeIn(page.root)),
+      "in the group it changes",
+    );
+  });
+});
+
+// Catches a rule open in a folded group left with no panel because its row is not drawn.
+test("the panel of a rule in a folded group stands right after that group's header", async () => {
+  await withPage(async (page) => {
+    await mount(page, twoGroups(), {
+      folded: [1],
+      open: { groupId: 1, ruleId: 2 },
+      panel: probePanel(),
+    });
+    assert.equal(rowOf(page.root, 2), null, "the row is not drawn");
+    assert.equal(page.root.querySelectorAll(".probe-panel").length, 1);
+    assert.ok(
+      headerOf(page.root, 1).nextElementSibling.contains(probeIn(page.root)),
+      "the panel stands under the header of the folded group",
+    );
+  });
+});
+
+// Catches a panel drawn where none is open, a panel drawn with no panel handed over, and a panel
+// that stays at the old place when another rule opens.
+test("no panel is drawn without one handed over or with nothing open, and opening another rule moves it", async () => {
+  await withPage(async (page) => {
+    await mount(page, twoGroups(), { open: { groupId: 1, ruleId: 1 } });
+    assert.equal(probeIn(page.root), null, "none handed over");
+  });
+  await withPage(async (page) => {
+    await mount(page, twoGroups(), { panel: probePanel() });
+    assert.equal(probeIn(page.root), null, "nothing open");
+  });
+  await withPage(async (page) => {
+    const { list, props } = await mount(page, twoGroups(), {
+      open: { groupId: 1, ruleId: 1 },
+      panel: probePanel(),
+    });
+    await showAgain(list, props, props.program, {
+      open: { groupId: 2, ruleId: 3 },
+      panel: probePanel(),
+    });
+    assert.equal(page.root.querySelectorAll(".probe-panel").length, 1);
+    assert.ok(
+      rowOf(page.root, 3).nextElementSibling.contains(probeIn(page.root)),
+      "the panel moved under rule 3",
+    );
+    await showAgain(list, props, props.program, {
+      open: { groupId: 2, ruleId: null },
+      panel: probePanel(),
+    });
+    assert.ok(
+      headerOf(page.root, 2).nextElementSibling.contains(probeIn(page.root)),
+      "and under the header of group 2",
+    );
+  });
+});
+
+// Catches a click, a key or a drag in the panel reaching the handlers of the row it changes: a click
+// that asks to open the row again, a key that does, a drag that lands a rule.
+test("a click, a key and a drag over the panel reach no handler of the row or the header", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, twoGroups(), {
+      open: { groupId: 1, ruleId: 1 },
+      panel: probePanel(),
+    });
+    const probe = probeIn(page.root);
+    const key = (target, name) => {
+      const { Event } = target.ownerDocument.defaultView;
+      const event = new Event("keydown", { bubbles: true, cancelable: true });
+      Object.defineProperty(event, "key", { value: name });
+      return inAct(() => target.dispatchEvent(event));
+    };
+    await press(probe);
+    await press(probe.querySelector("button"));
+    await key(probe, "Enter");
+    await key(probe, " ");
+    assert.deepEqual(calls, [], "nothing asked of the page");
+  });
+  await withPage(async (page) => {
+    const { calls } = await mount(page, twoGroups(), {
+      open: { groupId: 2, ruleId: null },
+      panel: probePanel(),
+    });
+    await press(probeIn(page.root));
+    assert.deepEqual(calls, []);
+  });
+  // A rule dragged over the panel under rule 3 is over no row: the line the row would draw, before
+  // rule 3, does not appear.
+  await withPage(async (page) => {
+    await mount(page, twoGroups(), {
+      open: { groupId: 2, ruleId: 3 },
+      panel: probePanel(),
+    });
+    await drag(rowOf(page.root, 1).querySelector(".drag-handle"), "dragstart");
+    await drag(probeIn(page.root), "dragover");
+    const before = rowOf(page.root, 3).previousElementSibling;
+    assert.ok(
+      before === null || !before.classList.contains("drop-line"),
+      "no line before the row the panel stands under",
+    );
   });
 });

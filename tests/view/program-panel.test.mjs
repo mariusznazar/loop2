@@ -292,22 +292,34 @@ test("an edit of the trip plan on Programy goes to the program shown, and anothe
   });
 });
 
-// --- the rule panel beside the rows --------------------------------------------------------------
-// To do 3 and 8, D-282, D-288. Catches the panel standing under the rows or nowhere, a header that
-// opens no panel, the focus left outside the panel on opening, and a closed panel that takes no
-// focus back to the row.
+// --- the rule panel under its row or header ------------------------------------------------------
+// To do 3 and 8, D-282, D-288; task proporcje-sceny-i-programu, To do 1 and 3. Catches the panel
+// standing beside the rows, at the end of the list or nowhere, a row that holds its own panel, a
+// header that opens no panel, the focus left outside the panel on opening, and a closed panel that
+// takes no focus back to the row.
 for (const mode of ["programs", "run"]) {
-  test(`the rule panel opens from a row and from a header beside the rows (${mode}), takes the focus, and „✕” and Escape give it back to the row`, async () => {
+  test(`the rule panel opens from a row and from a header under it (${mode}), takes the focus, and „✕” and Escape give it back to the row`, async () => {
     await withPage(async (page) => {
       const game = await wiredPanel(page, gameWithRule(), mode);
       assert.equal(classed(game.root, "rule-panel").length, 0, "closed");
       await click(rowOf(game.root, 1).querySelector(".rule-condition"));
-      const layout = game.root.querySelector(".program-editor-layout");
-      assert.ok(layout.classList.contains("with-panel"));
-      assert.deepEqual(
-        [...layout.children].map((child) => child.className),
-        ["program-rules", "program-rule-panel"],
-        "the panel stands beside the rows, at their right",
+      assert.equal(classed(game.root, "rule-panel").length, 1);
+      assert.ok(
+        rowOf(game.root, 1).nextElementSibling.contains(
+          game.root.querySelector(".rule-panel"),
+        ),
+        "the panel stands right under the row it changes",
+      );
+      assert.equal(
+        rowOf(game.root, 1).contains(game.root.querySelector(".rule-panel")),
+        false,
+        "and is no part of the row",
+      );
+      assert.equal(
+        game.root.querySelectorAll(".program-editor-layout, .with-panel")
+          .length,
+        0,
+        "no layout puts the panel beside the rows",
       );
       assert.equal(
         game.root.querySelector(".rule-panel-heading").textContent,
@@ -330,6 +342,13 @@ for (const mode of ["programs", "run"]) {
         game.root.querySelector('input[aria-label="Nazwa grupy"]'),
         "the header's panel holds the group's name",
       );
+      assert.equal(classed(game.root, "rule-panel").length, 1);
+      assert.ok(
+        headerOf(game.root, 1).nextElementSibling.contains(
+          game.root.querySelector(".rule-panel"),
+        ),
+        "the panel stands right under the header it changes",
+      );
       assert.equal(rowOf(game.root, 1).getAttribute("aria-current"), null);
 
       await click(buttonNamed(game.root.querySelector(".rule-panel"), "✕"));
@@ -347,6 +366,31 @@ for (const mode of ["programs", "run"]) {
     });
   });
 }
+
+// Task proporcje-sceny-i-programu, To do 1; D-288. A rule open in a group that is then folded has no
+// row drawn. Catches the panel vanishing with the row, and one left at the end of the list.
+test("a rule open in a group that gets folded keeps its panel under that group's header, and under its row again once unfolded", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithRule(), "programs");
+    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+    await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+    assert.equal(rowOf(game.root, 1), null, "the row is not drawn");
+    assert.equal(classed(game.root, "rule-panel").length, 1, "still open");
+    assert.ok(
+      headerOf(game.root, 1).nextElementSibling.contains(
+        game.root.querySelector(".rule-panel"),
+      ),
+      "the panel stands right under the header",
+    );
+    await click(game.root.querySelector('button[aria-label="Rozwiń grupę"]'));
+    assert.ok(
+      rowOf(game.root, 1).nextElementSibling.contains(
+        game.root.querySelector(".rule-panel"),
+      ),
+      "and right under the row once the group is unfolded",
+    );
+  });
+});
 
 // To do 10, D-124: a rule added by „+ reguła” opens its panel. Catches the new rule standing with no
 // panel, as the old editor left it.
