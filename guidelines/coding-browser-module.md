@@ -19,6 +19,8 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/body-row.ts` | do not copy | — |
 | `src/browser/view/character-screen.tsx` | copy | — |
 | `src/browser/view/character-skills.ts` | do not copy | — |
+| `src/browser/view/chronicle-entries.ts` | copy | — |
+| `src/browser/view/chronicle.ts` | copy | — |
 | `src/browser/view/clock.ts` | copy | — |
 | `src/browser/view/combat-line.ts` | do not copy | — |
 | `src/browser/view/controls/button.ts` | copy | — |
@@ -33,6 +35,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/controls/text-field.ts` | copy | — |
 | `src/browser/view/credits-section.tsx` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
+| `src/browser/view/discovery-band-text.ts` | copy | — |
 | `src/browser/view/discovery-band.tsx` | copy | — |
 | `src/browser/view/discovery-rule.ts` | copy | — |
 | `src/browser/view/email-confirmation.ts` | do not copy | — |
@@ -51,6 +54,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/program-editor.ts` | do not copy | — |
 | `src/browser/view/program-list.tsx` | copy | — |
 | `src/browser/view/program-panel.tsx` | copy | — |
+| `src/browser/view/right-area.tsx` | copy | — |
 | `src/browser/view/rule-list.tsx` | copy | — |
 | `src/browser/view/rule-panel.tsx` | copy | — |
 | `src/browser/view/run-header.tsx` | copy | — |
