@@ -35,6 +35,7 @@ import type {
   ProgramNameRefusal,
   RuleId,
 } from "../sim/types.js";
+import type { MoveHint } from "./chronicle-entries.js";
 import { ReactButton } from "./controls/react-button.js";
 import { ReactSelectList } from "./controls/react-select-list.js";
 import type { SelectOption } from "./controls/select-list.js";
@@ -56,8 +57,12 @@ export type ShownProgram =
 
 /** What the panel's controls ask for; the game view turns each into a simulation call. */
 export type ProgramPanelControls = {
-  /** An edit of the copy the map run carries out. */
-  editCopy(program: Program): void;
+  /**
+   * An edit of the copy the map run carries out. `move` says which rule or group the player moved,
+   * where the edit is a move by „↑”, „↓” or a drop; it is for the chronicle and never reaches the
+   * simulation. An edit of a saved program carries none.
+   */
+  editCopy(program: Program, move?: MoveHint): void;
   /** An edit of the saved program numbered `programId`. */
   editProgram(programId: ProgramId, program: Program): void;
   /** „Nowy program”: a program with the suggested name at the end of the list. */
@@ -307,8 +312,8 @@ type OpenRule = { key: string; target: RulePanelOpen };
 type PanelActions = {
   /** Shows `next`; uncommitted text of the editor goes to the program it was typed into first. */
   show: (next: ShownProgram) => void;
-  /** An edit of the program shown, a whole new program. */
-  edit: (program: Program) => void;
+  /** An edit of the program shown, a whole new program, with the hint of a move where it is one. */
+  edit: (program: Program, move?: MoveHint) => void;
   createProgram: () => void;
   renameProgram: (programId: ProgramId, name: string) => void;
   deleteProgram: (programId: ProgramId) => void;
@@ -756,8 +761,8 @@ export function createProgramPanel(
 
   const actions: PanelActions = {
     show,
-    edit(program) {
-      if (shown.kind === "copy") controls.editCopy(program);
+    edit(program, move) {
+      if (shown.kind === "copy") controls.editCopy(program, move);
       else controls.editProgram(shown.programId, program);
     },
     createProgram() {

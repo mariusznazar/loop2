@@ -56,8 +56,8 @@ functions, of which those that pass game time take a game state and a span of ga
 return the next game state together with the events it produced, and real time enters the
 simulation only as an argument. The browser view draws the game only from the game state, the
 game's content data, the moment of the browser's clock, which it reads and passes to the
-simulation, and, for the scene, its previous reading of the game state and the events the
-simulation returned, and changes the game state only through functions of the simulation, to which it passes
+simulation, and, for the scene and the chronicle, its previous reading of the game state and the
+events the simulation returned, and changes the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
 the server or kept in the page's memory after a save found no session (D-211).
 
@@ -77,15 +77,17 @@ the server or kept in the page's memory after a save found no session (D-211).
     line drawn from a stored moment of readiness and the clock's reading; a game state storing the
     moment of an event, such as the moment a resurrection is ready or the moment of a save; the
     scene comparing the game state it is given with its previous reading to find the place where the
-    mage stands, or to find the start of a map run
+    mage stands, or to find the start of a map run; the chronicle writing the entry of a change of
+    the copy from the copy before the player's act and the copy after it, and the entry of a loss of
+    the streak from an event the simulation returned
   - violates: a screen of the game written as a Godot scene, or a script of the game's own code that
     the browser loads, written directly in JavaScript instead of compiled from TypeScript; a
     simulation function that reads the system time or the page; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
     reading written into the game state on each reading; a field added to the game state, and with
-    it to the save, for what the scene's motion needs
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-04 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
+    it to the save, for what the scene's motion or the chronicle needs
+- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-04 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play and Questions to settle, question 1
 
 *Rationale:* text code and tests give the most leverage in work with AI agents. A simulation of
 pure functions makes progress while away plain arithmetic and the save a JSON document, and runs on
@@ -103,7 +105,10 @@ state holds. The moment of the browser's clock stands apart from it too: the gam
 moment of an event, written once at the event, and the view compares it with its latest reading, so
 real time passing at the headquarters makes no new game state to save. The scene's motion needs
 what one reading of the game state does not say, such as the place where the mage stood, and its
-previous reading and the events give it, so no state of a drawing enters the save.
+previous reading and the events give it, so no state of a drawing enters the save. The chronicle
+records what happened between two readings, such as a loss of the streak in a game minute the
+reading passed over or a change the player made to the copy, which one reading does not say either,
+and its previous reading and the events give it, so the chronicle does not enter the save (D-339).
 *Rejected:* Godot — slower to work on with AI agents; a browser view that draws from the game state
 and changes nothing in it — the player changes the game state from the browser view; loading
 counted as a choice of the player, signing in, with this decision left as it stood — a strained
@@ -421,7 +426,8 @@ character's tile, never on the drawing.
   shown only by a real browser, which the repository does not declare, an agent compares the change
   with the decision:
   - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
-    marks the tile
+    marks the tile, while the tab „Teren” of the right area of the screen of a map run is picked
+    (D-311)
   - violates: a click on a tile that sends the character there or changes the program
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
 
@@ -2219,7 +2225,7 @@ on with „Wznów”. A band in
 the role `discovery` above the program names what was discovered and the program rule the game
 wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose
 „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the
-scene keeping its colours. Where
+scene keeping its colours, and what it named enters the chronicle. Where
 the map run ends in a completion in the game minute of a discovery, the screen after the completion
 takes the place of the pause, and the band stands, with no „Wznów”, until „Restart” or „Zakończ”.
 
@@ -2238,19 +2244,19 @@ takes the place of the pause, and the band stands, with no „Wznów”, until �
     discoveries of one game minute in two bands; a completion in the game minute of a discovery
     leaving the map run paused with „Wznów”; the band of that discovery gone from the screen after
     the completion before „Restart” or „Zakończ”; the scene greyed at a stop at a discovery
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 5 and 12
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 5 and 12 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and Decisions in play
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
 whatever treats a paused map run treats a map run stopped by a discovery the same, the scene
 excepted: it keeps its colours at a stop at a discovery, so that the moment of the reward is not
 dimmed. A discovery
-concerns the program, so it stands above the program. A map run that ends in the game minute of a
-discovery has nothing to go on to, so the screen of its end stands in place of the pause, and the
-player still reads what that game minute discovered, which enters the Understanding as any
-discovery does. Accepted with it: a stop at a discovery cannot be told apart in the game state from
-the player's pause, and a player who goes on at once loses the list of discoveries, since the game
-keeps no record of them; the band ends in two ways, „Wznów” or „Restart” and „Zakończ”, and the
-screen after a completion can keep both the band and the encounter's paragraph.
+concerns the program, so it stands above the program, and the chronicle keeps it after the player
+goes on. A map run that ends in the game minute of a discovery has nothing to go on to, so the
+screen of its end stands in place of the pause, and the player still reads what that game minute
+discovered, which enters the Understanding as any discovery does. Accepted with it: a stop at a
+discovery cannot be told apart in the game state from the player's pause; the band ends in two
+ways, „Wznów” or „Restart” and „Zakończ”, and the screen after a completion can keep both the band
+and the encounter's paragraph.
 *Rejected:* a stop at a discovery as a game state of its own, with a button of its own for going
 on; the screen after a completion with no word of the discovery made in its game minute — the player
 would not learn what that game minute discovered; the scene greyed at a stop at a discovery, as at a
@@ -2785,18 +2791,18 @@ The encounter ends immediately when either side reaches zero health: a creature 
 
 ### D-147 — What record of an encounter does the player read?
 
-From an attack the map run keeps its last encounter’s facts and shows a wrapping paragraph in `text` in the world area of the screen of a map run, under the scene and above the body row and backpack: before the turns it gives the creature’s starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter’s result. The line stands through „Wznów”, editing and the frozen death or completion screen until another attack replaces it or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. „Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”.
+From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result. The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. „Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
-- **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141
+- **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141 · derives from D-338
 - **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them
-  - violates: a completion before the turns displaying an invented victory, defeat or departure
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-147 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 8, 9 and 15
+  - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them, as one entry of the chronicle at the game minute of the attack; after a reload at a later game minute, that paragraph standing in the chronicle at the game minute of the attack
+  - violates: a completion before the turns displaying an invented victory, defeat or departure; the paragraph standing under the scene in the world area; an entry of the chronicle for each exchange of blows; the paragraph of an earlier attack still standing after the next attack
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-147 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 8, 9 and 15 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 1 and 5, and Decisions in play
 
-*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph.
-*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; putting it above discovery — moves the explanation of the pause.
+*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter.
+*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; putting it above discovery — moves the explanation of the pause; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter.
 
 ### D-148 — Where is an attacking creature pictured today?
 
@@ -3369,15 +3375,15 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 
 ### D-185 — Where does the player read what completion deposited?
 
-After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the world area of the screen of a map run, under the scene and the last-encounter paragraph when present and above the body row and backpack, until „Restart” or „Zakończ”.
+After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the world area of the screen of a map run, under the scene and above the body row and backpack, until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-122 · derives from D-147 · derives from D-179
+- **Relations:** derives from D-122 · derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6
 
-*Rationale:* The transfer remains readable with the final state, even when a long encounter places it further below the scene.
+*Rationale:* The transfer remains readable with the final state.
 *Rejected:* placing it above discovery — changes the established order; placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
@@ -5708,8 +5714,8 @@ background, never on a picture.
 - **Verification:** an agent compares a change with the decision:
   - complies: the screen of the login card with the picture over the whole window and every sentence
     of the page inside the card, on its solid `panel`; the scene at the top of the world area of the
-    screen of a map run with no text on it or over it, the paragraph of the last encounter on the
-    solid background under it; the waiting screens with no picture
+    screen of a map run with no text on it or over it, „Teraz” and „Potem” on the solid background
+    under it; the waiting screens with no picture
   - violates: a sentence of the page standing on the picture outside the card; the card's background
     made half-transparent over the picture; the game minute or the name of the map written over the
     scene
@@ -6691,8 +6697,9 @@ the human chooses to correct — the human corrected no row.
 
 The screen of a map run has three areas under one header: the world on the left, the program in
 the middle, and on the right one content at a time, the editing of a program rule or a rule group
-while one is open and the table of revealed tiles otherwise. The world holds, from the top, the
-scene, „Teraz” and „Potem”, the paragraph of the last encounter, the line of the end of the map run
+while one is open and otherwise the chronicle or the table of revealed tiles, as the player picks
+with the tabs „Kronika” and „Teren”, „Kronika” picked when the character is sent to the map. The
+world holds, from the top, the scene, „Teraz” and „Potem”, the line of the end of the map run
 (D-185, D-216), the body row with the minutes each need lasts, with the backpack and the lines below
 them, the drawing of the map and the line of a tile under it. The header holds the character's
 name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
@@ -6704,24 +6711,29 @@ name, the map's name, the clock, a bar of the solving condition with its numbers
 - **Verification:** an agent compares a change with the decision:
   - complies: on the screen of a map run of Las the character's name, „Las”, „Minuta 212”, the bar
     „Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the header, and
-    under it the world, the program and the table of revealed tiles side by side; „Teraz” and
-    „Potem” under the scene and above the paragraph of the last encounter; a rule opened from its row
-    standing in the right area in the place of the table, and „✕” bringing the table back; after a
-    completion the line „Do skrzynki: …” under the scene in the world area, the table staying in the
-    right area
+    under it the world, the program and the right area side by side, the right area holding the tabs
+    „Kronika” and „Teren” with the chronicle under „Kronika”, picked when the character was sent;
+    „Teraz” and „Potem” under the scene, and the paragraph of the last encounter standing in the
+    chronicle; a rule opened from its row standing in the right area in the place of the tabs and
+    their content, and „✕” bringing back the tab picked; after a completion the line „Do skrzynki:
+    …” under „Teraz” and „Potem” in the world area, the right area keeping the tab picked
   - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
-    body row; the rule panel opened over the program or under the table; the table of revealed tiles
-    standing under the drawing in the world area; the line „Do skrzynki: …” in the right area;
-    „Restart” and „Zakończ” standing in the world area
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13
+    body row; the rule panel opened over the program or under the tabs; the table of revealed tiles
+    standing under the drawing in the world area; the paragraph of the last encounter standing in
+    the world area; the chronicle and the table standing one under the other; the line „Do skrzynki:
+    …” in the right area; „Restart” and „Zakończ” standing in the world area
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 8, Questions to settle, questions 5, 6 and 11, and Decisions in play
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
 Needs and the goal stand high, because they stay readable at a fast pace when moments no longer do,
-and „Teraz” and „Potem” stand right under the scene, so they do not move as the paragraph of the
-last encounter grows with each turn. The header is where the player steers the map run, so
-„Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of the
-solving condition and three buttons may break in a narrower window, and the paragraph of the last
-encounter two rows further from the scene.
+and „Teraz” and „Potem” stand right under the scene. The chronicle shares the right area with the
+table of revealed tiles under two tabs, so each keeps the whole height of the area, and „Kronika” is
+picked first, since the chronicle is what the player is to read; the paragraph of the last
+encounter stands in the chronicle alone, so its text stands in one place. The header is where the
+player steers the map run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header,
+which with the bar of the solving condition and three buttons may break in a narrower window; the
+table of revealed tiles one click away while „Kronika” is picked; and, while the end of the map run
+does not stand in the right area, after a death in combat the paragraph read only in the chronicle.
 *Rejected:* the pick of an action in a window over the screen, as in loop — it hides what the
 character needs; the end of a map run below an open editor of a rule, as in loop — its buttons fall
 under the edge of the window; the needs below two drawings of one place, as in loop; the trip plan
@@ -6730,7 +6742,11 @@ under the editor during a map run; the clock written as „03:32” — a new no
 in; „Restart”, the warning of a cut trip plan and „Zakończ” in the program column, in a row over the
 heading of the copy — the player looks for them in a new place, and the question at „Zakończ”
 would move into that row and push the program down in a narrow column; „Teraz” and „Potem” under the paragraph of the last encounter and the line of the
-end of the map run — they move down at each attack as the paragraph grows.
+end of the map run — they move down at each attack as the paragraph grows; „Teren” picked when the
+character is sent — the chronicle the player is to read stays hidden until it is opened; the
+chronicle and the table one under the other — both shorter, and the right area holding two contents
+at once; the paragraph of the last encounter under the scene as well as in the chronicle — the same
+text in two places.
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
@@ -7360,3 +7376,354 @@ narrower window, and a departure from loop's bars; the cells with bars under the
 — four bars with a calm, a warm and an alarm colour, new uses of colours and more work; a line of
 its own under the body row, „Bez ognia 79 min · bez jedzenia 86 min” — the minutes stand away from
 the values they concern.
+
+### D-338 — What does the chronicle of a map run hold?
+
+A manual map run keeps a chronicle of what happened in it, each entry with its game minute:
+discoveries, the character's actions, combat, the player's changes of the program, and each loss
+of the streak with its cause. The player filters it by these kinds in the right area of the screen.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the chronicle of a manual map run of Las holding „Zbierz — Patyk”, the text of the
+    band of a discovery and „Passa 391 przerwana: zdrowie spadło od zimna”, each with its game
+    minute, and the player picking „Passa” to read the losses of the streak alone
+  - violates: an entry of the chronicle with no game minute; a streak above zero falling to zero
+    with no entry of the chronicle; a change of the copy leaving no entry of the chronicle; the
+    chronicle standing in the world area of the screen of a map run
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P8 and NG7 · rozpoznanie_projektant.md, proposal 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does the chronicle of a map run hold?” · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
+
+*Rationale:* a line of discoveries that goes at „Wznów” and a streak that falls without a word leave
+the player nothing to read afterwards, and the player's complaint is not knowing what happened.
+*Rejected:* a line of discoveries with no record — the player cannot go back to what was found.
+
+### D-339 — Where does the chronicle of a map run live, and what of it stands after a load?
+
+The chronicle lives in the memory of the page and enters neither the game state nor the save, so
+leaving the screen of the map run, for the headquarters among others, and coming back clears none
+of it. After a load of a saved game state — a reload of the page, a closed tab, a new sign-in or
+another device — the chronicle of the loaded map run starts from the paragraph of its last
+encounter, composed from the facts the saved game state already holds and standing at the game
+minute of the attack as D-147 gives, and every other entry of the chronicle from before the load is
+lost.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338
+- **Verification:** an agent compares a change with the decision:
+  - complies: the chronicle of a map run of Las whole after the player opens Siedziba and comes
+    back; after a reload at game minute 300 of a map run a wolf attacked at game minute 212, the
+    chronicle holding the paragraph of that encounter alone, at game minute 212; after a reload of
+    a map run with no attack, an empty chronicle; the saved game state keeping its version and
+    holding no entry of the chronicle
+  - violates: an entry of the chronicle written into the game state or the save; the chronicle
+    emptied by a visit to Siedziba; the entries of the chronicle from before a reload standing after
+    it; after a reload, no paragraph of an encounter the saved game state holds
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, question 1, and § Settlements to record, row 1
+
+*Rationale:* the save keeps its shape and its version, so no player's saved game state is discarded
+for the chronicle and the chronicle adds nothing to a save, which is not sent above 64 KiB (D-207),
+while the facts of the last encounter that the save already holds let its paragraph stand after a
+load as D-147 gives. Accepted with it: one more way through the code, with its test, and after a
+load a chronicle holding the encounter alone, without the entries that came before it. The choice
+rests on two things nobody measured, each a hypothesis: the estimate of the chronicle's size, and
+that a reload in the middle of a map run is rare.
+*Rejected:* the chronicle in the memory of the page and empty after a load — after a reload the
+player cannot go back to why the streak fell, and the paragraph of the last encounter would stand
+nowhere after a load, against D-147; the chronicle in the save, coming back whole after a load —
+the version of the save rises, so saved game states with the player's programs are discarded
+(D-206), the size of the chronicle was never measured, estimated at 50 to 60 bytes an entry and
+several hundred entries in a long map run, and a save above 64 KiB is not sent (D-207), so the game
+would stop saving; with it, a limit of entries at which the oldest go would leave the chronicle
+without part of what happened in the map run, against D-338, and raising the server's limit
+changes D-104 and D-207 and is work in the account and save server.
+
+### D-340 — Which actions of the character give an entry of the chronicle, and how does it read?
+
+The start of each action of the character gives an entry of the chronicle in the words in which
+„Teraz” names the action, those of the row of its program rule, such as „Zbierz — Patyk”, „Idź —
+Jagoda”, „Eksploruj” or „Zjedz — jagoda”, with no number of a rule and no outcome of the action. A
+wait gives one entry of the same kind when it starts, „Czeka — żadna reguła nie pasuje”, and none
+for the game minutes it lasts.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-334
+- **Verification:** an agent compares a change with the decision:
+  - complies: the mage starting to gather a stick at game minute 212 giving „Zbierz — Patyk” at 212
+    once, however many game minutes the gathering lasts; a wait from game minute 40 to 47 giving one
+    entry „Czeka — żadna reguła nie pasuje” at 40
+  - violates: „Zbiera: patyk” in the chronicle; „Zbierz — Patyk · reguła 2.1”; an entry „Wrócił z
+    niczym: patyk” at the end of an action; an entry of the wait in every game minute it lasts
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, Questions to settle, question 2, and § Settlements to record, row 2
+
+*Rationale:* the player reads in the chronicle the words of „Teraz” and of the row of the rule, so an
+entry leads to its rule, and the entry of a wait shows when the character stood because no rule fit.
+Accepted with it: the chronicle does not show which rule started an action, nor that a gathering
+brought nothing; why a rule did not start is told by the bar at the rule (D-308).
+*Rejected:* entries of actions with no entry of a wait — the chronicle does not show when the
+character stood because no rule fit; the number of the rule in the entry, as „Zbierz — Patyk ·
+reguła 2.1” — numbers change when rules move, so an old entry would point to another rule, and the
+lines grow longer; an entry at the start and another with the outcome, as in loop („Wrócił z niczym:
+patyk”, „Zjedzono: jagoda”) — the end of an action does not say how it ended, so the simulation
+would get new work, and every action would give two entries.
+
+### D-341 — When does a loss of the streak give an entry of the chronicle, and how does it read?
+
+A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero,
+in the game minute of the loss, that of a death of cold or hunger included, reading „Passa {passa}
+przerwana: {przyczyna}” in the role `danger`, {passa} being the streak before the loss and
+{przyczyna} „zdrowie spadło od zimna”, „zdrowie spadło od głodu”, „zdrowie spadło od zimna i
+głodu”, „zmiana programu” or „przełączenie na inny program”. A change of the program that sets the
+streak to zero gives in its game minute two entries, the change and the loss of the streak, each
+under its own filter, and a game minute of lost health while the streak stands at zero gives none.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-39 · derives from D-131
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Passa 391 przerwana: zdrowie spadło od zimna” in `danger` in the game minute the mage
+    loses health from cold at a streak of 391; a program rule deleted at a streak of 120 giving its
+    entry under „Moje zmiany” and „Passa 120 przerwana: zmiana programu” under „Passa” in the same
+    game minute; the next game minutes of cold at a streak of zero giving no entry
+  - violates: an entry of a loss of the streak in each game minute of cold; „Passa przerwana:
+    zdrowie spadło od zimna” with no number; the loss written in `text`; an entry of a loss where
+    „↑” on the first program rule left the streak as it stood
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 3, and § Settlements to record, row 3
+
+*Rationale:* the player sees what was lost, how much and why, in the game minute it happened, and
+`danger` reads here as a sign of progress lost after the fact too, as D-39 gives it to progress that
+may be lost. Accepted with it: while a chill lasts, the game minutes of lost health after the loss
+give no entries, since the streak already stands at zero.
+*Rejected:* an entry in every game minute of lost health — dozens of the same entries in a long
+cold; the entry with no number of the streak lost — the player does not see how much was lost.
+
+### D-342 — Which changes of the program give an entry of the chronicle, and how does it read?
+
+Each change of the copy a map run carries out gives an entry of the chronicle in the role
+`player-change`, an entry about a program rule naming its number and its sentence at the moment of
+the change and one about a rule group its name: „Dodano regułę 2.3: Zawsze → Wędruj”, „Usunięto
+regułę 1.2: …”, „Zmieniono regułę 2.1: … → …”, „Przesunięto regułę 2.1 na 1.3: …”, the same for rule
+groups, such as „Dodano grupę „Ogień””, „Zmieniono plan wyprawy”, „Porzucono zmiany kopii”,
+„Zapisano kopię w programie „…””, „Zapisano kopię jako nowy program „…”” and „Przełączono postać na
+program „…””. Such entries are given after the end of the map run too, until „Restart” or
+„Zakończ”, at the game minute of the end, and an edit of a saved program, which changes no map run,
+gives none.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-39 · derives from D-173 · derives from D-292
+- **Verification:** an agent compares a change with the decision:
+  - complies: a program rule „Zawsze → Wędruj” added after the two rules of group 2 giving
+    „Dodano regułę 2.3: Zawsze → Wędruj” in `player-change`; a program rule fixed after a death of
+    cold at game minute 312 giving its entry at 312; „Program 2” edited during a map run on the copy
+    of „Program” giving no entry
+  - violates: one entry „Zmieniono kopię programu” for every change; the entry of a change in
+    `discovery`; „Porzuć zmiany” giving no entry; an edit of the copy after a completion giving no
+    entry; an edit of „Program 2” giving an entry while the copy belongs to „Program”
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, question 4, and § Settlements to record, row 4
+
+*Rationale:* the player reads what was changed in the program and when, as in loop, so a loss of the
+streak stands beside the change that caused it; the copy stays open to changes after the end of the
+map run (D-173), so those changes enter the chronicle too, while an edit of a saved program changes
+no map run. Accepted with it: the game describes every kind of change, though the program editor
+hands the simulation the whole program at once, so the copy before a change is compared with the
+copy after it, with more tests.
+*Rejected:* one general entry „Zmieniono kopię programu” — the player does not know what was
+changed, less than loop gave.
+
+### D-343 — How does the chronicle stand in the right area, and how does the player filter it?
+
+Over the list of the chronicle stands a row of filter buttons in the look of the pace buttons
+(D-130), one picked at a time — „Wszystko”, „Odkrycia”, „Czynności”, „Walka”, „Moje zmiany”,
+„Passa” and „Świat” — each but „Wszystko” showing the entries of one kind and „Wszystko” all of
+them, „Wszystko” picked when the character is sent to the map. The entries stand newest at the top,
+each with its game minute as a number alone in a column on the left in the role `text-label` and
+its text beside it, such as „212  Zbierz — Patyk”, on the background `panel`, the text in the role
+of its kind: a discovery in `discovery`, a change of the player in `player-change`, a loss of the
+streak in `danger`, an action and combat in `text`, and the kind „Świat” as D-344 gives. An empty
+chronicle and a filter that shows no entry read „Nic tu jeszcze nie ma.”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-39 · derives from D-40 · derives from D-130
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Passa” picked among the seven filter buttons, each made with the shared button
+    selected in its group, showing the losses of the streak alone, the newest at the top; „212” in
+    `text-label` in the column beside „Zbierz — Patyk” in `text`; the text of the band of a discovery
+    in `discovery`; „Nic tu jeszcze nie ma.” under „Walka” before any attack
+  - violates: two filters picked at once; the filter buttons drawn as tabs (D-276); the newest entry
+    at the bottom; „Minuta 212” or „03:32” beside an entry; every entry in one colour; an empty list
+    with no sentence
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 9, Questions to settle, questions 7 and 8, and § Settlements to record, rows 7 and 8
+
+*Rationale:* one filter at a time, as in loop, and the newest entry on top, as in loop, so the
+current moment needs no scrolling in a long chronicle; the game minute as a number alone keeps the
+lines short and brings no new notation of time, and the colours of the kinds let a discovery and a
+loss of the streak be picked out. The empty chronicle says so in the words of loop.
+*Rejected:* several kinds picked at once — more clicking, while loop picked one; the newest entry at
+the bottom — a long chronicle has to be scrolled to the current moment; „Minuta 212” in every entry
+— longer lines; „03:32”, as in loop — a new notation of time, which D-311 rejects; every entry in
+one colour — a discovery and a loss of the streak are harder to pick out.
+
+### D-344 — What does the kind „Świat” of the chronicle hold, and how do its entries read?
+
+Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own:
+„Ognisko wygasło” when a campfire goes out, the character's death and the completion of the map
+run, the death and the completion in the words in which „Teraz” says them in the same game minute,
+„Mag zamarzł”, „Mag umarł z głodu”, „Mag zginął w walce”, „Las rozwiązany” or „Las — głębiej
+rozwiązany”. The entry of a completion stands in the role `positive`, as in „Teraz”, and the
+entries of a death and of „Ognisko wygasło” in `text`.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-334 · derives from D-132 · derives from D-39
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Ognisko wygasło” under „Świat” in the game minute the last minute of burning of a
+    campfire passes; „Mag zamarzł” in `text` in the game minute „Teraz” reads it, beside „Passa 391
+    przerwana: zdrowie spadło od zimna” where the streak stood at 391; „Las rozwiązany” in
+    `positive` at game minute 480
+  - violates: „Postać zamarzła.” in the chronicle while „Teraz” reads „Mag zamarzł”; the entry of a
+    death in `danger`; „Ognisko wygasło” under „Odkrycia”; the entry of a completion in `text`
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 8 and 12, and § Settlements to record, row 9
+
+*Rationale:* a chronicle with no entry of a campfire going out is worse than loop's, which had one,
+and the player reads in the chronicle the words of „Teraz”, the completion in green as in „Teraz”
+and at the end of a map run (D-132). Accepted with it: the simulation gets the work of reporting a
+campfire going out; a death stands out by no colour, the loss of the streak beside it standing in
+`danger` only where the streak was above zero.
+*Rejected:* the five kinds of D-338 alone — no entry „Ognisko wygasło”, which loop had, and a
+campfire going out shows only in the table of revealed tiles, as „ognisko — wygasłe”, and in the
+cause „od zimna”, which tells of lost health, not of the fire; the entry of a death in `danger` —
+two red entries in one game minute at a death of cold, and a death that has already happened read
+as what D-39 calls something that may be lost; the words of loop, „Postać zamarzła.”, „Postać
+zagłodziła się.”, „Postać zginęła w walce.”, „Program utrzymał się bez ciebie — mapa rozwiązana.”
+— two wordings of one thing on one screen, „Teraz” reading „Mag zamarzł” in the same game minute.
+
+### D-345 — What does the entry of a discovery say in the chronicle?
+
+The discoveries of one game minute give one entry of the chronicle holding the whole text of the
+band of that discovery without its buttons (D-122), such as „Odkryto: Idź, Zbierz, Patyk, Jagoda. W
+regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.”, followed, where the
+game wrote a program rule, by „Gra dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”
+(D-312).
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-122 · derives from D-312
+- **Verification:** an agent compares a change with the decision:
+  - complies: the first chill of a new game giving one entry with what was discovered and „Gra
+    dopisała regułę w grupie „Program”: Zawsze → Eksploruj.”, standing after „Wznów”
+  - violates: „Odkryto: Patyk” and „Odkryto: Zbierz” as two entries of one game minute; „Dodaj
+    regułę z tym” in the entry; the sentence of the rule left out of the entry of a discovery at
+    which the game wrote one
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and § Settlements to record, row 10
+
+*Rationale:* the entry keeps the division of the band the player has just read, one game minute in
+one entry. Accepted with it: a long entry that wraps over several lines in the right area.
+*Rejected:* one entry for each thing of the band in the same game minute, as „Odkryto: Patyk” and
+„Odkryto: Zbierz” — several entries in one game minute, divided otherwise than the band the player
+has just read.
+
+### D-346 — How long does the pick of „Kronika” or „Teren” hold on the screen of a map run?
+
+The tab „Kronika” or „Teren” the player picks in the right area of the screen of a map run stays
+picked through the whole map run, through leaving its screen and coming back, and through
+„Restart”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-311
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Teren” picked, then Siedziba and back to the map run, „Teren” still picked; „Teren”
+    picked before „Restart” and still picked after it; a rule panel closed with „✕” giving back
+    „Teren”
+  - violates: „Kronika” picked again after „Restart” where the player had picked „Teren”; the pick
+    lost at a return from the headquarters
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 14
+
+*Rationale:* the right area keeps what the player chose to read through the map run and its
+restarts, so the player does not pick it again at each return to the screen or each „Restart”.
+Accepted with it: while „Kronika” is picked the table of revealed tiles is one click away, and a
+tile of the drawing under the pointer marks its row of the table only while „Teren” is picked.
+*Rejected:* „Teren” picked at the start — the chronicle the player is to read stays hidden until it
+is opened; the chronicle and the table one under the other — both shorter, and the right area would
+hold two contents at once, against D-311.
+
+### D-347 — How does an agent learn what went wrong in the running game?
+
+An agent learns what went wrong in the running game from what a player reads, the screen and the
+chronicle, and from the browser's console, through the browser it operates, with no outside
+service. An exception in the game shows on the screen as a sentence that something broke and goes
+to the console.
+
+- **Scope:** browser-view, agent-workflow
+- **Based on:** playwright-cli-console-messages
+- **Relations:** derives from D-254 · derives from D-323 · derives from D-253
+- **Verification:** an agent compares a change with the decision:
+  - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the
+    chronicle why the streak fell, and reading in the console the line of an error no code handled
+    (D-253) beside the sentence of D-323 on the screen
+  - violates: Sentry or GlitchTip added to the game; a route of the server's own that receives
+    reports of the browser's errors; a check that looks in the server's output for what went wrong
+    in the browser
+- **Origin:** technologia_zapis_dzialania_gry.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2) · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How does an agent learn what went wrong in the running game?” · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
+
+*Rationale:* the game is computed in the browser, and an agent is to know what went wrong as a person
+playing does. Lacks of the option chosen: an earning loop has no chronicle, an agent learns of a
+fault in the owner's own game only from the owner, and a state loaded from a save holds a chronicle
+only if the chronicle enters the save. Risks taken, each a hypothesis: the sentence may show with no
+fault or blink; logs of the console kept on disk may hold a real password-reset token; an agent may
+learn to ignore a console in which the browser writes ordinary refusals; a tab left overnight may
+slow down under a growing chronicle.
+*Rejected:* the server's output — the game does not run there; a route of the server's own for
+reports — code in two parts and a limit of requests for a game with one player; Sentry — an outside
+service and data in a foreign cloud; GlitchTip — a service, a database and a copy of it to keep.
+
+### D-348 — From what does the chronicle learn what happened in a game minute and what the player changed in the copy?
+
+The chronicle learns what happened in a game minute from the events the simulation returns, each
+with its game minute — among them a streak above zero falling to zero, with the streak before the
+loss and its cause, wherever it falls, and a campfire whose minutes of burning run out — save the
+paragraph of the last encounter, composed from the facts the map run keeps (D-147), and the game
+state holds none of these events. The browser view describes an act of the player on the copy from
+what the act was and, for an edit, from the copy before the act and the copy after it, together with
+the program rule or rule group the player moved where the program editor names it, which never
+enters the simulation, and no event of the simulation describes such a change.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-04 · derives from D-147 · derives from D-341 · derives from D-342 · derives from D-344
+- **Verification:** an agent compares a change with the decision:
+  - complies: at 16× a game minute of cold taking a streak of 391 to zero inside one reading of the
+    clock that passes several game minutes, the simulation returning one event of the loss at that
+    game minute with 391 and cold; a campfire burning out in a game minute of an encounter returning
+    its event; „↓” on program rule 2.1 giving „Przesunięto regułę 2.1 na 2.2: …” alone, though the
+    copies alone could read the rule below it moving up; „Porzuć zmiany” giving „Porzucono zmiany
+    kopii” alone, whatever it reverted
+  - violates: the view finding a loss of the streak or a campfire gone out by comparing two readings
+    of the game state; a field of the game state, and with it of the save, holding the losses of the
+    streak; an edit of the copy returning from the simulation an event that describes the change; the
+    hint of a move passed to a function of the simulation; a new way of setting a streak above zero
+    to zero that returns no event of the loss
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, the first and second questions
+
+*Rationale:* at a fast pace one reading of the game state passes several game minutes, and a tab the
+browser held back passes many, so a comparison of readings loses the game minute of a loss of the
+streak, its cause where the body recovered within the span, and a campfire lit again within it; the
+simulation alone knows these, and one shape of the event of a loss serves every place the streak
+falls. Each act on the copy is one call the view makes, so the view knows what the act was, the
+copies before and after an edit describe its changes exactly, and only which of two neighbours that
+swapped places the player moved is known to the program editor alone. Accepted with it: a new way of setting a streak above zero to zero
+leaves a loss the chronicle never shows unless it returns the event; a new place of the editor that
+moves a rule or a group and names none gives a swap described from the copies alone, which may name
+the other one.
+*Rejected:* readings of the game state alone, each compared with the one before — the game minute of
+a loss and its cause, and a campfire lit again within one reading, are lost; every fact as an event,
+the changes of the copy included — the simulation does not know which of two swapped neighbours the
+player moved, so it would take the editor's hint or describe some swaps wrongly, and it would
+describe facts the view already holds exactly; the program editor describing every edit at each of
+its places, with no comparison of the copies — many more places to keep right; the comparison
+alone, a swap decided by a fixed rule — „↓” on 2.1 reading in half the cases as 2.2 moving up.

@@ -625,6 +625,12 @@ React 19.3.1, by default, reports an error that no error boundary caught to the 
 
 - **Source:** https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/react-reconciler/src/ReactFiberErrorLogger.js § defaultOnUncaughtError — "reportGlobalError(error);" · https://raw.githubusercontent.com/facebook/react/v19.3.1/packages/shared/reportGlobalError.js § reportGlobalError — "In modern browsers, reportError will dispatch an error event," · "emulating an uncaught JavaScript error."; read 2026-11-07
 
+## playwright-cli-console-messages
+
+Playwright CLI has a command, `console`, that lists console messages.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Commands, DevTools — "playwright-cli console [min-level] # list console messages"; read 2026-11-08
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

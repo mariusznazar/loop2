@@ -1,6 +1,7 @@
 import {
   bodyMinute,
   eatenBody,
+  type HealthLossCause,
   paidNatureEnergy,
   regainedNatureEnergy,
   startingBody,
@@ -41,6 +42,7 @@ import type {
   Action,
   Activity,
   Backpack,
+  Campfire,
   CharacterId,
   CharacterSkills,
   CombatExchange,
@@ -58,6 +60,14 @@ import type {
   Understanding,
 } from "./types.js";
 
+/**
+ * Why a streak above zero fell to zero: the body lost health to cold, to hunger or to both in the
+ * same game minute, the rules or rule groups of the copy changed, or the character switched to
+ * another program.
+ */
+export type StreakLossCause =
+  HealthLossCause | "programChanged" | "programSwitched";
+
 /** What happened in the simulation, minute-stamped, in order of occurrence. */
 export type GameEvent =
   | { kind: "mapRunStarted"; seed: number }
@@ -74,6 +84,15 @@ export type GameEvent =
   | { kind: "tileRevealed"; minute: number; at: Hex }
   | { kind: "moved"; minute: number; from: Hex; to: Hex }
   | { kind: "characterDied"; minute: number; cause: DeathCause }
+  /** A streak above zero fell to zero in this game minute; `streak` is the count before the loss. */
+  | {
+      kind: "streakLost";
+      minute: number;
+      streak: number;
+      cause: StreakLossCause;
+    }
+  /** A campfire's last minute of burning passed in this game minute; `at` is its tile. */
+  | { kind: "campfireExtinguished"; minute: number; at: Hex }
   | { kind: "mapRunCompleted"; minute: number }
   | { kind: "attacked"; minute: number; creature: CreatureId }
   | { kind: "combatExchange"; minute: number; exchange: CombatExchange }
@@ -452,6 +471,36 @@ function streakAfter(streak: number, lostHealth: boolean): number {
 }
 
 /**
+ * The event of a streak above zero lost in this game minute's body step, as a list of none or one;
+ * the cause is the body's own reading of chill and starvation after the step.
+ */
+function streakLossEvents(
+  streak: number,
+  healthLoss: HealthLossCause | null,
+  minute: number,
+): GameEvent[] {
+  if (streak === 0 || healthLoss === null) return [];
+  return [{ kind: "streakLost", minute, streak, cause: healthLoss }];
+}
+
+/**
+ * The events of the campfires that went out in one world step: each campfire whose minutes of
+ * burning fell from above zero to zero. `worldMinute` maps the campfires one to one and in order,
+ * so the campfires before and after the step pair by position.
+ */
+function extinguishedEvents(
+  before: Campfire[],
+  after: Campfire[],
+  minute: number,
+): GameEvent[] {
+  return after.flatMap((campfire, i): GameEvent[] =>
+    before[i].minutesLeft > 0 && campfire.minutesLeft === 0
+      ? [{ kind: "campfireExtinguished", minute, at: { ...campfire.at } }]
+      : [],
+  );
+}
+
+/**
  * One game minute, in the order of D-71, up to the pick. First the body, warmed by what burns on
  * its tile, and the nature energy regained after satiety has fallen; where the character dies, the
  * step stops there: what burns and the tiles stay as they
@@ -459,20 +508,20 @@ function streakAfter(streak: number, lostHealth: boolean): number {
  * burns loses a minute and the tiles renew their stock; then, when the current activity ends in
  * this minute, its finish applies. Combat minutes skip the body, the nature energy included, and
  * the ordinary action, advancing only the world and streak here. `finishMinute` must follow to resolve combat, completion,
- * attacks and the ordinary pick. A map run that has ended passes no minute. Inputs stay unchanged.
+ * attacks and the ordinary pick. Where the step takes a streak above zero to zero, its events begin
+ * with the loss of the streak, in the minute of a death too, ahead of the death. A campfire whose
+ * minutes of burning run out in the world's step gives its event after the loss, ahead of the
+ * finished activity; the minute of a death passes no world, so it gives none. A map run that
+ * has ended passes no minute. Inputs stay unchanged.
  */
 export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
   if (mapRunEnded(run)) return { run, events: [], picks: false };
   const minute = run.minute + 1;
   if (run.activeCombat) {
+    const world = worldMinute(run, map, minute);
     return {
-      run: {
-        ...run,
-        minute,
-        streak: run.streak + 1,
-        ...worldMinute(run, map, minute),
-      },
-      events: [],
+      run: { ...run, minute, streak: run.streak + 1, ...world },
+      events: extinguishedEvents(run.campfires, world.campfires, minute),
       picks: false,
     };
   }
@@ -493,24 +542,35 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
         streak: streakAfter(run.streak, lived.lostHealth),
         death: { minute, cause },
       },
-      events: [{ kind: "characterDied", minute, cause }],
+      events: [
+        ...streakLossEvents(run.streak, lived.healthLoss, minute),
+        { kind: "characterDied", minute, cause },
+      ],
       picks: false,
     };
   }
   const body = lived.body;
   const streak = streakAfter(run.streak, lived.lostHealth);
+  const lossEvents = streakLossEvents(run.streak, lived.healthLoss, minute);
   const world = worldMinute(run, map, minute);
+  const worldEvents = extinguishedEvents(
+    run.campfires,
+    world.campfires,
+    minute,
+  );
   // `<` rather than `!==`: an activity of 0 minutes from faulty data finishes in the next minute
   // instead of never; for every duration of 1 minute or more the two are the same.
   if (!run.current || minute < run.current.endMinute)
     return {
       run: { ...run, minute, body, natureEnergy, streak, ...world },
-      events: [],
+      events: [...lossEvents, ...worldEvents],
       picks: false,
     };
 
   const finished = run.current;
   const events: GameEvent[] = [
+    ...lossEvents,
+    ...worldEvents,
     { kind: "activityFinished", minute, activity: finished.activity },
   ];
   let tiles = world.tiles;

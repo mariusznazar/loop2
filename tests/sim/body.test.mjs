@@ -298,6 +298,21 @@ test("the body step reports a loss only when the character is chilled or starvin
   }
 });
 
+test("the body step names the cause of its loss from the same reading: cold, hunger, both, or none", () => {
+  // Worked by hand as in the case above: Las cools by 0.024 °C and satiety falls by 0.6 in a minute.
+  const cases = [
+    [body(37, 100, 100), null, "warm and fed"],
+    [body(35.02, 100, 100), "cold", "35.02 − 0.024 = 34.996, below 35.0"],
+    [body(37, 30.5, 100), "hunger", "30.5 − 0.6 = 29.9, below 30"],
+    [body(35.02, 30.5, 100), "coldAndHunger", "chilled and starving together"],
+    [body(34, 50, 0.2), "cold", "chilled to death in this minute"],
+    [body(37, 30.5, 0.2), "hunger", "starved to death in this minute"],
+  ];
+  for (const [before, cause, why] of cases) {
+    assert.equal(bodyMinute(before, 0, forest).healthLoss, cause, why);
+  }
+});
+
 // Nature energy (task plomyk, plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania: To do
 // 1 at line 18 and To do 4 at line 21): the cap is 100 and every map run, a restart included,
 // starts full; outside combat a game minute whose satiety after its fall of 0.6 is 60 or above

@@ -360,7 +360,8 @@ export function newGame(): GameState {
  * when the character next picks a program rule. Where the copy checked differs from the copy before
  * it — groups and rules in order with their identities, conditions and actions, and the identity
  * counters — the streak and defeated-attack count of a map run not ended, in death or a completion,
- * become 0, paused or not; a copy handed back as it stands leaves both.
+ * become 0, paused or not, a streak that stood above zero being returned as one event of its loss; a
+ * copy handed back as it stands leaves both.
  *
  * Without a map run, replaces the content of the program a character with no pick and no program
  * used last goes with, `teamProgram`, checked against the resources of every map; the counts are
@@ -369,10 +370,7 @@ export function newGame(): GameState {
 export function setProgram(state: GameState, program: Program): GameResult {
   const run = state.run;
   if (run) {
-    return {
-      state: withCopyProgram(state, run, checkProgram(program, run)),
-      events: [],
-    };
+    return withCopyProgram(state, run, checkProgram(program, run));
   }
   const edited = teamProgram(state);
   const checked = checkProgram(program, null);

@@ -693,3 +693,111 @@ test("empty nature energy takes no health", () => {
   assert.equal(next.body.health, 50.05);
   assert.equal(next.death, null);
 });
+
+// A campfire going out is an event of the simulation (task kronika-z-filtrami, To do 7; spec D1,
+// D11): one `campfireExtinguished` for each campfire whose minutes of burning fall from above zero
+// to zero in the world's step of a minute, with the game minute and the campfire's tile. The
+// minute of a death gives none, the world not passing in it.
+
+const EXTINGUISHED = "campfireExtinguished";
+
+/** The events of the kind `campfireExtinguished` in `events`. */
+const extinguishedIn = (events) =>
+  events.filter((event) => event.kind === EXTINGUISHED);
+
+/** The run after `minutes` game minutes, one step each, with the events of all those steps. */
+function stepsWithEvents(run, minutes, stepProgram = IDLE) {
+  const events = [];
+  let current = run;
+  for (let i = 0; i < minutes; i += 1) {
+    const step = stepMinute(current, forest, stepProgram);
+    events.push(...step.events);
+    current = step.run;
+  }
+  return { run: current, events };
+}
+
+test("a campfire gives its event in the game minute its last minute of burning passes, on its tile", () => {
+  // Burning 3 minutes: minutes 1 and 2 leave 2 and then 1; minute 3 passes the last one.
+  const start = freeNextMinute(handMade({ campfires: burning(3) }));
+  const { run, events } = stepsWithEvents(start, 3);
+  assert.deepEqual(run.campfires, burning(0));
+  assert.deepEqual(extinguishedIn(events), [
+    { kind: EXTINGUISHED, minute: 3, at: entrance },
+  ]);
+});
+
+test("a campfire going out in a minute of an encounter gives its event too", () => {
+  const fighting = {
+    ...handMade({ campfires: burning(1) }),
+    current: null,
+    activeCombat: { creatureId: "wolf", attackMinute: 0, resolveMinute: 5 },
+  };
+  const { run, events } = stepsWithEvents(fighting, 1);
+  assert.equal(run.minute, 1);
+  assert.deepEqual(extinguishedIn(events), [
+    { kind: EXTINGUISHED, minute: 1, at: entrance },
+  ]);
+});
+
+test("a campfire crafted unlit, or one already at zero, gives no event", () => {
+  const crafted = after(endingNext(at({ [stick]: 8 }), CRAFT), 1);
+  assert.deepEqual(crafted.campfires, [{ at: entrance, minutesLeft: 0 }]);
+  const crafting = stepsWithEvents(freeNextMinute(crafted), 3);
+  assert.deepEqual(extinguishedIn(crafting.events), []);
+  const atZero = stepsWithEvents(
+    freeNextMinute(handMade({ campfires: burning(0) })),
+    3,
+  );
+  assert.deepEqual(extinguishedIn(atZero.events), []);
+});
+
+test("the minute of a death gives no event, and the campfire keeps its minutes", () => {
+  // Health 0.1 is gone in minute 1 of chill: the death comes before the world passes.
+  const dying = handMade({ campfires: burning(1), body: body(34, 50, 0.1) });
+  const { run, events } = stepsWithEvents(freeNextMinute(dying), 1);
+  assert.deepEqual(run.death, { minute: 1, cause: "cold" });
+  assert.deepEqual(extinguishedIn(events), []);
+  assert.deepEqual(run.campfires, burning(1));
+});
+
+test("each campfire that goes out gives its own event, and one still burning gives none", () => {
+  const away = neighbours(handMade().tiles, entrance)[0].at;
+  const far = offsetToAxial(3, 3);
+  const run = freeNextMinute(
+    handMade({
+      campfires: [
+        { at: entrance, minutesLeft: 1 },
+        { at: away, minutesLeft: 1 },
+        { at: far, minutesLeft: 5 },
+      ],
+    }),
+  );
+  const { events } = stepsWithEvents(run, 1);
+  assert.deepEqual(extinguishedIn(events), [
+    { kind: EXTINGUISHED, minute: 1, at: entrance },
+    { kind: EXTINGUISHED, minute: 1, at: away },
+  ]);
+});
+
+test("a campfire going out while an activity goes on gives its event, and the activity's end no event", () => {
+  // A wait running to minute 5 with the campfire's last minute at minute 1: no activity ends in it.
+  const running = {
+    ...handMade({ campfires: burning(1) }),
+    current: {
+      activity: { kind: "wait" },
+      startMinute: 0,
+      endMinute: 5,
+      stepTo: null,
+    },
+  };
+  const { run, events } = stepsWithEvents(running, 1);
+  assert.equal(run.current.endMinute, 5);
+  assert.deepEqual(extinguishedIn(events), [
+    { kind: EXTINGUISHED, minute: 1, at: entrance },
+  ]);
+  assert.deepEqual(
+    events.filter((event) => event.kind === "activityFinished"),
+    [],
+  );
+});

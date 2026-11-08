@@ -131,7 +131,10 @@ test("a new game sent with its one empty group waits until the minute of the fir
   const state = chilled.state;
   assert.equal(state.run.minute, 84);
   assert.equal(state.run.body.temperature, 34.984);
+  // Changed by the task "kronika-z-filtrami" (To do 4, D-341): minute 84 takes the streak of 83 to
+  // zero, so its events now begin with the loss of the streak, before the finish of the wait.
   assert.deepEqual(chilled.events, [
+    { kind: "streakLost", minute: 84, streak: 83, cause: "cold" },
     { kind: "activityFinished", minute: 84, activity: { kind: "wait" } },
     {
       kind: "discovered",

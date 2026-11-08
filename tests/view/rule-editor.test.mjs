@@ -50,7 +50,7 @@ function twoGroups() {
 async function mount({ root }, program, extra = {}) {
   const calls = [];
   const options = {
-    onCommit: (next) => calls.push(["commit", next]),
+    onCommit: (next, move) => calls.push(["commit", next, move]),
     onOpen: (target) => calls.push(["open", target]),
     onFoldedChange: (folded) => calls.push(["folded", folded]),
     props: {
@@ -393,6 +393,55 @@ test("a „↓” inside a group swaps the rule with its neighbour", async () =>
     const { calls } = await mount(page, twoGroups());
     await press(buttonIn(rowOf(page.root, 1), "↓"));
     assert.deepEqual(idsOf(calls[0][1]), [[2, 1], [3]]);
+  });
+});
+
+// Task kronika-z-filtrami, To do 5; spec D4. The chronicle names the rule or group the player moved
+// from the hint the list hands over with the edit, since a swap of two neighbours leaves the copies
+// unable to tell which one moved. Catches a move site that hands no hint, one that names the
+// neighbour instead of the rule moved, and a hint that names the wrong kind.
+test("„↑” and „↓” hand the identity of the rule moved as the hint of the edit, across a group border too", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, twoGroups());
+    await press(buttonIn(rowOf(page.root, 1), "↓"));
+    assert.deepEqual(idsOf(calls[0][1]), [[2, 1], [3]]);
+    assert.deepEqual(calls[0][2], { kind: "rule", ruleId: 1 });
+    await press(buttonIn(rowOf(page.root, 3), "↑"));
+    assert.deepEqual(idsOf(calls[1][1]), [[1, 2, 3], []]);
+    assert.deepEqual(calls[1][2], { kind: "rule", ruleId: 3 });
+  });
+});
+
+test("the drop of a rule hands the identity of the rule dragged as the hint, and the drop of a group that of the group", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, threeGroups());
+    await drag(rowOf(page.root, 2).querySelector(".drag-handle"), "dragstart");
+    await drag(rowOf(page.root, 3), "drop");
+    assert.deepEqual(idsOf(calls[0][1]), [[1], [2, 3], []]);
+    assert.deepEqual(calls[0][2], { kind: "rule", ruleId: 2 });
+    await drag(
+      headerOf(page.root, 2).querySelector(".drag-handle"),
+      "dragstart",
+    );
+    await drag(sectionOf(page.root, 1), "drop");
+    assert.deepEqual(
+      calls[1][1].groups.map((group) => group.id),
+      [2, 1, 3],
+    );
+    assert.deepEqual(calls[1][2], { kind: "group", groupId: 2 });
+  });
+});
+
+test("an edit that moves nothing hands no hint: „Usuń”, „✕”, „+ reguła” and „+ dodaj grupę”", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, twoGroups());
+    await press(buttonIn(rowOf(page.root, 2), "Usuń"));
+    await press(buttonIn(headerOf(page.root, 2), "✕"));
+    await press(buttonNamed(page.root, "+ reguła"));
+    await press(buttonNamed(page.root, "+ dodaj grupę"));
+    const commits = calls.filter((call) => call[0] === "commit");
+    assert.equal(commits.length, 4);
+    for (const commit of commits) assert.equal(commit[2], undefined);
   });
 });
 

@@ -28,6 +28,7 @@ import { createRoot } from "react-dom/client";
 import { ACTIONS } from "../sim/data/actions.js";
 import type { RuleSigns } from "../sim/game.js";
 import type { GameState, GroupId, Program, RuleGroup } from "../sim/types.js";
+import type { MoveHint } from "./chronicle-entries.js";
 import { ReactButton } from "./controls/react-button.js";
 import {
   actionTime,
@@ -72,8 +73,12 @@ export type RuleListProps = {
 export type RuleListTarget = { groupId: GroupId; ruleId: number | null };
 
 export type RuleListOptions = {
-  /** Called with the whole new program after each edit. */
-  onCommit: (program: Program) => void;
+  /**
+   * Called with the whole new program after each edit. An edit that moves a rule by „↑” or „↓” or a
+   * rule or a group by a drop also hands which one the player moved, since the program alone cannot
+   * tell it after a swap of two neighbours (the chronicle reads it); every other edit hands none.
+   */
+  onCommit: (program: Program, move?: MoveHint) => void;
   /** Called when the player asks to open the panel of a row or of a group's header. */
   onOpen: (target: RuleListTarget) => void;
   /** Called with the whole list of folded groups after a fold or an unfold. */
@@ -243,9 +248,9 @@ export function RuleListView({
     };
   }
 
-  function commit(next: Program, focus: string[]): void {
+  function commit(next: Program, focus: string[], move?: MoveHint): void {
     pendingFocus.current = focus;
-    onCommit(next);
+    onCommit(next, move);
   }
 
   function clearDrag(): void {
@@ -347,6 +352,9 @@ export function RuleListView({
             `group:${at.kind === "rule" ? at.groupId : 0}:open`,
           ]
         : [`group:${what.id}:open`],
+      what.kind === "rule"
+        ? { kind: "rule", ruleId: what.id }
+        : { kind: "group", groupId: what.id },
     );
   }
 
@@ -368,12 +376,16 @@ export function RuleListView({
     );
     // The control of the rule's new place: its own arrow, then the other, then its row, then the
     // header of the group it went to, which stays when that group is folded.
-    commit(next, [
-      `rule:${id}:${own}`,
-      `rule:${id}:${other}`,
-      `rule:${id}:open`,
-      `group:${into?.id ?? group.id}:open`,
-    ]);
+    commit(
+      next,
+      [
+        `rule:${id}:${own}`,
+        `rule:${id}:${other}`,
+        `rule:${id}:open`,
+        `group:${into?.id ?? group.id}:open`,
+      ],
+      { kind: "rule", ruleId: id },
+    );
   }
 
   function remove(group: RuleGroup, index: number): void {

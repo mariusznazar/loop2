@@ -48,12 +48,14 @@ const REAL_MS = 1760000000000;
 function controlsOver(game) {
   const { acts, apply } = game;
   return {
-    editCopy(program) {
+    editCopy(program, ...extra) {
       acts.push(["editCopy"]);
+      game.hints.push(extra[0]);
       apply(setProgram(game.state, program));
     },
-    editProgram(programId, program) {
+    editProgram(programId, program, ...extra) {
       acts.push(["editProgram", programId]);
+      game.hints.push(extra[0]);
       apply(editProgram(game.state, programId, program));
     },
     createProgram() {
@@ -96,6 +98,8 @@ function controlsOver(game) {
 async function wiredPanel({ root }, start = newGame(), mode = "run", folding) {
   const game = {
     acts: [],
+    // For each edit, the argument the panel passed after the program: the hint of a move, if any.
+    hints: [],
     state: start,
     panel: null,
     apply(result) {
@@ -640,6 +644,81 @@ test("during a map run the copy stands first and is shown with counts; a saved p
     await click(buttonNamed(game.root, "+ dodaj grupę"));
     assert.deepEqual(game.acts.at(-1), ["editCopy"]);
     assert.equal(groupCount(game.state.run.copy.program), 2);
+  });
+});
+
+/** A game whose program 1 holds two rules „Zawsze → Eksploruj”, with the character Ala in the team. */
+function gameWithTwoRules() {
+  const programmed = setProgram(
+    newKnowingGame(),
+    programFromRules(ALWAYS_EXPLORE, ALWAYS_EXPLORE),
+  ).state;
+  return createCharacter(programmed, "Ala").state;
+}
+
+/** Sends a drag event of the browser's kind, with the data transfer a drag carries. */
+function drag(target, type) {
+  const { Event } = target.ownerDocument.defaultView;
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "dataTransfer", {
+    value: { effectAllowed: "none", dropEffect: "none", setData() {} },
+  });
+  return inAct(() => target.dispatchEvent(event));
+}
+
+// Task kronika-z-filtrami, To do 5; spec D4. The hint of a move, which rule or group the player moved,
+// travels from the list through the panel's edit to `editCopy`, since the copies before and after a
+// swap cannot tell it. Catches a panel that drops the hint on the way, one that names a neighbour,
+// a hint attached to an edit that moves nothing, and one that reaches the edit of a saved program.
+test("„↓” on a rule of the copy and the drop of a rule or a group reach editCopy with the hint of the move", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(
+      page,
+      send(gameWithTwoRules(), SENT, REAL_MS).state,
+    );
+    await click(buttonNamed(rowOf(game.root, 1), "↓"));
+    assert.deepEqual(game.acts.at(-1), ["editCopy"]);
+    assert.deepEqual(game.hints.at(-1), { kind: "rule", ruleId: 1 });
+
+    // Rule 1 stands second now; dragged onto the upper half of the first row it goes first again.
+    await drag(rowOf(game.root, 1).querySelector(".drag-handle"), "dragstart");
+    await drag(rowOf(game.root, 2), "drop");
+    assert.deepEqual(game.acts.at(-1), ["editCopy"]);
+    assert.deepEqual(game.hints.at(-1), { kind: "rule", ruleId: 1 });
+
+    // A second group, added by the button, is no move; dragged before the first it is one.
+    await click(buttonNamed(game.root, "+ dodaj grupę"));
+    assert.equal(game.hints.at(-1), undefined);
+    await drag(
+      headerOf(game.root, 2).querySelector(".drag-handle"),
+      "dragstart",
+    );
+    await drag(game.root.querySelector('[data-group="1"]'), "drop");
+    assert.deepEqual(game.acts.at(-1), ["editCopy"]);
+    assert.deepEqual(game.hints.at(-1), { kind: "group", groupId: 2 });
+    assert.deepEqual(
+      game.state.run.copy.program.groups.map((group) => group.id),
+      [2, 1],
+    );
+  });
+});
+
+test("an edit of a saved program, a move included, carries no hint", async () => {
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithTwoRules());
+    assert.equal(programList(game.root).value, "1");
+    await click(buttonNamed(rowOf(game.root, 1), "↓"));
+    assert.deepEqual(game.acts.at(-1), ["editProgram", 1]);
+    assert.equal(game.hints.at(-1), undefined);
+    // The program is moved: rule 1 stands second.
+    assert.deepEqual(
+      game.state.programs[0].program.groups[0].rules.map((rule) => rule.id),
+      [2, 1],
+    );
+    await drag(rowOf(game.root, 1).querySelector(".drag-handle"), "dragstart");
+    await drag(rowOf(game.root, 2), "drop");
+    assert.deepEqual(game.acts.at(-1), ["editProgram", 1]);
+    assert.equal(game.hints.at(-1), undefined);
   });
 });
 

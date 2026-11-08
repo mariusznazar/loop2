@@ -59,19 +59,28 @@ export function eatenBody(body: Body, satiety: number): Body {
   };
 }
 
+/** What cost the character health in a game minute: chill, starvation, or both together. */
+export type HealthLossCause = "cold" | "hunger" | "coldAndHunger";
+
 /**
  * One game minute of the body: the warmth of what burns on the character's tile less the cooling
  * of the map's ambient temperature, capped at the starting temperature; satiety falls, not below
  * 0; health falls for chilled and for starving, read from the values just computed, or rises where
  * neither, not above the starting health. Health at 0 or less stands at 0 and gives the cause of
  * death: cold where chilled, otherwise hunger. `lostHealth` says whether the character lost health
- * to cold or hunger in this minute, that is, was chilled or starving after the step.
+ * to cold or hunger in this minute, that is, was chilled or starving after the step; `healthLoss`
+ * gives the cause of that loss from the same two readings, null where there was none.
  */
 export function bodyMinute(
   body: Body,
   warmth: number,
   map: MapDef,
-): { body: Body; death: DeathCause | null; lostHealth: boolean } {
+): {
+  body: Body;
+  death: DeathCause | null;
+  lostHealth: boolean;
+  healthLoss: HealthLossCause | null;
+} {
   const rules = BALANCE.body;
   const cooling = decimal(
     rules.coolingPerDegreeBelow *
@@ -88,6 +97,14 @@ export function bodyMinute(
   const chilled = temperature < rules.chilledBelow;
   const starving = satiety < rules.starvingBelow;
   const lostHealth = chilled || starving;
+  const healthLoss: HealthLossCause | null =
+    chilled && starving
+      ? "coldAndHunger"
+      : chilled
+        ? "cold"
+        : starving
+          ? "hunger"
+          : null;
 
   let health = body.health;
   if (chilled) health = decimal(health - rules.healthLossChilled);
@@ -100,9 +117,15 @@ export function bodyMinute(
       body: { temperature, satiety, health: 0 },
       death: chilled ? "cold" : "hunger",
       lostHealth,
+      healthLoss,
     };
   }
-  return { body: { temperature, satiety, health }, death: null, lostHealth };
+  return {
+    body: { temperature, satiety, health },
+    death: null,
+    lostHealth,
+    healthLoss,
+  };
 }
 
 /** What the note under the temperature of the body row says. */

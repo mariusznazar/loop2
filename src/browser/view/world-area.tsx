@@ -1,8 +1,8 @@
 /**
  * The world area of the screen of a map run in React (D-311, D-19, D-70, D-147, D-185, D-186, D-201,
  * D-215, D-216, D-272, D-314, D-316, D-320 to D-322, D-334, D-335, D-337; tasks ekran-przejscia, To do 4, 5
- * and 6, scena-z-ludzikiem and teraz-i-potem, To do 1, 2 and 4 to 6): from the top the scene, the rows
- * „Teraz” and „Potem”, the paragraph of the last encounter, the lines of the
+ * and 6, scena-z-ludzikiem and teraz-i-potem, To do 1, 2 and 4 to 6, kronika-z-filtrami, To do 6): from
+ * the top the scene, the rows „Teraz” and „Potem”, the lines of the
  * end of the map run — the deposit and the settlement of a death — the body row, each value in a
  * cell of its own with the minutes its need lasts under temperature and satiety (D-337), with the
  * backpack, the lines of a solved map, of the practice and of the preview of the bring plan between the
@@ -19,7 +19,6 @@ import type { GameEvent } from "../sim/game.js";
 import type { GameState, RuleId } from "../sim/types.js";
 import { bodyCells, backpackText } from "./body-row.js";
 import { practiceText } from "./character-skills.js";
-import { combatText } from "./combat-line.js";
 import { NowRows } from "./now-rows.js";
 import { Scene } from "./scene.js";
 import { TerrainDrawing } from "./terrain-drawing.js";
@@ -58,8 +57,8 @@ export type WorldAreaProps = {
 
 /**
  * The world area. The scene is a picture drawn from the game state, with no text on it or over it
- * and nothing in it to take a click or the keyboard (D-272, D-321). The encounter paragraph is drawn
- * only while the map run holds a record of one. A value of the body row below its threshold stands
+ * and nothing in it to take a click or the keyboard (D-272, D-321). The paragraph of the last encounter
+ * stands in the chronicle of the right area, not here (D-311, D-147). A value of the body row below its threshold stands
  * in `danger`, as do „marznie” and „głoduje” under it and the settlement of a death that took the
  * progress (D-39); the other notes stand in `text-secondary`. The line under the drawing gives the hovered tile's numbers, else the character's tile's.
  */
@@ -87,9 +86,6 @@ export function WorldArea({
         events={events}
       />
       <NowRows state={state} onShowRule={onShowRule} />
-      {run.lastCombat ? (
-        <p className="combat-line">{combatText(run.lastCombat)}</p>
-      ) : null}
       {trip.deposited === null ? null : (
         <p className="trip-result">{trip.deposited}</p>
       )}
