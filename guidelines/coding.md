@@ -112,7 +112,7 @@ ostrzeżenie od poziomu low, którego tam nie było; plik taki sam jak w
 
 ### Recording a failure
 
-- **Decision:** D-252 · D-253
+- **Decision:** D-252 · D-253 · D-354
 - **Invariant:** none
 - **Good:** none
 - **Bad:** none
@@ -124,6 +124,10 @@ odpowiedzią i ta reguła jej nie dotyczy. Awarię zapisuj zawsze z przyczyną,
 czyli z pierwotnym błędem, a nie z samym napisem, raz, tam gdzie kod ją
 obsługuje. W kodzie Node.js robi to `writeFailure` z `src/server/log-line.ts`,
 a porażkę bez pierwotnego błędu nazywa kodem `ReasonedFailure`.
+
+Zdanie, którym polecenie serwisowe (`account-block`, `account-backup`) odpowiada
+operatorowi, nie jest wierszem logu (D-354). Wiersz JSON awarii i zdanie po nim
+to jeden zapis awarii: zostaw oba i nie licz zdania jako drugiego zapisu.
 
 Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która zapisuje
 to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
