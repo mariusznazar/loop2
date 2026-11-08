@@ -23,7 +23,6 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { emptyProgram } from "../../dist/browser/sim/programs.js";
 import { TileTable } from "../../dist/browser/view/tile-table.js";
-import * as worldArea from "../../dist/browser/view/world-area.js";
 import { WorldArea } from "../../dist/browser/view/world-area.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
@@ -402,26 +401,36 @@ test("the line of a death that used a resurrection is not in danger, and a death
   });
 });
 
-// Catches a second size of the scene, a scale or a function of a scale exported beside the one size
-// (D-349), a size other than 672 × 304 on the background, a text on the picture or a background other
+// Catches a second size of the scene (D-349) — one that follows the width of the window or the game
+// state — a size other than 672 × 304 on the background, a text on the picture or a background other
 // than the file of the forest. The scene is no longer one `img`: since the task scena-z-ludzikiem
 // (To do 1 and 7) it is a frame that holds the forest as its background image and the props, the
 // campfire, the mage and the badge over it (D-316, D-320), so the case reads the size and the source
 // from the background and the absence of text from the whole frame. The one size is twice the
 // picture of 336 × 152 (D-349, task proporcje-sceny-i-programu, To do 4).
 test("the scene is the picture of the forest at the one size of D-349, with no text inside or over it", async () => {
-  assert.equal(
-    "SCENE_SCALE" in worldArea,
-    false,
-    "no scale of the scene is exported",
-  );
-  assert.equal(
-    "sceneSize" in worldArea,
-    false,
-    "no function of a scale is exported",
-  );
-  await withPage(async ({ document }) => {
-    const { container } = await draw(document, sent());
+  await withPage(async ({ window, document }) => {
+    const { container, show } = await draw(document, sent());
+    // The one size holds in a narrow window and in a wide one, and for another state of the game.
+    for (const [width, state] of [
+      [800, completed(sent())],
+      [1920, sent()],
+    ]) {
+      Object.defineProperty(window, "innerWidth", {
+        value: width,
+        configurable: true,
+      });
+      await inAct(() => window.dispatchEvent(new window.Event("resize")));
+      await show(state);
+      const picture = worldOf(container).querySelector(".scene-background");
+      assert.equal(picture.getAttribute("width"), "672", `in ${width} px`);
+      assert.equal(picture.getAttribute("height"), "304", `in ${width} px`);
+      assert.equal(
+        worldOf(container).querySelector(".scene").getAttribute("style"),
+        null,
+        "the frame is sized by its picture alone",
+      );
+    }
     const world = worldOf(container);
     const scene = world.firstElementChild;
     assert.equal(scene.className, "scene");
