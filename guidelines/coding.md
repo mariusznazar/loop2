@@ -1,7 +1,7 @@
 # Coding guidelines — loop2
 
 - **Discipline:** coding
-- **Applies to:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Applies to:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
 
 ## When to read
 

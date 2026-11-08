@@ -213,9 +213,9 @@ moving it on by no game minute.
 
 ## simulation-isolation
 
-No file of the simulation imports a file from outside the simulation, or uses the page, a timer,
-the system time or a global object that the browser or Node.js adds to those of the JavaScript
-language.
+No file of the simulation outside `tests/` imports a file, a package or a module from outside the
+simulation, or uses the page, a timer, the system time or a global object that the browser or
+Node.js adds to those of the JavaScript language.
 
 - **Method:** test
 - **Rests on:** none
@@ -1234,6 +1234,16 @@ After an error that no code of the game handled, the game state held in the page
 - **Rests on:** none
 - **Derives from:** D-323
 - **Part:** browser-view
+- **Violated:** no
+
+## cross-part-imports
+
+No file of a part imports a file of another part, unless the *Depends on* of the importing file's part names the other part, the importing file stands under `tests/` and the imported file belongs to the part `test-helpers`, or an invariant "the part `<X>` does not depend on `<Y>`" reading `Violated: yes` says that the part `<X>` of the importing file depends on the part `<Y>` of the imported file today.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-351
+- **Part:** every
 - **Violated:** no
 
 ## Withdrawn identifiers

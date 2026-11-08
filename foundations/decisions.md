@@ -7821,3 +7821,47 @@ the panel does not unfold it.
 opening another rule, and a fold is none of them, so the player would lose the field and the rule
 being written; unfolding the group for the panel — the group the player folded opens again and the
 list runs from under the pointer.
+
+### D-351 — How does loop2 keep the imports of its parts within the dependencies its part map allows?
+
+One invariant keeps every import of loop2's code within its part map, and its test counts as a
+test every file git tracks under `tests/`, helpers and stand-ins included, so that only a file
+outside `tests/` is kept from importing the part of test helpers. The test reads the imports of
+TypeScript, JavaScript and Python files, and no process that one file starts from another and no
+HTML or CSS: in TypeScript and JavaScript `import` and `export … from` statements and `import()`
+with a string literal, in Python `import` and `from … import` statements and a directory added to
+`sys.path`. A relative import that the test cannot match to a file git tracks fails it, with the
+file and the line, an import of a built file under `dist/` is matched to its source under `src/`,
+and a package or a module from outside the repository is the file of no part.
+
+- **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: cross-part-imports. For the rest, an agent compares a change with
+  the decision:
+  - complies: a test of the simulation importing a file of the part of test helpers; a test of the
+    browser view importing a built module of the simulation under `dist/browser/sim/`, which the
+    test matches to its source; a test of one part starting a file of another part as a process
+  - violates: a test of the simulation importing a built module under `dist/browser/view/`; a
+    file outside `tests/` importing a file of the part of test helpers; a relative import left
+    unchecked because the test cannot match it to a file
+- **Origin:** zadanie_loop2_test_granic_czesci.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1–3, and § Settlements to record, row 1
+
+*Rationale:* a file of the tests folder that is no test, such as a helper or a stand-in, serves
+tests and carries nothing into the product, so only code outside that folder is kept from the part
+of test helpers. The check reads what a file imports because that stands at the head of the file
+and a failed match is plain to see; a process one part starts from another is left to the review of
+a change, which sees what the file starts. An import the check cannot match to a file would
+otherwise pass unseen by exactly the roads the check is meant to follow, so it fails the check,
+and a built file is matched to its source because tests reach the game's code through the build.
+*Rejected:* a test is a file named like a test — a helper or a stand-in in the tests folder
+at once becomes a violation to rewrite or accept, and each later file of the kind meets the same
+wall with no added protection; no ruling, the part map template leaving it to the task that writes
+the test — the choice stays open; counting as an import also the launch of a tracked file as a
+process — a launch from a test of a script of another part has to be ruled on first, and guessing
+from argument lists in two languages misses a path a helper builds and hits sample text that holds
+a command; reading HTML and CSS as well — the test would repeat how the build turns the addresses
+of the page into source files and break with each change of it, and it would catch nothing today,
+since each such file and what it refers to belong to the browser view; skipping an import the test
+cannot match — a silent hole, since every import through the build folder to a `.tsx` file would
+pass unchecked, and by that road an import of the view came into a test of the simulation.
