@@ -16,7 +16,6 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { nextRandom } from "../../dist/browser/sim/random.js";
-import { terrainPicture } from "../../dist/browser/view/terrain-picture.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
@@ -172,12 +171,7 @@ test("an action ending in attack minute lands, while an interrupted move leaves 
     stepTo: target.at,
   };
   const attacked = advanceMinutes(moving, 1).state;
-  assert.equal(
-    terrainPicture(attacked).tiles.filter(
-      (tile) => tile.outline === "stepTarget",
-    ).length,
-    0,
-  );
+  assert.equal(attacked.run.current?.stepTo ?? null, null);
   const after = advanceMinutes(attacked, 6);
   assert.deepEqual(after.state.run.character.at, moving.run.character.at);
   assert.ok(!after.events.some((event) => event.kind === "moved"));

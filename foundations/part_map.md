@@ -100,13 +100,13 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   requirements-quality.txt
   .gitignore
   README.md
-  tests/invariants/loop2_invariant_support.py
   tests/invariants/account_container_support.py
   tests/invariants/test_account_server_runtime.py
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
   tests/invariants/test_application_package_layout.py
   tests/invariants/test_application_build_kitchen_sink.py
+  tests/invariants/test_cross_part_imports.py
   tests/invariants/test_local_start_access.py
   tests/password-measurement.test.mjs
 - **Depends on:** browser-view · simulation · account-server · product-foundation
@@ -167,6 +167,16 @@ host and which encrypt the database backup and send it off the server.
   tests/invariants/test_account_save_backup_failure_notice.py
 - **Depends on:** browser-view · account-server · build-tools
 - **Trust boundary:** deploy/**
+
+## test-helpers
+
+The part holds the helpers that serve the tests of several parts — running the product's commands in
+a copy of the working tree, reading the repository's files and giving each file its part of the part
+map — which the tests of every part may import and code that is no test may not.
+
+- **Files:** tests/invariants/loop2_invariant_support.py
+- **Depends on:** none
+- **Trust boundary:** none
 
 ## External context
 

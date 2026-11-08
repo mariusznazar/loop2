@@ -1,7 +1,7 @@
 # Testing guidelines — loop2
 
 - **Discipline:** testing
-- **Applies to:** simulation · browser-view · account-server · build-tools · deployment · agent-workflow
+- **Applies to:** simulation · browser-view · account-server · build-tools · deployment · agent-workflow · test-helpers
 
 ## When to read
 
@@ -31,6 +31,7 @@ Poziom wynika z zasobów używanych przez test, nie z katalogu.
 | build-tools | W połączeniach: plikach, procesach i rejestrze npm. |
 | deployment | W połączeniach: git, kontenerze i serwerze. |
 | agent-workflow | W zgodności plików repozytorium: kopiach skilli i instrukcjach. |
+| test-helpers | W połączeniach: poleceniach, procesach i plikach repozytorium, które uruchamia dla testów innych części. |
 
 `product-foundation` sprawdza skrypt the-way; ta część nie ma własnych testów.
 

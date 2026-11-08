@@ -6,9 +6,6 @@ classification here; prose and package scripts do not classify its purpose.
 
 import json
 from pathlib import Path
-import re
-import subprocess
-import tempfile
 import unittest
 
 import loop2_invariant_support as support
@@ -18,44 +15,6 @@ APPLICATION_PARTS = {"browser-view", "account-server"}
 NON_APPLICATION_PARTS = {"build-tools", "agent-workflow", "product-foundation"}
 PACKAGE_FILES = {"package.json", "package-lock.json", "npm-shrinkwrap.json"}
 SOURCE_EXTENSIONS = {".ts", ".mts", ".cts", ".js", ".mjs", ".cjs", ".html", ".tsx"}
-
-
-def file_owners(root, tracked):
-    """Resolve the map's Files patterns with Git, as the part-map guard does."""
-    # data: foundations/part_map.md
-    text = (root / "foundations/part_map.md").read_text(encoding="utf-8")
-    patterns = []
-    for index, section in enumerate(re.split(r"(?m)^## ", text)[1:]):
-        name, _, body = section.partition("\n")
-        field = re.search(r"(?m)^- \*\*Files:\*\* (.*(?:\n[ \t]+.*)*)", body)
-        if field is None:
-            continue
-        for line in field.group(1).splitlines():
-            pattern = line.strip()
-            if pattern.startswith("- "):
-                pattern = pattern[2:].strip()
-            if pattern and pattern != "none":
-                patterns.append(f"{pattern} loop2-invariant-owner-{index}={name.strip()}\n")
-    with tempfile.TemporaryDirectory(prefix="loop2-package-ownership-") as temporary:
-        attributes = Path(temporary, "ownership.attributes")
-        attributes.write_text("".join(patterns), encoding="utf-8")
-        result = subprocess.run(
-            ["git", "-c", f"core.attributesFile={attributes.as_posix()}",
-             "-c", "core.ignorecase=false", "check-attr", "-z", "--all", "--stdin"], cwd=root,
-            input="\0".join(sorted(tracked)) + "\0", capture_output=True,
-            text=True, encoding="utf-8", timeout=60)
-        if result.returncode:
-            raise AssertionError("git check-attr failed: " + result.stderr)
-    fields = result.stdout.split("\0")
-    owners = dict.fromkeys(tracked, "unspecified")
-    for index in range(0, len(fields) - 2, 3):
-        path, attribute, owner = fields[index:index + 3]
-        if not attribute.startswith("loop2-invariant-owner-"):
-            continue
-        if owners[path] != "unspecified":
-            raise AssertionError(f"{path} has overlapping part owners: {owners[path]}, {owner}")
-        owners[path] = owner
-    return owners
 
 
 def application_sources(owners):
@@ -103,7 +62,7 @@ class ApplicationPackageLayout(unittest.TestCase):
         lock = json.loads(lock_path.read_text(encoding="utf-8"))
         self.assertEqual(lock["packages"][""]["name"], manifest["name"])
 
-        owners = file_owners(root, tracked)
+        owners = support.file_owners(root, tracked)
         sources = application_sources(owners)
         for part in APPLICATION_PARTS:
             self.assertIn(part, sources.values(), f"{part} owns no application source")

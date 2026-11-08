@@ -1,6 +1,7 @@
 """Shared support for loop2's invariant checks: the repository root, the product's own npm
 commands run in a temporary copy of the working tree, the built server started on a free port, and
-the deployment files the repository holds, and readers that take those files apart.
+the deployment files the repository holds, readers that take those files apart, and the reader that
+gives each file the part of the part map it belongs to.
 
 Nothing here computes a value a check expects; the checks write their expected values out as
 literals (WAY-228). This module only runs the product and hands its output back.
@@ -67,6 +68,48 @@ def files_under(directory, root):
         for name in files:
             found.append(os.path.relpath(os.path.join(current, name), root).replace(os.sep, "/"))
     return sorted(found)
+
+
+def file_owners(root, tracked):
+    """Map each path of `tracked` to the part whose *Files* patterns in the part map claim it,
+    resolved by Git as the part-map guard does; "unspecified" where no part claims it. Two parts
+    claiming one path raise AssertionError."""
+    # data: foundations/part_map.md
+    text = read_text(os.path.join(root, "foundations", "part_map.md"))
+    patterns = []
+    for index, section in enumerate(re.split(r"(?m)^## ", text)[1:]):
+        name, _, body = section.partition("\n")
+        field = re.search(r"(?m)^- \*\*Files:\*\* (.*(?:\n[ \t]+.*)*)", body)
+        if field is None:
+            continue
+        for line in field.group(1).splitlines():
+            pattern = line.strip()
+            if pattern.startswith("- "):
+                pattern = pattern[2:].strip()
+            if pattern and pattern != "none":
+                patterns.append(f"{pattern} loop2-invariant-owner-{index}={name.strip()}\n")
+    with tempfile.TemporaryDirectory(prefix="loop2-package-ownership-") as temporary:
+        attributes = os.path.join(temporary, "ownership.attributes")
+        with open(attributes, "w", encoding="utf-8") as handle:
+            handle.write("".join(patterns))
+        pointer = attributes.replace(os.sep, "/")
+        result = subprocess.run(
+            ["git", "-c", f"core.attributesFile={pointer}",
+             "-c", "core.ignorecase=false", "check-attr", "-z", "--all", "--stdin"], cwd=root,
+            input="\0".join(sorted(tracked)) + "\0", capture_output=True,
+            text=True, encoding="utf-8", timeout=60)
+        if result.returncode:
+            raise AssertionError("git check-attr failed: " + result.stderr)
+    fields = result.stdout.split("\0")
+    owners = dict.fromkeys(tracked, "unspecified")
+    for index in range(0, len(fields) - 2, 3):
+        path, attribute, owner = fields[index:index + 3]
+        if not attribute.startswith("loop2-invariant-owner-"):
+            continue
+        if owners[path] != "unspecified":
+            raise AssertionError(f"{path} has overlapping part owners: {owners[path]}, {owner}")
+        owners[path] = owner
+    return owners
 
 
 # --- running commands -----------------------------------------------------------------------
