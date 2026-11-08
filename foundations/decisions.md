@@ -7360,3 +7360,66 @@ narrower window, and a departure from loop's bars; the cells with bars under the
 — four bars with a calm, a warm and an alarm colour, new uses of colours and more work; a line of
 its own under the body row, „Bez ognia 79 min · bez jedzenia 86 min” — the minutes stand away from
 the values they concern.
+
+### D-338 — What does the chronicle of a map run hold?
+
+A manual map run keeps a chronicle of what happened in it, each entry with its game minute:
+discoveries, the character's actions, combat, the player's changes of the program, and each loss
+of the streak with its cause. The player filters it by these kinds in the right area of the screen.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the chronicle of a manual map run of Las holding „Zbierz — Patyk”, the text of the
+    band of a discovery and „Passa 391 przerwana: zdrowie spadło od zimna”, each with its game
+    minute, and the player picking „Passa” to read the losses of the streak alone
+  - violates: an entry of the chronicle with no game minute; a streak above zero falling to zero
+    with no entry of the chronicle; a change of the copy leaving no entry of the chronicle; the
+    chronicle standing in the world area of the screen of a map run
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P8 and NG7 · rozpoznanie_projektant.md, proposal 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does the chronicle of a map run hold?” · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play
+
+*Rationale:* a line of discoveries that goes at „Wznów” and a streak that falls without a word leave
+the player nothing to read afterwards, and the player's complaint is not knowing what happened.
+*Rejected:* a line of discoveries with no record — the player cannot go back to what was found.
+
+### D-339 — Where does the chronicle of a map run live, and what of it stands after a load?
+
+The chronicle lives in the memory of the page and enters neither the game state nor the save, so
+leaving the screen of the map run, for the headquarters among others, and coming back clears none
+of it. After a load of a saved game state — a reload of the page, a closed tab, a new sign-in or
+another device — the chronicle of the loaded map run starts from the paragraph of its last
+encounter, composed from the facts the saved game state already holds and standing at the game
+minute of the attack as D-147 gives, and every other entry of the chronicle from before the load is
+lost.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-338
+- **Verification:** an agent compares a change with the decision:
+  - complies: the chronicle of a map run of Las whole after the player opens Siedziba and comes
+    back; after a reload at game minute 300 of a map run a wolf attacked at game minute 212, the
+    chronicle holding the paragraph of that encounter alone, at game minute 212; after a reload of
+    a map run with no attack, an empty chronicle; the saved game state keeping its version and
+    holding no entry of the chronicle
+  - violates: an entry of the chronicle written into the game state or the save; the chronicle
+    emptied by a visit to Siedziba; the entries of the chronicle from before a reload standing after
+    it; after a reload, no paragraph of an encounter the saved game state holds
+- **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, question 1, and § Settlements to record, row 1
+
+*Rationale:* the save keeps its shape and its version, so no player's saved game state is discarded
+for the chronicle and the chronicle adds nothing to a save, which is not sent above 64 KiB (D-207),
+while the facts of the last encounter that the save already holds let its paragraph stand after a
+load as D-147 gives. Accepted with it: one more way through the code, with its test, and after a
+load a chronicle holding the encounter alone, without the entries that came before it. The choice
+rests on two things nobody measured, each a hypothesis: the estimate of the chronicle's size, and
+that a reload in the middle of a map run is rare.
+*Rejected:* the chronicle in the memory of the page and empty after a load — after a reload the
+player cannot go back to why the streak fell, and the paragraph of the last encounter would stand
+nowhere after a load, against D-147; the chronicle in the save, coming back whole after a load —
+the version of the save rises, so saved game states with the player's programs are discarded
+(D-206), the size of the chronicle was never measured, estimated at 50 to 60 bytes an entry and
+several hundred entries in a long map run, and a save above 64 KiB is not sent (D-207), so the game
+would stop saving; with it, a limit of entries at which the oldest go would leave the chronicle
+without part of what happened in the map run, against D-338, and raising the server's limit
+changes D-104 and D-207 and is work in the account and save server.
