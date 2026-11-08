@@ -211,6 +211,7 @@ test("unconfigured accounts answer the canonical account routes as unavailable J
     ["POST", "/api/password-reset"],
     ["GET", "/api/saved-game"],
     ["PUT", "/api/saved-game"],
+    ["POST", "/api/browser-failure"],
   ]) {
     const response = await send(path, { method });
     assert.equal(response.status, 503, `${method} ${path}`);
@@ -262,7 +263,10 @@ function standInMailer() {
   return mailer;
 }
 
-async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
+async function accountFixture(
+  t,
+  { keyCapacity, sendingDeadline, browserReportLimit } = {},
+) {
   const directory = await mkdtemp(join(tmpdir(), "loop2-account-http-"));
   let runtime, inspection, listening;
   let release = () => {};
@@ -312,6 +316,7 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
     now: () => clock.time,
     keyCapacity,
     sendingDeadline,
+    browserReportLimit,
   });
   const mailer = standInMailer();
   // A case may act just before a route records a link, as another connection
@@ -4448,5 +4453,483 @@ test(
       { ...failedRenewal(f), failure: "request", place: "app.errors" },
       failedRenewal(f),
     ]);
+  },
+);
+
+// The report of a failure in the browser (D-353): a public route of the
+// server that writes one line and nothing else of the request.
+const reportPath = "/api/browser-failure";
+const reportFields = {
+  kind: "TypeError",
+  code: "none",
+  place: "view/last-resort.installLastResort",
+};
+const reportLine =
+  '{"failure":"browser","kind":"TypeError","code":"none","place":"view/last-resort.installLastResort"}';
+const limitedLine =
+  '{"failure":"browser","kind":"ReasonedFailure","code":"LIMITED","place":"account-routes.browserFailure"}';
+
+function report(f, fields = reportFields, options = {}) {
+  return post(f, reportPath, fields, options);
+}
+
+// A report issues no cookie of its own; a live session is renewed as on any
+// request, with its own cookie and no other.
+function assertAccepted(response, label, renewed = null) {
+  assert.equal(response.status, 204, label);
+  assert.equal(response.body, "", `${label}: no body`);
+  assert.equal(response.headers["cache-control"], "no-store", label);
+  const cookies = response.headers["set-cookie"] ?? [];
+  assert.ok(
+    cookies.every((value) => value.split(";")[0] === renewed),
+    `${label}: no new cookie`,
+  );
+}
+
+test(
+  "a report of the allowed form from a page with no session is answered 204 and writes the one line of its three words",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: browser-failure-report
+    // Faults: a session required; a field or header of the request on the
+    // line; a line of another shape or key order; an answer with a body.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    assertAccepted(await report(f), "no session");
+    assert.deepEqual(logged, [reportLine]);
+    // Nothing but the three words reaches the line: the query, the headers
+    // and the address of the request stay out of it.
+    logged.length = 0;
+    const withExtras = await post(
+      f,
+      `${reportPath}?email=marker%40example.test`,
+      reportFields,
+      {
+        address: "203.0.113.99",
+        forwarded: {
+          "User-Agent": "marker-agent/1.0",
+          Referer: "https://game.example.test:8443/#reset-password=marker",
+          "X-Marker": "marker-header",
+        },
+      },
+    );
+    assertAccepted(withExtras, "with a query and headers");
+    assert.deepEqual(logged, [reportLine]);
+    assert.ok(!logged[0].includes("marker"), "no text of the request");
+    assert.ok(!logged[0].includes("203.0.113.99"), "no address");
+  },
+);
+
+test(
+  "the words a browser writes and the places that exist are accepted as they are",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: browser-failure-report
+    // Fault: a pattern stricter than the browser's words, which would drop a
+    // real report without a trace.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const longest = `K${"x".repeat(63)}`;
+    const cases = [
+      ["Error", "none", "view/last-resort.installLastResort"],
+      ["none", "none", "view/app.startFrom"],
+      ["none", "ERR_INVALID_ARG_TYPE", "view/account-card.createAccountCard"],
+      ["TypeError", "ECONNRESET", "a"],
+      [longest, longest, `p${"x".repeat(95)}`],
+      ["RangeError", "A1_b2", "view/a-b/c.d_e"],
+    ];
+    for (const [kind, code, place] of cases) {
+      assertAccepted(await report(f, { kind, code, place }), place);
+    }
+    assert.deepEqual(
+      logged,
+      cases.map(([kind, code, place]) =>
+        JSON.stringify({ failure: "browser", kind, code, place }),
+      ),
+    );
+  },
+);
+
+// A session of the first account whose record has run out, as the store
+// leaves it between its removals.
+function expiredSession(f, id) {
+  const cookie = seed(f, id, f.first);
+  f.inspection
+    .prepare("UPDATE sessions SET expires_at = ? WHERE id = ?")
+    .run(Date.now() - 1, id);
+  return cookie;
+}
+
+test(
+  "the account on the line is the one the stored session names, and a forged, foreign, expired or absent cookie and a body naming an account give none",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: browser-failure-report
+    // Faults: accountId read from the body, a header, the query or an
+    // unsigned cookie; a session required; an expired session still naming
+    // its account.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const named = (account) =>
+      `{"failure":"browser","kind":"TypeError","code":"none","place":"view/last-resort.installLastResort","accountId":"${account.id}"}`;
+    const own = seed(f, "report-first", f.first);
+    assertAccepted(
+      await report(f, reportFields, { cookie: own }),
+      "a session",
+      own,
+    );
+    assert.deepEqual(logged, [named(f.first)]);
+    logged.length = 0;
+    // The second account's session names the second account, whatever else
+    // the request carries.
+    const other = seed(f, "report-second", f.second);
+    assertAccepted(
+      await post(f, `${reportPath}?accountId=${f.first.id}`, reportFields, {
+        cookie: other,
+        forwarded: { "X-Account-Id": f.first.id },
+      }),
+      "another account's session",
+      other,
+    );
+    assert.deepEqual(logged, [named(f.second)]);
+    logged.length = 0;
+    // A body that names an account is refused and writes nothing.
+    for (const fields of [
+      { ...reportFields, accountId: f.first.id },
+      { ...reportFields, account: f.first.id },
+      { ...reportFields, id: f.second.id },
+    ])
+      assertInvalidRequest(
+        await report(f, fields, { cookie: other }),
+        JSON.stringify(fields),
+      );
+    assert.deepEqual(logged, [], "refused bodies write nothing");
+    // A cookie that is not a stored session of this server names no account.
+    const strangers = {
+      "a cookie signed with another key": signedCookie(
+        "report-first",
+        randomBytes(32).toString("base64url"),
+      ),
+      "an unsigned session identifier": "__Host-loop2.sid=report-first",
+      "a signed identifier nothing stores": signedCookie(
+        "report-nothing",
+        f.keys[0],
+      ),
+      "an expired session": expiredSession(f, "report-old"),
+    };
+    for (const [label, cookie] of Object.entries(strangers)) {
+      assertAccepted(await report(f, reportFields, { cookie }), label);
+      assert.deepEqual(logged.splice(0), [reportLine], label);
+    }
+  },
+);
+
+test(
+  "a body that is not exactly the three string fields is refused with invalid-request and writes nothing",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: browser-failure-report
+    // Faults: a missing, extra or non-string field accepted or coerced; text
+    // of the request kept beyond the three words.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const word = "TypeError";
+    const bodies = [
+      {},
+      { kind: word, code: word },
+      { kind: word, place: "view/app" },
+      { code: word, place: "view/app" },
+      { ...reportFields, accountId: f.first.id },
+      { ...reportFields, email: "marker@example.test" },
+      { ...reportFields, message: "marker message" },
+      { ...reportFields, stack: "marker stack" },
+      { ...reportFields, extra: reportFields.kind },
+      { kind: 7, code: word, place: "view/app" },
+      { kind: word, code: null, place: "view/app" },
+      { kind: word, code: word, place: true },
+      { kind: [word], code: word, place: "view/app" },
+      { kind: word, code: { text: word }, place: "view/app" },
+      { kind: word, code: word, place: ["view/app"] },
+    ];
+    for (const fields of bodies)
+      assertInvalidRequest(await report(f, fields), JSON.stringify(fields));
+    for (const text of ["[]", "[1,2,3]", "null", "7", '"text"', "{", ""]) {
+      const response = await report(f, text);
+      assert.equal(response.status, 400, JSON.stringify(text));
+      assert.match(response.headers["content-type"], /^application\/json/);
+    }
+    assert.deepEqual(logged, [], "nothing written");
+    // The same route takes the correct body after all that.
+    assertAccepted(await report(f), "control");
+    assert.deepEqual(logged, [reportLine]);
+  },
+);
+
+test(
+  "a kind, code or place of another form is refused with invalid-request and writes nothing, at the edges of each length",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: browser-failure-report
+    // Faults: a space, a quote, a brace, an at sign, a line break, a control
+    // or non-ASCII character reaching the log; the characters of a place
+    // allowed in a kind or a code; a length not bounded.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const stray = [
+      "",
+      " ",
+      "a b",
+      " ab",
+      "ab ",
+      'a"b',
+      "a'b",
+      "a{b}",
+      "a}",
+      "a@b.test",
+      "a\nb",
+      "a\r\nb",
+      "ab\n",
+      "a\tb",
+      "a\u0000b",
+      "a\u001bb",
+      "a\u007fb",
+      "Zażółć",
+      "ż",
+      "a b",
+      "a\u{1F642}b",
+      "1abc",
+      "_abc",
+      "a:b",
+      "a=b",
+      "a\\b",
+    ];
+    const nonWords = ["a.b", "a/b", "a-b", ".a", "-a", "/a"];
+    const place = "view/app.startFrom";
+    const word = "TypeError";
+    const refused = [];
+    for (const value of [...stray, ...nonWords, word.repeat(8).slice(0, 65)]) {
+      refused.push({ kind: value, code: word, place });
+      refused.push({ kind: word, code: value, place });
+    }
+    for (const value of [
+      ...stray,
+      "a b/c",
+      ".a",
+      "/a",
+      "-a",
+      "a.",
+      "a/",
+      "a-",
+      "a..b",
+      "a//b",
+      "a/.b",
+      "a.1b",
+      "a/-b",
+      "p".repeat(97),
+    ])
+      refused.push({ kind: word, code: word, place: value });
+    for (const fields of refused)
+      assertInvalidRequest(await report(f, fields), JSON.stringify(fields));
+    assert.deepEqual(logged, [], "nothing written");
+    // The longest each field may be passes; one character more does not.
+    const edges = {
+      kind: "k".repeat(64),
+      code: "c".repeat(64),
+      place: "p".repeat(96),
+    };
+    assertAccepted(await report(f, edges), "the longest words");
+    assert.equal(logged.length, 1);
+    for (const name of ["kind", "code", "place"]) {
+      const longer = { ...edges, [name]: edges[name] + "x" };
+      assertInvalidRequest(await report(f, longer), `${name} one too long`);
+    }
+    assert.equal(logged.length, 1, "nothing more written");
+  },
+);
+
+test(
+  "the guards and the gate stand before the body of a report: a foreign origin, a body of another media or size and missing proxy metadata are refused and write nothing",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-mutation-request-guards
+    // Faults: the route missing from the guarded set or from the gate; the
+    // line written before the guards ran.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const valid = {
+      ...proxyHeaders,
+      Origin: origin,
+      "Content-Type": "application/json",
+    };
+    const body = JSON.stringify(reportFields);
+    const variants = [
+      ["no origin", { Origin: undefined }, 403],
+      ["null origin", { Origin: "null" }, 403],
+      ["foreign origin", { Origin: "https://evil.example" }, 403],
+      ["duplicate origin", { Origin: [origin, origin] }, 403],
+      ["text media", { "Content-Type": "text/plain" }, 415],
+      [
+        "form media",
+        { "Content-Type": "application/x-www-form-urlencoded" },
+        415,
+      ],
+      ["compressed", { "Content-Encoding": "gzip" }, 415],
+      ["no proxy protocol", { "X-Forwarded-Proto": undefined }, 403],
+      ["no client address", { "CF-Connecting-IP": undefined }, 403],
+      ["plain protocol", { "X-Forwarded-Proto": "http" }, 403],
+    ];
+    for (const [label, changes, expected] of variants) {
+      const headers = { ...valid, ...changes };
+      for (const name of Object.keys(headers))
+        if (headers[name] === undefined) delete headers[name];
+      const response = await f.send(reportPath, {
+        method: "POST",
+        headers,
+        body,
+      });
+      assert.equal(response.status, expected, label);
+      assert.match(response.headers["content-type"], /^application\/json/);
+    }
+    const over = await f.send(reportPath, {
+      method: "POST",
+      headers: valid,
+      body: JSON.stringify({ ...reportFields, padding: "x".repeat(16 * 1024) }),
+    });
+    assert.equal(over.status, 413, "over 16 KiB");
+    assert.deepEqual(logged, [], "nothing written");
+    assertAccepted(await report(f), "control");
+    assert.deepEqual(logged, [reportLine]);
+  },
+);
+
+test(
+  "any other method of the report path gets the JSON 404 of the unmatched API, and writes nothing",
+  { timeout: 20000 },
+  async (t) => {
+    // Fault: a route answering other methods, or the game's HTML page.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    for (const method of ["GET", "PUT", "DELETE", "PATCH"]) {
+      const response = await f.send(reportPath, {
+        method,
+        headers: {
+          ...proxyHeaders,
+          Origin: origin,
+          "Content-Type": "application/json",
+        },
+        body: method === "GET" ? undefined : JSON.stringify(reportFields),
+      });
+      assert.equal(response.status, 404, method);
+      assert.match(response.headers["content-type"], /^application\/json/);
+      assert.deepEqual(JSON.parse(response.body), { error: "Not found" });
+    }
+    const query = await f.send(
+      `${reportPath}?${new URLSearchParams(reportFields)}`,
+      {
+        headers: proxyHeaders,
+      },
+    );
+    assert.equal(query.status, 404, "fields in a query");
+    assert.deepEqual(logged, [], "nothing written");
+  },
+);
+
+test(
+  "over its limit the route answers 429 and writes nothing, one LIMITED line at the first refusal of an hour, and refused bodies use none of the limit",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: browser-failure-report
+    // Faults: bodies refused by their pattern counted; a line for every
+    // refused request; no line at the first refusal; the limit per address;
+    // a window that never ends or ends all at once.
+    const f = await accountFixture(t, { browserReportLimit: 2 });
+    const logged = captureLog(t);
+    for (const bad of [{}, { ...reportFields, kind: "a b" }])
+      assertInvalidRequest(await report(f, bad), "refused body");
+    assert.equal((await report(f, "{")).status, 400, "broken body");
+    assertAccepted(
+      await report(f, reportFields, { address: "192.0.2.1" }),
+      "first",
+    );
+    assertAccepted(
+      await report(f, reportFields, { address: "192.0.2.2" }),
+      "second",
+    );
+    assert.deepEqual(logged, [reportLine, reportLine]);
+    // Whoever asks, the third is refused; the first refusal leaves a line.
+    assertLimited(
+      await report(f, reportFields, { address: "192.0.2.3" }),
+      "third",
+    );
+    assert.deepEqual(logged.slice(2), [limitedLine]);
+    for (const address of ["192.0.2.3", "192.0.2.1", "198.51.100.77"])
+      assertLimited(await report(f, reportFields, { address }), address);
+    assertInvalidRequest(await report(f, {}), "still refused for its body");
+    assert.equal(logged.length, 3, "the later refusals write nothing");
+    // Still inside the hour: still refused and still silent.
+    f.clock.time += 59 * minute;
+    assertLimited(await report(f), "59 minutes on");
+    assert.equal(logged.length, 3);
+    // An hour from the two accepted reports both have left the count; the
+    // next flood begins a new window, with a line of its own.
+    f.clock.time += minute;
+    assertAccepted(await report(f), "an hour on, first");
+    assertAccepted(await report(f), "an hour on, second");
+    assertLimited(await report(f), "an hour on, third");
+    assertLimited(await report(f), "an hour on, fourth");
+    assert.deepEqual(logged.slice(3), [reportLine, reportLine, limitedLine]);
+    assert.ok(
+      logged.map((line) => line.length).every((length) => length < 200),
+      "the lines of the flood are short",
+    );
+  },
+);
+
+test(
+  "the hour is rolling: a report counts until an hour has passed since its own moment",
+  { timeout: 20000 },
+  async (t) => {
+    // Fault: a window that restarts as a whole, which would admit a burst
+    // twice in one hour.
+    const f = await accountFixture(t, { browserReportLimit: 2 });
+    const logged = captureLog(t);
+    assertAccepted(await report(f), "at the start");
+    f.clock.time += 30 * minute;
+    assertAccepted(await report(f), "half an hour on");
+    f.clock.time += minute;
+    assertLimited(await report(f), "31 minutes on");
+    // 60 minutes from the start only the first has left the count.
+    f.clock.time += 29 * minute;
+    assertAccepted(await report(f), "the first has left");
+    assertLimited(await report(f), "the second has not");
+    f.clock.time += 30 * minute;
+    assertAccepted(await report(f), "the second has left");
+    // Four reports were accepted, and the refusals made one LIMITED line.
+    assert.equal(logged.filter((line) => line === reportLine).length, 4);
+    assert.equal(logged.filter((line) => line === limitedLine).length, 1);
+    assert.equal(logged.length, 5);
+  },
+);
+
+test(
+  "from many addresses the server accepts 30 reports in an hour and refuses the 31st",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: browser-failure-report
+    // Fault: a limit per address, which a flood from many addresses passes,
+    // or none; the budget of the file and the watcher belongs to anyone.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    for (let index = 1; index <= 30; index += 1)
+      assertAccepted(
+        await report(f, reportFields, { address: `198.51.100.${index}` }),
+        `report ${index}`,
+      );
+    assertLimited(
+      await report(f, reportFields, { address: "198.51.100.31" }),
+      "the 31st",
+    );
+    assert.equal(logged.length, 31);
+    assert.equal(logged[30], limitedLine);
   },
 );

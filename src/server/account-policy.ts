@@ -8,6 +8,8 @@ const addressFailureLimit = 20;
 const addressFailureWindow = 15 * minute;
 const registrationLimit = 5;
 const registrationWindow = 60 * minute;
+const defaultBrowserReportLimit = 30;
+const browserReportWindow = 60 * minute;
 const defaultKeyCapacity = 10_000;
 const defaultSendingDeadline = 10_000;
 
@@ -45,6 +47,27 @@ export function isLinkToken(value: string): boolean {
 // The account database keeps only this digest of a link's token (D-156).
 export function linkTokenDigest(token: string): string {
   return createHash("sha256").update(token).digest("base64url");
+}
+
+// The browser's report of a failure (D-353): `kind` and `code` are one word of
+// letters, digits and underscore that starts with a letter, as the words the
+// browser writes are; `place` is such words joined by `.`, `/` and `-`. Nothing
+// else may reach the log, which lives for weeks, so a space, a quote, a brace,
+// an `@`, a line break and any non-ASCII character fail here.
+const reportWord = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
+const reportPlace =
+  /^(?=.{1,96}$)[A-Za-z][A-Za-z0-9_]*(?:[./-][A-Za-z][A-Za-z0-9_]*)*$/;
+
+export function isBrowserReport(input: {
+  kind: string;
+  code: string;
+  place: string;
+}): boolean {
+  return (
+    reportWord.test(input.kind) &&
+    reportWord.test(input.code) &&
+    reportPlace.test(input.place)
+  );
 }
 
 export type PasswordProblem = "invalid-password" | "password-mismatch";
@@ -135,7 +158,13 @@ interface PolicyOptions {
   keyCapacity?: number;
   // The whole sending of an account message, in milliseconds; tests shorten it.
   sendingDeadline?: number;
+  // Browser reports admitted in one rolling hour; tests lower it.
+  browserReportLimit?: number;
 }
+
+// "refused-first" is the first refusal of an hour: the caller writes the one
+// line that tells the reports were dropped.
+export type BrowserReportAdmission = "admitted" | "refused" | "refused-first";
 
 function recent(times: number[], now: number, window: number): number[] {
   return times.filter((time) => time + window > now);
@@ -147,6 +176,9 @@ export class AccountPolicy {
   private readonly emails = new Map<string, EmailHistory>();
   private readonly addresses = new Map<string, AddressHistory>();
   private reservations = 0;
+  private readonly browserReportLimit: number;
+  private browserReports: number[] = [];
+  private refusalNoticeAt: number | null = null;
   // After this long a sending whose mailer has not answered counts as failed,
   // so an account message never waits on the mail service unbounded.
   readonly sendingDeadline: number;
@@ -163,6 +195,13 @@ export class AccountPolicy {
       this.sendingDeadline > 2 ** 31 - 1
     )
       throw new Error("Invalid sending deadline");
+    this.browserReportLimit =
+      options.browserReportLimit ?? defaultBrowserReportLimit;
+    if (
+      !Number.isSafeInteger(this.browserReportLimit) ||
+      this.browserReportLimit < 1
+    )
+      throw new Error("Invalid browser report limit");
   }
 
   // Attempts admitted and not yet settled.
@@ -283,6 +322,27 @@ export class AccountPolicy {
       }),
       release: once(() => {}),
     };
+  }
+
+  // One count for the whole server, whoever sends: at most the limit of
+  // reports in a rolling hour, in memory, so the log and the failure watcher
+  // belong to no single sender. A refused request is not counted. The first
+  // refusal after an hour without a notice is flagged, so that the caller writes
+  // one line for the hour and none for each request dropped.
+  admitBrowserReport(): BrowserReportAdmission {
+    const now = this.now();
+    this.browserReports = recent(this.browserReports, now, browserReportWindow);
+    if (this.browserReports.length < this.browserReportLimit) {
+      this.browserReports.push(now);
+      return "admitted";
+    }
+    if (
+      this.refusalNoticeAt !== null &&
+      this.refusalNoticeAt + browserReportWindow > now
+    )
+      return "refused";
+    this.refusalNoticeAt = now;
+    return "refused-first";
   }
 
   private currentEmail(key: string, now: number): EmailHistory | undefined {

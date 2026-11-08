@@ -13,6 +13,7 @@ import {
   checkRegistration,
   confirmationLinkLifetime,
   createLinkToken,
+  isBrowserReport,
   isLinkToken,
   linkTokenDigest,
   normalizeEmail,
@@ -25,7 +26,12 @@ import {
   PasswordCapacityError,
   verifyPassword,
 } from "./passwords.js";
-import { ReasonedFailure, writeEvent, writeFailure } from "./log-line.js";
+import {
+  ReasonedFailure,
+  writeBrowserFailure,
+  writeEvent,
+  writeFailure,
+} from "./log-line.js";
 import type { LineFields } from "./log-line.js";
 import { mutationGuards } from "./transport.js";
 
@@ -49,6 +55,7 @@ const paths = {
   passwordResetMessage: "/api/password-reset-message",
   passwordReset: "/api/password-reset",
   savedGame: "/api/saved-game",
+  browserFailure: "/api/browser-failure",
 };
 
 // The body limit of the six small routes and of the save route, and the most
@@ -390,6 +397,7 @@ export function accountRoutes(
       paths.confirmationMessage,
       paths.passwordResetMessage,
       paths.passwordReset,
+      paths.browserFailure,
     ],
     ...mutationGuards(runtime.configuration.publicOrigin, accountBodyLimit),
   );
@@ -397,6 +405,40 @@ export function accountRoutes(
     paths.savedGame,
     ...mutationGuards(runtime.configuration.publicOrigin, savedGameLimit),
   );
+
+  // The page reports a failure no code of the game handled (D-353). No session
+  // is needed, because a failure can strike on the login card, and the body
+  // never names an account: the line carries the `accountId` of the stored
+  // session when there is one. The limit counts the reports whose bodies passed
+  // their patterns, and the first refusal of an hour leaves one line of its own.
+  router.post(paths.browserFailure, (request, response) => {
+    const input = stringFields(request.body, [
+      "kind",
+      "code",
+      "place",
+    ] as const);
+    if (!input || !isBrowserReport(input)) {
+      invalidRequest(response);
+      return;
+    }
+    const admission = policy.admitBrowserReport();
+    if (admission !== "admitted") {
+      if (admission === "refused-first")
+        writeFailure(
+          "browser",
+          "account-routes.browserFailure",
+          new ReasonedFailure("LIMITED"),
+        );
+      limited(response);
+      return;
+    }
+    const accountId: unknown = request.session?.accountId;
+    writeBrowserFailure(
+      input,
+      typeof accountId === "string" ? accountId : undefined,
+    );
+    response.status(204).end();
+  });
 
   router.get(paths.account, (request, response) => {
     const account = sessionAccount(runtime, request);
