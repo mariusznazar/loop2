@@ -1,6 +1,6 @@
-"""Invariant simulation-isolation: No file of the simulation imports a file from outside the
-simulation, or uses the page, a timer, the system time or a global object that the browser or
-Node.js adds to those of the JavaScript language.
+"""Invariant simulation-isolation: No file of the simulation outside `tests/` imports a file, a
+package or a module from outside the simulation, or uses the page, a timer, the system time or a
+global object that the browser or Node.js adds to those of the JavaScript language.
 
 The files of the simulation are the files git tracks or would track under `src/browser/sim/` (the
 part `simulation`'s source) and, for the run, the modules `npm run build` places under
