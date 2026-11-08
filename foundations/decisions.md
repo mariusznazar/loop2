@@ -2224,7 +2224,7 @@ on with „Wznów”. A band in
 the role `discovery` above the program names what was discovered and the program rule the game
 wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose
 „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the
-scene keeping its colours. Where
+scene keeping its colours, and what it named enters the chronicle. Where
 the map run ends in a completion in the game minute of a discovery, the screen after the completion
 takes the place of the pause, and the band stands, with no „Wznów”, until „Restart” or „Zakończ”.
 
@@ -2243,19 +2243,19 @@ takes the place of the pause, and the band stands, with no „Wznów”, until �
     discoveries of one game minute in two bands; a completion in the game minute of a discovery
     leaving the map run paused with „Wznów”; the band of that discovery gone from the screen after
     the completion before „Restart” or „Zakończ”; the scene greyed at a stop at a discovery
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 5 and 12
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 5 and 12 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and Decisions in play
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
 whatever treats a paused map run treats a map run stopped by a discovery the same, the scene
 excepted: it keeps its colours at a stop at a discovery, so that the moment of the reward is not
 dimmed. A discovery
-concerns the program, so it stands above the program. A map run that ends in the game minute of a
-discovery has nothing to go on to, so the screen of its end stands in place of the pause, and the
-player still reads what that game minute discovered, which enters the Understanding as any
-discovery does. Accepted with it: a stop at a discovery cannot be told apart in the game state from
-the player's pause, and a player who goes on at once loses the list of discoveries, since the game
-keeps no record of them; the band ends in two ways, „Wznów” or „Restart” and „Zakończ”, and the
-screen after a completion can keep both the band and the encounter's paragraph.
+concerns the program, so it stands above the program, and the chronicle keeps it after the player
+goes on. A map run that ends in the game minute of a discovery has nothing to go on to, so the
+screen of its end stands in place of the pause, and the player still reads what that game minute
+discovered, which enters the Understanding as any discovery does. Accepted with it: a stop at a
+discovery cannot be told apart in the game state from the player's pause; the band ends in two
+ways, „Wznów” or „Restart” and „Zakończ”, and the screen after a completion can keep both the band
+and the encounter's paragraph.
 *Rejected:* a stop at a discovery as a game state of its own, with a button of its own for going
 on; the screen after a completion with no word of the discovery made in its game minute — the player
 would not learn what that game minute discovered; the scene greyed at a stop at a discovery, as at a
