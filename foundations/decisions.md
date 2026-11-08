@@ -426,7 +426,8 @@ character's tile, never on the drawing.
   shown only by a real browser, which the repository does not declare, an agent compares the change
   with the decision:
   - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
-    marks the tile
+    marks the tile, while the tab „Teren” of the right area of the screen of a map run is picked
+    (D-311)
   - violates: a click on a tile that sends the character there or changes the program
 - **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
 
@@ -3374,15 +3375,15 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 
 ### D-185 — Where does the player read what completion deposited?
 
-After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the world area of the screen of a map run, under the scene and the last-encounter paragraph when present and above the body row and backpack, until „Restart” or „Zakończ”.
+After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the world area of the screen of a map run, under the scene and above the body row and backpack, until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-122 · derives from D-147 · derives from D-179
+- **Relations:** derives from D-122 · derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6
 
-*Rationale:* The transfer remains readable with the final state, even when a long encounter places it further below the scene.
+*Rationale:* The transfer remains readable with the final state.
 *Rejected:* placing it above discovery — changes the established order; placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
@@ -5713,8 +5714,8 @@ background, never on a picture.
 - **Verification:** an agent compares a change with the decision:
   - complies: the screen of the login card with the picture over the whole window and every sentence
     of the page inside the card, on its solid `panel`; the scene at the top of the world area of the
-    screen of a map run with no text on it or over it, the paragraph of the last encounter on the
-    solid background under it; the waiting screens with no picture
+    screen of a map run with no text on it or over it, „Teraz” and „Potem” on the solid background
+    under it; the waiting screens with no picture
   - violates: a sentence of the page standing on the picture outside the card; the card's background
     made half-transparent over the picture; the game minute or the name of the map written over the
     scene
@@ -6696,8 +6697,9 @@ the human chooses to correct — the human corrected no row.
 
 The screen of a map run has three areas under one header: the world on the left, the program in
 the middle, and on the right one content at a time, the editing of a program rule or a rule group
-while one is open and the table of revealed tiles otherwise. The world holds, from the top, the
-scene, „Teraz” and „Potem”, the paragraph of the last encounter, the line of the end of the map run
+while one is open and otherwise the chronicle or the table of revealed tiles, as the player picks
+with the tabs „Kronika” and „Teren”, „Kronika” picked when the character is sent to the map. The
+world holds, from the top, the scene, „Teraz” and „Potem”, the line of the end of the map run
 (D-185, D-216), the body row with the minutes each need lasts, with the backpack and the lines below
 them, the drawing of the map and the line of a tile under it. The header holds the character's
 name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
@@ -6709,24 +6711,29 @@ name, the map's name, the clock, a bar of the solving condition with its numbers
 - **Verification:** an agent compares a change with the decision:
   - complies: on the screen of a map run of Las the character's name, „Las”, „Minuta 212”, the bar
     „Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the header, and
-    under it the world, the program and the table of revealed tiles side by side; „Teraz” and
-    „Potem” under the scene and above the paragraph of the last encounter; a rule opened from its row
-    standing in the right area in the place of the table, and „✕” bringing the table back; after a
-    completion the line „Do skrzynki: …” under the scene in the world area, the table staying in the
-    right area
+    under it the world, the program and the right area side by side, the right area holding the tabs
+    „Kronika” and „Teren” with the chronicle under „Kronika”, picked when the character was sent;
+    „Teraz” and „Potem” under the scene, and the paragraph of the last encounter standing in the
+    chronicle; a rule opened from its row standing in the right area in the place of the tabs and
+    their content, and „✕” bringing back the tab picked; after a completion the line „Do skrzynki:
+    …” under „Teraz” and „Potem” in the world area, the right area keeping the tab picked
   - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
-    body row; the rule panel opened over the program or under the table; the table of revealed tiles
-    standing under the drawing in the world area; the line „Do skrzynki: …” in the right area;
-    „Restart” and „Zakończ” standing in the world area
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13
+    body row; the rule panel opened over the program or under the tabs; the table of revealed tiles
+    standing under the drawing in the world area; the paragraph of the last encounter standing in
+    the world area; the chronicle and the table standing one under the other; the line „Do skrzynki:
+    …” in the right area; „Restart” and „Zakończ” standing in the world area
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 8, Questions to settle, questions 5, 6 and 11, and Decisions in play
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
 Needs and the goal stand high, because they stay readable at a fast pace when moments no longer do,
-and „Teraz” and „Potem” stand right under the scene, so they do not move as the paragraph of the
-last encounter grows with each turn. The header is where the player steers the map run, so
-„Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of the
-solving condition and three buttons may break in a narrower window, and the paragraph of the last
-encounter two rows further from the scene.
+and „Teraz” and „Potem” stand right under the scene. The chronicle shares the right area with the
+table of revealed tiles under two tabs, so each keeps the whole height of the area, and „Kronika” is
+picked first, since the chronicle is what the player is to read; the paragraph of the last
+encounter stands in the chronicle alone, so its text stands in one place. The header is where the
+player steers the map run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header,
+which with the bar of the solving condition and three buttons may break in a narrower window; the
+table of revealed tiles one click away while „Kronika” is picked; and, while the end of the map run
+does not stand in the right area, after a death in combat the paragraph read only in the chronicle.
 *Rejected:* the pick of an action in a window over the screen, as in loop — it hides what the
 character needs; the end of a map run below an open editor of a rule, as in loop — its buttons fall
 under the edge of the window; the needs below two drawings of one place, as in loop; the trip plan
@@ -6735,7 +6742,11 @@ under the editor during a map run; the clock written as „03:32” — a new no
 in; „Restart”, the warning of a cut trip plan and „Zakończ” in the program column, in a row over the
 heading of the copy — the player looks for them in a new place, and the question at „Zakończ”
 would move into that row and push the program down in a narrow column; „Teraz” and „Potem” under the paragraph of the last encounter and the line of the
-end of the map run — they move down at each attack as the paragraph grows.
+end of the map run — they move down at each attack as the paragraph grows; „Teren” picked when the
+character is sent — the chronicle the player is to read stays hidden until it is opened; the
+chronicle and the table one under the other — both shorter, and the right area holding two contents
+at once; the paragraph of the last encounter under the scene as well as in the chronicle — the same
+text in two places.
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
