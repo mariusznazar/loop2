@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { request } from "node:http";
+import { ServerResponse, request } from "node:http";
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
@@ -4730,5 +4730,36 @@ test(
     assert.deepEqual(await settledLog(logged), [
       { failure: "request", kind: "Error", code: "none", place: "app.errors" },
     ]);
+  },
+);
+
+test(
+  "a failed renewal after an answer that has ended writes one line of the session and calls no destroy on the response",
+  { timeout: 20000 },
+  async (t) => {
+    // Guard: `if (!response.writableEnded)` before `response.destroy()` in the
+    // session callback of src/server/app.ts. The calls of `destroy` on the real
+    // response are observed, not changed: each is recorded with `writableEnded`
+    // at the moment of the call and then passed on. This observes a call, not
+    // a cut answer, because on this host the socket is already detached when
+    // the callback runs, so a cut is not visible. The guard's effect is visible
+    // only inside the product, which is the departure from the guideline.
+    // Fault: the guard removed, so `destroy` runs on the response whose answer
+    // has ended.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const destroy = ServerResponse.prototype.destroy;
+    const calls = [];
+    ServerResponse.prototype.destroy = function (...parameters) {
+      calls.push({ writableEnded: this.writableEnded });
+      return destroy.apply(this, parameters);
+    };
+    t.after(() => {
+      ServerResponse.prototype.destroy = destroy;
+    });
+    const response = await readAccount(f, refusingRenewal(f));
+    assert.equal(response.status, 200, "the answer ended whole");
+    assert.deepEqual(await settledLog(logged), [failedRenewal(f)]);
+    assert.deepEqual(calls, [], "no destroy of an answer that has ended");
   },
 );
