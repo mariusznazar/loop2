@@ -103,7 +103,7 @@ failure record and alerts are in "The failure record and alerts" in `references/
   redacted diagnosis, not raw logs.
 - After the build and before the containers are replaced the log gets one more line. On success
   it is `dump: the size of /var/log/loop2-app.log went from <N> to <M> bytes`, the bytes appended
-  from the log of both services, which the replacement removes. On failure it is a line starting
+  from the log of both services, which the replacement removes. On failure it is a line with
   `warning: the dump of the log of both loop2 services ... failed (exit <N>; ...)`; the
   deployment goes on, and the log of the containers it replaces is not kept. A run that ends at
   exit 2 to 7 has no `dump:` line, because it stopped before the dump and replaced nothing. Look
@@ -286,8 +286,9 @@ of that data (D-252), and its lines are reported selected and redacted like othe
    At most one message per kind in six hours and six in all in 24 hours; a held message is
    only counted in the watcher's log, and a `pusher` call that fails still counts as sent. A
    container that was replaced (a deployment, a human's `up`) is recorded silently and raises no
-   `restarted`. The browser kind has its own budget, so a flood of browser reports leaves the
-   server kind free.
+   `restarted`. The browser kind comes last in the order and goes once in six hours at most, so a
+   flood of browser reports takes four of the day's six messages at most and leaves room for
+   the server kinds.
 2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). Every
    five minutes, at minutes that are not the top of the hour, GitHub Actions opens the public
    address, up to six attempts 20 seconds apart, and the run fails unless one answers 200.
