@@ -16,8 +16,10 @@ export interface Account {
 }
 
 // A session write refused because its account is blocked, which is what a
-// block intends (D-137): the one refusal of a session write that is no failure
-// (D-353). It stays an `Error` with the message of any other refusal.
+// block intends (D-137). It is no failure only for the write the session
+// library makes as a response ends (D-353); the first store of a session in
+// `establishSession` is another write, and a refusal there keeps its line. It
+// stays an `Error` with the message of any other refusal.
 export class BlockedSessionRefusal extends Error {
   constructor() {
     super("Session cannot be replaced");

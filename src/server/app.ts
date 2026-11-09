@@ -57,9 +57,11 @@ export function createApp(
       // The library reports a store that failed as the response ends, through
       // this `next`, wherever the request has got to. Past the last layer the
       // error would reach Express's own handler, which prints its stack and
-      // message, so it stops here. An answer already ended stays whole. A
-      // write that the account's block refused is what the block intends and
-      // leaves no line (D-353); a write refused for any other cause does.
+      // message, so it stops here. An answer already ended stays whole. This
+      // is the write that ends a response, and when the account's block
+      // refused it, that is what the block intends and it leaves no line
+      // (D-353); a write refused for any other cause does. The first store of
+      // a session in `establishSession` is another write: it keeps its line.
       sessions(request, response, (error?: unknown) => {
         if (error && response.headersSent) {
           if (!(error instanceof BlockedSessionRefusal))
