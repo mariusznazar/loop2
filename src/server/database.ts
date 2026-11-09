@@ -15,6 +15,18 @@ export interface Account {
   emailConfirmed: boolean;
 }
 
+// A session write refused because its account is blocked, which is what a
+// block intends (D-137). It is no failure only for the write the session
+// library makes as a response ends (D-353); the first store of a session in
+// `establishSession` is another write, and a refusal there keeps its line. It
+// stays an `Error` with the message of any other refusal.
+export class BlockedSessionRefusal extends Error {
+  constructor() {
+    super("Session cannot be replaced");
+    this.name = "BlockedSessionRefusal";
+  }
+}
+
 export type BlockOutcome =
   | { outcome: "blocked" | "already-blocked"; accountId: string }
   | { outcome: "unknown" };
@@ -327,10 +339,12 @@ export class AccountDatabase {
     // stores nothing or follows it and deletes what it stored. An unknown
     // account still fails on the foreign key; the WHERE clause also keeps the
     // upsert unambiguous. Without an expected hash the password is not looked
-    // at.
-    const result = this.connection
-      .prepare(
-        `
+    // at. A write that stored nothing reads the block in the same transaction,
+    // so what it reports is the state the statement saw (D-353).
+    const stored = this.transaction(() => {
+      const result = this.connection
+        .prepare(
+          `
       INSERT INTO sessions (id, account_id, data, expires_at)
       SELECT ?, ?, ?, ?
       WHERE NOT EXISTS (
@@ -341,18 +355,25 @@ export class AccountDatabase {
         expires_at = MAX(sessions.expires_at, excluded.expires_at)
       WHERE sessions.account_id = excluded.account_id AND sessions.expires_at > ?
     `,
-      )
-      .run(
-        id,
-        session.accountId,
-        session.data,
-        session.expiresAt,
-        session.accountId,
-        session.expectedPasswordHash ?? null,
-        session.expectedPasswordHash ?? null,
-        this.now(),
-      );
-    if (result.changes === 0) throw new Error("Session cannot be replaced");
+        )
+        .run(
+          id,
+          session.accountId,
+          session.data,
+          session.expiresAt,
+          session.accountId,
+          session.expectedPasswordHash ?? null,
+          session.expectedPasswordHash ?? null,
+          this.now(),
+        );
+      if (result.changes > 0) return "stored";
+      const row = this.connection
+        .prepare("SELECT blocked FROM accounts WHERE id = ?")
+        .get(session.accountId);
+      return row?.blocked === 1 ? "blocked" : "refused";
+    });
+    if (stored === "blocked") throw new BlockedSessionRefusal();
+    if (stored === "refused") throw new Error("Session cannot be replaced");
   }
 
   readSession(id: string): StoredSession | null {

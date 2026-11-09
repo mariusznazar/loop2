@@ -347,8 +347,8 @@ const NO_CONNECTION = {
 const NO_SAVE = { ok: true, value: null };
 
 /**
- * The page address with a fragment the test sets, counting how often it is cleared, and with a
- * history of its own: `go` adds an entry after the current one and drops those after it, as a
+ * The page address with a fragment the test sets, counting how often it is cleared and how often
+ * the page asks to reload, and with a history of its own: `go` adds an entry after the current one and drops those after it, as a
  * browser does, `replace` changes the current entry, and `back` and `forward` move along it and
  * tell every listener, as the browser's back and forward buttons do through `hashchange`.
  */
@@ -358,6 +358,7 @@ function fakeAddress(hash = "") {
     entries: [hash],
     index: 0,
     cleared: 0,
+    reloaded: 0,
     get current() {
       return address.entries[address.index];
     },
@@ -373,6 +374,9 @@ function fakeAddress(hash = "") {
     },
     replace(next) {
       address.entries[address.index] = next;
+    },
+    reload() {
+      address.reloaded += 1;
     },
     onChange(listener) {
       listeners.add(listener);
@@ -3944,8 +3948,10 @@ test("the items of the bar lead to their screens, and back and forward walk the 
 });
 
 // Question 8, D-281, trust: the fragment is the player's input. Catches a crafted fragment that
-// throws, opens no screen, or stays in the address; a replacement that adds an entry of the history;
-// and an emailed link's fragment read as a screen while the game stands.
+// throws, opens no screen, or stays in the address; and a replacement that adds an entry of the
+// history. The fragments of the emailed links are no row here since D-352: with the game standing
+// they reload the page (the case "a fragment of an emailed link that appears in the address of an
+// open game reloads the page…"), and a link's fragment behind a screen's address stays one.
 test("an address that leads to no existing screen opens the nearest one and has its fragment replaced, with no new entry, at a reload and through a link alike", async () => {
   const CRAFTED = [
     ["a character number with a letter", "#/postac/x", "headquarters", "#/"],
@@ -3971,8 +3977,6 @@ test("an address that leads to no existing screen opens the nearest one and has 
     ],
     ["a map the data lacks", "#/mapy/nowhere", "headquarters", "#/"],
     ["a long fragment", `#/postac/${"1".repeat(5000)}`, "headquarters", "#/"],
-    ["a confirmation link's fragment", LINK, "headquarters", "#/"],
-    ["a reset link's fragment", RESET_LINK, "headquarters", "#/"],
     [
       "a screen's address with a link's fragment behind it",
       `#/postac/1${LINK}`,
@@ -3981,15 +3985,13 @@ test("an address that leads to no existing screen opens the nearest one and has 
     ],
   ];
   for (const [name, hash, screen, nearest] of CRAFTED) {
-    // At a reload: the emailed links' fragments are not here, since the page handles them first.
-    if (hash !== LINK && hash !== RESET_LINK) {
-      await onPage(async ({ root }) => {
-        const held = heldClient();
-        const address = await reloadedAt(held, hash, twoPrograms());
-        assert.equal(shownScreen(root), screen, name);
-        assert.deepEqual(address.entries, [nearest], name);
-      });
-    }
+    // At a reload.
+    await onPage(async ({ root }) => {
+      const held = heldClient();
+      const address = await reloadedAt(held, hash, twoPrograms());
+      assert.equal(shownScreen(root), screen, name);
+      assert.deepEqual(address.entries, [nearest], name);
+    });
     // Through a link while the game stands.
     await onPage(async ({ root }) => {
       const held = heldClient();
@@ -4785,6 +4787,68 @@ test("the screens Postać and Mapy are built on entering them and gone on leavin
     await follow(address, "#/");
     assert.equal(mapsHosts(), 0);
     assert.equal(byClass(root, "headquarters")[0], headquarters, "the same");
+  });
+});
+
+// Settlement 1 of the task porzadki-z-uwag-pr, D-352, D-156, D-224. A fragment of an emailed link
+// that appears in the address of a tab whose game is open (the link pasted into the address bar) must
+// reload the page, which then does what a page opened by the link does; before, the listener took it
+// for an address with no screen and replaced it with Siedziba, so the link was lost. Catches a
+// listener that resolves the fragment as a screen, one that reloads for one of the two links only,
+// and one that rewrites the fragment before the reload, which would send the reloaded page to
+// Siedziba with no token.
+test("a fragment of an emailed link that appears in the address of an open game reloads the page, which keeps the fragment and the screen as they were", async () => {
+  for (const [name, link] of [
+    ["a confirmation link", LINK],
+    ["a password-reset link", RESET_LINK],
+  ]) {
+    await onPage(async ({ root }) => {
+      const address = fakeAddress("#/mapy");
+      const { view } = await viewOf(withCharacter(), address);
+      assert.equal(shownScreen(root), "maps", `${name}: precondition`);
+      await follow(address, link);
+      assert.equal(address.reloaded, 1, `${name}: the page reloads`);
+      assert.equal(
+        address.hash(),
+        link,
+        `${name}: the fragment is left for the reloaded page to read`,
+      );
+      assert.equal(
+        shownScreen(root),
+        "maps",
+        `${name}: no screen replaces the one shown`,
+      );
+      await inAct(() => view.dispose());
+    });
+  }
+});
+
+// The same decision from the other side: only the two fragments of emailed links reload the page.
+// Catches a listener that reloads at every change of the address, and one that takes a fragment that
+// only begins like a link, with no token sign, for one.
+test("any other change of the address of an open game goes on as before and reloads nothing", async () => {
+  await onPage(async ({ root }) => {
+    const address = fakeAddress("#/");
+    const { view } = await viewOf(withCharacter(), address);
+    await follow(address, "#/programy");
+    assert.equal(shownScreen(root), "programs");
+    await goBack(address);
+    await goForward(address);
+    assert.equal(shownScreen(root), "programs");
+    // A fragment that names no screen opens the nearest one and is replaced, a link's lookalikes too.
+    for (const fragment of [
+      "#nieznany",
+      "#confirm-email",
+      "#reset-password",
+      "#/confirm-email=abc",
+      "#CONFIRM-EMAIL=abc",
+    ]) {
+      await follow(address, fragment);
+      assert.equal(shownScreen(root), "headquarters", fragment);
+      assert.equal(address.hash(), "#/", `${fragment}: replaced`);
+    }
+    assert.equal(address.reloaded, 0);
+    await inAct(() => view.dispose());
   });
 });
 

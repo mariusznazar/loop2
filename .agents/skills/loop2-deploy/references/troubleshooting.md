@@ -24,9 +24,9 @@ setting, never a value):
 | `Invalid or unavailable account configuration: LOOP2_SMTP_PASSWORD_FILE` | `/etc/loop2/smtp-password` exists with `stat -c '%U %g %a'` giving `root 1000 440`, holds the password alone, non-empty, at most 1 KiB, with no trailing newline. Replace it with the sequence in "The SMTP password" in `setup_and_secrets.md`, not by editing it by hand. |
 | `Invalid or unavailable account configuration: LOOP2_MAIL_FROM`, `LOOP2_SMTP_HOST`, `LOOP2_SMTP_PORT` or `LOOP2_SMTP_USER` | Compose supplies them; a mismatch means the checkout's `compose.yaml` was changed. Report to the task. |
 | `"failure":"mail"` with the `code` `EAUTH` | Outsider refused the login or the password: the human checks the login in `compose.yaml` and the password file against the mailbox, as in "The SMTP password". |
-| `"failure":"mail"` with the `code` `ECONNECTION`, `ETIMEDOUT`, `ESOCKET`, `EDNS`, `ETLS` or `EREQUIRETLS` | A connection, name lookup or TLS failure towards Outsider on port 587, not a credential problem. Whether the container can reach that port is shown only by the human's trial (H4). Report the code. |
+| `"failure":"mail"` with the `code` `ECONNECTION`, `ETIMEDOUT`, `ESOCKET`, `EDNS`, `ETLS` or `EREQUIRETLS` | A connection, name lookup or TLS failure towards Outsider on port 587, not a credential problem. Whether the container can reach that port is shown only by the human's trial (M4). Report the code. |
 | `"failure":"mail"` with the `code` `EENVELOPE` or `EMESSAGE` | Outsider accepted the connection, TLS and login but refused the sender, the recipient or the message, for example because the monthly allowance of 1000 is used up. The human looks in Outsider's panel. Report the code. |
-| `"failure":"mail"` with the `code` `DEADLINE`, `CONNECTION_ENDED`, `NOT_ENCRYPTED` or `UNSAFE_RECIPIENT` | No library code, so the code names the reason: the send ran out of its 10 seconds, the connection ended or was not upgraded to TLS, or the mailer refused the address before connecting. `DEADLINE` cannot tell a network fault from a slow Outsider; the human's trial (H4) decides. Report the line. |
+| `"failure":"mail"` with the `code` `DEADLINE`, `CONNECTION_ENDED`, `NOT_ENCRYPTED` or `UNSAFE_RECIPIENT` | No library code, so the code names the reason: the send ran out of its 10 seconds, the connection ended or was not upgraded to TLS, or the mailer refused the address before connecting. `DEADLINE` cannot tell a network fault from a slow Outsider; the human's trial (M4) decides. Report the line. |
 | `Invalid or unavailable account configuration: LOOP2_DATABASE_PATH` | The volume `loop2_accounts` is mounted at `/app/data` and writable by uid 1000 (`docker volume inspect loop2_accounts`), and the database is not from a newer schema than this commit knows (see below). |
 | `Invalid or unavailable account configuration: LOOP2_PUBLIC_ORIGIN` or `LOOP2_PROXY_MODE` | Compose supplies them; a mismatch means the checkout's `compose.yaml` was changed. Report to the task. |
 | `Account password readiness failed` | The password hash self-test failed at start; report with the bounded log. |
@@ -110,7 +110,7 @@ A rollback deploys earlier code (D-15). The data does not move with it:
 - **Rolling back to a commit without accounts:** that commit's Compose file does not mention
   the volume or the key file, so both stay unused on the server and the accounts are not
   visible. Deploying forward again shows them. Until then no loop2 container references the
-  volume, which is exactly the state a volume prune would clear; run none.
+  volume, which is exactly the state in which `docker volume prune --all` would clear it; run no prune.
 - **A database newer than the code:** an application refuses a database whose schema version
   it does not know. The current code writes schema version 4. Version 2 added to version 1 the
   blocked state of each account; version 3 adds to version 2 the confirmation state of each
@@ -120,11 +120,11 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   values; only accounts from a database before version 3 come out with an unconfirmed address
   (the move from 3 to 4 leaves the confirmation state as it is), and a failure leaves the database as it was and stops the
   start (exit 8). **The first deployment of this change, also the human's trial deployment of
-  its branch before the merge (H4), moves the persistent database of the test server to
+  its branch before the merge (M4), moves the persistent database of the test server to
   version 3.** From then on a commit that knows only version 2 or 1, `main` before this change
   included, fails health (exit 8): a rollback to it fails, and an unmerged branch leaves `main`
   unable to start. **The first deployment of the change with saved game states, also the
-  human's deployment of its branch before the merge (H1), moves the persistent database of the
+  human's deployment of its branch before the merge (S1), moves the persistent database of the
   test server to version 4.** From then on a commit that knows only version 3 or older, `main`
   before this change included, fails health (exit 8): a rollback to it cannot start, and every
   merge to `main` before this change is merged deploys that older code and leaves the test

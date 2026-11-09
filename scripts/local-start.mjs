@@ -25,6 +25,9 @@
 //
 // Failures go through the server's own log-line writer, as JSON lines; the lines
 // a person reads to find the game and what `npm run local:stop` did are plain.
+// The writer is part of the built game. Where `npm run local:stop` finds none, its
+// failure to load is the one failure no line can carry: it is left to Node.js's own
+// print of what nothing handled (D-253), once, after the stop has told every start.
 //
 // Exit codes: 0 stopped, 1 the start failed or a start did not stop, 2 refused.
 import { execFileSync } from "node:child_process";
@@ -66,20 +69,31 @@ class StartFailure extends Error {
   }
 }
 
-function logLine() {
-  return import(
-    pathToFileURL(join(root, "dist", "server", "log-line.js")).href
-  );
+// Set while `stop` works: the failure to load the writer then waits, as
+// `writerLoadFailure`, instead of ending the command before every start is told.
+let keepsWriterLoadFailure = false;
+let writerLoadFailure;
+
+async function logLine() {
+  try {
+    return await import(
+      pathToFileURL(join(root, "dist", "server", "log-line.js")).href
+    );
+  } catch (error) {
+    if (!keepsWriterLoadFailure) throw error;
+    writerLoadFailure ??= error;
+    return undefined;
+  }
 }
 
 async function recordFailure(failure, place, error) {
-  const { writeFailure } = await logLine();
-  writeFailure(failure, place, error);
+  const log = await logLine();
+  log?.writeFailure(failure, place, error);
 }
 
 async function recordReason(code, sentence, place) {
-  const { ReasonedFailure, writeFailure } = await logLine();
-  writeFailure(sentence, place, new ReasonedFailure(code));
+  const log = await logLine();
+  log?.writeFailure(sentence, place, new log.ReasonedFailure(code));
 }
 
 // A port of this computer where nothing answers: a message fails at once, the
@@ -159,8 +173,25 @@ function makeCertificate() {
   );
 }
 
+// One request of a browser, passed to the server. A server that fails before its
+// answer starts gets a 502; one that breaks its answer off after the headers
+// leaves the browser a connection cut where the answer stopped, since an ended
+// answer would look whole. Either is one failure line, except where the browser
+// had already left: the proxy then ended the request itself.
 function proxyRequest(serverPort, incoming, outgoing) {
   let browserLeft = false;
+  let failed = false;
+  const fail = (error) => {
+    if (browserLeft || failed) return;
+    failed = true;
+    void recordFailure("local-proxy", "local-start.proxy", error);
+    if (outgoing.headersSent) {
+      outgoing.destroy();
+      return;
+    }
+    outgoing.writeHead(502);
+    outgoing.end();
+  };
   const upstream = httpRequest(
     {
       host: HOST,
@@ -170,16 +201,12 @@ function proxyRequest(serverPort, incoming, outgoing) {
       headers: upstreamHeaders(incoming.headers),
     },
     (response) => {
+      response.once("error", fail);
       outgoing.writeHead(response.statusCode ?? 502, response.headers);
       response.pipe(outgoing);
     },
   );
-  upstream.once("error", (error) => {
-    if (browserLeft) return;
-    void recordFailure("local-proxy", "local-start.proxy", error);
-    if (!outgoing.headersSent) outgoing.writeHead(502);
-    outgoing.end();
-  });
+  upstream.once("error", fail);
   outgoing.once("close", () => {
     browserLeft = true;
     upstream.destroy();
@@ -274,12 +301,15 @@ async function runningStarts(starts) {
   return running;
 }
 
-// The directories this command made, each with what its name says. A directory of
-// any other name is not this command's and stays untouched.
+// The directories this command made, each with what its name says, in the order
+// of their names, whatever order the system lists them in. A directory of any
+// other name is not this command's and stays untouched.
 function startDirectories() {
   if (!existsSync(startsDirectory)) return [];
   const found = [];
-  for (const entry of readdirSync(startsDirectory, { withFileTypes: true })) {
+  const entries = readdirSync(startsDirectory, { withFileTypes: true });
+  entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  for (const entry of entries) {
     const name = startDirectoryName.exec(entry.name);
     if (entry.isDirectory() && name)
       found.push({
@@ -384,11 +414,14 @@ function tellToStop({ path }) {
 }
 
 async function stop() {
+  keepsWriterLoadFailure = true;
   const running = await runningStarts(startDirectories());
+  const untold = [];
   for (const start of running) {
     try {
       tellToStop(start);
     } catch (error) {
+      untold.push(start);
       await recordFailure(
         `could not tell the start ${start.name} to stop`,
         "local-start.stop",
@@ -402,12 +435,15 @@ async function stop() {
     await sleep(STOP_CHECK_MS);
     left = await runningStarts(left);
   }
-  for (const { name } of left)
+  // A start that could not be told has its failure line, with its cause.
+  for (const start of left) {
+    if (untold.includes(start)) continue;
     await recordReason(
       "START_STILL_RUNNING",
-      `the local start ${name} did not stop`,
+      `the local start ${start.name} did not stop`,
       "local-start.stop",
     );
+  }
   console.log(`Local starts stopped: ${running.length - left.length}`);
   return left.length === 0 ? 0 : EXIT_FAILED;
 }
@@ -417,14 +453,17 @@ if (options.length > 1 || (options.length === 1 && options[0] !== "--stop")) {
   console.error(USAGE);
   process.exit(EXIT_REFUSED);
 }
+let stopped;
 try {
-  if (options.length === 1) process.exit(await stop());
-  await start();
+  if (options.length === 1) stopped = await stop();
+  else await start();
 } catch (error) {
   // Of any other error the line takes only its kind and code: its message may
   // quote a value.
   if (error instanceof StartFailure)
     await recordReason(error.code, error.message, "local-start.start");
   else await recordFailure("local-start", "local-start.start", error);
-  process.exit(EXIT_FAILED);
+  stopped = EXIT_FAILED;
 }
+if (writerLoadFailure !== undefined) throw writerLoadFailure;
+if (stopped !== undefined) process.exit(stopped);

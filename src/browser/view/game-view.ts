@@ -36,7 +36,10 @@ import {
 import { startClock, type GameStore } from "./clock.js";
 import { createChronicle } from "./chronicle.js";
 import type { CopyAct } from "./chronicle-entries.js";
-import type { PageAddress } from "./email-confirmation.js";
+import {
+  readConfirmationToken,
+  type PageAddress,
+} from "./email-confirmation.js";
 import { createGameSaver, type LogoutSave } from "./game-saver.js";
 import { createHeadquarters } from "./headquarters.js";
 import {
@@ -50,6 +53,7 @@ import {
   createProgramPanel,
   type ProgramPanelControls,
 } from "./program-panel.js";
+import { readResetToken } from "./password-reset.js";
 import { createRunScreen } from "./run-screen.js";
 import {
   readScreenAddress,
@@ -174,7 +178,8 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * that character, each with a new entry (D-53, D-329), while „Puść w pętlę” leaves the player on
  * the screen Mapy. „Zakończ” asks „Zapisać, odrzucić, wrócić?” and acts on the answer where the
  * copy holds unsaved changes (D-173); the browser's back and forward and the bar's links reach the
- * view through the address's listener. Leaving Przejście by any change of screen pauses a map run
+ * view through the address's listener, which reloads the page where the fragment of an emailed link
+ * appears in the address (D-352). Leaving Przejście by any change of screen pauses a map run
  * that goes on as „Pauza” does, a moment of saving (D-283, D-207); coming back resumes nothing
  * (D-284). The view tells the page its place through `onScreen`, at the first screen and at each
  * change, with the bar's „Wróć do przejścia” where a map run waits outside its screen.
@@ -813,10 +818,16 @@ export function createGameView(options: GameViewOptions): GameView {
   }
 
   // The browser's back and forward, and a link of the bar: the address names the screen; one that
-  // names no existing screen opens the nearest and is replaced with its address (D-281).
+  // names no existing screen opens the nearest and is replaced with its address (D-281). The fragment
+  // of an emailed link (D-156, D-224) names none: the page reloads with it in the address, and the
+  // reloaded page does what a page opened by that link does (D-352).
   const stopListening = address.onChange(() => {
     if (disposed) return;
     const hash = address.hash();
+    if (readConfirmationToken(hash) !== null || readResetToken(hash) !== null) {
+      address.reload();
+      return;
+    }
     const screen = resolveScreen(readScreenAddress(hash), state);
     show(screen, screenAddress(screen) === hash ? "none" : "replace");
     focusShownScreen();

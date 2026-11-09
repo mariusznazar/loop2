@@ -9,6 +9,7 @@ import {
   sessionCookieScope,
 } from "./account-routes.js";
 import type { AccountRuntime } from "./configuration.js";
+import { BlockedSessionRefusal } from "./database.js";
 import { writeFailure } from "./log-line.js";
 import type { LineFields } from "./log-line.js";
 import { clientAddress, trustProxy } from "./transport.js";
@@ -56,15 +57,20 @@ export function createApp(
       // The library reports a store that failed as the response ends, through
       // this `next`, wherever the request has got to. Past the last layer the
       // error would reach Express's own handler, which prints its stack and
-      // message, so it stops here. An answer already ended stays whole.
+      // message, so it stops here. An answer already ended stays whole. This
+      // is the write that ends a response, and when the account's block
+      // refused it, that is what the block intends and it leaves no line
+      // (D-353); a write refused for any other cause does. The first store of
+      // a session in `establishSession` is another write: it keeps its line.
       sessions(request, response, (error?: unknown) => {
         if (error && response.headersSent) {
-          writeFailure(
-            "session",
-            "app.sessions",
-            error,
-            sessionFields(request),
-          );
+          if (!(error instanceof BlockedSessionRefusal))
+            writeFailure(
+              "session",
+              "app.sessions",
+              error,
+              sessionFields(request),
+            );
           if (!response.writableEnded) response.destroy();
           return;
         }
@@ -97,7 +103,9 @@ export function createApp(
         status = 415;
       else if (
         error.type === "entity.parse.failed" ||
-        error.type === "entity.verify.failed"
+        error.type === "entity.verify.failed" ||
+        // A browser that breaks off sending its body (D-353).
+        error.type === "request.aborted"
       )
         status = 400;
     }

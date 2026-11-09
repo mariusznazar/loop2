@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { request } from "node:http";
+import { ServerResponse, request } from "node:http";
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import fs from "node:fs";
 import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Readable } from "node:stream";
 import { DatabaseSync } from "node:sqlite";
 import argon2 from "argon2";
 import session from "express-session";
@@ -320,6 +322,9 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
     beforeIssue: null,
     beforeSave: null,
     beforeFind: null,
+    // Runs once a lookup of an account by email has returned, before the
+    // login's password check is answered.
+    afterFind: null,
     beforeReset: null,
   };
   const database = new Proxy(runtime.database, {
@@ -335,7 +340,9 @@ async function accountFixture(t, { keyCapacity, sendingDeadline } = {}) {
       if (!hook) return value.bind(target);
       return (...parameters) => {
         hooks[hook]?.();
-        return value.apply(target, parameters);
+        const result = value.apply(target, parameters);
+        if (name === "findAccountByEmail") hooks.afterFind?.();
+        return result;
       };
     },
   });
@@ -777,6 +784,26 @@ async function waitFor(condition, label) {
     if (Date.now() > deadline) throw new Error(`${label}: deadline exceeded`);
     await new Promise((resolve) => setTimeout(resolve, 5));
   }
+}
+
+// Resolves when the next login has read its account and its password check
+// is not yet answered: an action taken then is in the check's window, however
+// fast the check is. Fails after the same five seconds as waitFor.
+function nextAccountRead(f, label) {
+  let timer;
+  const read = new Promise((resolve) => {
+    f.hooks.afterFind = () => {
+      f.hooks.afterFind = null;
+      resolve();
+    };
+  });
+  const deadline = new Promise((_resolve, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`${label}: deadline exceeded`)),
+      5000,
+    );
+  });
+  return Promise.race([read, deadline]).finally(() => clearTimeout(timer));
 }
 
 // Both native password slots stay busy for the action, so any password work
@@ -1375,11 +1402,25 @@ test(
       },
     });
     abandoned.on("error", () => {});
+    // The attempt's password work waits until the test lets it finish, so it
+    // outlives the disconnect however fast the check is.
+    const realVerify = argon2.verify;
+    let letVerifyFinish;
+    const mayFinish = new Promise((resolve) => {
+      letVerifyFinish = resolve;
+    });
+    argon2.verify = (...parameters) =>
+      mayFinish.then(() => realVerify.apply(argon2, parameters));
+    t.after(() => {
+      argon2.verify = realVerify;
+      letVerifyFinish();
+    });
+    const read = nextAccountRead(f, "fifth attempt read its account");
     abandoned.end(
       JSON.stringify({ email: "drop@example.test", password: `${password}!` }),
     );
     try {
-      await waitFor(() => f.policy.inFlight === 1, "fifth attempt admitted");
+      await read;
     } finally {
       abandoned.destroy();
     }
@@ -1393,6 +1434,7 @@ test(
       await login(f, "drop@example.test", password),
       "the disconnected attempt still holds its reservation",
     );
+    letVerifyFinish();
     await waitFor(() => f.policy.inFlight === 0, "abandoned work completed");
     assertLimited(
       await login(f, "drop@example.test", password),
@@ -1833,10 +1875,9 @@ test(
         await login(f, email, `${password}!`),
         `failure ${attempt}`,
       );
+    const read = nextAccountRead(f, "login read its account");
     const pending = login(f, email, password);
-    // The account is read before the password work starts, in the same turn
-    // that admits the attempt (as in the disconnected-login case above).
-    await waitFor(() => f.policy.inFlight === 1, "login admitted");
+    await read;
     assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
     assertMessage(await pending, 403, blockedMessage, "blocked meanwhile");
     assert.equal(sessionCount(f), 0, "no session is stored");
@@ -1889,8 +1930,9 @@ test(
         `failure ${attempt}`,
       );
     assert.equal(sessionCount(f), 1, "precondition: the registration's own");
+    const read = nextAccountRead(f, "login read its account");
     const pending = login(f, email, password);
-    await waitFor(() => f.policy.inFlight === 1, "login admitted");
+    await read;
     resetDirectly(f, email, replacement);
     assertLoginRefused(await pending, "replaced meanwhile");
     assert.equal(sessionCount(f), 0, "no session is stored");
@@ -1927,6 +1969,118 @@ test(
     assert.equal(sessionCount(f), 0, "the second store put nothing back");
     const { cookie } = issuedSession(response, "registration");
     assertRefusal(await readAccount(f, cookie), 401, "its cookie");
+  },
+);
+
+// The session write that ends a registration's response, refused while the
+// registration waits on its message. A block is meant to stop the account's
+// sessions (D-137), so its refusal leaves no failure line; a refusal for any
+// other cause is a failure and keeps its line (D-353).
+/** Starts a registration whose message is held and returns once the message
+ * is handed on, so the account's first session is stored and its link
+ * recorded; `settled` is the registration's answer, still to come. */
+async function startWaitingRegistration(f, email, address) {
+  f.mailer.held.length = 0;
+  f.mailer.outcome = "hold";
+  const settled = register(f, email, { address }).then(
+    (response) => response,
+    (error) => error,
+  );
+  await waitFor(() => f.mailer.held.length === 1, "message handed on");
+  assert.equal(sessionCount(f), 1, "precondition: the first store");
+  return { settled };
+}
+
+/** Answers the held message and returns the registration's response and the
+ * lines of failure the server has written once the response has ended. */
+async function endWaitingRegistration(f, { settled }, logged) {
+  for (const answer of f.mailer.held.splice(0)) answer("sent");
+  const response = await settled;
+  // The library reports a failed write in the turn after its response; a later
+  // request is answered after that turn.
+  await f.send("/api/account", { headers: proxyHeaders });
+  return { response, lines: failureLines(logged) };
+}
+
+test(
+  "a block committed while a registration waits on its message leaves no line of failure, and the answer stays 201",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: blocked-account-access
+    // Fault: the refusal of the session write that the block intends logged
+    // as a failure of the session, a false alarm for whoever reads the log
+    // for failures (D-353).
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const email = "blocked-waiting@example.test";
+    const waiting = await startWaitingRegistration(f, email, "198.51.100.97");
+    try {
+      assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
+      assert.equal(sessionCount(f), 0, "the block deleted it");
+    } finally {
+      for (const answer of f.mailer.held.splice(0)) answer("sent");
+    }
+    const { response, lines } = await endWaitingRegistration(
+      f,
+      waiting,
+      logged,
+    );
+    assert.equal(response.status, 201, "the registration still answers");
+    assert.equal(sessionCount(f), 0, "nothing is stored for the blocked");
+    assert.deepEqual(lines, [], "no failure line for the block's refusal");
+    const { cookie } = issuedSession(response, "registration");
+    assertRefusal(await readAccount(f, cookie), 401, "its cookie");
+  },
+);
+
+test(
+  "a session write at the end of a registration refused for another cause than a block leaves its line of failure",
+  { timeout: 30000 },
+  async (t) => {
+    // invariant: password-reset-ends-sessions
+    // Fault: the block's exemption made too wide, so that a password replaced
+    // meanwhile or a failing database hides a failure of the session (D-353).
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+
+    // The password replaced while the message is on its way.
+    const reset = "replaced-waiting-line@example.test";
+    const replaced = await startWaitingRegistration(f, reset, "198.51.100.98");
+    resetDirectly(f, reset, await hashPassword("a password set by the reset"));
+    const afterReset = await endWaitingRegistration(f, replaced, logged);
+    assert.equal(afterReset.response.status, 201, "still answers");
+    assert.equal(sessionCount(f), 0, "the reset's refusal stores nothing");
+    assert.deepEqual(afterReset.lines, [
+      {
+        failure: "session",
+        kind: "Error",
+        code: "none",
+        place: "app.sessions",
+        accountId: storedAccount(f, reset).id,
+      },
+    ]);
+
+    // The database refusing the write, as a trigger does.
+    logged.length = 0;
+    const failing = "database-fault-waiting@example.test";
+    const faulted = await startWaitingRegistration(f, failing, "198.51.100.99");
+    f.inspection.exec(`
+      CREATE TRIGGER refuse_end_write BEFORE UPDATE ON sessions
+      BEGIN SELECT RAISE(ABORT, 'synthetic ${failing}'); END;
+    `);
+    const afterFault = await endWaitingRegistration(f, faulted, logged);
+    assert.equal(afterFault.response.status, 201, "still answers");
+    assert.deepEqual(afterFault.lines, [
+      {
+        failure: "session",
+        kind: "Error",
+        code: "ERR_SQLITE_ERROR",
+        errcode: 1811,
+        place: "app.sessions",
+        accountId: storedAccount(f, failing).id,
+      },
+    ]);
+    assertPlainLines(logged, [`synthetic ${failing}`, failing]);
   },
 );
 
@@ -4207,6 +4361,46 @@ test(
 );
 
 test(
+  "a browser that breaks off sending a request body is refused and leaves no failure line",
+  { timeout: 20000 },
+  async (t) => {
+    // D-353: a break-off is an expected refusal, like a body too large or
+    // broken. Fault: the break-off answered as a server failure, with its
+    // line written by the error handler.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const arrived = new Promise((resolve) =>
+      f.listening.once("request", resolve),
+    );
+    const outgoing = request({
+      hostname: "127.0.0.1",
+      port: f.to,
+      path: "/api/session",
+      method: "POST",
+      agent: false,
+      headers: { ...logoutHeaders, "Content-Length": 64 },
+    });
+    // The client's own error on the broken connection is the case, not a fault.
+    outgoing.on("error", () => {});
+    outgoing.write('{"email":"first@example.test"');
+    await arrived;
+    outgoing.destroy();
+    await waitFor(
+      async () => (await f.connections()) === 0,
+      "connection closed",
+    );
+    assert.deepEqual(
+      failureLines(logged),
+      [],
+      "no failure line for a break-off",
+    );
+    // The server still answers after the break-off.
+    const after = await f.send("/api/account", { headers: proxyHeaders });
+    assert.equal(after.status, 401);
+  },
+);
+
+test(
   "every failure the server handles leaves a line of its kind, code and place, with the account's number, and no text of the error or the request",
   { timeout: 30000 },
   async (t) => {
@@ -4448,5 +4642,127 @@ test(
       { ...failedRenewal(f), failure: "request", place: "app.errors" },
       failedRenewal(f),
     ]);
+  },
+);
+
+// A GET that resolves once the server closes its connection, whatever the
+// answer held: `complete` tells whether the answer ended, `bytes` what arrived.
+// `onBytes` is called when the first bytes of the answer arrive.
+function getUntilClosed(f, path, headers, onBytes) {
+  return new Promise((resolve, reject) => {
+    const outgoing = request(
+      {
+        hostname: "127.0.0.1",
+        port: f.to,
+        path,
+        method: "GET",
+        headers,
+        agent: false,
+      },
+      (incoming) => {
+        let bytes = 0;
+        incoming.on("data", (chunk) => {
+          bytes += chunk.length;
+          onBytes();
+        });
+        // A cut answer is reported by `complete`, not by an error event.
+        incoming.on("error", () => {});
+        incoming.on("close", () => {
+          clearTimeout(deadline);
+          resolve({
+            status: incoming.statusCode,
+            complete: incoming.complete,
+            bytes,
+          });
+        });
+      },
+    );
+    const deadline = setTimeout(
+      () => outgoing.destroy(new Error("HTTP deadline exceeded")),
+      5000,
+    );
+    outgoing.on("error", (error) => {
+      clearTimeout(deadline);
+      reject(error);
+    });
+    outgoing.end();
+  });
+}
+
+test(
+  "a file whose read breaks off while it is sent is cut, writes one line of the request, and is not handed to Express's own handler",
+  { timeout: 20000 },
+  async (t) => {
+    // Guard: the `response.headersSent` branch of the error handler in
+    // src/server/app.ts. The read fault is forced on the stream the static
+    // server opens: it breaks off only once the client has the first kilobyte,
+    // so the answer has begun. Faults: the branch removed, so Express's handler
+    // gets the error and prints its stack; the error handed on with
+    // `next(error)`; the connection left open, so the answer hangs.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const createReadStream = fs.createReadStream;
+    t.after(() => {
+      fs.createReadStream = createReadStream;
+    });
+    let arrived;
+    const firstBytes = new Promise((resolve) => {
+      arrived = resolve;
+    });
+    fs.createReadStream = () => {
+      let sent = false;
+      return new Readable({
+        async read() {
+          if (!sent) {
+            sent = true;
+            this.push(Buffer.alloc(1024));
+            return;
+          }
+          await firstBytes;
+          this.destroy(new Error("synthetic read fault"));
+        },
+      });
+    };
+    const answer = await getUntilClosed(f, "/main.js", proxyHeaders, arrived);
+    assert.equal(answer.status, 200, "the answer began");
+    assert.equal(answer.complete, false, "the answer is cut, not ended");
+    assert.deepEqual(await settledLog(logged), [
+      { failure: "request", kind: "Error", code: "none", place: "app.errors" },
+    ]);
+  },
+);
+
+test(
+  "a failed renewal after an answer that has ended writes one line of the session and calls no destroy on the response",
+  { timeout: 20000 },
+  async (t) => {
+    // Guard: `if (!response.writableEnded)` before `response.destroy()` in the
+    // session callback of src/server/app.ts. The calls of `destroy` on the real
+    // response are observed, not changed: each is recorded with `writableEnded`
+    // at the moment of the call and then passed on. This observes a call, not
+    // a cut answer, because on this host the socket is already detached when
+    // the callback runs, so a cut is not visible. The guard's effect is visible
+    // only inside the product, which is the departure from the guideline.
+    // Fault: the guard removed, so `destroy` runs on the response whose answer
+    // has ended.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    // `destroy` is inherited from OutgoingMessage: the restore must not leave
+    // an own property of the same function on ServerResponse.prototype.
+    const destroy = ServerResponse.prototype.destroy;
+    const ownDestroy = Object.hasOwn(ServerResponse.prototype, "destroy");
+    const calls = [];
+    ServerResponse.prototype.destroy = function (...parameters) {
+      calls.push({ writableEnded: this.writableEnded });
+      return destroy.apply(this, parameters);
+    };
+    t.after(() => {
+      if (ownDestroy) ServerResponse.prototype.destroy = destroy;
+      else delete ServerResponse.prototype.destroy;
+    });
+    const response = await readAccount(f, refusingRenewal(f));
+    assert.equal(response.status, 200, "the answer ended whole");
+    assert.deepEqual(await settledLog(logged), [failedRenewal(f)]);
+    assert.deepEqual(calls, [], "no destroy of an answer that has ended");
   },
 );

@@ -225,21 +225,25 @@ empty or malformed file stops the application before it listens; its log names t
 `LOOP2_SMTP_PASSWORD_FILE`, never the contents.
 
 **Before the first deployment of this change** (the merge deploys by itself, and without the
-file the game does not start), the human does outside the repository:
+file the game does not start), the human does outside the repository. The steps of the mail are
+named M1 to M4, so that they are not mistaken for the tunnel's H1–H5 above:
 
-- H1, in Outsider's panel: the domain `mariusznazar.com`, the mailbox `loop2@mariusznazar.com`
+- M1, in Outsider's panel: the domain `mariusznazar.com`, the mailbox `loop2@mariusznazar.com`
   and DKIM switched on.
-- H2, in the domain's DNS at Cloudflare: an MX record to Outsider; an SPF TXT record and a
+- M2, in the domain's DNS at Cloudflare: an MX record to Outsider; an SPF TXT record and a
   DMARC TXT record at `_dmarc` with `p=none` and reports to the sender mailbox, both as
   Outsider's documentation gives them; the DKIM TXT record at `x._domainkey` with the value from
   the panel (selector `x`). The records of the website (A, CNAME) are left alone.
-- H3, on the server: the file `/etc/loop2/smtp-password` as below, and a copy of the password
+- M3, on the server: the file `/etc/loop2/smtp-password` as below, and a copy of the password
   in the owner's private note.
 
 **Creating or replacing the file.** Run in bash as root on the server, from a private terminal.
 The password is typed at the prompt without echo, so it appears in no command argument, no
 shell history and no log; the file is replaced atomically. Each step depends on the one
-before it, so the block can be pasted whole:
+before it, so the block can be pasted whole. Paste the block alone: the command that reads
+the password reads the terminal's input, so a line pasted after the block, already waiting in
+that input, would be taken as the password. The check below is a second paste, made after the
+password has been typed and the prompt has returned.
 
 ```sh
 f=/etc/loop2/smtp-password
@@ -252,6 +256,11 @@ f=/etc/loop2/smtp-password
   printf '%s' "$pw" > "$tmp" &&
   chown root:1000 -- "$tmp" && chmod 0440 -- "$tmp" &&
   mv -T -- "$tmp" "$f" )
+```
+
+When the prompt has returned, check the file's owner, group and mode (a second paste):
+
+```sh
 stat -c '%U %g %a' "$f"
 ```
 
@@ -273,7 +282,7 @@ Expected: `root 1000 440`. Put the same value into the private note's copy and n
 human changes the plain value `LOOP2_SMTP_USER` in `compose.yaml` through a request; no
 credential moves.
 
-**Trying delivery (H4)** belongs to the request that brings this change: the human deploys the
+**Trying delivery (M4)** belongs to the request that brings this change: the human deploys the
 request's head with `loop2-deploy <sha>`, creates an account with an address on an external
 mailbox, receives the message and opens its link; the address is then confirmed. If the
 message does not come, the agent reads the failure line and reports its code (`EAUTH`, a connection
@@ -292,8 +301,24 @@ listens. It keeps recent writes in companion files next to `accounts.sqlite` (wr
 log), so copying the one file while the application runs does not copy the database.
 
 - Replacing the container, redeploying the same commit and rolling back code keep the volume.
-  `docker compose down`, `docker system prune --volumes` and `docker volume prune` remove it
-  when no loop2 container references it; none of these is part of any loop2 procedure.
+  What removes it, by Docker's documentation (read 2026-11-09 at the tags `docker/cli` `v27.3.1`
+  and `docker/compose` `v2.29.7`; the Docker Engine version on the test server is recorded
+  nowhere in this repository, so read the documentation of that version, `docker version`
+  gives it, before trusting the lines below on the server):
+  - `docker compose down -v` (or `--volumes`) removes the named volumes declared in the
+    Compose file, and `loop2_accounts` is one of them and is not external. `docker compose down`
+    without it removes the containers and the network and leaves the volume.
+  - `docker volume prune --all` (or `-a`) removes the unused named volumes too, so it removes
+    `loop2_accounts` when no loop2 container references it. The page of `docker volume prune`
+    says that without `--all` it removes anonymous volumes only, and `loop2_accounts` is a
+    named one; but the example output on the same page lists a named volume among those it
+    deleted, so do not count on plain `docker volume prune` to spare `loop2_accounts`.
+  - `docker system prune --volumes` prunes anonymous volumes only, so it leaves
+    `loop2_accounts`; `-a` of that command is about images. Another version of Docker may
+    document it otherwise.
+
+  None of these is part of any loop2 procedure; naming what each removes does not allow an
+  agent to run any of them.
 - Docker keeps the volume in its own data directory on the server; the human finds it with
   `docker volume inspect loop2_accounts` and opens it only as root or through Docker.
 - The database holds e-mail addresses and password hashes. No agent reads or copies it. A
@@ -306,11 +331,14 @@ log), so copying the one file while the application runs does not copy the datab
 The request stays a blocked draft until the password measurement and the public journey have
 been done on its head commit. The human does everything here (D-12).
 
-**When the request brings saved game states, from the first deployment of its branch (H1) until
+**When the request brings saved game states, from the first deployment of its branch (S1) until
 its merge, merge nothing else to `main`.** That deployment moves the database of the test server
 to schema version 4, and `main` before this change knows only version 3: every merge deploys
 automatically, so the older code refuses the database and fails health (exit 8) with no way
 back by rollback. The window includes review and corrections; the human who merges keeps it.
+The two deployments that matter for saved game states are named S1 (the first deployment of
+the branch) and S2 (the redeployment of the same commit below), so that they are not mistaken
+for the tunnel's H1–H5.
 
 1. **Script.** The installed script is reinstalled only when the head changes
    `deploy/loop2-deploy`: compare it with the installed copy as `troubleshooting.md` describes
@@ -334,10 +362,13 @@ back by rollback. The window includes review and corrections; the human who merg
    - Persistence: run step 3 again for the same commit, then reload; the same session still
      reaches the headquarters. Log out, log in with the same address and password; it works.
      This shows that accounts and sessions survive container replacement.
-   - Saved game state: the game has no save button; it saves itself after each change. A new
-     account starts with an empty team, so first make a change you can recognise (for example
-     create a character, or edit and keep a program) and wait a moment for the automatic save.
-     Then run step 3 again for the same commit (H2), reload, and check that exact change is
+   - Saved game state: the game saves its state itself after each change the player makes
+     (D-207); there is no button that saves the game state. The buttons „Zapisz w programie”,
+     „Zapisz jako nowy program” and „Zapisz” of the program panel keep a program, not the game
+     state. A new account starts with an empty team, so first make a change you can recognise
+     (for example create a character, or edit and keep a program) and wait a moment for the
+     automatic save. Then run step 3 again for the same commit (S2), reload, and check that
+     exact change is
      back, not an empty team; an empty team means the save was lost. This is the check that
      saved game states survive container replacement.
    - A wrong password shows the single message `Nieprawidłowy adres e-mail lub hasło.`
@@ -412,6 +443,15 @@ container on the server.
      - `cgroup memory accounting is unavailable`, or another line naming a `cgroup file`, means
        Docker on the server does not show the memory counts the verdict needs. The result
        cannot be judged and goes back to the task's cycle.
+     - `the image cannot be inspected: docker image inspect exited with status 1` names the
+       Docker step that failed and its exit status. `docker run` (the measurement container
+       did not start) and `docker wait` (the measurement could not be waited for) name their
+       steps the same way; `gave no exit status` takes the place of the status when Docker did
+       not finish. Docker's own error text for that step is in the terminal, not in the file,
+       and usually shows one of three causes: the SSH login to the Docker host was refused, the
+       user has no permission on the Docker socket, or the daemon does not hold the image. A
+       human fixes the cause on the server (D-12), then the measurement runs again. Do not copy
+       that terminal text into a request: over SSH it can name the server (D-13).
    - **2, the file is empty:** the arguments were wrong. The reason and the usage line went to
      the terminal, not to the file, because `>` keeps only standard output.
 
@@ -419,8 +459,22 @@ container on the server.
 no network, no volume, no secret and no environment of the application; limited to 409 MiB
 with no swap, with no restarts; named `loop2-password-measure-<random>`. It removes the
 container afterwards, also after a failure. The running `loop2` container, its database volume
-and its secrets are not touched. The extra load is two password operations at a time for a few
-seconds; locally, the 40 measured operations took 3.4 s.
+and its secrets are not touched. The extra load is two password operations at a time for a
+dozen or so seconds on the server; locally, the 40 measured operations took 3.4 s.
+
+**A measurement that was interrupted.** The launcher removes its container only in its final
+step, so a launcher that was ended from outside, a closed terminal or a lost connection can
+leave a container `loop2-password-measure-<random>` behind, running or stopped. The human finds
+it on the server and removes it; an agent runs neither command:
+
+```bash
+docker ps --all --filter name=loop2-password-measure --format '{{.Names}} {{.Status}}'
+docker rm --force <the name printed>
+```
+
+Remove a container only when no other shell is waiting for its measurement: a running one may
+still be measuring for another shell, while a running one that a lost connection left behind is
+to be removed. Remove none of the other containers of the host.
 
 ## The five GitHub secrets
 

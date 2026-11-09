@@ -25,6 +25,8 @@ export type PageAddress = {
    * browser's back and forward, and a link followed. Returns the removal of the listener.
    */
   onChange(listener: () => void): () => void;
+  /** Reloads the page at its address, fragment included, so that the start of the page reads it. */
+  reload(): void;
 };
 
 const FRAGMENT_PREFIX = "#confirm-email=";
@@ -75,7 +77,8 @@ export function confirmationOutcome(result: AccountResult<null>): {
  * The page's real address: `location` for the fragment, `history` for writing it — `pushState` for
  * a new entry and `replaceState` for none, neither of which fires `hashchange` — and the window's
  * `hashchange` for what the page did not write itself, which the browser's back and forward and a
- * followed link fire. Outside a browser it carries no fragment, writes nothing and hears nothing.
+ * followed link fire. Outside a browser it carries no fragment, writes nothing, hears nothing and
+ * reloads nothing.
  */
 export function browserAddress(): PageAddress {
   const inBrowser = (): boolean =>
@@ -97,6 +100,9 @@ export function browserAddress(): PageAddress {
       if (!inBrowser()) return () => undefined;
       window.addEventListener("hashchange", listener);
       return () => window.removeEventListener("hashchange", listener);
+    },
+    reload(): void {
+      if (typeof location !== "undefined") location.reload();
     },
   };
 }
