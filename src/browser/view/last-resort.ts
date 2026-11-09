@@ -38,7 +38,7 @@ export type LastResortOptions = {
   onUncaught(): void;
   /**
    * Called with the kind, code and place of a line at the moment it is written, so the page can
-   * report each distinct line once (D-347); the module sends nothing itself.
+   * report each distinct line once (D-253); the module sends nothing itself.
    */
   onLine?(kind: string, code: string, place: string): void;
 };

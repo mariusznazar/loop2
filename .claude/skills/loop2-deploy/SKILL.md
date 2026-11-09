@@ -361,9 +361,11 @@ the lines that begin with one of the two exact starts of the command's JSON line
 lines. The command's sentences carry the email address and never reach the file; a line that
 begins with a bare `{` does not pass either, because a registered address can begin with `{`. A
 crash line of the command (`"failure":"uncaught"`) is not appended. Residual risk: an address
-that the human types on purpose with a line break inside, so that one whole line of the output
-looks like a JSON line of the command, passes the filter and lands in the file with the words
-the human chose. Type the address as it is registered.
+with a line break inside, so that one whole line of the output looks like a JSON line of the
+command, passes the filter and lands in the file with the words the address carries. The human
+may type such an address on purpose, and may also paste one a player registered, because the
+server accepts any text around exactly one `@`. Type the address as it is registered, or check
+it for a line break before pasting it.
 
 - **`block`** marks the account blocked and ends its sessions in every browser in the same
   step. A blocked player who reloads the page sees the login card again; a login with the right
@@ -398,7 +400,11 @@ a revert keeps the branch and server aligned. No earlier product image is retain
 `compose.yaml` recreates both containers on the host's default driver, which does not rotate: the
 log of a running container is then not bounded. The dump is made by the installed deploy script,
 not by the commit; the installed script is the one with the dump only if the human reinstalled it,
-and a rollback to an older commit does not change that. A commit from before the watcher, the
+and a rollback to an older commit does not change that. The dump reads the `compose.yaml` of the
+commit being deployed: a commit whose Compose file has no `app` or no `cloudflared` service
+(see "Rollback across the tunnel transition" in `references/troubleshooting.md`) makes
+`docker compose logs` fail, the script warns, and the log of the running containers is not
+kept. A commit from before the watcher, the
 logrotate file or the browser route makes the deployment warn about the installed copies that
 differ (expected), and the page's reports meet the JSON 404 and are lost.
 

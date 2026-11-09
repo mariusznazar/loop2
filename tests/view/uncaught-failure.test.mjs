@@ -559,8 +559,7 @@ function recordReports(held, lines) {
   return sent;
 }
 
-// invariant: browser-failure-report
-// D-347, D-253; task skad-wiem-o-awarii, slice 4. Catches a report sent before its line is written,
+// D-353, D-253; task skad-wiem-o-awarii, slice 4. Catches a report sent before its line is written,
 // a report sent again for a line already written, and a line the account client never hears of.
 test("each distinct line goes to the account client once per page load, after its console line, for errors and rejections alike", async () => {
   await onPage(async ({ lines }) => {
@@ -588,7 +587,6 @@ test("each distinct line goes to the account client once per page load, after it
   });
 });
 
-// invariant: browser-failure-report
 // D-323, D-253; task skad-wiem-o-awarii, slice 4. Catches a card taken down that reports under the
 // place of the page's handling instead of its own, and a report left out for it.
 test("a card taken down on the page is reported once, with the place of its own line", async () => {
@@ -622,7 +620,6 @@ test("a card taken down on the page is reported once, with the place of its own 
   });
 });
 
-// invariant: browser-failure-report
 // D-323, D-253; task skad-wiem-o-awarii, slice 4. Catches a report whose failure leaves the error
 // uncancelled, or writes a second line of its own, or reaches the window as an error of the page.
 test("a report the account client throws or refuses leaves the error cancelled, its one line written and no error of its own", async () => {

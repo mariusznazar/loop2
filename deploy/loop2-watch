@@ -22,7 +22,9 @@
 #
 # A message is a fixed subject and a fixed sentence per kind, held in the constants below. Nothing
 # read from a log or from Docker, no number and no name of a commit or an account goes into one,
-# into the state or into the log of this script, because the message may travel unencrypted.
+# because the message may travel unencrypted. The state holds the ids and start times of the two
+# containers and the times of the last messages; the log of this script holds counts and statuses.
+# Nothing of the content of a line of the game's log reaches either.
 #
 # The log holds one line per run that skipped, found something or had a trouble of its own, and an
 # exit line at an abnormal end. This script never calls pusher about itself: a failing watcher that
@@ -36,8 +38,10 @@
 set -uo pipefail
 shopt -s lastpipe
 
-# Every constant stands in this block. No environment variable and no argument changes one. The
-# tests of deploy/ replace only the lines between the two markers.
+# The constants of the messages, the names, the paths and the limits stand in this block; the
+# patterns of the state and of Docker's answer and the two anchored prefixes of the log lines stand
+# outside it. No environment variable and no argument changes one. The tests of deploy/ replace
+# only the lines between the two markers.
 # >>> constants >>>
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 umask 027

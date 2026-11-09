@@ -339,8 +339,7 @@ dump_file_size() {
 append_logs_to_dump() {
   # Its standard output is the dump file; its standard error is collected by the caller. A header
   # of commit names first, then the whole log of both services, bounded in time.
-  printf '%s loop2-deploy | previous commit %s, new commit %s
-' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$PREVIOUS_COMMIT" "$REQUESTED"
+  printf '%s loop2-deploy | previous commit %s, new commit %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$PREVIOUS_COMMIT" "$REQUESTED"
   timeout "$DUMP_TIMEOUT_SECONDS" docker compose --project-name "$COMPOSE_PROJECT" -f "$CHECKOUT_DIR/compose.yaml" logs --no-color --timestamps "$COMPOSE_SERVICE" "$TUNNEL_SERVICE"
 }
 
