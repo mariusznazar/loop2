@@ -2,7 +2,7 @@
 
 ## browser-view
 
-The part draws the game's screens in the browser, sends the browser's requests to the account and save server, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
+The part draws the game's screens in the browser, sends the browser's requests to the account and save server, reports to that server each distinct line its last-resort handling writes for an error nothing handled, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
 
 - **Files:** src/browser/*.ts
   src/browser/*.css
