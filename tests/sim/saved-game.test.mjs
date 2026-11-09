@@ -1773,6 +1773,111 @@ test("a crafted document of the current version is refused whole as shape", () =
     assertRefused(name, changed(change), "shape");
 });
 
+// The chest holds at most the balance data's chestCapacity (balance.ts: 60), and that count is
+// allowed: a chest of exactly it loads, one piece beyond it is refused.
+test("a chest holding exactly its capacity loads, and one piece beyond it is refused as shape", () => {
+  const full = changed((document) => {
+    document.game.team.chest.pieces = { stick: 60 };
+  });
+  assert.deepEqual(loadSavedGame(full), { ok: true, state: full.game });
+  assertRefused(
+    "a chest one piece beyond its capacity",
+    changed((document) => {
+      document.game.team.chest.pieces = { stick: 60, berry: 1 };
+    }),
+    "shape",
+  );
+});
+
+// A completion may deposit exactly what its frozen bring plan planned, each item at its count
+// (D-179): berry 5 and stick 20 in the document.
+test("a completion depositing exactly the planned counts loads", () => {
+  const exact = changed((document) => {
+    solvingItsMap(document);
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [
+      { item: "berry", count: 5 },
+      { item: "stick", count: 20 },
+    ];
+  });
+  assert.deepEqual(loadSavedGame(exact), { ok: true, state: exact.game });
+});
+
+// invariant: save-version
+// Two characters of one number, the rest of the document sound: the number alone refuses it.
+test("two characters of one number are refused as shape, the rest of the document sound", () => {
+  assert.deepEqual(loadSavedGame(structuredClone(HEADQUARTERS)), {
+    ok: true,
+    state: HEADQUARTERS.game,
+  });
+  assertRefused(
+    "two characters of one number",
+    changed((document) => {
+      document.game.team.characters.push({
+        ...structuredClone(document.game.team.characters[0]),
+        name: "Ewa",
+      });
+    }, HEADQUARTERS),
+    "shape",
+  );
+});
+
+// invariant: save-version
+// A program whose number is not below the program counter, the rest of the document sound: its
+// number is 2 and the next program number is 2, and no record names program 2.
+test("a program whose number is not below the next program number is refused as shape", () => {
+  assertRefused(
+    "a program numbered as the next program number",
+    changed((document) => {
+      document.game.programs.push({
+        id: 2,
+        name: "Other",
+        program: structuredClone(PROGRAM_1),
+      });
+    }, HEADQUARTERS),
+    "shape",
+  );
+});
+
+// invariant: save-version
+// A map run ended in death keeps its mark: the map was solved when the run started, and the run
+// stays so to its end and after a load (D-214; one manual map run at a time, D-55).
+test("a map run ended in death whose mark disagrees with its map's being solved is refused as shape", () => {
+  assertRefused(
+    "a mark set on a death on an unsolved map",
+    changed((document) => {
+      dead(document);
+      document.game.run.solvedMapRun = true;
+    }),
+    "shape",
+  );
+  assertRefused(
+    "a mark unset on a death on a solved map",
+    changed((document) => {
+      dead(document);
+      solvingItsMap(document);
+      document.game.run.solvedMapRun = false;
+    }),
+    "shape",
+  );
+});
+
+// invariant: save-version
+// A rule group is a named set of rules (glossary: rule group), so its name is text.
+test("a program whose rule group's name is no text is refused as shape", () => {
+  for (const name of [7, null, ["Program"]]) {
+    assertRefused(
+      `a group named ${JSON.stringify(name)}`,
+      changed((document) => {
+        document.game.programs[0].program.groups[0].name = name;
+      }, HEADQUARTERS),
+      "shape",
+    );
+  }
+});
+
 // Values a JSON document can hold in place of any other, among them objects
 // that refuse to become text, which a message quoting the value would trip on.
 const HOSTILE_VALUES = [
