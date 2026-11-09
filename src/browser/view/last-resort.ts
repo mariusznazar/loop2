@@ -36,6 +36,11 @@ export type LastResortOptions = {
   readonly target: Window;
   /** Called at every error nothing handled, after its line; the page has to take it once. */
   onUncaught(): void;
+  /**
+   * Called with the kind, code and place of a line at the moment it is written, so the page can
+   * report each distinct line once (D-347); the module sends nothing itself.
+   */
+  onLine?(kind: string, code: string, place: string): void;
 };
 
 export type LastResort = {
@@ -63,6 +68,7 @@ export function installLastResort(options: LastResortOptions): LastResort {
     if (!written.has(line)) {
       written.add(line);
       console.error(line);
+      options.onLine?.(kind, code, place);
     }
     options.onUncaught();
   }

@@ -877,3 +877,121 @@ test("a save body over 65 536 bytes is never sent and comes back too large", asy
   });
   assert.deepEqual(seen, []);
 });
+
+/**
+ * Passes every call of the real global fetch on to it and records the options it was given, so a
+ * case can see what the client asks of the connection (keepalive, redirects, credentials).
+ */
+async function withRecordedFetch(body) {
+  const real = globalThis.fetch;
+  const options = [];
+  globalThis.fetch = (input, init) => {
+    options.push(init);
+    return real(input, init);
+  };
+  try {
+    await body(options);
+  } finally {
+    globalThis.fetch = real;
+  }
+}
+
+const reportedWords = {
+  kind: "TypeError",
+  code: "E_X",
+  place: "view/last-resort.installLastResort",
+};
+
+// invariant: browser-failure-report
+// invariant: account-client-requests
+test("reportBrowserFailure posts the three words as one JSON POST to the report path, with no keepalive, same-origin credentials and no redirect", async () => {
+  respond = (_request, response) => response.writeHead(204).end();
+  await withRecordedFetch(async (options) => {
+    const result = await within(
+      client().reportBrowserFailure(
+        reportedWords.kind,
+        reportedWords.code,
+        reportedWords.place,
+      ),
+      "report",
+    );
+    assert.deepEqual(result, { ok: true, value: null });
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].method, "POST");
+    assert.equal(seen[0].url, "/api/browser-failure");
+    assert.ok(seen[0].contentType?.startsWith("application/json"));
+    assert.deepEqual(JSON.parse(seen[0].body), reportedWords);
+    assert.equal(options.length, 1);
+    assert.ok(!options[0].keepalive, "no keepalive");
+    assert.equal(options[0].redirect, "error");
+    assert.equal(options[0].credentials, "same-origin");
+  });
+});
+
+// invariant: browser-failure-report
+// invariant: account-client-outcomes
+test("reportBrowserFailure gives a failure, never a throw, for a redirect, a dead connection, a refusal and an answer that is no 204", async () => {
+  const target = `http://127.0.0.1:${elsewhere.address().port}/api/browser-failure`;
+  respond = (_request, response) =>
+    response.writeHead(307, { location: target }).end();
+  const redirected = await within(
+    client().reportBrowserFailure(
+      reportedWords.kind,
+      reportedWords.code,
+      reportedWords.place,
+    ),
+    "redirect",
+  );
+  assert.equal(redirected.ok, false);
+  assert.deepEqual(elsewhereSeen, [], "the redirect target got nothing");
+
+  respond = (request) => request.socket.destroy();
+  const dead = await within(
+    client().reportBrowserFailure(
+      reportedWords.kind,
+      reportedWords.code,
+      reportedWords.place,
+    ),
+    "dead",
+  );
+  assert.deepEqual(
+    [dead.ok, dead.failure.kind, dead.failure.reason],
+    [false, "unreachable", "network"],
+  );
+
+  respond = (_request, response) =>
+    reply(
+      response,
+      429,
+      '{"error":"Za dużo prób. Spróbuj ponownie za kilka minut.","code":"too-many-attempts"}',
+    );
+  const limited = await within(
+    client().reportBrowserFailure(
+      reportedWords.kind,
+      reportedWords.code,
+      reportedWords.place,
+    ),
+    "limited",
+  );
+  assert.deepEqual(limited, {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 429,
+      code: "too-many-attempts",
+      message: "Za dużo prób. Spróbuj ponownie za kilka minut.",
+    },
+  });
+
+  respond = (_request, response) => reply(response, 200, "{}");
+  const answered = await within(
+    client().reportBrowserFailure(
+      reportedWords.kind,
+      reportedWords.code,
+      reportedWords.place,
+    ),
+    "answered",
+  );
+  assert.equal(answered.ok, false);
+  assert.equal(answered.failure.kind, "unexpected");
+});

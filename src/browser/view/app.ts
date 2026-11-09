@@ -234,7 +234,22 @@ export function startApp(
     game?.halt();
     card?.fail();
   }
-  const lastResort = installLastResort({ target: window, onUncaught });
+  /**
+   * Sends a line the page wrote to the server (D-347). The result is ignored, and a failing client,
+   * a test double included, must not become an error of the last-resort handler.
+   */
+  function reportLine(kind: string, code: string, place: string): void {
+    try {
+      client.reportBrowserFailure(kind, code, place).catch(() => undefined);
+    } catch {
+      // Nothing to do: the line is already written and the page goes on.
+    }
+  }
+  const lastResort = installLastResort({
+    target: window,
+    onUncaught,
+    onLine: reportLine,
+  });
 
   /** The notice to stand on the screen about to be shown, once; nothing after that. */
   function takeNotice(): ConfirmationNotice | null {
