@@ -11,8 +11,9 @@ stand-in, each for a reason the real server cannot give:
   receives, since the real server ignores most of them and its answer would show nothing;
 - in class LocalStart, the case of a start on its way up: a stand-in that takes its time;
 - the case of a stop with no built game: a stand-in that holds no writer of failure lines;
-- the cases of a request the server drops, of an answer it breaks off after its headers and of a
-  request it holds while the browser leaves: stand-ins that fail on demand.
+- the cases of a request the server drops, of an answer it breaks off after its headers (by
+  closing the connection, and by resetting it) and of a request it holds while the browser
+  leaves: stand-ins that fail on demand.
 The other cases run the real built server."""
 
 import json
@@ -59,14 +60,19 @@ createServer((request) => request.socket.destroy())
   .listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
 """
 
-# A server that breaks its answer off after the headers and a first piece of the body.
+# A server that breaks its answer off after the headers and a first piece of the body: it closes
+# the connection, or for /reset resets it a moment later, when the piece has reached the proxy,
+# which then has an error of its request and an error of the response to report.
 CUT_OFF_SERVER = """import { createServer } from "node:http";
 
 const host = process.env.LOOP2_LISTEN_HOST;
 const port = Number(process.env.LOOP2_LISTEN_PORT);
 createServer((request, response) => {
   request.resume();
-  response.write("partial", () => request.socket.destroy());
+  response.write("partial", () => {
+    if (request.url === "/reset") setTimeout(() => request.socket.resetAndDestroy(), 100);
+    else request.socket.destroy();
+  });
 }).listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
 """
 
@@ -159,7 +165,8 @@ def answer_until_end(port, request):
     connection ended within HTTP_TIMEOUT, as against a browser left waiting."""
     context = tls_context()
     answer = b""
-    with socket.create_connection(("127.0.0.1", port), timeout=support.HTTP_TIMEOUT) as raw,             context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
+    with socket.create_connection(("127.0.0.1", port), timeout=support.HTTP_TIMEOUT) as raw, \
+            context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
         secure.sendall(request)
         try:
             while chunk := secure.recv(65536):
@@ -314,7 +321,7 @@ class LocalStartBoundary(unittest.TestCase):
 
 
 class LocalStart(unittest.TestCase):
-    """The real command. Its cases run the real built server except the five the module's description
+    """The real command. Its cases run the real built server except those the module's description
     lists as using a stand-in."""
 
     def setUp(self):
@@ -493,7 +500,10 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(code, 1, "the planted start did not stop: " + output)
         self.assertIn("stopped: 1", output)
         self.assertFalse(accepts_connections("127.0.0.1", start.port), output)
-        self.assertEqual(output.count("Cannot find module"), 1, output)
+        # Node's own print of what nothing handled: the code of its error, and one print of it,
+        # which ends with the line that names the Node version.
+        self.assertIn("ERR_MODULE_NOT_FOUND", output)
+        self.assertEqual(output.count("Node.js v"), 1, output)
 
     def test_stop_writes_through_no_planted_link(self):
         outside = self.copy.file("outside.txt")
@@ -586,6 +596,24 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(len(lines), 1, start.output())
         self.assertEqual(json.loads(lines[0])["code"], "ECONNRESET")
 
+    def test_an_answer_the_server_resets_after_its_headers_leaves_one_line_not_two(self):
+        # A reset makes the proxy's request and its response both report an error; the failure
+        # is one and leaves one line. The cut of the next request is written after anything the
+        # reset still had to write, so the count after it holds the reset's lines too.
+        code, output = self.copy.npm("run", "build")
+        self.assertEqual(code, 0, output)
+        write_stand_in(self.copy, CUT_OFF_SERVER)
+        start = Start(self.copy, ["node", "scripts/local-start.mjs"])
+        self.starts.append(start)
+        answer, ended = answer_until_end(start.port, request_bytes(start.port, "GET", "/reset"))
+        self.assertTrue(ended, "the browser was left waiting: " + repr(answer))
+        self.assertTrue(wait_until(lambda: proxy_lines(start)), start.output())
+        answer_until_end(start.port, request_bytes(start.port, "GET", "/"))
+        self.assertTrue(wait_until(lambda: len(proxy_lines(start)) >= 2), start.output())
+        lines = proxy_lines(start)
+        self.assertEqual(len(lines), 2, start.output())
+        self.assertEqual({json.loads(line)["code"] for line in lines}, {"ECONNRESET"})
+
     def test_a_browser_that_leaves_in_the_middle_of_a_request_leaves_no_failure_line(self):
         # Task item 18: the line that follows is the one of the dropped request alone, and it
         # comes after the held request's connection has ended on the server's side.
@@ -595,7 +623,9 @@ class LocalStart(unittest.TestCase):
         start = Start(self.copy, ["node", "scripts/local-start.mjs"])
         self.starts.append(start)
         context = tls_context()
-        with socket.create_connection(("127.0.0.1", start.port), timeout=support.HTTP_TIMEOUT) as raw,                 context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
+        with socket.create_connection(("127.0.0.1", start.port),
+                                      timeout=support.HTTP_TIMEOUT) as raw, \
+                context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
             secure.sendall(request_bytes(start.port, "GET", "/hold"))
             self.assertTrue(wait_until(lambda: "held /hold" in start.output()), start.output())
         self.assertTrue(wait_until(lambda: "closed /hold" in start.output()), start.output())
