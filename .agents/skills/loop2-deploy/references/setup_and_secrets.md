@@ -422,6 +422,107 @@ container afterwards, also after a failure. The running `loop2` container, its d
 and its secrets are not touched. The extra load is two password operations at a time for a few
 seconds; locally, the 40 measured operations took 3.4 s.
 
+## The failure record and alerts
+
+The human installs the record of the game's log and the watcher, and sets up the alert of
+GitHub; no agent installs anything (D-12). What each is and how an agent reads it: "The failure
+record and alerts" in `SKILL.md`. Do the steps in this order, from the exact commit the code
+was reviewed at (`target_sha`). Extract each file with `git show "${target_sha}:<path>"` into a
+temporary file, as in "Installing a script from an exact commit"; run Git as the account that owns
+the checkout and the `install` and file changes with the privileges they need. `<run account>`
+is the deployment account and its group from the owner's private note, never from this file.
+
+1. **The dump file.** Create it owned by the run account, mode 0640, if it does not exist:
+
+   ```sh
+   test ! -e /var/log/loop2-app.log &&
+     install -o <run account> -g <run account's group> -m 0640 /dev/null /var/log/loop2-app.log
+   stat -c '%U %G %a' /var/log/loop2-app.log
+   ```
+
+   Check: `stat` shows the run account, its group and `640`.
+2. **The rotation.** Install `deploy/loop2-app.logrotate` as `/etc/logrotate.d/loop2-app`, root,
+   mode 0644, and dry-run it:
+
+   ```sh
+   rotate_tmp=$(mktemp)
+   git -C /srv/loop2 show "${target_sha}:deploy/loop2-app.logrotate" > "$rotate_tmp" &&
+     install -o root -g root -m 0644 "$rotate_tmp" /etc/logrotate.d/loop2-app
+   rm -- "$rotate_tmp"
+   logrotate -d /etc/logrotate.d/loop2-app
+   ```
+
+   Then rotate once by force. An empty file is skipped (`notifempty`), so first put one line in it,
+   which stays in the first rotated copy:
+
+   ```sh
+   printf 'logrotate trial\n' >> /var/log/loop2-app.log
+   logrotate -f /etc/logrotate.d/loop2-app
+   ls -l /var/log/loop2-app.log*
+   stat -c '%U %G %a' /var/log/loop2-app.log
+   ```
+
+   Check: `/var/log/loop2-app.log.1` holds the trial line, the main file is empty with the same
+   owner, group and mode, and the run account can still append to it. Also check that `logrotate`
+   runs daily on this host: a `logrotate` timer in `systemctl list-timers`, or
+   `/etc/cron.daily/logrotate`. If neither exists, report it as unchecked: the size cap does not
+   hold.
+3. **The deploy script, before the merge.** Reinstall `/usr/local/bin/loop2-deploy` from
+   `target_sha` as in "Installing a script from an exact commit", **before** the change merges,
+   so the deployment of the merge already dumps. Without it that deployment runs the old script
+   and the log of the old containers is lost. Check:
+
+   ```sh
+   git -C /srv/loop2 show "${target_sha}:deploy/loop2-deploy" | cmp - /usr/local/bin/loop2-deploy && echo same
+   ```
+
+   Until step 4 the deployment warns about the watcher's installed copies (see "Installed-script
+   warning" in `troubleshooting.md`); that is expected.
+4. **The watcher.** Install `deploy/loop2-watch` as `/usr/local/bin/loop2-watch`, root, mode
+   0755, after `bash -n` on the extracted file. Run it once by hand as root; with no state yet it
+   records the containers and reports nothing:
+
+   ```sh
+   /usr/local/bin/loop2-watch; echo "exit $?"
+   stat -c '%y' /var/lib/loop2-watch/state
+   ```
+
+   Then install `deploy/loop2-watch.cron` as `/etc/cron.d/loop2-watch`, root, mode 0644 (the name
+   has no dot, or cron skips it), and check both files with `cmp` against `git show` of
+   `target_sha`. A quiet healthy run writes no line in `/var/log/loop2-watch.log`; the proof of a
+   run is the state file's modification time moving on by about five minutes. A deliberate
+   trial: restart the game container once with `docker restart loop2` and wait for the next one
+   or two runs. The `restarted` message (subject `loop2_ponowny_start`) arrives in the owner's
+   Mikrus mail, and a run that falls while the container is still starting may send a `down`
+   message too. This is the only check that delivery by `pusher` works. Do not repeat it within
+   six hours: the message of a kind is held for that long.
+5. **A deployment.** Deploy the commit (the human's `loop2-deploy <target_sha>`, or the
+   merge's automatic deployment). The deploy log shows the line `dump: the size of
+   /var/log/loop2-app.log went from <N> to <M> bytes`; `tail -n 20 /var/log/loop2-app.log` shows
+   the header with the previous and the new commit and the lines of the previous containers; and
+   `docker inspect --type container --format '{{.HostConfig.LogConfig.Type}}' loop2` prints
+   `local`.
+6. **The alert of GitHub.** Find the GitHub account that last changed the cron line of
+   `.github/workflows/check-address.yml` (for example the author of
+   `git log -1 -- .github/workflows/check-address.yml`; a squash merge, or a commit under another
+   identity, can make it a different account from the one that clicks). Set e-mail notifications
+   for failed Actions runs on that account, start the workflow by hand from that account with the
+   failure input set, and see the e-mail arrive. If the "Run workflow" button is not offered before
+   the merge, do this step after it. If the trial cannot be run from that account, the
+   scheduled path is reported as unchecked, never as passed.
+7. **The next morning.** Read the tail of `/var/log/loop2-watch.log` and the age of
+   `/var/lib/loop2-watch/state`: a state file touched in the last few minutes is the proof that
+   cron runs the file. Left out, it is reported as unchecked.
+
+If the change is abandoned after step 4, the human removes `/etc/cron.d/loop2-watch`, or the
+watcher goes on sending its messages.
+
+**What stays with the human.** No automated test proves Docker's log driver and its `inspect`
+fields, the `--since` and `--until` windowing of `docker logs`, `logrotate`, delivery by `pusher`,
+cron or the GitHub e-mail; steps 1 to 7 are the only checks of the first five and of the e-mail,
+and the windowing has none until the first real failure line is counted. Anything not done is
+reported as unchecked.
+
 ## The five GitHub secrets
 
 | Secret | Holds |

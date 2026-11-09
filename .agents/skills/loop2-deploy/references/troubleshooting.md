@@ -51,10 +51,11 @@ loop2's ownership label; it leaves upstream bases and shared cache alone.
 
 ## Installed-script warning
 
-The installed command is outside the checkout and never updates itself. Three installed copies
+The installed command is outside the checkout and never updates itself. Six installed copies
 are compared with their sources at the deployed commit: `/usr/local/bin/loop2-deploy`,
-`/usr/local/bin/loop2-backup` and `/etc/cron.d/loop2-backup`. A warning for the two backup
-copies is expected before they are installed and after a rollback to a commit older than their
+`/usr/local/bin/loop2-backup`, `/etc/cron.d/loop2-backup`, `/usr/local/bin/loop2-watch`,
+`/etc/cron.d/loop2-watch` and `/etc/logrotate.d/loop2-app`. A warning for a copy other than the
+deploy script is expected before it is installed and after a rollback to a commit older than its
 last change. A mismatch warning does not stop deployment. After a source change, review and install from the **exact intended
 commit** using `setup_and_secrets.md`, then deploy that commit. The checkout may hold a failed
 commit, so copying `/srv/loop2/deploy/loop2-deploy` without selecting its commit is unsafe.
