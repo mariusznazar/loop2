@@ -309,8 +309,10 @@ log), so copying the one file while the application runs does not copy the datab
     Compose file, and `loop2_accounts` is one of them and is not external. `docker compose down`
     without it removes the containers and the network and leaves the volume.
   - `docker volume prune --all` (or `-a`) removes the unused named volumes too, so it removes
-    `loop2_accounts` when no loop2 container references it. `docker volume prune` without
-    `--all` removes anonymous volumes only, and `loop2_accounts` is a named one.
+    `loop2_accounts` when no loop2 container references it. The page of `docker volume prune`
+    says that without `--all` it removes anonymous volumes only, and `loop2_accounts` is a
+    named one; but the example output on the same page lists a named volume among those it
+    deleted, so do not count on plain `docker volume prune` to spare `loop2_accounts`.
   - `docker system prune --volumes` prunes anonymous volumes only, so it leaves
     `loop2_accounts`; `-a` of that command is about images. Another version of Docker may
     document it otherwise.
@@ -470,8 +472,9 @@ docker ps --all --filter name=loop2-password-measure --format '{{.Names}} {{.Sta
 docker rm --force <the name printed>
 ```
 
-Remove only a container whose measurement is not in progress in another shell: a running one
-is still measuring. Remove none of the other containers of the host.
+Remove a container only when no other shell is waiting for its measurement: a running one may
+still be measuring for another shell, while a running one that a lost connection left behind is
+to be removed. Remove none of the other containers of the host.
 
 ## The five GitHub secrets
 
