@@ -322,7 +322,11 @@ w menu „Konto” na pasku menu w nagłówku (`menu-bar.tsx`); pasek tylko je z
 
 Błąd, którego nie obsłużył żaden kod gry, trafia do `installLastResort` z `last-resort.ts`,
 który `startApp` instaluje na oknie: zdarzenia `error` i `unhandledrejection` są
-anulowane, w konsoli staje jeden wiersz `uncaught kind=… code=… place=…`, a `halt()`
+anulowane, w konsoli staje jeden wiersz `uncaught kind=… code=… place=…`, a przy
+każdym wierszu, którego strona jeszcze nie napisała, moduł wywołuje opcjonalne
+wywołanie zwrotne `onLine` z rodzajem, kodem i miejscem (`app.ts` podpina do niego
+metodę klienta konta `reportBrowserFailure`, która wysyła te trzy słowa serwerowi;
+jej wynik jest pomijany, a jej błąd nie staje się błędem obsługi, D-356), a `halt()`
 gry sprawia, że magazyn stanu odrzuca każdy kolejny wynik symulacji i zegar staje,
 więc zapis dalej wysyła ostatni cały stan, czytany bez odczytu zegara; po błędzie strona
 nie buduje już gry, a logowanie kończy się na ekranie oczekiwania ze zdaniem (D-323, D-253).
