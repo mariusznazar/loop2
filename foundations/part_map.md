@@ -146,8 +146,8 @@ The part builds the application into the loop2 container, deploys a commit of th
 test server, appending the log of the containers it replaces to a file on the host, and holds the
 nightly backup script and its schedule, which a human installs on the host and which encrypt the
 database backup and send it off the server; it also holds the logrotate file of that log file, the
-failure watcher and its schedule and the scheduled check of the public address, the last two telling
-the owner when the running game fails.
+failure watcher with its schedule, and the scheduled check of the public address, the watcher and
+the check both telling the owner when the running game fails.
 
 - **Files:** Dockerfile
   .dockerignore
