@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { request } from "node:http";
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import fs from "node:fs";
 import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Readable } from "node:stream";
 import { DatabaseSync } from "node:sqlite";
 import argon2 from "argon2";
 import session from "express-session";
@@ -4640,6 +4642,93 @@ test(
     assert.deepEqual(await settledLog(logged), [
       { ...failedRenewal(f), failure: "request", place: "app.errors" },
       failedRenewal(f),
+    ]);
+  },
+);
+
+// A GET that resolves once the server closes its connection, whatever the
+// answer held: `complete` tells whether the answer ended, `bytes` what arrived.
+// `onBytes` is called when the first bytes of the answer arrive.
+function getUntilClosed(f, path, headers, onBytes) {
+  return new Promise((resolve, reject) => {
+    const outgoing = request(
+      {
+        hostname: "127.0.0.1",
+        port: f.to,
+        path,
+        method: "GET",
+        headers,
+        agent: false,
+      },
+      (incoming) => {
+        let bytes = 0;
+        incoming.on("data", (chunk) => {
+          bytes += chunk.length;
+          onBytes();
+        });
+        // A cut answer is reported by `complete`, not by an error event.
+        incoming.on("error", () => {});
+        incoming.on("close", () => {
+          clearTimeout(deadline);
+          resolve({
+            status: incoming.statusCode,
+            complete: incoming.complete,
+            bytes,
+          });
+        });
+      },
+    );
+    const deadline = setTimeout(
+      () => outgoing.destroy(new Error("HTTP deadline exceeded")),
+      5000,
+    );
+    outgoing.on("error", (error) => {
+      clearTimeout(deadline);
+      reject(error);
+    });
+    outgoing.end();
+  });
+}
+
+test(
+  "a file whose read breaks off while it is sent is cut, writes one line of the request, and is not handed to Express's own handler",
+  { timeout: 20000 },
+  async (t) => {
+    // Guard: the `response.headersSent` branch of the error handler in
+    // src/server/app.ts. The read fault is forced on the stream the static
+    // server opens: it breaks off only once the client has the first kilobyte,
+    // so the answer has begun. Faults: the branch removed, so Express's handler
+    // gets the error and prints its stack; the error handed on with
+    // `next(error)`; the connection left open, so the answer hangs.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const createReadStream = fs.createReadStream;
+    t.after(() => {
+      fs.createReadStream = createReadStream;
+    });
+    let arrived;
+    const firstBytes = new Promise((resolve) => {
+      arrived = resolve;
+    });
+    fs.createReadStream = () => {
+      let sent = false;
+      return new Readable({
+        async read() {
+          if (!sent) {
+            sent = true;
+            this.push(Buffer.alloc(1024));
+            return;
+          }
+          await firstBytes;
+          this.destroy(new Error("synthetic read fault"));
+        },
+      });
+    };
+    const answer = await getUntilClosed(f, "/main.js", proxyHeaders, arrived);
+    assert.equal(answer.status, 200, "the answer began");
+    assert.equal(answer.complete, false, "the answer is cut, not ended");
+    assert.deepEqual(await settledLog(logged), [
+      { failure: "request", kind: "Error", code: "none", place: "app.errors" },
     ]);
   },
 );
