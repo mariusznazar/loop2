@@ -97,15 +97,19 @@ test("each answer to a confirmation has its sentence and role, and only a confir
     assert.deepEqual(confirmationOutcome(result), { notice, definitive }, name);
 });
 
-/** An address whose fragment the test sets, counting how often it is cleared. */
+/** An address whose fragment the test sets, counting how often it is cleared and reloaded. */
 function fakeAddress(hash) {
   const address = {
     hash: () => address.current,
     current: hash,
     cleared: 0,
+    reloaded: 0,
     clearFragment() {
       address.cleared += 1;
       address.current = "";
+    },
+    reload() {
+      address.reloaded += 1;
     },
   };
   return address;

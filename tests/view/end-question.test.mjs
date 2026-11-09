@@ -109,6 +109,7 @@ function fakeAddress(hash) {
   const address = {
     entries: [hash],
     index: 0,
+    reloaded: 0,
     hash: () => address.entries[address.index],
     go(next) {
       address.entries.splice(address.index + 1);
@@ -117,6 +118,9 @@ function fakeAddress(hash) {
     },
     replace(next) {
       address.entries[address.index] = next;
+    },
+    reload() {
+      address.reloaded += 1;
     },
     onChange(listener) {
       listeners.add(listener);
