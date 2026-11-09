@@ -49,7 +49,7 @@ export function linkTokenDigest(token: string): string {
   return createHash("sha256").update(token).digest("base64url");
 }
 
-// The browser's report of a failure (D-353): `kind` and `code` are one word of
+// The browser's report of a failure (D-356): `kind` and `code` are one word of
 // letters, digits and underscore that starts with a letter, as the words the
 // browser writes are; `place` is such words joined by `.`, `/` and `-`. Nothing
 // else may reach the log, which lives for weeks, so a space, a quote, a brace,

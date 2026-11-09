@@ -559,7 +559,7 @@ function recordReports(held, lines) {
   return sent;
 }
 
-// D-353, D-253; task skad-wiem-o-awarii, slice 4. Catches a report sent before its line is written,
+// D-356, D-253; task skad-wiem-o-awarii, slice 4. Catches a report sent before its line is written,
 // a report sent again for a line already written, and a line the account client never hears of.
 test("each distinct line goes to the account client once per page load, after its console line, for errors and rejections alike", async () => {
   await onPage(async ({ lines }) => {

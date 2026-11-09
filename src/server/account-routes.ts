@@ -406,7 +406,7 @@ export function accountRoutes(
     ...mutationGuards(runtime.configuration.publicOrigin, savedGameLimit),
   );
 
-  // The page reports a failure no code of the game handled (D-353). No session
+  // The page reports a failure no code of the game handled (D-356). No session
   // is needed, because a failure can strike on the login card, and the body
   // never names an account: the line carries the `accountId` of the stored
   // session when there is one. The limit counts the reports whose bodies passed

@@ -235,7 +235,7 @@ export function startApp(
     card?.fail();
   }
   /**
-   * Sends a line the page wrote to the server (D-353). The result is ignored, and a failing client,
+   * Sends a line the page wrote to the server (D-356). The result is ignored, and a failing client,
    * a test double included, must not become an error of the last-resort handler.
    */
   function reportLine(kind: string, code: string, place: string): void {

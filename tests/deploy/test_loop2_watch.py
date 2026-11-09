@@ -1,4 +1,4 @@
-"""The failure watcher `deploy/loop2-watch` and its schedule (D-353, decisions C1 to C7 of the spec).
+"""The failure watcher `deploy/loop2-watch` and its schedule (D-356, decisions C1 to C7 of the spec).
 
 The script runs as a black box through the seam of `watch_script_support.py`: stand-ins for
 `docker`, `pusher`, `flock` and `date`, a clock the test sets, and a state directory, a log and two

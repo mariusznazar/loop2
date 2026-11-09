@@ -1,4 +1,4 @@
-"""The dump of the log of both loop2 services in the deployment script (decision D-352, invariant
+"""The dump of the log of both loop2 services in the deployment script (decision D-355, invariant
 loop2-deploy-log-dump).
 
 - after the build and before `up --force-recreate` removes the containers, the script appends one

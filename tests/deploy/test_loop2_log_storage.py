@@ -1,4 +1,4 @@
-"""Static checks of the log storage of the running game (decision D-352): both Compose services
+"""Static checks of the log storage of the running game (decision D-355): both Compose services
 write their logs to Docker's `local` driver with no other logging option, and the repository holds
 the one logrotate stanza of the dump file `/var/log/loop2-app.log`. Standard library only: both
 files are read as text, not parsed as YAML, and nothing runs."""
@@ -71,7 +71,7 @@ class ComposeLogDriver(unittest.TestCase):
         self.lines = read_lines(COMPOSE)
 
     def test_both_services_log_to_the_local_driver_and_no_other_option(self):
-        # D-352, A2: Docker's own defaults of the `local` driver bound each log
+        # D-355, A2: Docker's own defaults of the `local` driver bound each log
         logging = service_logging(self.lines)
         for service in SERVICES:
             with self.subTest(service=service):
@@ -80,7 +80,7 @@ class ComposeLogDriver(unittest.TestCase):
                                  f"service {service} does not log to the `local` driver alone")
 
     def test_no_other_logging_key_in_the_compose_file(self):
-        # D-352, A2: one `logging:` key per service, and no legacy `log_driver`
+        # D-355, A2: one `logging:` key per service, and no legacy `log_driver`
         keys = [line for line in self.lines if is_code(line)
                 and re.match(r"\s*(logging|log_driver|log_opt)\s*:", line)]
         self.assertEqual(len(keys), len(SERVICES),
@@ -94,14 +94,14 @@ class LogrotateStanza(unittest.TestCase):
         self.lines = [line.strip() for line in read_lines(LOGROTATE) if is_code(line)]
 
     def test_one_stanza_for_the_dump_file(self):
-        # D-352, A3: the file holds one stanza, for /var/log/loop2-app.log only
+        # D-355, A3: the file holds one stanza, for /var/log/loop2-app.log only
         self.assertTrue(self.lines, f"{LOGROTATE} holds no stanza")
         self.assertEqual(self.lines[0], LOGROTATE_HEADER)
         self.assertEqual(self.lines[-1], "}")
         self.assertEqual(self.lines.count(LOGROTATE_HEADER), 1)
 
     def test_the_stanza_holds_exactly_the_directives_of_a3(self):
-        # D-352, A3: weekly or past 100 MiB, four files, copy and truncate, owner root, and no
+        # D-355, A3: weekly or past 100 MiB, four files, copy and truncate, owner root, and no
         # create and no user name
         body = self.lines[1:-1]
         self.assertEqual(sorted(body), LOGROTATE_DIRECTIVES)

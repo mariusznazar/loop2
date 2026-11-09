@@ -1,5 +1,5 @@
 # loop2-app.logrotate: rotates the dump file of the game's log, /var/log/loop2-app.log, which
-# loop2-deploy appends to before the containers are replaced (decision D-352).
+# loop2-deploy appends to before the containers are replaced (decision D-355).
 #
 # Installed root-owned, mode 0644, at /etc/logrotate.d/loop2-app, by a human.
 /var/log/loop2-app.log {

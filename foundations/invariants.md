@@ -1252,7 +1252,7 @@ A deployment through `loop2-deploy` appends the log of the containers it replace
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-352
+- **Derives from:** D-355
 - **Part:** deployment
 - **Violated:** no
 
@@ -1262,7 +1262,7 @@ Every message the failure watcher sends through `pusher` has a fixed subject and
 
 - **Method:** test
 - **Rests on:** mikrus-pusher-mail
-- **Derives from:** D-353
+- **Derives from:** D-356
 - **Part:** deployment
 - **Violated:** no
 
@@ -1272,7 +1272,7 @@ The server writes a failure report of the browser only as a kind, a code and a p
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-353
+- **Derives from:** D-356
 - **Part:** account-server
 - **Violated:** no
 
