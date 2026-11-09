@@ -1,0 +1,54 @@
+name: Check the public address
+
+# Every five minutes, at the minutes GitHub does not delay (never the top of the hour), the step
+# opens the game's public address and fails unless it answers 200. The run ships no files, checks
+# out no code and holds no secret; it deploys nothing. A failed run makes GitHub notify the owner.
+
+on:
+  schedule:
+    - cron: "3-58/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      force_failure:
+        description: "Fail the check at once, to test that the failure reaches the owner"
+        type: boolean
+        default: false
+
+# A newer run of this check replaces an older one still running; the deployment's group is not used.
+concurrency:
+  group: check-address-loop2
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  LOOP2_PUBLIC_URL: https://loop2.mariusznazar.com/
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Open the public address
+        env:
+          FORCE_FAILURE: ${{ inputs.force_failure }}
+        run: |
+          set -uo pipefail
+          if [ "$FORCE_FAILURE" = "true" ]; then
+            echo "::error::Forced failure requested by a manual run; the public address was not opened."
+            exit 1
+          fi
+          code=""
+          for attempt in 1 2 3 4 5 6; do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$LOOP2_PUBLIC_URL" || true)"
+            if [ "$code" = "200" ]; then
+              echo "attempt $attempt: $LOOP2_PUBLIC_URL answered 200."
+              exit 0
+            fi
+            echo "attempt $attempt: $LOOP2_PUBLIC_URL answered '$code'."
+            if [ "$attempt" -lt 6 ]; then
+              sleep 20
+            fi
+          done
+          echo "::error::$LOOP2_PUBLIC_URL did not answer 200 in 6 attempts (last answer: '$code')."
+          exit 1

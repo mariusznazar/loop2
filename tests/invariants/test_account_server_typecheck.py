@@ -30,7 +30,10 @@ Covers:
   nightly backup script and its schedule stand under `deploy/`, which the search counts, and deploy
   nothing: the script's every Docker command is an `exec` in the running container. The failure
   watcher, its schedule and the logrotate file stand there too and start no image: the watcher's
-  every Docker command is an `inspect` or a `logs` (tests/deploy/test_loop2_watch.py).
+  every Docker command is an `inspect` or a `logs` (tests/deploy/test_loop2_watch.py). The
+  scheduled check of the public address (`.github/workflows/check-address.yml`) deploys nothing:
+  it checks out no code, holds no secret and runs no Docker command
+  (tests/deploy/test_check_address_workflow.py).
 
 Does NOT cover: a deployment defined outside this repository; that the script stops before `up`
 when the build fails (the script's own tests read that: whatever it does, the image `up` starts
@@ -74,8 +77,9 @@ ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT,
 BACKUP_SCRIPT = "deploy/loop2-backup"
 LOGROTATE_CONFIG = "deploy/loop2-app.logrotate"
 WATCH_SCRIPT = "deploy/loop2-watch"
+SCHEDULED_CHECK_WORKFLOW = ".github/workflows/check-address.yml"
 NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron", LOGROTATE_CONFIG, WATCH_SCRIPT,
-              "deploy/loop2-watch.cron")
+              "deploy/loop2-watch.cron", SCHEDULED_CHECK_WORKFLOW)
 
 TYPECHECK_COMMAND = ["npm", "run", "typecheck"]
 BUILT_OUTPUT = "dist"
