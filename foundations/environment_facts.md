@@ -645,7 +645,7 @@ The documentation of `docker volume prune` says that it removes the local volume
 
 ## docker-system-prune-volumes
 
-`docker system prune` removes no volume by default, its `--volumes` option prunes anonymous volumes as well, and its `--all` option widens the images it removes, not the volumes.
+`docker system prune` removes no volume by default, its `--volumes` option prunes anonymous volumes as well, and its `--all` option removes all unused images, not just dangling ones.
 
 - **Source:** https://raw.githubusercontent.com/docker/cli/ce1223035ac3ab8922717092e63a184cf67b493d/docs/reference/commandline/system_prune.md § Options, --volumes — "Prune anonymous volumes" · § Options, -a, --all — "Remove all unused images not just dangling ones" · § Examples — "By default, volumes aren't removed to prevent important data from being deleted if there is currently no container using the volume. Use the --volumes flag when running the command to prune anonymous volumes as well:"; read 2026-11-09
 
