@@ -421,6 +421,76 @@ test("a failed backup adds the error's kind and code to standard error, and noth
   assert.doesNotMatch(result.stderr, /garbage-secret-name|not a database/i);
 });
 
+// The stand-in of account-database-check's tests makes the removal of the
+// temporary directory fail in the given mode, after the backup has gone out.
+function runBackupWithStandin(box, mode) {
+  const child = spawn(process.execPath, ["--import", standin, command, word], {
+    env: {
+      ...environment(box.path, box.temporary),
+      LOOP2_CHECK_STANDIN: mode,
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  const chunks = [];
+  let stderr = "";
+  child.stdout.on("data", (chunk) => chunks.push(chunk));
+  child.stderr.setEncoding("utf8").on("data", (chunk) => {
+    stderr += chunk;
+  });
+  return new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("close", (code) =>
+      resolve({ code, stdout: Buffer.concat(chunks), stderr }),
+    );
+  });
+}
+
+// To do 5, loop2#046-6, Settlement 3 (D-354), D-233. Faults: the removal's
+// failure written as backup-database, so the operator reads "No backup was
+// made" after a backup that went out whole.
+test("a whole backup whose temporary directory cannot be removed is one failure of its own, with its cause and one sentence, and exits 1", async (t) => {
+  const box = await sandbox(t);
+  seedDatabase(box).close();
+
+  const result = await runBackupWithStandin(box, "cleanup-fails");
+
+  assert.equal(result.code, 1, result.stderr);
+  const backup = join(box.directory, "cleanup-backup.sqlite");
+  await writeFile(backup, result.stdout);
+  const opened = new DatabaseSync(backup, { readOnly: true });
+  try {
+    assert.equal(
+      opened.prepare("PRAGMA integrity_check").get().integrity_check,
+      "ok",
+    );
+  } finally {
+    opened.close();
+  }
+  assert.equal(emailsOf(backup).length, SEEDED + 1, "every row is in");
+  const lines = result.stderr
+    .split(/\r?\n/)
+    .filter((text) => text.startsWith("{"));
+  assert.equal(lines.length, 1, result.stderr);
+  assert.deepEqual(JSON.parse(lines[0]), {
+    failure: "backup-cleanup",
+    kind: "Error",
+    code: "EBUSY",
+    place: "account-backup.run",
+  });
+  assert.match(result.stderr, /went out whole/);
+  assert.doesNotMatch(result.stderr, /No backup was made/);
+  assert.equal(
+    result.stderr.includes(box.temporary),
+    false,
+    "the message names no path",
+  );
+  assert.equal(
+    (await readdir(box.temporary)).length,
+    1,
+    "the temporary copy is left in place",
+  );
+});
+
 // To do 8, cause 7, D-253. Faults: no handler, so the default print writes the
 // message and the stack; a line on standard output, which carries the backup.
 test("what no code of the command handled ends it with one line of its kind, code and place on standard error", async (t) => {

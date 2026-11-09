@@ -11,6 +11,9 @@
 // The docker commands go to the daemon the docker CLI is set to (DOCKER_HOST or
 // its context), so the image measured is one that daemon holds. The container
 // gets no network, volume, secret or environment of the application.
+// The report names the docker step that failed and its exit status. Docker's own
+// error text goes to standard error, never into the report: over DOCKER_HOST=ssh://
+// it can name the server.
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { pathToFileURL } from "node:url";
@@ -187,22 +190,55 @@ export function judge(request, observed) {
   return problems;
 }
 
+// The report as the launcher writes it to standard output: without the lines of
+// docker's error text, which go to standard error.
+export function reportForFile(report) {
+  const printed = { ...report };
+  delete printed.stderr;
+  return printed;
+}
+
 export function measure(request, docker = runDocker) {
-  const image = inspected(
-    docker(["image", "inspect", "--format", "{{json .}}", request.image]),
-  );
+  // Docker's error text of each failed step, for standard error.
+  const stderr = [];
+  const failure = (step, answer) => {
+    const text = answer.stderr.trim();
+    if (text !== "") stderr.push(`docker ${step}: ${text}`);
+    return answer.status === null
+      ? `docker ${step} gave no exit status`
+      : `docker ${step} exited with status ${answer.status}`;
+  };
+  const inspection = docker([
+    "image",
+    "inspect",
+    "--format",
+    "{{json .}}",
+    request.image,
+  ]);
+  const image = inspected(inspection);
   if (!image) {
+    const reason =
+      inspection.status === 0
+        ? "docker image inspect printed no image"
+        : failure("image inspect", inspection);
     return {
       ok: false,
-      problems: ["the image cannot be inspected"],
+      problems: [`the image cannot be inspected: ${reason}`],
       request,
+      stderr,
     };
   }
   const identity = judge(request, { image, container: null, result: null })
     .filter((problem) => problem.startsWith("the image"))
     .concat(typeof image.Id === "string" ? [] : ["the image has no id"]);
   if (identity.length > 0) {
-    return { ok: false, problems: identity, request, imageId: image.Id };
+    return {
+      ok: false,
+      problems: identity,
+      request,
+      imageId: image.Id,
+      stderr,
+    };
   }
   const name = `loop2-password-measure-${randomBytes(6).toString("hex")}`;
   const memory = String(request.limitBytes);
@@ -234,13 +270,18 @@ export function measure(request, docker = runDocker) {
       ENTRYPOINT,
     ]);
     if (started.status !== 0) {
-      extra.push("the measurement container did not start");
+      extra.push(
+        `the measurement container did not start: ${failure("run", started)}`,
+      );
     } else {
       const waited = docker(["wait", name], RUN_TIMEOUT_MS);
       if (waited.status !== 0) {
         docker(["kill", name]);
+        const reason = failure("wait", waited);
         extra.push(
-          `the measurement did not finish within ${RUN_TIMEOUT_MS / 1000} s`,
+          waited.status === null
+            ? `the measurement did not finish within ${RUN_TIMEOUT_MS / 1000} s`
+            : `the measurement could not be waited for: ${reason}`,
         );
       }
       container = inspected(
@@ -266,6 +307,7 @@ export function measure(request, docker = runDocker) {
       memorySwapBytes: container.HostConfig?.MemorySwap,
     },
     result,
+    stderr,
   };
 }
 
@@ -281,7 +323,8 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
     process.exit(2);
   }
   const report = measure(request);
-  console.log(JSON.stringify(report, null, 2));
+  for (const line of report.stderr) console.error(line);
+  console.log(JSON.stringify(reportForFile(report), null, 2));
   console.log(report.ok ? "PASS" : `FAIL: ${report.problems.join("; ")}`);
   process.exit(report.ok ? 0 : 1);
 }

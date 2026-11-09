@@ -5223,9 +5223,10 @@ after an hour, the text of a page shows no motion, and images cost tokens. Risks
 hypothesis: a drag may catch a select list instead of a handle; an agent judging motion from a few
 frames may report that a scene works while a person sees it jerk at 16×.
 *Rejected:* Playwright MCP as the first way — more tokens and a command sent at each tab where the
-CLI reads one file of the repository; Chrome DevTools MCP and agent-browser — no clock, and their frames unchecked; Puppeteer, Selenium,
-WebdriverIO, Cypress and Stagehand — nothing above Playwright; computer use, direct calls to the
-API, a document model and a person clicking — an agent does not check the running product this way.
+CLI reads one file of the repository; Chrome DevTools MCP and agent-browser — no clock, and their
+frames unchecked; Puppeteer, Selenium, WebdriverIO, Cypress and Stagehand — nothing above
+Playwright; computer use, direct calls to the API, a document model and a person clicking — an agent
+does not check the running product this way.
 
 ### D-255 — Where does the data an agent checks the game on come from?
 
@@ -7863,6 +7864,91 @@ of the page into source files and break with each change of it, and it would cat
 since each such file and what it refers to belong to the browser view; skipping an import the test
 cannot match — a silent hole, since every import through the build folder to a `.tsx` file would
 pass unchecked, and by that road an import of the view came into a test of the simulation.
+
+### D-352 — What does a page whose game is open do when the fragment of an emailed link appears in its address?
+
+When the fragment of an emailed link (D-156, D-224), `#confirm-email=<token>` or
+`#reset-password=<token>`, appears in the address of a tab whose game is open, the page reloads and
+then does what a page opened by that link does.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-96 · derives from D-156 · derives from D-224 · derives from D-281
+- **Verification:** an agent compares a change with the decision:
+  - complies: a link from a mail typed into the address bar of a signed-in tab with the game open
+    reloading the page, which then shows the confirmation of D-156 or the form „Ustaw nowe hasło”
+    of D-225
+  - violates: the fragment of such a link resolved as the address of a screen and replaced with
+    Siedziba; the open game handling the link itself, without a reload
+- **Origin:** zadanie_loop2_porzadki_z_uwag_pr.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Co robi otwarta gra, gdy do jej karty wklei się link z maila?”, and § Settlements to record, row 1
+
+*Rationale:* a page opened by a link already confirms the address or shows the form of a reset, so
+an open game takes that road by reloading and has no second one beside the start of the page. A
+signed-in player who pastes the link into the tab no longer loses it without a word. Accepted with
+it: the reload of a game in a manual map run rests on the save made when the page becomes hidden,
+which D-207 gives no guarantee of reaching the server, so in the bad case up to 30 real seconds of
+the map run are lost.
+*Rejected:* the open game handling the link itself, with no reload — nothing is lost, but a second
+road for the link grows beside the start of the page, with more code and more tests, and the game
+has to vanish at the form of a reset (D-96); leaving it as it is, with D-281 saying that an open
+game takes the link of a mail for an address with no screen — no code, but the player still loses
+the link without a word.
+
+### D-353 — Which refusals of the account server are an expected course and leave no failure line?
+
+A browser that breaks off sending the body of a request is an expected refusal, like a body that is
+too large or broken, and the session write that the library makes as a response ends, refused
+because the account was blocked while the request was in progress, as while a registration waits on
+its message, is the intended effect of the block; neither leaves a failure line. A session write
+that fails for any other reason stays a failure.
+
+- **Scope:** account-server
+- **Based on:** none
+- **Relations:** derives from D-137 · derives from D-252
+- **Verification:** an agent compares a change with the decision:
+  - complies: a request whose body the browser stopped sending, refused with no line of `failure`;
+    a block committed while a registration waits, leaving no failure line of the session write that
+    the library makes as the response ends; the first store of a session, made in the route that
+    signs the player in, refused because of a block, leaving its line; a session write that fails
+    because the password was replaced meanwhile or the database failed, leaving its line
+  - violates: a line of `failure` for a body the browser broke off; a line of `failure` for the
+    session write that the library makes as a response ends, which a block refused; a session write
+    that fails for another cause left without its line
+- **Origin:** zadanie_loop2_porzadki_z_uwag_pr.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Co jest awarią, a co zwykłym przebiegiem: przeglądarka zrywająca wysyłanie, blokada konta w trakcie rejestracji i zdanie dla operatora po wierszu JSON?”, and § Settlements to record, row 2
+
+*Rationale:* a browser breaks off a body when a player closes the tab or loses the connection, and a
+block is meant to stop the session of the account, so in neither case did the server fail to do what
+it was to do. Each line of `failure` that is not one would be a false alarm for whoever reads the
+logs to learn of a failure; the session write refused for another cause still is one, and its line
+stays.
+*Rejected:* leaving the breaking off of a body as a failure — every connection a player drops gives
+an alarm; leaving the refusal of the session write at a block as a failure — a rare false alarm.
+
+### D-354 — Is the sentence by which a service command answers the operator a log line?
+
+The sentence by which a service command of the account server, `account-block` or `account-backup`,
+answers the operator is no log line: the log line of such a command is its JSON line of D-252
+alone, and the sentence stays beside it. A failure of the command written as that line and followed
+by that sentence is one failure recorded once.
+
+- **Scope:** account-server
+- **Based on:** none
+- **Relations:** derives from D-137 · derives from D-252
+- **Verification:** an agent compares a change with the decision:
+  - complies: a failed run of `account-backup` writing one JSON line of the failure and after it one
+    sentence for the operator; a refusal of `account-block` leaving its sentence in the terminal
+  - violates: the sentence removed, so that after a block or its refusal the operator sees only
+    JSON; the JSON line removed, so that a failure of the command reaches no log; the sentence
+    counted as a second record of the failure
+- **Origin:** zadanie_loop2_porzadki_z_uwag_pr.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Co jest awarią, a co zwykłym przebiegiem: przeglądarka zrywająca wysyłanie, blokada konta w trakcie rejestracji i zdanie dla operatora po wierszu JSON?”, and § Settlements to record, row 3
+
+*Rationale:* the operator at a terminal reads the sentence, and whatever searches the logs reads the
+JSON line; each does its own work, so neither is a copy of the other. Counting the sentence as a
+second record of the failure would lead to removing it or moving it, and then the operator would
+see nothing but JSON, against D-137.
+*Rejected:* removing the sentence for the operator — after a block or its refusal the operator sees
+only JSON in the terminal, against D-137; removing the JSON line — a failure of the command reaches
+no log, against D-252.
 
 ### D-355 — Where does the log of the running game on the server lie, how long does it live and how does an agent read it?
 

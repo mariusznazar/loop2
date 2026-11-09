@@ -9,7 +9,10 @@ import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
 import { spawn } from "node:child_process";
 import session from "express-session";
-import { AccountDatabase } from "../dist/server/database.js";
+import {
+  AccountDatabase,
+  BlockedSessionRefusal,
+} from "../dist/server/database.js";
 import { SqliteSessionStore } from "../dist/server/session-store.js";
 
 async function fixture(t, options = {}) {
@@ -1641,6 +1644,74 @@ test("a session write whose expected password hash no longer holds stores nothin
 });
 
 // invariant: account-session-storage
+// A block is meant to stop the account's sessions (D-137), so the refusal of a
+// session write it causes is told from a refusal for any other cause (D-353):
+// by the error's type, from the state the writing statement saw.
+test("a session write refused because the account is blocked says so; one refused for another cause does not", async (t) => {
+  const { store, database, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "other-hash");
+  const refusal = async (id, value) => {
+    try {
+      await call(store, "set", id, value);
+    } catch (error) {
+      return error;
+    }
+    assert.fail(`the write of ${id} stored`);
+  };
+
+  // A password replaced meanwhile: refused, and no block to blame.
+  const replaced = data(account.id);
+  store.expectPasswordHash(replaced, "an-older-hash");
+  const hash = await refusal("replaced", replaced);
+  assert.ok(!(hash instanceof BlockedSessionRefusal), "password hash");
+  assert.ok(hash instanceof Error, "an error refused it");
+
+  // A held identifier of another account: refused, and no block to blame.
+  await call(store, "set", "held", data(other.id));
+  const held = await refusal("held", data(account.id));
+  assert.ok(!(held instanceof BlockedSessionRefusal), "identifier of another");
+  assert.ok(held instanceof Error, "an error refused it");
+
+  // The block, with or without an expectation, also when the hash has moved.
+  assert.equal(database.blockAccount("player@example.test").outcome, "blocked");
+  const bare = await refusal("blocked-bare", data(account.id));
+  assert.ok(bare instanceof BlockedSessionRefusal, "no expectation");
+  assert.ok(bare instanceof Error, "an error refused it");
+  const guarded = data(account.id);
+  store.expectPasswordHash(guarded, "encoded-hash");
+  assert.ok(
+    (await refusal("blocked-guarded", guarded)) instanceof
+      BlockedSessionRefusal,
+    "an expectation that holds",
+  );
+  const moved = data(account.id);
+  store.expectPasswordHash(moved, "an-older-hash");
+  assert.ok(
+    (await refusal("blocked-moved", moved)) instanceof BlockedSessionRefusal,
+    "an expectation that no longer holds",
+  );
+  assert.equal(
+    raw
+      .prepare("SELECT count(*) AS n FROM sessions WHERE id LIKE 'blocked-%'")
+      .get().n,
+    0,
+    "nothing is stored for the blocked",
+  );
+
+  // Unblocked, the same write is refused for the hash alone.
+  assert.equal(
+    database.unblockAccount("player@example.test").outcome,
+    "unblocked",
+  );
+  assert.ok(
+    !(
+      (await refusal("unblocked-moved", moved)) instanceof BlockedSessionRefusal
+    ),
+    "unblocked",
+  );
+});
+
+// invariant: account-session-storage
 // invariant: password-reset-ends-sessions
 test("a session write whose expected password hash was changed through a second connection stores nothing and leaves a held row as it was; one with no expectation behaves as before", async (t) => {
   const { store, raw, account } = await fixture(t);
@@ -1817,6 +1888,10 @@ test("persisted cookies must be usable after database expiry replacement and pac
     ],
   ]) {
     await t.test(name, async (t) => {
+      // The library's Cookie copy reads the clock twice (maxAge, then expires),
+      // so a real clock lets a millisecond between the reads move the expiry
+      // (loop2#043-28). A frozen clock keeps the expected value exact.
+      t.mock.timers.enable({ apis: ["Date"], now: 1000 });
       const { store, raw, account } = await fixture(t);
       const valid = data(account.id);
       valid.cookie.path = "/accounts";
@@ -1881,6 +1956,8 @@ test("set and touch refuse unusable cookie input without changing stored session
     ],
   ]) {
     await t.test(name, async (t) => {
+      // Frozen clock, as in the loop above: the load's expiry must stay exact (loop2#043-28).
+      t.mock.timers.enable({ apis: ["Date"], now: 1000 });
       const { store, raw, account } = await fixture(t);
       await call(store, "set", "one", data(account.id));
       const invalid = data(account.id, 5000);

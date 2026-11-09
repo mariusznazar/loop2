@@ -21,6 +21,7 @@ import {
 import {
   advanceLoopRun,
   endLoopRun,
+  passLoops,
   startLoop,
   stopLoop,
 } from "../../dist/browser/sim/loop.js";
@@ -868,6 +869,24 @@ test("stopping a loop whose map run ended in death pays only the loop's own prac
   );
   assert.equal(stopLoop(stopped, 1).state, stopped);
   assert.equal(stopLoop(stopped, 2).state, stopped);
+});
+
+// Ola (2) is the second character of the team and her loop stops at its death, with no resurrection
+// ready before the death's minute. Her generation grows from 1, the creation's (D-190), to 2, and
+// the report line of the stop names her generation, not Ala's (1), who stays first in the team.
+test("a loop of a character other than the first that stops in passing writes that character's own generation", () => {
+  let state = startLoop(
+    game(EMPTY),
+    { mapId: "forest", characterId: 2 },
+    T0,
+  ).state;
+  state = changing(state, 2, { resurrectionReadyAtMs: T0 + 10 ** 9 });
+  state = changingRun(state, 2, { body: { ...DYING } });
+  const passed = passLoops(state, T0, T0 + 5 * 60_000).state;
+  assert.equal(ala(passed).generation, 1);
+  const line = passed.awayReport.find((listed) => listed.characterId === 2);
+  assert.deepEqual(line.stop, { generation: 2, away: false });
+  assert.equal(passed.loops[2], undefined);
 });
 
 test("a send throws for a character in a loop, and clears the stopped line of the character it sends and no other", () => {

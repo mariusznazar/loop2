@@ -163,10 +163,11 @@ the old game's state and installed-script mismatches are also logged.
   only into `app` at `/app/data`; nothing is prepared on the host by hand. Container
   replacement keeps it. The database holds the accounts, the sessions and the players' saved game
   states. Never run volume pruning on the host: while no loop2 container references the
-  volume, a prune removes the accounts and every saved game state with them.
+  volume, `docker volume prune --all` removes the accounts and every saved game state with
+  them (the commands that remove it: "The account database" in `references/setup_and_secrets.md`).
 - **Deploying a request and accepting it:** "Deploying a request head" in
   `references/setup_and_secrets.md`: deployment, persistence check (accounts, sessions and, after redeploying the same commit
-  (H2), a saved game state), password measurement in the deployed image, public browser
+  (S2), a saved game state), password measurement in the deployed image, public browser
   journey.
 
 ## Database backups
@@ -198,7 +199,7 @@ private note. The agent reads the file's metadata only and never its content.
 - **Rotation is the human's:** replace the file and the private copy, then recreate the
   application container by deploying the running commit. Sequence: "The SMTP password" in
   `references/setup_and_secrets.md`.
-- **What the human set up outside the repository** (H1, H2): in Outsider's panel the domain
+- **What the human set up outside the repository** (M1, M2): in Outsider's panel the domain
   `mariusznazar.com`, the mailbox `loop2@mariusznazar.com` and DKIM; in the domain's DNS at
   Cloudflare an MX record to Outsider, an SPF TXT record, the DKIM TXT record at selector `x`,
   and a DMARC TXT record whose reports go to the sender mailbox. The records of the website
@@ -229,7 +230,7 @@ private note. The agent reads the file's metadata only and never its content.
   or invalid setting, or a missing or invalid password file, stops the application before it
   listens (exit 8). A password file that is missing at `compose up` fails there instead.
   The merge of the change deploys it, so the file must exist on the server before the merge.
-- **The first delivery (H4):** the human deploys the branch commit, creates an account with an
+- **The first delivery (M4):** the human deploys the branch commit, creates an account with an
   address on an external mailbox, receives the message and opens its link. That deployment
   also moves the database to schema version 3 (see Rollback). The first deployment of the commit
   with saved game states moves it on to version 4.
@@ -374,9 +375,14 @@ it for a line break before pasting it.
   `Nieprawidłowy adres e-mail lub hasło.`. A game already open in a browser plays on until the
   page is reloaded or the player logs out.
 - **`unblock`** lets the account log in again. The sessions the block ended stay ended, so the
-  player logs in anew.
+  player logs in anew. The emailed links the block stopped, of the address confirmation and of
+  the password reset, stay stopped too (D-137, D-160): the player who opens one sees that it is
+  invalid or expired and asks for a new one; for the confirmation, signed in again, with „Wyślij
+  ponownie”.
 - **What it prints.** One line, after a change also a JSON line of the event with the account's
-  number, and at exit 1 also a JSON line of the error's kind and code. Exit 0 means the account
+  number, and at exit 1 also a JSON line of the error's kind and code. Wrong arguments (no action or
+  one other than `block` and `unblock`, no address, a further word) print the usage line, `Usage: node dist/server/account-block.js block|unblock <email address>`,
+  and under it `Nothing changed.`. Exit 0 means the account
   is now in the state asked for: blocked,
   already blocked, unblocked, or was not blocked. Every other exit changed nothing: 1 the
   database could not be opened or changed, for example because it stayed busy longer than the
@@ -417,12 +423,12 @@ database whose schema version is newer than it knows, so an old commit may fail 
 exit 8 on a newer database. The first deployment of a commit with account blocking moves the
 database to schema version 2, so from then on a rollback to a commit from before account
 blocking fails health with exit 8. The first deployment of the commit with address
-confirmation, including the human's trial deployment of its branch (H4) before the merge,
+confirmation, including the human's trial deployment of its branch (M4) before the merge,
 moves the database to schema version 3: an earlier commit, `main` included, then refuses it
 and fails health with exit 8, and only the human repairs the database.
 
 **The first deployment of the commit with saved game states, including the human's deployment
-of its branch (H1) before the merge, moves the database to schema version 4,** which adds the
+of its branch (S1) before the merge, moves the database to schema version 4,** which adds the
 table of saved game states. From then on a commit that knows only version 3 or older, `main`
 before this change included, refuses the database and fails health with exit 8: a rollback to it
 cannot start, and only the human repairs the database. Until the branch is merged, a merge of

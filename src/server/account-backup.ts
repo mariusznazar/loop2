@@ -24,8 +24,10 @@ import { installLastResort, writeFailure } from "./log-line.js";
 const usage = "Usage: node dist/server/account-backup.js --to-standard-output";
 const fixedWord = "--to-standard-output";
 
-// Exit codes: 0 only after the last byte of the backup has left; otherwise the
-// output is not a backup.
+// Exit codes: 0 only after the last byte of the backup has left and its
+// temporary directory is removed. Exit 1 also ends a whole backup whose
+// directory cannot be removed: the copy is left in the container, and the
+// command says so once, as its own failure (D-354).
 const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
@@ -58,6 +60,9 @@ async function run(): Promise<number> {
   }
 
   let directory: string | undefined;
+  let whole = false;
+  let outputFailed = false;
+  let removal: { error: unknown } | undefined;
   try {
     try {
       // mkdtemp creates the directory readable by its owner alone.
@@ -82,23 +87,45 @@ async function run(): Promise<number> {
             error ? reject(error) : resolve(),
           );
         });
+        whole = true;
       } catch (error) {
         writeFailure("backup-output", "account-backup.run", error);
         console.error("The backup could not be written out. It is not whole.");
-        return exitOutputFailure;
+        outputFailed = true;
       }
     } finally {
-      if (directory !== undefined)
-        await rm(directory, { recursive: true, force: true });
+      if (directory !== undefined) {
+        try {
+          await rm(directory, { recursive: true, force: true });
+        } catch (error) {
+          removal = { error };
+        }
+      }
     }
+    // A removal that failed before the whole backup left is the command's
+    // failure, reported as a database failure below.
+    if (removal !== undefined && !whole) throw removal.error;
   } catch (error) {
-    writeFailure("backup-database", "account-backup.run", error);
+    writeFailure(
+      "backup-database",
+      "account-backup.run",
+      removal !== undefined ? removal.error : error,
+    );
     console.error(
       "The account database could not be opened or backed up, for example while it was busy for longer than the wait allows. No backup was made; run the command again.",
     );
     return exitDatabaseFailure;
   }
-  return 0;
+  // The whole backup has left and only its temporary directory stayed: one
+  // failure, its JSON line and the sentence after it (D-354).
+  if (removal !== undefined) {
+    writeFailure("backup-cleanup", "account-backup.run", removal.error);
+    console.error(
+      "The backup went out whole to standard output; only the removal of its temporary copy failed, so that copy was left in the container.",
+    );
+    return exitDatabaseFailure;
+  }
+  return outputFailed ? exitOutputFailure : 0;
 }
 
 process.exit(await run());

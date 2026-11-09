@@ -11,6 +11,7 @@ import {
   measure,
   measurementLimit,
   parseArguments,
+  reportForFile,
 } from "../scripts/measure-passwords.mjs";
 
 const entryPoint = fileURLToPath(
@@ -230,10 +231,14 @@ function fakeDocker({
   memory = limit,
   waitStatus = 0,
   result = passingResult(),
+  failing = {},
 } = {}) {
   const calls = [];
   const docker = (args) => {
     calls.push(args);
+    const failure = failing[args[0]];
+    if (failure)
+      return { status: failure.status, stdout: "", stderr: failure.stderr };
     const answer = (stdout) => ({ status: 0, stdout, stderr: "" });
     switch (args[0]) {
       case "image":
@@ -295,6 +300,43 @@ test("the launcher passes a measured image within every bound and runs it isolat
     assert.equal(run.includes(flag), false, `run passes ${flag}`);
   const name = value("--name");
   assert.deepEqual(calls[calls.length - 1], ["rm", "--force", name]);
+});
+
+test("the launcher names the docker step that failed with its exit status, and keeps docker's text out of the report", () => {
+  const dockerText =
+    "synthetic docker text: permission denied on the test socket";
+  const cases = {
+    "image inspect": {
+      failing: { image: { status: 1, stderr: dockerText } },
+      problem: "docker image inspect exited with status 1",
+    },
+    run: {
+      failing: { run: { status: 125, stderr: dockerText } },
+      problem: "docker run exited with status 125",
+    },
+    wait: {
+      failing: { wait: { status: 1, stderr: dockerText } },
+      problem: "docker wait exited with status 1",
+    },
+  };
+  for (const [label, { failing, problem }] of Object.entries(cases)) {
+    const { docker } = fakeDocker({ failing });
+    const report = measure(request, docker);
+    assert.equal(report.ok, false, label);
+    assert.ok(
+      report.problems.some((text) => text.includes(problem)),
+      `${label}: ${report.problems.join(" | ")}`,
+    );
+    assert.ok(
+      report.stderr.some((line) => line.includes(dockerText)),
+      `${label}: docker's text is not kept for the terminal`,
+    );
+    assert.equal(
+      JSON.stringify(reportForFile(report)).includes(dockerText),
+      false,
+      `${label}: docker's text reached the report file`,
+    );
+  }
 });
 
 test("the launcher measures nothing when the image's label names another commit", () => {

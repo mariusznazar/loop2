@@ -995,3 +995,32 @@ test("reportBrowserFailure gives a failure, never a throw, for a redirect, a dea
   assert.equal(answered.ok, false);
   assert.equal(answered.failure.kind, "unexpected");
 });
+
+// Decision D-207: each save of the game state is sent with `keepalive`, so a closing tab still
+// delivers it. The wait is observed on the call the client hands the real fetch, which is passed
+// on unchanged, so the request still reaches the local server above.
+test("saveGame hands the real fetch a PUT with keepalive and the server gets that request", async () => {
+  respond = (_request, response) => reply(response, 200, '{"revision":8}');
+  const realFetch = globalThis.fetch;
+  const handed = [];
+  globalThis.fetch = (input, init) => {
+    handed.push({ input, init });
+    return realFetch(input, init);
+  };
+  let outcome;
+  try {
+    outcome = await within(client().saveGame(submission), "save");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  // Precondition: the answer was a success, so the request was fully sent.
+  assert.deepEqual(outcome, { kind: "saved", revision: 8 });
+  assert.equal(handed.length, 1);
+  assert.equal(handed[0].input, "/api/saved-game");
+  assert.equal(handed[0].init.method, "PUT");
+  assert.equal(handed[0].init.keepalive, true);
+  assert.deepEqual(
+    seen.map(({ method, url }) => ({ method, url })),
+    [{ method: "PUT", url: "/api/saved-game" }],
+  );
+});
