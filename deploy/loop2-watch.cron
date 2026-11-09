@@ -1,0 +1,7 @@
+# loop2-watch.cron: starts the failure watcher every five minutes.
+#
+# Installed root-owned, mode 0644, at /etc/cron.d/loop2-watch, by a human; cron skips a file in that
+# directory whose name holds a dot. The script writes its own log and calls pusher itself, so cron's
+# mail is off.
+MAILTO=""
+*/5 * * * * root /usr/local/bin/loop2-watch

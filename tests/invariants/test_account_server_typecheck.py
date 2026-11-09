@@ -28,7 +28,9 @@ Covers:
     `import`, `tag`, `compose pull`, `create`, `run`, `start`, `restart`);
 - the repository holds no deployment route file other than those three and the workflow. The
   nightly backup script and its schedule stand under `deploy/`, which the search counts, and deploy
-  nothing: the script's every Docker command is an `exec` in the running container.
+  nothing: the script's every Docker command is an `exec` in the running container. The failure
+  watcher, its schedule and the logrotate file stand there too and start no image: the watcher's
+  every Docker command is an `inspect` or a `logs` (tests/deploy/test_loop2_watch.py).
 
 Does NOT cover: a deployment defined outside this repository; that the script stops before `up`
 when the build fails (the script's own tests read that: whatever it does, the image `up` starts
@@ -67,10 +69,13 @@ WORKFLOW = ".github/workflows/deploy.yml"
 DEPLOY_SCRIPT = "deploy/loop2-deploy"
 ROUTE_FILES = (DOCKERFILE, COMPOSE_FILE, WORKFLOW, DEPLOY_SCRIPT,
                "deploy/cloudflared.Dockerfile")
-# Files of `deploy/` that start no image: the backup script is read by a test of its own below.
+# Files of `deploy/` that start no image: the backup script is read by a test of its own below, the
+# failure watcher's by tests/deploy/test_loop2_watch.py, which lists every Docker command it holds.
 BACKUP_SCRIPT = "deploy/loop2-backup"
 LOGROTATE_CONFIG = "deploy/loop2-app.logrotate"
-NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron", LOGROTATE_CONFIG)
+WATCH_SCRIPT = "deploy/loop2-watch"
+NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron", LOGROTATE_CONFIG, WATCH_SCRIPT,
+              "deploy/loop2-watch.cron")
 
 TYPECHECK_COMMAND = ["npm", "run", "typecheck"]
 BUILT_OUTPUT = "dist"
