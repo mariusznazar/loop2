@@ -691,7 +691,7 @@ The deployed account server uses `express-session` with a project-owned Store ba
 Replacing the application container preserves the SQLite database of player accounts and saved game states.
 
 - **Method:** review
-- **Rests on:** docker-volume-lifecycle
+- **Rests on:** docker-volume-lifecycle · docker-compose-down-volumes · docker-volume-prune-scope · docker-system-prune-volumes
 - **Derives from:** D-17 · D-205
 - **Part:** account-server · deployment
 - **Violated:** no

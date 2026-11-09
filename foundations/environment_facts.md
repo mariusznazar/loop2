@@ -631,6 +631,24 @@ Playwright CLI has a command, `console`, that lists console messages.
 
 - **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Commands, DevTools — "playwright-cli console [min-level] # list console messages"; read 2026-11-08
 
+## docker-compose-down-volumes
+
+By default `docker compose down` removes the containers of the Compose file's services and the networks it defines and no volume, and with `--volumes` it also removes the named volumes declared in the Compose file's `volumes` section and the anonymous volumes attached to containers, but never a volume defined as external.
+
+- **Source:** https://raw.githubusercontent.com/docker/compose/9c60fe67df0763c81f2276fd4163ee5354d70b09/docs/reference/compose_down.md § Description — "By default, the only things removed are:" · "Containers for services defined in the Compose file." · "Networks defined in the networks section of the Compose file." · "Networks and volumes defined as external are never removed." · § Options, -v, --volumes — "Remove named volumes declared in the "volumes" section of the Compose file and anonymous volumes attached to containers"; read 2026-11-09
+
+## docker-volume-prune-scope
+
+The documentation of `docker volume prune` says that it removes the local volumes that no container references, by default only the anonymous ones and with `--all` the named ones too, while its example output of the command without that option lists a named volume among those deleted.
+
+- **Source:** https://raw.githubusercontent.com/docker/cli/ce1223035ac3ab8922717092e63a184cf67b493d/docs/reference/commandline/volume_prune.md § Description — "Remove all unused local volumes. Unused local volumes are those which are not referenced by any containers. By default, it only removes anonymous volumes." · § Examples — "WARNING! This will remove anonymous local volumes not used by at least one container." · "Deleted Volumes: 07c7bdf3e34ab76d921894c2b834f073721fccfbbcba792aa7648e3a7a664c2e my-named-vol" · § Filtering (--all, -a) — "Use the --all flag to prune both unused anonymous and named volumes."; read 2026-11-09
+
+## docker-system-prune-volumes
+
+`docker system prune` removes no volume by default, its `--volumes` option prunes anonymous volumes as well, and its `--all` option widens the images it removes, not the volumes.
+
+- **Source:** https://raw.githubusercontent.com/docker/cli/ce1223035ac3ab8922717092e63a184cf67b493d/docs/reference/commandline/system_prune.md § Options, --volumes — "Prune anonymous volumes" · § Options, -a, --all — "Remove all unused images not just dangling ones" · § Examples — "By default, volumes aren't removed to prevent important data from being deleted if there is currently no container using the volume. Use the --volumes flag when running the command to prune anonymous volumes as well:"; read 2026-11-09
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
