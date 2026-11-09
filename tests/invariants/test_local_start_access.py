@@ -5,10 +5,15 @@ The file also checks the rest of what `npm run local` promises: a browser reache
 it, every start has a database of its own, and neither an argument nor an environment value leads
 the removal of earlier databases anywhere else (D-255, D-256, D-257, D-258).
 
-Each start runs in a temporary copy of the working tree. The case of the headers replaces the built
-server by a stand-in that reports the raw headers it receives, since the real server ignores most of
-them and its answer would show nothing; so does the case of a start on its way up, which needs a
-server that takes its time. The other cases run the real server."""
+Each start runs in a temporary copy of the working tree. Some cases replace the built server by a
+stand-in, each for a reason the real server cannot give:
+- the case of the headers (class LocalStartBoundary): a stand-in that reports the raw headers it
+  receives, since the real server ignores most of them and its answer would show nothing;
+- in class LocalStart, the case of a start on its way up: a stand-in that takes its time;
+- the case of a stop with no built game: a stand-in that holds no writer of failure lines;
+- the cases of a request the server drops, of an answer it breaks off after its headers and of a
+  request it holds while the browser leaves: stand-ins that fail on demand.
+The other cases run the real built server."""
 
 import json
 import os
@@ -52,6 +57,34 @@ const host = process.env.LOOP2_LISTEN_HOST;
 const port = Number(process.env.LOOP2_LISTEN_PORT);
 createServer((request) => request.socket.destroy())
   .listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
+"""
+
+# A server that breaks its answer off after the headers and a first piece of the body.
+CUT_OFF_SERVER = """import { createServer } from "node:http";
+
+const host = process.env.LOOP2_LISTEN_HOST;
+const port = Number(process.env.LOOP2_LISTEN_PORT);
+createServer((request, response) => {
+  request.resume();
+  response.write("partial", () => request.socket.destroy());
+}).listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
+"""
+
+# A server that never answers /hold and says when it has the request and when its connection
+# ends, and drops the connection of /drop.
+HOLDING_SERVER = """import { createServer } from "node:http";
+
+const host = process.env.LOOP2_LISTEN_HOST;
+const port = Number(process.env.LOOP2_LISTEN_PORT);
+createServer((request) => {
+  request.resume();
+  if (request.url === "/drop") {
+    request.socket.destroy();
+    return;
+  }
+  console.log(`held ${request.url}`);
+  request.socket.once("close", () => console.log(`closed ${request.url}`));
+}).listen(port, host, () => console.log(`Loop: http://${host}:${port}`));
 """
 
 # A server that holds its whole process, as a start busy on its way up does.
@@ -119,6 +152,34 @@ def exchange(port, request, context=None):
     if "chunked" in headers.get("transfer-encoding", [""])[0]:
         body = decoded_chunks(body)
     return int(lines[0].split()[1]), headers, body
+
+
+def answer_until_end(port, request):
+    """Send one request of raw bytes over TLS; return the bytes the browser got and whether the
+    connection ended within HTTP_TIMEOUT, as against a browser left waiting."""
+    context = tls_context()
+    answer = b""
+    with socket.create_connection(("127.0.0.1", port), timeout=support.HTTP_TIMEOUT) as raw,             context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
+        secure.sendall(request)
+        try:
+            while chunk := secure.recv(65536):
+                answer += chunk
+        except TimeoutError:
+            return answer, False
+        except (ssl.SSLError, ConnectionError):
+            pass  # the connection was cut without a closing message
+    return answer, True
+
+
+def wait_until(condition):
+    deadline = time.monotonic() + support.HTTP_TIMEOUT
+    while not condition() and time.monotonic() < deadline:
+        time.sleep(0.1)
+    return condition()
+
+
+def proxy_lines(start):
+    return [line for line in start.output().splitlines() if "local-proxy" in line]
 
 
 def decoded_chunks(body):
@@ -253,7 +314,8 @@ class LocalStartBoundary(unittest.TestCase):
 
 
 class LocalStart(unittest.TestCase):
-    """The real command on the real built server."""
+    """The real command. Its cases run the real built server except the five the module's description
+    lists as using a stand-in."""
 
     def setUp(self):
         self.copy = support.TreeCopy()
@@ -505,6 +567,43 @@ class LocalStart(unittest.TestCase):
         lines = [line for line in start.output().splitlines() if "local-proxy" in line]
         self.assertEqual(len(lines), 1, start.output())
         self.assertEqual(json.loads(lines[0])["code"], "ECONNRESET")
+
+    def test_an_answer_the_server_breaks_off_after_its_headers_ends_the_browsers_connection(self):
+        # Task item 8: the browser is not left waiting for the rest of a cut-off answer, which
+        # does not end as a whole one, and the cut leaves one line with its cause.
+        code, output = self.copy.npm("run", "build")
+        self.assertEqual(code, 0, output)
+        write_stand_in(self.copy, CUT_OFF_SERVER)
+        start = Start(self.copy, ["node", "scripts/local-start.mjs"])
+        self.starts.append(start)
+        answer, ended = answer_until_end(start.port, request_bytes(start.port, "GET", "/"))
+        self.assertTrue(ended, "the browser was left waiting: " + repr(answer))
+        self.assertTrue(answer.startswith(b"HTTP/1.1 200"), answer)
+        self.assertIn(b"partial", answer)
+        self.assertFalse(answer.endswith(b"0\r\n\r\n"), "the cut answer ends as a whole one")
+        self.assertTrue(wait_until(lambda: proxy_lines(start)), start.output())
+        lines = proxy_lines(start)
+        self.assertEqual(len(lines), 1, start.output())
+        self.assertEqual(json.loads(lines[0])["code"], "ECONNRESET")
+
+    def test_a_browser_that_leaves_in_the_middle_of_a_request_leaves_no_failure_line(self):
+        # Task item 18: the line that follows is the one of the dropped request alone, and it
+        # comes after the held request's connection has ended on the server's side.
+        code, output = self.copy.npm("run", "build")
+        self.assertEqual(code, 0, output)
+        write_stand_in(self.copy, HOLDING_SERVER)
+        start = Start(self.copy, ["node", "scripts/local-start.mjs"])
+        self.starts.append(start)
+        context = tls_context()
+        with socket.create_connection(("127.0.0.1", start.port), timeout=support.HTTP_TIMEOUT) as raw,                 context.wrap_socket(raw, server_hostname="127.0.0.1") as secure:
+            secure.sendall(request_bytes(start.port, "GET", "/hold"))
+            self.assertTrue(wait_until(lambda: "held /hold" in start.output()), start.output())
+        self.assertTrue(wait_until(lambda: "closed /hold" in start.output()), start.output())
+
+        status, _, _ = exchange(start.port, request_bytes(start.port, "GET", "/drop"))
+        self.assertEqual(status, 502, "precondition: a dropped request leaves a line")
+        self.assertTrue(wait_until(lambda: proxy_lines(start)), start.output())
+        self.assertEqual(len(proxy_lines(start)), 1, start.output())
 
 
 if __name__ == "__main__":

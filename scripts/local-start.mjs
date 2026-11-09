@@ -173,8 +173,25 @@ function makeCertificate() {
   );
 }
 
+// One request of a browser, passed to the server. A server that fails before its
+// answer starts gets a 502; one that breaks its answer off after the headers
+// leaves the browser a connection cut where the answer stopped, since an ended
+// answer would look whole. Either is one failure line, except where the browser
+// had already left: the proxy then ended the request itself.
 function proxyRequest(serverPort, incoming, outgoing) {
   let browserLeft = false;
+  let failed = false;
+  const fail = (error) => {
+    if (browserLeft || failed) return;
+    failed = true;
+    void recordFailure("local-proxy", "local-start.proxy", error);
+    if (outgoing.headersSent) {
+      outgoing.destroy();
+      return;
+    }
+    outgoing.writeHead(502);
+    outgoing.end();
+  };
   const upstream = httpRequest(
     {
       host: HOST,
@@ -184,16 +201,12 @@ function proxyRequest(serverPort, incoming, outgoing) {
       headers: upstreamHeaders(incoming.headers),
     },
     (response) => {
+      response.once("error", fail);
       outgoing.writeHead(response.statusCode ?? 502, response.headers);
       response.pipe(outgoing);
     },
   );
-  upstream.once("error", (error) => {
-    if (browserLeft) return;
-    void recordFailure("local-proxy", "local-start.proxy", error);
-    if (!outgoing.headersSent) outgoing.writeHead(502);
-    outgoing.end();
-  });
+  upstream.once("error", fail);
   outgoing.once("close", () => {
     browserLeft = true;
     upstream.destroy();
