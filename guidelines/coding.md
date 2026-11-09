@@ -112,7 +112,7 @@ ostrzeżenie od poziomu low, którego tam nie było; plik taki sam jak w
 
 ### Recording a failure
 
-- **Decision:** D-252 · D-253 · D-354
+- **Decision:** D-252 · D-253
 - **Invariant:** none
 - **Good:** none
 - **Bad:** none

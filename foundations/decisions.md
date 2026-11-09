@@ -7899,21 +7899,23 @@ the link without a word.
 ### D-353 — Which refusals of the account server are an expected course and leave no failure line?
 
 A browser that breaks off sending the body of a request is an expected refusal, like a body that is
-too large or broken, and a session write refused because the account was blocked while its
-registration was in progress is the intended effect of the block; neither leaves a failure line. A
-session write that fails for any other reason stays a failure.
+too large or broken, and the session write that the library makes as a response ends, refused
+because the account was blocked while the request was in progress, as while a registration waits on
+its message, is the intended effect of the block; neither leaves a failure line. A session write
+that fails for any other reason stays a failure.
 
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-137 · derives from D-252
 - **Verification:** an agent compares a change with the decision:
   - complies: a request whose body the browser stopped sending, refused with no line of `failure`;
-    a block committed while a registration waits, leaving no failure line of the session write; a
-    session write that fails because the password was replaced meanwhile or the database failed,
-    leaving its line
+    a block committed while a registration waits, leaving no failure line of the session write that
+    the library makes as the response ends; the first store of a session, made in the route that
+    signs the player in, refused because of a block, leaving its line; a session write that fails
+    because the password was replaced meanwhile or the database failed, leaving its line
   - violates: a line of `failure` for a body the browser broke off; a line of `failure` for the
-    session write that a block refused; a session write that fails for another cause left without
-    its line
+    session write that the library makes as a response ends, which a block refused; a session write
+    that fails for another cause left without its line
 - **Origin:** zadanie_loop2_porzadki_z_uwag_pr.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Co jest awarią, a co zwykłym przebiegiem: przeglądarka zrywająca wysyłanie, blokada konta w trakcie rejestracji i zdanie dla operatora po wierszu JSON?”, and § Settlements to record, row 2
 
 *Rationale:* a browser breaks off a body when a player closes the tab or loses the connection, and a
