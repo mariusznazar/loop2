@@ -546,6 +546,103 @@ test("the same line is written once until the page is reloaded, and a line of an
   });
 });
 
+/**
+ * Gives the account client of `held` a report that records each call, with the number of console
+ * lines written before it; the report answers as the server does, a 204.
+ */
+function recordReports(held, lines) {
+  const sent = [];
+  held.client.reportBrowserFailure = (kind, code, place) => {
+    sent.push({ kind, code, place, written: lines().length });
+    return Promise.resolve({ ok: true, value: null });
+  };
+  return sent;
+}
+
+// D-356, D-253; task skad-wiem-o-awarii, slice 4. Catches a report sent before its line is written,
+// a report sent again for a line already written, and a line the account client never hears of.
+test("each distinct line goes to the account client once per page load, after its console line, for errors and rejections alike", async () => {
+  await onPage(async ({ lines }) => {
+    const held = heldClient();
+    const sent = recordReports(held, lines);
+    await startPage(held);
+    for (let round = 0; round < 3; round += 1)
+      await inAct(() => reportError(new TypeError(`${QUOTED} ${round}`)));
+    await inAct(() => reportRejection(new RangeError(QUOTED)));
+    await settle();
+    assert.deepEqual(sent, [
+      {
+        kind: "TypeError",
+        code: "none",
+        place: "view/last-resort.installLastResort",
+        written: 1,
+      },
+      {
+        kind: "RangeError",
+        code: "none",
+        place: "view/last-resort.installLastResort",
+        written: 2,
+      },
+    ]);
+  });
+});
+
+// D-323, D-253; task skad-wiem-o-awarii, slice 4. Catches a card taken down that reports under the
+// place of the page's handling instead of its own, and a report left out for it.
+test("a card taken down on the page is reported once, with the place of its own line", async () => {
+  await onPage(async ({ root, lines }) => {
+    await outsideAct(async () => {
+      const held = heldClient();
+      const sent = recordReports(held, lines);
+      const address = fakeAddress(
+        "#confirm-email=Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE",
+      );
+      await startPage(held, address, { inside: false });
+      await held.answer(
+        "confirmEmail",
+        {
+          ok: false,
+          failure: { kind: "unexpected", status: 200, message: {} },
+        },
+        { inside: false },
+      );
+      await held.answer("currentAccount", NO_SESSION, { inside: false });
+      assert.equal(byClass(root, "account-card-screen").length, 1);
+      assert.deepEqual(sent, [
+        {
+          kind: "Error",
+          code: "none",
+          place: "view/account-card.createAccountCard",
+          written: 1,
+        },
+      ]);
+    });
+  });
+});
+
+// D-323, D-253; task skad-wiem-o-awarii, slice 4. Catches a report whose failure leaves the error
+// uncancelled, or writes a second line of its own, or reaches the window as an error of the page.
+test("a report the account client throws or refuses leaves the error cancelled, its one line written and no error of its own", async () => {
+  const doubles = {
+    "a double that throws": () => {
+      throw new Error("a double that throws");
+    },
+    "a double that refuses": () =>
+      Promise.reject(new Error("a double that refuses")),
+  };
+  for (const [name, report] of Object.entries(doubles)) {
+    await onPage(async ({ lines }) => {
+      const held = heldClient();
+      held.client.reportBrowserFailure = report;
+      await startPage(held);
+      const proceeded = await inAct(() => reportError(new TypeError(QUOTED)));
+      await settle();
+      assert.equal(proceeded, false, `${name}: the error is cancelled`);
+      assert.deepEqual(lines(), [LINE], name);
+    });
+  }
+});
+
 // --- the sentence ----------------------------------------------------------------------------
 
 // D-323, D-208; task napis-o-awarii, To do 2. Catches a sentence that replaces the sentence of a

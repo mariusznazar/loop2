@@ -1,6 +1,6 @@
 ---
 name: loop2-deploy
-description: How loop2's test-server deployment works - seeing which commit runs, reading the deploy log and its exit codes 2-8, database backups and restores, rolling back, blocking or unblocking a player account, what an agent may read on the server versus what only the human changes, secrets, setup and failed deployments. Use for any question about deploying or the test server.
+description: How loop2's test-server deployment works - seeing which commit runs, reading the deploy log and its exit codes 2-8, database backups and restores, rolling back, blocking or unblocking a player account, what an agent may read on the server versus what only the human changes, secrets, setup, failed deployments, the log record and alerts. Use for any question about deploying or the test server.
 ---
 
 # loop2-deploy
@@ -33,6 +33,10 @@ host port. The connector uses HTTP/2 over IPv4, encrypted to Cloudflare, with me
 | Account database volume / file in the container | `loop2_accounts` / `/app/data/accounts.sqlite` |
 | Backup script / schedule / log | `/usr/local/bin/loop2-backup` / `/etc/cron.d/loop2-backup` / `/var/log/loop2-backup.log` |
 | Backup encryption key / Strych host-key file | `/etc/loop2/backup-encryption-key` / `/etc/loop2/strych-known-hosts` |
+| Dump of the game's log / its rotation file | `/var/log/loop2-app.log` / `/etc/logrotate.d/loop2-app` (source `deploy/loop2-app.logrotate`) |
+| Failure watcher script / schedule | `/usr/local/bin/loop2-watch` / `/etc/cron.d/loop2-watch` |
+| Watcher log / state directory / lock | `/var/log/loop2-watch.log` / `/var/lib/loop2-watch/` / `/run/loop2-watch.lock` |
+| Scheduled check of the public address | `.github/workflows/check-address.yml` (GitHub, not the server) |
 
 The old game (`loop`) and `foundryvtt` share the host and stay untouched. Deployment never
 prunes host-wide, runs `down`, or changes another Compose project. Replaced dangling images
@@ -57,11 +61,23 @@ files or requests. The MCP has full rights, so the following limits are an agree
   `/etc/loop2/backup-encryption-key` (expects `root 0 400`) and of `/etc/loop2/strych-known-hosts`
   (expects `root 0 644`); `cmp` of the installed backup script and schedule with their sources
   in `/srv/loop2/deploy`.
+- Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
+  `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
+  of the older compressed ones (`/var/log/loop2-app.log.2.gz` to `.4.gz`); a bounded `tail -n 100` of
+  `/var/log/loop2-watch.log`; `stat -c '%y' /var/lib/loop2-watch/state`, the age of the watcher's
+  state file and never its content; `stat -c '%U %G %a' /var/log/loop2-app.log`;
+  `docker inspect --type container --format '{{.HostConfig.LogConfig.Type}}' loop2` (expects
+  `local`); `cmp` of the installed watcher script, its schedule and the logrotate file with their
+  sources in `/srv/loop2/deploy`. Locally, `gh run list --workflow check-address.yml --limit 10` and
+  `gh workflow view check-address.yml`.
 - Allowed: the fixed internal application probe and bounded connector readiness command below;
   `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844`
   (also the same check for `region2.v2.argotunnel.com`). A **Connected** line is success evidence,
   often followed by timeout exit 124; it proves host TCP/IPv4 reachability only, not UDP or
   container connectivity. See `references/troubleshooting.md`.
+- No write to the dump file, its rotated copies, the watcher's files or the logrotate file; no
+  reading of the watcher's state file; no running of the watcher; no `docker logs` of a replaced
+  container (it is gone); no rotation by hand.
 - No token-file, session-key-file or SMTP-password-file reads, no triggering of mail (below), no reading or copying of the account database or
   its volume (it holds e-mail addresses and password hashes), no reading of the backup
   encryption key or the known-hosts file, no running of the backup script or of the backup
@@ -74,7 +90,8 @@ Every server or Cloudflare change is the human's, except deployment started by t
 automation. The agent prepares the commands. Read `references/setup_and_secrets.md` for setup,
 the five transition actions and rotations; read `references/troubleshooting.md` for failure,
 script installation and rollback through the route change; read `references/backup_and_restore.md`
-for the backups, their log, keys, installation, key change and restore.
+for the backups, their log, keys, installation, key change and restore. The human's steps for the
+failure record and alerts are in "The failure record and alerts" in `references/setup_and_secrets.md`.
 
 ## Seeing deployments
 
@@ -84,6 +101,14 @@ for the backups, their log, keys, installation, key change and restore.
   ends with `deployed <sha>, previously <sha>` or `stage <name>: ... (exit N)`. Git and Docker
   output stays in this log. Treat service logs as potentially sensitive; report selected,
   redacted diagnosis, not raw logs.
+- After the build and before the containers are replaced the log gets one more line. On success
+  it is `dump: the size of /var/log/loop2-app.log went from <N> to <M> bytes`, the bytes appended
+  from the log of both services, which the replacement removes. On failure it is a line with
+  `warning: the dump of the log of both loop2 services ... failed (exit <N>; ...)`; the
+  deployment goes on, and the log of the containers it replaces is not kept. A run that ends at
+  exit 2 to 7 has no `dump:` line, because it stopped before the dump and replaced nothing. Look
+  for the `warning:` line after any deployment that follows a report of a failure (see "The
+  failure record and alerts").
 - The running application commit comes from its label, not the checkout or connector image.
   Run this in bash on the server (it is what `mikrus` `exec` gives); it is not for Windows
   PowerShell 5.1, which drops the nested double quotes before Docker sees them:
@@ -210,6 +235,99 @@ private note. The agent reads the file's metadata only and never its content.
   also moves the database to schema version 3 (see Rollback). The first deployment of the commit
   with saved game states moves it on to version 4.
 
+## The failure record and alerts
+
+**Where the game's log lies.**
+
+- **The running containers.** Both services run under Docker's `local` log driver with its
+  default rotation, which bounds each container's log at about 100 MB. Read it with
+  `docker compose -p loop2 logs --tail 100 app cloudflared` from `/srv/loop2`. Docker removes a
+  container's log with the container and every deployment recreates both, so this part lives
+  until the next deployment.
+- **The dump `/var/log/loop2-app.log`.** Just before the replacement, `loop2-deploy` appends a
+  header line, `<UTC time> loop2-deploy | previous commit <sha>, new commit <sha>`, and then the
+  whole log of both services as Compose prints it, with Docker's timestamps. The lines under a
+  header are those of the containers of its previous commit. Find the generations with
+  `grep -n -F -m 20 -- 'loop2-deploy |' /var/log/loop2-app.log`.
+- **The `account-block` lines**, which the human appends to the same file with the command in
+  "Blocking a player account". Nothing else reaches it.
+
+**How long each lives.** A running container's log: until the next deployment, and not above
+about 100 MB. The dump: `logrotate` rotates it weekly, or sooner when it passes 100 MiB, and
+keeps four rotated files (the newest, `.1`, in plain text; `.2.gz` to `.4.gz` compressed), so a
+line lives about four weeks, shorter when the size forces a rotation. It survives deployments, a
+host restart and a rollback to an older commit, as long as the installed deploy script is the one
+that has the dump. It misses a container removed any other way than by that script, and the few
+seconds between the copy and the stop of the old container.
+
+**How an agent reads it.** Bounded, and by a fixed string: for a failure from before the last
+deployment, `grep -F -m 50 -- '"failure":"' /var/log/loop2-app.log /var/log/loop2-app.log.1`
+(`-m` limits each file), then `zgrep -F -m 50` on the older ones. A line of the game begins with
+its JSON object after the service's name and Docker's time. The file holds the game's lines for
+those weeks, with `accountId` values, and the human's `account-block` lines: it is the retention
+of that data (D-252), and its lines are reported selected and redacted like other service logs.
+
+**The three ways the owner learns the game failed.**
+
+1. **The watcher** (`loop2-watch`, root, cron every five minutes). It reads state and health of
+   both containers and the fresh failure lines of the game container's log, skips a run while a
+   deployment or the backup holds the deploy lock, and calls `pusher` with a fixed subject and
+   one fixed Polish sentence per kind, which name the kind and send the reader here. It never
+   puts a number, a commit, an account or any output into a message, because `pusher` may travel
+   unencrypted.
+
+   | Mail subject | Kind | An agent reads |
+   |---|---|---|
+   | `loop2_gra_nie_dziala` | a container is missing, not running or restarting, or Docker cannot be read | state and health under "Seeing deployments", the deploy log |
+   | `loop2_usluga_niezdrowa` | a health check reads `unhealthy` | the same, then bounded service logs |
+   | `loop2_ponowny_start` | a container has the same id and a new start time | bounded service logs of that container |
+   | `loop2_awarie_serwera` | failure lines of the server in the log of `loop2` | `grep -F -m 50 -- '"failure":"'` in the service logs, then the dump |
+   | `loop2_awarie_przegladarek` | failure lines the browsers reported (`"failure":"browser"`) | `grep -F -m 50 -- '"failure":"browser"'` in the same places |
+
+   At most one message per kind in six hours and six in all in 24 hours; a held message is
+   only counted in the watcher's log, and a `pusher` call that fails still counts as sent. A
+   container that was replaced (a deployment, a human's `up`) is recorded silently and raises no
+   `restarted`. The browser kind comes last in the order and goes once in six hours at most, so a
+   flood of browser reports takes at most four of the day's six messages and leaves at least two
+   for the server kinds.
+2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). Every
+   five minutes, at minutes that are not the top of the hour, GitHub Actions opens the public
+   address, up to six attempts 20 seconds apart, and the run fails unless one answers 200.
+   GitHub then notifies the owner of the failed run. It sees what the watcher cannot: a server
+   that is off, a fallen tunnel, a Cloudflare fault.
+3. **The browser's report.** The page's last-resort handling, besides its line in the console,
+   sends the kind, code and place of an error no code handled to `POST /api/browser-failure`,
+   once per distinct line per page load. The server accepts at most 30 reports an hour for the
+   whole server, writes each as a failure line with `"failure":"browser"` (with the `accountId`
+   of the session when there is one, never from the request), and writes one `LIMITED` line at the
+   first refusal of an hour. The watcher counts these lines as the browser kind. A browser error
+   that happens while the server or the network is down reaches nobody.
+
+**Accepted gaps of the watcher.** Failure lines written between its last run and a deployment that
+removes the container are only in the dump and are not reported: after a deployment that follows a
+report, read the dump. It does not watch itself and does not read the dump. If cron does not start
+it, nothing is sent; its state file is rewritten at every quiet run, so a state file older than
+about ten minutes shows it has not run (a deployment or the backup holding the lock leaves the
+state alone for that run). Its log, `/var/log/loop2-watch.log`, has a line only for a run that
+skipped, found something, sent or held a message, or ended abnormally (`skipped:`, `run: due=...`,
+`dropped:`, `stage ...`, `end: failed (exit N)`); a quiet healthy run writes none. A second,
+different outage of the same kind within six hours is not announced by it, and the scheduled check
+still sees an unreachable game.
+
+**The four limits of the scheduled check.** Alone it fails in four ways. (1) When the server and
+GitHub are both down, nothing is sent. (2) GitHub disables a scheduled workflow after 60 days
+with no activity in the repository, which is public; then the check stops silently. (3) GitHub
+sends the failure notice of a scheduled run to the user who last changed the cron line, so
+notifications set off, or set on another account, give a silence taken for "it works". (4) A real
+outage brings two messages, one from the watcher and one from GitHub, and during a longer one a
+GitHub mail every five minutes.
+
+**What no test proves.** Docker's log driver and its `inspect` fields, the `--since` and
+`--until` windowing of `docker logs` that the watcher uses, `logrotate`, delivery by `pusher`,
+cron and the GitHub e-mail are proved only by the human's steps in "The failure record and
+alerts" in `references/setup_and_secrets.md`; the windowing has no cheap check and stays
+unchecked until the first real failure line is counted.
+
 ## Blocking a player account
 
 The owner blocks a player account, and unblocks it, with one command run in the application
@@ -221,6 +339,44 @@ surrounding spaces do not matter.
 docker exec loop2 node dist/server/account-block.js block <email>
 docker exec loop2 node dist/server/account-block.js unblock <email>
 ```
+
+These plain commands are allowed and leave the event out of the failure record, since the
+command runs by `docker exec` and its lines reach only the terminal. To keep the event in
+`/var/log/loop2-app.log`, the human runs this instead (`block` shown, `unblock` the same), in
+bash, as the account that owns the dump file or as root. The address goes between the single
+quotes of `email=` (a single quote inside it is written `'\''`):
+
+```sh
+email='<email>'
+case $email in
+  *$'\n'* | *$'\r'*)
+    echo "refused: the address holds a line feed or a carriage return; nothing was run" >&2 ;;
+  *)
+    out=$(docker exec loop2 node dist/server/account-block.js block "$email" 2>&1); status=$?
+    printf '%s\n' "$out"
+    printf '%s\n' "$out" | while IFS= read -r line; do
+      case $line in
+        '{"event":"account-'*'}' | '{"failure":"account-block"'*'}')
+          printf '%s account-block | %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$line" ;;
+      esac
+    done >> /var/log/loop2-app.log
+    echo "exit $status" ;;
+esac
+```
+
+An address that holds a line feed or a carriage return is refused with that message: the command
+does not run and nothing reaches the file. Otherwise the terminal shows what the plain command
+shows, then `exit` and the status. The file gets only
+the lines that begin with one of the two exact starts of the command's JSON lines and end with
+`}`, each with a UTC time and the tag `account-block` in front, in the shape of the file's other
+lines. The command's sentences carry the email address and never reach the file; a line that
+begins with a bare `{` does not pass either, because a registered address can begin with `{`. A
+crash line of the command (`"failure":"uncaught"`) is not appended. The server accepts any text
+around exactly one `@`, so a registered address can hold a line break, and the check above
+refuses it before the command runs. Residual risk: an address that reaches the command another
+way, such as a command typed without the check or the address put into a different variable
+than `email`, is not checked, and the filter alone lets one whole line of the output that looks
+like a JSON line of the command pass into the file with the words the address carries.
 
 - **`block`** marks the account blocked and ends its sessions in every browser in the same
   step. A blocked player who reloads the page sees the login card again; a login with the right
@@ -255,6 +411,18 @@ docker exec loop2 node dist/server/account-block.js unblock <email>
 An ordinary rollback within the same route is one deployment: merge a revert request, or the
 human runs `loop2-deploy <earlier sha>`. A fast rollback lasts until the next push to `main`;
 a revert keeps the branch and server aligned. No earlier product image is retained for recovery.
+
+**A rollback and the failure record.** A commit from before the `local` log driver in
+`compose.yaml` recreates both containers on the host's default driver, which does not rotate: the
+log of a running container is then not bounded. The dump is made by the installed deploy script,
+not by the commit; the installed script is the one with the dump only if the human reinstalled it,
+and a rollback to an older commit does not change that. The dump reads the `compose.yaml` of the
+commit being deployed: a commit whose Compose file has no `app` or no `cloudflared` service
+(see "Rollback across the tunnel transition" in `references/troubleshooting.md`) makes
+`docker compose logs` fail, the script warns, and the log of the running containers is not
+kept. A commit from before the watcher, the
+logrotate file or the browser route makes the deployment warn about the installed copies that
+differ (expected), and the page's reports meet the JSON 404 and are lost.
 
 **A rollback changes code, never data.** The accounts, sessions and session-key file stay as
 they are, and so are the saved game states the same database holds; accounts and saved game

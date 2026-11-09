@@ -1,8 +1,10 @@
 """The deployment script from the checkout to the build (spec § 5, steps 7–9 and 12).
 
-- the three installed copies (the deploy script, the backup script and the backup schedule)
-  compared with their sources at the checked-out commit (`deploy/loop2-deploy`,
-  `deploy/loop2-backup`, `deploy/loop2-backup.cron`): a difference is a warning, with the rollback
+- the six installed copies (the deploy script, the backup script and its schedule, the failure
+  watcher and its schedule, and the logrotate file of the dump) compared with their sources at the
+  checked-out commit (`deploy/loop2-deploy`, `deploy/loop2-backup`, `deploy/loop2-backup.cron`,
+  `deploy/loop2-watch`, `deploy/loop2-watch.cron`, `deploy/loop2-app.logrotate`): a difference is
+  a warning, with the rollback
   wording, and the run goes on with the installed copy; an unreadable installed copy or a commit
   without a source is a warning too, never a crash, and a commit without the sources (it has no
   `compose.yaml` either) fails at the build with exit 7;
@@ -78,16 +80,19 @@ class InstalledScriptComparison(DeployBuildTestCase):
         self.assertLess(self.index_of("differs"), self.index_of("build of"))
 
     def test_commit_without_the_sources_warns_for_each_pair_then_fails_the_build_with_7(self):
-        # Changed from one warning to three by spec decision 10: the comparison covers three pairs.
+        # Changed from one warning to three by spec decision 10, and from three to six when the
+        # watcher, its schedule and the logrotate file joined the comparison.
         sha = self.fixture.commit("main", "from before the deployment existed")
         self.fixture.install()
         self.fixture.answer_passing_run()
         result = self.deploy(sha)
         self.assertEqual(result.code, 7, result)
         warning = [line for line in result.stdout.splitlines() if "warning" in line]
-        self.assertEqual(len(warning), 3, result)
+        self.assertEqual(len(warning), 6, result)
         for line, source in zip(warning, ("deploy/loop2-deploy ", "deploy/loop2-backup ",
-                                          "deploy/loop2-backup.cron ")):
+                                          "deploy/loop2-backup.cron ", "deploy/loop2-watch ",
+                                          "deploy/loop2-watch.cron ",
+                                          "deploy/loop2-app.logrotate ")):
             self.assertIn(source, line)
             self.assertIn("missing", line)
         self.assertEqual(self.compose_calls(result, "up"), [], result)
@@ -101,6 +106,13 @@ class InstalledScriptComparison(DeployBuildTestCase):
                               "deploy/loop2-backup at", "/usr/local/bin/loop2-backup"),
             "backup schedule": ({"schedule": b'MAILTO=""\n'}, "deploy/loop2-backup.cron at",
                                 "/etc/cron.d/loop2-backup"),
+            "watcher script": ({"watch": support.WATCH_SCRIPT_BYTES + b"# x\n"},
+                               "deploy/loop2-watch at", "/usr/local/bin/loop2-watch"),
+            "watcher schedule": ({"watch_schedule": b'MAILTO=""\n'},
+                                 "deploy/loop2-watch.cron at", "/etc/cron.d/loop2-watch"),
+            "logrotate file": ({"logrotate": support.read_bytes(support.LOGROTATE_FILE)
+                                + b"# x\n"},
+                               "deploy/loop2-app.logrotate at", "/etc/logrotate.d/loop2-app"),
         }
         for name, (installed, source, path) in cases.items():
             with self.subTest(pair=name):
@@ -124,7 +136,8 @@ class InstalledScriptComparison(DeployBuildTestCase):
                 self.assertLess(self.index_of("differs"), self.index_of("build of"))
 
     def test_unreadable_installed_copy_warns_for_that_pair_only_and_continues(self):
-        for name in ("installed_backup", "installed_schedule"):
+        for name in ("installed_backup", "installed_schedule", "installed_watch",
+                     "installed_watch_schedule", "installed_logrotate"):
             with self.subTest(missing=name):
                 self.fixture = support.DeployFixture()
                 self.addCleanup(self.fixture.remove)
@@ -139,14 +152,14 @@ class InstalledScriptComparison(DeployBuildTestCase):
                 self.assertIn("cannot be read", warning[0])
                 self.assertIn(os.path.basename(getattr(self.fixture, name)), warning[0])
 
-    def test_all_three_differing_warn_three_times(self):
+    def test_all_six_differing_warn_six_times(self):
         sha = self.fixture.deployable_commit()
-        self.fixture.install(b"# a\n", b"# b\n", b"# c\n")
+        self.fixture.install(b"# a\n", b"# b\n", b"# c\n", b"# d\n", b"# e\n", b"# f\n")
         self.fixture.answer_passing_run()
         result = self.deploy(sha)
         self.assertEqual(result.code, 0, result)
         warning = [line for line in result.stdout.splitlines() if "warning" in line]
-        self.assertEqual(len(warning), 3, result)
+        self.assertEqual(len(warning), 6, result)
 
 
 class ResourceGate(DeployBuildTestCase):

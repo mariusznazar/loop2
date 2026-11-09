@@ -123,6 +123,12 @@ export interface AccountClient {
   loadSavedGame(): Promise<AccountResult<SavedGame | null>>;
   /** PUT /api/saved-game: replaces the saved game state, sent with `keepalive`. */
   saveGame(submission: SavedGameSubmission): Promise<SaveOutcome>;
+  /** POST /api/browser-failure: reports one line of the browser's last-resort handling. */
+  reportBrowserFailure(
+    kind: string,
+    code: string,
+    place: string,
+  ): Promise<AccountResult<null>>;
 }
 
 export interface AccountClientOptions {
@@ -451,5 +457,11 @@ export function createAccountClient(
       ),
     loadSavedGame: () => loadSavedGame(timeoutMs),
     saveGame: (submission) => saveGame(submission, timeoutMs),
+    reportBrowserFailure: (kind, code, place) =>
+      noContentRequest(
+        "/api/browser-failure",
+        { kind, code, place },
+        timeoutMs,
+      ),
   };
 }

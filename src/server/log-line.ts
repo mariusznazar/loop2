@@ -55,6 +55,30 @@ export function writeFailure(
   );
 }
 
+// The three words a browser reports of a failure no code of the game handled
+// (D-356). The route has checked their form; nothing else of the request
+// reaches the line, and the `accountId` is the one the stored session names.
+export type BrowserReport = {
+  readonly kind: string;
+  readonly code: string;
+  readonly place: string;
+};
+
+export function writeBrowserFailure(
+  report: BrowserReport,
+  accountId?: string,
+): void {
+  console.error(
+    JSON.stringify({
+      failure: "browser",
+      kind: report.kind,
+      code: report.code,
+      place: report.place,
+      accountId,
+    }),
+  );
+}
+
 export function writeEvent(event: string, fields: LineFields = {}): void {
   console.log(JSON.stringify({ event, ...fields }));
 }

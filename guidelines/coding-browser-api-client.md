@@ -75,8 +75,12 @@ zachowanie po postaci porażki i nie czyta statusów ani treści odpowiedzi.
 `tests/account-api.test.mjs` uruchamia prawdziwy lokalny serwer HTTP, którego
 odpowiedzi każdy test ustala sam, i nadaje prawdziwemu `fetch` adres bazowy
 przez globalne źródło undici, tak jak adres strony robi to w przeglądarce.
-Niczego nie podstawia za `fetch`. Takie ustawienie adresu bazowego działa
-w Node 24; wymaga sprawdzenia przy zmianie jego wersji.
+Nie podstawia za `fetch` żadnej własnej odpowiedzi: odpowiedź zawsze daje
+lokalny serwer. Wyjątkiem są przypadki, które sprawdzają opcje samego wywołania,
+jak `keepalive`, przekierowania i poświadczenia, których serwer nie widzi; owijają
+one prawdziwy `fetch` nakładką, która zapisuje podane opcje, przekazuje
+wywołanie dalej bez zmian i w `finally` przywraca `fetch`. Takie ustawienie
+adresu bazowego działa w Node 24; wymaga sprawdzenia przy zmianie jego wersji.
 
 ## Where in code
 

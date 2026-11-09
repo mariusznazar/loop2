@@ -63,7 +63,10 @@ wywołaniem tych funkcji.
 
 Testy przekazują własny zegar przez opcję konstruktora i przesuwają go, zamiast
 czekać 15 minut albo godzinę. Pojemność tablic też jest opcją, żeby test mógł
-zapełnić tablicę kilkoma kluczami; wartości progów i okien opcjami nie są.
+zapełnić tablicę kilkoma kluczami, i próg zgłoszeń awarii przeglądarki w ciągu
+godziny, żeby test mógł go wyczerpać kilkoma żądaniami. Progi prób logowania
+i zakładania kont oraz okna czasu opcjami nie są, więc testy tych limitów
+sprawdzają ich prawdziwe wartości.
 
 ## Where in code
 

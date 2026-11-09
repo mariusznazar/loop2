@@ -631,6 +631,60 @@ Playwright CLI has a command, `console`, that lists console messages.
 
 - **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Commands, DevTools — "playwright-cli console [min-level] # list console messages"; read 2026-11-08
 
+## docker-container-log-removal
+
+In Moby v28.1.1, removing a container deletes the container's root directory, in which the `json-file` and `local` log drivers keep the container's log, so the log goes with the container.
+
+- **Source:** https://raw.githubusercontent.com/moby/moby/v28.1.1/daemon/delete.go § cleanupContainer — "err := containerfs.EnsureRemoveAll(container.Root)"; read 2026-11-08 · https://raw.githubusercontent.com/moby/moby/v28.1.1/container/container.go § StartLogger — "info.LogPath, err = container.GetRootResourcePath(fmt.Sprintf(" · "logDir, err := container.GetRootResourcePath(" · "info.LogPath = filepath.Join(logDir," · § GetRootResourcePath — "return symlink.FollowSymlinkInScope(filepath.Join(container.Root, cleanPath), container.Root)"; read 2026-11-08
+
+## github-scheduled-workflow-disabling
+
+GitHub automatically disables the scheduled workflows of a public repository when no repository activity has occurred in it for 60 days.
+
+- **Source:** https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (archived: https://web.archive.org/web/20261031092549/https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows, 2026-10-31) § schedule — "In a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in 60 days."; read 2026-11-08
+
+## loop2-repository-visibility
+
+The GitHub repository `mariusznazar/loop2` is public.
+
+- **Source:** https://api.github.com/repos/mariusznazar/loop2 (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-08) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-08
+
+## docker-compose-recreate-removal
+
+In Docker Compose v2.35.1, recreating a container removes the container it replaces.
+
+- **Source:** https://raw.githubusercontent.com/docker/compose/v2.35.1/pkg/compose/convergence.go § recreateContainer — "err = s.apiClient().ContainerRemove(ctx, replaced.ID,"; read 2026-11-09
+
+## docker-local-log-driver-bound
+
+By default, the `local` log driver of Docker preserves 100MB of log messages per container.
+
+- **Source:** https://docs.docker.com/engine/logging/drivers/local/ (archived: https://web.archive.org/web/20261015110255/https://docs.docker.com/engine/logging/drivers/local/, 2026-10-15) — "By default, the local driver preserves 100MB of log messages per container and uses automatic compression to reduce the size on disk."; read 2026-11-09
+
+## logrotate-rotation-triggers
+
+On Ubuntu 22.04, `logrotate` can handle each log file daily, weekly, monthly or when it grows too large, and with `maxsize` it rotates a file that has grown bigger than that size even before the time interval ends.
+
+- **Source:** https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html (archived: https://web.archive.org/web/20261009164358/https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html, 2026-10-09) § DESCRIPTION — "Each log file may be handled daily, weekly, monthly, or when it grows too large." § CONFIGURATION FILE DIRECTIVES, maxsize — "Log files are rotated when they grow bigger than size bytes even before the additionally specified time interval (daily, weekly, monthly, or yearly)."; read 2026-11-09
+
+## logrotate-rotation-count
+
+On Ubuntu 22.04, `logrotate` rotates a log `count` times, the number that the `rotate` directive gives, before it removes the log or mails it to the address that a `mail` directive specifies.
+
+- **Source:** https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html (archived: https://web.archive.org/web/20261009164358/https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html, 2026-10-09) § CONFIGURATION FILE DIRECTIVES, rotate — "Log files are rotated count times before being removed or mailed to the address specified in a mail directive."; read 2026-11-09
+
+## github-schedule-shortest-interval
+
+The shortest interval at which GitHub runs scheduled workflows is once every 5 minutes.
+
+- **Source:** https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (archived: https://web.archive.org/web/20261031092549/https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows, 2026-10-31) § schedule — "The shortest interval you can run scheduled workflows is once every 5 minutes."; read 2026-11-09
+
+## github-actions-public-runs-free
+
+GitHub charges nothing for the use of standard GitHub-hosted runners in public repositories.
+
+- **Source:** https://docs.github.com/en/billing/concepts/product-billing/github-actions (archived: https://web.archive.org/web/20261108201638/https://docs.github.com/en/billing/concepts/product-billing/github-actions, 2026-11-08) § Included compute usage and storage — "The use of standard GitHub-hosted runners is free:" · "In public repositories"; read 2026-11-09
+
 ## docker-compose-down-volumes
 
 By default `docker compose down` removes the containers of the Compose file's services and the networks it defines and no volume, and with `--volumes` it also removes the named volumes declared in the Compose file's `volumes` section and the anonymous volumes attached to containers, but never a volume defined as external.

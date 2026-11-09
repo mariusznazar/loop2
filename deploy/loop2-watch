@@ -1,0 +1,583 @@
+#!/bin/bash
+# loop2-watch: tells the owner, through pusher, that the loop2 game on the test server has failed.
+#
+# Installed root-owned, mode 0755, at /usr/local/bin/loop2-watch, outside the checkout, by a human;
+# deploy/loop2-watch.cron starts it as root every five minutes. A human may run it too. It takes no
+# argument. It only reads: docker inspect of the game and tunnel containers and docker logs of the
+# game container. It writes only its own log, its own state directory and its own lock. In order:
+#   1. takes its own lock, without waiting; a run that finds it taken ends at once
+#   2. looks at the deployment's lock, which a deployment or the nightly backup holds: it opens the
+#      file for reading only, asks for a shared lock without waiting and lets it go at once, and
+#      never creates, takes for writing or opens the file for writing. A held lock ends the run and
+#      leaves the state alone
+#   3. reads the state file, line by line by a strict pattern; a state that is missing or damaged
+#      means "from now": this run only records the containers and reports nothing
+#   4. reads the state of the two containers, and counts the lines of the game container's log for
+#      the window since the last run, by an anchored prefix: the content of a line is never copied
+#   5. looks at the deployment's lock again; if it is held now, the readings are dropped and the
+#      state is not advanced, so the next run reads the longer window
+#   6. finds which of five kinds of trouble stand: down, unhealthy, restarted, failures (lines of
+#      the server's own failures) and browser (lines of failures the browsers reported), throttles
+#      them, writes the state and calls pusher once for each message
+#
+# A message is a fixed subject and a fixed sentence per kind, held in the constants below. Nothing
+# read from a log or from Docker, no number and no name of a commit or an account goes into one,
+# because the message may travel unencrypted. The state holds the ids and start times of the two
+# containers and the times of the last messages; the log of this script holds counts and statuses.
+# Nothing of the content of a line of the game's log reaches either.
+#
+# The log holds one line per run that skipped, found something or had a trouble of its own, and an
+# exit line at an abnormal end. This script never calls pusher about itself: a failing watcher that
+# did would flood.
+#
+# Exit codes: 0 done or skipped · 2 input · 3 own lock · 4 state directory · 5 clock · 6 state file
+#             129, 130, 138, 140, 141, 142, 143 a signal
+#             1 in the log, for a signal no trap names: bash then runs the handler with $? still 0,
+#             and only the mark set at a proper end tells that from a success
+
+set -uo pipefail
+shopt -s lastpipe
+
+# The constants of the messages, the names, the paths and the limits stand in this block; the
+# patterns of the state and of Docker's answer and the two anchored prefixes of the log lines stand
+# outside it. No environment variable and no argument changes one. The tests of deploy/ replace
+# only the lines between the two markers.
+# >>> constants >>>
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+umask 027
+readonly LOG_FILE=/var/log/loop2-watch.log
+readonly STATE_DIRECTORY=/var/lib/loop2-watch
+readonly STATE_FILE_NAME=state
+readonly OWN_LOCK_FILE=/run/loop2-watch.lock
+readonly DEPLOY_LOCK_FILE=/run/loop2-deploy.lock
+readonly GAME_CONTAINER=loop2
+readonly TUNNEL_CONTAINER=loop2-cloudflared
+readonly INSPECT_FORMAT='{{.Id}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}} {{.State.StartedAt}}'
+readonly DOCKER_WAIT_SECONDS=60
+readonly PUSHER_WAIT_SECONDS=60
+readonly KILL_WAIT_SECONDS=10
+readonly MAX_WINDOW_SECONDS=86400
+readonly KIND_INTERVAL_SECONDS=21600
+readonly DAY_SECONDS=86400
+readonly DAY_MESSAGE_LIMIT=6
+readonly SUBJECT_DOWN=loop2_gra_nie_dziala
+readonly TEXT_DOWN='Gra loop2 nie działa: kontener gry albo tunelu nie jest uruchomiony. Co dalej: skill loop2-deploy.'
+readonly SUBJECT_UNHEALTHY=loop2_usluga_niezdrowa
+readonly TEXT_UNHEALTHY='Usługa gry loop2 jest niezdrowa: kontrola zdrowia kontenera zawodzi. Co dalej: skill loop2-deploy.'
+readonly SUBJECT_RESTARTED=loop2_ponowny_start
+readonly TEXT_RESTARTED='Kontener gry albo tunelu loop2 wystartował od nowa. Co dalej: skill loop2-deploy.'
+readonly SUBJECT_FAILURES=loop2_awarie_serwera
+readonly TEXT_FAILURES='Serwer gry loop2 zapisał awarie w logu. Co dalej: skill loop2-deploy.'
+readonly SUBJECT_BROWSER=loop2_awarie_przegladarek
+readonly TEXT_BROWSER='Przeglądarki graczy zgłosiły awarie gry loop2. Co dalej: skill loop2-deploy.'
+# === end of constants ===
+
+export LC_ALL=C TZ=UTC
+readonly STATE_FILE=$STATE_DIRECTORY/$STATE_FILE_NAME
+readonly STATE_LINE_LIMIT=40
+# The shapes the state file and Docker's answer may have; a line of another shape is refused.
+readonly EPOCH_PATTERN='[1-9][0-9]{9,10}'
+readonly ID_PATTERN='[0-9a-f]{64}'
+readonly START_PATTERN='[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z'
+readonly WINDOW_LINE="^window_end ($EPOCH_PATTERN)\$"
+readonly CONTAINER_LINE="^container ($GAME_CONTAINER|$TUNNEL_CONTAINER) ($ID_PATTERN) ($START_PATTERN)\$"
+readonly LAST_LINE="^last (down|unhealthy|restarted|failures|browser) ($EPOCH_PATTERN)\$"
+readonly MESSAGE_LINE="^message ($EPOCH_PATTERN)\$"
+readonly INSPECT_LINE="^($ID_PATTERN) (created|running|paused|restarting|removing|exited|dead) (none|starting|healthy|unhealthy) ($START_PATTERN)\$"
+readonly KINDS=(down unhealthy restarted failures browser)
+readonly CONTAINERS=("$GAME_CONTAINER" "$TUNNEL_CONTAINER")
+
+NOW=''
+LOG_WARNED=''
+DONE=''
+DEPLOY_LOCK_WHY=''
+
+# What the state file held, when it was read whole.
+STATE_OK=''
+STATE_PROBLEM=missing
+WINDOW_END=''
+declare -A CONTAINER_ID=() CONTAINER_START=() LAST_SENT=()
+MESSAGE_TIMES=()
+
+# What this run read.
+declare -A READ_OK=() READ_ID=() READ_STATUS=() READ_HEALTH=() READ_START=()
+LOGS_STATE=skipped
+LOGS_STATUS=0
+FAILURE_COUNT=0
+BROWSER_COUNT=0
+NEW_WINDOW_END=''
+
+# What this run decided.
+declare -A CONDITION=()
+DUE=()
+SENT=()
+HELD=()
+PUSHER_EXITS=()
+
+# --- output -------------------------------------------------------------------------------------
+
+append_to_log() {
+  # One text to the log file only. A log that cannot be written is reported once, on stderr.
+  if ! { printf '%s\n' "$1" >>"$LOG_FILE"; } 2>/dev/null; then
+    if [[ -z $LOG_WARNED ]]; then
+      printf 'loop2-watch: warning: cannot write the log file %s\n' "$LOG_FILE" >&2
+      LOG_WARNED=yes
+    fi
+  fi
+}
+
+log() {
+  # The file first: a reader of standard output that has left raises SIGPIPE at the printf, and the
+  # line must stand in the log all the same. The time is the run's start once it is read.
+  local line stamp
+  if [[ -n $NOW ]]; then
+    printf -v stamp '%(%Y-%m-%dT%H:%M:%SZ)T' "$NOW"
+  else
+    printf -v stamp '%(%Y-%m-%dT%H:%M:%SZ)T' -1
+  fi
+  line="$stamp loop2-watch: $*"
+  append_to_log "$line"
+  printf '%s\n' "$line" 2>/dev/null
+}
+
+fail() {
+  # fail CODE STAGE MESSAGE: logs the stage and ends the run with the code.
+  log "stage $2: $3 (exit $1)"
+  exit "$1"
+}
+
+# --- the handler at the exit --------------------------------------------------------------------
+
+on_exit() {
+  # Bash runs this handler for a signal no trap names too, with $? still that of the last command.
+  # It never calls pusher: a watcher that reported its own failure would flood the owner.
+  local code=$?
+  trap - EXIT
+  trap '' HUP INT USR1 USR2 PIPE ALRM TERM
+  exec 7>&- 8<&-
+  rm -f -- "$STATE_FILE.new" 2>/dev/null
+  if (( code == 0 )) && [[ $DONE != yes ]]; then
+    code=1
+  fi
+  if (( code != 0 )); then
+    log "end: failed (exit $code)"
+  fi
+  exit "$code"
+}
+
+# --- 1. its own lock ----------------------------------------------------------------------------
+
+take_own_lock() {
+  # File descriptor 7 holds the lock until the run ends. Children are started without it.
+  local status
+  if ! { exec 7>>"$OWN_LOCK_FILE"; } 2>/dev/null; then
+    fail 3 lock "cannot open the lock file $OWN_LOCK_FILE; nothing was read"
+  fi
+  flock --exclusive --nonblock 7 2>/dev/null
+  status=$?
+  if (( status == 1 )); then
+    # 1 is flock's own answer for a lock that is taken; any other status is flock failing or missing.
+    log "skipped: another run holds $OWN_LOCK_FILE (flock exit $status)"
+    DONE=yes
+    exit 0
+  elif (( status != 0 )); then
+    log "skipped: flock could not take $OWN_LOCK_FILE (flock exit $status); nothing was read"
+    DONE=yes
+    exit 0
+  fi
+}
+
+read_clock() {
+  local now status
+  now=$(date -u +%s 2>/dev/null)
+  status=$?
+  if (( status != 0 )) || [[ ! $now =~ ^$EPOCH_PATTERN$ ]]; then
+    fail 5 clock "the time cannot be read (date exit $status); nothing was read"
+  fi
+  NOW=$now
+}
+
+# --- 2 and 5. the deployment's lock -------------------------------------------------------------
+
+deploy_lock_is_held() {
+  # Looks, never takes: the file is opened for reading only, so nothing is created and nothing is
+  # written, and a missing file means that no deployment has ever run. A file that cannot be read,
+  # and a flock that fails, count as held, because the question cannot be answered; what the
+  # answer was stands in DEPLOY_LOCK_WHY for the log line.
+  local status
+  DEPLOY_LOCK_WHY=''
+  [[ -e $DEPLOY_LOCK_FILE ]] || return 1
+  if ! { exec 8<"$DEPLOY_LOCK_FILE"; } 2>/dev/null; then
+    DEPLOY_LOCK_WHY="file cannot be opened for reading"
+    return 0
+  fi
+  flock --shared --nonblock 8 2>/dev/null
+  status=$?
+  if (( status == 0 )); then
+    flock --unlock 8 2>/dev/null
+  fi
+  exec 8<&-
+  if (( status == 1 )); then
+    DEPLOY_LOCK_WHY="is held (flock exit $status)"
+  elif (( status != 0 )); then
+    DEPLOY_LOCK_WHY="could not be looked at, flock failed (flock exit $status)"
+  fi
+  (( status != 0 ))
+}
+
+# --- 3. the state -------------------------------------------------------------------------------
+
+ensure_state_directory() {
+  if [[ -d $STATE_DIRECTORY ]]; then
+    return 0
+  fi
+  if ! (umask 077 && mkdir -- "$STATE_DIRECTORY") 2>/dev/null; then
+    fail 4 state "cannot make the state directory $STATE_DIRECTORY"
+  fi
+}
+
+forget_state() {
+  WINDOW_END=''
+  CONTAINER_ID=()
+  CONTAINER_START=()
+  LAST_SENT=()
+  MESSAGE_TIMES=()
+}
+
+load_state() {
+  # Every line must match one of four shapes, and none may repeat; the file is data and is never
+  # sourced, evaluated or put into a command. Any line that fails means the whole state is lost.
+  local line name count=0 bad=''
+  STATE_OK=''
+  forget_state
+  if [[ ! -f $STATE_FILE ]]; then
+    STATE_PROBLEM=missing
+    return 0
+  fi
+  if ! { exec 6<"$STATE_FILE"; } 2>/dev/null; then
+    STATE_PROBLEM=unreadable
+    return 0
+  fi
+  while IFS= read -r line <&6 || [[ -n $line ]]; do
+    count=$((count + 1))
+    if (( count > STATE_LINE_LIMIT )); then
+      bad=yes
+      break
+    elif [[ $line =~ $WINDOW_LINE ]] && [[ -z $WINDOW_END ]]; then
+      WINDOW_END=${BASH_REMATCH[1]}
+    elif [[ $line =~ $CONTAINER_LINE ]] && [[ -z ${CONTAINER_ID[${BASH_REMATCH[1]}]-} ]]; then
+      name=${BASH_REMATCH[1]}
+      CONTAINER_ID[$name]=${BASH_REMATCH[2]}
+      CONTAINER_START[$name]=${BASH_REMATCH[3]}
+    elif [[ $line =~ $LAST_LINE ]] && [[ -z ${LAST_SENT[${BASH_REMATCH[1]}]-} ]]; then
+      LAST_SENT[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
+    elif [[ $line =~ $MESSAGE_LINE ]]; then
+      MESSAGE_TIMES+=("${BASH_REMATCH[1]}")
+    else
+      bad=yes
+      break
+    fi
+  done
+  exec 6<&-
+  if [[ -n $bad || -z $WINDOW_END ]]; then
+    forget_state
+    STATE_PROBLEM=damaged
+    return 0
+  fi
+  STATE_OK=yes
+}
+
+state_text() {
+  # What the next run will read: the end of the window, each container's id and start time, the
+  # time of the last message of each kind, and the messages of the last day.
+  local name kind stamp
+  printf 'window_end %s\n' "$NEW_WINDOW_END"
+  for name in "${CONTAINERS[@]}"; do
+    if [[ -n ${CONTAINER_ID[$name]-} ]]; then
+      printf 'container %s %s %s\n' "$name" "${CONTAINER_ID[$name]}" "${CONTAINER_START[$name]}"
+    fi
+  done
+  for kind in "${KINDS[@]}"; do
+    if [[ -n ${LAST_SENT[$kind]-} ]]; then
+      printf 'last %s %s\n' "$kind" "${LAST_SENT[$kind]}"
+    fi
+  done
+  for stamp in "${MESSAGE_TIMES[@]}"; do
+    if (( NOW - stamp < DAY_SECONDS )); then
+      printf 'message %s\n' "$stamp"
+    fi
+  done
+}
+
+write_state() {
+  # Whole or not at all: the new file is written beside the old one and moved over it.
+  local temporary=$STATE_FILE.new
+  if ! { state_text >"$temporary"; } 2>/dev/null || ! mv -f -- "$temporary" "$STATE_FILE" 2>/dev/null; then
+    fail 6 state "the state file $STATE_FILE cannot be written; no message was sent"
+  fi
+}
+
+# --- 4. the readings ----------------------------------------------------------------------------
+
+read_container() {
+  # read_container NAME: one fixed form of docker inspect; an answer off the expected shape is the
+  # same as a container that cannot be read. Docker's standard error goes nowhere.
+  local name=$1 output status
+  READ_OK[$name]=no
+  output=$(timeout --kill-after="$KILL_WAIT_SECONDS" "$DOCKER_WAIT_SECONDS" \
+    docker inspect --type container --format "$INSPECT_FORMAT" "$name" 2>/dev/null 7>&-)
+  status=$?
+  if (( status == 0 )) && [[ $output =~ $INSPECT_LINE ]]; then
+    READ_OK[$name]=yes
+    READ_ID[$name]=${BASH_REMATCH[1]}
+    READ_STATUS[$name]=${BASH_REMATCH[2]}
+    READ_HEALTH[$name]=${BASH_REMATCH[3]}
+    READ_START[$name]=${BASH_REMATCH[4]}
+  fi
+}
+
+read_containers() {
+  local name
+  for name in "${CONTAINERS[@]}"; do
+    read_container "$name"
+  done
+}
+
+count_lines() {
+  # Counts by the anchored start of a line and keeps nothing of the line. The two starts are the
+  # ones src/server/log-line.ts writes: a failure object whose first field is `failure`, and the
+  # same with the word `browser`, which the browser report route writes (the closing quote of the
+  # word stands in the second, so a longer word that begins with it counts as a failure).
+  local line
+  while IFS= read -r line || [[ -n $line ]]; do
+    case $line in
+      '{"failure":"browser"'*) BROWSER_COUNT=$((BROWSER_COUNT + 1)) ;;
+      '{"failure":"'*) FAILURE_COUNT=$((FAILURE_COUNT + 1)) ;;
+    esac
+  done
+}
+
+read_logs() {
+  # The window runs from the end of the last run to the start of this one, at most a day. A window
+  # that was not read stays open: the state keeps its old end.
+  local since
+  LOGS_STATE=skipped
+  FAILURE_COUNT=0
+  BROWSER_COUNT=0
+  NEW_WINDOW_END=$NOW
+  if [[ -z $STATE_OK ]]; then
+    return 0
+  fi
+  if [[ ${READ_OK[$GAME_CONTAINER]-} != yes ]]; then
+    NEW_WINDOW_END=$WINDOW_END
+    return 0
+  fi
+  since=$WINDOW_END
+  if (( since >= NOW )); then
+    return 0
+  fi
+  if (( NOW - since > MAX_WINDOW_SECONDS )); then
+    since=$((NOW - MAX_WINDOW_SECONDS))
+  fi
+  timeout --kill-after="$KILL_WAIT_SECONDS" "$DOCKER_WAIT_SECONDS" \
+    docker logs --since "$since" --until "$NOW" "$GAME_CONTAINER" 2>&1 7>&- | count_lines
+  LOGS_STATUS=${PIPESTATUS[0]}
+  if (( LOGS_STATUS != 0 )); then
+    LOGS_STATE=unreadable
+    FAILURE_COUNT=0
+    BROWSER_COUNT=0
+    NEW_WINDOW_END=$WINDOW_END
+    return 0
+  fi
+  LOGS_STATE=counted
+}
+
+# --- 6. the kinds, the throttles, the messages --------------------------------------------------
+
+evaluate() {
+  # Which kinds stand now. A container that is not running, cannot be read or answers off the
+  # shape is down; one with the same id and another start time has restarted; one with another id
+  # was replaced, by a deployment or by hand, and is recorded without a word.
+  local name
+  CONDITION=()
+  for name in "${CONTAINERS[@]}"; do
+    if [[ ${READ_OK[$name]-} != yes || ${READ_STATUS[$name]-} != running ]]; then
+      CONDITION[down]=yes
+    elif [[ ${READ_HEALTH[$name]-} == unhealthy ]]; then
+      CONDITION[unhealthy]=yes
+    fi
+  done
+  for name in "${CONTAINERS[@]}"; do
+    if [[ -n $STATE_OK && ${READ_OK[$name]-} == yes && -n ${CONTAINER_ID[$name]-} \
+        && ${CONTAINER_ID[$name]} == "${READ_ID[$name]-}" \
+        && ${CONTAINER_START[$name]} != "${READ_START[$name]-}" ]]; then
+      CONDITION[restarted]=yes
+    fi
+  done
+  if (( FAILURE_COUNT > 0 )); then
+    CONDITION[failures]=yes
+  fi
+  if (( BROWSER_COUNT > 0 )); then
+    CONDITION[browser]=yes
+  fi
+}
+
+record_containers() {
+  local name
+  for name in "${CONTAINERS[@]}"; do
+    if [[ ${READ_OK[$name]-} == yes ]]; then
+      CONTAINER_ID[$name]=${READ_ID[$name]}
+      CONTAINER_START[$name]=${READ_START[$name]}
+    fi
+  done
+}
+
+decide() {
+  # At most one message per kind in KIND_INTERVAL_SECONDS and DAY_MESSAGE_LIMIT in all in
+  # DAY_SECONDS. The kinds due go in the order of KINDS until the day's budget ends.
+  local kind stamp recent=0
+  DUE=()
+  SENT=()
+  HELD=()
+  for stamp in "${MESSAGE_TIMES[@]}"; do
+    if (( NOW - stamp < DAY_SECONDS )); then
+      recent=$((recent + 1))
+    fi
+  done
+  for kind in "${KINDS[@]}"; do
+    if [[ ${CONDITION[$kind]-} != yes ]]; then
+      continue
+    fi
+    DUE+=("$kind")
+    stamp=${LAST_SENT[$kind]-}
+    if (( recent + ${#SENT[@]} >= DAY_MESSAGE_LIMIT )); then
+      HELD+=("$kind(day)")
+    elif [[ -n $stamp ]] && (( NOW - stamp < KIND_INTERVAL_SECONDS )); then
+      HELD+=("$kind(kind)")
+    else
+      SENT+=("$kind")
+    fi
+  done
+  for kind in "${SENT[@]}"; do
+    LAST_SENT[$kind]=$NOW
+    MESSAGE_TIMES+=("$NOW")
+  done
+}
+
+send_message() {
+  # Only the fixed subject and sentence of the kind go to pusher. Its exit status tells little: it
+  # reports no connection, not an HTTP error, and a message it reports as failed counts as sent.
+  local kind=$1 subject text status
+  case $kind in
+    down) subject=$SUBJECT_DOWN text=$TEXT_DOWN ;;
+    unhealthy) subject=$SUBJECT_UNHEALTHY text=$TEXT_UNHEALTHY ;;
+    restarted) subject=$SUBJECT_RESTARTED text=$TEXT_RESTARTED ;;
+    failures) subject=$SUBJECT_FAILURES text=$TEXT_FAILURES ;;
+    browser) subject=$SUBJECT_BROWSER text=$TEXT_BROWSER ;;
+    *) return 0 ;;
+  esac
+  timeout --kill-after="$KILL_WAIT_SECONDS" "$PUSHER_WAIT_SECONDS" \
+    pusher "$subject" <<<"$text" >/dev/null 2>&1 7>&-
+  status=$?
+  PUSHER_EXITS+=("$kind:$status")
+}
+
+send_messages() {
+  local kind
+  for kind in "${SENT[@]}"; do
+    send_message "$kind"
+  done
+}
+
+join() {
+  # join SEPARATOR WORD...: the words, one separator between each.
+  local separator=$1 result='' word
+  shift
+  for word in "$@"; do
+    result=${result:+$result$separator}$word
+  done
+  printf '%s' "$result"
+}
+
+report_run() {
+  # One line for a run that had something to say: kind names, the container names that were not
+  # fine, exit statuses and counts of lines. Nothing else of what was read.
+  local notes=() name faulty=()
+  if [[ -z $STATE_OK ]]; then
+    notes+=("first run, the state is $STATE_PROBLEM: watching from now")
+  fi
+  if [[ $LOGS_STATE == unreadable ]]; then
+    notes+=("logs unreadable (docker exit $LOGS_STATUS), the window stays open")
+  fi
+  if (( ${#DUE[@]} > 0 )); then
+    for name in "${CONTAINERS[@]}"; do
+      if [[ ${READ_OK[$name]-} != yes || ${READ_STATUS[$name]-} != running \
+          || ${READ_HEALTH[$name]-} == unhealthy ]]; then
+        faulty+=("$name")
+      fi
+    done
+    notes+=("due=$(join , "${DUE[@]}")")
+    notes+=("sent=$(join , "${SENT[@]}")")
+    if (( ${#HELD[@]} > 0 )); then
+      notes+=("held=$(join , "${HELD[@]}")")
+    fi
+    if (( ${#PUSHER_EXITS[@]} > 0 )); then
+      notes+=("pusher=$(join , "${PUSHER_EXITS[@]}")")
+    fi
+    if (( ${#faulty[@]} > 0 )); then
+      notes+=("containers=$(join , "${faulty[@]}")")
+    fi
+    if [[ $LOGS_STATE == counted ]]; then
+      notes+=("failure_lines=$FAILURE_COUNT browser_lines=$BROWSER_COUNT")
+    fi
+  fi
+  if (( ${#notes[@]} > 0 )); then
+    log "run: $(join '; ' "${notes[@]}")"
+  fi
+}
+
+# --- run ----------------------------------------------------------------------------------------
+
+main() {
+  if (( $# != 0 )); then
+    fail 2 input "refused: the script takes no argument; got $#"
+  fi
+  take_own_lock
+  read_clock
+  if deploy_lock_is_held; then
+    log "skipped: the deployment lock $DEPLOY_LOCK_WHY; nothing was read"
+    DONE=yes
+    exit 0
+  fi
+  ensure_state_directory
+  load_state
+  read_containers
+  read_logs
+  if deploy_lock_is_held; then
+    log "dropped: the deployment lock $DEPLOY_LOCK_WHY after the readings; the state is not advanced"
+    DONE=yes
+    exit 0
+  fi
+  if [[ -n $STATE_OK ]]; then
+    evaluate
+  else
+    CONDITION=()
+  fi
+  record_containers
+  decide
+  write_state
+  send_messages
+  report_run
+  DONE=yes
+}
+
+trap on_exit EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 138' USR1
+trap 'exit 140' USR2
+trap 'exit 141' PIPE
+trap 'exit 142' ALRM
+trap 'exit 143' TERM
+
+main "$@"

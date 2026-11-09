@@ -2,7 +2,7 @@
 
 ## browser-view
 
-The part draws the game's screens in the browser, sends the browser's requests to the account and save server, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
+The part draws the game's screens in the browser, sends the browser's requests to the account and save server, reports to that server each distinct line its last-resort handling writes for an error nothing handled, and holds the kitchen-sink page that shows the shared controls, roles and tiles in every state.
 
 - **Files:** src/browser/*.ts
   src/browser/*.css
@@ -61,7 +61,7 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns the persistence of accounts, sessions and each player's saved game state, sends account email through the mail service, gives the operator a command that blocks and unblocks a player account and a command that writes one consistent backup of the database to its standard output, checks the database's read, write and backup operations on the Node.js release of the image it is built into, and measures its own password work in the image it runs in.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns the persistence of accounts, sessions and each player's saved game state, sends account email through the mail service, accepts the report of a failure that the browser sends and writes it as one line of its log, gives the operator a command that blocks and unblocks a player account and a command that writes one consistent backup of the database to its standard output, checks the database's read, write and backup operations on the Node.js release of the image it is built into, and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs
@@ -143,14 +143,18 @@ The part holds the product's foundation.
 ## deployment
 
 The part builds the application into the loop2 container, deploys a commit of the repository to the
-test server, and holds the nightly backup script and its schedule, which a human installs on the
-host and which encrypt the database backup and send it off the server.
+test server, appending the log of the containers it replaces to a file on the host, and holds the
+nightly backup script and its schedule, which a human installs on the host and which encrypt the
+database backup and send it off the server; it also holds the logrotate file of that log file, the
+failure watcher with its schedule, and the scheduled check of the public address, the watcher and
+the check both telling the owner when the running game fails.
 
 - **Files:** Dockerfile
   .dockerignore
   compose.yaml
   .gitattributes
   .github/workflows/deploy.yml
+  .github/workflows/check-address.yml
   deploy/**
   tests/deploy/**
   tests/invariants/test_loop2_container_isolation.py

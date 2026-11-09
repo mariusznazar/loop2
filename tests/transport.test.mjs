@@ -189,6 +189,31 @@ function seed(f, id, expiresAt = Date.now() + 86_400_000) {
   return data;
 }
 
+// The report route writes the one line of a failure of the browser (D-356);
+// the lines this test file's server writes are collected here as text.
+const browserReport = {
+  kind: "TypeError",
+  code: "none",
+  place: "view/app.startFrom",
+};
+
+function captureLog(t) {
+  const logged = [];
+  const methods = ["log", "info", "warn", "error", "debug"];
+  const originals = methods.map((name) => console[name]);
+  t.after(() =>
+    methods.forEach((name, index) => {
+      console[name] = originals[index];
+    }),
+  );
+  for (const name of methods)
+    console[name] = (...values) => logged.push(values.map(String).join(" "));
+  return logged;
+}
+
+const browserLines = (logged) =>
+  logged.filter((line) => line.startsWith('{"failure":"browser"'));
+
 test(
   "transport refuses ambiguous proxy metadata before loading live sessions",
   { timeout: 20000 },
@@ -494,6 +519,7 @@ test(
     // Faults: a guard missing from one state-changing route, a guard run after
     // its route, and field checks that coerce or ignore unexpected fields.
     const f = await fixture(t);
+    const logged = captureLog(t);
     const secret = "  guarded password 🙂  ";
     const known = f.runtime.database.createAccount(
       "guarded@example.test",
@@ -568,6 +594,7 @@ test(
           passwordConfirmation: newSecret,
         },
       ],
+      ["/api/browser-failure", browserReport],
     ];
     const json = (value) => () => JSON.stringify(value);
     const variants = (fields) => [
@@ -678,6 +705,7 @@ test(
             current.data === stored.data,
           `${name}: the live session keeps its identity`,
         );
+        assert.deepEqual(browserLines(logged), [], `${name}: no report line`);
       }
     }
     // Controls: the same bodies with every guard satisfied do change state.
@@ -693,6 +721,7 @@ test(
       ["/api/session", routes[1][1], 200],
       ["/api/accounts", routes[0][1], 201],
       ["/api/password-reset", routes[6][1], 204],
+      ["/api/browser-failure", routes[7][1], 204],
     ]) {
       const response = await f.send(path, {
         method: "POST",
@@ -703,6 +732,7 @@ test(
     }
     assert.equal(f.runtime.database.readSession(live), null);
     assert.equal(count("accounts"), accounts + 1);
+    assert.equal(browserLines(logged).length, 1, "the report was written");
     assert.equal(confirmed(), confirmedBefore + 1);
     const resetAfter = resetState();
     assert.notEqual(resetAfter.hash, resetBefore.hash, "the password was set");
@@ -859,7 +889,7 @@ test(
 );
 
 // The save route is a state-changing route with its own body limit, 64 KiB
-// (D-104); the seven others keep 16 KiB.
+// (D-104); the eight others keep 16 KiB.
 const savedGame = "/api/saved-game";
 
 test(
@@ -974,7 +1004,7 @@ test(
     }
 
     // The limits: a body over 16 KiB is within the save route's limit and is
-    // saved; every body over 64 KiB is refused. Each of the seven other routes
+    // saved; every body over 64 KiB is refused. Each of the eight other routes
     // refuses a body over 16 KiB (also in "refused state-changing requests").
     const valid = {
       ...proxyHeaders,
@@ -999,6 +1029,7 @@ test(
       "/api/email-confirmation-message",
       "/api/password-reset-message",
       "/api/password-reset",
+      "/api/browser-failure",
     ]) {
       const response = await f.send(path, {
         method: "POST",
@@ -1100,5 +1131,66 @@ test(
     assert.deepEqual(JSON.parse(control.body), {
       save: { version: 1, revision: 1, game: { turn: 1 } },
     });
+  },
+);
+
+test(
+  "transport refuses the browser report before the session and the log, and a valid transport reads the session for the account on the line",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-request-transport
+    // Fault: the report path outside the transport gate, so that a request
+    // with ambiguous proxy metadata loads the session or writes a line.
+    const f = await fixture(t);
+    const logged = captureLog(t);
+    const id = "report-transport-record";
+    seed(f, id);
+    const cookie = signedCookie(id, f.keys[0]);
+    const sessionBefore = f.runtime.database.readSession(id);
+    assert.ok(sessionBefore, "precondition: a live session");
+    for (const headers of [
+      {},
+      { "X-Forwarded-Proto": "https" },
+      { ...proxyHeaders, "X-Forwarded-Proto": "http" },
+      { ...proxyHeaders, "X-Forwarded-Proto": "https,http" },
+      { ...proxyHeaders, "CF-Connecting-IP": ["192.0.2.7", "192.0.2.7"] },
+      { ...proxyHeaders, "CF-Connecting-IP": "192.0.2.7,192.0.2.8" },
+    ]) {
+      const name = JSON.stringify(headers);
+      const response = await f.send("/api/browser-failure", {
+        method: "POST",
+        headers: {
+          ...headers,
+          Origin: origin,
+          "Content-Type": "application/json",
+          Cookie: cookie,
+        },
+        body: JSON.stringify(browserReport),
+      });
+      assert.equal(response.status, 403, name);
+      assert.equal(response.headers["cache-control"], "no-store", name);
+      assert.equal(response.headers["set-cookie"], undefined, name);
+      assert.deepEqual(
+        f.runtime.database.readSession(id),
+        sessionBefore,
+        `${name}: session untouched`,
+      );
+    }
+    assert.deepEqual(logged, [], "nothing written");
+    // Valid transport reaches the route, which names the session's account.
+    const control = await f.send("/api/browser-failure", {
+      method: "POST",
+      headers: {
+        ...proxyHeaders,
+        Origin: origin,
+        "Content-Type": "application/json",
+        Cookie: cookie,
+      },
+      body: JSON.stringify(browserReport),
+    });
+    assert.equal(control.status, 204);
+    assert.deepEqual(logged, [
+      `{"failure":"browser","kind":"TypeError","code":"none","place":"view/app.startFrom","accountId":"${f.account.id}"}`,
+    ]);
   },
 );

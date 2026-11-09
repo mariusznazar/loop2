@@ -40,6 +40,12 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SCRIPT = os.path.join(ROOT, "deploy", "loop2-deploy")
 BACKUP_SCRIPT = os.path.join(ROOT, "deploy", "loop2-backup")
 BACKUP_SCHEDULE = os.path.join(ROOT, "deploy", "loop2-backup.cron")
+LOGROTATE_FILE = os.path.join(ROOT, "deploy", "loop2-app.logrotate")
+# The failure watcher and its cron file are written in a later slice of the task; the deploy
+# script only compares the installed copies byte for byte with the files of the commit, so these
+# stand-in bytes are all the comparison needs.
+WATCH_SCRIPT_BYTES = b"#!/bin/bash\n# stand-in for deploy/loop2-watch\n"
+WATCH_SCHEDULE_BYTES = b'MAILTO=""\n# stand-in for deploy/loop2-watch.cron\n'
 
 BLOCK_BEGIN = b"# >>> constants >>>"
 BLOCK_END = b"# === end of constants ==="  # no "<<" in it: a heredoc to shell readers
@@ -64,6 +70,8 @@ for rule in "$stubs/answers/{tool}"/*; do
   [[ -d $rule ]] || continue
   pattern=$(<"$rule/pattern")
   if [[ "$*" == $pattern ]]; then
+    [[ -f $rule/stderr ]] && cat "$rule/stderr" >&2
+    [[ -f $rule/delay ]] && exec sleep "$(<"$rule/delay")"
     cat "$rule/stdout"
     exit "$(<"$rule/exit")"
   fi
@@ -255,10 +263,15 @@ class DeployFixture:
         self.installed = self.path("usr", "local", "bin", "loop2-deploy")
         self.installed_backup = self.path("usr", "local", "bin", "loop2-backup")
         self.installed_schedule = self.path("etc", "cron.d", "loop2-backup")
+        self.installed_watch = self.path("usr", "local", "bin", "loop2-watch")
+        self.installed_watch_schedule = self.path("etc", "cron.d", "loop2-watch")
+        self.installed_logrotate = self.path("etc", "logrotate.d", "loop2-app")
         self.log_file = self.path("var", "log", "loop2-deploy.log")
+        self.dump_file = self.path("var", "log", "loop2-app.log")
         self.lock_file = self.path("run", "loop2-deploy.lock")
         self.meminfo = self.path("proc", "meminfo")
-        for directory in (self.installed, self.installed_schedule, self.log_file, self.lock_file):
+        for directory in (self.installed, self.installed_schedule, self.installed_logrotate,
+                          self.log_file, self.lock_file):
             os.makedirs(os.path.dirname(directory), exist_ok=True)
         write_bytes(self.meminfo, b"MemTotal:        4456448 kB\nMemAvailable:    3788800 kB\n")
 
@@ -281,7 +294,11 @@ class DeployFixture:
             "INSTALLED_SCRIPT": shell_path(self.installed),
             "INSTALLED_BACKUP_SCRIPT": shell_path(self.installed_backup),
             "INSTALLED_BACKUP_SCHEDULE": shell_path(self.installed_schedule),
+            "INSTALLED_WATCH_SCRIPT": shell_path(self.installed_watch),
+            "INSTALLED_WATCH_SCHEDULE": shell_path(self.installed_watch_schedule),
+            "INSTALLED_LOGROTATE": shell_path(self.installed_logrotate),
             "LOG_FILE": shell_path(self.log_file),
+            "DUMP_FILE": shell_path(self.dump_file),
             "LOCK_FILE": shell_path(self.lock_file),
             "MEMINFO_FILE": shell_path(self.meminfo),
         }
@@ -357,24 +374,35 @@ class DeployFixture:
     # --- a deployable commit and a host that lets it through -----------------------------------
 
     def deployable_commit(self, message="deployable", script=None):
-        """A new commit on main holding `compose.yaml` and the three installable files:
-        `deploy/loop2-deploy` (by default the repository's script), `deploy/loop2-backup` and
-        `deploy/loop2-backup.cron`, the last two from the repository's own files, as every commit
-        of this task on does."""
+        """A new commit on main holding `compose.yaml` and the six installable files:
+        `deploy/loop2-deploy` (by default the repository's script), `deploy/loop2-backup`,
+        `deploy/loop2-backup.cron` and `deploy/loop2-app.logrotate` from the repository's own
+        files, and `deploy/loop2-watch` and `deploy/loop2-watch.cron` as stand-in bytes, as every
+        commit of this task on does."""
         files = {"compose.yaml": b"name: loop2\n",
                  "deploy/loop2-deploy": read_bytes(SCRIPT) if script is None else script,
                  "deploy/loop2-backup": read_bytes(BACKUP_SCRIPT),
-                 "deploy/loop2-backup.cron": read_bytes(BACKUP_SCHEDULE)}
+                 "deploy/loop2-backup.cron": read_bytes(BACKUP_SCHEDULE),
+                 "deploy/loop2-watch": WATCH_SCRIPT_BYTES,
+                 "deploy/loop2-watch.cron": WATCH_SCHEDULE_BYTES,
+                 "deploy/loop2-app.logrotate": read_bytes(LOGROTATE_FILE)}
         return self.commit("main", message, files=files)
 
-    def install(self, data=None, backup=None, schedule=None):
-        """Write the three installed copies: the deploy script, the backup script and the backup
-        schedule (by default the repository's files)."""
+    def install(self, data=None, backup=None, schedule=None, watch=None, watch_schedule=None,
+                logrotate=None):
+        """Write the six installed copies: the deploy script, the backup script and its schedule,
+        the watcher and its schedule, and the logrotate file (by default the bytes that
+        `deployable_commit` puts in a commit)."""
         write_bytes(self.installed, read_bytes(SCRIPT) if data is None else data)
         write_bytes(self.installed_backup,
                     read_bytes(BACKUP_SCRIPT) if backup is None else backup)
         write_bytes(self.installed_schedule,
                     read_bytes(BACKUP_SCHEDULE) if schedule is None else schedule)
+        write_bytes(self.installed_watch, WATCH_SCRIPT_BYTES if watch is None else watch)
+        write_bytes(self.installed_watch_schedule,
+                    WATCH_SCHEDULE_BYTES if watch_schedule is None else watch_schedule)
+        write_bytes(self.installed_logrotate,
+                    read_bytes(LOGROTATE_FILE) if logrotate is None else logrotate)
 
     def answer_passing_run(self, running=None):
         """Answers under which a deployment gets through every stage: Docker's root directory,
@@ -410,15 +438,21 @@ class DeployFixture:
 
     # --- stubs ---------------------------------------------------------------------------------
 
-    def answer(self, tool, exit_code=0, stdout="", match="*"):
+    def answer(self, tool, exit_code=0, stdout="", match="*", stderr="", hang_seconds=None):
         """Make a stub answer the calls whose arguments, joined by spaces, match a bash pattern;
         rules are tried in the order they were given, the first match answers. A call no rule
-        matches exits 0 and prints nothing."""
+        matches exits 0 and prints nothing. `stderr` is printed to the standard error first; with
+        `hang_seconds` the call then does nothing but wait that long (a stuck tool) and prints
+        and exits as nothing else."""
         directory = os.path.join(self.stubs, "answers", tool)
         rule = os.path.join(directory, f"{len(os.listdir(directory)):03d}")
         write_bytes(os.path.join(rule, "pattern"), match.encode())
         write_bytes(os.path.join(rule, "exit"), str(exit_code).encode())
         write_bytes(os.path.join(rule, "stdout"), stdout.encode())
+        if stderr:
+            write_bytes(os.path.join(rule, "stderr"), stderr.encode())
+        if hang_seconds is not None:
+            write_bytes(os.path.join(rule, "delay"), str(hang_seconds).encode())
 
     def guard_stubs(self):
         """Stop the test when any stubbed tool resolves outside the stub directory on the copy's
