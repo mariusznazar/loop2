@@ -16,7 +16,8 @@ Reading of the sentence:
 - nothing of a player and nothing of a tool's output: a marker, made to look like a player's
   address, stands in the lines of the stand-in log (the lines the watcher counts, and a line it
   does not), in the standard output and the standard error of the stand-in `docker` for `inspect`
-  (an answer of the right shape, and one off it) and for `logs`, and in a damaged state file; it
+  (an answer of the right shape on the standard error; an answer off the shape that exits 0; a
+  failed command) and for `logs`, and in a damaged state file; it
   reaches no argument and no standard input of `pusher`, nor the watcher's standard output, its
   standard error, its log, its state file or any other file of the machine the run used. A
   precondition shows that the marker was really put before the watcher: the stand-in `docker` was
@@ -216,6 +217,38 @@ class FixedMessages(unittest.TestCase):
         texts, _files = self.everywhere(fixture, result)
         for text in texts:
             self.assertNotIn(MARKER, text)
+
+    def test_an_inspect_that_succeeds_with_an_answer_off_the_shape_reaches_nothing(self):
+        # invariant: failure-watcher-message
+        # The break: the watcher quotes the raw answer of a successful `docker inspect`, which it
+        # holds whole when the answer does not fit the expected shape, in its log or a message.
+        shapes = {
+            "the marker alone": MARKER + "\n",
+            "the marker for the id": healthy_line(MARKER),
+            "the marker for the status": healthy_line(support.GAME_ID, status=MARKER),
+            "the marker for the health": healthy_line(support.GAME_ID, health=MARKER),
+            "the marker for the start": healthy_line(support.GAME_ID, started=MARKER),
+            "a good line and the marker after it": healthy_line(support.GAME_ID) + MARKER + "\n",
+            "a good line with the marker appended": healthy_line(support.GAME_ID).rstrip("\n")
+                                                    + " " + MARKER + "\n",
+        }
+        for name, answer in shapes.items():
+            with self.subTest(name):
+                fixture = self.fixture()
+                fixture.answer("docker", stdout=answer.encode(), stderr=(MARKER + "\n").encode(),
+                               match="inspect * loop2-cloudflared")
+                noise(fixture)
+                result = fixture.run_at(LATER)
+                self.assert_one_fixed_notice(result, "down")
+                rule = os.path.join(fixture.stubs, "answers", "docker", "000", "stdout")
+                self.assertIn(MARKER, support.deploy_support.read_bytes(rule).decode(),
+                              "precondition: the marker stands in the answer")
+                self.assertTrue(
+                    any(c[:1] == ["inspect"] and c[-1] == "loop2-cloudflared"
+                        for c in result.of("docker")), "precondition: the answer was asked for")
+                texts, _files = self.everywhere(fixture, result)
+                for text in texts:
+                    self.assertNotIn(MARKER, text)
 
     def test_control_a_quiet_run_with_the_marker_in_the_noise_calls_no_pusher(self):
         # invariant: failure-watcher-message
