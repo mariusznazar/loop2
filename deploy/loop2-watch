@@ -90,6 +90,7 @@ readonly CONTAINERS=("$GAME_CONTAINER" "$TUNNEL_CONTAINER")
 NOW=''
 LOG_WARNED=''
 DONE=''
+DEPLOY_LOCK_WHY=''
 
 # What the state file held, when it was read whole.
 STATE_OK=''
@@ -174,8 +175,13 @@ take_own_lock() {
   fi
   flock --exclusive --nonblock 7 2>/dev/null
   status=$?
-  if (( status != 0 )); then
+  if (( status == 1 )); then
+    # 1 is flock's own answer for a lock that is taken; any other status is flock failing or missing.
     log "skipped: another run holds $OWN_LOCK_FILE (flock exit $status)"
+    DONE=yes
+    exit 0
+  elif (( status != 0 )); then
+    log "skipped: flock could not take $OWN_LOCK_FILE (flock exit $status); nothing was read"
     DONE=yes
     exit 0
   fi
@@ -195,11 +201,14 @@ read_clock() {
 
 deploy_lock_is_held() {
   # Looks, never takes: the file is opened for reading only, so nothing is created and nothing is
-  # written, and a missing file means that no deployment has ever run. A file that cannot be read
-  # counts as held, because the question cannot be answered.
+  # written, and a missing file means that no deployment has ever run. A file that cannot be read,
+  # and a flock that fails, count as held, because the question cannot be answered; what the
+  # answer was stands in DEPLOY_LOCK_WHY for the log line.
   local status
+  DEPLOY_LOCK_WHY=''
   [[ -e $DEPLOY_LOCK_FILE ]] || return 1
   if ! { exec 8<"$DEPLOY_LOCK_FILE"; } 2>/dev/null; then
+    DEPLOY_LOCK_WHY="file cannot be opened for reading"
     return 0
   fi
   flock --shared --nonblock 8 2>/dev/null
@@ -208,6 +217,11 @@ deploy_lock_is_held() {
     flock --unlock 8 2>/dev/null
   fi
   exec 8<&-
+  if (( status == 1 )); then
+    DEPLOY_LOCK_WHY="is held (flock exit $status)"
+  elif (( status != 0 )); then
+    DEPLOY_LOCK_WHY="could not be looked at, flock failed (flock exit $status)"
+  fi
   (( status != 0 ))
 }
 
@@ -531,7 +545,7 @@ main() {
   take_own_lock
   read_clock
   if deploy_lock_is_held; then
-    log "skipped: the deployment lock is held or cannot be read; nothing was read"
+    log "skipped: the deployment lock $DEPLOY_LOCK_WHY; nothing was read"
     DONE=yes
     exit 0
   fi
@@ -540,7 +554,7 @@ main() {
   read_containers
   read_logs
   if deploy_lock_is_held; then
-    log "dropped: the deployment lock was taken during the readings; the state is not advanced"
+    log "dropped: the deployment lock $DEPLOY_LOCK_WHY after the readings; the state is not advanced"
     DONE=yes
     exit 0
   fi

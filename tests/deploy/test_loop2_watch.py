@@ -472,6 +472,31 @@ class TheDeploymentLock(WithFixture):
                            "loop2"]], result)
         self.assert_sent(result, "down", "failures", "browser")
 
+    def test_the_log_line_of_a_held_lock_says_held_and_that_of_a_broken_flock_names_its_status(self):
+        # The break: any non-zero status of `flock` named a held lock, so a host without `flock`
+        # looked like a deployment that never ends.
+        held = self.primed()
+        held.hold_deploy_lock_from(1)
+        _result, lines = self.run_logged(held, T0 + FIVE_MINUTES)
+        self.assertEqual(len(lines), 1, lines)
+        self.assertRegex(lines[0], r"skipped: the deployment lock is held \(flock exit 1\)")
+        late = self.primed()
+        late.hold_deploy_lock_from(2)
+        _result, lines = self.run_logged(late, T0 + FIVE_MINUTES)
+        self.assertEqual(len(lines), 1, lines)
+        self.assertRegex(lines[0], r"dropped: the deployment lock is held \(flock exit 1\)")
+        for status in (2, 127):
+            with self.subTest(status):
+                broken = self.primed()
+                before = broken.state_text()
+                broken.answer("flock", exit_code=status, match="*--shared*")
+                result, lines = self.run_logged(broken, T0 + FIVE_MINUTES)
+                self.assert_quiet(result)
+                self.assertEqual(broken.state_text(), before)
+                self.assertEqual(len(lines), 1, lines)
+                self.assertRegex(lines[0], rf"skipped: .*\(flock exit {status}\)")
+                self.assertNotRegex(lines[0], r"is held|holds")
+
     def test_the_lock_is_only_asked_for_shared_and_without_waiting_by_its_descriptor(self):
         # The break: `flock` called on the path, which would create the file as root; or a wait.
         fixture = self.primed()
@@ -538,6 +563,26 @@ class TheWatchersOwnLock(WithFixture):
         self.assertEqual(fixture.state_text(), before)
         self.assertEqual(len(lines), 1, result)
         self.assertRegex(lines[0], r"skipped", result)
+
+    def test_the_log_line_of_a_taken_lock_says_so_and_that_of_a_broken_flock_names_its_status(self):
+        # The break: any non-zero status of `flock` named another run, so a host without `flock`
+        # looked like a run that is always in the way.
+        taken = self.primed()
+        taken.answer("flock", exit_code=1, match="*--exclusive*")
+        _result, lines = self.run_logged(taken, T0 + FIVE_MINUTES)
+        self.assertEqual(len(lines), 1, lines)
+        self.assertRegex(lines[0], r"skipped: another run holds .*\(flock exit 1\)")
+        for status in (2, 127):
+            with self.subTest(status):
+                broken = self.primed()
+                before = broken.state_text()
+                broken.answer("flock", exit_code=status, match="*--exclusive*")
+                result, lines = self.run_logged(broken, T0 + FIVE_MINUTES)
+                self.assert_quiet(result)
+                self.assertEqual(broken.state_text(), before)
+                self.assertEqual(len(lines), 1, lines)
+                self.assertRegex(lines[0], rf"skipped: .*\(flock exit {status}\)")
+                self.assertNotRegex(lines[0], r"is held|holds")
 
     def test_the_lock_is_exclusive_without_waiting_and_is_the_first_call(self):
         # The break: a wait on its own lock, which stacks runs up behind a stuck one.
