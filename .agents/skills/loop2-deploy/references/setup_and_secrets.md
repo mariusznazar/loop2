@@ -412,6 +412,15 @@ container on the server.
      - `cgroup memory accounting is unavailable`, or another line naming a `cgroup file`, means
        Docker on the server does not show the memory counts the verdict needs. The result
        cannot be judged and goes back to the task's cycle.
+     - `the image cannot be inspected: docker image inspect exited with status 1` names the
+       Docker step that failed and its exit status. `docker run` (the measurement container
+       did not start) and `docker wait` (the measurement could not be waited for) name their
+       steps the same way; `gave no exit status` takes the place of the status when Docker did
+       not finish. Docker's own error text for that step is in the terminal, not in the file,
+       and usually shows one of three causes: the SSH login to the Docker host was refused, the
+       user has no permission on the Docker socket, or the daemon does not hold the image. A
+       human fixes the cause on the server (D-12), then the measurement runs again. Do not copy
+       that terminal text into a request: over SSH it can name the server (D-13).
    - **2, the file is empty:** the arguments were wrong. The reason and the usage line went to
      the terminal, not to the file, because `>` keeps only standard output.
 
