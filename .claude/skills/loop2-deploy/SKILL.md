@@ -288,8 +288,8 @@ of that data (D-252), and its lines are reported selected and redacted like othe
    only counted in the watcher's log, and a `pusher` call that fails still counts as sent. A
    container that was replaced (a deployment, a human's `up`) is recorded silently and raises no
    `restarted`. The browser kind comes last in the order and goes once in six hours at most, so a
-   flood of browser reports takes four of the day's six messages at most and leaves room for
-   the server kinds.
+   flood of browser reports takes at most four of the day's six messages and leaves at least two
+   for the server kinds.
 2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). Every
    five minutes, at minutes that are not the top of the hour, GitHub Actions opens the public
    address, up to six attempts 20 seconds apart, and the run fails unless one answers 200.
@@ -343,31 +343,40 @@ docker exec loop2 node dist/server/account-block.js unblock <email>
 These plain commands are allowed and leave the event out of the failure record, since the
 command runs by `docker exec` and its lines reach only the terminal. To keep the event in
 `/var/log/loop2-app.log`, the human runs this instead (`block` shown, `unblock` the same), in
-bash, as the account that owns the dump file or as root:
+bash, as the account that owns the dump file or as root. The address goes between the single
+quotes of `email=` (a single quote inside it is written `'\''`):
 
 ```sh
-out=$(docker exec loop2 node dist/server/account-block.js block <email> 2>&1); status=$?
-printf '%s\n' "$out"
-printf '%s\n' "$out" | while IFS= read -r line; do
-  case $line in
-    '{"event":"account-'*'}' | '{"failure":"account-block"'*'}')
-      printf '%s account-block | %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$line" ;;
-  esac
-done >> /var/log/loop2-app.log
-echo "exit $status"
+email='<email>'
+case $email in
+  *$'\n'* | *$'\r'*)
+    echo "refused: the address holds a line feed or a carriage return; nothing was run" >&2 ;;
+  *)
+    out=$(docker exec loop2 node dist/server/account-block.js block "$email" 2>&1); status=$?
+    printf '%s\n' "$out"
+    printf '%s\n' "$out" | while IFS= read -r line; do
+      case $line in
+        '{"event":"account-'*'}' | '{"failure":"account-block"'*'}')
+          printf '%s account-block | %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$line" ;;
+      esac
+    done >> /var/log/loop2-app.log
+    echo "exit $status" ;;
+esac
 ```
 
-The terminal shows what the plain command shows, then `exit` and the status. The file gets only
+An address that holds a line feed or a carriage return is refused with that message: the command
+does not run and nothing reaches the file. Otherwise the terminal shows what the plain command
+shows, then `exit` and the status. The file gets only
 the lines that begin with one of the two exact starts of the command's JSON lines and end with
 `}`, each with a UTC time and the tag `account-block` in front, in the shape of the file's other
 lines. The command's sentences carry the email address and never reach the file; a line that
 begins with a bare `{` does not pass either, because a registered address can begin with `{`. A
-crash line of the command (`"failure":"uncaught"`) is not appended. Residual risk: an address
-with a line break inside, so that one whole line of the output looks like a JSON line of the
-command, passes the filter and lands in the file with the words the address carries. The human
-may type such an address on purpose, and may also paste one a player registered, because the
-server accepts any text around exactly one `@`. Type the address as it is registered, or check
-it for a line break before pasting it.
+crash line of the command (`"failure":"uncaught"`) is not appended. The server accepts any text
+around exactly one `@`, so a registered address can hold a line break, and the check above
+refuses it before the command runs. Residual risk: an address that reaches the command another
+way, such as a command typed without the check or the address put into a different variable
+than `email`, is not checked, and the filter alone lets one whole line of the output that looks
+like a JSON line of the command pass into the file with the words the address carries.
 
 - **`block`** marks the account blocked and ends its sessions in every browser in the same
   step. A blocked player who reloads the page sees the login card again; a login with the right
