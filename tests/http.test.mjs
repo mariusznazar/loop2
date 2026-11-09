@@ -5028,6 +5028,31 @@ test(
   },
 );
 
+test("a policy is refused a browser report limit that is no whole number from one up, which would leave the flood unlimited or the route shut", () => {
+  // Faults: a constructor that takes NaN or a text (the comparison with the
+  // count never holds, so no report is ever refused), a fraction, a number
+  // beyond the safe integers, or a zero or less (every report refused).
+  for (const bad of [
+    0,
+    -1,
+    1.5,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    2 ** 53,
+    "30",
+  ])
+    assert.throws(
+      () => new AccountPolicy({ browserReportLimit: bad }),
+      /browser report limit/,
+      `${String(bad)} is refused`,
+    );
+  for (const good of [1, 30])
+    assert.doesNotThrow(
+      () => new AccountPolicy({ browserReportLimit: good }),
+      `${good} is taken`,
+    );
+});
+
 test(
   "over its limit the route answers 429 and writes nothing, one LIMITED line at the first refusal of an hour, and refused bodies use none of the limit",
   { timeout: 20000 },
