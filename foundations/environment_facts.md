@@ -649,6 +649,36 @@ The GitHub repository `mariusznazar/loop2` is public.
 
 - **Source:** https://api.github.com/repos/mariusznazar/loop2 (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-08) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-08
 
+## docker-compose-recreate-removal
+
+In Docker Compose v2.35.1, recreating a container removes the container it replaces.
+
+- **Source:** https://raw.githubusercontent.com/docker/compose/v2.35.1/pkg/compose/convergence.go § recreateContainer — "err = s.apiClient().ContainerRemove(ctx, replaced.ID,"; read 2026-11-09
+
+## docker-local-log-driver-bound
+
+By default, the `local` log driver of Docker preserves 100MB of log messages per container.
+
+- **Source:** https://docs.docker.com/engine/logging/drivers/local/ (archived: https://web.archive.org/web/20261015110255/https://docs.docker.com/engine/logging/drivers/local/, 2026-10-15) — "By default, the local driver preserves 100MB of log messages per container and uses automatic compression to reduce the size on disk."; read 2026-11-09
+
+## logrotate-rotation-rules
+
+On Ubuntu 22.04, `logrotate` can handle each log file daily, weekly, monthly or when it grows too large, rotates a file that has grown bigger than its `maxsize` even before the time interval ends, and rotates a log `count` times before it removes it.
+
+- **Source:** https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html (archived: https://web.archive.org/web/20261009164358/https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html, 2026-10-09) § DESCRIPTION — "Each log file may be handled daily, weekly, monthly, or when it grows too large." § CONFIGURATION FILE DIRECTIVES, rotate — "Log files are rotated count times before being removed or mailed to the address specified in a mail directive." · maxsize — "Log files are rotated when they grow bigger than size bytes even before the additionally specified time interval (daily, weekly, monthly, or yearly)."; read 2026-11-09
+
+## github-schedule-shortest-interval
+
+The shortest interval at which GitHub runs scheduled workflows is once every 5 minutes.
+
+- **Source:** https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (archived: https://web.archive.org/web/20261031092549/https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows, 2026-10-31) § schedule — "The shortest interval you can run scheduled workflows is once every 5 minutes."; read 2026-11-09
+
+## github-actions-public-runs-free
+
+GitHub charges nothing for the use of standard GitHub-hosted runners in public repositories.
+
+- **Source:** https://docs.github.com/en/billing/concepts/product-billing/github-actions (archived: https://web.archive.org/web/20261108201638/https://docs.github.com/en/billing/concepts/product-billing/github-actions, 2026-11-08) § Included compute usage and storage — "The use of standard GitHub-hosted runners is free:" · "In public repositories"; read 2026-11-09
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
