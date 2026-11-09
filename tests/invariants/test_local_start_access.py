@@ -391,7 +391,8 @@ class LocalStart(unittest.TestCase):
 
     def stop_with_a_silent_directory(self):
         """`npm run local:stop` with a planted directory that passes for a running start, its
-        name sorted first by the zeros before a live number; its stop file is the case's."""
+        name sorted first by the zeros before a live number, the order in which the script
+        takes the directories; its stop file is the case's."""
         return support.run([support.npm(), "run", "local:stop"], self.copy.path,
                            timeout=STOP_TIMEOUT)
 
@@ -403,8 +404,34 @@ class LocalStart(unittest.TestCase):
         os.makedirs(self.copy.file(f".runs/local-start/{self.planted_name()}/stop"))
         code, output = self.stop_with_a_silent_directory()
         self.assertEqual(code, 1, output)
-        self.assertIn("START_STILL_RUNNING", output)
         self.assertFalse(accepts_connections("127.0.0.1", start.port), output)
+
+    def test_a_directory_stop_cannot_be_told_to_leaves_one_failure_line_with_its_cause(self):
+        # Task item 7: the line of the failed telling and the line of the start that did not stop
+        # are one failure, so the run leaves one line, the one that carries the original error.
+        self.local()
+        os.makedirs(self.copy.file(f".runs/local-start/{self.planted_name()}/stop"))
+        code, output = self.stop_with_a_silent_directory()
+        self.assertEqual(code, 1, "the start that did not stop still fails the command")
+        lines = [line for line in output.splitlines() if '"failure":' in line]
+        self.assertEqual(len(lines), 1, output)
+        self.assertEqual(json.loads(lines[0])["code"], "EEXIST")
+
+    def test_stop_with_no_built_game_still_tells_every_start_and_leaves_the_missing_writer_once(self):
+        # Task item 6: a copy that holds no dist/server/log-line.js, with a start of the stand-in
+        # server that holds no writer either, and a directory whose stop file cannot be written
+        # listed before it.
+        write_stand_in(self.copy, STAND_IN_SERVER)
+        start = Start(self.copy, ["node", "scripts/local-start.mjs"])
+        self.starts.append(start)
+        os.makedirs(self.copy.file(f".runs/local-start/{self.planted_name()}/stop"))
+        self.assertFalse(os.path.exists(self.copy.file("dist/server/log-line.js")),
+                         "precondition: no writer of failure lines is built")
+        code, output = self.stop_with_a_silent_directory()
+        self.assertEqual(code, 1, "the planted start did not stop: " + output)
+        self.assertIn("stopped: 1", output)
+        self.assertFalse(accepts_connections("127.0.0.1", start.port), output)
+        self.assertEqual(output.count("Cannot find module"), 1, output)
 
     def test_stop_writes_through_no_planted_link(self):
         outside = self.copy.file("outside.txt")
