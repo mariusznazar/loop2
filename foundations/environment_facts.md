@@ -661,11 +661,17 @@ By default, the `local` log driver of Docker preserves 100MB of log messages per
 
 - **Source:** https://docs.docker.com/engine/logging/drivers/local/ (archived: https://web.archive.org/web/20261015110255/https://docs.docker.com/engine/logging/drivers/local/, 2026-10-15) — "By default, the local driver preserves 100MB of log messages per container and uses automatic compression to reduce the size on disk."; read 2026-11-09
 
-## logrotate-rotation-rules
+## logrotate-rotation-triggers
 
-On Ubuntu 22.04, `logrotate` can handle each log file daily, weekly, monthly or when it grows too large, rotates a file that has grown bigger than its `maxsize` even before the time interval ends, and rotates a log `count` times before it removes it.
+On Ubuntu 22.04, `logrotate` can handle each log file daily, weekly, monthly or when it grows too large, and with `maxsize` it rotates a file that has grown bigger than that size even before the time interval ends.
 
-- **Source:** https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html (archived: https://web.archive.org/web/20261009164358/https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html, 2026-10-09) § DESCRIPTION — "Each log file may be handled daily, weekly, monthly, or when it grows too large." § CONFIGURATION FILE DIRECTIVES, rotate — "Log files are rotated count times before being removed or mailed to the address specified in a mail directive." · maxsize — "Log files are rotated when they grow bigger than size bytes even before the additionally specified time interval (daily, weekly, monthly, or yearly)."; read 2026-11-09
+- **Source:** https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html (archived: https://web.archive.org/web/20261009164358/https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html, 2026-10-09) § DESCRIPTION — "Each log file may be handled daily, weekly, monthly, or when it grows too large." § CONFIGURATION FILE DIRECTIVES, maxsize — "Log files are rotated when they grow bigger than size bytes even before the additionally specified time interval (daily, weekly, monthly, or yearly)."; read 2026-11-09
+
+## logrotate-rotation-count
+
+On Ubuntu 22.04, `logrotate` rotates a log `count` times, the number that the `rotate` directive gives, before it removes the log or mails it to the address that a `mail` directive specifies.
+
+- **Source:** https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html (archived: https://web.archive.org/web/20261009164358/https://manpages.ubuntu.com/manpages/jammy/man8/logrotate.8.html, 2026-10-09) § CONFIGURATION FILE DIRECTIVES, rotate — "Log files are rotated count times before being removed or mailed to the address specified in a mail directive."; read 2026-11-09
 
 ## github-schedule-shortest-interval
 
