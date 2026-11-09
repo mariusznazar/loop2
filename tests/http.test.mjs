@@ -1994,7 +1994,7 @@ async function startWaitingRegistration(f, email, address) {
 /** Answers the held message and returns the registration's response and the
  * lines of failure the server has written once the response has ended. */
 async function endWaitingRegistration(f, { settled }, logged) {
-  for (const answer of f.mailer.held) answer("sent");
+  for (const answer of f.mailer.held.splice(0)) answer("sent");
   const response = await settled;
   // The library reports a failed write in the turn after its response; a later
   // request is answered after that turn.
@@ -2018,7 +2018,7 @@ test(
       assert.equal(f.runtime.database.blockAccount(email).outcome, "blocked");
       assert.equal(sessionCount(f), 0, "the block deleted it");
     } finally {
-      for (const answer of f.mailer.held) answer("sent");
+      for (const answer of f.mailer.held.splice(0)) answer("sent");
     }
     const { response, lines } = await endWaitingRegistration(
       f,
@@ -4365,9 +4365,8 @@ test(
   { timeout: 20000 },
   async (t) => {
     // D-353: a break-off is an expected refusal, like a body too large or
-    // broken. Faults: the break-off answered as a server failure, with its
-    // line written by the error handler; a server that never reads the
-    // partial body, which the arrival wait below would show as a hang.
+    // broken. Fault: the break-off answered as a server failure, with its
+    // line written by the error handler.
     const f = await accountFixture(t);
     const logged = captureLog(t);
     const arrived = new Promise((resolve) =>
@@ -4748,14 +4747,18 @@ test(
     // has ended.
     const f = await accountFixture(t);
     const logged = captureLog(t);
+    // `destroy` is inherited from OutgoingMessage: the restore must not leave
+    // an own property of the same function on ServerResponse.prototype.
     const destroy = ServerResponse.prototype.destroy;
+    const ownDestroy = Object.hasOwn(ServerResponse.prototype, "destroy");
     const calls = [];
     ServerResponse.prototype.destroy = function (...parameters) {
       calls.push({ writableEnded: this.writableEnded });
       return destroy.apply(this, parameters);
     };
     t.after(() => {
-      ServerResponse.prototype.destroy = destroy;
+      if (ownDestroy) ServerResponse.prototype.destroy = destroy;
+      else delete ServerResponse.prototype.destroy;
     });
     const response = await readAccount(f, refusingRenewal(f));
     assert.equal(response.status, 200, "the answer ended whole");

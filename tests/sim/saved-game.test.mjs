@@ -1773,6 +1773,7 @@ test("a crafted document of the current version is refused whole as shape", () =
     assertRefused(name, changed(change), "shape");
 });
 
+// invariant: save-version
 // The chest holds at most the balance data's chestCapacity (balance.ts: 60), and that count is
 // allowed: a chest of exactly it loads, one piece beyond it is refused.
 test("a chest holding exactly its capacity loads, and one piece beyond it is refused as shape", () => {
