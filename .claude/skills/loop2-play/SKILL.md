@@ -32,7 +32,8 @@ mail goes to an address where nothing answers.
 Each start has a database of its own under `.runs/local-start/` and removes those of the starts it
 does not find running, so an account lives until the next start; a start whose process number is
 in use and whose port takes a connection and stays silent counts as running. Two starts side by side
-stay apart in two browsers or sessions: in one, they share the session cookie, so signing in on one signs you out of the other.
+stay apart in two browsers or sessions: in one, they share the session cookie, so signing in on one
+signs you out of the other.
 Every account is made through the login card, with a made-up address at `example.test`.
 
 ## Operate the game with Playwright CLI
