@@ -399,6 +399,8 @@ test(
       Buffer.from(`${secret}Ã`, "latin1"),
       Buffer.from([0xef, 0xbb, 0xbf]),
       Buffer.from([0xef, 0xbb, 0xbf, 0x0a]),
+      Buffer.from([0xef, 0xbb, 0xbf, 0xef, 0xbb, 0xbf]),
+      Buffer.from([0xef, 0xbb, 0xbf, 0xef, 0xbb, 0xbf, 0xef, 0xbb, 0xbf]),
       secret.padEnd(1025, "x"),
     ];
     for (const content of invalid) {
@@ -435,6 +437,16 @@ test(
     );
     const marked = await readAccountConfiguration(f.environment);
     assert.equal(marked.mail.password, secret);
+    // Two marks and text: the decoder drops only the leading mark, so the second stays.
+    await writeFile(
+      f.smtpFile,
+      Buffer.concat([
+        Buffer.from([0xef, 0xbb, 0xbf, 0xef, 0xbb, 0xbf]),
+        Buffer.from(secret),
+      ]),
+    );
+    const markedTwice = await readAccountConfiguration(f.environment);
+    assert.equal(markedTwice.mail.password, `\uFEFF${secret}`);
   },
 );
 

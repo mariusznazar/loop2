@@ -45,6 +45,7 @@ const printableAscii = /^[\x21-\x7e]+$/;
 const hostName = /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$/;
 const login = /^[^\s\p{Cc}]+$/u;
 const controlCharacter = /\p{Cc}/u;
+const byteOrderMark = /\uFEFF/gu;
 const passwordFileLimit = 1024;
 
 // A start that failed, in a sentence of the code's own that holds no value; the
@@ -107,9 +108,9 @@ async function readSecrets(path: string): Promise<string[]> {
   }
 }
 
-// The SMTP password: one small non-empty UTF-8 file without control characters,
-// so a trailing newline is refused instead of trimmed, and a file of only a
-// byte-order mark, which decodes to nothing, is refused; read once at startup.
+// The SMTP password: one small UTF-8 file without control characters, so a
+// trailing newline is refused instead of trimmed, and a file of byte-order marks
+// and nothing else, which holds no password, is refused; read once at startup.
 async function readSmtpPassword(path: string): Promise<string> {
   try {
     const file = await open(path, constants.O_RDONLY | constants.O_NONBLOCK);
@@ -130,7 +131,11 @@ async function readSmtpPassword(path: string): Promise<string> {
       const password = new TextDecoder("utf-8", { fatal: true }).decode(
         buffer.subarray(0, length),
       );
-      if (password === "" || controlCharacter.test(password)) throw new Error();
+      if (
+        password.replace(byteOrderMark, "") === "" ||
+        controlCharacter.test(password)
+      )
+        throw new Error();
       return password;
     } finally {
       await file.close();
