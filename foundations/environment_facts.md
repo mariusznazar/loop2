@@ -16,25 +16,25 @@ In OpenSSH portable 8.9p1, the option `command=` of an authorized_keys file make
 
 The test server's authorized_keys contains exactly one entry beginning with `restrict,command="/usr/local/bin/loop2-deploy"`.
 
-- **Source:** observed: `python3 -c 'from pathlib import Path; lines=(Path.home()/".ssh/authorized_keys").read_text().splitlines(); print(sum(line.startswith("restrict,command="+chr(34)+"/usr/local/bin/loop2-deploy"+chr(34)+" ") for line in lines))'` on Python 3.10.12, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Source:** reading: `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys` on the test server's host, grep (GNU grep) 3.7 — "1"; run 2026-11-10
 
 ## loop2-host-installed-command
 
 The installed `/usr/local/bin/loop2-deploy` is owned by root:root with mode 0755.
 
-- **Source:** observed: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Source:** reading: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on the test server's host, stat (GNU coreutils) 8.32 — "755 root:root"; run 2026-11-10
 
 ## mikrus-host-docker-workloads
 
 The old loop game and foundryvtt run as Docker containers on the test server's host.
 
-- **Source:** observed: `docker ps --format '{{.Names}} {{.Status}}'` on Docker 28.1.1 build 4eba377, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377 — "6e63d970d315   loop:latest                "docker-entrypoint.s…"   8 weeks ago     Up 8 weeks (healthy)" · "bbe6f6752113   felddy/foundryvtt:12.331   "./entrypoint.sh res…"   18 months ago   Up 5 months (healthy)"; run 2026-11-10
 
 ## mikrus-host-swap
 
-The test server's host reports zero total swap in `/proc/meminfo`.
+The test server's host reports zero total swap.
 
-- **Source:** observed: `cat /proc/meminfo` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64; run 2026-10-13
+- **Source:** reading: `free` on the test server's host, free from procps-ng 3.3.17 — "total        used        free      shared  buff/cache   available" · "Swap:              0           0           0"; run 2026-11-10
 
 ## game-icons-licence
 
@@ -459,9 +459,9 @@ A file in `/etc/cron.d` for cron 3.0pl1-137ubuntu3 of Ubuntu 22.04 must be owned
 
 ## docker-build-cache-invalidation
 
-Docker's builder checks the base image and then each instruction against the cached layers, invalidates the cache where no cached layer matches, checks `COPY` by file metadata and `RUN` by its command string, and uses no cache for any instruction after an invalidation.
+Docker's builder checks the base image and then each instruction against the cached layers, invalidates the cache where no cached layer matches, checks `COPY` by file metadata and `RUN` by its command string, uses no cache for any instruction after an invalidation, and treats a build argument as a cause of cache invalidation.
 
-- **Source:** https://raw.githubusercontent.com/docker/docs/62f6d26c183faf98fc8567f0b675f660f4e91ae6/content/manuals/build/cache/invalidation.md § General rules — "The builder begins by checking if the base image is already cached. Each subsequent instruction is compared against the cached layers. If no cached layer matches the instruction exactly, the cache is invalidated." · "For the ADD and COPY instructions, and for RUN instructions with bind mounts (RUN --mount=type=bind), the builder calculates a cache checksum from file metadata to determine whether cache is valid." · "In that case just the command string itself is used to find a match." · "Once the cache is invalidated, all subsequent Dockerfile commands generate new images and the cache isn't used."; read 2026-10-31
+- **Source:** https://raw.githubusercontent.com/docker/docs/62f6d26c183faf98fc8567f0b675f660f4e91ae6/content/manuals/build/cache/invalidation.md § General rules — "The builder begins by checking if the base image is already cached. Each subsequent instruction is compared against the cached layers. If no cached layer matches the instruction exactly, the cache is invalidated." · "For the ADD and COPY instructions, and for RUN instructions with bind mounts (RUN --mount=type=bind), the builder calculates a cache checksum from file metadata to determine whether cache is valid." · "In that case just the command string itself is used to find a match." · "Once the cache is invalidated, all subsequent Dockerfile commands generate new images and the cache isn't used." · § Build secrets — "Build arguments do result in cache invalidation."; read 2026-11-10
 
 ## openssh-strict-host-key-checking
 
@@ -702,6 +702,12 @@ The documentation of `docker volume prune` says that it removes the local volume
 `docker system prune` removes no volume by default, its `--volumes` option prunes anonymous volumes as well, and its `--all` option removes all unused images, not just dangling ones.
 
 - **Source:** https://raw.githubusercontent.com/docker/cli/ce1223035ac3ab8922717092e63a184cf67b493d/docs/reference/commandline/system_prune.md § Options, --volumes — "Prune anonymous volumes" · § Options, -a, --all — "Remove all unused images not just dangling ones" · § Examples — "By default, volumes aren't removed to prevent important data from being deleted if there is currently no container using the volume. Use the --volumes flag when running the command to prune anonymous volumes as well:"; read 2026-11-09
+
+## browser-bare-import-resolution
+
+The HTML Standard has the resolution of a module specifier give a URL or throw an exception, and throw a TypeError for a bare specifier that no import map remaps.
+
+- **Source:** https://html.spec.whatwg.org/commit-snapshots/a0442320781555c99544448e30134662bfc39190/ § 8.1.5.1 The resolution algorithm — "The resolve a module specifier algorithm is the primary entry point for converting module specifier strings into URLs. When no import maps are involved, it is relatively straightforward, and reduces to resolving a URL-like module specifier." · "In the end, if no successful resolution is found via any of the candidate module specifier maps, resolve a module specifier will throw an exception. Thus the result is always either a URL or a thrown exception." · "Throw a TypeError indicating that specifier was a bare specifier, but was not remapped to anything by importMap."; read 2026-11-10
 
 ## Withdrawn identifiers
 

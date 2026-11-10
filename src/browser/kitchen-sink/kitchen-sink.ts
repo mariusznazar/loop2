@@ -33,13 +33,12 @@ import {
   type Field,
 } from "../view/controls/text-field.js";
 import { messageSentence, UNCONFIRMED_SENTENCE } from "../view/email-status.js";
+import { ICON_SQUARE, iconPlaces, TILE_SIZE } from "../view/terrain-picture.js";
 
 /** The page's marker: it stands in this module and in the page's HTML, in no other file of src. */
 export const PAGE_MARKER = "loop2-kitchen-sink-page";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-/** The tiles' radius, as the game draws them (`terrain-picture.ts`). */
-const TILE_SIZE = 24;
 /** Room around the tiles for the outlines' stroke, as in `terrain-drawing.tsx`. */
 const MARGIN = 4;
 
@@ -674,23 +673,15 @@ function drawSample(tiles: readonly SampleTile[]): SVGSVGElement {
     polygon.setAttribute("points", points);
     group.append(polygon);
     const icons = tile.icons === "none" ? [] : ICONS;
-    // Two icons per row, centred on the tile, as `terrain-picture.ts` places them.
-    const iconSize = TILE_SIZE * 0.7;
-    const rows = Math.ceil(icons.length / 2);
+    // The game's placement of the icons on a tile, with its tile size and icon square.
+    const places = iconPlaces(icons.length, cx, cy, TILE_SIZE * ICON_SQUARE);
     icons.forEach((href, i) => {
-      const inRow = Math.min(2, icons.length - Math.floor(i / 2) * 2);
       const image = document.createElementNS(SVG_NS, "image");
       image.setAttribute("href", href);
-      image.setAttribute(
-        "x",
-        String(cx + (i % 2) * iconSize - (inRow * iconSize) / 2),
-      );
-      image.setAttribute(
-        "y",
-        String(cy + Math.floor(i / 2) * iconSize - (rows * iconSize) / 2),
-      );
-      image.setAttribute("width", String(iconSize));
-      image.setAttribute("height", String(iconSize));
+      image.setAttribute("x", String(places[i].x));
+      image.setAttribute("y", String(places[i].y));
+      image.setAttribute("width", String(places[i].size));
+      image.setAttribute("height", String(places[i].size));
       const depleted = tile.icons === "first-depleted" && i === 0;
       image.setAttribute("class", depleted ? "icon dimmed" : "icon");
       group.append(image);
@@ -782,7 +773,7 @@ const TILE_SAMPLES: readonly (readonly [string, () => Node[], string?])[] = [
         { at: HERE, revealed: true, icons: "first-depleted", outline: null },
       ]),
     ],
-    "Ten stan widać tylko tutaj: w grze zapas zasobu nie spada dziś do zera.",
+    "W grze zbieranie zabiera zapas z kafelka; przy zapasie zero ikona przygasa.",
   ],
 ];
 

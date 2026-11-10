@@ -2,7 +2,7 @@
 
 Aplikacja TypeScript: gra w przeglądarce zbudowana w React oraz serwer Express 5, który podaje jej pliki.
 
-Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w głównym katalogu repozytorium.
+Wymagania: Node.js 24.15.0 lub nowszy w linii 24 (`^24.15.0`) i dostarczony z nim npm. Wszystkie polecenia wykonuj w głównym katalogu repozytorium.
 
 ## Pierwsze uruchomienie
 
@@ -20,10 +20,12 @@ Tej drogi używa się do sprawdzania, nie do grania na stałe, bo gra się na se
 - **Poczta nigdzie nie dochodzi.** Ustawienia poczty wskazują adres, pod którym nic nie odpowiada, więc po rejestracji strona mówi, że nie udało się wysłać wiadomości, a adres zostaje niepotwierdzony. Potwierdzenie adresu i ustawienie nowego hasła przechodzi się na serwerze testowym.
 - **Certyfikat powstaje przez `openssl`** z `PATH` albo z instalacji Git for Windows. Klucz żyje tylko w pamięci polecenia.
 
-Sam serwer uruchamiają dwa polecenia, a `npm run typecheck` sprawdza typy przeglądarki i serwera bez emisji plików:
+Serwer budują i uruchamiają dwa polecenia, `npm run build` i `npm start`; `npm run typecheck` sprawdza typy przeglądarki i serwera bez emisji plików. Poniżej ich opis oraz uwagi o grafikach:
 
-1. `npm run build` — kompilacja obu części do `dist/browser` i `dist/server`, zebranie kodu przeglądarki esbuildem do `dist/public` oraz skopiowanie tam HTML-a, arkuszy stylów leżących bezpośrednio w `src/browser/`, ikon z `assets/icons/`, czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`) i plików PNG z `assets/sprites/` (do `dist/public/sprites`). Obraz gry za kartą logowania, `assets/sprites/login-backdrop.png`, i kadr lasu w śniegu w scenie, `assets/sprites/forest-scene.png`, są złożone z grafik paczki Pixel Crawler autorstwa Anokolisy, których warunki nie wymagają wzmianki; postać maga w scenie, `assets/sprites/mage-idle.png` i `assets/sprites/mage-run.png`, oraz ognisko, patyki, krzak i mech sceny, `assets/sprites/fire.png`, `assets/sprites/sticks.png`, `assets/sprites/berry-bush.png` i `assets/sprites/moss.png`, są wycięte z grafik tej samej paczki, autorstwa Anokolisy, których warunki nie wymagają wzmianki; `npm run kitchen-sink` nie kopiuje plików z `assets/sprites/`.
-2. `npm start` — uruchomienie zbudowanego serwera.
+1. `npm run build` — kompilacja obu części do `dist/browser` i `dist/server`, zebranie kodu przeglądarki esbuildem do `dist/public` oraz skopiowanie tam HTML-a, arkuszy stylów leżących bezpośrednio w `src/browser/`, ikon z `assets/icons/`, czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`) i plików PNG z `assets/sprites/` (do `dist/public/sprites`).
+2. Grafiki z `assets/sprites/` pochodzą z paczki Pixel Crawler autorstwa Anokolisy, której warunki nie wymagają wzmianki: obraz gry za kartą logowania, `assets/sprites/login-backdrop.png`, i kadr lasu w śniegu w scenie, `assets/sprites/forest-scene.png`, są złożone z jej grafik; postać maga w scenie, `assets/sprites/mage-idle.png` i `assets/sprites/mage-run.png`, oraz ognisko, patyki, krzak i mech sceny, `assets/sprites/fire.png`, `assets/sprites/sticks.png`, `assets/sprites/berry-bush.png` i `assets/sprites/moss.png`, są z niej wycięte.
+3. `npm run kitchen-sink` nie kopiuje plików z `assets/sprites/`.
+4. `npm start` — uruchomienie zbudowanego serwera.
 
 `npm start` wymaga wcześniejszego builda. Serwer domyślnie nasłuchuje na 127.0.0.1:3000; adres zmienisz zmiennymi środowiska `LOOP2_LISTEN_HOST` i `LOOP2_LISTEN_PORT`. Zakończ go przez Ctrl+C. Bez ustawień kont strona się otwiera, ale serwer odpowiada na żądania kont kodem 503, więc nikt nie wejdzie do gry; do gry prowadzi `npm run local`.
 
@@ -73,7 +75,7 @@ Agent obsługuje działającą grę w prawdziwej przeglądarce według skilla `l
 
 `npm test` to jedno polecenie wszystkich testów. Buduje aplikację i wykonuje testy HTTP, testy startu serwera oraz testy symulacji i widoku w Node, bez przeglądarki. Każdy test, który uruchamia serwer, podaje mu w `LOOP2_LISTEN_PORT` wolny port wskazany przez system, więc dwa przebiegi `npm test` na jednym komputerze nie zderzają się na porcie, a port 3000 może być w tym czasie zajęty. Wyjątkiem jest jeden test domyślnego adresu: uruchamia serwer bez `LOOP2_LISTEN_HOST` i `LOOP2_LISTEN_PORT` i przechodzi, gdy serwer zgłosi gotowość na 127.0.0.1:3000 (test od razu go zamyka) albo zakończy się błędem zajętego 127.0.0.1:3000. Potem uruchamia testy w Pythonie z każdego katalogu `tests/` (niezmienniki, wdrożenie, jakość, praca agenta) przez `python -B .the-way/gate/run_tests.py` i sprawdza fundament przez `python -B .the-way/elements/common/foundation_check.py`. Pierwszy błąd zatrzymuje dalsze kroki. Wymaga Pythona 3.14 na `PATH` jako `python`, zainicjowanego submodułu `.the-way`, środowiska `.runs/quality-venv` opisanego wyżej, a gdy zmiana dotyka `package-lock.json` — także dostępu do rejestru npm.
 
-W przeglądarce, po `npm run local` i założeniu konta, sprawdź, że `/main.js` ładuje się bez błędu, konsola nie zawiera błędów wykonania, a strona pokazuje ekran Siedziba z stopką z podpisami autorów ikon, a w menu „Konto” stoi „Wyloguj”; po założeniu postaci, „Mapy”, wiersza „Las” i „Wejdź” strona prowadzi na ekran przebiegu mapy, gdzie wiersz stanu z minutą rosnącą co sekundę i panel terenu z listą kafelków.
+W przeglądarce, po `npm run local` i założeniu konta, sprawdź, że `/main.js` ładuje się bez błędu, konsola nie zawiera błędów wykonania, a strona pokazuje ekran Siedziba ze stopką z podpisami autorów ikon, a w menu „Konto” stoi „Wyloguj”; po założeniu postaci, „Mapy”, wiersza „Las” i „Wejdź” strona prowadzi na ekran Przejście, gdzie nagłówek pokazuje nazwę postaci, nazwę mapy i minutę gry rosnącą co sekundę, pod rysunkiem mapy stoją zakładki „Kronika” i „Teren”, a po prawej stoi program.
 
 Jeden plik testu: `npm test -- tests/sim/hex.test.mjs` albo `npm test -- tests/quality/test_audit_dependencies.py`. Bramka przyjmuje dokładnie jeden plik: Node uruchamia po budowaniu, Python bez budowania, bez pozostałych testów i kontroli fundamentu. Błędny plik lub przebieg bez wykonanego testu kończy się porażką. Przed requestem wymagany jest pełny `npm test` bez argumentów.
 

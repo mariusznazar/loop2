@@ -45,11 +45,17 @@ export type TerrainPicture = {
   tiles: PictureTile[];
 };
 
+/** The tile radius the game draws with by default; the kitchen-sink page uses it too. */
+export const TILE_SIZE = 24;
+
+/** The side of the square the icons of a tile share, as a multiple of the tile's size. */
+export const ICON_SQUARE = 1.4;
+
 /**
  * Places `count` icons on a tile centred at cx, cy: two a row, centred, in a square of side
  * `box`; an icon's side is half the box, or a third of it where the icons take three rows.
  */
-function iconPlaces(
+export function iconPlaces(
   count: number,
   cx: number,
   cy: number,
@@ -71,7 +77,10 @@ function iconPlaces(
  * The terrain of the map run as plain data for drawing; pure, no DOM, no number of stock or of a
  * campfire's minutes. A burning stick is not drawn: it stands only in the list of revealed tiles.
  */
-export function terrainPicture(state: GameState, size = 24): TerrainPicture {
+export function terrainPicture(
+  state: GameState,
+  size = TILE_SIZE,
+): TerrainPicture {
   const run = state.run;
   if (!run) return { width: 0, height: 0, offsetX: 0, offsetY: 0, tiles: [] };
 
@@ -86,8 +95,8 @@ export function terrainPicture(state: GameState, size = 24): TerrainPicture {
   const resourceOrder: ResourceId[] = MAPS[run.mapId].resources.map(
     ({ id }) => id,
   );
-  // The square the icons of a tile share: two icons of side 0.7 × size a row.
-  const iconBox = size * 1.4;
+  // The square the icons of a tile share, see `ICON_SQUARE`.
+  const iconBox = size * ICON_SQUARE;
   const tiles = run.tiles.map((tile, index): PictureTile => {
     const centre = centres[index];
     const cx = centre.x + offsetX;

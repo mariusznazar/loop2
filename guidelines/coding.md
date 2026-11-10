@@ -129,6 +129,15 @@ Zdanie, którym polecenie serwisowe (`account-block`, `account-backup`) odpowiad
 operatorowi, nie jest wierszem logu (D-354). Wiersz JSON awarii i zdanie po nim
 to jeden zapis awarii: zostaw oba i nie licz zdania jako drugiego zapisu.
 
+Inaczej jest z `account-database-check` i `measure-passwords`: to, co wypisują
+przy awarii — zdanie w logu budowania obrazu i raport dla skryptu, który je
+uruchomił — nie jest wierszem logu, tylko komunikatem dla tego, kto je uruchomił.
+Żadne z nich nie działa na wartości gracza: `account-database-check` pracuje na
+tymczasowej bazie, a `measure-passwords` na sztucznych hasłach. Ich błąd nie
+cytuje więc wartości gracza, a awaria zostaje z treścią błędu i bez wiersza
+awarii w postaci wierszy logu (z polami `failure`, `kind`, `code` i `place`);
+raport `measure-passwords` zostaje takim, jaki jest.
+
 Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która zapisuje
 to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
 serwer, `account-block` i `account-backup` — mają własną, `installLastResort`,

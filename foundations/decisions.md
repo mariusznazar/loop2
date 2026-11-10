@@ -6,7 +6,7 @@ The account and save server is written in TypeScript and runs on Node.js 24 LTS.
 types are checked before deployment.
 
 - **Scope:** account-server, build-tools
-- **Based on:** node-24-support-schedule · Node.js 24.21.0 TypeScript documentation, "no type checking is performed" (https://nodejs.org/download/release/v24.21.0/docs/api/typescript.html, read 2026-10-04) · State of JS 2025 runtime survey, Node.js 10,062 of 11,141 respondents to the runtime question (https://2025.stateofjs.com/en-US/other-tools/#runtimes, read 2026-10-04) · Bun 1.4.2 documentation, built-in `bun:sqlite` (https://github.com/oven-sh/bun/blob/bun-v1.4.2/docs/runtime/sqlite.mdx, read 2026-10-04) · Deno release documentation, 2.9 LTS to 2027-01-31 (https://docs.deno.com/runtime/fundamentals/stability_and_releases/, read 2026-10-04) · Go SQL driver list (https://go.dev/wiki/SQLDrivers, read 2026-10-04)
+- **Based on:** node-24-support-schedule · Node.js 24.21.0 TypeScript documentation, "no type checking is performed" (https://nodejs.org/download/release/v24.21.0/docs/api/typescript.html § Type stripping — "Node.js will replace TypeScript syntax with whitespace, and no type checking is performed."; read 2026-11-10) · State of JS 2025 runtime survey, Node.js at the top of the chart of runtimes (https://2025.stateofjs.com/en-US/other-tools/#runtimes § JavaScript Runtimes, All Respondents chart, the first three rows by rank — "1" · "Node.js" · "10,062" · "2" · "Browser" · "9,682" · "3" · "Bun" · "2,321"; the page's text gives no label to these figures; read 2026-11-10) · Bun 1.4.2 documentation, built-in `bun:sqlite` (https://github.com/oven-sh/bun/blob/bun-v1.4.2/docs/runtime/sqlite.mdx § front matter, description — "Bun natively implements a high-performance SQLite3 driver."; read 2026-11-10) · Deno release documentation, 2.9 LTS to 2027-01-31 (https://docs.deno.com/runtime/fundamentals/stability_and_releases/ § Long Term Support (LTS) — "The LTS channel is active on the Deno 2.9 line, starting with v2.9.3, and is maintained until January 31st, 2027."; read 2026-11-10) · Go SQL driver list (https://go.dev/wiki/SQLDrivers § Drivers — "Drivers for Go’s sql package include:" · "SQLite (uses cgo): https://github.com/mattn/go-sqlite3 [*]" · "SQLite: (pure go): https://modernc.org/sqlite"; read 2026-11-10)
 - **Relations:** derives from D-07
 - **Verification:** invariants: account-server-runtime · account-server-typecheck
 - **Origin:** none
@@ -20,7 +20,7 @@ The account and save server uses Express 5 on Node.js 24 to route and handle HTT
 responses.
 
 - **Scope:** account-server, build-tools
-- **Based on:** Express 5 API, routing and JSON request parsing (https://expressjs.com/en/5x/api/express/, read 2026-10-04) · Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/, read 2026-10-04) · Express 5 error handling (https://expressjs.com/en/5x/guide/error-handling/, read 2026-10-04) · Node.js 24 low-level HTTP API (https://nodejs.org/docs/latest-v24.x/api/http.html, read 2026-10-04) · Fastify 5.12 validation and serialization (https://fastify.dev/docs/v5.12.x/Reference/Validation-and-Serialization/, read 2026-10-04)
+- **Based on:** Express 5 API, routing and JSON request parsing (https://expressjs.com/en/5x/api/express/ § express.json() — "This is a built-in middleware function in Express. It parses incoming requests with JSON payloads and is based on body-parser." · § express.Router() — "You can add middleware and HTTP method routes (such as get, put, post, and so on) to router just like an application."; read 2026-11-10) · Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/ § Serving static files in Express — "To serve static files such as images, CSS files, and JavaScript files, use the express.static built-in middleware function in Express."; read 2026-11-10) · Express 5 error handling (https://expressjs.com/en/5x/guide/error-handling/ § The default error handler — "Express comes with a built-in error handler that takes care of any errors that might be encountered in the app."; read 2026-11-10) · Node.js 24.21.0 low-level HTTP API (https://nodejs.org/download/release/v24.21.0/docs/api/http.html § HTTP, introduction — "The HTTP interfaces in Node.js are designed to support many features of the protocol which have been traditionally difficult to use. In particular, large, possibly chunk-encoded, messages. The interface is careful to never buffer entire requests or responses, so the user is able to stream data."; read 2026-11-10) · Fastify 5.12 validation and serialization (https://fastify.dev/docs/v5.12.x/Reference/Validation-and-Serialization/ § Validation and Serialization — "Fastify uses a schema-based approach. We recommend using JSON Schema to validate routes and serialize outputs."; read 2026-11-10)
 - **Relations:** derives from D-01
 - **Verification:** invariants: account-server-express-http
 - **Origin:** none
@@ -59,7 +59,7 @@ game's content data, the moment of the browser's clock, which it reads and passe
 simulation, and, for the scene and the chronicle, its previous reading of the game state and the
 events the simulation returned, and changes the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
-the server or kept in the page's memory after a save found no session (D-211).
+the server or the unsaved game state it kept in the page's memory after a save found no session (D-211).
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
@@ -130,7 +130,7 @@ account and save routes in the loop2 container. An unmatched `/api/` request rec
 not the game's HTML page.
 
 - **Scope:** account-server, build-tools, deployment
-- **Based on:** Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/, read 2026-10-04) · Express 5 request routing and response API (https://expressjs.com/en/5x/api/express/, read 2026-10-04) · Caddy 2 route, file_server and reverse_proxy (https://caddyserver.com/docs/caddyfile/directives/route, read 2026-10-04) · Docker multiple processes in one container (https://docs.docker.com/engine/containers/multi-service_container/, read 2026-10-04)
+- **Based on:** Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/ § Serving static files in Express — "To serve static files such as images, CSS files, and JavaScript files, use the express.static built-in middleware function in Express."; read 2026-11-10) · Express 5 request routing and response API (https://expressjs.com/en/5x/api/express/ § express.Router() — "Creates a new router object." · "You can add middleware and HTTP method routes (such as get, put, post, and so on) to router just like an application."; read 2026-11-10) · Caddy 2 route, file_server and reverse_proxy (https://caddyserver.com/docs/caddyfile/directives/route § Examples — "Proxy requests to /api as-is, and rewrite all other requests based on whether they match a file on disk, otherwise /index.html. Then that file is served."; read 2026-11-10) · Docker multiple processes in one container (https://docs.docker.com/engine/containers/multi-service_container/ § introduction — "It's best practice to separate areas of concern by using one service per container."; read 2026-11-10)
 - **Relations:** derives from D-02 · derives from D-08
 - **Verification:** invariants: loop2-one-serving-process · loop2-api-error-route
 - **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What serves the built game and account requests in the container?"
@@ -995,7 +995,7 @@ In the file of design tokens of the browser view, each role of its styleguide's 
 - **Verification:** an agent compares a change with the decision:
   - complies: `--text-label` for the role `text-label`; `--space-s` for a size of the spacing scale; `--font-size-label` for the size of labels;
   - violates: `--space-8` for the spacing of 8 px; `--zinc-900` for the background `page`; `--yellow` for the role `discovery`.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q18. Jak nazywają się role w kodzie i czy jakieś odstępstwa zostają celowo?"
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q18. Jak nazywają się role w kodzie i czy jakieś odstępstwa zostają celowo?", for the names of the roles · the names of the other tokens were chosen by the cycle, not by an answer of the human: Decision 1 of the spec in `docs/task-cycles/styleguide-loop2/spec.md` at commit b0c4d44
 
 *Rationale:* A value may change while its meaning stays, so a name that tells what the value is for stays true when the value changes, and the change stays in the one place that holds the value; a name telling a colour or a number turns false with the first such change, or takes a rename in every style that reads it.
 *Rejected:* names by the value — a colour's name or the number of pixels of a spacing — each change of a value renames the property in every style.
@@ -1114,10 +1114,10 @@ The characters of the team stand on its list in the order they were created.
 - **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?"
 
 *Rationale:* the order of creation is one the player sets by creating characters, which no other
-event of the game changes, so a character keeps its place on the list and the player finds it
-there again.
-*Rejected:* the list sorted by name — two characters may bear one name, and a new character would
-move the others.
+event of the game changes, so the characters keep their order on the list and the player finds each
+among the others where it was; only the position number of a character on the list shifts, when a
+character before it leaves.
+*Rejected:* unknown
 
 ### D-55 — How many manual map runs go on at a time?
 
@@ -1142,29 +1142,31 @@ run for each character, and the screen one for each.
 
 ### D-56 — How does the game state tell one character from another?
 
-Each character carries a number the game gives it when the character is created, one
-more than the number the game state gave last, so the numbers of two characters of one game
-differ. A map run names the team's character it carries by that number.
+Each character carries a number the game gives it when the character is created, 1 for the
+first character of a game and one more than the number the game state gave last for each later one,
+so the numbers of two characters of one game differ. A map run names the team's character it carries
+by that number.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-52
 - **Verification:** an agent compares a change with the decision:
-  - complies: the third character created carrying the number 3, whatever its name; a map run of
+  - complies: the first character of a game carrying the number 1; the third character created
+    carrying the number 3, whatever its name; a map run of
     that character holding the number 3; a saved game that keeps the number the game state gives
     next
-  - violates: a character found by its name or by its place on the team's list; a map run holding
+  - violates: a character found by its name or by its position number on the team's list; a map run holding
     a copy of the character's name or archetype in place of its number; a number given anew to a
     character created after another left the team
 - **Origin:** none
 
-*Rationale:* two characters may bear one name, and a character's place on the list moves when a
-character before it leaves, so neither tells a character apart for long; a number given once, at
+*Rationale:* two characters may bear one name, and a character's position number on the list
+shifts when a character before it leaves, so neither tells a character apart for long; a number given once, at
 creation, keeps pointing at the same character in a saved game and when time away is computed
 character by character. Counting up keeps the number out of the simulation's randomness, which
 serves map runs.
-*Rejected:* the name — two characters may share it; the place on the team's list — it moves when a
-character before it leaves; a number drawn at random — every random draw of the simulation comes
+*Rejected:* the name — two characters may share it; the position number on the team's list — it shifts
+when a character before it leaves; a number drawn at random — every random draw of the simulation comes
 from the generators of a map run.
 
 ### D-57 — In what unit does a character's warmth stand?
@@ -1340,7 +1342,7 @@ A tile holding fewer pieces of a resource than its starting stock gains one piec
 - **Based on:** none
 - **Relations:** derives from D-24
 - **Verification:** an agent compares a change with the decision:
-  - complies: a tile of Las whose sticks fall below its starting stock in game minute 45 gaining a stick in game minute 60 and another in game minute 90, sticks renewing one piece in 30 game minutes; a tile at its starting stock gaining nothing;
+  - complies: a tile of Las missing two sticks of its starting stock since game minute 45 gaining a stick in game minute 60 and another in game minute 90, sticks renewing one piece in 30 game minutes; a tile at its starting stock gaining nothing;
   - violates: a tile growing above its starting stock; a tile refilled to its starting stock at once; a tile whose sticks fall below its starting stock in game minute 45 waiting for its own 30 game minutes and gaining its first stick in game minute 75.
 - **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Jak działają plecak, zbieranie, ognisko i jedzenie — reguły i liczby?"
 
@@ -1873,7 +1875,7 @@ Registration with an email address that already has an account shows „Konto z 
 
 ### D-101 — How long do independent browser sessions last?
 
-Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once. A session expires 30 days after its last request and every request with a valid session, static-file requests included, renews the server expiry and cookie. Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot resurrect a destroyed session or shorten a later expiry.
+Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once. A session expires 30 days after its last request and every request with a valid session, static-file requests included, renews the server expiry and cookie. Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot restore a destroyed session or shorten a later expiry.
 
 - **Scope:** account-server, browser-view
 - **Based on:** express-session-store-contract
@@ -2011,7 +2013,7 @@ In the private Cloudflare Tunnel topology of D-10, account requests require exac
 
 ### D-111 — When is account configuration sufficient to start the server?
 
-Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `LOOP2_PUBLIC_ORIGIN`, `LOOP2_PROXY_MODE`, `LOOP2_MAIL_FROM`, `LOOP2_SMTP_HOST`, `LOOP2_SMTP_PORT`, `LOOP2_SMTP_USER` and `LOOP2_SMTP_PASSWORD_FILE`, and every partial or invalid explicit configuration refuses before listening; wholly unconfigured non-production may serve public files with JSON 503 from known account routes, without anonymous gameplay or generated-secret, in-memory-database or MemoryStore fallback. The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 with no control character, so a trailing newline is refused, read once; unreadable or invalid settings report their setting or path rather than contents, and startup does not contact the mail service. After configuration and required resources validate, a start with neither listen variable set retains `127.0.0.1:3000` and the existing occupied-address error, and startup failure or shutdown disposes opened resources.
+Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `LOOP2_PUBLIC_ORIGIN`, `LOOP2_PROXY_MODE`, `LOOP2_MAIL_FROM`, `LOOP2_SMTP_HOST`, `LOOP2_SMTP_PORT`, `LOOP2_SMTP_USER` and `LOOP2_SMTP_PASSWORD_FILE`, and every partial or invalid explicit configuration refuses before listening; wholly unconfigured non-production may serve public files with JSON 503 from known account routes, without anonymous gameplay or generated-secret, in-memory-database or MemoryStore fallback. The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents, and startup does not contact the mail service. After configuration and required resources validate, a start with neither listen variable set retains `127.0.0.1:3000` and the existing occupied-address error, and startup failure or shutdown disposes opened resources.
 
 - **Scope:** account-server, deployment, build-tools
 - **Based on:** session-secret-rotation
@@ -2019,8 +2021,8 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 - **Verification:** invariants: account-server-default-address · account-startup-configuration.
 - **Origin:** none
 
-*Rationale:* Failing before readiness prevents an apparently healthy production process from operating without durable identity or a signing key. An explicitly unconfigured development mode still allows static work, while partial configuration remains an error rather than silently losing account behavior. The mail settings count as account settings, so a server that holds accounts can always send their confirmation messages, and every local run or test that configures accounts supplies them; the mail service is not reached at startup, so its failure never keeps the game down.
-*Rejected:* Generated production keys or ephemeral storage — invalidate or lose identity on replacement; an unconfigured production fallback — conceals missing setup; unconditional default-start readiness — contradicts required validation; mail as a separate optional group with mail switched off outside production — a second configured but incomplete mode beside the one unconfigured mode; trimming the password file — hides a rotation mistake until the first failed login to the mail service.
+*Rationale:* Failing before readiness prevents an apparently healthy production process from operating without durable identity or a signing key. An explicitly unconfigured development mode still allows static work, while partial configuration remains an error rather than silently losing account behavior. The mail settings count as account settings, so a server that holds accounts can always send their confirmation messages, and every local run or test that configures accounts supplies them; the mail service is not reached at startup, so its failure never keeps the game down. A byte-order mark is invisible and the decoding of the file drops a leading one, so a file of marks and nothing else holds no password anyone can see, and the mistake shows at startup, not only when the file has no byte; a mark followed by a password still gives that password.
+*Rejected:* Generated production keys or ephemeral storage — invalidate or lose identity on replacement; an unconfigured production fallback — conceals missing setup; unconditional default-start readiness — contradicts required validation; mail as a separate optional group with mail switched off outside production — a second configured but incomplete mode beside the one unconfigured mode; trimming the password file — hides a rotation mistake until the first failed login to the mail service; refusing a password file only at zero bytes — a file of only a byte-order mark still gives an empty password, and the mistake shows at the first login to the mail service; refusing every file that starts with a byte-order mark — refuses a mark followed by a password, which the decoder reads as that password, while the rule asks only that the password not be empty; accepting a file of two or more byte-order marks and nothing else — a password of invisible characters, and the mistake shows at the first login to the mail service.
 
 ### D-113 — Which file is the exemplar for password hashing?
 
@@ -2803,7 +2805,7 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
 - **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-147 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 8, 9 and 15 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 1 and 5, and Decisions in play
 
 *Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter.
-*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; putting it above discovery — moves the explanation of the pause; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter.
+*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter.
 
 ### D-148 — Where is an attacking creature pictured today?
 
@@ -2933,7 +2935,7 @@ The link of a confirmation message is the configured public origin followed by `
   - violates: a link carrying its token in its path or query; a token kept in clear in the database or written to a log; an address confirmed by the request that opens the link
 - **Origin:** potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2, and § Settlements to record, row K2
 
-*Rationale:* the page confirms with a request of its own, so a mail client or a spam filter that opens a link by itself uses up nothing, and the link works in any browser because it needs no session. A navigation from a mail service on another site brings no session cookie, but the page's own requests do, so a signed-in player sees the result above the game. A fragment reaches no server, no request log and no `Referer`, a digest in the database yields no working link to whoever reads it, and one refusal for every bad token tells nothing about which it was. The start of the game page gains one more state.
+*Rationale:* the page confirms with a request of its own, so a mail client or a spam filter that opens a link by itself uses up nothing, and the link works in any browser because it needs no session. A navigation from the player's webmail page on another site brings no session cookie, but the page's own requests do, so a signed-in player sees the result above the game. A fragment reaches no server, no request log and no `Referer`, a digest in the database yields no working link to whoever reads it, and one refusal for every bad token tells nothing about which it was. The start of the game page gains one more state.
 *Rejected:* confirming by the request that opens the link — needs an exception to D-104, and mail clients and spam filters that open links by themselves would use up the single-use link; the token in a query parameter or a path — reaches the request logs of the edge and the server, and a path outside the public files is not served; the token kept in clear — a read of the database yields working links; a salted or slow hash — needless for 256 random bits.
 
 ### D-157 — What does a signed-in player see of an unconfirmed address, and who may ask for another confirmation message?
@@ -3359,7 +3361,7 @@ When „Zakończ” or „Restart” ends a map run before completion, or „Zat
 - **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7
 
 *Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents.
-*Rejected:* unknown
+*Rejected:* „Zakończ” before completion giving back to the chest what the character brought in — „Zakończ” as a free undo of the withdrawal from the chest.
 
 ### D-184 — How does the headquarters show the chest's capacity?
 
@@ -3385,7 +3387,7 @@ After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzyn
 - **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6
 
 *Rationale:* The transfer remains readable with the final state.
-*Rejected:* placing it above discovery — changes the established order; placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
+*Rejected:* placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
 
@@ -3790,8 +3792,8 @@ revision the one before was given (D-209).
 map run passes — fewer requests, but the catch-up does not recompute a manual map run, so closing the
 tab in the middle of one takes it back to the sending
 of the character: up to 8 real minutes at 1× (the whole 480 game minutes of Las), up to half a real
-minute at 16×; the 30-second rhythm for earning loops too — a tab left overnight sends about 1440
-saves a day, which at one earning loop protect nothing, since the catch-up computes the same course;
+minute at 16×; the 30-second rhythm for earning loops too — a tab left open for a day sends about 2880
+saves, which at one earning loop protect nothing, since the catch-up computes the same course;
 a save at each map run a catch-up ended — it sends what the last one sends; no save after a catch-up
 — map runs that ended stay unsaved; a save after any game minute of a catch-up — each reload sends,
 and two open tabs refuse each other (D-209); a button „Zapisz” — a player who forgets to click loses everything since the last
@@ -3969,11 +3971,11 @@ same seed.
 The exemplar for kind `saved-game` is `src/browser/sim/saved-game.ts`, and its kind guidelines are
 read before adding or changing a file of that kind. Saved-game code turns a game state into the
 saved document of the current version of its shape, and an unknown value — a saved game state
-downloaded from the server or kept in the page's memory (D-211) — into a game state or a refusal
+downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal
 naming why, inside the simulation, no value a document can hold making it throw, and changing
 nothing passed to it. An error of its own code is no refusal: it leaves the load as a thrown error,
-which the browser view writes to the console without its text, and the saved game state stays as it
-stands, on the server and in the page's memory alike, while the player gets the sentence of D-96.
+which the browser view writes to the console without its text, and the saved game state on the server and the
+unsaved game state in the page's memory stay as they stand, while the player gets the sentence of D-96.
 
 - **Scope:** simulation, browser-view, agent-workflow
 - **Based on:** none
@@ -4670,18 +4672,19 @@ error fails the image's build. The Node.js image stays unpinned.
 - **Based on:** node-sqlite-database · docker-build-cache-invalidation
 - **Relations:** derives from D-229 · derives from D-236
 - **Verification:** an agent compares a change with the decision:
-  - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build that takes the step from its cache on an unchanged base image and unchanged code
+  - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build of the same commit that takes the step from its cache on an unchanged base image and unchanged code
   - violates: a release check moved out of the image's build into the deploy script; a base image pinned by version and digest while this entry stands; a release check that reads the server's database
 - **Origin:** none
 
 *Rationale:* no server image exists without having passed on its own release, whatever release the
 host's Docker store holds, and on a new host after a disaster the build step simply runs on the
 release that host gets. A failure ends the build, so the deployment stops with the running containers
-in service. Docker reruns the build step when the base image or the built code changes, so a step
-taken from the cache means the same release and the same code passed before; the release shows in
-the deployment's log at the first build of a commit. Unpinned, the image of the restore trial may
-stand on another Node.js 24 release than the server's, and the launcher reports the release it ran
-on. If a new release fails, deployments stop until a human pins the last good release, which takes
+in service. Docker reruns the build step when the base image or the built code changes, and with
+each new commit through the build argument `LOOP2_COMMIT`, not through a change of code. So a step
+taken from the cache means the same release, the same code and the same commit passed before, and
+the release shows in the deployment's log at the first build of a commit. Unpinned, the image of the
+restore trial may stand on another Node.js 24 release than the server's, and the launcher reports
+the release it ran on. If a new release fails, deployments stop until a human pins the last good release, which takes
 one change of this decision.
 *Rejected:* a pin of the Node.js image alone, by version and digest — a pin checks nothing: someone
 has to run a release check by hand at each move of it, and fixes of the base image stop until someone
@@ -4986,9 +4989,9 @@ the title says what is untrue to a player who sat at the game.
 ### D-247 — When is time away computed, and how much?
 
 The catch-up currently computes all the missed game minutes, and the game currently sets no upper
-bound on them. It runs on its own after each load of a saved game state: after a sign-in,
-after a reload of the page, after a save lost to another browser's (D-209) and after a sign-in to the
-same account with the state kept in the page's memory (D-211).
+bound on them. It runs on its own after each load of a game state, the unsaved game state kept in the page's
+memory (D-211) included: after a sign-in, after a reload of the page, after a save lost to another
+browser's (D-209) and after a sign-in to the same account with that unsaved game state.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -5122,7 +5125,14 @@ yet; another text, given by the human — its cost was not named.
 Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and
 departs from none of them. A log line of its Node.js code is one JSON object on one line, written
 through `console` with no library and under fixed field names, while its Bash scripts keep their own
-text and a line in the browser's console is plain text. The product logs changes of a player's
+text, a line in the browser's console is plain text, and what a command prints to whoever ran it — the
+readiness line of the server, the sentence of `account-database-check` in the log of an image build,
+the report of `measure-passwords` for the script that ran it — is no log line, and where the command
+works on no value of a player's, as `account-database-check` does on a temporary database and
+`measure-passwords` on made-up passwords, its failure keeps the error's text there and gets no
+failure line in the log form of this decision, with `failure`, `kind`, `code` and `place`; the
+sentence by which `account-block` or `account-backup` answers the operator is the matter of D-354.
+The product logs changes of a player's
 account and of access to it and operations that change what runs on the server or its backup, and no
 progress of a game and no housekeeping, and an agent adds alone an item that fits this principle, an
 identifier of a thing included, while anything that points to a person takes the human's consent.
@@ -5136,22 +5146,33 @@ identifier of a thing included, while anything that points to a person takes the
     logging scope in the change that brings it; the readiness line `Loop: <address>` as plain text,
     since the six rules call for failure and event lines and this line is neither: it is a process's
     announcement to what launches it, in the exact form the invariants
-    `account-server-occupied-address` and `account-server-default-address` fix
+    `account-server-occupied-address` and `account-server-default-address` fix; a failed run of
+    `account-database-check` leaving in the log of the image build its sentence with the error's text
+    and no failure line of the log form, and a failed run of `measure-passwords` giving the error's text in its report
+    for the script that ran it, the one JSON object it prints, and no failure line of the log form
   - violates: a line of `field=value` text in Node.js code; an error's message written where it may
     quote a value; an email address added to the list without the human's consent; a line for each
-    save of a game
-- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 9 and 10, and § Settlements to record, row 1
+    save of a game; a failure line of the log form, with `failure`, `kind`, `code` and `place`, written by
+    `account-database-check` or `measure-passwords`; the error's text left out of the message of either
+- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 9 and 10, and § Settlements to record, row 1 · zadanie_loop2_teksty_rozjechane_z_kodem.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 1
 
 *Rationale:* when something fails, the owner and an agent see its cause and not only its effect, and
 new code starts from rules instead of logging as it happens to. One object on one line keeps a value
 with a space or a new line from breaking a search, at the price of a line less pleasant to read. A
 list written by hand can drift from the code, and an agent judges whether an item fits the principle;
-the review of each change holds both.
+the review of each change holds both. What a command prints to the person who ran it is read by that
+person, and nothing searches it for a failure; a command that works on a temporary database, or
+on made-up passwords, has no player's value for its error to quote, so the text of the error says what
+went wrong and a failure line of the log form would give the owner at a failed build or measurement a code instead.
 *Rejected:* three of the rules, with a departure from the logging scope — a line of a failure does
 not say whose account it is, and nothing brings the rules back at the first outside player; a
 departure from all the rules — at the first failure of the server neither a human nor an agent sees
 its cause, and new code logs as it happens to; text of `field=value` — reads more pleasantly, but a
-value with a space or a new line breaks a search.
+value with a space or a new line breaks a search; a failure line of the log form in both commands that print
+to whoever ran them and a sentence without the error's text — logs alike, but a change of code and
+tests, and at a failed build or measurement the owner sees a code of the error instead of its
+description; a failure line of the log form with a sentence of the error's text beside it — nothing is lost,
+but a change of code and tests and two lines for each failure.
 
 ### D-253 — Which processes of loop2 have a last-resort handler of their own?
 
@@ -5625,7 +5646,7 @@ bundles nothing. A task that needs React on the page makes that script bundle, b
 build step and never of its lines that serve files.
 
 - **Scope:** browser-view · build-tools
-- **Based on:** none
+- **Based on:** browser-bare-import-resolution
 - **Relations:** derives from D-45 · derives from D-76 · derives from D-265
 - **Verification:** an agent compares a change with the decision:
   - complies: a constant the page needs moved into a module with no React, the page's samples left
@@ -6814,9 +6835,9 @@ copy's group in which the player finds the rule now — after a group dragged ab
 the rule moved with its group or into another one, and after a load of the paused game — without
 the band depending on the numbering of rules. Accepted with it: a longer sentence in the band. Its
 further cost: where a rule „Zawsze → Eksploruj” of the player's own, such as one „+ reguła” adds,
-stands in another group that comes first — dragged above the one the game wrote into, or left
-standing after the game's rule or its group is deleted — the band names that group, where the same
-rule stands.
+stands in another group that comes first — dragged above the one the game wrote into, the game's
+rule moved to a later group, or left standing after the game's rule or its group is deleted — the
+band names that group, where the same rule stands.
 *Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
 looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
 the numbering; no sentence about the rule — a departure from the project's definition; a name the
@@ -6854,14 +6875,15 @@ panel gives, and the panel opens on the condition; where it holds neither, the b
 
 *Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
 the discovery into the rule and opens the panel where the player goes on writing, and „Odkryto:
-Zbierz, Patyk.” gives „Zawsze → Zbierz — patyk” at once. Accepted with it: a rule of acting on the
-list of discoveries, the adding setting the streak to zero as every change of the copy does
+Zbierz, Patyk.” gives „Zawsze → Zbierz — patyk” at once. An action or condition that needs a target
+the rule panel offers none for gives way to the next one, because a rule without the target it needs
+cannot be written, and a button left greyed there would refuse a discovery for which the decision
+gives a rule; so the button writes only a rule the rule panel can show filled. Accepted with it: a
+rule of acting on the list of discoveries, the adding setting the streak to zero as every change of the copy does
 (D-131); a player who deleted every rule group in the pause adds a group before using the button.
 *Rejected:* the button doing what „+ reguła” does — the words „z tym” promise more; the button left
 for later — a departure from the approved wording; the target always the first of the grid,
-whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”; the rule group
-„Program” with the condition „Zawsze” added where the copy holds none, as the game does at the
-first chill (D-123) — reachable only by deleting every group in the pause.
+whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”.
 
 ### D-314 — What does the background of the scene show?
 
