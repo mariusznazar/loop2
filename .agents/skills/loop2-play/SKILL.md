@@ -1,6 +1,6 @@
 ---
 name: loop2-play
-description: How an agent runs the game on this computer and operates it in a real browser as a player does - npm run local over HTTPS, an account through the login card, Playwright CLI with Playwright MCP where the CLI fails, reading motion from a stream of frames, ending the start. Use to check a screen or a change in the running game, or for any question about running the game locally.
+description: How an agent runs the game on this computer and operates it in a real browser as a player does - npm run local over HTTPS, an account through the login card, Playwright CLI with Playwright MCP where the CLI fails, reading motion from a stream of frames, showing a screenshot, ending the start. Use to check a screen or a change in the running game or for a question about running it locally.
 ---
 
 # loop2-play
@@ -10,8 +10,10 @@ that start. An agent operates it in a real browser with Playwright CLI, and with
 where the CLI fails. A check made here touches neither the test server nor a player's save.
 
 This inspection adds to what a person checks and replaces none of it. Nothing of it stays in the
-repository: no Playwright test, no frame, no snapshot. Its evidence goes into the report or the
-request.
+repository of loop2: no Playwright test, no frame, no snapshot, no screenshot. A screenshot you
+show the human goes to the public repository `mariusznazar/screenshots` and reaches the
+description of the request as an image (section "Show a screenshot to the human"); the rest of its
+evidence goes into the report.
 
 Run every command below in the repository's root: Playwright CLI finds its setting for the local
 certificate, `.playwright/cli.config.json`, from the directory it is called in.
@@ -155,7 +157,59 @@ since the first frame. Open the frames you need; each costs tokens. The stream g
 the screen changes, so a paused map run gives one frame, and a run at 1× about one a second. To
 watch something else, copy `frames.js` to `.playwright-cli/` and change what it waits for.
 
+## Show a screenshot to the human
+
+Of what a check makes, only a screenshot reaches the description of the request; describe motion
+in words and keep logs and outputs in the report. A screenshot you show lies in
+`mariusznazar/screenshots`, a public repository shared by public products, in the directory
+`loop2/` and in it a directory named as your cycle (the name of the cycle's directory under
+`.runs/task-cycles/`). The repository is public and keeps its history, so look at the screenshot
+before you push it: it may show only the made-up account of this start, an address at
+`example.test`, and no real address, password or token. Never write an access value into a file of
+the repository or into a request.
+
+```sh
+playwright-cli screenshot --filename=.playwright-cli/<name>.png
+```
+
+On Playwright MCP, `browser_take_screenshot` takes the place of that command. Then push it yourself,
+with the `gh` account already signed in on this computer and no step of the human. The push goes to
+a branch named `loop2/<cycle>`, never to `main`, so that two cycles pushing at once do not meet; the
+clone stands in `.runs/`, which git ignores:
+
+```sh
+gh repo clone mariusznazar/screenshots .runs/screenshots
+git -C .runs/screenshots switch -c loop2/<cycle>
+mkdir -p .runs/screenshots/loop2/<cycle>
+cp .playwright-cli/<name>.png .runs/screenshots/loop2/<cycle>/<name>.png
+git -C .runs/screenshots add loop2/<cycle>/<name>.png
+git -C .runs/screenshots commit -m "loop2: screenshot <name> of <cycle>"
+git -C .runs/screenshots push -u origin loop2/<cycle>
+git -C .runs/screenshots rev-parse HEAD
+```
+
+For a further screenshot of the same cycle the clone and the branch already stand: leave out the
+first two commands and push with `git -C .runs/screenshots push`. The last command prints the commit
+that holds your file; read it after each push.
+
+The request embeds the screenshot by a link to the file in that commit, never to a branch and never
+to an address on `raw.githubusercontent.com`:
+
+```text
+![<what the screen shows>](https://github.com/mariusznazar/screenshots/blob/<commit>/loop2/<cycle>/<name>.png?raw=true)
+```
+
+Put this link beside the screenshot in your report, so that the request can embed it. Do not copy
+the file into the repository of loop2 or into the record of the cycle. Where the push fails, for
+instance because `gh` is not signed in, set up no credentials and keep no screenshot in the
+repository: say in your report that the screenshot was looked at and is not shown, and why, and go
+on.
+
 ## Where the CLI fails: Playwright MCP
+
+Use this way only from a session of the agent that started in the worktree of your cycle. Playwright
+MCP keeps one browser profile for the directory its session started in, and a profile serves one
+browser at a time, so two sessions started from one directory block each other.
 
 Playwright MCP has no setting for the local certificate here, so its first navigation ends in
 `ERR_CERT_AUTHORITY_INVALID`. Run this through `browser_run_code_unsafe`, with the address of the
@@ -216,8 +270,9 @@ npm run local:stop
 
 `npm run local:stop` ends every start of this checkout and says how many; a person at the console
 uses Ctrl+C. It needs no process number. The database stays until the next start and is no leftover
-to clean up. Delete `.playwright-cli/` and `.playwright-mcp/frames.json` when the evidence is in
-your report; on Playwright MCP, `browser_close` takes the place of `playwright-cli close`.
+to clean up. Delete `.playwright-cli/`, `.playwright-mcp/frames.json` and `.runs/screenshots/` when
+the evidence is in your report; on Playwright MCP, `browser_close` takes the place of
+`playwright-cli close`.
 
 ## What this start cannot check
 
