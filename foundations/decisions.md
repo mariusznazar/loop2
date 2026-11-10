@@ -1114,8 +1114,9 @@ The characters of the team stand on its list in the order they were created.
 - **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?"
 
 *Rationale:* the order of creation is one the player sets by creating characters, which no other
-event of the game changes, so a character keeps its place on the list and the player finds it
-there again.
+event of the game changes, so the characters keep their order on the list and the player finds each
+among the others where it was; only the position number of a character on the list shifts, when a
+character before it leaves.
 *Rejected:* unknown
 
 ### D-55 — How many manual map runs go on at a time?
@@ -1152,18 +1153,18 @@ differ. A map run names the team's character it carries by that number.
   - complies: the third character created carrying the number 3, whatever its name; a map run of
     that character holding the number 3; a saved game that keeps the number the game state gives
     next
-  - violates: a character found by its name or by its place on the team's list; a map run holding
+  - violates: a character found by its name or by its position number on the team's list; a map run holding
     a copy of the character's name or archetype in place of its number; a number given anew to a
     character created after another left the team
 - **Origin:** none
 
-*Rationale:* two characters may bear one name, and a character's place on the list moves when a
-character before it leaves, so neither tells a character apart for long; a number given once, at
+*Rationale:* two characters may bear one name, and a character's position number on the list
+shifts when a character before it leaves, so neither tells a character apart for long; a number given once, at
 creation, keeps pointing at the same character in a saved game and when time away is computed
 character by character. Counting up keeps the number out of the simulation's randomness, which
 serves map runs.
-*Rejected:* the name — two characters may share it; the place on the team's list — it moves when a
-character before it leaves; a number drawn at random — every random draw of the simulation comes
+*Rejected:* the name — two characters may share it; the position number on the team's list — it shifts
+when a character before it leaves; a number drawn at random — every random draw of the simulation comes
 from the generators of a map run.
 
 ### D-57 — In what unit does a character's warmth stand?
