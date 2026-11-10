@@ -313,7 +313,7 @@ pilnuje żaden mechanizm, a limit nie obejmuje testów bez imitacji dokumentu.
 
 Każdy plik `*.test.mjs` pod `tests/` ma wejść do `npm test`; sprawdza to
 `tests/quality/test_node_test_selection.py`. `package.json` kieruje bramkę
-do `scripts/test.py`, który w pełnym przebiegu przekazuje Node pliki i wzorce.
+do `scripts/test.py`, który w pełnym przebiegu przekazuje Node wzorce, nie pliki.
 Pythonowy runner
 the-way znajduje katalogi mające śledzony przez git i obecny plik `test_*.py`,
 a następnie uruchamia w nich odkrywanie testów unittest. Nowy plik Pythona
@@ -335,7 +335,7 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 ### unit test
 
 - **Purpose:** Reguły symulacji i logika widoku w pamięci, także kilku funkcji razem; bez sieci, plików danych testu, procesów i przeglądarki. Import zbudowanego modułu nie jest operacją na danych testowych w pliku. Test ekranu w React idzie na jsdom przez `tests/view/page-document.mjs` i bierze z niego `assert`, tak samo pomocnik na jsdom. Ręczny model dokumentu ani jsdom nie dowodzi prawdziwych zdarzeń, fokusu ani SVG. (D-81, D-88, D-264, D-268)
-- **Files:** `tests/sim/` i `tests/view/`, pliki `*.test.mjs`; poziomu nie wyznacza katalog. Włączanie do bramki opisuje Test files in the gate. (D-83)
+- **Files:** `tests/sim/` i `tests/view/`, pliki `*.test.mjs`, bez `tests/view/page-document.test.mjs`, który uruchamia procesy (integration test); poziomu nie wyznacza katalog. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** Nazwa opisuje zachowanie i warunek; przygotowanie, działanie, sprawdzenie; jedno zachowanie, ewentualnie tabela jawnie nazwanych wariantów. Bez odtwarzania algorytmu produktu i wybierania oczekiwania po wyniku. (D-78)
 - **Doubles:** Brak zależności zewnętrznych do zastąpienia; kod pod testem i generator gry pozostają rzeczywiste. Własne zastępniki dokumentu tracą tylko pliki testów ekranów w React; test innego ekranu zachowuje swój. (D-84, D-264)
 - **Data:** Każdy przypadek ma własne dane, które zmienia; wspólne tylko niemodyfikowane dane i przygotowanie. Wartość rozstrzygająca oczekiwanie stoi w przypadku. (D-73)
@@ -347,7 +347,7 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 ### integration test
 
 - **Purpose:** Konkretna operacja lub połączenie na prawdziwych plikach, lokalnym HTTP lub procesach, także kontrola plików repozytorium skryptem; start gotowej aplikacji należy do smoke test. (D-81)
-- **Files:** `tests/http.test.mjs`, `tests/transport.test.mjs`, `tests/account-storage.test.mjs`, `tests/account-mail.test.mjs`, `tests/passwords.test.mjs`, `tests/account-api.test.mjs`, `tests/password-measurement.test.mjs`, `tests/account-backup.test.mjs`, `tests/account-database-check.test.mjs` i `tests/view/memory-limit.test.mjs` (uruchamia procesy potomne, które limit zabija, i czyta pliki testów) oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
+- **Files:** `tests/http.test.mjs`, `tests/transport.test.mjs`, `tests/account-storage.test.mjs`, `tests/account-mail.test.mjs`, `tests/passwords.test.mjs`, `tests/account-api.test.mjs`, `tests/password-measurement.test.mjs`, `tests/account-backup.test.mjs`, `tests/account-database-check.test.mjs` i `tests/view/memory-limit.test.mjs` (uruchamia procesy potomne, które limit zabija, i czyta pliki testów), `tests/view/page-document.test.mjs` (uruchamia procesy potomne, `spawnSync`, których limit pamięci dotyczy) oraz przypadki `test_*.py` w `tests/invariants/`, `tests/quality/`, `tests/deploy/` i `tests/agent_workflow/`, zgodnie z zasobami, które sprawdzają. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** as in `unit test`. (D-78)
 - **Doubles:** Rzeczywista zależność, gdy jest szybka, powtarzalna i prosta, potem działające uproszczenie, potem podstawiona odpowiedź lub kontrola wywołania; obce typy za własnym adapterem. Nie zastępuj kodu pod testem; wywołanie sprawdzaj tylko dla skutku widocznego poza produktem. Błąd plików lub HTTP sprawdzaj na prawdziwych plikach tymczasowych lub lokalnym serwerze; podstawiona odpowiedź dowodzi reakcji na błąd, nie zastąpionej operacji. Wysyłkę poczty sprawdzaj na prawdziwym serwerze SMTP na pętli zwrotnej, uruchamianym w teście na porcie 0, zamykanym po każdym przypadku także po porażce i z certyfikatem testowym, któremu przypadek ufa przez szew nadawcy bez wyłączania weryfikacji; trasy wysyłające pocztę sprawdzaj z podstawionym nadawcą wiadomości, który zapisuje wiadomości i zwraca wynik wybrany przez przypadek albo nie odpowiada: dowodzi on reakcji trasy, nie wysłania ani dostarczenia. Żaden test nie łączy się z prawdziwym Outsiderem (D-163). Skrypt kopii bazy sprawdzaj z podstawionymi narzędziami (`docker`, `age`, `rsync`, `flock`, `pusher`, `date`) przez szew `tests/deploy/backup_script_support.py`: dowodzą one kolejności kroków i reakcji skryptu na każdą porażkę, nie przesłania pliku ani dostarczenia wiadomości; żaden test nie łączy się ze Strychem ani z prawdziwym `pusher` (D-235). (D-73, D-84, D-163, D-235)
 - **Data:** as in `unit test`; wspólny niemodyfikowany serwer lub kopia zbudowanej aplikacji są dozwolone. (D-73)
