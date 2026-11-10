@@ -20,7 +20,7 @@ Tej drogi używa się do sprawdzania, nie do grania na stałe, bo gra się na se
 - **Poczta nigdzie nie dochodzi.** Ustawienia poczty wskazują adres, pod którym nic nie odpowiada, więc po rejestracji strona mówi, że nie udało się wysłać wiadomości, a adres zostaje niepotwierdzony. Potwierdzenie adresu i ustawienie nowego hasła przechodzi się na serwerze testowym.
 - **Certyfikat powstaje przez `openssl`** z `PATH` albo z instalacji Git for Windows. Klucz żyje tylko w pamięci polecenia.
 
-Sam serwer uruchamiają dwa polecenia, a `npm run typecheck` sprawdza typy przeglądarki i serwera bez emisji plików:
+Serwer budują i uruchamiają dwa polecenia, `npm run build` i `npm start`; `npm run typecheck` sprawdza typy przeglądarki i serwera bez emisji plików. Poniżej ich opis oraz uwagi o grafikach:
 
 1. `npm run build` — kompilacja obu części do `dist/browser` i `dist/server`, zebranie kodu przeglądarki esbuildem do `dist/public` oraz skopiowanie tam HTML-a, arkuszy stylów leżących bezpośrednio w `src/browser/`, ikon z `assets/icons/`, czcionek Geist z ich licencją z `assets/fonts/` (do `dist/public/fonts`) i plików PNG z `assets/sprites/` (do `dist/public/sprites`).
 2. Grafiki z `assets/sprites/` pochodzą z paczki Pixel Crawler autorstwa Anokolisy, której warunki nie wymagają wzmianki: obraz gry za kartą logowania, `assets/sprites/login-backdrop.png`, i kadr lasu w śniegu w scenie, `assets/sprites/forest-scene.png`, są złożone z jej grafik; postać maga w scenie, `assets/sprites/mage-idle.png` i `assets/sprites/mage-run.png`, oraz ognisko, patyki, krzak i mech sceny, `assets/sprites/fire.png`, `assets/sprites/sticks.png`, `assets/sprites/berry-bush.png` i `assets/sprites/moss.png`, są z niej wycięte.
