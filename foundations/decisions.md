@@ -6831,9 +6831,9 @@ copy's group in which the player finds the rule now — after a group dragged ab
 the rule moved with its group or into another one, and after a load of the paused game — without
 the band depending on the numbering of rules. Accepted with it: a longer sentence in the band. Its
 further cost: where a rule „Zawsze → Eksploruj” of the player's own, such as one „+ reguła” adds,
-stands in another group that comes first — dragged above the one the game wrote into, or left
-standing after the game's rule or its group is deleted — the band names that group, where the same
-rule stands.
+stands in another group that comes first — dragged above the one the game wrote into, the game's
+rule moved to a later group, or left standing after the game's rule or its group is deleted — the
+band names that group, where the same rule stands.
 *Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
 looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
 the numbering; no sentence about the rule — a departure from the project's definition; a name the
