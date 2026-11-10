@@ -4672,18 +4672,19 @@ error fails the image's build. The Node.js image stays unpinned.
 - **Based on:** node-sqlite-database · docker-build-cache-invalidation
 - **Relations:** derives from D-229 · derives from D-236
 - **Verification:** an agent compares a change with the decision:
-  - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build that takes the step from its cache on an unchanged base image and unchanged code
+  - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build of the same commit that takes the step from its cache on an unchanged base image and unchanged code
   - violates: a release check moved out of the image's build into the deploy script; a base image pinned by version and digest while this entry stands; a release check that reads the server's database
 - **Origin:** none
 
 *Rationale:* no server image exists without having passed on its own release, whatever release the
 host's Docker store holds, and on a new host after a disaster the build step simply runs on the
 release that host gets. A failure ends the build, so the deployment stops with the running containers
-in service. Docker reruns the build step when the base image or the built code changes, so a step
-taken from the cache means the same release and the same code passed before; the release shows in
-the deployment's log at the first build of a commit. Unpinned, the image of the restore trial may
-stand on another Node.js 24 release than the server's, and the launcher reports the release it ran
-on. If a new release fails, deployments stop until a human pins the last good release, which takes
+in service. Docker reruns the build step when the base image or the built code changes, and with
+each new commit through the build argument `LOOP2_COMMIT`, not through a change of code. So a step
+taken from the cache means the same release, the same code and the same commit passed before, and
+the release shows in the deployment's log at the first build of a commit. Unpinned, the image of the
+restore trial may stand on another Node.js 24 release than the server's, and the launcher reports
+the release it ran on. If a new release fails, deployments stop until a human pins the last good release, which takes
 one change of this decision.
 *Rejected:* a pin of the Node.js image alone, by version and digest — a pin checks nothing: someone
 has to run a release check by hand at each move of it, and fixes of the base image stop until someone
