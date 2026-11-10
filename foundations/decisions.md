@@ -6871,8 +6871,11 @@ panel gives, and the panel opens on the condition; where it holds neither, the b
 
 *Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
 the discovery into the rule and opens the panel where the player goes on writing, and „Odkryto:
-Zbierz, Patyk.” gives „Zawsze → Zbierz — patyk” at once. Accepted with it: a rule of acting on the
-list of discoveries, the adding setting the streak to zero as every change of the copy does
+Zbierz, Patyk.” gives „Zawsze → Zbierz — patyk” at once. An action or condition that needs a target
+the rule panel offers none for gives way to the next one, because a rule without the target it needs
+cannot be written, and a button left greyed there would refuse a discovery for which the decision
+gives a rule; so the button writes only a rule the rule panel can show filled. Accepted with it: a
+rule of acting on the list of discoveries, the adding setting the streak to zero as every change of the copy does
 (D-131); a player who deleted every rule group in the pause adds a group before using the button.
 *Rejected:* the button doing what „+ reguła” does — the words „z tym” promise more; the button left
 for later — a departure from the approved wording; the target always the first of the grid,
