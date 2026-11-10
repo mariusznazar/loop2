@@ -709,6 +709,24 @@ The HTML Standard has the resolution of a module specifier give a URL or throw a
 
 - **Source:** https://html.spec.whatwg.org/commit-snapshots/a0442320781555c99544448e30134662bfc39190/ § 8.1.5.1 The resolution algorithm — "The resolve a module specifier algorithm is the primary entry point for converting module specifier strings into URLs. When no import maps are involved, it is relatively straightforward, and reduces to resolving a URL-like module specifier." · "In the end, if no successful resolution is found via any of the candidate module specifier maps, resolve a module specifier will throw an exception. Thus the result is always either a URL or a thrown exception." · "Throw a TypeError indicating that specifier was a bare specifier, but was not remapped to anything by importMap."; read 2026-11-10
 
+## playwright-mcp-persistent-profile
+
+By default Playwright MCP keeps a persistent browser profile for the workspace root of its client, a profile that only one browser instance can use at a time, so concurrent clients sharing a workspace conflict.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-mcp/e436f64eb7e1904b6c302da0997a2243496d191e/README.md § User profile — "You can run Playwright MCP with persistent profile like a regular browser (default), in isolated contexts for testing sessions, or connect to your existing browser using the browser extension." § User profile, Persistent profile — "{workspace-hash} is derived from the MCP client's workspace root, so different projects get separate profiles automatically." · "A persistent profile can only be used by one browser instance at a time, so concurrent MCP clients sharing the same workspace will conflict. To run several clients in parallel, start each additional client with --isolated or point it at a distinct --user-data-dir."; read 2026-11-11
+
+## playwright-cli-workspace-sessions
+
+Playwright CLI 0.1.22 keeps its sessions apart for each workspace, the nearest directory, counting from the directory it is called in, that holds a `.playwright` directory, shares one workspace between the calls made where no directory above holds one, and names the session of a call that gives none `default`.
+
+- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "const workspaceDir = findWorkspaceDir(process.cwd());" · "hash.update(workspaceDir || import_package.packageRoot);" · "daemonProfilesDir: daemonProfilesDir(workspaceDirHash)," § findWorkspaceDir — "if (import_fs.default.existsSync(import_path.default.join(dir, ".playwright")))" · "return dir;" § resolveSessionName — "return explicitSessionName(sessionName) || "default";"; read 2026-11-11 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-11
+
+## screenshots-repository-visibility
+
+The GitHub repository `mariusznazar/screenshots` is public.
+
+- **Source:** https://api.github.com/repos/mariusznazar/screenshots (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-11) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-11
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
