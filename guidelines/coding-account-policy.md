@@ -22,7 +22,7 @@ Czytaj również ogólne wytyczne kodowania.
 - **Decision:** D-102 · D-103 · D-116 · D-226
 - **Invariant:** account-attempt-limits
 - **Good:** Trasa logowania albo zakładania konta dostaje zgodę na próbę przed pracą hasła i rozlicza ją raz, po jej zakończeniu: przy logowaniu pracą hasła jest sprawdzenie hasła, przy zakładaniu konta jego haszowanie.
-- **Bad:** Próba jest liczona dopiero po haszowaniu albo zwalniana, gdy klient się rozłączy.
+- **Bad:** Próba jest liczona dopiero po pracy hasła (sprawdzeniu hasła przy logowaniu, haszowaniu przy zakładaniu konta) albo zwalniana, gdy klient się rozłączy.
 
 Reguła dotyczy prób logowania i zakładania konta. Trasa ustawiania hasła
 odnośnikiem nie przyjmuje próby: przed pracą hasła sprawdza, czy odnośnik
