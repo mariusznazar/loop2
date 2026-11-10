@@ -335,7 +335,7 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 ### unit test
 
 - **Purpose:** Reguły symulacji i logika widoku w pamięci, także kilku funkcji razem; bez sieci, plików danych testu, procesów i przeglądarki. Import zbudowanego modułu nie jest operacją na danych testowych w pliku. Test ekranu w React idzie na jsdom przez `tests/view/page-document.mjs` i bierze z niego `assert`, tak samo pomocnik na jsdom. Ręczny model dokumentu ani jsdom nie dowodzi prawdziwych zdarzeń, fokusu ani SVG. (D-81, D-88, D-264, D-268)
-- **Files:** `tests/sim/` i `tests/view/`, pliki `*.test.mjs`, bez `tests/view/page-document.test.mjs`, który uruchamia procesy (integration test); poziomu nie wyznacza katalog. Włączanie do bramki opisuje Test files in the gate. (D-83)
+- **Files:** `tests/sim/` i `tests/view/`, pliki `*.test.mjs`, bez `tests/view/page-document.test.mjs` i `tests/view/memory-limit.test.mjs`, które uruchamiają procesy (integration test); poziomu nie wyznacza katalog. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** Nazwa opisuje zachowanie i warunek; przygotowanie, działanie, sprawdzenie; jedno zachowanie, ewentualnie tabela jawnie nazwanych wariantów. Bez odtwarzania algorytmu produktu i wybierania oczekiwania po wyniku. (D-78)
 - **Doubles:** Brak zależności zewnętrznych do zastąpienia; kod pod testem i generator gry pozostają rzeczywiste. Własne zastępniki dokumentu tracą tylko pliki testów ekranów w React; test innego ekranu zachowuje swój. (D-84, D-264)
 - **Data:** Każdy przypadek ma własne dane, które zmienia; wspólne tylko niemodyfikowane dane i przygotowanie. Wartość rozstrzygająca oczekiwanie stoi w przypadku. (D-73)
