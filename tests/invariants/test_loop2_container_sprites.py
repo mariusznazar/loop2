@@ -10,8 +10,9 @@ Reading of the sentence:
   directly in `assets/sprites/` of the working tree whose name ends in `.png`; subdirectories and
   their files are not counted. The set must not be empty: an empty directory fails the check
   instead of passing it vacuously. That the scene's drawing asks for exactly these files is not
-  checked here; the case of Slice 3 of task `scena-z-ludzikiem` ties the files the drawing asks for
-  to these files;
+  checked here; the case "every file the scene's data names stands directly in assets/sprites/ as
+  a .png file" of `tests/view/scene-picture.test.mjs` ties the files the drawing asks for to these
+  files;
 - serves ... at `/sprites/<file name>`: from inside the running container, a GET of
   `/sprites/<file name>` (the name percent-encoded as a URL path segment) on the one TCP port the
   container listens on answers with status 200;
