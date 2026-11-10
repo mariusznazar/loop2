@@ -4989,9 +4989,9 @@ the title says what is untrue to a player who sat at the game.
 ### D-247 — When is time away computed, and how much?
 
 The catch-up currently computes all the missed game minutes, and the game currently sets no upper
-bound on them. It runs on its own after each load of a saved game state: after a sign-in,
-after a reload of the page, after a save lost to another browser's (D-209) and after a sign-in to the
-same account with the state kept in the page's memory (D-211).
+bound on them. It runs on its own after each load of a game state, the unsaved game state kept in the page's
+memory (D-211) included: after a sign-in, after a reload of the page, after a save lost to another
+browser's (D-209) and after a sign-in to the same account with that unsaved game state.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
