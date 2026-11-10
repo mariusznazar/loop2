@@ -6876,9 +6876,7 @@ list of discoveries, the adding setting the streak to zero as every change of th
 (D-131); a player who deleted every rule group in the pause adds a group before using the button.
 *Rejected:* the button doing what „+ reguła” does — the words „z tym” promise more; the button left
 for later — a departure from the approved wording; the target always the first of the grid,
-whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”; the rule group
-„Program” with the condition „Zawsze” added where the copy holds none, as the game does at the
-first chill (D-123) — reachable only by deleting every group in the pause.
+whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”.
 
 ### D-314 — What does the background of the scene show?
 
