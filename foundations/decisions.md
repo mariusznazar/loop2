@@ -1875,7 +1875,7 @@ Registration with an email address that already has an account shows „Konto z 
 
 ### D-101 — How long do independent browser sessions last?
 
-Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once. A session expires 30 days after its last request and every request with a valid session, static-file requests included, renews the server expiry and cookie. Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot resurrect a destroyed session or shorten a later expiry.
+Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once. A session expires 30 days after its last request and every request with a valid session, static-file requests included, renews the server expiry and cookie. Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot restore a destroyed session or shorten a later expiry.
 
 - **Scope:** account-server, browser-view
 - **Based on:** express-session-store-contract
