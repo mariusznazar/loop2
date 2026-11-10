@@ -995,7 +995,7 @@ In the file of design tokens of the browser view, each role of its styleguide's 
 - **Verification:** an agent compares a change with the decision:
   - complies: `--text-label` for the role `text-label`; `--space-s` for a size of the spacing scale; `--font-size-label` for the size of labels;
   - violates: `--space-8` for the spacing of 8 px; `--zinc-900` for the background `page`; `--yellow` for the role `discovery`.
-- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q18. Jak nazywają się role w kodzie i czy jakieś odstępstwa zostają celowo?"
+- **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q18. Jak nazywają się role w kodzie i czy jakieś odstępstwa zostają celowo?", for the names of the roles · the names of the other tokens were chosen by the cycle, not by an answer of the human: Decision 1 of the spec in `docs/task-cycles/styleguide-loop2/spec.md` at commit b0c4d44
 
 *Rationale:* A value may change while its meaning stays, so a name that tells what the value is for stays true when the value changes, and the change stays in the one place that holds the value; a name telling a colour or a number turns false with the first such change, or takes a rename in every style that reads it.
 *Rejected:* names by the value — a colour's name or the number of pixels of a spacing — each change of a value renames the property in every style.
