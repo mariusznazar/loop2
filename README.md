@@ -2,7 +2,7 @@
 
 Aplikacja TypeScript: gra w przeglądarce zbudowana w React oraz serwer Express 5, który podaje jej pliki.
 
-Wymagania: Node.js 24.x i dostarczony z nim npm. Wszystkie polecenia wykonuj w głównym katalogu repozytorium.
+Wymagania: Node.js 24.15.0 lub nowszy w linii 24 (`^24.15.0`) i dostarczony z nim npm. Wszystkie polecenia wykonuj w głównym katalogu repozytorium.
 
 ## Pierwsze uruchomienie
 
