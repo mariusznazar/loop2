@@ -16,25 +16,25 @@ In OpenSSH portable 8.9p1, the option `command=` of an authorized_keys file make
 
 The test server's authorized_keys contains exactly one entry beginning with `restrict,command="/usr/local/bin/loop2-deploy"`.
 
-- **Source:** observed: `python3 -c 'from pathlib import Path; lines=(Path.home()/".ssh/authorized_keys").read_text().splitlines(); print(sum(line.startswith("restrict,command="+chr(34)+"/usr/local/bin/loop2-deploy"+chr(34)+" ") for line in lines))'` on Python 3.10.12, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Source:** reading: `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys` on the test server's host, grep (GNU grep) 3.7 — "1"; run 2026-11-10
 
 ## loop2-host-installed-command
 
 The installed `/usr/local/bin/loop2-deploy` is owned by root:root with mode 0755.
 
-- **Source:** observed: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Source:** reading: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on the test server's host, stat (GNU coreutils) 8.32 — "755 root:root"; run 2026-11-10
 
 ## mikrus-host-docker-workloads
 
 The old loop game and foundryvtt run as Docker containers on the test server's host.
 
-- **Source:** observed: `docker ps --format '{{.Names}} {{.Status}}'` on Docker 28.1.1 build 4eba377, Ubuntu 22.04.5 LTS; run 2026-10-13
+- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377 — "6e63d970d315   loop:latest                "docker-entrypoint.s…"   8 weeks ago     Up 8 weeks (healthy)" · "bbe6f6752113   felddy/foundryvtt:12.331   "./entrypoint.sh res…"   18 months ago   Up 5 months (healthy)"; run 2026-11-10
 
 ## mikrus-host-swap
 
-The test server's host reports zero total swap in `/proc/meminfo`.
+The test server's host reports zero total swap.
 
-- **Source:** observed: `cat /proc/meminfo` on GNU coreutils 8.32, Ubuntu 22.04.5 LTS, Linux 5.15.158-2-pve x86_64; run 2026-10-13
+- **Source:** reading: `free` on the test server's host, free from procps-ng 3.3.17 — "total        used        free      shared  buff/cache   available" · "Swap:              0           0           0"; run 2026-11-10
 
 ## game-icons-licence
 
