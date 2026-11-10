@@ -5122,7 +5122,11 @@ yet; another text, given by the human — its cost was not named.
 Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and
 departs from none of them. A log line of its Node.js code is one JSON object on one line, written
 through `console` with no library and under fixed field names, while its Bash scripts keep their own
-text and a line in the browser's console is plain text. The product logs changes of a player's
+text, a line in the browser's console is plain text, and what a command prints to whoever ran it — the
+readiness line of the server, the sentence of `account-database-check` in the log of an image build,
+the report of `measure-passwords` for the script that ran it — is no log line, and where the command
+works on no value of a player's, as these two do on a temporary database and made-up passwords, its
+failure keeps the error's text there and gets no JSON line. The product logs changes of a player's
 account and of access to it and operations that change what runs on the server or its backup, and no
 progress of a game and no housekeeping, and an agent adds alone an item that fits this principle, an
 identifier of a thing included, while anything that points to a person takes the human's consent.
@@ -5136,22 +5140,33 @@ identifier of a thing included, while anything that points to a person takes the
     logging scope in the change that brings it; the readiness line `Loop: <address>` as plain text,
     since the six rules call for failure and event lines and this line is neither: it is a process's
     announcement to what launches it, in the exact form the invariants
-    `account-server-occupied-address` and `account-server-default-address` fix
+    `account-server-occupied-address` and `account-server-default-address` fix; a failed run of
+    `account-database-check` leaving in the log of the image build its sentence with the error's text
+    and no JSON line, and a failed run of `measure-passwords` giving the error's text in its report
+    for the script that ran it
   - violates: a line of `field=value` text in Node.js code; an error's message written where it may
     quote a value; an email address added to the list without the human's consent; a line for each
-    save of a game
-- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 9 and 10, and § Settlements to record, row 1
+    save of a game; a JSON line of failure written by `account-database-check` or `measure-passwords`;
+    the error's text left out of the message of either
+- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 9 and 10, and § Settlements to record, row 1 · zadanie_loop2_teksty_rozjechane_z_kodem.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 1
 
 *Rationale:* when something fails, the owner and an agent see its cause and not only its effect, and
 new code starts from rules instead of logging as it happens to. One object on one line keeps a value
 with a space or a new line from breaking a search, at the price of a line less pleasant to read. A
 list written by hand can drift from the code, and an agent judges whether an item fits the principle;
-the review of each change holds both.
+the review of each change holds both. What a command prints to the person who ran it is read by that
+person, and nothing searches it for a failure; a command that works on a temporary database and
+made-up passwords has no player's value for its error to quote, so the text of the error says what
+went wrong and a JSON line would give the owner at a failed build or measurement a code instead.
 *Rejected:* three of the rules, with a departure from the logging scope — a line of a failure does
 not say whose account it is, and nothing brings the rules back at the first outside player; a
 departure from all the rules — at the first failure of the server neither a human nor an agent sees
 its cause, and new code logs as it happens to; text of `field=value` — reads more pleasantly, but a
-value with a space or a new line breaks a search.
+value with a space or a new line breaks a search; a JSON line of failure in both commands that print
+to whoever ran them and a sentence without the error's text — logs alike, but a change of code and
+tests, and at a failed build or measurement the owner sees a code of the error instead of its
+description; a JSON line of failure with a sentence of the error's text beside it — nothing is lost,
+but a change of code and tests and two lines for each failure.
 
 ### D-253 — Which processes of loop2 have a last-resort handler of their own?
 
