@@ -255,7 +255,7 @@ test("canonical equivalent content preserves history despite key order, extra fi
   );
 });
 
-test("deleting an active rule removes its count; adding its duplicate starts at zero and completion does not resurrect it", () => {
+test("deleting an active rule removes its count; adding its duplicate starts at zero and completion does not restore it", () => {
   const start = sent();
   const changed = structuredClone(PROGRAM);
   changed.groups[0].rules = [{ ...changed.groups[0].rules[0], id: 92 }];

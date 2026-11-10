@@ -666,7 +666,7 @@ test(
   "a read that loaded its session before logout cannot revive it afterwards",
   { timeout: 20000 },
   async (t) => {
-    // D-101: a delayed renewal cannot resurrect a destroyed session.
+    // D-101: a delayed renewal cannot restore a destroyed session.
     const f = await accountFixture(t);
     const cookie = seed(f, "logout-delayed", f.first);
     const delayed = f.send("/test-delayed-read", {
