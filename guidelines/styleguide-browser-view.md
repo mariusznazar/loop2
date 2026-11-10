@@ -166,6 +166,10 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
 - każda rola rodzaju `text` poza `text-disabled`, kolory sygnałowe także, ma
   co najmniej 4,5:1 na `page`, `panel`, `highlight`, `rule-winning`
   i `rule-running`;
+- wypełnienie paska postępu nad głową postaci, `positive` na torze w `highlight`,
+  nie dokłada pary ani progu: reguła sceny wymaga dla niego co najmniej 3:1
+  wobec toru (D-39), a `positive` ma już 4,5:1 na `highlight` z pierwszego
+  punktu;
 - `text-disabled` nie ma progu;
 - `control-border` i `focus` mają co najmniej 3:1 na tych samych pięciu
   tłach;
@@ -224,9 +228,15 @@ i ma te same stany co ono. Pole z widoczną etykietą stawia jej tekst nad polem
 w `text-label`. Formularz stawia pod swoim przyciskiem jedno zdanie w `warning` (formularz „Nie pamiętam hasła” po prośbie — zdanie w `text` z belką), a przycisk,
 który go wysyła, jest przyciskiem zatwierdzającym i ma główny wygląd (D-274).
 
-Kontrolki odstępujące od tej listy stanów:
+Każda wspólna kontrolka ma postać DOM i postać React, która rysuje ten sam
+element z tymi samymi klasami, więc odstępstwo od listy stanów dotyczy obu
+postaci. Pole tekstowe i pole hasła, w React
+`src/browser/view/controls/react-text-field.tsx`, od listy nie odstępują.
 
-- `src/browser/view/controls/button.ts` — przycisk, przycisk niszczący
+Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
+
+- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+  — przycisk, przycisk niszczący
   i przycisk wybrany w grupie: error nie dotyczy, bo przycisk nie ma
   niepoprawnej wartości; empty nie dotyczy, bo przycisk nie ma pozycji ani
   wpisu. Przycisk niszczący w spoczynku jest neutralny, z tekstem w `text`,
@@ -246,14 +256,16 @@ Kontrolki odstępujące od tej listy stanów:
   (także „Wejdź” przy przejściu ręcznym, które czeka albo się skończyło, D-287)
   wygląda jak każdy wyłączony przycisk — tekst w `text-disabled` o wadze
   `--font-weight-body`, ramka w `control-border`.
-- `src/browser/view/controls/button.ts` — akcja poboczna (D-275): error
+- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+  — akcja poboczna (D-275): error
   i empty nie dotyczą, jak przycisku; loading nie dotyczy, bo na serwer czeka
   tylko przycisk, który wysyła formularz, a akcja poboczna jest wtedy
   wyłączona. Spoczynek: podkreślony tekst w `text-secondary`, bez ramki i bez
   odstępów po bokach, więc zaczyna się równo z polami; pod kursorem tekst
   w `text`, a tło zostaje bez zmiany, bez `highlight`; wyłączona — tekst
   w `text-disabled`.
-- `src/browser/view/controls/button.ts` — zakładka, czyli przycisk wybrany
+- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+  — zakładka, czyli przycisk wybrany
   w grupie narysowany jako zakładka (D-276): error i empty nie dotyczą, jak
   przycisku; loading nie dotyczy, bo na serwer czeka tylko przycisk, który
   wysyła formularz, a zakładka jest wtedy wyłączona, z linią wyboru. Zakładka
@@ -263,12 +275,15 @@ Kontrolki odstępujące od tej listy stanów:
   pod kursorem tło `highlight`; wyłączona, gdy formularz czeka na serwer —
   tekst w `text-disabled`, a linia wyboru zostaje. Pod całą grupą stoi cienka
   linia w `divider`, którą rysuje klasa `tabs` kontenera zakładek.
-- `src/browser/view/controls/select-list.ts` — lista wyboru: error nie
+- `src/browser/view/controls/select-list.ts` i `src/browser/view/controls/react-select-list.tsx`
+  — lista wyboru: error nie
   dotyczy, bo lista podaje tylko poprawne pozycje; loading nie dotyczy, bo
   żaden formularz czekający na serwer jej nie ma.
-- `src/browser/view/controls/number-field.ts` — pole liczby: loading nie
+- `src/browser/view/controls/number-field.ts` i `src/browser/view/controls/react-number-field.tsx`
+  — pole liczby: loading nie
   dotyczy, bo żaden formularz czekający na serwer go nie ma.
-- `src/browser/view/controls/pick-cell.ts` — komórka wyboru, czyli jedna
+- `src/browser/view/controls/pick-cell.ts` i `src/browser/view/controls/react-pick-cell.tsx`
+  — komórka wyboru, czyli jedna
   pozycja wyboru w panelu reguły (D-288, D-44): default — ramka w
   `control-border`, tekst w `text`; hover — tło `highlight`; visible focus —
   obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
@@ -317,7 +332,7 @@ stoi komentarz zaczynający się od `Source:` z niepustą treścią. Reguła
 
 Źródło wartości ustalone z Mariuszem dla loop2 w zadaniu „Styleguide loop2”
 (styleguide_loop2.md w vaulcie, Notes/Projects/(P) Loop/_zadania, pytania
-Q9–Q11 i Q19):
+Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki”:
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
@@ -327,6 +342,11 @@ Q9–Q11 i Q19):
 - dla wartości, których loop nie pokazała — kafelek odsłonięty, podświetlenie
   powiązania, fokus, krycie ikon wyczerpanych — wybór Mariusza z podglądu
   wariantów terenu i fokusu;
+- dla wartości, której loop nie pokazała, a którą Mariusz wybrał z podglądu
+  wariantów poza terenem i fokusem — grubość `--bar-width` belki przy zdaniu
+  pod formularzem i linii wybranej zakładki, z podglądu wariantów karty
+  z 2026-11-02 w zadaniu „przyciski-i-zakladki” (To do 7) — wybór Mariusza
+  z tego podglądu, z nazwą zadania i datą wyboru;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
   i grubości linii siatki — ustalenie zadania;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
@@ -342,7 +362,7 @@ prawdziwość ocenia przegląd zmiany pliku tokenów.
 - **Decision:** D-38 · D-44 · D-45 · D-157 · D-269 · D-274 · D-276
 - **Invariant:** application-build-kitchen-sink
 - **Good:** Strona zbudowana komendą `npm run kitchen-sink` i podawana tylko na komputerze dewelopera.
-- **Bad:** Strona rysuje panel terenu ze stanu gry złożonego ręcznie.
+- **Bad:** Strona składa ręcznie stan gry i rysuje z niego mapę gry albo trafia do wyniku `npm run build`.
 
 Strona wszystkich stanów to `src/browser/kitchen-sink/index.html` — kod
 produktu, nie część tekstu styleguide'u. Buduje ją i otwiera lokalnie osobna
@@ -435,7 +455,7 @@ czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
 ### Menu bar, the menu „Konto” and the list of programs
 
-- **Decision:** D-280 · D-330 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47
+- **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47
 - **Invariant:** none
 - **Good:** Pozycja „Programy” na ekranie Programy w `text-strong` z linią w `selected` u dołu, a „Wyloguj” w menu „Konto”, które po odpowiedzi serwera stoi otwarte ze zdaniem wyniku.
 - **Bad:** Pozycja paska z ikoną, zaznaczona zielenią albo tłem; „Wróć do przejścia” zaznaczone na ekranie przejścia; menu „Konto” zamykające się samo po odpowiedzi serwera.
@@ -491,7 +511,7 @@ Menu „Konto”:
 Lista programów na ekranie Programy: pozycja jest odnośnikiem do programu
 (D-281); wybrana ma tekst w `text-strong` i belkę w `selected` o grubości
 `--bar-width` po lewej, każda inna — tekst w `text`; pod kursorem tło
-`highlight` (D-40, D-280). Przegląd zmiany czyta pozycje paska, menu i listy
+`highlight` (D-40, D-331). Przegląd zmiany czyta pozycje paska, menu i listy
 wobec tej reguły i wobec strony wszystkich stanów.
 
 ### The screen Mapy
@@ -542,8 +562,9 @@ listę otwartych map, po prawej kartę wybranej mapy.
 - **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym.
 
 Edytor programu stoi na ekranie Programy i na ekranie przejścia (D-288).
-Wygląd jego części bierze się z istniejących ról; edytor nie dokłada żadnej
-nowej barwy, roli ani wartości.
+Wygląd jego części bierze się z ról tabeli Roles i z wartości pliku tokenów;
+znaki stanu (D-308) mają własne role tła, `rule-winning` i `rule-running`,
+oraz pasek stanu o grubości `--bar-width`, opisane niżej.
 
 - Wiersz reguły: warunek w `text-secondary`, czynność w `text-strong`, numer
   (D-292), czas wykonania (D-293) i licznik „Wykonano {n}×” (D-93) w
