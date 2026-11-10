@@ -5643,7 +5643,7 @@ bundles nothing. A task that needs React on the page makes that script bundle, b
 build step and never of its lines that serve files.
 
 - **Scope:** browser-view · build-tools
-- **Based on:** none
+- **Based on:** browser-bare-import-resolution
 - **Relations:** derives from D-45 · derives from D-76 · derives from D-265
 - **Verification:** an agent compares a change with the decision:
   - complies: a constant the page needs moved into a module with no React, the page's samples left

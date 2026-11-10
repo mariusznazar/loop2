@@ -703,6 +703,12 @@ The documentation of `docker volume prune` says that it removes the local volume
 
 - **Source:** https://raw.githubusercontent.com/docker/cli/ce1223035ac3ab8922717092e63a184cf67b493d/docs/reference/commandline/system_prune.md § Options, --volumes — "Prune anonymous volumes" · § Options, -a, --all — "Remove all unused images not just dangling ones" · § Examples — "By default, volumes aren't removed to prevent important data from being deleted if there is currently no container using the volume. Use the --volumes flag when running the command to prune anonymous volumes as well:"; read 2026-11-09
 
+## browser-bare-import-resolution
+
+The HTML Standard has the resolution of a module specifier give a URL or throw an exception, and throw a TypeError for a bare specifier that no import map remaps.
+
+- **Source:** https://html.spec.whatwg.org/commit-snapshots/a0442320781555c99544448e30134662bfc39190/ § 8.1.5.1 The resolution algorithm — "The resolve a module specifier algorithm is the primary entry point for converting module specifier strings into URLs. When no import maps are involved, it is relatively straightforward, and reduces to resolving a URL-like module specifier." · "In the end, if no successful resolution is found via any of the candidate module specifier maps, resolve a module specifier will throw an exception. Thus the result is always either a URL or a thrown exception." · "Throw a TypeError indicating that specifier was a bare specifier, but was not remapped to anything by importMap."; read 2026-11-10
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
