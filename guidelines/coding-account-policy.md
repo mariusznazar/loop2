@@ -21,7 +21,7 @@ Czytaj również ogólne wytyczne kodowania.
 
 - **Decision:** D-102 · D-103 · D-116 · D-226
 - **Invariant:** account-attempt-limits
-- **Good:** Trasa logowania albo zakładania konta dostaje zgodę na próbę przed haszowaniem i rozlicza ją raz, po zakończeniu sprawdzenia hasła.
+- **Good:** Trasa logowania albo zakładania konta dostaje zgodę na próbę przed pracą hasła i rozlicza ją raz, po jej zakończeniu: przy logowaniu pracą hasła jest sprawdzenie hasła, przy zakładaniu konta jego haszowanie.
 - **Bad:** Próba jest liczona dopiero po haszowaniu albo zwalniana, gdy klient się rozłączy.
 
 Reguła dotyczy prób logowania i zakładania konta. Trasa ustawiania hasła
@@ -33,7 +33,10 @@ klienta, zanim zacznie się praca hasła, a rezerwacje liczą się do progu raze
 z zapisanymi niepowodzeniami. Próbę rozlicza się dokładnie raz: sukcesem,
 niepowodzeniem albo zwolnieniem, gdy praca hasła się zakończy — nigdy na
 podstawie stanu połączenia. Zwolnienie nie liczy się jako nieudana próba
-(odmowa z braku miejsca na pracę hasła, duplikat, błąd serwera). Czas podaje
+(odmowa z braku miejsca na pracę hasła, duplikat przy zakładaniu konta, błąd
+serwera, logowanie z dobrym hasłem na zablokowane konto i logowanie, w którym
+hasło konta zmieniło się podczas jego sprawdzania, bo wyprzedziło je ustawienie
+hasła odnośnikiem). Czas podaje
 przekazany zegar; granica okna równa upływowi czasu już nie liczy próby.
 
 ### Ograniczone tablice bez wypierania

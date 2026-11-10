@@ -18,7 +18,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/away-report.ts` | copy | — |
 | `src/browser/view/body-row.ts` | do not copy | — |
 | `src/browser/view/character-screen.tsx` | copy | — |
-| `src/browser/view/character-skills.ts` | do not copy | — |
+| `src/browser/view/character-skills.ts` | copy | — |
 | `src/browser/view/chronicle-entries.ts` | copy | — |
 | `src/browser/view/chronicle.ts` | copy | — |
 | `src/browser/view/clock.ts` | copy | — |
@@ -39,7 +39,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/discovery-band.tsx` | copy | — |
 | `src/browser/view/discovery-rule.ts` | copy | — |
 | `src/browser/view/email-confirmation.ts` | do not copy | — |
-| `src/browser/view/email-status.ts` | do not copy | — |
+| `src/browser/view/email-status.ts` | copy | — |
 | `src/browser/view/footer.ts` | do not copy | — |
 | `src/browser/view/game-saver.ts` | do not copy | — |
 | `src/browser/view/game-view.ts` | do not copy | — |
