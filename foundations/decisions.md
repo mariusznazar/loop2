@@ -3792,8 +3792,8 @@ revision the one before was given (D-209).
 map run passes — fewer requests, but the catch-up does not recompute a manual map run, so closing the
 tab in the middle of one takes it back to the sending
 of the character: up to 8 real minutes at 1× (the whole 480 game minutes of Las), up to half a real
-minute at 16×; the 30-second rhythm for earning loops too — a tab left overnight sends about 1440
-saves a day, which at one earning loop protect nothing, since the catch-up computes the same course;
+minute at 16×; the 30-second rhythm for earning loops too — a tab left open for a day sends about 2880
+saves, which at one earning loop protect nothing, since the catch-up computes the same course;
 a save at each map run a catch-up ended — it sends what the last one sends; no save after a catch-up
 — map runs that ended stay unsaved; a save after any game minute of a catch-up — each reload sends,
 and two open tabs refuse each other (D-209); a button „Zapisz” — a player who forgets to click loses everything since the last
