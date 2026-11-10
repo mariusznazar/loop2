@@ -59,7 +59,7 @@ game's content data, the moment of the browser's clock, which it reads and passe
 simulation, and, for the scene and the chronicle, its previous reading of the game state and the
 events the simulation returned, and changes the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
-the server or kept in the page's memory after a save found no session (D-211).
+the server or the unsaved game state it kept in the page's memory after a save found no session (D-211).
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
@@ -3971,11 +3971,11 @@ same seed.
 The exemplar for kind `saved-game` is `src/browser/sim/saved-game.ts`, and its kind guidelines are
 read before adding or changing a file of that kind. Saved-game code turns a game state into the
 saved document of the current version of its shape, and an unknown value — a saved game state
-downloaded from the server or kept in the page's memory (D-211) — into a game state or a refusal
+downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal
 naming why, inside the simulation, no value a document can hold making it throw, and changing
 nothing passed to it. An error of its own code is no refusal: it leaves the load as a thrown error,
-which the browser view writes to the console without its text, and the saved game state stays as it
-stands, on the server and in the page's memory alike, while the player gets the sentence of D-96.
+which the browser view writes to the console without its text, and the saved game state on the server and the
+unsaved game state in the page's memory stay as they stand, while the player gets the sentence of D-96.
 
 - **Scope:** simulation, browser-view, agent-workflow
 - **Based on:** none
