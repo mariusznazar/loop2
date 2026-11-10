@@ -245,7 +245,7 @@ Ekran nie wykonuje działań sam: kupno gałęzi i zatrzymanie pętli wychodzą 
 przejście na mapie (`run !== null`), przycisk „Kup” jest wyłączony, a ekran pisze, że
 stopnie kupi się po jego zakończeniu. Funkcje układające tekst, `loopLine` z `team-lines.ts`
 i `branchText` z `character-skills.ts`, są czystymi funkcjami; nic nie rysują, więc ekran
-może je importować (D-265).
+może je importować; import czystych funkcji dopuszcza D-265 niezależnie od statusu pliku.
 
 ### Pasek menu w Reactcie
 
