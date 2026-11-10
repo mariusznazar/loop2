@@ -9,7 +9,10 @@ import {
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
-import { terrainPicture } from "../../dist/browser/view/terrain-picture.js";
+import {
+  iconPlaces,
+  terrainPicture,
+} from "../../dist/browser/view/terrain-picture.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -378,4 +381,38 @@ test("a tile's icons follow the order of the resources in the run's map data", (
   } finally {
     order.splice(0, order.length, ...saved);
   }
+});
+
+// The placement of icons on a tile, from its rule: two icons a row, centred on the tile, each half
+// the side of the square the icons share, a third of it where the icons take three rows. The
+// numbers are written out from that rule for a square of side 12 centred at 100,50.
+test("two, four and five icons on a tile are placed as the rule says", () => {
+  const check = (places, expected) => {
+    assert.equal(places.length, expected.length);
+    expected.forEach(([x, y, size], index) => {
+      assert.ok(Math.abs(places[index].x - x) < 1e-9, `x of ${index}`);
+      assert.ok(Math.abs(places[index].y - y) < 1e-9, `y of ${index}`);
+      assert.ok(Math.abs(places[index].size - size) < 1e-9, `size of ${index}`);
+    });
+  };
+  // Two icons: one row of side 6, the row centred vertically at 47 to 53 and horizontally 94 to 106.
+  check(iconPlaces(2, 100, 50, 12), [
+    [94, 47, 6],
+    [100, 47, 6],
+  ]);
+  // Four icons: two rows of side 6, the block of 2 by 2 centred on 44 to 56 and 94 to 106.
+  check(iconPlaces(4, 100, 50, 12), [
+    [94, 44, 6],
+    [100, 44, 6],
+    [94, 50, 6],
+    [100, 50, 6],
+  ]);
+  // Five icons: three rows of side 4, the block centred on 44 to 56; the fifth alone, centred.
+  check(iconPlaces(5, 100, 50, 12), [
+    [96, 44, 4],
+    [100, 44, 4],
+    [96, 48, 4],
+    [100, 48, 4],
+    [98, 52, 4],
+  ]);
 });
