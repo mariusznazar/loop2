@@ -60,7 +60,11 @@ files or requests. The MCP has full rights, so the following limits are an agree
   the metadata of the two backup files only, `stat -c '%U %g %a'` of
   `/etc/loop2/backup-encryption-key` (expects `root 0 400`) and of `/etc/loop2/strych-known-hosts`
   (expects `root 0 644`); `cmp` of the installed backup script and schedule with their sources
-  in `/srv/loop2/deploy`.
+  in `/srv/loop2/deploy`; the metadata of the installed deploy script only,
+  `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` (expects `755 root:root`); and the number of
+  lines of the account's own `~/.ssh/authorized_keys` that begin with the forced command
+  `restrict,command="/usr/local/bin/loop2-deploy" `, `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys`
+  (expects `1`; the count only, never a line or a key).
 - Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
   `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
   of the older compressed ones (`/var/log/loop2-app.log.2.gz` to `.4.gz`); a bounded `tail -n 100` of
