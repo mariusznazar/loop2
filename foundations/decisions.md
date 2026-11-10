@@ -1116,8 +1116,7 @@ The characters of the team stand on its list in the order they were created.
 *Rationale:* the order of creation is one the player sets by creating characters, which no other
 event of the game changes, so a character keeps its place on the list and the player finds it
 there again.
-*Rejected:* the list sorted by name — two characters may bear one name, and a new character would
-move the others.
+*Rejected:* unknown
 
 ### D-55 — How many manual map runs go on at a time?
 
