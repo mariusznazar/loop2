@@ -1142,15 +1142,17 @@ run for each character, and the screen one for each.
 
 ### D-56 — How does the game state tell one character from another?
 
-Each character carries a number the game gives it when the character is created, one
-more than the number the game state gave last, so the numbers of two characters of one game
-differ. A map run names the team's character it carries by that number.
+Each character carries a number the game gives it when the character is created, 1 for the
+first character of a game and one more than the number the game state gave last for each later one,
+so the numbers of two characters of one game differ. A map run names the team's character it carries
+by that number.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-52
 - **Verification:** an agent compares a change with the decision:
-  - complies: the third character created carrying the number 3, whatever its name; a map run of
+  - complies: the first character of a game carrying the number 1; the third character created
+    carrying the number 3, whatever its name; a map run of
     that character holding the number 3; a saved game that keeps the number the game state gives
     next
   - violates: a character found by its name or by its position number on the team's list; a map run holding
