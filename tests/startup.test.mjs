@@ -397,6 +397,8 @@ test(
       `${secret}\t`,
       Buffer.from([0x73, 0xff, 0xfe, 0x73]),
       Buffer.from(`${secret}Ã`, "latin1"),
+      Buffer.from([0xef, 0xbb, 0xbf]),
+      Buffer.from([0xef, 0xbb, 0xbf, 0x0a]),
       secret.padEnd(1025, "x"),
     ];
     for (const content of invalid) {
@@ -426,6 +428,13 @@ test(
     await writeFile(f.smtpFile, longest);
     const configuration = await readAccountConfiguration(f.environment);
     assert.equal(configuration.mail.password, longest);
+    // A byte-order mark followed by text is accepted, the mark dropped by the decoder.
+    await writeFile(
+      f.smtpFile,
+      Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(secret)]),
+    );
+    const marked = await readAccountConfiguration(f.environment);
+    assert.equal(marked.mail.password, secret);
   },
 );
 
