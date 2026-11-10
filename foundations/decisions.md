@@ -3361,7 +3361,7 @@ When „Zakończ” or „Restart” ends a map run before completion, or „Zat
 - **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7
 
 *Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents.
-*Rejected:* unknown
+*Rejected:* „Zakończ” before completion giving back to the chest what the character brought in — „Zakończ” as a free undo of the withdrawal from the chest, and an exception for tasks 14 and 18.
 
 ### D-184 — How does the headquarters show the chest's capacity?
 
