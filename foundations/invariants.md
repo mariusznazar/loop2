@@ -330,10 +330,9 @@ namespace declarations.
 
 ## icon-credits
 
-For each SVG icon file directly in `assets/icons/`, the game's footer and the game's section of
-credits each hold a credit that names the icon's title as its page on game-icons.net gives it, the
-icon's author, that page and the licence CC BY 3.0, and says how the icon file differs from its
-source.
+For each SVG icon file directly in `assets/icons/`, the game's section of credits holds a credit
+that names the icon's title as its page on game-icons.net gives it, the icon's author, that page
+and the licence CC BY 3.0, and says how the icon file differs from its source.
 
 - **Method:** test
 - **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title · game-icons-binoculars-title · game-icons-hiking-title · game-icons-direction-sign-title · game-icons-grab-title · game-icons-claw-hammer-title · game-icons-match-tip-title · game-icons-logging-title · game-icons-meal-title · game-icons-deadly-strike-title · game-icons-boot-kick-title · game-icons-dodge-title · game-icons-wood-pile-title
