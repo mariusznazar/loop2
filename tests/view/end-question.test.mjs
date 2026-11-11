@@ -801,8 +801,8 @@ function placeOf(root) {
 // Row 4 and row 8, D-122, D-173. Catches the question standing above the band of a discovery, above
 // the list „Program:” and „Nowy program” (the program panel's first controls, which stay where
 // they were), under the heading of the copy, or not under the band after a completion in the minute
-// of a discovery, where the band has no „Wznów”: it stands in the panel, just above the heading of
-// the copy „Kopia: …” and its line.
+// of a discovery, where no band stands at the end (D-122): the question stands in the panel, just above
+// the heading of the copy „Kopia: …” and its line.
 test("the question stands under the band of a discovery and directly above the heading of the copy, after the list „Program:” and „Nowy program”, also after a completion in the minute of a discovery", async () => {
   const order = [
     "program-list",
@@ -830,10 +830,10 @@ test("the question stands under the band of a discovery and directly above the h
     const { view } = await viewOf(renamed(completed(atDiscovery())));
     await press(endButton(root));
     const place = placeOf(root);
-    assert.deepEqual(place.area, ["discovery-band", "run-program-place"]);
+    // No band once the map run has ended: the window of the end names the discovery (D-122).
+    assert.deepEqual(place.area, ["run-program-place"]);
     assert.deepEqual(place.panel, order);
-    const band = byClass(runScreenOf(root), "discovery-band")[0];
-    assert.equal(buttonIn(band, "Wznów"), undefined, "no „Wznów” in the band");
+    assert.equal(byClass(runScreenOf(root), "discovery-band").length, 0);
     await inAct(() => view.dispose());
   });
   await onPage(async ({ root }) => {
