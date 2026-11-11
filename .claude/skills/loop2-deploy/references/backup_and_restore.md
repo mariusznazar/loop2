@@ -373,7 +373,13 @@ commit's passes, although the game discards them and starts a new game (see "Res
 
 ### Restoring over the server's database
 
-Eight steps, all the human's. The procedure has never been tried.
+Eight steps, all the human's. Tried once, on 2026-11-11, by the owner on the real test server,
+steps 1 to 8 in order, from the newest nightly backup chosen by its time (the weekday file 3).
+Each step worked as written except three places, which this text now corrects: the host in step 1,
+the mode of the decrypted file in step 2 and the marker in step 7. In step 7 the owner reported
+the public page, the login of the test account and the saved game as in order, and said no more.
+Not tried: the way back, a second attempt after a failed one, the old key of step 2, `rsync`
+exit 23, a backup of a newer schema than the running code, and the path "With no server".
 
 The private directory of step 1 is `/root/loop2-restore`. It lies outside `/srv/loop2` on purpose:
 the deployment of step 6 runs `git clean -ffdx` in `/srv/loop2` and would erase anything left
@@ -394,12 +400,24 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    seven weekday files into `/root/loop2-restore`, in bash. The command uses the options of the
    script's own send, so the host key is checked against `/etc/loop2/strych-known-hosts` alone,
    the login and `/backup_key` come from root's SSH configuration, and `--times` keeps each
-   file's time. It names the seven fixed file names and lists nothing on Strych (D-230):
+   file's time. It names the seven fixed file names and lists nothing on Strych (D-230). The host
+   is the one in the constants block of the installed script; load it into `STRYCH_HOST` without
+   printing it, and check that it loaded. Load it once in a shell: a second load in the same shell
+   says `STRYCH_HOST: readonly variable` and leaves the first value in place:
+
+   ```sh
+   eval "$(grep -m1 '^readonly STRYCH_HOST=' /usr/local/bin/loop2-backup)"
+   echo "${STRYCH_HOST:+host loaded}"
+   ```
+
+   On a host where the script is not installed yet (the path "With no server"), read the same
+   line from `/srv/loop2/deploy/loop2-backup` instead, which the deployment of that path's step 8
+   put there.
 
    ```sh
    rsync --whole-file --times --timeout=120 \
      --rsh="ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/etc/loop2/strych-known-hosts -o GlobalKnownHostsFile=/dev/null -o ConnectTimeout=30" \
-     <host from the constants block>:loop2-accounts-{1..7}.sqlite.age /root/loop2-restore/
+     "$STRYCH_HOST":loop2-accounts-{1..7}.sqlite.age /root/loop2-restore/
    echo "rsync exit $?"
    ```
 
@@ -419,9 +437,13 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    to understand before going on. Then enter the directory and stay in it for step 2:
    `cd /root/loop2-restore`.
 2. Decrypt it there, from `/root/loop2-restore`, so that the plain database is written inside
-   the private directory that step 7 removes and nowhere else:
-   `age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file>`.
-   `head -c 15 accounts.sqlite` shows `SQLite format 3`. A backup made before the last change of
+   the private directory that step 7 removes and nowhere else. The file is the plain database
+   (addresses and password hashes), and `age` creates it with the permissions the umask leaves,
+   which gave `-rw-r--r--` under root's usual umask, so make it owner-only with `umask 077` for
+   this command, in a subshell:
+   `( umask 077; age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file> )`.
+   `ls -l accounts.sqlite` shows `-rw-------`, and `head -c 15 accounts.sqlite` shows
+   `SQLite format 3`. A backup made before the last change of
    the key ("Changing the encryption key") is refused by `age` with the current key. Open it with
    the old key from the private note, the one marked old: put it into a file of its own in the
    private directory, pasting it so that it passes no command argument and no shell history, end
@@ -450,9 +472,12 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    newer schema than that commit knows, deploy a commit that knows it instead; until then health
    fails with exit 8.
 7. Check: the deployment ends with `deployed`, the public page loads, the test account logs in
-   and its marker name is there. Only when the check passes, remove the whole directory:
-   `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go the way
-   back below.
+   and its marker is there. The marker is the name given to a character or a program in the test
+   account in step 8 of "Installing and reinstalling" and written down then. If it was not
+   written down, log in and check that the test account holds a saved game state the owner
+   recognises from before the backup's time. Only when the check passes, remove the whole
+   directory: `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go
+   the way back below.
 8. Write down what was lost: everything after the backup's time. Then undo what the restore
    gave back to people:
    - Whoever is known to have reset a password since the backup resets it again with „Nie
@@ -472,8 +497,9 @@ A second attempt after a failed one. `/root/loop2-restore` stays after a failed 
 step 4 has run, `previous` in it holds the database from before the restore. Do not start again
 from step 1: its `mkdir` refuses a directory that exists, and step 4 run again would move the
 restored files over the ones in `previous` and lose the way back. Instead, leave the directory
-as it is and: choose and fetch the backup (step 1 without the `mkdir`), decrypt it (step 2, from
-`/root/loop2-restore`; the new `accounts.sqlite` replaces the earlier decrypted one, never anything in `previous`), stop
+as it is and: choose and fetch the backup (step 1 without the `mkdir`, and without loading
+`STRYCH_HOST` again in the same shell), decrypt it (step 2, from `/root/loop2-restore`; the new
+`accounts.sqlite` replaces the earlier decrypted one, never anything in `previous`), stop
 `app` if it runs (step 3), and in step 4 remove the restored `accounts.sqlite` and any `-wal`
 and `-shm` from the volume's directory instead of moving them. Then go on with step 5. When
 `previous` is empty, the first attempt stopped before step 4, and step 4 stands as written.
