@@ -1,9 +1,0 @@
-
-> loop2@0.0.0 test
-> python -B scripts/test.py tests/invariants/test_browser_view_framework.py
-
-.........
-----------------------------------------------------------------------
-Ran 9 tests in 3.458s
-
-OK

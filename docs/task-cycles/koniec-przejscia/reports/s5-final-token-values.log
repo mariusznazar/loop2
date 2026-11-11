@@ -1,9 +1,0 @@
-
-> loop2@0.0.0 test
-> python -B scripts/test.py tests/invariants/test_browser_view_token_values.py
-
-....
-----------------------------------------------------------------------
-Ran 4 tests in 0.309s
-
-OK

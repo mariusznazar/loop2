@@ -1,9 +1,0 @@
-
-> loop2@0.0.0 test
-> python -B scripts/test.py tests/invariants/test_design_token_contrast.py
-
-...
-----------------------------------------------------------------------
-Ran 3 tests in 0.012s
-
-OK
