@@ -1518,6 +1518,12 @@ test("a cell of the action pick carries its price in brackets after its name, a 
   assert.equal(held.craftCampfire.chosen, true);
   assert.equal(held.craftCampfire.label, "Wytwórz — ognisko (6 patyków)");
   assert.equal(actionSentence({ kind: "craftCampfire" }), "Wytwórz — ognisko");
+  // In the map run of a character with „Czysty płomień” the cell follows its price.
+  const clean = withRanks(runningGame(), { flameSpell: { cleanFlame: 1 } });
+  assert.equal(
+    cellsOf(actionPick(clean, { kind: "lightCampfire" })).lightCampfire.label,
+    "Zapal — ognisko (10 energii natury)",
+  );
 });
 
 test("a rule is numbered by its group and its place in it, a group by its place in the program", () => {
