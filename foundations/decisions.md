@@ -1381,18 +1381,18 @@ Each feeding of a campfire burning at the feeding's start adds, at the feeding's
 
 ### D-70 — How does the browser view show a campfire?
 
-A campfire shows on the drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
+A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one, and its minutes left stand in the tile's row of the list of revealed tiles.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-19
 - **Verification:** an agent compares a change with the decision:
-  - complies: a tile's row reading „ognisko — płonie, zostało 42 min”, and the campfire's icon on that tile of the drawing;
-  - violates: the minutes left written on the drawing beside the campfire's icon.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jak ekran pokazuje ciepło, sytość, zdrowie, plecak i ognisko?"
+  - complies: a tile's row reading „ognisko — płonie, zostało 42 min”, and on that tile of the drawing the burning campfire's icon; the same campfire once its minutes run out, and a campfire crafted and not yet lit, drawn with the extinguished campfire's icon;
+  - violates: the minutes left written on the drawing beside the campfire's icon; one icon for a burning and for an extinguished campfire.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jak ekran pokazuje ciepło, sytość, zdrowie, plecak i ognisko?" · koszty_i_stan_ogniska_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play, "Zadanie zapisuje w całości"
 
-*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands. Accepted with it: the drawing alone does not tell a burning campfire from an extinguished one.
-*Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further.
+*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list.
+*Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further; one icon for both states — the drawing alone does not tell a burning campfire from an extinguished one.
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
@@ -8091,3 +8091,18 @@ loop2 names a place on the author's disk outside the repository, such as the fol
 
 *Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note and the folder it lies in within the notes show less than a path and still let a reader find the source of a decision, so they stay.
 *Rejected:* removing only the three paths of the backlog section of the agent instructions — the other six paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; replacing the folder `Notes/Projects/(P) Loop` by a reference to the entry `projects` — about 310 changed lines, 298 of them in the *Origin* fields, to review, and a new rule for how later entries write *Origin*; removing the names of the notes altogether — decisions lose the pointer to their reasoning and an agent cannot reach the source on the author's computer either
+
+### D-363 — Where does the player read what an action costs?
+
+The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name, in the same text as the name, so that it takes the name's role and dims with a greyed cell — such as „Wytwórz — ognisko (6 patyków)” — at every cell of its pick, a greyed one included, and at the action chosen in the panel, where the time of one execution stands; the row of a program rule shows no price. The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name, such as „(2 patyki, 10 energii natury)” and „(1 jagoda)”, so the data of the game's things hold the plural forms of their names; an action that takes a piece of a use — fuel, food or a thing to light — names the first item the data marks for that use, as the reason of its rule does (D-310), and an action that uses up nothing has no price. During a map run the price follows the character of the map run, as the time does (D-293), so the character with the bought branch „Czysty płomień” reads „Zapal — ognisko (10 energii natury)”, while on the screen Programy and outside a map run the price is the data's, „Zapal — ognisko (2 patyki, 10 energii natury)”.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** derives from D-288 · derives from D-63 · derives from D-293 · derives from D-310
+- **Verification:** an agent compares a change with the decision:
+  - complies: the cell „Wytwórz — ognisko (6 patyków)” in the pick of the rule panel, greyed with its price when it may not be picked; „Zasil — ognisko (1 patyk)”; „Uderz — patyk” with no price, since the stick stays in the backpack after a strike (D-145); the row „Zapas poniżej 8 · Patyk → Wytwórz — ognisko” with no price;
+  - violates: a price in the row of a program rule; „(6 × patyk)” in the panel; a price with a name in the singular after a count of 6; „Zapal — ognisko (2 patyki, 10 energii natury)” shown to the character with „Czysty płomień” during a map run
+- **Origin:** koszty_i_stan_ogniska_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 to 3, and § Settlements to record, rows 1 to 3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "Where does the player read what an action costs?"
+
+*Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. The price stands where the action is picked, as the time does; the row of a rule keeps the narrow column of the program, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, with the names of things in the form their count takes, is the example of the definition, and every new thing will need those forms. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop; the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
+*Rejected:* the price in the row of a rule as well, hidden where the reason says what is missing, as in the old loop — a longer row, which in the narrow column of the program more often wraps to two lines; the price with a „×” sign, „(6 × patyk)”, as the reason at a rule is written — it needs no new data, but it departs from the example of the definition and reads as a list, not as a sentence; the price always from the data, „(2 patyki, 10 energii natury)” on every screen — one price and simpler code, but the panel would name sticks that lighting will not take from a character with „Czysty płomień”

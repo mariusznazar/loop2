@@ -25,6 +25,17 @@ export type ActionDef = {
   iconTitle: string;
 };
 
+/**
+ * The name of the nature energy a spell costs in the forms its count takes in a price: „1 energia
+ * natury”, „2 energie natury”, „10 energii natury”. The form after 2 to 4 (and 22 to 24, not 12 to
+ * 14) is `few`, after 0, 5 and more `many`.
+ */
+export const NATURE_ENERGY_NAME = {
+  one: "energia natury",
+  few: "energie natury",
+  many: "energii natury",
+} as const;
+
 export type ActionId = keyof typeof ACTIONS;
 
 /**

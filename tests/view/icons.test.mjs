@@ -120,9 +120,17 @@ test("every icon file is a light shape without a background: svg and path elemen
 
 const CHANGES = "zmienione (bez tła, jasny kolor)";
 
-test("each icon credit records that the file was changed from its source", () => {
+/**
+ * How each icon file differs from its source. The files copied from the source repository had a
+ * black background removed and the shape drawn light; `wood-pile.svg` was taken from its page as
+ * the download with no background, so only its colour was changed.
+ */
+const CHANGES_OF = { "wood-pile": "zmienione (zmieniony kolor)" };
+const changesOf = (icon) => CHANGES_OF[icon] ?? CHANGES;
+
+test("each icon credit says how the file differs from its source, the one taken with no background by its colour alone", () => {
   for (const [icon, credit] of Object.entries(ICON_CREDITS))
-    assert.equal(credit.changes, CHANGES, icon);
+    assert.equal(credit.changes, changesOf(icon), icon);
 });
 
 /** A stand-in for the few DOM calls the footer makes: elements keep what is appended to them. */
@@ -177,6 +185,7 @@ const TITLES = {
   "deadly-strike": "Deadly strike icon",
   "boot-kick": "Boot kick icon",
   dodge: "Dodge icon",
+  "wood-pile": "Wood Pile icon",
 };
 
 /**
@@ -197,8 +206,16 @@ const ACTION_ICONS = [
   { name: "Odskocz", icon: "dodge" },
 ];
 
-/** Everything the data gives an icon, in the footer's order: the resources, the campfire, the actions. */
-const NAMED = [...Object.values(RESOURCES), CAMPFIRE, ...ACTION_ICONS];
+/**
+ * Everything the data gives an icon, in the footer's order: the resources, the campfire, the
+ * extinguished campfire, the actions.
+ */
+const NAMED = [
+  ...Object.values(RESOURCES),
+  CAMPFIRE,
+  CAMPFIRE.extinguished,
+  ...ACTION_ICONS,
+];
 
 test("each footer line names the icon by its title on game-icons.net and says after the licence that it was changed", async () => {
   const { items, credits } = await builtFooter();
@@ -211,7 +228,7 @@ test("each footer line names the icon by its title on game-icons.net and says af
     assert.ok(title, NAMED[i].icon);
     assert.equal(
       textOf(item),
-      `${NAMED[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${CHANGES}`,
+      `${NAMED[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${changesOf(NAMED[i].icon)}`,
     );
   });
 });
@@ -227,10 +244,23 @@ test("the footer credits the campfire's icon, by Lorc, after the four resources'
   assert.equal(links[0].href, "https://game-icons.net/1x1/lorc/campfire.html");
 });
 
-test("the footer credits the actions' icons after the campfire's, one line each, in the order of the data", async () => {
+test("the footer credits the extinguished campfire's icon, by Delapouite, right after the campfire's", async () => {
+  const { items } = await builtFooter();
+  assert.equal(
+    textOf(items[5]),
+    "ognisko wygasłe: „Wood Pile icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (zmieniony kolor)",
+  );
+  const links = items[5].children.filter((node) => typeof node !== "string");
+  assert.equal(
+    links[0].href,
+    "https://game-icons.net/1x1/delapouite/wood-pile.html",
+  );
+});
+
+test("the footer credits the actions' icons after the two campfires', one line each, in the order of the data", async () => {
   const { items } = await builtFooter();
   assert.deepEqual(
-    items.slice(5).map((item) => textOf(item).split(":")[0]),
+    items.slice(6).map((item) => textOf(item).split(":")[0]),
     ACTION_ICONS.map((action) => action.name),
   );
 });
@@ -238,6 +268,11 @@ test("the footer credits the actions' icons after the campfire's, one line each,
 test("the campfire's data names the icon file campfire.svg and its title on game-icons.net", () => {
   assert.equal(CAMPFIRE.icon, "campfire");
   assert.equal(CAMPFIRE.iconTitle, "Campfire icon");
+});
+
+test("the extinguished campfire's data names the icon file wood-pile.svg and its title on game-icons.net", () => {
+  assert.equal(CAMPFIRE.extinguished.icon, "wood-pile");
+  assert.equal(CAMPFIRE.extinguished.iconTitle, "Wood Pile icon");
 });
 
 test("the footer links open in a new tab, without opener or referrer", async () => {
@@ -310,7 +345,7 @@ test("each line of the section is the footer's line: the icon's title, author, g
   items.forEach((item, i) => {
     assert.equal(
       textOfMarkup(item),
-      `${NAMED[i].name}: „${TITLES[NAMED[i].icon]}”, ${ICON_CREDITS[NAMED[i].icon].author}, game-icons.net, CC BY 3.0, ${CHANGES}`,
+      `${NAMED[i].name}: „${TITLES[NAMED[i].icon]}”, ${ICON_CREDITS[NAMED[i].icon].author}, game-icons.net, CC BY 3.0, ${changesOf(NAMED[i].icon)}`,
     );
   });
 });

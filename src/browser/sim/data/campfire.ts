@@ -23,6 +23,15 @@ export type CampfireDef = {
   icon: string;
   /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
   iconTitle: string;
+  /** What the drawing of the map shows for the campfire with no minutes of burning left, never lit included. */
+  extinguished: {
+    /** Name of what the icon shows, as the credit of the icon names it. */
+    name: string;
+    /** File name in assets/icons, without the extension. */
+    icon: string;
+    /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
+    iconTitle: string;
+  };
 };
 
 export const CAMPFIRE = {
@@ -35,4 +44,9 @@ export const CAMPFIRE = {
   warmth: 0.5,
   icon: "campfire",
   iconTitle: "Campfire icon",
+  extinguished: {
+    name: "ognisko wygasłe",
+    icon: "wood-pile",
+    iconTitle: "Wood Pile icon",
+  },
 } as const satisfies CampfireDef;
