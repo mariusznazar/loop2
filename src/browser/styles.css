@@ -1725,6 +1725,15 @@ header .failure-line {
 }
 
 /*
+ * A mage that bends faces right, the way its props lie, whatever way it walked in: the bend sheet
+ * turns back the mirror its figure's element puts on a mage that walked left, as it does for the
+ * sticks and the moss, which the mage reaches walking from the right.
+ */
+.scene-mage[data-facing="left"] .scene-mage-bend {
+  transform: scaleX(-1);
+}
+
+/*
  * The player's pause greys the whole scene with the old Loop's value (Scene.tsx at commit cdc7c0d,
  * `paused ? 'grayscale(1) brightness(0.5)'`; D-322). At a discovery, after a completion and after a
  * death the scene itself keeps its colours.

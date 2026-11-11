@@ -869,6 +869,26 @@ test("the mage's bend sheet is the data's file, shown in place of the idle sheet
   });
 });
 
+// To do 1. Catches a mage that bends with its back to the prop: it walks left to the sticks, so its
+// figure is mirrored, and the bend sheet, whose frames reach right, must not be.
+test("a mage that walked left bends facing right, the way its props lie", async () => {
+  await withPage(async (page) => {
+    const { draw, mage } = await mounted(
+      page,
+      doingFrom({ kind: "explore" }, 0),
+    );
+    await draw(doingFrom(GATHER_STICK, 10), changed(GATHER_STICK, 10));
+    assert.equal(mage().getAttribute("data-facing"), "left", "precondition");
+    const sprite = one(mage(), ".scene-mage-sprite");
+    assert.equal(computed(sprite, "transform"), "scaleX(-1)");
+    assert.equal(
+      computed(one(mage(), ".scene-mage-bend"), "transform"),
+      "scaleX(-1)",
+      "turned back inside the mirrored figure",
+    );
+  });
+});
+
 // To do 3, 5, D-04. Catches an end of gathering that shows no flight, a flight of another icon than
 // the resource's, or one that comes without the backpack having gained a piece.
 test("a gathering that ends with a piece more in the backpack sends the icon of the resource flying, on a plaque", async () => {

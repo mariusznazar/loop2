@@ -82,7 +82,7 @@ export const SCENE_EFFECTS = {
   feet: { x: 32, up: 3 },
   dustSink: 2,
   /** How far above the higher of its two ends the flying icon's arc rises. */
-  arc: 14,
+  arc: 6,
 } as const;
 
 /** The campfire's sheet: burning with its frames, extinguished as the same picture without colour. */
