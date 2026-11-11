@@ -1444,7 +1444,7 @@ test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walk
   });
 });
 
-// The price of the action (task koszty-i-stan-ogniska, To do 1 to 4; D-362): in the
+// The price of the action (task koszty-i-stan-ogniska, To do 1 to 4; D-363): in the
 // panel only, in brackets after the name, beside the time where the action is the value shown.
 test("the price stands in the name of each action cell, a greyed one too, and the row of the rule shows no price", async () => {
   await withPage(async (page) => {

@@ -805,7 +805,7 @@ export function countedName(
 }
 
 /**
- * What one carrying out of an action costs, as the rule panel shows it after the action's name (D-362): the
+ * What one carrying out of an action costs, as the rule panel shows it after the action's name (D-363): the
  * pieces it uses up, then the nature energy, each with its name in the form the count takes — „6
  * patyków”, „2 patyki, 10 energii natury”. The price follows the character of the map run as the
  * simulation gives it (the character with the branch „Czysty płomień” lights a campfire for 10 energii natury

@@ -88,10 +88,10 @@ Test parametru gry może użyć konkretnych liczb; oczekiwany czas przeżycia,
 tempo postępu lub trudność mapy wymagają uzgodnionego wymagania (D-80).
 
 Dokumentami źródłowymi są fundament loop2 — decyzje, niezmienniki i słownik —
-zaakceptowane zadania w `C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/`
-i jego podkatalogu zadań (stan `ready for cycle` lub wykonane) oraz zatwierdzona
-`C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/definicja_mvp_loop2.md` (D-82).
-`C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/koncepcja_projektowa.md`
+zaakceptowane zadania w katalogu, który wskazuje pozycja `projects` pod `loop2`
+w pliku lokalizacji `~/.the-way/locations.json`, i jego podkatalogu zadań (stan
+`ready for cycle` lub wykonane) oraz zatwierdzona `definicja_mvp_loop2.md` z tego
+katalogu (D-82). `koncepcja_projektowa.md` z tego katalogu
 jest szkicem: źródłem jest tylko fragment przytoczony
 przez zaakceptowany dokument. Q7c zadania przewodnika przytacza linię 1261
 koncepcji jako źródło jednego losowania przy wyborze kroku.
