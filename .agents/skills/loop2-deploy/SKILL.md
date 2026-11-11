@@ -60,7 +60,10 @@ files or requests. The MCP has full rights, so the following limits are an agree
   the metadata of the two backup files only, `stat -c '%U %g %a'` of
   `/etc/loop2/backup-encryption-key` (expects `root 0 400`) and of `/etc/loop2/strych-known-hosts`
   (expects `root 0 644`); `cmp` of the installed backup script and schedule with their sources
-  in `/srv/loop2/deploy`; the metadata of the installed deploy script only,
+  in `/srv/loop2/deploy`; the number of lines that set `KnownHostsCommand` or `VerifyHostKeyDNS`
+  in root's SSH configuration and the system-wide one, by the one counting command in "What an
+  agent may read" in `references/backup_and_restore.md` (expects `0`; the number only, never a
+  line); the metadata of the installed deploy script only,
   `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` (expects `755 root:root`); and the number of
   lines of the account's own `~/.ssh/authorized_keys` that begin with the forced command
   `restrict,command="/usr/local/bin/loop2-deploy" `, `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys`
@@ -87,7 +90,8 @@ files or requests. The MCP has full rights, so the following limits are an agree
   container (it is gone); no rotation by hand.
 - No token-file, session-key-file or SMTP-password-file reads, no triggering of mail (below), no reading or copying of the account database or
   its volume (it holds e-mail addresses and password hashes), no reading of the backup
-  encryption key or the known-hosts file, no running of the backup script or of the backup
+  encryption key or the known-hosts file, no reading of root's SSH configuration beyond that
+count, no running of the backup script or of the backup
   command, no hand run of the send, no fetching, opening or listing of backups on Strych, full `docker inspect`, Compose
   configuration dumps, arbitrary container execution, restarts, deployments, key changes or
   secret rotation. The MCP's changing tools
