@@ -60,14 +60,19 @@ files or requests. The MCP has full rights, so the following limits are an agree
   the metadata of the two backup files only, `stat -c '%U %g %a'` of
   `/etc/loop2/backup-encryption-key` (expects `root 0 400`) and of `/etc/loop2/strych-known-hosts`
   (expects `root 0 644`); `cmp` of the installed backup script and schedule with their sources
-  in `/srv/loop2/deploy`; the metadata of the installed deploy script only,
+  in `/srv/loop2/deploy`; the number of lines that set `KnownHostsCommand` or `VerifyHostKeyDNS`
+  in root's SSH configuration and the system-wide one, by the one counting command in "What an
+  agent may read" in `references/backup_and_restore.md` (expects `0`; the number only, never a
+  line); the metadata of the installed deploy script only,
   `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` (expects `755 root:root`); and the number of
   lines of the account's own `~/.ssh/authorized_keys` that begin with the forced command
   `restrict,command="/usr/local/bin/loop2-deploy" `, `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys`
   (expects `1`; the count only, never a line or a key).
-- Allowed, for a reading in an environment fact only: `stat --version`, `grep --version`,
-  `docker --version` and `free --version`, each run alone with no pipe or other option. Each prints
-  the tool's version, whose first line is what such a reading quotes; they expect no fixed value.
+- Allowed, for a reading in an environment fact only: `stat --version`, `bash --version`,
+  `grep --version`, `docker --version` and `free --version`, each run alone, or piped through
+  `head -1` to keep its first line, and each also allowed in the same call as the counting
+  command of `references/backup_and_restore.md`; no other pipe or option. Each prints the tool's
+  version, whose first line is what such a reading quotes; they expect no fixed value.
 - Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
   `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
   of the older compressed ones (`/var/log/loop2-app.log.2.gz` to `.4.gz`); a bounded `tail -n 100` of
@@ -87,7 +92,8 @@ files or requests. The MCP has full rights, so the following limits are an agree
   container (it is gone); no rotation by hand.
 - No token-file, session-key-file or SMTP-password-file reads, no triggering of mail (below), no reading or copying of the account database or
   its volume (it holds e-mail addresses and password hashes), no reading of the backup
-  encryption key or the known-hosts file, no running of the backup script or of the backup
+  encryption key or the known-hosts file, no reading of root's SSH configuration beyond that
+  count, no running of the backup script or of the backup
   command, no hand run of the send, no fetching, opening or listing of backups on Strych, full `docker inspect`, Compose
   configuration dumps, arbitrary container execution, restarts, deployments, key changes or
   secret rotation. The MCP's changing tools
@@ -182,7 +188,7 @@ the old game's state and installed-script mismatches are also logged.
 Every night at 03:17 (server clock) the installed `loop2-backup` makes a consistent backup of the
 database, encrypts it with `age` and sends it to Mikrus Strych, which keeps seven files, one per
 weekday, each replaced a week later. A failed night calls `pusher` with the subject
-`kopia bazy loop2 nieudana`. A cron that did not start writes nothing. Where backups, keys and
+`kopia_bazy_loop2_nieudana`, which `pusher` turns into spaces in the mail's subject. A cron that did not start writes nothing. Where backups, keys and
 the log lie, how to read the log, install, change the encryption key and restore:
 `references/backup_and_restore.md`.
 

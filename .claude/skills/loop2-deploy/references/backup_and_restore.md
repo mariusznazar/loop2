@@ -33,7 +33,8 @@ database exists on this host only inside the pipe (in the container it lies in `
 seconds of the run, and a killed run can leave it there until the container is replaced); releases
 the lock; logs the weekday file and the size; sends the file with `rsync` over `ssh` (batch mode,
 host key checked against `/etc/loop2/strych-known-hosts`); removes the temporary directory. Any
-non-zero end calls `pusher` once, with the subject `kopia bazy loop2 nieudana` and the text
+non-zero end calls `pusher` once, with the subject `kopia_bazy_loop2_nieudana` (`pusher` takes
+underscores as spaces, so the mail's subject reads "kopia bazy loop2 nieudana") and the text
 `Kopia bazy loop2 nie udała się.` and nothing of what failed.
 
 The command's fixed word `--to-standard-output` sends every address and password hash to wherever
@@ -51,11 +52,12 @@ holds its size beside the exit code. The log holds no player data and no access 
 | Exit | Stage | Meaning |
 |---|---|---|
 | 0 | | sent |
+| 1 | | no stage of the script sets this code. The log says `end: failed (exit 1)` for a run ended by a signal that no trap of the script names (the last row lists the signals it does name); the header of `deploy/loop2-backup` says bash then ends with that signal's own status, so the status the process gave can differ from the 1 in the log |
 | 2 | input | an argument was given; the script takes none |
 | 3 | key | the key file is missing, empty or unreadable; nothing was made |
 | 4 | lock | the lock file cannot be opened, the lock was not free within 900 seconds (a deployment was running), or could not be released |
 | 5 | temporary | no private temporary directory on the host (disk or permissions) |
-| 6 | stream | `docker` or `age` did not exit 0; the line gives both statuses. `docker` 1: no running container `loop2` (missing or stopped), no backup command in the running commit, or a failed backup; Docker's own text stands in the line before it in the log and says which; 2: wrong arguments; 3: no database file at the container's path; 4: the output could not be written out; 124 or 137: the 300 second limit; 125 to 127: Docker itself failed or could not start the command. A commit from before the backup command gives a failure here too, with `docker` 1 |
+| 6 | stream | `docker` or `age` did not exit 0; the line gives both statuses. `docker` 1: no running container `loop2` (missing or stopped), no backup command in the running commit, or a failed backup; Docker's own error text stands in the log just above the `stage stream` line, in lines with no time in front, and says which; 2: wrong arguments; 3: no database file at the container's path; 4: the output could not be written out; 124 or 137: the 300 second limit; 125 to 127: Docker itself failed or could not start the command. A commit from before the backup command gives a failure here too, with `docker` 1 |
 | 7 | file | the encrypted file is missing or empty |
 | 8 | send | `rsync` exit N, see below |
 | 9 | weekday | the UTC day of the week could not be read |
@@ -70,8 +72,10 @@ refused login prints the login. For the reason, the human makes the hand run bel
 Reading a log:
 
 - **A size near 200 bytes is an empty backup.** `age` makes a valid file of about that size from no
-  input, and it would replace that weekday's file. The script's checks stop an empty file, but
-  read the size anyway: the database measures far more.
+  input, and the script does not stop it: its checks stop a failed `docker` or `age` (exit 6) and
+  an encrypted file that is missing or zero bytes (exit 7), and this file is neither. It is sent,
+  replaces that weekday's file and the log shows `end: sent`. Read the size on each `made` line:
+  the database measures far more.
 - **The limit per backup is about 25 MB.** `rsync` writes the new file beside the old one before
   replacing it, so eight files stand on Strych for the length of a transfer. 7 times the size must
   stay within 200 MB, and with the extra file the real limit is 25 MB per backup (about 385
@@ -80,8 +84,8 @@ Reading a log:
 - **A failed send with a logged size near 25 MB** and a passing hand run of the send means Strych
   has no room for the eighth file.
 - **A failed night keeps the older backup** in its weekday file, so seven backups still stand,
-  one of them then 14 days old. "Which is the newest" is answered by the file's time on Strych,
-  or by the log while one exists.
+  one of them then 14 days old. "Which is the newest" is answered by the file's time on Strych
+  (step 1 of "Restoring over the server's database" reads it), or by the log while one exists.
 - **A cron that did not start writes nothing.** Silence in the log at 03:17 is not a success. The
   notice comes only from a run that started. Whether the host's cron starts the file is shown only
   by finding a run at 03:17 in the log the next morning.
@@ -104,16 +108,23 @@ script with `bash -n`, then `install` (see "Installing a script from an exact co
    `deployed`. The build output of the first build of a commit shows the Node.js release the image
    was checked on; that line stands in `/var/log/loop2-deploy.log`, not on the terminal of a human
    run, and a repeat of the same commit prints none. The deployment's warnings about the two
-   absent installed copies are expected until steps 7 and 11. **From this deployment until this
-   request's merge, merge nothing else to `main` and deploy nothing else to the server.** Any
-   other deployment replaces the image with one that has no backup command: the nightly run then
-   fails, and the later steps (the hand runs, the restore trial) would run on the wrong code.
+   absent installed copies are expected until steps 7 and 11. **While the commit just deployed
+   holds a change of the backup command that `main` does not hold yet, merge nothing else to
+   `main` and deploy nothing else to the server.** That is the case for a first installation from
+   an unmerged branch and for a later change of the command on a branch. Any other deployment
+   then replaces the image with one that lacks the change: the nightly run fails or runs the old
+   command, and the later steps (the hand runs, the restore trial) would run on the wrong code.
+   When the commit is on `main` already, this step holds nothing else back; only a commit from
+   before the backup command must never be deployed (see "After a rollback" in "The log").
 3. `apt install age` on the server (`age --version` shows it works). The package holds
    `age-keygen` too.
 4. Make the key: `age-keygen -o /etc/loop2/backup-encryption-key` as root, then set owner root,
    group root, mode 0400. Copy the file into the owner's private note. Check with `stat`.
 5. Write root's SSH configuration entry for Strych's host (host from the constants block, login
-   and `IdentityFile /backup_key` from the private note).
+   and `IdentityFile /backup_key` from the private note). Write nothing else into root's SSH
+   configuration or the system-wide one. Above all never set `KnownHostsCommand` or
+   `VerifyHostKeyDNS` there: each adds a source of host keys beside the one file of step 6, and
+   the check of Strych's key would no longer rest on the line a human compared (D-238).
 6. Fill `/etc/loop2/strych-known-hosts` (root, 0644) from `ssh-keyscan` for that host, keeping
    the one line whose fingerprint is `SHA256:3WieS14O9NRnaiL5imCQfMugcVExGOoPqZEMhUD/LZk` (not a
    secret; compared at the first access to Strych). `ssh-keygen -lf /etc/loop2/strych-known-hosts`
@@ -184,8 +195,55 @@ Allowed (through the `mikrus` MCP, as in `SKILL.md`):
   `stat -c '%U %g %a' /etc/loop2/strych-known-hosts` (expects `root 0 644`)
 - `cmp` of the installed `/usr/local/bin/loop2-backup` and `/etc/cron.d/loop2-backup` with
   `deploy/loop2-backup` and `deploy/loop2-backup.cron` in `/srv/loop2`
+- the number of lines that set `KnownHostsCommand` or `VerifyHostKeyDNS` in root's SSH
+  configuration and in the system-wide one (D-238), by the command below. It expects `0`, and it
+  prints that number and nothing else.
 
-Never: reading the content of the key, the known-hosts file or root's SSH configuration; running
+```sh
+bash -c '
+shopt -s nullglob
+home=/root
+n=0
+scan() {
+  local file=$1 base=$2 depth=$3 word path f
+  [ -r "$file" ] || return 0
+  if [ "$depth" -gt 16 ]; then n=$((n + 1)); return 0; fi
+  n=$((n + $(grep -v -E "^[[:space:]]*#" "$file" | grep -c -i -E "^[[:space:]]*(\"|(KnownHostsCommand|VerifyHostKeyDNS)([[:space:]=]|$))")))
+  while IFS= read -r word; do
+    [ -n "$word" ] || continue
+    if ! [[ $word =~ ^[A-Za-z0-9_./*?~+-]+$ ]]; then n=$((n + 1)); continue; fi
+    case $word in
+      /*) path=$word ;;
+      \~/*) path=$home/${word#\~/} ;;
+      \~*) n=$((n + 1)); continue ;;
+      *) path=$base/$word ;;
+    esac
+    for f in $path; do
+      [ -f "$f" ] && scan "$f" "$base" $((depth + 1))
+    done
+  done < <(grep -v -E "^[[:space:]]*#" "$file" | sed -n -E "s/^[[:space:]]*include[[:space:]=]+(.*)$/\1/Ip" | tr -s " \t=" "\n")
+}
+scan /root/.ssh/config /root/.ssh 1
+scan /etc/ssh/ssh_config /etc/ssh 1
+echo "$n"
+'
+```
+
+The count covers `/root/.ssh/config`, `/etc/ssh/ssh_config` and every file their `Include`
+lines name, to any depth up to 16, with wildcards expanded and a relative path taken from
+`/root/.ssh` or `/etc/ssh` as `ssh_config(5)` gives it; a path that begins with `~/` is taken
+from `/root`. It counts a line whose first word is either option in any letter case, with a
+space or `=` after it, and skips lines whose first character after spaces is `#`; a line that
+sets the option to `no` still counts. Four cases the command cannot follow each count as one,
+so the number is not 0 for any of them: a line whose first character after spaces is a double
+quote (`ssh` reads a quoted keyword as the option); a word of an `Include` line with a character
+outside letters, digits and `_ . / * ? ~ + -` (a variable, a `%` token, a quote, a trailing
+comment); a word of an `Include` line that begins with `~` but not with `~/` (a `~user/` path);
+and a nesting deeper than 16. A number above 0 is a finding for the human, not a line to read:
+the agent reports the number and does not open the files.
+
+Never: reading the content of the key, the known-hosts file or root's SSH configuration (the count
+above is the only reading of the configuration); running
 the backup script or the command; making the hand run of the send; fetching or opening a backup;
 listing Strych with the owner's key; installing, changing a key or the schedule.
 
@@ -198,16 +256,46 @@ sentence "Gra została zapisana w innej przeglądarce. Wczytano ten zapis." (D-2
 than the running code's schema is refused until a commit that knows it is deployed. A restore is
 not a rollback (D-15): code and data are separate paths.
 
+What the undoing does to access:
+
+- A restore from before a password reset brings back the old password, and the sessions the reset
+  ended (D-138) are valid again. Whoever knows the old password can sign in, and a reset made to
+  cut someone off from an account no longer does. Step 8 of "Restoring over the server's
+  database" has the owner of such an account reset it again.
+- A restore from before a block brings back the account unblocked, together with the sessions
+  the block deleted (D-137). Step 8 blocks it again.
+- A restore signs nobody out of what the backup holds. No step ends all sessions, because the old
+  password would let the person sign in again.
+
+The schema version of the database is not the only version a backup carries. Each saved game
+state has the version of the saved game, and the game discards one whose version is not the
+`SAVED_GAME_VERSION` of the deployed code (`src/browser/sim/saved-game.ts`): it replaces that
+state with a new game and shows „Zapis pochodził z innej wersji gry i nie dał się wczytać.
+Zaczynasz od nowa.” above it (D-96). A backup of such states passes the schema check and the
+restore trial, which only looks for the marker in the saved game state. Nothing in the restore
+checks it: a backup made before the commit that changed `SAVED_GAME_VERSION` brings back saves of
+the earlier version, and the players of those saves start a new game at the first load.
+
 ### Trying a backup on the owner's computer
 
 This proves a backup restores in the built image without touching the server. Run on the
 owner's computer in PowerShell, with the Docker engine on and `age` installed. `winget` hung on
 the owner's computer; the Windows zip of `age`'s releases page serves too. A newer `age` than the
-server's opened the backup.
+server's opened the backup. The zip only unpacks `age.exe` into a folder, which is not on the
+path: in each PowerShell window of the trial, run `$env:PATH += ';<folder holding age.exe>'`
+once, and `age` then runs by name in step 3 (without it PowerShell says that the term `age` is
+not recognized).
 
-1. Make a private folder and work in it. Paste the Strych key from the private note into a file
-   there, `strych-key`, with a final line break and no `.txt`. Take the file's rights away from
-   everyone but you, or `ssh` refuses the key:
+1. Make a private folder and enter it, and work in it to the end:
+
+   ```powershell
+   New-Item -ItemType Directory <the private folder>
+   Set-Location <the private folder>
+   ```
+
+   Paste the Strych key from the private note into a file there, `strych-key`, with a final line
+   break and no `.txt`. Take the file's rights away from everyone but you, or `ssh` refuses the
+   key:
 
    ```powershell
    icacls .\strych-key /inheritance:r /grant:r "${env:USERNAME}:R"
@@ -230,9 +318,11 @@ server's opened the backup.
    -join ($b | ForEach-Object { [char]$_ })
    ```
 4. Build the image from a clean checkout of the commit step 2 of "Installing and reinstalling"
-   deployed, with that commit's sha: `docker build --build-arg LOOP2_COMMIT=<sha> -t <image> <path of the clean checkout>`
-   Stay in the private folder: the build names the checkout by its path. The launcher's report must read `image revision: <sha>`. `unknown` or another value shows no
-   same commit, and the trial does not count until a build gives that sha.
+   deployed, with that commit's sha:
+   `docker build --build-arg LOOP2_COMMIT=<sha> -t <image> <path of the clean checkout>`
+   Stay in the private folder: the build names the checkout by its path. The launcher's report
+   must read `image revision: <sha>`. `unknown` or another value shows no same commit, and the
+   trial does not count until a build gives that sha.
 5. Read the test account's password without placing it in the shell history. Keep that
    password ASCII: the console code page may alter another character on its way to the launcher.
    This form needs no special console: the launcher drops a byte-order mark that a UTF-8 console
@@ -261,10 +351,12 @@ server's opened the backup.
    check it and remove it by hand.
 7. Write the capacity sum and the launcher's report into the request's record.
 8. Remove the fetched files, the decrypted file and both temporary keys, in this order. Read-only
-   keys stopped `Remove-Item`, so give the rights back first, for both key files:
+   keys stopped `Remove-Item`, so give the rights back first, one row for each of the two key
+   files (the Strych key of step 1 and the backup key of step 3):
 
    ```powershell
-   icacls <key file> /grant:r "${env:USERNAME}:F"
+   icacls .\strych-key /grant:r "${env:USERNAME}:F"
+   icacls .\<key file of step 3> /grant:r "${env:USERNAME}:F"
    Set-Location ..
    Remove-Item -Recurse -Force <the private folder>
    Test-Path <the private folder>
@@ -272,47 +364,151 @@ server's opened the backup.
 
    `Set-Location ..` leaves the folder, which PowerShell will not remove while you stand in it.
    `Test-Path` shows `False`. A `True` means the folder still holds the plain database and the
-   keys: read the error, leave the folder, and remove it again before going on. Then `Remove-Variable secure, credential` and close the window.
+   keys: read the error, leave the folder, and remove it again before going on. Then
+   `Remove-Variable secure, credential` and close the window.
 
 Not proven by this trial: building a new server, restoring over a live volume, backups of later
-schema versions.
+schema versions, and the version of the saved game. The launcher only looks for the marker in the
+saved game state, so a backup whose saved game states are of another version than the built
+commit's passes, although the game discards them and starts a new game (see "Restoring").
 
 ### Restoring over the server's database
 
-Eight steps, all the human's. The procedure has never been tried.
+Eight steps, all the human's. Tried once, on 2026-11-11, by the owner on the real test server,
+steps 1 to 8 in order, from the newest nightly backup chosen by its time (the weekday file 3).
+Each step that was run worked as written except three places, which this text now corrects: the
+host in step 1, the mode of the decrypted file in step 2 and the marker in step 7. Two branches
+inside steps were never reached: in step 4 no `-wal` and no `-shm` stood in the volume after the
+clean stop of `app`, so moving them was not tried, and in step 8 the owner had reset no password
+and blocked no account since the backup, so nothing was redone. In step 7 the owner reported the
+public page, the login of the test account and the saved game as in order, and said no more.
+Not tried: the way back, a second attempt after a failed one, the old key of step 2, the move of
+`-wal` and `-shm` in step 4, a password reset or a block redone in step 8, `rsync` exit 23, a
+backup of a newer schema than the running code, and the path "With no server".
 
 The private directory of step 1 is `/root/loop2-restore`. It lies outside `/srv/loop2` on purpose:
 the deployment of step 6 runs `git clean -ffdx` in `/srv/loop2` and would erase anything left
 there. It is not `/tmp`, a shared directory. It holds the plain database (addresses and password
 hashes), so step 7 removes it.
 
-1. Choose the backup (the newest by time on Strych, or the one wanted). Make the directory and the one inside
-   it: `mkdir -m 0700 /root/loop2-restore /root/loop2-restore/previous`. Bring the backup into
-   `/root/loop2-restore` as root with the Strych login and key.
-2. Decrypt it there: `age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file>`.
-   `head -c 15 accounts.sqlite` shows `SQLite format 3`.
+**While the procedure runs, from step 3 until step 7 has passed (or the way back below is
+finished), merge nothing to `main`, push nothing to `main` and run no deployment but the one of
+step 6.** A push to `main` starts the automated deployment by itself. It would build and start
+`app` on whatever the volume holds at that moment (nothing between steps 4 and 5, a half-restored
+or a failed database afterwards) and on the commit of `main`, which may not be the commit step 6
+deploys. If a deployment started anyway, wait for its `deployed` or failure line in
+`/var/log/loop2-deploy.log` (it holds the lock), then take the run as a failed attempt and follow
+"A second attempt after a failed one" below.
+
+1. Choose the backup. Make the directory and the one inside it:
+   `mkdir -m 0700 /root/loop2-restore /root/loop2-restore/previous`. Then, as root, fetch the
+   seven weekday files into `/root/loop2-restore`, in bash. The command uses the options of the
+   script's own send, so the host key is checked against `/etc/loop2/strych-known-hosts` alone,
+   the login and `/backup_key` come from root's SSH configuration, and `--times` keeps each
+   file's time. It names the seven fixed file names and lists nothing on Strych (D-230). The host
+   is the one in the constants block of the installed script; load it into `STRYCH_HOST` without
+   printing it, and check that it loaded. Load it once in a shell: a second load in the same shell
+   says `STRYCH_HOST: readonly variable` and leaves the first value in place:
+
+   ```sh
+   eval "$(grep -m1 '^readonly STRYCH_HOST=' /usr/local/bin/loop2-backup)"
+   echo "${STRYCH_HOST:+host loaded}"
+   ```
+
+   On a host where the script is not installed yet (the path "With no server"), read the same
+   line from `/srv/loop2/deploy/loop2-backup` instead, which the deployment of that path's step 8
+   put there.
+
+   ```sh
+   rsync --whole-file --times --timeout=120 \
+     --rsh="ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/etc/loop2/strych-known-hosts -o GlobalKnownHostsFile=/dev/null -o ConnectTimeout=30" \
+     "$STRYCH_HOST":loop2-accounts-{1..7}.sqlite.age /root/loop2-restore/
+   echo "rsync exit $?"
+   ```
+
+   Exit 0 is all seven. The exits of the send in the table under "The log" read the same here
+   (255: a refused login, a changed host key of Strych or a lost key). Exit 23 means at least one
+   file was not fetched; `ls` below shows which, and a week not yet gone by since the first
+   backup leaves weekday files that no night has filled. Then read which file is the newest: the
+   first row of this listing, the one with the latest time:
+
+   ```sh
+   ls -l -t --time-style=long-iso /root/loop2-restore/loop2-accounts-*.sqlite.age
+   ```
+
+   Take the newest unless another is wanted. A size near 200 bytes is an empty backup (see "The
+   log"): take the next newest. While the log of the backup exists, its last `end: sent` line
+   names the weekday file of the newest night and should agree; a disagreement is for the owner
+   to understand before going on. Then enter the directory and stay in it for step 2:
+   `cd /root/loop2-restore`.
+2. Decrypt it there, from `/root/loop2-restore`, so that the plain database is written inside
+   the private directory that step 7 removes and nowhere else. The file is the plain database
+   (addresses and password hashes), and `age` creates it with the permissions the umask leaves,
+   which gave `-rw-r--r--` under root's usual umask, so make it owner-only with `umask 077` for
+   this command, in a subshell:
+   `( umask 077; age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file> )`.
+   `ls -l accounts.sqlite` shows `-rw-------`, and `head -c 15 accounts.sqlite` shows
+   `SQLite format 3`. A backup made before the last change of
+   the key ("Changing the encryption key") is refused by `age` with the current key. Open it with
+   the old key from the private note, the one marked old: put it into a file of its own in the
+   private directory, pasting it so that it passes no command argument and no shell history, end
+   with Enter and Ctrl-D, and decrypt with the same command as above, giving
+   `-i /root/loop2-restore/old-key` in place of `-i /etc/loop2/backup-encryption-key` (the
+   `umask 077` and `-o accounts.sqlite` stay); step 7 removes the key with the directory:
+
+   ```sh
+   ( umask 077; cat > /root/loop2-restore/old-key )
+   ```
 3. Stop the application: from `/srv/loop2`, `docker compose -p loop2 stop app`.
-4. Find the volume's directory with `docker volume inspect --format '{{ .Mountpoint }}' loop2_accounts`.
-   Move all three files, `accounts.sqlite`, `accounts.sqlite-wal` and `accounts.sqlite-shm`
-   (those that exist), together into `/root/loop2-restore/previous` (made in step 1). The recent writes lie in the
+4. Find the volume's directory with
+   `docker volume inspect --format '{{ .Mountpoint }}' loop2_accounts`. Move all three files,
+   `accounts.sqlite`, `accounts.sqlite-wal` and `accounts.sqlite-shm` (those that exist),
+   together into `/root/loop2-restore/previous` (made in step 1). The recent writes lie in the
    two companions, so the one file is not the database; after a crash they were never merged.
-   The volume is left with none of the three.
-5. Install the decrypted file there as `accounts.sqlite` with owner uid 1000 and group 1000.
+   The volume is left with none of the three. For a second attempt this step differs: see below.
+5. Install the decrypted file there as `accounts.sqlite`, owner uid 1000, group 1000, mode 0600,
+   where `<volume directory>` is the one of step 4 (the decrypted file in
+   `/root/loop2-restore` stays until step 7):
+
+   ```sh
+   install -o 1000 -g 1000 -m 0600 /root/loop2-restore/accounts.sqlite <volume directory>/accounts.sqlite
+   ```
 6. Start by deploying the commit that was running (`loop2-deploy <sha>`, `SSH_ORIGINAL_COMMAND`
    unset); take the sha from the running container's label (`SKILL.md`). If the backup is from a
    newer schema than that commit knows, deploy a commit that knows it instead; until then health
    fails with exit 8.
 7. Check: the deployment ends with `deployed`, the public page loads, the test account logs in
-   and its marker name is there. Only when the check passes, remove the whole directory:
-   `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go the way
-   back below.
-8. Write down what was lost: everything after the backup's time.
+   and its marker is there. The marker is the name given to a character or a program in the test
+   account in step 8 of "Installing and reinstalling" and written down then. If it was not
+   written down, log in and check that the test account holds a saved game state the owner
+   recognises from before the backup's time. Only when the check passes, remove the whole
+   directory: `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go
+   the way back below.
+8. Write down what was lost: everything after the backup's time. Then undo what the restore
+   gave back to people:
+   - Whoever is known to have reset a password since the backup resets it again with „Nie
+     pamiętam hasła” on the login card, because the old password works again; today that is
+     the owner's own account. This instruction has no way to find the other accounts, so it
+     names none.
+   - Block again each account that was blocked since the backup (the command in "Blocking a
+     player account" in `SKILL.md`), because the restore brought it back unblocked.
 
 The way back, when step 7 fails and the database from before the restore is wanted: stop `app`
 (`docker compose -p loop2 stop app` from `/srv/loop2`), remove the restored `accounts.sqlite` and
 any `-wal` and `-shm` beside it in the volume's directory, move the three files back from
 `/root/loop2-restore/previous` (owner uid 1000, group 1000), and deploy the running commit
 (`loop2-deploy <sha>`). Then remove `/root/loop2-restore`.
+
+A second attempt after a failed one. `/root/loop2-restore` stays after a failed step 7, and once
+step 4 has run, `previous` in it holds the database from before the restore. Do not start again
+from step 1: its `mkdir` refuses a directory that exists, and step 4 run again would move the
+restored files over the ones in `previous` and lose the way back. Instead, leave the directory
+as it is and: choose and fetch the backup (step 1 without the `mkdir`, and without loading
+`STRYCH_HOST` again in the same shell), decrypt it (step 2, from `/root/loop2-restore`; the new
+`accounts.sqlite` replaces the earlier decrypted one, never anything in `previous`), stop
+`app` if it runs (step 3), and in step 4 remove the restored `accounts.sqlite` and any `-wal`
+and `-shm` from the volume's directory instead of moving them. Then go on with step 5. When
+`previous` is empty, the first attempt stopped before step 4, and step 4 stands as written.
 
 ### With no server
 
@@ -323,14 +519,32 @@ in this order:
    the installed `loop2-deploy`.
 2. Create `/etc/loop2` as in H2 of "H1-H5" in `setup_and_secrets.md` (deployment account as
    owner, numeric group 65532, mode 0750).
-3. Put the session keys, the SMTP password and the tunnel token in place, each by its section of
-   `setup_and_secrets.md`, from the owner's private note.
+3. Put the SMTP password and the tunnel token in place, each by its section of
+   `setup_and_secrets.md`, from the owner's private note. Put the session keys in place as the
+   keys the players' sessions were signed with, not as new ones: write `/etc/loop2/session-secrets`
+   from the private note's copy of the file, whole, in a private terminal (paste it, end with
+   Enter and Ctrl-D), then give it owner root, group 1000 and mode 0440:
+
+   ```sh
+   ( umask 077; cat > /etc/loop2/session-secrets )
+   chown root:1000 /etc/loop2/session-secrets && chmod 0440 /etc/loop2/session-secrets
+   stat -c '%U %g %a' /etc/loop2/session-secrets
+   ```
+
+   The last row expects `root 1000 440`. Do not make a new key here. "Creating the file" in
+   "Session signing keys" of `setup_and_secrets.md` writes a file with one new key, which signs
+   every player out, because the restored sessions were signed with the keys of the note.
+   "Rotating" there needs the file in place first, and it only prepends a new key to it; the
+   file is already the note's.
 4. `apt install age`. Check that `rsync` exists (`rsync --version`; install it with `apt` if not)
    and that `pusher` exists (`command -v pusher`). Send a test message with
-   `echo test | pusher test_kopii` and check that it arrives. On a host with no `pusher` the script's notice
-   reaches no one: a failed night leaves only `notice: pusher exit 127` in the log. Then do not
-   leave the schedule unwatched: read `/var/log/loop2-backup.log` every morning, or take the
-   missing notice to the owner as a decision before step 10.
+   `echo test | pusher test_kopii` and check that it arrives. On a host where it does not arrive
+   the script's notice reaches no one either. With no `pusher`, a failed night leaves only
+   `notice: pusher exit 127` in the log; with a `pusher` that runs but whose message never comes,
+   the log shows a `notice: pusher exit` line whose status tells little, because `pusher` reports
+   no connection and not a refused message. Then do not leave the schedule unwatched: read
+   `/var/log/loop2-backup.log` every morning, or take the missing notice to the owner as a
+   decision before step 10.
 5. Write `/etc/loop2/backup-encryption-key` from the private note, root:root, mode 0400.
 6. Write `/backup_key` from the private note, root:root, mode 0600 (`ssh` refuses a private key
    that others can read).

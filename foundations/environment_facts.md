@@ -24,6 +24,38 @@ The installed `/usr/local/bin/loop2-deploy` is owned by root:root with mode 0755
 
 - **Source:** reading: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on the test server's host, stat (GNU coreutils) 8.32 — "755 root:root"; run 2026-11-10
 
+## loop2-host-ssh-host-key-options
+
+Root's SSH configuration and the system-wide one on the test server's host, with the files their `Include` lines name, contain no line that sets `KnownHostsCommand` or `VerifyHostKeyDNS`.
+
+- **Source:** reading: `bash -c '
+shopt -s nullglob
+home=/root
+n=0
+scan() {
+  local file=$1 base=$2 depth=$3 word path f
+  [ -r "$file" ] || return 0
+  if [ "$depth" -gt 16 ]; then n=$((n + 1)); return 0; fi
+  n=$((n + $(grep -v -E "^[[:space:]]*#" "$file" | grep -c -i -E "^[[:space:]]*(\"|(KnownHostsCommand|VerifyHostKeyDNS)([[:space:]=]|$))")))
+  while IFS= read -r word; do
+    [ -n "$word" ] || continue
+    if ! [[ $word =~ ^[A-Za-z0-9_./*?~+-]+$ ]]; then n=$((n + 1)); continue; fi
+    case $word in
+      /*) path=$word ;;
+      \~/*) path=$home/${word#\~/} ;;
+      \~*) n=$((n + 1)); continue ;;
+      *) path=$base/$word ;;
+    esac
+    for f in $path; do
+      [ -f "$f" ] && scan "$f" "$base" $((depth + 1))
+    done
+  done < <(grep -v -E "^[[:space:]]*#" "$file" | sed -n -E "s/^[[:space:]]*include[[:space:]=]+(.*)$/\1/Ip" | tr -s " \t=" "\n")
+}
+scan /root/.ssh/config /root/.ssh 1
+scan /etc/ssh/ssh_config /etc/ssh 1
+echo "$n"
+'` and, in the same call, `bash --version | head -1` and `grep --version | head -1` on the test server's host, bash 5.1.16(1)-release and grep (GNU grep) 3.7 — "0" · "GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)" · "grep (GNU grep) 3.7"; run 2026-11-11
+
 ## mikrus-host-docker-workloads
 
 The old loop game and foundryvtt run as Docker containers on the test server's host.
