@@ -69,8 +69,10 @@ files or requests. The MCP has full rights, so the following limits are an agree
   `restrict,command="/usr/local/bin/loop2-deploy" `, `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys`
   (expects `1`; the count only, never a line or a key).
 - Allowed, for a reading in an environment fact only: `stat --version`, `bash --version`,
-  `grep --version`, `docker --version` and `free --version`, each run alone with no pipe or other option. Each prints
-  the tool's version, whose first line is what such a reading quotes; they expect no fixed value.
+  `grep --version`, `docker --version` and `free --version`, each run alone, or piped through
+  `head -1` to keep its first line, and each also allowed in the same call as the counting
+  command of `references/backup_and_restore.md`; no other pipe or option. Each prints the tool's
+  version, whose first line is what such a reading quotes; they expect no fixed value.
 - Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
   `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
   of the older compressed ones (`/var/log/loop2-app.log.2.gz` to `.4.gz`); a bounded `tail -n 100` of
@@ -186,7 +188,7 @@ the old game's state and installed-script mismatches are also logged.
 Every night at 03:17 (server clock) the installed `loop2-backup` makes a consistent backup of the
 database, encrypts it with `age` and sends it to Mikrus Strych, which keeps seven files, one per
 weekday, each replaced a week later. A failed night calls `pusher` with the subject
-`kopia bazy loop2 nieudana`. A cron that did not start writes nothing. Where backups, keys and
+`kopia_bazy_loop2_nieudana`, which `pusher` turns into spaces in the mail's subject. A cron that did not start writes nothing. Where backups, keys and
 the log lie, how to read the log, install, change the encryption key and restore:
 `references/backup_and_restore.md`.
 

@@ -33,7 +33,8 @@ database exists on this host only inside the pipe (in the container it lies in `
 seconds of the run, and a killed run can leave it there until the container is replaced); releases
 the lock; logs the weekday file and the size; sends the file with `rsync` over `ssh` (batch mode,
 host key checked against `/etc/loop2/strych-known-hosts`); removes the temporary directory. Any
-non-zero end calls `pusher` once, with the subject `kopia bazy loop2 nieudana` and the text
+non-zero end calls `pusher` once, with the subject `kopia_bazy_loop2_nieudana` (`pusher` takes
+underscores as spaces, so the mail's subject reads "kopia bazy loop2 nieudana") and the text
 `Kopia bazy loop2 nie udała się.` and nothing of what failed.
 
 The command's fixed word `--to-standard-output` sends every address and password hash to wherever
@@ -375,11 +376,15 @@ commit's passes, although the game discards them and starts a new game (see "Res
 
 Eight steps, all the human's. Tried once, on 2026-11-11, by the owner on the real test server,
 steps 1 to 8 in order, from the newest nightly backup chosen by its time (the weekday file 3).
-Each step worked as written except three places, which this text now corrects: the host in step 1,
-the mode of the decrypted file in step 2 and the marker in step 7. In step 7 the owner reported
-the public page, the login of the test account and the saved game as in order, and said no more.
-Not tried: the way back, a second attempt after a failed one, the old key of step 2, `rsync`
-exit 23, a backup of a newer schema than the running code, and the path "With no server".
+Each step that was run worked as written except three places, which this text now corrects: the
+host in step 1, the mode of the decrypted file in step 2 and the marker in step 7. Two branches
+inside steps were never reached: in step 4 no `-wal` and no `-shm` stood in the volume after the
+clean stop of `app`, so moving them was not tried, and in step 8 the owner had reset no password
+and blocked no account since the backup, so nothing was redone. In step 7 the owner reported the
+public page, the login of the test account and the saved game as in order, and said no more.
+Not tried: the way back, a second attempt after a failed one, the old key of step 2, the move of
+`-wal` and `-shm` in step 4, a password reset or a block redone in step 8, `rsync` exit 23, a
+backup of a newer schema than the running code, and the path "With no server".
 
 The private directory of step 1 is `/root/loop2-restore`. It lies outside `/srv/loop2` on purpose:
 the deployment of step 6 runs `git clean -ffdx` in `/srv/loop2` and would erase anything left
@@ -447,8 +452,9 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    the key ("Changing the encryption key") is refused by `age` with the current key. Open it with
    the old key from the private note, the one marked old: put it into a file of its own in the
    private directory, pasting it so that it passes no command argument and no shell history, end
-   with Enter and Ctrl-D, and decrypt with `-i /root/loop2-restore/old-key`; step 7 removes it
-   with the directory:
+   with Enter and Ctrl-D, and decrypt with the same command as above, giving
+   `-i /root/loop2-restore/old-key` in place of `-i /etc/loop2/backup-encryption-key` (the
+   `umask 077` and `-o accounts.sqlite` stay); step 7 removes the key with the directory:
 
    ```sh
    ( umask 077; cat > /root/loop2-restore/old-key )
