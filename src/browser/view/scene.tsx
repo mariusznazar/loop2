@@ -375,6 +375,7 @@ export function Scene({
         className="scene-mage"
         data-walking={walking ? "" : undefined}
         data-bending={drawing.mage.bending ? "" : undefined}
+        data-bend-facing={drawing.mage.bendFacing ?? undefined}
         data-facing={current.facing}
         style={mageStyle}
         onAnimationEnd={onAnimationEnd}

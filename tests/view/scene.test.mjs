@@ -875,7 +875,7 @@ test("the mage's bend sheet is the data's file, shown in place of the idle sheet
 
 // To do 1. Catches a mage that bends with its back to the prop: it walks left to the sticks, so its
 // figure is mirrored, and the bend sheet, whose frames reach right, must not be.
-test("a mage that walked left bends facing right, the way its props lie", async () => {
+test("a mage that walked left to the sticks bends facing right, toward them", async () => {
   await withPage(async (page) => {
     const { draw, mage } = await mounted(
       page,
@@ -1277,5 +1277,63 @@ test("an effect stands at the mage that gathered, though the next action walks e
       (83 / 336) * 100,
       "the cloud at the sticks",
     );
+  });
+});
+
+// Finding B2 of the review. Catches a mage that bends with its back to its prop: the moss lies to the
+// mage's left, the sticks and the bush to its right. The bend sheet's frames reach right and the mage's
+// figure is mirrored when it walked left, so the sheet is mirrored again where the two differ.
+test("the bending mage faces its prop whatever way it walked: sticks and bush to the right, moss to the left", async () => {
+  await withPage(async (page) => {
+    const MOSS = { kind: "gather", resource: "moss" };
+    const BERRY = { kind: "gather", resource: "berry" };
+    const bendMirror = (mage) =>
+      computed(one(mage, ".scene-mage-bend"), "transform") === "scaleX(-1)";
+    const walked = async (from, to) => {
+      const { draw, mage } = await mounted(page, doingFrom(from, 0));
+      await draw(doingFrom(to, 10), changed(to, 10));
+      return mage();
+    };
+
+    // From the clearing's side to the sticks and the moss the mage walks left: its figure is mirrored.
+    const sticks = await walked({ kind: "explore" }, GATHER_STICK);
+    assert.equal(sticks.getAttribute("data-facing"), "left", "precondition");
+    assert.equal(sticks.getAttribute("data-bend-facing"), "right");
+    assert.equal(
+      bendMirror(sticks),
+      true,
+      "the sticks: turned back, facing right",
+    );
+
+    const moss = await walked({ kind: "explore" }, MOSS);
+    assert.equal(moss.getAttribute("data-facing"), "left", "precondition");
+    assert.equal(moss.getAttribute("data-bend-facing"), "left");
+    assert.equal(
+      bendMirror(moss),
+      false,
+      "the moss: left with the figure, not turned back",
+    );
+
+    // To the bush from the sticks the mage walks right: its figure is not mirrored.
+    const berry = await walked(GATHER_STICK, BERRY);
+    assert.equal(berry.getAttribute("data-facing"), "right", "precondition");
+    assert.equal(berry.getAttribute("data-bend-facing"), "right");
+    assert.equal(bendMirror(berry), false, "the bush: right with the figure");
+
+    // Placed at the moss at once, as at a first draw, the mage faces right: the bend turns over to the left.
+    const placed = (await mounted(page, doingFrom(MOSS, 0))).mage();
+    assert.equal(placed.getAttribute("data-facing"), "right", "precondition");
+    assert.equal(
+      bendMirror(placed),
+      true,
+      "the moss at a first draw: turned over",
+    );
+
+    // The fibre has no prop: the mage bends as it faces, whichever way that is.
+    for (const from of [{ kind: "explore" }, BERRY]) {
+      const fibre = await walked(from, GATHER_FIBER);
+      assert.equal(fibre.getAttribute("data-bend-facing"), null, "no prop");
+      assert.equal(bendMirror(fibre), false, "the fibre: as the mage faces");
+    }
   });
 });

@@ -5713,10 +5713,10 @@ scene is the mage of Pixel Crawler.
     a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
     holds, with a credit line for the pack in the footer
   - violates: a picture placed straight in the directory the server serves; a sprite file in
-    another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack other than the two named; the cloud of dust in a colour that
-    does not stand out from the ground it stands on; a pack whose licence asks for a credit, used
-    with no credit line in the game;
-    the hooded figure of loop as the character of the scene
+    another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
+    other than the two named; the cloud of dust in a colour that does not stand out from the
+    ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
+    game; the hooded figure of loop as the character of the scene
 - **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
@@ -6988,7 +6988,8 @@ and shows no flash of its whole area.
   - complies: the scene under the system's setting for reduced motion keeping its frames still; an
     effect of the scene that changes a part of its area; the icon of a gathered resource flying to
     the mage in 300 ms and the cloud of dust of a miss gone in 300 ms, with no text on either; an
-    effect of a reading that carries several ends of a gathering, as after a catch-up, left out
+    effect of a reading that carries several ends of a gathering, as after a tab left in the
+    background, left out
   - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
     that moves under the system's setting for reduced motion as it does without it; an effect of
     an ordinary event that lasts 500 ms; a flying icon with a number beside it

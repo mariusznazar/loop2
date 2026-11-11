@@ -637,3 +637,51 @@ test("no effect without exactly one end of a gathering, in a reading that has a 
     "no map run before",
   );
 });
+
+// Minor finding 3 of the review: a net change of the backpack decides hit or miss, so a reading in which
+// an action that takes pieces out of it also ended cannot be read.
+test("no effect where an action that takes pieces out of the backpack ended in the same reading", () => {
+  for (const kind of [
+    "craftCampfire",
+    "lightCampfire",
+    "lightItem",
+    "feedCampfire",
+    "eat",
+  ])
+    assert.equal(
+      effectOf("stick", 2, 2, [finished(STICK), finished({ kind })]),
+      null,
+      kind,
+    );
+  // The ends of an action that takes none do not hinder it.
+  assert.equal(
+    effectOf("stick", 2, 3, [finished({ kind: "explore" }), finished(STICK)])
+      .kind,
+    "flight",
+  );
+});
+
+test("the bending mage faces its prop: the sticks and the bush lie to its right, the moss to its left, and the fibre has none", () => {
+  const facing = (action) => sceneDrawing(doing(action)).mage.bendFacing;
+  assert.equal(facing({ kind: "gather", resource: "stick" }), "right");
+  assert.equal(facing({ kind: "gather", resource: "berry" }), "right");
+  assert.equal(facing({ kind: "patrol", resource: "moss" }), "left");
+  assert.equal(facing({ kind: "gather", resource: "moss" }), "left");
+  assert.equal(facing({ kind: "gather", resource: "fiber" }), null);
+  assert.equal(facing({ kind: "explore" }), null);
+});
+
+// Derived from the places of the data, not from its `mageFaces`: the mage's figure is columns 20 to 44
+// of its 64-pixel frame, so its middle is 32 right of the frame's edge, and a prop whose middle is to
+// the right of it lies on the mage's right.
+test("each prop's facing is the side its middle lies on, from the places of the data", () => {
+  for (const [resource, prop] of Object.entries(SCENE_PROPS)) {
+    const mageMiddle = prop.mageAt + 32;
+    const propMiddle = prop.place.x + prop.picture.width / 2;
+    assert.equal(
+      prop.mageFaces,
+      propMiddle > mageMiddle ? "right" : "left",
+      resource,
+    );
+  }
+});

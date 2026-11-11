@@ -1725,11 +1725,15 @@ header .failure-line {
 }
 
 /*
- * A mage that bends faces right, the way its props lie, whatever way it walked in: the bend sheet
- * turns back the mirror its figure's element puts on a mage that walked left, as it does for the
- * sticks and the moss, which the mage reaches walking from the right.
+ * A mage that bends faces its prop, as the data gives it, whatever way it walked in (`data-bend-facing`,
+ * where the resource has a prop; the fibre's has none and bends as the mage faces). The bend sheet's
+ * frames reach right and the mage's figure is mirrored when it walked left, so where the two differ
+ * the sheet is mirrored once more: turned back for a mage that walked left to a prop on its right, the
+ * sticks, and turned over for a mage that walked right to a prop on its left, which the moss would be
+ * if the mage came to it from the left.
  */
-.scene-mage[data-facing="left"] .scene-mage-bend {
+.scene-mage[data-facing="left"][data-bend-facing="right"] .scene-mage-bend,
+.scene-mage[data-facing="right"][data-bend-facing="left"] .scene-mage-bend {
   transform: scaleX(-1);
 }
 
@@ -1815,6 +1819,7 @@ header .failure-line {
   position: absolute;
   padding: var(--space-xs);
   background: var(--panel);
+  color: var(--text);
   transform: translate(-50%, -50%);
 }
 

@@ -10,7 +10,11 @@ import {
   SCENE_MAGES,
   SCENE_PROPS,
 } from "../sim/data/scene.js";
-import type { ScenePicture, SceneSpot } from "../sim/data/scene.js";
+import type {
+  ScenePicture,
+  ScenePropSpot,
+  SceneSpot,
+} from "../sim/data/scene.js";
 import type { GameEvent } from "../sim/game.js";
 import { sameHex } from "../sim/hex.js";
 import type { GameMapRun, GameState } from "../sim/types.js";
@@ -45,6 +49,11 @@ export type SceneDrawing = {
     goal: MageGoal;
     /** Whether the mage is gathering, so it bends in a loop where it stands at its place. */
     bending: boolean;
+    /**
+     * The way the bending mage faces, toward its prop as the data gives it; null where it does not
+     * bend or where its resource has no prop, so it bends as it faces.
+     */
+    bendFacing: "right" | "left" | null;
   };
   /** The props, always, each with the resource it shows. */
   props: (ScenePlacedSprite & { resource: ResourceId })[];
@@ -55,7 +64,7 @@ export type SceneDrawing = {
 };
 
 const STAYS: MageGoal = { kind: "stays" };
-const PROPS: Partial<Record<ResourceId, SceneSpot>> = SCENE_PROPS;
+const PROPS: Partial<Record<ResourceId, ScenePropSpot>> = SCENE_PROPS;
 const MAGES: Record<
   ArchetypeId,
   { idle: ScenePicture; run: ScenePicture; bend: ScenePicture }
@@ -170,6 +179,16 @@ function bendingOf(run: GameMapRun): boolean {
   return kind === "gather" || kind === "patrol";
 }
 
+/** The way the mage faces while it bends: toward the prop of the resource it gathers, if it has one. */
+function bendFacingOf(run: GameMapRun): "right" | "left" | null {
+  if (!bendingOf(run)) return null;
+  const activity = run.current?.activity;
+  if (activity === undefined || activity.kind !== "rule") return null;
+  const { action } = activity;
+  if (action.kind !== "gather" && action.kind !== "patrol") return null;
+  return PROPS[action.resource]?.mageFaces ?? null;
+}
+
 /** The scene of the state's map run; null where no map run stands. */
 export function sceneDrawing(state: GameState): SceneDrawing | null {
   const run = state.run;
@@ -193,12 +212,22 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
       bend: spriteOf(sheets.bend),
       goal: goalOf(run),
       bending: bendingOf(run),
+      bendFacing: bendFacingOf(run),
     },
     props,
     fire: fireOf(run),
     badge: badgeOf(state, run),
   };
 }
+
+/** The actions whose end takes pieces out of the backpack (crafting, lighting, feeding and eating). */
+const USES_BACKPACK: ReadonlySet<string> = new Set([
+  "craftCampfire",
+  "lightCampfire",
+  "lightItem",
+  "feedCampfire",
+  "eat",
+]);
 
 /** A point of the scene, in its pixels. */
 export type ScenePoint = { x: number; y: number };
@@ -218,8 +247,10 @@ export type SceneEffect =
  * left edge at `mageX`; null where the reading shows none. The scene has no event of a hit or a
  * miss, so the backpack tells: a gathering that put a piece of its resource into it hit, and „Zbierz”
  * that put none missed (D-66). „Obchód” never shows a miss. A reading of a map run started has no
- * previous reading of it, and a reading that carries more than one end of a gathering, as after a
- * catch-up, carries effects that are all overdue, so it shows none (D-317).
+ * previous reading of it, and a reading that carries more than one end of a gathering, as after a tab
+ * left in the background, carries effects that are all overdue, so it shows none (D-317); nor does a
+ * reading in which an action that takes pieces out of the backpack also ended, since the backpack's
+ * net change then tells nothing of the gathering.
  */
 export function sceneEffect(
   before: GameState,
@@ -238,6 +269,15 @@ export function sceneEffect(
     return action.kind === "gather" || action.kind === "patrol" ? [action] : [];
   });
   if (ends.length !== 1) return null;
+  // The end of an action that takes pieces out of the backpack in the same reading leaves only a net
+  // change to read, which no longer tells whether the gathering hit.
+  const spent = events.some(
+    (e) =>
+      e.kind === "activityFinished" &&
+      e.activity.kind === "rule" &&
+      USES_BACKPACK.has(e.activity.action.kind),
+  );
+  if (spent) return null;
   const { kind, resource } = ends[0];
   const gained =
     run.character.backpack[resource] > was.character.backpack[resource];

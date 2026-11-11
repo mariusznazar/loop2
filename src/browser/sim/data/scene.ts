@@ -23,6 +23,15 @@ export type SceneSpot = {
   mageAt: number;
 };
 
+/**
+ * A prop and the way the bending mage faces at it: the side of the mage on which the prop lies, as
+ * the mage stands at its place. The mage's figure is 25 pixels wide, columns 20 to 44 of its frame, so
+ * at the sticks (frame 42) it spans 62 to 86 and the sticks 80 to 101, at the bush (frame 224) 244 to
+ * 268 and the bush 252 to 280, and at the moss (frame 32) 52 to 76 and the moss 40 to 51, which lies
+ * to its left.
+ */
+export type ScenePropSpot = SceneSpot & { mageFaces: "right" | "left" };
+
 /** The scene's frame and the lines and edges its places are given by, in its pixels. */
 export const SCENE = {
   /** The forest in snow of D-314, the frame's whole picture. */
@@ -98,15 +107,18 @@ export const SCENE_PROPS = {
     picture: { file: "sticks.png", width: 22, height: 13, frames: 1 },
     place: { x: 80, y: 132 },
     mageAt: 42,
+    mageFaces: "right",
   },
   berry: {
     picture: { file: "berry-bush.png", width: 29, height: 27, frames: 1 },
     place: { x: 252, y: 122 },
     mageAt: 224,
+    mageFaces: "right",
   },
   moss: {
     picture: { file: "moss.png", width: 12, height: 9, frames: 1 },
     place: { x: 40, y: 128 },
     mageAt: 32,
+    mageFaces: "left",
   },
-} as const satisfies Partial<Record<ResourceId, SceneSpot>>;
+} as const satisfies Partial<Record<ResourceId, ScenePropSpot>>;

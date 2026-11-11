@@ -14,7 +14,7 @@ bez odstępstw zgodnie z D-38.
 | Role | Kind | Meaning for the user | Text on it | Decision |
 |---|---|---|---|---|
 | `page` | background | Tu jest gra. | `text` | D-40 |
-| `panel` | background | To osobny, wydzielony blok, także plakietka nad głową postaci. | `text` | D-40 |
+| `panel` | background | To osobny, wydzielony blok, także plakietka nad głową postaci i plakietka lecącej ikony zasobu. | `text` | D-40 |
 | `highlight` | background | Ten wiersz albo tor, także tor paska nad głową postaci i tor paska wymagania warunku mapy w nagłówku, jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
 | `rule-winning` | background | Ta reguła programu wygrywa teraz. | `text` | D-40 |
 | `rule-running` | background | Czynność tej reguły programu trwa teraz. | `text` | D-40 |
@@ -624,8 +624,9 @@ takcie, dojście maga na miejsce trwa zawsze tyle samo, niezależnie od tempa gr
 a pasek płynie między odczytami zegara (D-316, D-319, D-320); czasy stoją
 w `src/browser/styles.css`. Zmiana celu w drodze skręca maga z miejsca, w którym jest.
 Mag, który zbiera, schyla się w pętli w tym samym takcie klatek przez całe zbieranie,
-od chwili, gdy stanie na miejscu czynności, i zawsze zwrócony w prawo, tam gdzie leżą rekwizyty
-(D-362); jego klatki schylenia leżą w osobnym arkuszu z obrazkiem pierwszej klatki, pełnym
+od chwili, gdy stanie na miejscu czynności, zwrócony ku rekwizytowi, który zbiera, z danych
+gry: ku prawej przy patykach i jagodach, ku lewej przy mchu; przy włóknie, które rekwizytu nie ma,
+zwrócony tak, jak stoi (D-362); jego klatki schylenia leżą w osobnym arkuszu z obrazkiem pierwszej klatki, pełnym
 schyleniem, na którym mag staje pod ustawieniem ograniczenia ruchu.
 
 Koniec zbierania pokazuje efekt zwykłego zdarzenia, najwyżej 300 ms, bez tekstu (D-317).
