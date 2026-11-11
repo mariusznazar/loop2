@@ -6792,7 +6792,7 @@ name, the map's name, the clock, a bar of the solving condition with its numbers
 map run „Koniec przejścia”, which opens the end-of-run window. After a character's death or a
 completion that window (D-362) stands over this screen, its header included, under the menu bar and
 the row of warnings below it, and holds the lines of the end (D-185, D-216), which the world area
-does not; it closes when the question „Zapisać, odrzucić, wrócić?” of D-173 stands.
+does not; „✕” in it and Escape close it and uncover the screen, it opens again at every entry on the screen of an ended map run, and it closes when the question „Zapisać, odrzucić, wrócić?” of D-173 stands.
 
 - **Scope:** browser-view
 - **Based on:** none
