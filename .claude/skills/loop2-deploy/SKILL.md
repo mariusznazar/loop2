@@ -68,8 +68,8 @@ files or requests. The MCP has full rights, so the following limits are an agree
   lines of the account's own `~/.ssh/authorized_keys` that begin with the forced command
   `restrict,command="/usr/local/bin/loop2-deploy" `, `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys`
   (expects `1`; the count only, never a line or a key).
-- Allowed, for a reading in an environment fact only: `stat --version`, `grep --version`,
-  `docker --version` and `free --version`, each run alone with no pipe or other option. Each prints
+- Allowed, for a reading in an environment fact only: `stat --version`, `bash --version`,
+  `grep --version`, `docker --version` and `free --version`, each run alone with no pipe or other option. Each prints
   the tool's version, whose first line is what such a reading quotes; they expect no fixed value.
 - Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
   `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
