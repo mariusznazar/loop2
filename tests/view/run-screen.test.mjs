@@ -23,6 +23,7 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
+import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
@@ -134,6 +135,18 @@ async function wiredScreen({ root }, start) {
         saveAndEnd: unused("saveAndEnd"),
         discardAndEnd: unused("discardAndEnd"),
         back: unused("back"),
+        // The game view keeps whether the window stands and tells the screen with `setWindow`.
+        openWindow() {
+          game.acts.push("openWindow");
+          game.screen.setWindow(true);
+        },
+        closeWindow() {
+          game.acts.push("closeWindow");
+          game.screen.setWindow(false);
+        },
+        openMap(mapId) {
+          game.acts.push(`openMap ${mapId}`);
+        },
       },
       game.chronicle,
     ),
@@ -776,5 +789,228 @@ test("while the program panel shows a saved program a click on Teraz scrolls not
     await press(page.window, rowsOf(game.screen).now);
     await key(page.window, rowsOf(game.screen).next, "Enter");
     assert.equal(scrolls.length, 0);
+  });
+});
+
+// --- the end-of-run window over the screen ------------------------------------------------------
+
+/** The map run of `state` ended in a completion in its game minute 480, its map solved. */
+const completedRun = (state) => ({
+  ...state,
+  paused: false,
+  solvedMaps: [...state.solvedMaps, state.run.mapId],
+  run: { ...state.run, minute: 480, completion: { minute: 480 } },
+});
+
+/** Ala's map run of Las, no rule in her program, ended in the death by cold the simulation gives. */
+function freezingRun() {
+  const program = setProgram(newKnowingGame(), programFromRules()).state;
+  return send(createCharacter(program, "Ala").state, SENT, 0).state;
+}
+
+const windowIn = (screen) => byClass(screen.element, "end-window")[0];
+/** The window that stands; the case fails where none does. */
+function expectWindowIn(screen) {
+  const opened = windowIn(screen);
+  assert.ok(opened, "the window stands");
+  return opened;
+}
+const headerIn = (screen) => byClass(screen.element, "run-header")[0];
+/** Whether the header and each of the three areas are `hidden` (true) or none is (false). */
+function coveredState(screen) {
+  const states = [headerIn(screen), ...areasOf(screen.element)].map(
+    (element) => element.hidden,
+  );
+  if (states.every((hidden) => hidden)) return true;
+  if (states.every((hidden) => !hidden)) return false;
+  assert.fail(`the header and the areas differ in being hidden: ${states}`);
+}
+
+// D-311, D-368, binding answer 1 of slice 4. Catches a window drawn while it is not set open or
+// over a map run that goes on, a header or an area left visible under the window, and a screen
+// that stays covered after the window is set closed.
+test("told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again", async () => {
+  await withPage(async (page) => {
+    const game = await wiredScreen(page, completedRun(pausedRun()));
+    assert.equal(windowIn(game.screen), undefined, "not drawn until told");
+    assert.equal(coveredState(game.screen), false);
+    await inAct(() => game.screen.setWindow(true));
+    assert.ok(windowIn(game.screen), "the window stands");
+    assert.equal(coveredState(game.screen), true, "the screen is covered");
+    await inAct(() => game.screen.setWindow(false));
+    assert.equal(windowIn(game.screen), undefined);
+    assert.equal(coveredState(game.screen), false, "the screen is shown");
+
+    const running = await wiredScreen(page, pausedRun());
+    await inAct(() => running.screen.setWindow(true));
+    assert.equal(windowIn(running.screen), undefined, "no window, no end");
+    assert.equal(coveredState(running.screen), false, "nothing is covered");
+  });
+});
+
+// Catches the covered header and areas leaving the tree, which would drop what they hold: the
+// program panel's element, the hovered tile and the tabs picked stand through the window.
+test("what the window covers stays in the tree and keeps its state: the tab picked and the program panel stand through the window", async () => {
+  await withPage(async (page) => {
+    const game = await wiredScreen(page, completedRun(pausedRun()));
+    const [, program, tabs] = areasOf(game.screen.element);
+    await press(page.window, buttonNamed(tabs, "Teren"));
+    const panel = byClass(program, "program-panel")[0];
+    await inAct(() => game.screen.setWindow(true));
+    assert.ok(panel.isConnected, "the panel's element stays in the screen");
+    assert.ok(program.contains(panel));
+    await inAct(() => game.screen.setWindow(false));
+    assert.ok(
+      byClass(areasOf(game.screen.element)[2], "tabs")
+        .flatMap((tabsRow) => [...tabsRow.querySelectorAll("button")])
+        .some(
+          (button) =>
+            button.textContent === "Teren" &&
+            button.getAttribute("aria-pressed") === "true",
+        ),
+      "„Teren” is still the tab picked",
+    );
+  });
+});
+
+// Task To do 2, binding answer 2. Catches „✕” that does not ask the game view to close the window,
+// and a focus left on nothing: it goes to „Koniec przejścia” in the header, which the closing shows.
+test("„✕” asks the game view to close the window and the focus goes to „Koniec przejścia” in the header; „Koniec przejścia” asks to open it", async () => {
+  await withPage(async (page) => {
+    const game = await wiredScreen(page, completedRun(pausedRun()));
+    await inAct(() => game.screen.setWindow(true));
+    await press(
+      page.window,
+      buttonLabelled(expectWindowIn(game.screen), "Zamknij okno"),
+    );
+    assert.deepEqual(game.acts, ["closeWindow"]);
+    assert.equal(windowIn(game.screen), undefined);
+    const opener = buttonNamed(headerIn(game.screen), "Koniec przejścia");
+    assert.ok(opener && shown(opener), "the header holds the button");
+    assert.ok(page.document.activeElement === opener, "focus is on it");
+    await press(page.window, opener);
+    assert.deepEqual(game.acts, ["closeWindow", "openWindow"]);
+    assert.ok(windowIn(game.screen), "the window stands again");
+  });
+});
+
+// Task To do 8. Catches window buttons wired to the header's act, to another map, or to none.
+test("the buttons of the window ask for „Restart”, „Zakończ” and the opening of the map they name", async () => {
+  await withPage(async (page) => {
+    const game = await wiredScreen(page, completedRun(pausedRun()));
+    await inAct(() => game.screen.setWindow(true));
+    await press(
+      page.window,
+      buttonNamed(expectWindowIn(game.screen), "Zakończ"),
+    );
+    await press(
+      page.window,
+      buttonNamed(expectWindowIn(game.screen), "Otwarte: Las — głębiej →"),
+    );
+    assert.deepEqual(game.acts, ["end", "openMap forestDeep"]);
+    // The stand-in `end` of this test ends the map run in the game state, so the window is gone;
+    // the buttons that stand in a window of a map run whose end the player has not asked for are
+    // drawn again for „Restart”.
+    const again = await wiredScreen(page, completedRun(pausedRun()));
+    await inAct(() => again.screen.setWindow(true));
+    await press(
+      page.window,
+      buttonNamed(expectWindowIn(again.screen), "Restart"),
+    );
+    assert.deepEqual(again.acts, ["restart"]);
+  });
+});
+
+// D-313, task To do 9. Catches the window left standing over the rule panel „Dodaj regułę z tym”
+// opens, and the rule added before the window closes, which would give the panel no room to focus.
+test("„Dodaj regułę z tym” of the window closes the window and then does what the panel's button does: the rule is added and its panel stands open", async () => {
+  await withPage(async (page) => {
+    const chilled = firstChill();
+    const game = await wiredScreen(page, completedRun(chilled));
+    await inAct(() => game.screen.setWindow(true));
+    const discovery = byClass(
+      expectWindowIn(game.screen),
+      "end-window-discovery",
+    )[0];
+    assert.ok(discovery, "precondition: the window names the discovery");
+    await press(page.window, buttonNamed(discovery, "Dodaj regułę z tym"));
+    assert.deepEqual(game.acts, ["closeWindow", "editCopy"], "in this order");
+    assert.equal(windowIn(game.screen), undefined);
+    assert.equal(coveredState(game.screen), false);
+    const [, program] = areasOf(game.screen.element);
+    assert.equal(
+      game.state.run.copy.program.groups[0].rules.length,
+      2,
+      "one rule added",
+    );
+    const panel = byClass(program, "rule-panel")[0];
+    assert.ok(panel && shown(panel), "its panel stands open in the program");
+    assert.ok(
+      panel.contains(page.document.activeElement),
+      "the focus is in the panel, not on the header",
+    );
+  });
+});
+
+// D-368, D-147. Catches the entries of „Ostatnie minuty” read from anywhere but the chronicle
+// memory the screen was given, and a death whose window shows none.
+test("the window's „Ostatnie minuty” are the entries of the chronicle memory the screen was given, up to the death", async () => {
+  await withPage(async (page) => {
+    const game = await wiredScreen(page, freezingRun());
+    await inAct(() => game.apply(advanceMinutes(game.state, 5000)));
+    assert.ok(game.state.run.death, "precondition: the character died");
+    await inAct(() => game.screen.setWindow(true));
+    const minutes = byClass(
+      expectWindowIn(game.screen),
+      "end-window-minutes",
+    )[0];
+    const rows = byClass(minutes, "chronicle-row").map((row) => [
+      row.querySelector(".chronicle-minute").textContent,
+      row.querySelector(".chronicle-text").textContent,
+    ]);
+    const chronicle = byClass(
+      areasOf(game.screen.element)[2],
+      "chronicle-row",
+    ).map((row) => [
+      row.querySelector(".chronicle-minute").textContent,
+      row.querySelector(".chronicle-text").textContent,
+    ]);
+    assert.ok(rows.length >= 1 && rows.length <= 4, "at most four");
+    assert.deepEqual(
+      rows,
+      chronicle.slice(0, rows.length).reverse(),
+      "the newest entries of the chronicle, oldest first",
+    );
+  });
+});
+
+// D-368, D-88. The window takes the focus as it appears, which in a browser scrolls the page to its
+// edge, and the screen it covers may have been scrolled down: the page must go to its top at each
+// appearance, and only then, or the menu bar stays out of sight above the window. Catches no scroll,
+// a scroll at every draw while the window stands, and a scroll with no window drawn.
+test("the page scrolls to its top when the window appears, and at no other draw", async () => {
+  await withPage(async (page) => {
+    const writes = [];
+    Object.defineProperty(page.document.documentElement, "scrollTop", {
+      configurable: true,
+      get: () => 0,
+      set(value) {
+        writes.push(value);
+      },
+    });
+    const game = await wiredScreen(page, completedRun(pausedRun()));
+    assert.deepEqual(writes, [], "none while no window is drawn");
+    await inAct(() => game.screen.setWindow(true));
+    assert.deepEqual(writes, [0], "at the appearance");
+    await inAct(() => game.screen.update(game.state, game.state.run, []));
+    await inAct(() => game.screen.setWindow(true));
+    assert.deepEqual(writes, [0], "not at a draw while the window stands");
+    await inAct(() => game.screen.setWindow(false));
+    assert.deepEqual(writes, [0], "not at the closing");
+    await inAct(() => game.screen.setWindow(true));
+    assert.deepEqual(writes, [0, 0], "at the next appearance");
+    const running = await wiredScreen(page, pausedRun());
+    await inAct(() => running.screen.setWindow(true));
+    assert.deepEqual(writes, [0, 0], "none where no end stands to draw it");
   });
 });

@@ -28,6 +28,7 @@ import {
   zeroCounts,
 } from "./programs.js";
 import { mixSeed } from "./random.js";
+import { nextRecord, recordOf, startRecord } from "./run-record.js";
 import {
   mapRunEnded,
   finishMinute,
@@ -311,6 +312,7 @@ function startRun(
         ...started.run,
         copy,
         bringPlan: copy.program.tripPlan.bring.map((entry) => ({ ...entry })),
+        ...startRecord(equipment.backpack),
         deposited: null,
         solvedMapRun,
         deathSettlement: null,
@@ -719,6 +721,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   const events: GameEvent[] = [];
   let current = state;
   let run: MapRun = state.run;
+  let record = recordOf(state.run);
   let copy = state.run.copy;
   let program = programOf(
     current,
@@ -795,12 +798,14 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
       });
     }
     events.push(...ending);
+    record = nextRecord(record, run, finished.run);
     run = finished.run;
     completed = run.completion !== null;
     if (mapRunEnded(run) || revealed) break;
   }
   const endedRun = {
     ...run,
+    ...record,
     copy,
     bringPlan: state.run.bringPlan,
     deposited: null,

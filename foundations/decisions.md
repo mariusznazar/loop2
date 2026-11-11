@@ -1087,27 +1087,35 @@ something other than the name.
 *Rejected:* a name of white space alone taken as a name — it tells no character apart on the list;
 a name keeping white space at its start or end — it looks on the list as the same name without it.
 
-### D-53 — Where does the player send a character from, and where does „Zakończ” lead?
+### D-53 — Where does the player send a character from, and where do the buttons that end a map run lead?
 
 The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the
-screen Postać of that character.
+screen Postać of that character. „Otwarte: {mapa} →” of the end-of-run window (D-368), which stands after a completion of a map that opens another, leads to the screen Mapy with the card of the map it opened.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: the button „Wejdź” beside each character in the section „Kto idzie” of the card of a
-    map; „Zakończ” of a map run opening the screen Postać of the character that made it
+    map; „Zakończ” of a map run opening the screen Postać of the character that made it; after a
+    completion of Las „Otwarte: Las — głębiej →” in the window opening the screen Mapy with the
+    card of Las — głębiej
   - violates: a panel for sending characters standing apart from the card of a map; a button that
     sends a character standing in the headquarters; „Zakończ” leading to the headquarters or to any
-    screen other than the screen Postać of that character
-- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-53 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7
+    screen other than the screen Postać of that character; „Otwarte: {mapa} →” leading to any screen
+    other than the screen Mapy with the card of the map it opened
+- **Origin:** siedziba_i_druzyna_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co stoi w siedzibie w tym zadaniu i jak gracz przechodzi z siedziby do przejścia mapy i z powrotem?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 "Postacie i drużyny" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-53 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 3, and § Settlements to record, row 3
 
 *Rationale:* a character goes out from the card that says what the map asks, on a screen where the
 player sees the map and who goes. Coming back to the character leads on to what the map run gave it
-and to the next choice.
+and to the next choice. A completion that opens a map leads on to that map's card, where the player
+sends a character, so the way to what it opened is one click from the end. Accepted with it: at a
+repeated completion the button says „Otwarte”, though the map was open before.
 *Rejected:* sending from the headquarters beside each character — it needs a long row for each
-character and the map's demands stand nowhere; two buttons „Wejdź”, as in loop.
+character and the map's demands stand nowhere; two buttons „Wejdź”, as in loop; the way to the card
+of the opened map only at the first completion that really opens it — at later completions the
+player goes through „Zakończ”, Postać and Mapy; no button, the sentence „Otwarto: Las
+— głębiej” alone — the way to the new map is „Zakończ” and then Mapy.
 
 ### D-54 — In what order do the characters of the team stand?
 
@@ -1255,17 +1263,17 @@ A character dies in the game minute in which its health reaches zero, also durin
 
 ### D-62 — What does the screen show, and what can the player do, after a character's death?
 
-After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives. After a character's death the pace buttons are gone together with „Pauza”.
+After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header. After a character's death the pace buttons are gone together with „Pauza”.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: after a death of cold in game minute 312 „Teraz” reads „Mag zamarzł” and the clock „Minuta 312”, „Pauza” and the pace buttons are gone, the game minute stays at 312, and „Restart” starts game minute zero on the same seed;
-  - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20
+  - complies: after a death of cold in game minute 312 „Teraz” reads „Mag zamarzł” and the clock „Minuta 312”, „Pauza” and the pace buttons are gone, the game minute stays at 312, the window opens over the screen with the title „Mag zamarzł” and the menu bar standing above it, and „Restart” starts game minute zero on the same seed;
+  - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive; what the death took and why it came standing in the world area instead of the window.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Co się dzieje, gdy mag zginie: w której minucie kończy się przejście, co gracz widzi i co może zrobić dalej?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "12. Czy po śmierci postaci przyciski tempa znikają tak jak po domknięciu?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 1 and 9, and § Settlements to record, row 1
 
-*Rationale:* The player sees what the character had and where it stood at the moment of death, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen D-53 gives, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
+*Rationale:* The player sees what the character had and where it stood at the moment of death, reads in the window why it died, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen D-53 gives, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on.
 *Rejected:* going back to sending the character at once after death — the player loses the state that explains the death; the pace buttons kept active after death while gone after a completion, and the pace buttons shown inactive or active on both screens of an end — the screens of the two ends would differ, or show controls of a time that stands still.
 
 ### D-63 — How does a character light a campfire or a stick?
@@ -2238,25 +2246,30 @@ the role `discovery` above the program names what was discovered and the program
 wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose
 „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the
 scene keeping its colours, and what it named enters the chronicle. Where
-the map run ends in a completion in the game minute of a discovery, the screen after the completion
-takes the place of the pause, and the band stands, with no „Wznów”, until „Restart” or „Zakończ”.
+the map run ends in a completion or a character's death in the game minute of a discovery, the
+end-of-run window (D-368) takes the place of the pause and names that discovery in its part about
+what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until
+„Restart” or „Zakończ”, and the band does not stand.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
-- **Relations:** derives from D-21 · derives from D-118
+- **Relations:** derives from D-21 · derives from D-118 · derives from D-368
 - **Verification:** invariants: player-map-run-pace. An agent compares a change with the decision:
   - complies: after the first finished exploration the clock „Minuta {game minute} (pauza)” and above
     the program the band „Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu
     leży mniej niż … szt., Zapas poniżej … szt.” with „Dodaj regułę z tym” and „Wznów”, gone once
     the player presses „Wznów” in the band or in the header; a completion of Las in the game minute
-    of a discovery showing „Teraz” „Las rozwiązany” and the clock „Minuta 480” with no „ (pauza)” and the band of that
-    discovery, with no „Wznów”, until „Restart”; the scene in its colours while the band stands
+    of a discovery showing „Teraz” „Las rozwiązany” and the clock „Minuta 480” with no „ (pauza)”, and
+    the window of the end naming that discovery in the text of the band, with „Dodaj regułę z tym”
+    and no band above the program, until „Restart”; a death in the game minute of a discovery
+    treated alike; the scene in its colours while the band stands
   - violates: a „Wznów” of the band that does anything other than the „Wznów” of the header; the
     band still standing after „Wznów”; the band standing in the world area; two
     discoveries of one game minute in two bands; a completion in the game minute of a discovery
-    leaving the map run paused with „Wznów”; the band of that discovery gone from the screen after
-    the completion before „Restart” or „Zakończ”; the scene greyed at a stop at a discovery
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 5 and 12 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and Decisions in play
+    leaving the map run paused with „Wznów”; the band of that discovery standing above the program
+    after a completion or a death; the window of that end saying nothing of the discovery, or
+    without „Dodaj regułę z tym”; the scene greyed at a stop at a discovery
+- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?" · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "15. Co widzi gracz, gdy przejście domyka się w tej samej minucie gry, w której coś odkryto?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „What does a map run do, and what does the player see, when something is discovered?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 1, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 5 and 12 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 9, and Decisions in play · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 9, Questions to settle, questions 5 and 12, and § Settlements to record, row 6
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
 whatever treats a paused map run treats a map run stopped by a discovery the same, the scene
@@ -2264,14 +2277,21 @@ excepted: it keeps its colours at a stop at a discovery, so that the moment of t
 dimmed. A discovery
 concerns the program, so it stands above the program, and the chronicle keeps it after the player
 goes on. A map run that ends in the game minute of a discovery has nothing to go on to, so the
-screen of its end stands in place of the pause, and the player still reads what that game minute
-discovered, which enters the Understanding as any discovery does. Accepted with it: a stop at a
-discovery cannot be told apart in the game state from the player's pause; the band ends in two
-ways, „Wznów” or „Restart” and „Zakończ”, and the screen after a completion can keep both the band
-and the encounter's paragraph.
+end-of-run window stands in place of the pause, and the player still reads what that game minute
+discovered, which enters the Understanding as any discovery does; only the window names it, so the
+same discovery does not stand on the screen twice, and a death is treated as a completion is. Accepted
+with it: the game state tells a stop at a discovery from the player's pause by what the last game
+minute of a discovery revealed, which it keeps until the player moves on; the band ends in two ways,
+„Wznów”, or „Restart” and „Zakończ”; and after an end the discovery of its game minute is read in the
+window alone.
 *Rejected:* a stop at a discovery as a game state of its own, with a button of its own for going
-on; the screen after a completion with no word of the discovery made in its game minute — the player
-would not learn what that game minute discovered; the scene greyed at a stop at a discovery, as at a
+on; the end of a map run with no word of the discovery made in its game minute — the player
+would not learn what that game minute discovered; the band standing as before, with no „Wznów”, and
+the window silent on the discovery — the end would not name the discovery of its own game minute, and
+after a death the player would learn of it only after closing the window, the two ends behaving
+differently; the window naming the discovery while the band stands too — the same discovery twice on
+the screen; the window naming the discovery without „Dodaj regułę z tym” — after the end the player
+adds a rule from the discovery only with the ordinary editor; the scene greyed at a stop at a discovery, as at a
 pause — it would dim the moment of the reward.
 
 ### D-123 — What does the game write into the program at a discovery?
@@ -2520,27 +2540,39 @@ an act that changes nothing; keeping beaten attacks through a changed program �
 After a completion the screen stays on the state of the game minute of the completion and time
 stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany”
 and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header
-standing at that game minute, such as „Minuta 480”. „Pauza” and the pace buttons are gone, and the
-player has „Restart” and „Zakończ” as after a character's death.
+standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself
+over the screen, its header included and the menu bar not, under the same completion text as its title, in
+the role `positive`. „Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as
+after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in
+the window, the way to the map it opened (D-53, D-173).
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: after a completion in game minute 480 of Las „Teraz” reads „Las rozwiązany” in
-    `positive` and the clock „Minuta 480”, „Pauza” and the pace buttons are gone, the game minute stays at 480,
-    „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać of
-    that character
+    `positive` and the clock „Minuta 480”, the window titled „Las rozwiązany” in `positive` standing
+    over the screen under the menu bar, „Pauza” and the pace buttons are gone, the game minute stays at
+    480, „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać
+    of that character
   - violates: the game going back to the headquarters with a message the moment the map run
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
-    written in a role other than `positive`
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 9 and 12
+    written in a role other than `positive`; a completion of a map that opens another whose window has
+    no „Otwarte: {mapa} →”
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 9 and 12 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 4 and 8, Questions to settle, questions 1 and 3, and § Settlements to record, rows 1 and 3
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
 which the program met the map's condition, can repeat the same seed with „Restart” and returns with
-„Zakończ”. The role `positive` says that something works, which a completion shows of the program.
+„Zakończ”. The role `positive` says that something works, which a completion shows of the program. A
+win opens with the win and leads on to what it opened. Accepted with it: at a repeated completion
+the button says „Otwarte”, though the map was open before.
 *Rejected:* going back to the headquarters with a message at the completion — the player would lose
-the state of the map run that solved the map.
+the state of the map run that solved the map; a line of text with „Do skrzynki nic nie trafiło” under
+it — a win that reads as a defeat; the way to the opened map only at the first completion that really
+opens it — at later completions the player goes through „Zakończ”, Postać and Mapy; a link to the card
+of the opened map that leaves the map run standing — the card of the new map then shows „Wejdź”
+inactive (D-55), and the player has to go back and end the map run; no button, the sentence „Otwarto: Las
+— głębiej” alone — the way to the new map is „Zakończ” and then Mapy.
 
 ### D-133 — Where does the player see a map run's streak and a map's solving condition?
 
@@ -2597,22 +2629,20 @@ which maps are solved.
 
 ### D-135 — Does the game show the longest streak of a map run?
 
-The game does not show today the longest streak that a map run has reached, during the map run or
-after its end.
+A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it
+against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of
+the bar of the solving condition in the header (D-133).
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: the screen after a death of cold reading „Teraz” „Mag zamarzł” and „Passa 0/480”, with no longest streak
-  - violates: the screen after a death showing the longest streak the map run reached
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?"
+  - complies: the window after a death of cold reading „najdłuższa passa 116/480” with its bar, while the bar in the header reads „Passa 0/480”; the same longest streak in the window after a reload of the page
+  - violates: the window after a death or a completion with no longest streak; a longest streak that a load of the saved game state loses
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-135 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 5 and 10, and Questions to settle, questions 4 and 6
 
-*Rationale:* the streak a map's solving condition counts is the one the bar of the solving condition in the header shows. Accepted
-with it: at a death of cold or hunger the streak stands at zero, so the screen after death does not
-tell how near the map run came to its map's condition.
-*Rejected:* the longest streak of a map run kept, as the predecessor game, loop, kept it, and shown
-on the screen after death.
+*Rationale:* at a death of cold or hunger the streak stands at zero, so only the longest streak tells how near the map run came, and it gives a measure of progress between attempts. The streak a map's solving condition counts is the one the bar of the solving condition in the header shows, and the longest streak stands in the same form. Accepted with it: one more field in the game state and a bump of the version of the save.
+*Rejected:* the game showing only the streak going on — a screen after death that does not say how near the map run came.
 
 ### D-136 — How is a map solved, and what opens the next one?
 
@@ -2803,18 +2833,18 @@ The encounter ends immediately when either side reaches zero health: a creature 
 
 ### D-147 — What record of an encounter does the player read?
 
-From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result. The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. „Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”.
+From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result. The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent. At the end of the map run the same paragraph stands in the end-of-run window (D-368), in a section of its own outside „Ostatnie minuty”, and after a load of the saved game state too. „Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141 · derives from D-338
 - **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them, as one entry of the chronicle at the game minute of the attack; after a reload at a later game minute, that paragraph standing in the chronicle at the game minute of the attack
-  - violates: a completion before the turns displaying an invented victory, defeat or departure; the paragraph standing under the scene in the world area; an entry of the chronicle for each exchange of blows; the paragraph of an earlier attack still standing after the next attack
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-147 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 8, 9 and 15 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 1 and 5, and Decisions in play
+  - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them, as one entry of the chronicle at the game minute of the attack; after a reload at a later game minute, that paragraph standing in the chronicle at the game minute of the attack; after a death in that fight the window holding the paragraph in a section of its own and „Ostatnie minuty” the entries of the chronicle other than the paragraph
+  - violates: a completion before the turns displaying an invented victory, defeat or departure; the paragraph standing under the scene in the world area; an entry of the chronicle for each exchange of blows; the paragraph of an earlier attack still standing after the next attack; the paragraph standing in the window inside „Ostatnie minuty”, or in the window only where it is not among the last entries
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-147 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 8, 9 and 15 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 1 and 5, and Decisions in play · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, question 8, and § Settlements to record, row 7
 
-*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter.
-*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter.
+*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too. The window gives the paragraph a section of its own and keeps it out of „Ostatnie minuty”, so the same paragraph does not stand twice in it. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter; in „Ostatnie minuty” an attack does not stand among the other entries, though the paragraph gives the game minute of the attack.
+*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter; the paragraph counted among the entries of „Ostatnie minuty” and in a section of its own as well — the same paragraph twice in the window; the paragraph in „Ostatnie minuty” where it is among the last entries and in a section of its own only where it is not — two cases to build and check, the section sometimes there and sometimes not, and after a load „Ostatnie minuty” holding one entry or none.
 
 ### D-148 — Where is an attacking creature pictured today?
 
@@ -3190,18 +3220,18 @@ While the program the copy belongs to holds changes made since the copy was take
 
 ### D-173 — What can the player do with the copy after a map run ends?
 
-On the screens after a character's death and after a completion, editing the copy, „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” act as during the map run until the player picks „Restart” or ends the map run with „Zakończ”. „Zakończ” with no unsaved changes of the copy ends the map run at once, and with unsaved changes, at any moment of a map run, it asks „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy, or, while the panel shows another program, where that heading would stand, under the band of a discovery where one stands, whose sentence is in the role `warning` and whose answers „Zapisz”, „Odrzuć” and „Wróć” stand in that order, „Odrzuć” being a destructive button (D-44), and, where the program the copy belongs to holds changes the copy lacks, the line of D-172 stands under the sentence. „Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was; after the map run ends the screen Postać of its character opens (D-53) and the program editor shows the program the copy belongs to, the new program where „Zapisz” made one.
+On the screens after a character's death and after a completion, editing the copy, „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” act as during the map run until the player picks „Restart” or ends the map run with „Zakończ” or „Otwarte: {mapa} →”. „Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy, or, while the panel shows another program, where that heading would stand, under the band of a discovery where one stands, whose sentence is in the role `warning` and whose answers „Zapisz”, „Odrzuć” and „Wróć” stand in that order, „Odrzuć” being a destructive button (D-44), and, where the program the copy belongs to holds changes the copy lacks, the line of D-172 stands under the sentence. „Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was; where a button of the window asks, the window closes when the question stands and stays closed after „Wróć”, the player opening it again with „Koniec przejścia” in the header; after the map run ends the player lands where the button that asked leads, the screen Postać of its character for „Zakończ” and the screen Mapy with the card of the opened map for „Otwarte: {mapa} →” (D-53), and the program editor shows the program the copy belongs to, the new program where „Zapisz” made one.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164
 - **Verification:** an agent compares a change with the decision:
-  - complies: a fix made in the copy after a death, „Zakończ” asking „Zapisać, odrzucić, wrócić?” under the band of the discovery, „Zapisz” putting the fix into „Program” and opening the screen Postać of that character, and „Program” standing in the panel of Programy as it was saved; the copy of the deleted „Program 2” saved by „Zapisz” as „Program 2” with no name field; „Odrzuć” opening the screen Postać with „Program” as it was; „Zakończ” with no unsaved changes opening the screen Postać at once
-  - violates: the save buttons gone after a completion; „Zakończ” ending the map run at once while the copy holds unsaved changes; the question asked where the copy holds none; „Zapisz” opening a field for a name; „Odrzuć” reaching the program with the copy's unsaved changes; „Wróć” leaving the map run ended
-- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-173 · pytanie_przy_zakoncz_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 2, 3, 4 and 8, and § Settlements to record, rows 1, 2, 3, 4 and 8
+  - complies: a fix made in the copy after a death, „Zakończ” asking „Zapisać, odrzucić, wrócić?” under the band of the discovery, „Zapisz” putting the fix into „Program” and opening the screen Postać of that character, and „Program” standing in the panel of Programy as it was saved; the copy of the deleted „Program 2” saved by „Zapisz” as „Program 2” with no name field; „Odrzuć” opening the screen Postać with „Program” as it was; „Zakończ” with no unsaved changes opening the screen Postać at once; „Otwarte: Las — głębiej →” of the window with unsaved changes closing the window and asking in the same band, „Zapisz” then opening the screen Mapy with the card of Las — głębiej, and „Wróć” leaving the window closed with „Koniec przejścia” in the header
+  - violates: the save buttons gone after a completion; „Zakończ” ending the map run at once while the copy holds unsaved changes; the question asked where the copy holds none; „Zapisz” opening a field for a name; „Odrzuć” reaching the program with the copy's unsaved changes; „Wróć” leaving the map run ended; the question standing in the window; the window open again of itself after „Wróć”; „Otwarte: {mapa} →” ending the map run with unsaved changes with no question, or after „Zapisz” opening the screen Postać
+- **Origin:** programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q9. Czy po śmierci postaci i po domknięciu gracz może jeszcze zapisać albo porzucić zmiany kopii, co z niezapisanymi zmianami robi „Zakończ” i przy których regułach zostają po nim liczniki przejścia (D-93)?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-173 · pytanie_przy_zakoncz_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 2, 3, 4 and 8, and § Settlements to record, rows 1, 2, 3, 4 and 8 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, questions 3 and 10, and § Settlements to record, rows 3 and 4
 
-*Rationale:* the screens after an end show the state that explains it, which is where the player finds the fix, so the copy stays open to editing and saving until the player leaves it. Unsaved changes can be the very rule that won the map, and their silent loss costs far more than one click, so „Zakończ” asks wherever there is something to lose. The question stands just above the heading of the copy it concerns, under the band of a discovery, so it stays at that copy through the map run and after its end, wherever the end buttons stand, and nothing already standing moves but the copy and its rules. „Zapisz” keeps the player's work in one click, also where the program was deleted, so a name is no second step, and where the program changed since the copy was taken from it, the line of D-172 says what the save replaces. „Odrzuć” loses work, so it is a destructive button, as every button that can drop work is (D-44). Accepted with it: one more click at every end of a map run holding unsaved changes; a program saved under a name the game chose, which the player changes on Programy with „Zmień nazwę”; the eye going from „Zakończ” to the band in the program panel.
-*Rejected:* „Zakończ” acting at once with unsaved changes, the line „Niezapisane zmiany w kopii.” alone warning of it — a winning program lost without a word; the copy closed to saving once the map run ends — a fix found after a death would be made anew in the program; „Zapisz” opening a field for a name, as „Zapisz jako nowy program” does, the map run ending after that name is saved — a second step in the question, the field, the refusal of a taken name and „Zapisz”, so more to build and check, though the player names the program at once; no „Zapisz” in the question where the program was deleted, only „Odrzuć” and „Wróć” — the question would have two answers in one case and three in another, and the player would have to find where to save; „Zapisz” replacing the changes of the program with no word in the question — a player who does not see the panel of the copy loses, without warning, changes made in the program; two ways of saving in the question, „Zapisz w programie” and „Zapisz jako nowy program” — more to build, and the question would have four answers; the question in the place of „Zakończ” in the header, three buttons instead of the one while it stands — the row of the header is long already and the bar of the solving condition joins it, so in a narrower window the row may break, and the question would have to follow „Zakończ” wherever the end of a map run moves it, though the answer would stand where the player clicked; a window over the screen — it hides the screen, which the foundation avoided, and is a new kind of element to build and describe; the question above the band of a discovery — the band of a discovery moves down by the height of the question while it stands, though the question would stand nearer the header with „Zakończ”.
+*Rationale:* the screens after an end show the state that explains it, which is where the player finds the fix, so the copy stays open to editing and saving until the player leaves it. Unsaved changes can be the very rule that won the map, and their silent loss costs far more than one click, so „Zakończ” asks wherever there is something to lose. The question stands just above the heading of the copy it concerns, under the band of a discovery, so it stays at that copy through the map run and after its end, wherever the end buttons stand, and nothing already standing moves but the copy and its rules. The window covers that panel, so it closes while the question stands and stays closed after „Wróć”, and the question remembers which button asked it, since the player lands where that button leads. „Zapisz” keeps the player's work in one click, also where the program was deleted, so a name is no second step, and where the program changed since the copy was taken from it, the line of D-172 says what the save replaces. „Odrzuć” loses work, so it is a destructive button, as every button that can drop work is (D-44). Accepted with it: one more click at every end of a map run holding unsaved changes; a program saved under a name the game chose, which the player changes on Programy with „Zmień nazwę”; the eye going from „Zakończ” to the band in the program panel; the end out of the player's sight while the question stands and after it, until „Koniec przejścia” in the header opens it.
+*Rejected:* „Zakończ” acting at once with unsaved changes, the line „Niezapisane zmiany w kopii.” alone warning of it — a winning program lost without a word; the copy closed to saving once the map run ends — a fix found after a death would be made anew in the program; „Zapisz” opening a field for a name, as „Zapisz jako nowy program” does, the map run ending after that name is saved — a second step in the question, the field, the refusal of a taken name and „Zapisz”, so more to build and check, though the player names the program at once; no „Zapisz” in the question where the program was deleted, only „Odrzuć” and „Wróć” — the question would have two answers in one case and three in another, and the player would have to find where to save; „Zapisz” replacing the changes of the program with no word in the question — a player who does not see the panel of the copy loses, without warning, changes made in the program; two ways of saving in the question, „Zapisz w programie” and „Zapisz jako nowy program” — more to build, and the question would have four answers; the question in the place of „Zakończ” in the header, three buttons instead of the one while it stands — the row of the header is long already and the bar of the solving condition joins it, so in a narrower window the row may break, and the question would have to follow „Zakończ” wherever the end of a map run moves it, though the answer would stand where the player clicked; the question in a window over the screen, or in the end-of-run window above its buttons — a second place of the question, far from the copy it concerns, to build and check with what D-324 gives while the question stands; the window opening again of itself after „Wróć” — one more state, the window remembering that the question closed it, and a player who wanted to correct the copy after „Wróć” has to close the window again; a link to the card of the opened map that ends no map run — the map run stands and waits for „Restart” or „Zakończ”, so „Wejdź” on the card of the new map is inactive (D-55) and the player has to go back and end the map run; the question above the band of a discovery — the band of a discovery moves down by the height of the question while it stands, though the question would stand nearer the header with „Zakończ”.
 
 ### D-174 — How does the player switch the character to another program during a map run?
 
@@ -3387,16 +3417,16 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 
 ### D-185 — Where does the player read what completion deposited?
 
-After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the world area of the screen of a map run, under the scene and above the body row and backpack, until „Restart” or „Zakończ”.
+After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-122 · derives from D-179
+- **Relations:** derives from D-122 · derives from D-179 · derives from D-368
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6
+- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 and 6
 
-*Rationale:* The transfer remains readable with the final state.
-*Rejected:* placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
+*Rationale:* The transfer remains readable with the final state, among what the map run gave rather than as the first word after a win.
+*Rejected:* a line directly under the status row — a win opens with what did not come; showing nothing — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
 
@@ -3940,8 +3970,9 @@ further progress is unsaved too, and a new layout of the screen with the form be
 A manual map run of a loaded saved game state that goes on comes back at the game minute of the
 save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a
 completion or in the character's death comes back with its screen after its end, with „Restart”,
-„Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and the screen the page opens
-on is the one D-96 gives. No time that passed between the save and the load advances it, the
+„Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window
+(D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle
+holds the entries (D-339), and the screen the page opens on is the one D-96 gives. No time that passed between the save and the load advances it, the
 computing of time away included.
 
 - **Scope:** simulation, browser-view
@@ -3951,18 +3982,30 @@ computing of time away included.
   - complies: a map run of Las saved at game minute 212 at 8× loading an hour later at game minute
     212, paused, at 8×; a map run saved on the screen after a death loading on that screen with
     „Restart” and „Zakończ”; a reload at `#/programy` with a map run saved after a death opening
-    Programy, the map run waiting with its screen after its end for „Restart” or „Zakończ”
+    Programy, the map run waiting with its screen after its end for „Restart” or „Zakończ”; a
+    reload of the screen after a death opening the window again with its title, the longest streak
+    and the line of what the death took, and with no „Ostatnie minuty”
   - violates: a loaded map run going on at once; a loaded map run moved on by the time away; loading
-    that closes an ended map run as „Zakończ” does
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 8, 15 and 23, and § Settlements to record, row 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-212
+    that closes an ended map run as „Zakończ” does; an ended map run loaded without the window, or
+    with a window that lacks its longest streak or the line of what the end took or gave
+- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 8, 15 and 23, and § Settlements to record, row 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-212 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 10, Questions to settle, questions 1 and 4, and § Settlements to record, rows 2 and 5
 
 *Rationale:* a player who signs in on another device does not miss a discovery, an attack or the
 character's death in the first seconds, at the cost of one click after each load with a map run
 going on. A map run the player solves as a puzzle and watches does not end while the player is away,
 and the computing of time away starts from the loaded game state, in which such a map run stands
 paused. An ended map run keeps the state that explains its end, the copy's unsaved changes and
-„Restart” on the same seed.
-*Rejected:* the map run coming back exactly as saved and going on if it went on, with the time away
+„Restart” on the same seed, and the window that explains the end opens again with it, from what the
+game state holds; the chronicle lives in the memory of the page (D-339), so what only it knows does
+not come back. Accepted with it: after a load „Ostatnie minuty” show what the chronicle has, which is
+usually nothing, and then the section does not stand.
+*Rejected:* the game state keeping the last entries before the end as well, so that the whole window
+comes back after a load — the entries of the chronicle are made in the view from events (D-348), so the
+simulation would have to compose those texts or the view write them into the game state, which changes
+D-339, and there is more to build and check; after a load only what stands today, the line of the
+resurrection and „Do skrzynki” — the longest streak and the whole of why are gone after a reload
+though the save changes its version anyway, and the field of the longest streak would be shown
+nowhere after a load; the map run coming back exactly as saved and going on if it went on, with the time away
 not moving it — a player signing in on another device may miss a discovery, an attack or the
 character's death in the first seconds; the computing of time away also moving a manual map run that
 went on — a map run the player solves as a puzzle and watches ends in a completion or a death in the
@@ -4047,25 +4090,28 @@ the attempt earns nothing. Accepted with it: one more line on the screen.
 
 ### D-216 — Where does the player read what a character's death took?
 
-After a character's death, at the place of the line „Do skrzynki: …”, until „Restart” or „Zakończ”
-and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.” in
-`text-secondary` when the death used up a resurrection, and „Wskrzeszenie nie było gotowe: postać
-straciła całą wprawę i wykupione stopnie. Teraz to pokolenie {n}.” in `danger` when no resurrection
-was ready.
+After a character's death, in the section of the end-of-run window (D-368) saying what it cost,
+until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego
+przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach
+czasu realnego.” in `text-secondary` when the death used up a resurrection, the hours coming from the
+balance data, and „Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie.
+Teraz to pokolenie {n}.” in `danger` when no resurrection was ready.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-62 · derives from D-185 · derives from D-190 · derives from D-212
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 4 · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
+- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 4 · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 and 6
 
-*Rationale:* the player learns what the death took before pressing „Restart”. The first text gives
-no hours, since after a load such a number could already be false, and the second stands in `danger`
+*Rationale:* the player learns what the death took before pressing „Restart”, in words that agree
+with what the player reads afterwards at the character: the practice of this map run is gone and the
+earlier practice stays, and the hours are real ones. The first text names the span of the renewal
+rather than the time left, which after a load could be false, and the second stands in `danger`
 because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
 game state remembers how each death was settled.
-*Rejected:* the same in the status row, which the header then held — a very long row and a change of its accepted wording;
-nothing on this screen, the telling left to the headquarters — the player may press „Restart”
-unaware of the lost progress.
+*Rejected:* „wprawa i wykupione stopnie zostają” with no word of the practice of this map run — the
+player sees it gone and takes the game for a liar; nothing on this screen, the telling left to
+another one — the player may press „Restart” unaware of the lost progress.
 
 ### D-217 — What does the game show of a character's resurrection?
 
@@ -6763,11 +6809,15 @@ drawing of the map and the line of a tile that end it, an area with the tabs „
 holding one content at a time, the chronicle or the table of revealed tiles, as the player picks,
 „Kronika” picked when the character is sent to the map; on the right the program, in which the
 editing of a rule or a rule group opens in place under its row (D-288). The world holds, from the
-top, the scene, „Teraz” and „Potem”, the line of the end of the map run (D-185, D-216), the body row
+top, the scene, „Teraz” and „Potem”, the body row
 with the minutes each need lasts, with the backpack and the lines below them, the drawing of the map
 and the line of a tile under it. The header holds the character's
 name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
-„Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”.
+„Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”, and after the end of the
+map run „Koniec przejścia”, which opens the end-of-run window. After a character's death or a
+completion that window (D-368) stands over this screen, its header included, under the menu bar and
+the row of warnings below it, and holds the lines of the end (D-185, D-216), which the world area
+does not; „✕” in it and Escape pressed in it (D-370) close it and uncover the screen, it opens again at every entry on the screen of an ended map run, and it closes when the question „Zapisać, odrzucić, wrócić?” of D-173 stands.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -6780,15 +6830,18 @@ name, the map's name, the clock, a bar of the solving condition with its numbers
     „Kronika”, picked when the character was sent; „Teraz” and „Potem” under the scene, and the
     paragraph of the last encounter standing in the chronicle; a rule opened from its row standing
     under that row in the program, the tabs and the tab picked staying where they were, and no third
-    column appearing; after a completion the line „Do skrzynki: …” under „Teraz” and „Potem” in the
-    world area, the area with the tabs keeping the tab picked
+    column appearing; after a completion the window over the screen holding the line „Do skrzynki: …”,
+    the menu bar standing above it and the world area keeping „Teraz” and „Potem” under the scene;
+    „✕” uncovering the screen with „Koniec przejścia” in its header
   - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
     body row; the rule panel opened over the program, beside the rows or in a column of its own; the
     tabs standing in the column of the program; the table of revealed tiles standing in the world
     area itself, with the drawing; the paragraph of the last encounter standing in the world area;
-    the chronicle and the table standing one under the other; the line „Do skrzynki: …” in the area
-    with the tabs; „Restart” and „Zakończ” standing in the world area
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 8, Questions to settle, questions 5, 6 and 11, and Decisions in play · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 2, Questions to settle, questions 1, 2 and 6, and § Settlements to record, row 2
+    the chronicle and the table standing one under the other; the line „Do skrzynki: …” or the
+    sentence of a resurrection standing in the world area or in the area with the tabs; „Restart” and
+    „Zakończ” standing in the world area; the window covering the menu bar; the window standing while
+    the question „Zapisać, odrzucić, wrócić?” stands
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 8, Questions to settle, questions 5, 6 and 11, and Decisions in play · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 2, Questions to settle, questions 1, 2 and 6, and § Settlements to record, row 2 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 3 and 8, Questions to settle, questions 1, 2, 9 and 10, and § Settlements to record, rows 1, 2 and 4
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
 Needs and the goal stand high, because they stay readable at a fast pace when moments no longer do,
@@ -6797,16 +6850,24 @@ since the player reads and writes it for most of a map run: a rule and the butto
 wrap into fewer lines, and a rule opened in place (D-288) takes no column of its own. The chronicle
 shares the area under the world with the table of revealed tiles under two tabs, so each keeps the
 whole area, and „Kronika” is picked first, since the chronicle is what the player is to read; the
-paragraph of the last encounter stands in the chronicle alone, so its text stands in one place. The
+paragraph of the last encounter stands in the chronicle and, at the end, in the window (D-147), never in the world area. The
 area with the tabs stands under the world, so its place does not depend on the length of the
 program and the player sees it beside the program. The header is where the player steers the map
 run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of
 the solving condition and three buttons may break in a narrower window; the table of revealed tiles
 one click away while „Kronika” is picked; in a low window, such as 1280 × 720, the area with the
-tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; and,
-while the end of the map run does not carry it, after a death in combat the paragraph read only in
-the chronicle.
-*Rejected:* the pick of an action in a window over the screen, as in loop — it hides what the
+tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to. The end
+of the map run stands in a window over the screen, so no place of the screen moves for it and its
+buttons stand in sight, and the menu bar with the row of warnings stays above it, so a failed save
+(D-208) and a broken game (D-323) are seen while it stands. The question of „Zakończ” stands in the
+program panel, which the window covers, so the window closes while the question stands. Accepted with
+it: the window hides the scene and the program while it stands, and does not cover the whole screen as
+the end of loop does.
+*Rejected:* the buttons „Restart” and „Zakończ” only in the end and none in the header after it — they
+change their place at the moment of the end; the same buttons in both places at once, the header and
+a second set at the bottom of the end — two „Restart” and two „Zakończ” on one screen, and more to
+build and check; only the header's buttons, and the end offering only the way to the opened map —
+„Otwarte: …” stands apart from „Restart” and „Zakończ”, a departure from loop; the pick of an action in a window over the screen, as in loop — it hides what the
 character needs; the end of a map run below an open editor of a rule, as in loop — its buttons fall
 under the edge of the window; the needs below two drawings of one place, as in loop; the trip plan
 under the editor during a map run; the clock written as „03:32” — a new notation of time;
@@ -6881,7 +6942,9 @@ the rule panel offers for that action. Where the discovery holds no such action 
 takes no target or one the rule panel offers a target for, the rule is „{the first such condition}
 → Eksploruj”, the condition's number and target being those a pick of that condition in the rule
 panel gives, and the panel opens on the condition; where it holds neither, the button does what
-„+ reguła” does (D-124). Where the copy holds no rule group, the button is disabled.
+„+ reguła” does (D-124). Where the copy holds no rule group, the button is disabled. The same button
+stands in the end-of-run window where the window names a discovery of the game minute of the end
+(D-122), and there it closes the window and does what it does in the band.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -6892,11 +6955,13 @@ panel gives, and the panel opens on the condition; where it holds neither, the b
     „Zawsze → Eksploruj” added at the end of the copy's group „Program” with the panel on the action
     and the streak at zero (D-131); a discovery of an item alone adding „Zawsze → Eksploruj” with the
     panel on the condition; a discovery of „Idź” and „Wędruj” while the rule panel offers no target
-    for „Idź” giving „Zawsze → Wędruj”
+    for „Idź” giving „Zawsze → Wędruj”; the window of a completion in the game minute of the discovery „Zbierz, Patyk” with the button, which closes the window and gives „Zawsze → Zbierz — patyk” with the rule panel open on the action
   - violates: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — jagoda”; the rule added to a rule
     group of its own or to the saved program; the panel opened on the condition after the button
-    filled the action; the button adding a rule group while the copy holds none
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 5 and 10, and § Settlements to record, row 4
+    filled the action; the button adding a rule group while the copy holds none; the window of a
+    completion in the game minute of a discovery with the text of the discovery and no button, or with
+    the button leaving the window open over the rule panel
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 5 and 10, and § Settlements to record, row 4 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 9, Questions to settle, questions 1, 5 and 12, and § Settlements to record, row 6
 
 *Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
 the discovery into the rule and opens the panel where the player goes on writing, and „Odkryto:
@@ -6905,10 +6970,14 @@ the rule panel offers none for gives way to the next one, because a rule without
 cannot be written, and a button left greyed there would refuse a discovery for which the decision
 gives a rule; so the button writes only a rule the rule panel can show filled. Accepted with it: a
 rule of acting on the list of discoveries, the adding setting the streak to zero as every change of the copy does
-(D-131); a player who deleted every rule group in the pause adds a group before using the button.
+(D-131); a player who deleted every rule group in the pause adds a group before using the button. The window
+offers the same button because the discovery of the game minute of an end is named there alone, and
+the window closes so that the rule panel it opens is seen under its row.
 *Rejected:* the button doing what „+ reguła” does — the words „z tym” promise more; the button left
 for later — a departure from the approved wording; the target always the first of the grid,
-whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”.
+whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”; the window naming the
+discovery of the end without the button — after the end the player adds a rule from the discovery only
+with the ordinary editor.
 
 ### D-314 — What does the background of the scene show?
 
@@ -7172,14 +7241,14 @@ After an error that no code of the game handled, an exception or a rejected prom
 
 ### D-324 — What does the map run do, and what stands on the screen, while the question of „Zakończ” stands?
 
-While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map run is paused as „Pauza” pauses it, and „Wróć” puts it back as it was before „Zakończ”: a map run that went on goes on, and a paused one, the stop at a discovery included, stays paused. The rest of the screen works as usual, so editing the copy, the pace buttons, a second „Zakończ” and the buttons of the panel of the copy act and leave the question standing, except that it goes, with the map run left paused, when the copy no longer holds unsaved changes — after „Zapisz w programie”, „Zapisz jako nowy program”, „Porzuć zmiany”, „Przełącz postać na ten program” or an edit after which the copy no longer differs from its program as D-171 gives — and „Wznów”, in the header or in the band of a discovery, and „Restart” close it as „Wróć” does and then do what they do without it. Leaving the screen of the map run closes the question as „Wróć” does, the map run standing paused as D-283 gives, and the question lives in the memory of the page alone, so after a reload it is gone and the map run comes back as D-212 gives.
+While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map run is paused as „Pauza” pauses it, and „Wróć” puts it back as it was before „Zakończ”: a map run that went on goes on, and a paused one, the stop at a discovery included, stays paused. The rest of the screen works as usual, so editing the copy, the pace buttons, a second „Zakończ” and the buttons of the panel of the copy act and leave the question standing, except that it goes, with the map run left paused, when the copy no longer holds unsaved changes — after „Zapisz w programie”, „Zapisz jako nowy program”, „Porzuć zmiany”, „Przełącz postać na ten program” or an edit after which the copy no longer differs from its program as D-171 gives — and „Wznów”, in the header or in the band of a discovery, „Restart” and, after the end of the map run, „Koniec przejścia” of the header close it as „Wróć” does and then do what they do without it, „Koniec przejścia” opening the end-of-run window (D-368, D-311). Leaving the screen of the map run closes the question as „Wróć” does, the map run standing paused as D-283 gives, and the question lives in the memory of the page alone, so after a reload it is gone and the map run comes back as D-212 gives.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-173 · derives from D-21 · derives from D-122 · derives from D-212 · derives from D-283
+- **Relations:** derives from D-173 · derives from D-21 · derives from D-122 · derives from D-212 · derives from D-283 · derives from D-368
 - **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player clicks „Zakończ” with unsaved changes in the copy, the clock in the header ending in „ (pauza)” and no game minute passing while the question stands, and „Wróć” bringing it back going on at 8×; a paused map run staying paused after „Wróć”; „Porzuć zmiany” taking the question away and leaving the map run paused, so that „Zakończ” then ends it at once; „Zapisz jako nowy program” used while the question stands, after which „Zakończ” ends the map run at once; a reload with the question standing opening the map run paused with no question
-  - violates: a map run passing its game minutes while the question stands; „Wróć” leaving a map run that went on paused, or setting going a map run that was paused before „Zakończ”; the question standing after „Wznów”, after „Restart” or over a copy with no unsaved changes; the question standing on the return to the screen of the map run; the question written into the game state or the save
+  - complies: a map run of Las going on at 8× when the player clicks „Zakończ” with unsaved changes in the copy, the clock in the header ending in „ (pauza)” and no game minute passing while the question stands, and „Wróć” bringing it back going on at 8×; a paused map run staying paused after „Wróć”; „Porzuć zmiany” taking the question away and leaving the map run paused, so that „Zakończ” then ends it at once; „Zapisz jako nowy program” used while the question stands, after which „Zakończ” ends the map run at once; a reload with the question standing opening the map run paused with no question; a map run ended by a death with the question standing and the player pressing „Koniec przejścia” in the header, the question gone and the window open
+  - violates: a map run passing its game minutes while the question stands; „Wróć” leaving a map run that went on paused, or setting going a map run that was paused before „Zakończ”; the question standing after „Wznów”, after „Restart” or over a copy with no unsaved changes; the question standing on the return to the screen of the map run; the question standing together with the window; the question written into the game state or the save
 - **Origin:** pytanie_przy_zakoncz_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 6 and 7, and § Settlements to record, rows 5, 6 and 7
 
 *Rationale:* a question over a map run that goes on would ask about a screen that keeps changing, since the character may die or solve the map while the player decides, so it holds the map run as „Pauza” does, and „Wróć” gives back what the player had instead of costing one more click to go on. The rest of the screen stays usable, so a player may save the copy under a name of their own with „Zapisz jako nowy program” and only then end the map run, and the question goes when it would ask about changes that are no longer there, since it would otherwise stand over a map run that goes on or ask about nothing. The question is a memory of the page, so a reload or a leaving of the screen costs one click, „Zakończ”, to ask again, and the game state and the save hold nothing of it. Accepted with it: the page remembers whether the map run went on before the question; several cases to build and check.
@@ -7508,14 +7577,14 @@ lost.
   - complies: the chronicle of a map run of Las whole after the player opens Siedziba and comes
     back; after a reload at game minute 300 of a map run a wolf attacked at game minute 212, the
     chronicle holding the paragraph of that encounter alone, at game minute 212; after a reload of
-    a map run with no attack, an empty chronicle; the saved game state keeping its version and
-    holding no entry of the chronicle
+    a map run with no attack, an empty chronicle; the saved game state holding no entry of the
+    chronicle, and the chronicle bringing no new version of the save
   - violates: an entry of the chronicle written into the game state or the save; the chronicle
     emptied by a visit to Siedziba; the entries of the chronicle from before a reload standing after
     it; after a reload, no paragraph of an encounter the saved game state holds
 - **Origin:** kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, question 1, and § Settlements to record, row 1
 
-*Rationale:* the save keeps its shape and its version, so no player's saved game state is discarded
+*Rationale:* the chronicle leaves the shape and the version of the save as they are, so no player's saved game state is discarded
 for the chronicle and the chronicle adds nothing to a save, which is not sent above 64 KiB (D-207),
 while the facts of the last encounter that the save already holds let its paragraph stand after a
 load as D-147 gives. Accepted with it: one more way through the code, with its test, and after a
@@ -8113,7 +8182,7 @@ An agent reads root's SSH configuration and the system-wide one on the server on
 
 ### D-362 — How does loop2 point to places on the author's disk that lie outside the repository?
 
-loop2 names a place on the author's disk outside the repository, such as the folder of its projects in the notes and the list of its tasks, by the entry that stands for it under `loop2` in the locations file `~/.the-way/locations.json`, which are the entries `projects` and `tasks`, and no file git tracks holds an absolute path on that disk. A file may name a note and the folder it lies in within the notes, such as `Notes/Projects/(P) Loop/_zadania`, without a path on the disk.
+loop2 names a place on the author's disk outside the repository, such as the folder of its projects in the notes, the list of its tasks and the rules of a task's line, by the entry that stands for it under `loop2` in the locations file `~/.the-way/locations.json`, which are the entries `projects`, `tasks` and `task-rules`, and no file git tracks holds an absolute path on that disk. A file may name a note and the folder it lies in within the notes, such as `Notes/Projects/(P) Loop/_zadania`, without a path on the disk.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, product-foundation, test-helpers
 - **Based on:** none
@@ -8124,7 +8193,7 @@ loop2 names a place on the author's disk outside the repository, such as the fol
 - **Origin:** zadanie_loop2_lokalizacje_poza_repozytorium.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 2, and § Settlements to record, row 1
 
 *Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note and the folder it lies in within the notes show less than a path and still let a reader find the source of a decision, so they stay.
-*Rejected:* removing only the three paths of the backlog section of the agent instructions — the other six paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; replacing the folder `Notes/Projects/(P) Loop` by a reference to the entry `projects` — about 310 changed lines, 298 of them in the *Origin* fields, to review, and a new rule for how later entries write *Origin*; removing the names of the notes altogether — decisions lose the pointer to their reasoning and an agent cannot reach the source on the author's computer either
+*Rejected:* removing only the three paths of the backlog section of the agent instructions — the other six paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; replacing the folder `Notes/Projects/(P) Loop` by a reference to the entry `projects` — about 310 changed lines, 298 of them in the *Origin* fields, to review, and a new rule for how later entries write *Origin*; removing the names of the notes altogether — decisions lose the pointer to their reasoning and an agent cannot reach the source on the author's computer either; leaving this decision unchanged — it would list only `projects` and `tasks`, so an agent reading it would take `task-rules` for an entry outside the rules of loop2, and the next review of the foundation would have to find and fix the mismatch; a separate decision of loop2 that the rules of a task's line come from the author's notes — it repeats a rule the-way keeps for its own tasks, so the rule would be held in two places that both need upkeep
 
 ### D-363 — Where does the player read what an action costs?
 
@@ -8200,3 +8269,63 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, which is the place the mage stood or walked to at the previous reading.
 *Rejected:* unknown
+
+### D-368 — What does the end-of-run window say, and how does it open and close?
+
+When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run, covering it with its header but not the menu bar nor the row of warnings under it, and under „Koniec przejścia” it answers in this order what happened, what it cost or gave, why and what next: the cause as a title — after a death „Mag zamarzł”, „Mag umarł z głodu” or „Mag zginął w walce”, after a completion the completion text of the map from its data, such as „Las rozwiązany”, in the role `positive` — with the longest streak the map run reached against the map's condition as „najdłuższa passa 116/480” with its bar in the form of the bar of the header (D-135, D-133), the discovery of that game minute where there is one (D-122), the line of what the end gave or cost (D-185, D-216), the sections of why and the buttons of what next. Each section of why stands only where it has content: „Ostatnie minuty” only after a death, the four last entries of the chronicle other than the paragraph of the last encounter, ending with the entry of the death, each with its game minute as in the chronicle; the paragraph of the last encounter, in the words of the chronicle, in a section of its own (D-147); „Nie zadziałały ani razu”, the rules of the copy with the counter „Wykonano 0×” (D-93), each with its number, such as „2.2”, and the sentence of its row; „Na co poszedł czas”, one bar with a legend and percentages, with a piece of its own for each action of at least 8 % of the time, at most five, the rest in „reszta”, where „Idź”, „Idź — ognisko” and „Wędruj” join as „W drodze”, waiting stands as „Czeka” and combat as „Walka”; and „Wyprawa i teren”, with the lines „weszła z …” or „pustym plecakiem”, „odsłonięto {n} z {m} kafelków” and „w drodze {n} min”, and no line „odłożyła”. The window scrolls in itself while its buttons — „Restart” with the warning of a cut trip plan (D-188), „Zakończ” and, after a completion of a map that opens another, „Otwarte: {mapa} →” (D-132) — stay fixed at its bottom; „✕” in the window and the key Escape pressed in it (D-370) close it and uncover the screen of the map run, whose header then holds „Koniec przejścia”, which opens it again, and the window opens again at every entry on the screen of an ended map run, after leaving by the menu bar and after a reload too.
+
+- **Scope:** simulation, browser-view
+- **Based on:** none
+- **Relations:** derives from D-62 · derives from D-132
+- **Verification:** an agent compares a change with the decision:
+  - complies: a completion of Las opening the window over the screen with „Koniec przejścia” above „Las rozwiązany” in `positive`, the line „Do skrzynki: …” in it and not in the world area, the menu bar standing above it, „Restart”, „Zakończ” and „Otwarte: Las — głębiej →” fixed at its bottom while the sections scroll, „✕” uncovering the screen with „Koniec przejścia” in its header, and a reload of that screen opening the window again; after a death in a fight, „Ostatnie minuty” holding the four entries of the chronicle before the paragraph of the last encounter, which stands in a section of its own
+  - violates: the window opening only after „Koniec przejścia” is pressed; the window covering the menu bar; the buttons scrolling away with the sections; a section standing with no content; „Ostatnie minuty” after a completion; the paragraph of the last encounter counted among the entries of „Ostatnie minuty” and in its own section as well; the lines of the end standing in the world area
+- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P5, NG10 and W8 · rozpoznanie_projektant.md, part B.2 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 4 and 7, Questions to settle, questions 1, 2, 7, 8 and 9, and § Settlements to record, rows 1, 2 and 7
+
+*Rationale:* a lost map run teaches only when the game says why it was lost, and a solved map reads as a win when its reward comes first. The player's main complaint is that the player does not know why rules did not fire, and the window names the rules that never did. A window over the screen puts the end where nothing that stood there before has to move, and the menu bar with the row of warnings stays above it, so a failed save (D-208) and a broken game (D-323) are seen while it stands. Its buttons stand fixed because they are the way on, and „✕” with the button of the header let the player read the scene and the program with its counters that the window explains; the window opens again at every entry, so the explanation is not lost by leaving or by a reload. After a load everything but „Ostatnie minuty” comes back from the game state (D-212). Accepted with it: the window hides the scene while it stands; it does not cover the whole screen as the end of loop does; the keyboard, Escape and the return to the window are to build; in „Ostatnie minuty” an attack does not stand among the other entries, though its paragraph gives the game minute of the attack; and after a load that section does not stand at all, since the chronicle then holds only that paragraph (D-339).
+*Rejected:* one line above the terrain and the buttons „Restart” and „Zakończ” — a defeat teaches nothing and a win opens with „Do skrzynki nic nie trafiło”; the end at the top of the program column, above the band of a discovery, with its own scrolling — the program moves down by the height of the end, the rules that did not fire are read above the program, not beside it, and in one column the end stands under the whole world, in a place D-311 rejects; the same place from the width at which the screen has two columns and above the world in one column — in a narrow window the scene and the effect of a solving stand under the end, and the layout has one more place; in the left column under „Teraz” and „Potem” — in a low window only the top of the end shows and the buttons fall under the lower edge, and the body row, the backpack, the drawing of the map and the tabs move down, close to the place D-311 rejects; a third tab „Koniec” in the area under the world — in a low window it stands under the lower edge, it changes what D-311 rejects, and the chronicle hides behind the tab when the player reads what happened; the end in the place of the scene — it hides the scene, in which the solving is shown; the window covering the menu bar too — to go to another screen the player must first close the window, and neither a failed save (D-208) nor a broken game (D-323) is seen while it stands; a table with exceptions of the rows of loop's end, with other wording in them — each changed row is new wording and perhaps a new question; the paragraph of the last encounter counted among the entries of „Ostatnie minuty” and in a section of its own as well — the same paragraph twice in the window; the paragraph in „Ostatnie minuty” where it is among the last entries and in a section of its own only where it is not — two cases to build and check, the section sometimes there and sometimes not.
+
+### D-369 — What does a manual map run keep of itself for the end-of-run window, and how does a load read it?
+
+A manual map run keeps, in the map run of the game state and so in the saved game state, and not in the plain map run that earning loops share, three things for the end-of-run window (D-368): the longest streak, the greatest value its streak held at the end of a game minute; the game minutes it passed by what the character was doing, each game minute counted once, to what the character was doing at its start, as a count for every kind of a closed list — the kinds of the data's ordinary actions, a wait and a fight — so that the counts sum to the game minute; and the items the character entered with, the entries of the backpack the send gave it, in the order of the data's items. The record begins at the start of the map run and again at „Restart”, and the load of a saved game state refuses a record whose longest streak lies below the streak going on or above the game minute, whose counts are not exactly those of the closed list or do not sum to the game minute, or whose items are out of the order of the data's items or add up to more pieces than the character carries.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-135 · derives from D-206
+- **Verification:** an agent compares a change with the decision:
+  - complies: a manual map run at game minute 212 that entered with 4 sticks, holding a longest streak of 40 and counts by action that sum to 212, saved and loaded back with the same three things; a map run restarted holding a longest streak of 0, counts of 0 for every kind and the entries of its new send; a death in a game minute in which the streak falls to 0 leaving the longest streak as it was
+  - violates: the three things standing in the plain map run of an earning loop; a game minute counted to two kinds or to none; a count missing from the saved record that the load fills in with 0; a load accepting counts that sum to another number than the game minute, or a longest streak above it; the longest streak read from the chronicle
+- **Origin:** koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 5, 7 and 10, Questions to settle, questions 4, 6 and 7, and § Settlements to record, rows 5 and 7
+
+*Rationale:* the window tells how near the map run came, where its time went and what the character entered with, and all three must come back after a load (D-212), so they stand in the game state, and not in the chronicle, which lives in the memory of the page and is lost at a load (D-339). They stand in the manual map run alone, since every earning loop would otherwise carry and save them, and the saved game state would grow with the number of loops against the limits of D-207 and D-208 for nothing the loops use. The longest streak is read at the end of every game minute, the one in which the map run ends included, so a fall of the streak that ends the map run does not lose it. The kinds are those of the simulation and the grouping the window shows is the view's, so a new action needs no wording in the simulation. The load is strict, as D-213 asks, so a record whose counting disagrees with the game minute is refused and not shown. Accepted with it: a wrong counting reaches saved documents until a new version of the save drops them (D-206); a sound document refused where the counting has an exception nobody found, the player starting anew as D-206 gives; the saved game state growing by the record and its version rising once for it.
+*Rejected:* the three things in the plain map run that earning loops share — every earning loop would carry and save them, the saved game state would grow with the number of loops against the limits of D-207 and D-208, and the loops' map run in the document would change shape without any gain; the counts stored under the grouped names of the window — the simulation would know the view's wording and a new action would have to be grouped there; counting in the view from the events — lost at a load, since the events are not kept (D-348); the longest streak read from the entries of the chronicle that record a lost streak — they live in the memory of the page and are lost at a load (D-339); what the character entered with read at the end from the trip plan and the chest — both change during the map run; a lenient load that fills in a missing count or accepts counts that do not sum to the game minute — a migration by another name, against D-206 and D-213.
+
+### D-370 — How does the end-of-run window cover the screen of a map run, and where does the keyboard go?
+
+While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown, though they stay in the page with their state, and the window stands in their place under the menu bar and the row of warnings, as wide as the content column of the screens (D-280) and as tall as its content up to a part of the height of the browser window, with no backdrop; its heading with „✕” and its buttons stay fixed while its middle part scrolls, and the page is at its top when the window opens, so the menu bar stands above it in sight. The window takes the focus when it opens, Escape is read in the window and not on the document, and nothing traps the focus, so the menu bar above the window stays within the keyboard's reach; „✕” and Escape move the focus to „Koniec przejścia” in the header.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-368 · derives from D-311 · derives from D-280
+- **Verification:** an agent compares a change with the decision:
+  - complies: after a death the header and the three areas of the screen of a map run not shown and the window standing under the menu bar with the page at its top; a window with many rules that never fired as tall as a part of the browser window, its middle part scrolling while „Restart” and „Zakończ” stay in sight; Escape pressed in the window closing it with the focus on „Koniec przejścia” in the header; Escape in the open menu „Konto” closing the menu and leaving the window as it was
+  - violates: the header or an area of the screen shown beside or under the window while it stands; a dimmed backdrop; a trap that keeps the focus in the window, or one that puts the menu bar out of the keyboard's reach; Escape read on the document; the buttons or the heading scrolling away with the sections; the window opening with the focus left on the covered screen or on the page; the page left scrolled so that the menu bar stands out of sight when the window opens
+- **Origin:** koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 2, and Questions to settle, questions 1 and 9
+
+*Rationale:* the height of the menu bar and of the row of warnings under it is not known to the stylesheet, so a window as a block in their place keeps its buttons in sight where a layer positioned over the screen would put them below the lower edge of a tall screen, and a screen left out of the drawing cannot be reached by the keyboard under the window. The window takes the focus so that Escape works at once; nothing traps it, since the menu bar above the window stays reachable (D-311); and Escape is read in the window because on the document it would meet the menu „Konto” (D-285) and the rule panel. The window covers the whole screen, so there is nothing to dim, and the file of design tokens holds no value for a backdrop. Accepted with it: the covered screen, the scene included, is not seen while the window stands, so an effect of the end on the scene is seen before the window opens or after „✕”; a player who had scrolled the screen is at its top when the window opens, and the scroll is not kept after the window closes; a player of the keyboard whose focus stands outside the window, after a click on the page, finds that Escape closes nothing.
+*Rejected:* a layer positioned over the screen — the height of the menu bar and of the row under it is not known to the stylesheet, a tall screen under the layer would put the buttons below the lower edge of the window, and the keyboard would still reach the controls it covers; a trap of the focus with the window as the only part of the page that answers — the menu bar above the window must stay reachable (D-311); a listener for Escape on the document — it would meet the menu „Konto” (D-285) and the rule panel; a window narrower than the screen — the screen beneath it would show beside it and would need a backdrop, a value the token file lacks; a dimmed backdrop — it needs a value the token file lacks, and there is nothing to dim; the window taking the focus without moving the page — the page, shortened as the screen goes, would keep a scroll that hides part of the window; the menu bar made to stick to the top of the page — a change of layout outside the end of a map run.
+
+### D-371 — Who remembers whether the end-of-run window is open, and where does „Koniec przejścia” stand?
+
+Whether the end-of-run window (D-368) is open is a memory of the page, kept by the game view and never written into the game state or the save: it is open when a map run ends and when the game is built on an ended map run, it becomes open again at every entering of the screen of an ended map run, and „✕”, Escape and the question „Zapisać, odrzucić, wrócić?” (D-173) close it, and the window stands only while it is open, the player is on that screen and no question stands. „Koniec przejścia” stands in the header before „Restart”, only while the map run has ended and the window is closed.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-368 · derives from D-173 · derives from D-311
+- **Verification:** an agent compares a change with the decision:
+  - complies: a window closed by „✕”, the player leaving by the menu bar and coming back, and the window open again; a reload of the screen after a death with the saved game state holding nothing of whether the window was open, and the window open; „Zakończ” of the window with unsaved changes closing the window and the header holding „Koniec przejścia” before „Restart”; „Wróć” leaving the window closed
+  - violates: whether the window is open written into the game state or the save; the window closed after the player leaves the screen of an ended map run and comes back; the window open again of itself after „Wróć”; „Koniec przejścia” in the header while the window stands, or while the map run goes on
+- **Origin:** koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 8, and Questions to settle, questions 1 and 10
+
+*Rationale:* the window is a thing of the screen and not of the game, so a save holds nothing of it, and a reload opens it again as D-212 gives; a state in the save would come back closed after a reload, against its opening at every entry, and would change the shape of the save for a thing of the screen. The question closes the window and the window does not come back of itself after „Wróć”, as D-173 gives, so the window needs no memory of why it was closed. „Koniec przejścia” stands only while the window is closed because the header is not shown while it stands, and before „Restart” so that the way back to the window comes before the buttons that end the map run. Accepted with it: a player who corrects the copy after „Wróć” has the window closed already, and one who wants to read the end again opens it with the button.
+*Rejected:* the state of the window in the game state or the save — it would come back closed after a reload, against its opening at every entry, and the save would change shape for a thing of the screen; the window opening itself again after „Wróć” — a state of its own, the window remembering that the question closed it (D-173); „Koniec przejścia” after „Zakończ”, or standing always — the button of the way back stands before the buttons that end the map run, and while the window stands the header is not shown.

@@ -63,7 +63,8 @@ export function emptyLoopMark(plan: TripPlan): string | null {
   return plan.bring.length === 0 ? "Pętla nic nie zarobi do skrzynki" : null;
 }
 
-function itemList(entries: readonly TripEntry[]): string {
+/** The items of a list as „patyk 3, jagoda 2”, the form of the trip lines and of the end window. */
+export function itemList(entries: readonly TripEntry[]): string {
   return entries
     .map(({ item, count }) => `${ITEMS[item].name} ${count}`)
     .join(", ");
@@ -103,24 +104,4 @@ const SOLVED_RUN_TEXT =
 /** The line of a run on a solved map, whatever its moment; null for any other run. */
 export function solvedRunText(state: GameState): string | null {
   return state.run?.solvedMapRun ? SOLVED_RUN_TEXT : null;
-}
-
-/**
- * The line of how a death was settled and whether it stands in `danger` (D-39); read from the
- * settlement alone, so null while there is none and the same after a load.
- */
-export function deathSettlementLine(
-  state: GameState,
-): { text: string; danger: boolean } | null {
-  const settlement = state.run?.deathSettlement;
-  if (!settlement) return null;
-  if (settlement.kind === "resurrectionUsed")
-    return {
-      text: "Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.",
-      danger: false,
-    };
-  return {
-    text: `Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie ${settlement.generation}.`,
-    danger: true,
-  };
 }

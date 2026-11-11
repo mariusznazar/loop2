@@ -12,25 +12,26 @@ wytyczne kodowania.
 
 ## Files of this kind
 
-| File | Status | Decision |
-|---|---|---|
-| `src/browser/sim/game.ts` | exemplar | D-35 |
-| `src/browser/sim/body.ts` | copy | — |
-| `src/browser/sim/character.ts` | copy | — |
-| `src/browser/sim/combat.ts` | copy | — |
-| `src/browser/sim/hex.ts` | copy | — |
-| `src/browser/sim/layout.ts` | copy | — |
-| `src/browser/sim/loop.ts` | do not copy | — |
-| `src/browser/sim/map-card.ts` | copy | — |
-| `src/browser/sim/program.ts` | copy | — |
-| `src/browser/sim/programs.ts` | copy | — |
-| `src/browser/sim/random.ts` | copy | — |
-| `src/browser/sim/run.ts` | copy | — |
-| `src/browser/sim/skills.ts` | do not copy | — |
-| `src/browser/sim/trip.ts` | copy | — |
-| `src/browser/sim/types.ts` | copy | — |
-| `src/browser/sim/understanding.ts` | copy | — |
-| `src/browser/sim/world.ts` | copy | — |
+| File                               | Status      | Decision |
+| ---------------------------------- | ----------- | -------- |
+| `src/browser/sim/game.ts`          | exemplar    | D-35     |
+| `src/browser/sim/body.ts`          | copy        | —        |
+| `src/browser/sim/character.ts`     | copy        | —        |
+| `src/browser/sim/combat.ts`        | copy        | —        |
+| `src/browser/sim/hex.ts`           | copy        | —        |
+| `src/browser/sim/layout.ts`        | copy        | —        |
+| `src/browser/sim/loop.ts`          | do not copy | —        |
+| `src/browser/sim/map-card.ts`      | copy        | —        |
+| `src/browser/sim/program.ts`       | copy        | —        |
+| `src/browser/sim/programs.ts`      | copy        | —        |
+| `src/browser/sim/random.ts`        | copy        | —        |
+| `src/browser/sim/run-record.ts`    | copy        | —        |
+| `src/browser/sim/run.ts`           | copy        | —        |
+| `src/browser/sim/skills.ts`        | do not copy | —        |
+| `src/browser/sim/trip.ts`          | copy        | —        |
+| `src/browser/sim/types.ts`         | copy        | —        |
+| `src/browser/sim/understanding.ts` | copy        | —        |
+| `src/browser/sim/world.ts`         | copy        | —        |
 
 ## Rules
 

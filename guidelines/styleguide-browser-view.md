@@ -11,34 +11,34 @@ bez odstępstw zgodnie z D-38.
 
 ## Roles
 
-| Role | Kind | Meaning for the user | Text on it | Decision |
-|---|---|---|---|---|
-| `page` | background | Tu jest gra. | `text` | D-40 |
-| `panel` | background | To osobny, wydzielony blok, także plakietka nad głową postaci i plakietka lecącej ikony zasobu. | `text` | D-40 |
-| `highlight` | background | Ten wiersz albo tor, także tor paska nad głową postaci i tor paska wymagania warunku mapy w nagłówku, jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
-| `rule-winning` | background | Ta reguła programu wygrywa teraz. | `text` | D-40 |
-| `rule-running` | background | Czynność tej reguły programu trwa teraz. | `text` | D-40 |
-| `divider` | other | Tu kończy się jedna sekcja, a zaczyna następna. | — | D-40 |
-| `control-border` | other | To da się kliknąć albo wpisać. | — | D-40 |
-| `selected` | other | To jest wybrane w swojej grupie. | — | D-40 |
-| `condition-unmet` | other | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu. | — | D-40 |
-| `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga i na ikonach rysunku mapy, choć obok nich nie ma tekstu. | — | D-40 |
-| `text` | text | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem. | — | D-40 |
-| `text-secondary` | text | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”. | — | D-40 |
-| `text-label` | text | Nazwa pola albo sekcji, albo data. | — | D-40 |
-| `text-disabled` | text | Tego teraz nie da się użyć. | — | D-40 |
-| `positive` | text | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, oraz jako wypełnienie paska postępu nad głową postaci; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | — | D-39 |
-| `warning` | text | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć. | — | D-39 |
-| `danger` | text | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała. | — | D-39 |
-| `discovery` | text | Odkryto coś nowego. | — | D-39 |
-| `player-change` | text | To zrobił gracz. | — | D-39 |
-| `character` | other | Tu jest postać i tu właśnie idzie; cel kroku odróżnia kształt — cienka linia przerywana zamiast grubej ciągłej — nigdy kolor. | — | D-41 |
-| `tile-hidden` | other | Tego miejsca jeszcze nie znasz. | — | D-41 |
-| `tile-revealed` | other | To miejsce znasz; ikony mówią, co tu leży. | — | D-41 |
-| `tile-edge` | other | Granica między kafelkami, nieodsłoniętymi i odsłoniętymi. | — | D-41 |
-| `link-highlight` | other | Ten kafelek i ten wiersz listy odsłoniętych kafelków to to samo miejsce. | — | D-41 |
-| `depleted` | other | Tego, co tu było, już nie ma. | — | D-41 |
-| `focus` | other | Tu jesteś, obsługując grę klawiaturą. | — | D-41 |
+| Role              | Kind       | Meaning for the user                                                                                                                                                                                                                                                                                          | Text on it | Decision |
+| ----------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------- |
+| `page`            | background | Tu jest gra.                                                                                                                                                                                                                                                                                                  | `text`     | D-40     |
+| `panel`           | background | To osobny, wydzielony blok, także plakietka nad głową postaci i plakietka lecącej ikony zasobu.                                                                                                                                                                                                               | `text`     | D-40     |
+| `highlight`       | background | Ten wiersz albo tor, także tor paska nad głową postaci i tor paska wymagania warunku mapy w nagłówku, jest zaznaczony albo ta kontrolka jest pod kursorem.                                                                                                                                                    | `text`     | D-40     |
+| `rule-winning`    | background | Ta reguła programu wygrywa teraz.                                                                                                                                                                                                                                                                             | `text`     | D-40     |
+| `rule-running`    | background | Czynność tej reguły programu trwa teraz.                                                                                                                                                                                                                                                                      | `text`     | D-40     |
+| `divider`         | other      | Tu kończy się jedna sekcja, a zaczyna następna.                                                                                                                                                                                                                                                               | —          | D-40     |
+| `control-border`  | other      | To da się kliknąć albo wpisać.                                                                                                                                                                                                                                                                                | —          | D-40     |
+| `selected`        | other      | To jest wybrane w swojej grupie.                                                                                                                                                                                                                                                                              | —          | D-40     |
+| `condition-unmet` | other      | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu.                                                                                                                                                                                                    | —          | D-40     |
+| `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga i na ikonach rysunku mapy, choć obok nich nie ma tekstu.                                                                                                         | —          | D-40     |
+| `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem.                                                                                                                                               | —          | D-40     |
+| `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                     | —          | D-40     |
+| `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                            | —          | D-40     |
+| `text-disabled`   | text       | Tego teraz nie da się użyć.                                                                                                                                                                                                                                                                                   | —          | D-40     |
+| `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, oraz jako wypełnienie paska postępu nad głową postaci; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | —          | D-39     |
+| `warning`         | text       | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć.                                                                | —          | D-39     |
+| `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała.                                                                                                                                                                                        | —          | D-39     |
+| `discovery`       | text       | Odkryto coś nowego.                                                                                                                                                                                                                                                                                           | —          | D-39     |
+| `player-change`   | text       | To zrobił gracz.                                                                                                                                                                                                                                                                                              | —          | D-39     |
+| `character`       | other      | Tu jest postać i tu właśnie idzie; cel kroku odróżnia kształt — cienka linia przerywana zamiast grubej ciągłej — nigdy kolor.                                                                                                                                                                                 | —          | D-41     |
+| `tile-hidden`     | other      | Tego miejsca jeszcze nie znasz.                                                                                                                                                                                                                                                                               | —          | D-41     |
+| `tile-revealed`   | other      | To miejsce znasz; ikony mówią, co tu leży.                                                                                                                                                                                                                                                                    | —          | D-41     |
+| `tile-edge`       | other      | Granica między kafelkami, nieodsłoniętymi i odsłoniętymi.                                                                                                                                                                                                                                                     | —          | D-41     |
+| `link-highlight`  | other      | Ten kafelek i ten wiersz listy odsłoniętych kafelków to to samo miejsce.                                                                                                                                                                                                                                      | —          | D-41     |
+| `depleted`        | other      | Tego, co tu było, już nie ma.                                                                                                                                                                                                                                                                                 | —          | D-41     |
+| `focus`           | other      | Tu jesteś, obsługując grę klawiaturą.                                                                                                                                                                                                                                                                         | —          | D-41     |
 
 Tabela nie trzyma wartości: wartości ról stoją w pliku tokenów, który wskazuje
 Where in code.
@@ -686,6 +686,113 @@ ma zakładki „Kronika” i „Teren”, a na starcie przejścia wybrana jest �
 
 Żadna z tych części nie dostaje nowej roli, barwy ani wartości; wartości stoją
 w pliku tokenów, a kod kroniki w `src/browser/view/right-area.tsx`.
+
+### The end-of-run window
+
+- **Decision:** D-368 · D-311 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
+- **Invariant:** none
+- **Good:** Okno po śmierci z tytułem „Mag zamarzł” w `text-strong` na `panel`, nad nim pasek menu i wiersz ostrzeżeń, pod nim przyciski „Restart”, „Zakończ” i „Otwarte: …” stojące w polu widzenia, gdy sekcje się przewijają; Escape zamyka okno, a nagłówek ekranu ma wtedy „Koniec przejścia”.
+- **Bad:** Okno przykrywające pasek menu; okno z zasłoną za sobą; przycisk zrobiony w oknie osobnym `<button>` albo z czcionką Geist Mono; pasek czasu w roli, której nie ma w tabeli Roles; Escape czytany na dokumencie.
+
+Okno końca przejścia, `src/browser/view/end-window.tsx`, jest pierwszym oknem
+nad ekranem gry. Otwiera się samo, gdy przejście ręczne kończy się śmiercią
+postaci albo ukończeniem mapy, i otwiera się znowu przy każdym wejściu na ekran
+zakończonego przejścia (D-368). Jego treść i kolejność podaje D-368, jego
+teksty — `src/browser/view/end-window-lines.ts`; ta reguła podaje, jak okno
+wygląda, jak przykrywa ekran, jak się zamyka i jak bierze fokus. Reguły okna
+stoją w `src/browser/styles.css` pod klasami `end-window`.
+
+Jak przykrywa ekran:
+
+- Póki okno stoi, ekran przejścia — jego nagłówek i trzy obszary pod nim — nie
+  jest pokazany: elementy mają atrybut `hidden` i zostają w drzewie. Pasek menu
+  z wierszem ostrzeżeń pod nim stoi nad oknem i działa, więc nieudany zapis
+  (D-208) i awaria gry (D-323) są widoczne, a kliknięcie w pasek opuszcza
+  ekran przejścia (D-311, D-368). Okno nie przykrywa paska menu.
+- Okno nie ma zasłony ani tła za sobą. Stoi na tle `panel` z tekstem w `text` i ramką w `divider`
+  (D-40), w kolumnie treści ekranu, o takiej wysokości, że pod nim zostaje
+  miejsce na pasek menu i wiersz ostrzeżeń.
+- Najwyższą wysokość okna zadaje `max-height` w jednostce `vh`: wymiar układu,
+  którego D-43 nie liczy jako wartości wpisanej zamiast tokenu. Jej wartość
+  stoi w regule `end-window` w `src/browser/styles.css`. Wyższa treść przewija
+  się w oknie, nie wypycha go.
+- Przewija się tylko część środkowa: nagłówek okna — napis „Koniec przejścia”,
+  tytuł i „✕” — oraz rząd przycisków u dołu stoją w miejscu i są stale w polu
+  widzenia (D-368).
+
+Jak się zamyka i otwiera:
+
+- „✕” i Escape zamykają okno i odsłaniają ekran; fokus idzie wtedy na
+  „Koniec przejścia” w nagłówku ekranu. Escape czyta korzeń okna, nigdy
+  dokument (D-285).
+- „Koniec przejścia” w nagłówku ekranu otwiera okno znowu. Stoi przed „Restart”,
+  póki okno jest zamknięte po końcu przejścia; gdy okno stoi, nagłówek jest
+  ukryty razem z ekranem (D-311, D-368).
+- „Restart” zaczyna przejście od nowa, „Zakończ” i „Otwarte: {mapa} →” kończą
+  je i opuszczają ekran. Gdy kopia ma niezapisane zmiany, te dwa przyciski
+  zamiast tego zamykają okno i stawiają pytanie „Zapisać, odrzucić, wrócić?”
+  w panelu kopii; okno nie stoi, póki pytanie stoi, i po „Wróć” zostaje
+  zamknięte, aż gracz otworzy je przyciskiem „Koniec przejścia” (D-173).
+- „Dodaj regułę z tym” zamyka okno i otwiera panel reguły pod wierszem reguły
+  (D-313).
+
+Jak role, czcionka i wspólne kontrolki składają okno; żadna część nie dostaje
+nowej roli ani wartości:
+
+- Tytuł jest w `text-strong`, a po ukończeniu mapy w `positive` (D-132, D-39);
+  napis „Koniec przejścia” nad nim i nazwy sekcji są w `text-label`, sekcje
+  oddziela linia w `divider`. Treść sekcji jest w `text`, numer reguły w „Nie
+  zadziałały ani razu” w `text-label`.
+- Wiersz tego, co koniec dał albo kosztował, jest w `text-secondary`, a w
+  `danger`, gdy wskrzeszenie nie było gotowe (D-185, D-216). Odkrycie stoi w
+  `discovery` z belką w kolorze tego tekstu (D-279), jak pasek odkrycia, i ze
+  wspólnymi przyciskami (D-122, D-313).
+- „Ostatnie minuty” i akapit ostatniego starcia stoją czcionką Geist Mono jak
+  kronika (D-46), minuta w `text-label`, a tekst wpisu w roli swojego rodzaju
+  jak w kronice (reguła The chronicle of a map run). Reszta okna stoi czcionką
+  tekstu gry.
+- Najdłuższa passa stoi w klasach paska wymagania z nagłówka: tor w `highlight`,
+  wypełnienie w `text`, a spełniona — nazwa, liczby i wypełnienie w `positive`
+  (D-135, D-133, D-40).
+- Pasek czasu „Na co poszedł czas” ma tor w `highlight` i kawałki wypełnione w
+  `text`, rozdzielone odstępem o szerokości `--frame-width`; długość kawałka
+  jest jego udziałem w minutach, a obok stoi legenda z nazwą i procentem, procent
+  w `text-label`. Jego wysokość to stopień skali odstępów, `--space-s`, nie `--bar-width`.
+- Wszystkie przyciski okna — „✕”, „Restart”, „Zakończ”, „Otwarte: …” i „Dodaj
+  regułę z tym” — to wspólne przyciski `ReactButton` (D-44): okno nie tworzy
+  własnego elementu `<button>`, nie ustawia ich czcionki i nie zmienia ich
+  wyglądu. „Restart” i „Zakończ” są przyciskami niszczącymi, pozostałe zwykłymi;
+  „Dodaj regułę z tym” jest wyłączony, gdy kopia nie ma grupy reguł, a w oknie
+  nie ma akcji pobocznej ani zakładki (D-275, D-276). Ostrzeżenie o przyciętym
+  planie wyprawy stoi obok „Restart” w `warning` (D-188).
+
+Fokus:
+
+- Korzeń okna to element `section` z `role="dialog"`, nazwany tytułem okna przez
+  `aria-labelledby`, z `tabIndex` równym −1. Bierze fokus raz, gdy okno się
+  pojawia, i nie bierze go więcej, póki stoi; kliknięcie w okno zostawia więc
+  fokus w oknie i Escape działa.
+- Część przewijana ma `tabIndex` równy 0: bez kontrolki w środku klawiatura nie
+  ma inaczej jak ją przewinąć. Tab idzie po kolei: „✕”, część przewijana,
+  kontrolki w niej, przyciski u dołu.
+- Okno nie zatrzymuje fokusu w sobie i nie ma `aria-modal`; pasek menu nad nim
+  zostaje osiągalny z klawiatury.
+- Fokus każdego elementu okna, także korzenia po otwarciu, rysuje jedna reguła
+  `:focus-visible` (reguła Visible focus, D-47); okno nie ustawia `outline`.
+
+Strona wszystkich stanów nie ma próbki okna; jego przyciski stoją tam w swoich
+stanach (D-45).
+
+Otwarte dla człowieka:
+
+- kawałki paska czasu odróżnia tylko ich kolejność, odstęp i długość, bo plik
+  tokenów nie ma serii wypełnień; nowa wartość wchodzi ze źródłem ustalonym
+  z człowiekiem (reguła Every value with its source);
+- czy D-40 ma nazwać wypełnienie paska czasu w `text`, jak nazywa wypełnienie
+  paska wymagania w nagłówku, i czy pasek ma mieć nazwaną grubość zamiast
+  stopnia skali odstępów;
+- użycia ról, które mieszczą się w słowach D-40, ale nie zostały zatwierdzone
+  dla tych miejsc: tor paska czasu w `highlight` i ramka okna w `divider`.
 
 ## Examples
 

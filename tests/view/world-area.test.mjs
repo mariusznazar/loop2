@@ -1,7 +1,7 @@
 // The world area of the screen of a map run in React (task ekran-przejscia, To do 4, 5 and 6; D-311,
 // D-19, D-70, D-147, D-185, D-186, D-201, D-215, D-216, D-272, D-314) on jsdom through
-// tests/view/page-document.mjs (D-264): the scene, the lines of the
-// end, the body row with the backpack, the lines between the backpack and the drawing, the drawing
+// tests/view/page-document.mjs (D-264): the scene, the rows, the body row with the backpack, the lines
+// between the backpack and the drawing, the drawing
 // and the line of a tile under it, and the table of revealed tiles that stands in another area
 // and shares the hovered tile with the drawing. Real events and the look are checked in the
 // browser (D-88), so a hover case here holds only what jsdom shows. Every comparison is of plain
@@ -174,11 +174,12 @@ const tileOf = (container, key) =>
 const rowOf = (container, key) =>
   container.querySelector(`.tile-list tbody tr[data-tile="${key}"]`);
 
-// Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene
-// (below the lines of the end, where they would move as those grow), a paragraph of the last encounter
-// standing in the world area, which the chronicle holds since task kronika-z-filtrami, To do 6, or a
-// part out of the order of task item 4 and of task teraz-i-potem, To do 2 (D-311).
-test("the world area stands from the top: the scene, Teraz, Potem, the lines of the end, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no paragraph of the last encounter", async () => {
+// Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene,
+// a paragraph of the last encounter standing in the world area, which the chronicle holds since task
+// kronika-z-filtrami, To do 6, a part out of the order of task item 4 and of task teraz-i-potem, To do 2
+// (D-311), or a line of the deposit or of a death's settlement standing in the world area, which the
+// window of the end holds since task koniec-przejscia, To do 3 (D-185, D-216, D-311).
+test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -209,35 +210,44 @@ test("the world area stands from the top: the scene, Teraz, Potem, the lines of 
     assert.equal(parts[5][1], "Wprawa w tym przejściu: Eksploracja +12");
     assert.equal(parts[6][1], "Wyniesie: nic");
 
-    // Completed: the deposit stands under „Potem”, above the body row; the preview is gone.
+    // Completed: no deposit line under „Potem” (D-185: the window holds it); the solved line stays,
+    // and the preview is gone.
     await show(withRun(completed(solvedSent()), { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
       "scene",
       "now-row",
       "next-row",
-      "trip-result",
       "body-row",
       "trip-result",
       "world-drawing",
       "tile-line",
     ]);
     const ended = partsOf(container);
-    assert.equal(ended[3][1], "Do skrzynki nic nie trafiło.");
     assert.equal(
-      ended[5][1],
+      ended[4][1],
       "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
     );
-
-    // Dead, the resurrection not ready: the settlement under „Potem”, in `danger`.
-    await show(withRun(died(sent(), 9_000_000), { lastCombat: WOLF }));
-    const [scene, now, next, settlement, body] = partsOf(container);
-    assert.deepEqual(
-      [scene[0], now[0], next[0], settlement[0], body[0]],
-      ["scene", "now-row", "next-row", "trip-result danger", "body-row"],
+    assert.ok(
+      ended.every(([, text]) => !text.includes("Do skrzynki")),
+      "the deposit stands nowhere in the world area",
     );
-    assert.equal(
-      settlement[1],
-      "Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 2.",
+
+    // Dead, the resurrection not ready: no settlement line in the world area (D-216: the window
+    // holds it, in its section about what the death cost); the practice of the run stays after the
+    // death (D-201).
+    await show(withRun(died(sent(), 9_000_000), { lastCombat: WOLF }));
+    assert.deepEqual(classesOf(container), [
+      "scene",
+      "now-row",
+      "next-row",
+      "body-row",
+      "run-practice",
+      "world-drawing",
+      "tile-line",
+    ]);
+    assert.ok(
+      partsOf(container).every(([, text]) => !text.includes("Wskrzeszenie")),
+      "the settlement stands nowhere in the world area",
     );
   });
 });
@@ -390,19 +400,15 @@ test("in the minutes of an attack Teraz says the fight alone and Potem names the
   });
 });
 
-// Catches a settlement of a used resurrection drawn in `danger`, or a deposit drawn at death.
-test("the line of a death that used a resurrection is not in danger, and a death shows no deposit and no preview", async () => {
+// Catches the settlement of a death drawn in the world area, the line that the window of the end holds
+// (D-216, its section about what the death cost), or a deposit drawn at death (D-185).
+test("a death that used a resurrection shows no line of its settlement and no deposit and no preview in the world area", async () => {
   await withPage(async ({ document }) => {
     const { container } = await draw(document, died(sent(), 0));
     const lines = partsOf(container).filter(([name]) =>
       name.startsWith("trip-result"),
     );
-    assert.deepEqual(lines, [
-      [
-        "trip-result",
-        "Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.",
-      ],
-    ]);
+    assert.deepEqual(lines, []);
   });
 });
 

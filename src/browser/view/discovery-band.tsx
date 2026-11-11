@@ -27,9 +27,9 @@ export type DiscoveryBandProps = {
 /**
  * The band: the text of the discovery held by the game state, then the sentence about the rule the
  * game wrote, then „Dodaj regułę z tym” and „Wznów”. „Dodaj regułę z tym” is disabled where the
- * rule it would add cannot be built, as where the copy holds no rule group. „Wznów” is left out
- * once the map run has ended, in death or a completion, where nothing is left to go on to; the band
- * then stands until „Restart” or „Zakończ”. Nothing is drawn while the state holds no discovery.
+ * rule it would add cannot be built, as where the copy holds no rule group. Nothing is drawn while
+ * the state holds no discovery, nor once the map run has ended, in death or a completion: the
+ * end-of-run window then names that discovery (D-122).
  */
 export function DiscoveryBand({
   state,
@@ -38,7 +38,7 @@ export function DiscoveryBand({
 }: DiscoveryBandProps) {
   const text = discoveryBandText(state);
   if (text === null) return null;
-  const ended = state.run !== null && mapRunEnded(state.run);
+  if (state.run !== null && mapRunEnded(state.run)) return null;
   return (
     <div className="discovery-band">
       <p className="discovery-band-text">{text}</p>
@@ -47,7 +47,7 @@ export function DiscoveryBand({
         disabled={discoveryRule(state) === null}
         onClick={() => onAddRule()}
       />
-      {ended ? null : <ReactButton text="Wznów" onClick={() => onResume()} />}
+      <ReactButton text="Wznów" onClick={() => onResume()} />
     </div>
   );
 }
