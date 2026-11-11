@@ -11,7 +11,7 @@ export type IconCredit = {
 /** The change made to every icon file: the black background removed, the shape drawn light. */
 const CHANGES = "zmienione (bez tła, jasny kolor)";
 
-/** Commit of https://github.com/game-icons/icons the icon files were copied from. */
+/** Commit of https://github.com/game-icons/icons the icon files were copied from, `wood-pile.svg` excepted: it was taken from its page on game-icons.net. */
 export const ICON_SOURCE_COMMIT = "82d948812bfe3f269ef8f731dcdb07b08160edc4";
 
 export const ICON_LICENCE = {
@@ -99,6 +99,11 @@ export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
   dodge: {
     author: "Felbrigg",
     sourceUrl: "https://game-icons.net/1x1/felbrigg/dodge.html",
+    changes: CHANGES,
+  },
+  "wood-pile": {
+    author: "Delapouite",
+    sourceUrl: "https://game-icons.net/1x1/delapouite/wood-pile.html",
     changes: CHANGES,
   },
 };

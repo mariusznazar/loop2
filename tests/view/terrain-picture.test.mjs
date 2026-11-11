@@ -277,15 +277,53 @@ test("the campfire's icon stands on its tile, burning and extinguished, and on n
   for (const state of [burning, extinguished]) {
     const picture = terrainPicture(state);
     const drawn = atEntrance(picture);
-    assert.equal(drawn.campfire.href, "/icons/campfire.svg");
     assert.ok(drawn.campfire.size > 0);
     for (const tile of picture.tiles)
       if (tile !== drawn) assert.equal(tile.campfire, null);
   }
-  // Extinguished, the campfire is still there: drawn as when it burns, never in `depleted`.
+});
+
+// D-70: one icon for a burning campfire and one for an extinguished one, the same place and size.
+// The icon files are those of the task koszty-i-stan-ogniska: campfire.svg and wood-pile.svg.
+test("a burning campfire is drawn with campfire.svg and an extinguished one with wood-pile.svg, in the same place", () => {
+  const [burning, extinguished] = fireRun(63, 110);
+  const lit = atEntrance(terrainPicture(burning)).campfire;
+  const out = atEntrance(terrainPicture(extinguished)).campfire;
+  assert.equal(lit.href, "/icons/campfire.svg");
+  assert.equal(out.href, "/icons/wood-pile.svg");
+  const place = ({ x, y, size }) => ({ x, y, size });
+  assert.deepEqual(place(out), place(lit));
+});
+
+test("a campfire crafted and never lit is drawn with the extinguished campfire's icon", () => {
+  // Crafted at minute 40 with no minutes of burning; lighting ends at minute 45.
+  const [crafted] = fireRun(42);
   assert.deepEqual(
-    atEntrance(terrainPicture(extinguished)).campfire,
-    atEntrance(terrainPicture(burning)).campfire,
+    crafted.run.campfires.map((c) => c.minutesLeft),
+    [0],
+  );
+  assert.equal(
+    atEntrance(terrainPicture(crafted)).campfire.href,
+    "/icons/wood-pile.svg",
+  );
+});
+
+test("the icon follows the minutes left: one minute is a burning campfire, none an extinguished one", () => {
+  const [burning] = fireRun(63);
+  const withMinutes = (minutesLeft) => ({
+    ...burning,
+    run: {
+      ...burning.run,
+      campfires: burning.run.campfires.map((c) => ({ ...c, minutesLeft })),
+    },
+  });
+  assert.equal(
+    atEntrance(terrainPicture(withMinutes(1))).campfire.href,
+    "/icons/campfire.svg",
+  );
+  assert.equal(
+    atEntrance(terrainPicture(withMinutes(0))).campfire.href,
+    "/icons/wood-pile.svg",
   );
 });
 
