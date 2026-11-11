@@ -715,11 +715,17 @@ By default Playwright MCP keeps a persistent browser profile for the workspace r
 
 - **Source:** https://raw.githubusercontent.com/microsoft/playwright-mcp/e436f64eb7e1904b6c302da0997a2243496d191e/README.md § User profile — "You can run Playwright MCP with persistent profile like a regular browser (default), in isolated contexts for testing sessions, or connect to your existing browser using the browser extension." § User profile, Persistent profile — "{workspace-hash} is derived from the MCP client's workspace root, so different projects get separate profiles automatically." · "A persistent profile can only be used by one browser instance at a time, so concurrent MCP clients sharing the same workspace will conflict. To run several clients in parallel, start each additional client with --isolated or point it at a distinct --user-data-dir."; read 2026-11-11
 
-## playwright-cli-workspace-sessions
+## playwright-cli-workspace-directory
 
-Playwright CLI 0.1.22 keeps its sessions apart for each workspace, the nearest directory, counting from the directory it is called in, that holds a `.playwright` directory, shares one workspace between the calls made where no directory above holds one, and names the session of a call that gives none `default`.
+Playwright CLI 0.1.22 takes as the workspace of a call the first directory that holds a `.playwright` directory among the directory the call is made in and the nine above it, and the root of its own package where none does.
 
-- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "const workspaceDir = findWorkspaceDir(process.cwd());" · "hash.update(workspaceDir || import_package.packageRoot);" · "daemonProfilesDir: daemonProfilesDir(workspaceDirHash)," § findWorkspaceDir — "if (import_fs.default.existsSync(import_path.default.join(dir, ".playwright")))" · "return dir;" § resolveSessionName — "return explicitSessionName(sessionName) || "default";"; read 2026-11-11 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-11
+- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "const workspaceDir = findWorkspaceDir(process.cwd());" · "hash.update(workspaceDir || import_package.packageRoot);" § findWorkspaceDir — "for (let i = 0; i < 10; i++) {" · "if (import_fs.default.existsSync(import_path.default.join(dir, ".playwright")))" · "return dir;" · "const parentDir = import_path.default.dirname(dir);"; read 2026-11-11 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-11
+
+## playwright-cli-sessions-per-workspace
+
+Playwright CLI 0.1.22 keeps the sessions of each workspace apart from those of every other workspace.
+
+- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "hash.update(workspaceDir || import_package.packageRoot);" · "const workspaceDirHash = hash.digest("hex").substring(0, 16);" · "daemonProfilesDir: daemonProfilesDir(workspaceDirHash),"; read 2026-11-11 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-11
 
 ## screenshots-repository-visibility
 
