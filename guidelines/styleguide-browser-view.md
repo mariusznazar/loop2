@@ -22,7 +22,7 @@ bez odstępstw zgodnie z D-38.
 | `control-border` | other | To da się kliknąć albo wpisać. | — | D-40 |
 | `selected` | other | To jest wybrane w swojej grupie. | — | D-40 |
 | `condition-unmet` | other | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu. | — | D-40 |
-| `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, choć obok niej nie ma tekstu. | — | D-40 |
+| `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci i na ikonach rysunku mapy, choć obok nich nie ma tekstu. | — | D-40 |
 | `text` | text | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem. | — | D-40 |
 | `text-secondary` | text | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”. | — | D-40 |
 | `text-label` | text | Nazwa pola albo sekcji, albo data. | — | D-40 |
@@ -107,12 +107,10 @@ w regule `@media`, geometria rysunku siatki i sceny liczona w TypeScripcie,
 klatki i położenia obrazków postaci i zasobów sceny, atrybuty
 `width` i `height` obrazka, wymiar układu — szerokość albo wysokość z jej
 minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
-w `assets/icons/`, ani ikona czynności nad głową postaci rysowana maską
-w `text-strong`, bo obok niej nie ma tekstu. Dwa sposoby stoją obok siebie do
-zadania 24: ikony czynności rysowane maską biorą kolor z tekstu obok, więc
-szarzeją razem z wyszarzoną komórką i zmiana `text-strong` dochodzi do nich
-sama; każda inna ikona ma kolor w swoim pliku, a gdy zmienia się wartość
-`text-strong`, zmień go w nim ręcznie (D-43).
+w `assets/icons/`. Ikona z `assets/icons/` jest rysowana jednym sposobem,
+maską: obok tekstu bierze kolor tego tekstu, więc szarzeje razem z wyszarzoną
+komórką i zmiana `text-strong` dochodzi do niej sama, a tam, gdzie obok niej nie
+ma tekstu — nad głową postaci i na rysunku mapy — stoi w `text-strong` (D-43).
 
 Czcionki interfejsu to Geist i Geist Mono z plików produktu (D-46): tekst gry
 idzie stosem Geist, kronika i zegar przejścia stosem Geist Mono.
@@ -136,7 +134,7 @@ nie liczy; czy staną się tokenami, ten przewodnik nie rozstrzyga.
 
 - **Decision:** D-42 · D-47
 - **Invariant:** browser-view-focus-outline
-- **Good:** Link stopki pokazuje obwódkę w roli `focus`, gdy dojdzie do niego klawiatura.
+- **Good:** Link zwiniętej sekcji wzmianek pokazuje obwódkę w roli `focus`, gdy dojdzie do niego klawiatura.
 - **Bad:** `outline: none` na wspólnym przycisku albo obwódka ustawiana z TypeScriptu.
 
 Kontrolką jest każdy element, na który przeglądarka pozwala wejść klawiaturą,

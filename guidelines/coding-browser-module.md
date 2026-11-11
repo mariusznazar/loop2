@@ -33,6 +33,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/controls/react-text-field.tsx` | copy | — |
 | `src/browser/view/controls/select-list.ts` | copy | — |
 | `src/browser/view/controls/text-field.ts` | copy | — |
+| `src/browser/view/credit-lines.ts` | copy | — |
 | `src/browser/view/credits-section.tsx` | copy | — |
 | `src/browser/view/credits.ts` | copy | — |
 | `src/browser/view/discovery-band-text.ts` | copy | — |
@@ -40,7 +41,6 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/discovery-rule.ts` | copy | — |
 | `src/browser/view/email-confirmation.ts` | do not copy | — |
 | `src/browser/view/email-status.ts` | copy | — |
-| `src/browser/view/footer.ts` | do not copy | — |
 | `src/browser/view/game-saver.ts` | do not copy | — |
 | `src/browser/view/game-view.ts` | do not copy | — |
 | `src/browser/view/headquarters.tsx` | copy | — |
