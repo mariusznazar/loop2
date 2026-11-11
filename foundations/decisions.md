@@ -4705,7 +4705,7 @@ human has compared, the file holds no secret, and after a changed host key the s
 human repeats that comparison.
 
 - **Scope:** deployment, agent-workflow
-- **Based on:** openssh-strict-host-key-checking · openssh-option-order · openssh-extra-host-key-sources · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § JAK TO ZROBIĆ? — "IdentityFile /backup_key"; read 2026-10-31
+- **Based on:** openssh-strict-host-key-checking · openssh-option-order · openssh-extra-host-key-sources · loop2-host-ssh-host-key-options-unset · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § JAK TO ZROBIĆ? — "IdentityFile /backup_key"; read 2026-10-31
 - **Relations:** derives from D-228 · derives from D-230 · derives from D-13
 - **Verification:** an agent compares a change with the decision:
   - complies: a send whose `ssh` options, on the command line, name that file and turn off every other known-hosts file; root's SSH entry for Strych holding only the login and the path of the key
