@@ -4,7 +4,11 @@
 // their cases stand in rule-editor.test.mjs and program-panel.test.mjs.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ACTION_GROUPS, ACTIONS } from "../../dist/browser/sim/data/actions.js";
+import {
+  ACTION_GROUPS,
+  ACTIONS,
+  NATURE_ENERGY_NAME,
+} from "../../dist/browser/sim/data/actions.js";
 import {
   CONDITION_SECTIONS,
   CONDITIONS,
@@ -1492,6 +1496,12 @@ test("a name takes the form of its count in Polish: 1 the singular, 2 to 4 and 2
   ];
   for (const [count, form] of expected)
     assert.equal(countedName(count, forms), form, String(count));
+});
+
+test("the nature energy takes the form of its count in a price: 1 energia natury, 2 energie natury, 10 energii natury", () => {
+  assert.equal(countedName(1, NATURE_ENERGY_NAME), "energia natury");
+  assert.equal(countedName(2, NATURE_ENERGY_NAME), "energie natury");
+  assert.equal(countedName(10, NATURE_ENERGY_NAME), "energii natury");
 });
 
 test("every resource of the data has the forms of its name that its count takes in a price", () => {

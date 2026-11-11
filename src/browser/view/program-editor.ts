@@ -1,4 +1,9 @@
-import { ACTION_GROUPS, ACTIONS, type ActionDef } from "../sim/data/actions.js";
+import {
+  ACTION_GROUPS,
+  ACTIONS,
+  NATURE_ENERGY_NAME,
+  type ActionDef,
+} from "../sim/data/actions.js";
 import {
   CONDITION_SECTIONS,
   CONDITIONS,
@@ -786,13 +791,6 @@ export function actionTime(state: GameState, kind: ActionKind): string | null {
   return `${minutes} min`;
 }
 
-/** The nature energy named after a count, as the game writes it: „1 energia natury”, „2 energie natury”, „10 energii natury”. */
-const NATURE_ENERGY = {
-  one: "energia natury",
-  few: "energie natury",
-  many: "energii natury",
-} as const;
-
 /** The form of a name that follows `count` in Polish: 1 takes `one`, 2 to 4 `few` (not 12 to 14), every other count `many`. */
 export function countedName(
   count: number,
@@ -827,7 +825,9 @@ export function actionPriceText(
     return `${count} ${countedName(count, { one: name, ...plural })}`;
   });
   if (natureEnergy > 0)
-    parts.push(`${natureEnergy} ${countedName(natureEnergy, NATURE_ENERGY)}`);
+    parts.push(
+      `${natureEnergy} ${countedName(natureEnergy, NATURE_ENERGY_NAME)}`,
+    );
   return parts.length === 0 ? null : parts.join(", ");
 }
 
