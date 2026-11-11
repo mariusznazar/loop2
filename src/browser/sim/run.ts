@@ -30,6 +30,7 @@ import {
 import { neighbours, sameHex, tileAt } from "./hex.js";
 import { drawLayout } from "./layout.js";
 import {
+  campfireLightCount,
   campfireTarget,
   chooseActivity,
   itemFor,
@@ -269,10 +270,7 @@ function landUse(state: Landing, action: Action): Landing {
     }
     case "lightCampfire": {
       const { item } = CAMPFIRE.light;
-      const count =
-        skillBonus(character.skills, "cleanFlame") > 0
-          ? 0
-          : CAMPFIRE.light.count;
+      const count = campfireLightCount(character.skills);
       if (!here || here.minutesLeft > 0 || backpack[item] < count) return state;
       return {
         ...state,

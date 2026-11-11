@@ -11,6 +11,7 @@ import {
 } from "../../dist/browser/sim/data/conditions.js";
 import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import {
   createCharacter,
   newGame,
@@ -23,6 +24,7 @@ import {
   removeGroup,
   dropRule,
   actionPick,
+  actionPriceText,
   actionSentence,
   actionTargetPick,
   actionTime,
@@ -31,6 +33,7 @@ import {
   conditionPick,
   conditionSentence,
   conditionTargetPick,
+  countedName,
   countText,
   dropGroup,
   fieldAfter,
@@ -1027,6 +1030,25 @@ function withBought(state, ...branches) {
   };
 }
 
+/** The state with the character of the map run holding exactly the given ranks, `{ skill: { branch: rank } }`. */
+function withRanks(state, ranksBySkill) {
+  return {
+    ...state,
+    run: {
+      ...state.run,
+      character: {
+        ...state.run.character,
+        skills: Object.fromEntries(
+          Object.entries(ranksBySkill).map(([skill, ranks]) => [
+            skill,
+            { practice: 0, ranks },
+          ]),
+        ),
+      },
+    },
+  };
+}
+
 /** The state with its Understanding replaced by the given parts of it. */
 function knowing(state, understanding) {
   return {
@@ -1057,15 +1079,15 @@ test("the actions of the pick stand in four named groups, in the order of the ta
       [
         "Ogień",
         [
-          "Wytwórz — ognisko",
-          "Zapal — ognisko",
-          "Zapal — patyk",
-          "Zasil — ognisko",
+          "Wytwórz — ognisko (6 patyków)",
+          "Zapal — ognisko (2 patyki, 10 energii natury)",
+          "Zapal — patyk (1 patyk, 10 energii natury)",
+          "Zasil — ognisko (1 patyk)",
         ],
       ],
       [
         "Żywność i walka",
-        ["Zjedz — jagoda", "Uderz — patyk", "Kopnij", "Odskocz"],
+        ["Zjedz — jagoda (1 jagoda)", "Uderz — patyk", "Kopnij", "Odskocz"],
       ],
     ],
   );
@@ -1394,6 +1416,108 @@ test("the time of one execution: minutes from the data, „tura” in combat, a 
   const bought = withBought(during, "neatConstruction");
   assert.equal(actionTime(bought, "craftCampfire"), "15 min");
   assert.equal(actionTime(bought, "gather"), "10 min");
+});
+
+// The prices below are the task koszty-i-stan-ogniska, To do 1 to 4, written out by hand from the
+// examples of its To do 2 and from the data of the game: crafting a campfire uses 6 sticks, lighting it
+// 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1 stick, eating 1 berry.
+test("the price of an action: the pieces it uses up, then nature energy, each name in the form its count takes", () => {
+  const outside = newKnowingGame();
+  assert.equal(actionPriceText(outside, "craftCampfire"), "6 patyków");
+  assert.equal(
+    actionPriceText(outside, "lightCampfire"),
+    "2 patyki, 10 energii natury",
+  );
+  assert.equal(
+    actionPriceText(outside, "lightItem"),
+    "1 patyk, 10 energii natury",
+  );
+  assert.equal(actionPriceText(outside, "feedCampfire"), "1 patyk");
+  assert.equal(actionPriceText(outside, "eat"), "1 jagoda");
+});
+
+test("an action that uses up nothing has no price: a strike leaves its stick in the backpack, and walking, gathering and combat take nothing", () => {
+  const outside = newKnowingGame();
+  for (const kind of [
+    "explore",
+    "wander",
+    "walkTo",
+    "walkToCampfire",
+    "gather",
+    "patrol",
+    "strikeWithStick",
+    "kick",
+    "dodge",
+  ])
+    assert.equal(actionPriceText(outside, kind), null, kind);
+});
+
+test("the price follows the character of the map run: „Czysty płomień” lights a campfire for nature energy alone, and outside a map run the price is the data's", () => {
+  const during = runningGame();
+  assert.equal(
+    actionPriceText(during, "lightCampfire"),
+    "2 patyki, 10 energii natury",
+    "a character that bought nothing",
+  );
+  const clean = withRanks(during, { flameSpell: { cleanFlame: 1 } });
+  assert.equal(actionPriceText(clean, "lightCampfire"), "10 energii natury");
+  assert.equal(
+    actionPriceText(clean, "lightItem"),
+    "1 patyk, 10 energii natury",
+    "lighting a stick is no part of the branch",
+  );
+  assert.equal(actionPriceText(clean, "craftCampfire"), "6 patyków");
+  assert.equal(
+    actionPriceText(newKnowingGame(), "lightCampfire"),
+    "2 patyki, 10 energii natury",
+  );
+});
+
+test("a name takes the form of its count in Polish: 1 the singular, 2 to 4 and 22 to 24 the few, 0, 5 to 21, 25 and 112 the many", () => {
+  const forms = { one: "patyk", few: "patyki", many: "patyków" };
+  const expected = [
+    [0, "patyków"],
+    [1, "patyk"],
+    [2, "patyki"],
+    [4, "patyki"],
+    [5, "patyków"],
+    [12, "patyków"],
+    [14, "patyków"],
+    [21, "patyków"],
+    [22, "patyki"],
+    [24, "patyki"],
+    [25, "patyków"],
+    [112, "patyków"],
+    [122, "patyki"],
+  ];
+  for (const [count, form] of expected)
+    assert.equal(countedName(count, forms), form, String(count));
+});
+
+test("every resource of the data has the forms of its name that its count takes in a price", () => {
+  const forms = {
+    stick: ["patyk", "patyki", "patyków"],
+    berry: ["jagoda", "jagody", "jagód"],
+    moss: ["mech", "mchy", "mchów"],
+    fiber: ["włókno", "włókna", "włókien"],
+  };
+  assert.deepEqual(Object.keys(RESOURCES), Object.keys(forms));
+  for (const [id, [one, few, many]] of Object.entries(forms)) {
+    assert.equal(RESOURCES[id].name, one, id);
+    assert.deepEqual(RESOURCES[id].plural, { few, many }, id);
+  }
+});
+
+test("a cell of the action pick carries its price in brackets after its name, a greyed cell too, and the sentence of a rule's row never does", () => {
+  const cells = cellsOf(actionPick(newKnowingGame(), EXPLORE));
+  assert.equal(cells.craftCampfire.label, "Wytwórz — ognisko (6 patyków)");
+  assert.equal(cells.gather.label, "Zbierz");
+  // A held action the Understanding does not hold stands chosen and greyed, with its price.
+  const held = cellsOf(actionPick(newGame(), { kind: "craftCampfire" }));
+  assert.equal(held.craftCampfire.greyed, true);
+  assert.equal(held.craftCampfire.chosen, true);
+  assert.equal(held.craftCampfire.label, "Wytwórz — ognisko (6 patyków)");
+  assert.equal(actionSentence({ kind: "craftCampfire" }), "Wytwórz — ognisko");
 });
 
 test("a rule is numbered by its group and its place in it, a group by its place in the program", () => {

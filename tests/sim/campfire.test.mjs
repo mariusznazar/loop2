@@ -14,7 +14,7 @@ import {
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
-import { actionFeasible } from "../../dist/browser/sim/program.js";
+import { actionFeasible, actionPrice } from "../../dist/browser/sim/program.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
@@ -692,6 +692,73 @@ test("empty nature energy takes no health", () => {
   const next = after(run, 1);
   assert.equal(next.body.health, 50.05);
   assert.equal(next.death, null);
+});
+
+// The price of an action (task koszty-i-stan-ogniska, To do 1 to 4; D-63, D-145, D-175): what the
+// editor shows is what the simulation takes. The expected prices are written out by hand from the
+// data: crafting 6 sticks, lighting a campfire 2 sticks and 10 nature energy, lighting a stick 1
+// stick and 10, feeding 1 stick, eating 1 berry; „Czysty płomień” takes the 2 sticks off lighting.
+const CLEAN_FLAME = { flameSpell: { practice: 0, ranks: { cleanFlame: 1 } } };
+
+test("the price of an action names the pieces it uses up and the nature energy it takes, nothing for what takes none", () => {
+  const price = (kind, skills = {}) => actionPrice(kind, skills);
+  assert.deepEqual(price("craftCampfire"), {
+    pieces: [{ item: "stick", count: 6 }],
+    natureEnergy: 0,
+  });
+  assert.deepEqual(price("lightCampfire"), {
+    pieces: [{ item: "stick", count: 2 }],
+    natureEnergy: 10,
+  });
+  assert.deepEqual(price("lightItem"), {
+    pieces: [{ item: "stick", count: 1 }],
+    natureEnergy: 10,
+  });
+  assert.deepEqual(price("feedCampfire"), {
+    pieces: [{ item: "stick", count: 1 }],
+    natureEnergy: 0,
+  });
+  assert.deepEqual(price("eat"), {
+    pieces: [{ item: "berry", count: 1 }],
+    natureEnergy: 0,
+  });
+  for (const kind of ["gather", "strikeWithStick", "kick", "walkTo", "explore"])
+    assert.deepEqual(price(kind), { pieces: [], natureEnergy: 0 }, kind);
+  // „Czysty płomień” (D-63): no sticks for lighting a campfire, the same nature energy.
+  assert.deepEqual(price("lightCampfire", CLEAN_FLAME), {
+    pieces: [],
+    natureEnergy: 10,
+  });
+  assert.deepEqual(price("craftCampfire", CLEAN_FLAME).pieces, [
+    { item: "stick", count: 6 },
+  ]);
+});
+
+test("a finished action takes from the backpack and from the nature energy exactly its price, with and without „Czysty płomień”", () => {
+  const rich = { [stick]: 10, [berry]: 5 };
+  const cases = [
+    [CRAFT, at(rich), {}],
+    [LIGHT_CAMPFIRE, at(rich, burning(0)), {}],
+    [LIGHT_CAMPFIRE, at(rich, burning(0)), CLEAN_FLAME],
+    [LIGHT_ITEM, at(rich), {}],
+    [FEED, at(rich, burning(30)), {}],
+    [EAT, at(rich), {}],
+  ];
+  for (const [action, start, skills] of cases) {
+    const before = withEnergy(
+      { ...start, character: { ...start.character, skills } },
+      50,
+      50,
+    );
+    const done = after(endingNext(before, action), 1);
+    const price = actionPrice(action.kind, skills);
+    const expected = { ...before.character.backpack };
+    for (const { item, count } of price.pieces) expected[item] -= count;
+    const label = `${action.kind} ${JSON.stringify(skills)}`;
+    assert.deepEqual(done.character.backpack, expected, label);
+    // Satiety 50 falls to 49.4, below 60: no energy comes back in the minute.
+    assert.equal(done.natureEnergy, 50 - price.natureEnergy, label);
+  }
 });
 
 // A campfire going out is an event of the simulation (task kronika-z-filtrami, To do 7; spec D1,
