@@ -172,14 +172,15 @@ the repository or into a request.
 playwright-cli screenshot --filename=.playwright-cli/<name>.png
 ```
 
-On Playwright MCP, `browser_take_screenshot` takes the place of that command. Then push it yourself,
-with the `gh` account already signed in on this computer and no step of the human. The push goes to
-a branch named `loop2/<cycle>`, never to `main`, so that two cycles pushing at once do not meet; the
-clone stands in `.runs/`, which git ignores:
+On Playwright MCP, call `browser_take_screenshot` with the `filename` `.playwright-cli/<name>.png`
+in its place. Then push it yourself, with the owner's `gh` account, already signed in on this
+computer, and no step of the human. The push goes to a branch named `loop2/<cycle>`, never to
+`main`, so that two cycles pushing at once do not meet; the clone stands in `.runs/`, which git
+ignores:
 
 ```sh
 gh repo clone mariusznazar/screenshots .runs/screenshots
-git -C .runs/screenshots switch -c loop2/<cycle>
+git -C .runs/screenshots switch loop2/<cycle> || git -C .runs/screenshots switch -c loop2/<cycle>
 mkdir -p .runs/screenshots/loop2/<cycle>
 cp .playwright-cli/<name>.png .runs/screenshots/loop2/<cycle>/<name>.png
 git -C .runs/screenshots add loop2/<cycle>/<name>.png
@@ -188,9 +189,12 @@ git -C .runs/screenshots push -u origin loop2/<cycle>
 git -C .runs/screenshots rev-parse HEAD
 ```
 
-For a further screenshot of the same cycle the clone and the branch already stand: leave out the
-first two commands and push with `git -C .runs/screenshots push`. The last command prints the commit
-that holds your file; read it after each push.
+A cycle has several checks, and the clone is deleted at the end of each. The second command takes
+the branch of your cycle from the repository where an earlier check pushed it, and makes the branch
+where none did; a new branch made from `main` while the repository already holds the branch would
+be refused by the push. Where the clone already stands, for a further screenshot of the same check,
+leave out the first command. The last command prints the commit that holds your file; read it after
+each push.
 
 The request embeds the screenshot by a link to the file in that commit, never to a branch and never
 to an address on `raw.githubusercontent.com`:
@@ -208,8 +212,9 @@ on.
 ## Where the CLI fails: Playwright MCP
 
 Use this way only from a session of the agent that started in the worktree of your cycle. Playwright
-MCP keeps one browser profile for the directory its session started in, and a profile serves one
-browser at a time, so two sessions started from one directory block each other.
+MCP keeps one browser profile for the workspace root of its client, which is taken to be the
+directory the session started in, and a profile serves one browser at a time, so two sessions
+started from one directory block each other.
 
 Playwright MCP has no setting for the local certificate here, so its first navigation ends in
 `ERR_CERT_AUTHORITY_INVALID`. Run this through `browser_run_code_unsafe`, with the address of the
