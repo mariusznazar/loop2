@@ -169,6 +169,14 @@ const answersOf = (question) =>
 const answer = (root, text) => buttonIn(questionOf(root), text);
 const headerButton = (root, text) =>
   buttonIn(byClass(runScreenOf(root), "run-header")[0], text);
+/** The end-of-run window while it stands over the screen, undefined otherwise (D-362). */
+const windowOf = (root) => byClass(runScreenOf(root), "end-window").find(shown);
+/** The „Zakończ” a player presses: the window's where it stands over an ended map run, else the header's. */
+const endButton = (root) =>
+  buttonIn(
+    windowOf(root) ?? byClass(runScreenOf(root), "run-header")[0],
+    "Zakończ",
+  );
 const clockOf = (root) =>
   byClass(runScreenOf(root), "run-header-clock")[0].textContent;
 const noteOf = (root) => byClass(questionOf(root), "end-question-note")[0];
@@ -334,13 +342,13 @@ test("the line of D-172 stands under the sentence only while the copy's program 
 // and a navigation to Postać before the answer.
 test("„Zakończ” with unsaved changes asks at every moment of the map run, leaves the map run where it is and stops the one that goes on", async () => {
   const moments = [
-    ["going on", () => renamed(going()), true],
-    ["paused", () => renamed(paused()), true],
-    ["paused at a discovery", () => renamed(atDiscovery()), true],
-    ["after a death", () => renamed(dead(going())), false],
-    ["after a completion", () => renamed(completed(paused())), false],
+    ["going on", () => renamed(going()), true, false],
+    ["paused", () => renamed(paused()), true, false],
+    ["paused at a discovery", () => renamed(atDiscovery()), true, false],
+    ["after a death", () => renamed(dead(going())), false, true],
+    ["after a completion", () => renamed(completed(paused())), false, true],
   ];
-  for (const [name, start, pausedAfter] of moments) {
+  for (const [name, start, pausedAfter, windowStood] of moments) {
     await onPage(async ({ root, pass, reading }) => {
       const { view, address } = await viewOf(start());
       const before = await heldState(view);
@@ -349,11 +357,21 @@ test("„Zakończ” with unsaved changes asks at every moment of the map run, l
         undefined,
         `${name}: no question before „Zakończ”`,
       );
-      await press(headerButton(root, "Zakończ"));
+      assert.equal(
+        windowOf(root) !== undefined,
+        windowStood,
+        `${name}: the window stands over an ended map run alone`,
+      );
+      await press(endButton(root));
       assert.deepEqual(
         answersOf(questionOf(root)),
         ["Zapisz", "Odrzuć", "Wróć"],
         name,
+      );
+      assert.equal(
+        windowOf(root),
+        undefined,
+        `${name}: no window with the question`,
       );
       assert.equal(shownScreen(root), "run", name);
       assert.deepEqual(address.entries, [RUN_ADDRESS], `${name}: no new entry`);
@@ -810,7 +828,7 @@ test("the question stands under the band of a discovery and directly above the h
   });
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(completed(atDiscovery())));
-    await press(headerButton(root, "Zakończ"));
+    await press(endButton(root));
     const place = placeOf(root);
     assert.deepEqual(place.area, ["discovery-band", "run-program-place"]);
     assert.deepEqual(place.panel, order);

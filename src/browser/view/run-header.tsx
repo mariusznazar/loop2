@@ -1,8 +1,9 @@
 /**
  * The header of the screen of a map run in React (D-311, D-130, D-132, D-62, D-188, D-122, D-44,
- * D-46, D-133; task ekran-przejscia, To do 1 and 8; task teraz-i-potem, To do 3): the character's
- * name, the map's name and after them the clock, the bar of the solving condition, „Pauza” or
- * „Wznów”, the five pace buttons, „Restart”, the warning of a cut trip plan and „Zakończ”, in this
+ * D-46, D-133, D-362; task ekran-przejscia, To do 1 and 8; task teraz-i-potem, To do 3; task
+ * koniec-przejscia, To do 2): the character's name, the map's name and after them the clock, the
+ * bar of the solving condition, „Pauza” or „Wznów”, the five pace buttons, after the end of the map
+ * run „Koniec przejścia”, then „Restart”, the warning of a cut trip plan and „Zakończ”, in this
  * order. It is a component with no boundary
  * of its own: the screen of a map run renders it from the game state it was given and from the
  * controls of the header, which ask the game for each act. It imports the pure functions of the DOM
@@ -14,6 +15,7 @@ import type { CSSProperties } from "react";
 import { BALANCE } from "../sim/data/balance.js";
 import { MAPS } from "../sim/data/maps.js";
 import { solvingRequirements } from "../sim/run.js";
+import { mapRunEnded } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
 import {
@@ -25,12 +27,24 @@ import {
 } from "./status-row.js";
 import { tripWarning } from "./trip-lines.js";
 
+/** What the header's buttons ask for: the status row's, and the opening of the end-of-run window. */
+export type RunHeaderControls = StatusRowControls & {
+  /** „Koniec przejścia”: the end-of-run window opens over the screen again (D-362). */
+  openWindow(): void;
+};
+
 /** What the screen gives the header; every render gives it whole. */
 export type RunHeaderProps = {
   /** The game state the header draws; it draws nothing while the state holds no map run. */
   state: GameState;
   /** What the header's buttons ask for. */
-  controls: StatusRowControls;
+  controls: RunHeaderControls;
+  /**
+   * Whether the end-of-run window stands over the screen. Over an ended map run the header is then
+   * hidden, covered by the window, and has no „Koniec przejścia”; where the window is closed it has
+   * the button. A map run that goes on has neither (D-311, D-362).
+   */
+  windowOpen: boolean;
 };
 
 /**
@@ -40,11 +54,14 @@ export type RunHeaderProps = {
  * and the buttons. After the end of the map run, in death or a completion, the clock stands at the
  * game minute of the end in the role `text`, the bar stands too, at the stopped minute and with
  * the streak as it stands then (D-133, D-135), „Pauza” and the pace buttons are not drawn, and
- * „Restart” and „Zakończ” stay.
+ * „Restart” and „Zakończ” stay; „Koniec przejścia” stands before „Restart” while the window of the
+ * end is closed, and while it stands the header is `hidden`, so that the window covers the screen
+ * (D-311, D-362).
  */
-export function RunHeader({ state, controls }: RunHeaderProps) {
+export function RunHeader({ state, controls, windowOpen }: RunHeaderProps) {
   const run = state.run;
   if (run === null) return null;
+  const ended = mapRunEnded(run);
   const character = state.team.characters.find(
     (entry) => entry.id === run.character.id,
   );
@@ -57,7 +74,7 @@ export function RunHeader({ state, controls }: RunHeaderProps) {
     map,
   );
   return (
-    <div className="run-header">
+    <div className="run-header" hidden={ended && windowOpen}>
       {character === undefined ? null : (
         <h2 className="run-header-name">{character.name}</h2>
       )}
@@ -104,6 +121,12 @@ export function RunHeader({ state, controls }: RunHeaderProps) {
               onClick={() => controls.setPace(pace)}
             />
           ))}
+      {ended && !windowOpen ? (
+        <ReactButton
+          text="Koniec przejścia"
+          onClick={() => controls.openWindow()}
+        />
+      ) : null}
       <ReactButton
         text="Restart"
         kind="destructive"
