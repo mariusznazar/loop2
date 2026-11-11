@@ -7,6 +7,7 @@
 // browser (D-88), so a hover case here holds only what jsdom shows. Every comparison is of plain
 // data or of a handful of words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { Fragment, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -27,6 +28,10 @@ import { WorldArea } from "../../dist/browser/view/world-area.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
+const STYLES = readFileSync(
+  new URL("../../src/browser/styles.css", import.meta.url),
+  "utf8",
+);
 const SENT = { mapId: "forest", characterId: 1 };
 const ALWAYS = { kind: "always" };
 
@@ -695,6 +700,45 @@ test("without a map run the world area and the table draw nothing", async () => 
     const { container } = await draw(document, newGame());
     assert.equal(container.querySelector(".world-area"), null);
     assert.equal(container.querySelector(".tile-list"), null);
+  });
+});
+
+/**
+ * A property of an element as the real stylesheet, laid on its page, gives it, as `computed` of
+ * `scene.test.mjs` does: the page is the test's own jsdom page, whose first import started the
+ * memory limit.
+ */
+function computed(element, property) {
+  const { document, getComputedStyle } = element.ownerDocument.defaultView;
+  if (!document.querySelector("style[data-test-styles]")) {
+    const style = document.createElement("style");
+    style.setAttribute("data-test-styles", "");
+    style.textContent = STYLES;
+    document.head.append(style);
+  }
+  return getComputedStyle(element).getPropertyValue(property);
+}
+
+// Catches an icon of the drawing that does not stand in `text-strong` (D-40, D-43) — it would take
+// the `text` of the panel around the drawing — and a stock of 0 that does not dim it by `depleted`
+// (D-41). The values are those of the stylesheet's rules, read as the tokens they name.
+test("the icons of the drawing take the colour text-strong, the icon of a stock of 0 dimmed by depleted", async () => {
+  await withPage(async ({ document }) => {
+    const { container } = await draw(document, withTiles());
+    const frames = [...container.querySelectorAll(".terrain-drawing .icon")];
+    assert.ok(frames.length > 0, "the drawing holds icons");
+    for (const frame of frames) {
+      assert.equal(computed(frame, "color"), "var(--text-strong)");
+      assert.equal(
+        computed(frame.querySelector(".icon-mask"), "color"),
+        "var(--text-strong)",
+      );
+    }
+    const dimmed = frames.filter((frame) => frame.classList.contains("dimmed"));
+    assert.equal(dimmed.length, 1, "one icon stands at a stock of 0");
+    assert.equal(computed(dimmed[0], "opacity"), "var(--depleted)");
+    for (const frame of frames.filter((each) => !dimmed.includes(each)))
+      assert.notEqual(computed(frame, "opacity"), "var(--depleted)");
   });
 });
 
