@@ -2551,12 +2551,18 @@ of data alone.
   - violates: a list in the simulation's code naming „Eksploruj” and „Wędruj” as what the first
     chill reveals; a condition revealed by the first crafted campfire that takes a change of the
     simulation's code to be revealed
-- **Origin:** odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Settlements to record, row O9, column "What the cycle would otherwise guess"
+- **Origin:** none
 
 *Rationale:* what reveals a thing stands with the thing, so an action, an item, a condition or a creature is
 defined and revealed in one place, and a later discovery of a kind already handled adds data, not
 code, as the game's content does. A kind of revealing event the simulation does not handle yet takes
-a change of its code where it reads the event.
+a change of its code where it reads the event. The rule that things are discovered in play states
+only the principle, and the decision that puts the game's content in data files lists game maps,
+items, creatures, character skills and their numbers, not what reveals a thing, so without this
+decision the chain of revelations would have no place in the foundation, and each change would choose
+anew between the data files, as in the predecessor game, loop, whose data give each action, item and
+condition a field naming the event that reveals it, and the simulation's code. The place decides whether the discoveries added
+later, such as those of combat and of lighting a fire, are added by a change of data alone.
 *Rejected:* the whole chain of revelations in a table of its own, apart from the actions, items, conditions and creatures — a thing would be defined in one place and revealed in another; the chain written into
 the simulation's code — each later discovery would take a change of code.
 
@@ -2574,11 +2580,12 @@ discovery included, „Restart”, „Zakończ” and the next send of a charact
     map run at 4× moving at 4×; the first map run of a new game passing at 1×
   - violates: „Restart”, „Zakończ” or a new send bringing the pace back to 1×; a stop at a
     discovery changing the pace
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "4. Co dzieje się z wybranym tempem przy pauzie, „Restart”, „Zakończ” i kolejnym wysłaniu postaci?" · odkrywanie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jak czas gry staje przy odkryciu i co wtedy widzi gracz?"
+- **Origin:** none
 
 *Rationale:* the pace is the player's setting of how fast a map run passes, kept from one attempt to
 the next until the player changes it, and a stop at a discovery is the same pause as „Pauza”, so
-whatever treats a pause treats both the same. Accepted with it: a player who ended a map run at 16×
+whatever treats a pause treats both the same. Accepted with it: a stop at a discovery cannot be told
+apart in the game state from the player's pause, which is why the pace stays through it too; a player who ended a map run at 16×
 starts the next one at 16× and can miss its start; with the browser tab hidden, a mage sent then
 passes the whole of Las unseen in half a real minute.
 *Rejected:* each map run, a map run restart included, starting again at 1× — the player would pick
@@ -2600,11 +2607,15 @@ group.
   - violates: a select list of paces; the pace buttons standing in an area of the screen under the
     header; a pace button that creates and styles a `<button>` of its own; the pace in force marked
     in a way no shared control holds
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where does the player pick the pace, and with which control?”
+- **Origin:** none
 
 *Rationale:* the pace stands where the player watches the map run, beside „Pauza”, the other
 control of its time, and the button selected in its group marks the pace in force with a shared
-control.
+control, so the styleguide needs no new control for it. At 1× the 480 game minutes of Las take 8 real
+minutes and at 16× 30 real seconds. Accepted with it: at 16× the screen jumps 3.2 game minutes at
+each refresh, which comes every 200 ms; the paces 2×, 4× and 8× are not taken from the predecessor
+game, loop; and the time of a hidden browser tab counts, so at 16× a player who leaves the tab for
+30 seconds lets a whole map run of Las, to its completion or its death, pass unseen.
 *Rejected:* a pace control standing apart from „Pauza”, or one built from a control of its own.
 
 ### D-131 — Which changes of the program a map run carries out reset its solving progress?
@@ -2628,18 +2639,19 @@ stands, together with the number of beaten attacks. Every switch of the characte
   - violates: „↑” on the first program rule setting the streak to 0; a program rule deleted in a
     pause leaving the streak as it stood; „Zapisz jako nowy program” setting the streak to 0; a
     switch leaving the beaten attacks as they stood
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "9. Która zmiana programu zeruje passę — także czynność edytora, po której program jest taki sam jak przed nią?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 · programy_gracza_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10. Czy gracz może w trakcie przejścia przełączyć postać na inny program?" and "Q15. Czy „Zapisz w programie” i „Zapisz jako nowy program” zostawiają passę i kopię bez zmian?"
+- **Origin:** none
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps
 fixing it, so changed rules or rule groups start the streak again, in a pause as well; an act that leaves
 the program as it was changes nothing the map checks. A switch brings another program, which the map
 checks anew, also where it holds the same rules. A save moves the copy's content into a program and
 changes nothing the map run carries out, and a saved program reaches a map run at a next entry or a
-switch. Accepted with it: a player who presses „↑” on
+switch; saving under a new name takes no fresh copy of another program, as a switch does, so it
+moves neither the copy nor the streak. Accepted with it: a player who presses „↑” on
 the first program rule keeps the streak, though the player touched the program; the same program has to supply the beaten attacks and the streak, which can lengthen the attempt after an edit.
 *Rejected:* every act of the program editor setting the streak to zero, an act that leaves the
 program the same included, as the predecessor game, loop, did — the player would lose the streak for
-an act that changes nothing; keeping beaten attacks through a changed program — different programs would supply the two kinds of progress; clearing beaten attacks after cold or hunger — the streak already accounts for those losses; „Zapisz jako nowy program” setting the streak to zero as a switch does — a fix saved under a new name would cost the progress on the map.
+an act that changes nothing; survival counted from the start of the map run — it rewards patching on the go; keeping beaten attacks through a changed program — different programs would supply the two kinds of progress; clearing beaten attacks after cold or hunger — the streak already accounts for those losses; „Zapisz jako nowy program” setting the streak to zero as a switch does — a fix saved under a new name would cost the progress on the map.
 
 ### D-132 — What does the screen show, and what can the player do, after a completion?
 
@@ -2660,13 +2672,22 @@ player has „Restart” and „Zakończ” as after a character's death.
   - violates: the game going back to the headquarters with a message the moment the map run
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
     written in a role other than `positive`
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 9 and 12
+- **Origin:** none
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
 which the program met the map's condition, can repeat the same seed with „Restart” and returns with
 „Zakończ”. The role `positive` says that something works, which a completion shows of the program.
+„Teraz” gives the outcome of a map run that has ended, the cause of a death or the map's completion
+text, so the player reads on the screen why the map run ended. The „time stands still” of the screen
+after a completion, like that of the screen after a death, concerns that map run alone: the earning
+loops of the other characters go on, as they do in a pause. Accepted with it: the same completion
+text is read on the screen in a second place once the end of a map run has a place of its own.
 *Rejected:* going back to the headquarters with a message at the completion — the player would lose
-the state of the map run that solved the map.
+the state of the map run that solved the map; no „Teraz” after the end of a map run — while the end
+has no place of its own, the player reads nowhere why the map run ended; „Teraz” staying on the last
+action — after a death it reads as something the mage still does, and the cause is stated nowhere;
+the screen after the end stopping the earning loops of the other characters — viewing the result
+would suspend their earning.
 
 ### D-133 — Where does the player see a map run's streak and a map's solving condition?
 
@@ -2687,20 +2708,27 @@ During a map run the header shows a bar with numbers for the requirements presen
     header; a streak target shown for a map that asks for beaten attacks alone; the bar gone from the
     header after the end of a map run; a met requirement whose fill turns green while its name and
     numbers do not; the sentence of the condition written in the code of the screen Mapy
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?" and "16. Gdzie w wierszu stanu stoi dopisek „ (pauza)”, gdy wiersz pokazuje też passę?" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 3 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-133 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 and 6, Questions to settle, question 5, and § Settlements to record, rows 5 and 6
+- **Origin:** none
 
 *Rationale:* the player sees during a map run how far the program has come towards the map's
 condition, at any pace and at a glance, and on the card what each map asks before sending a
 character. A met requirement turns green with its name and numbers, as in loop, so on a map with
 two requirements the player sees which one is met, and the bar stays after the end, as in loop, so
-the player sees how far the map run came while reading why it ended. Accepted with it: a new text in
-each map's data, and after a death of cold or hunger a bar that shows a streak of zero.
+the player sees how far the map run came while reading why it ended. The bar shows the streak as it
+stands, not the longest one, which keeps D-135 true. The card shows what the data of the map hold
+whatever the player has discovered, so it changes nothing in the Understanding, and the sentence of
+the condition stands on it as it stood at the headquarters. The pause belongs to the whole map run, so its mark stands
+after the clock and not by the character's action. Accepted with it: a new text in each map's data,
+a longer header, and after a death of cold or hunger a bar that shows a streak of zero.
 *Rejected:* the streak with no number of the condition beside it — the player would not read how
 many game minutes the condition still asks for; the numbers alone in a line of text — the goal
 stands hidden in small print; the fill always green, as the bar over the mage's head — on a map
 with two requirements it is not seen which one is already met; no bar after the end of a map run —
 the player would not see how far the map run came towards the map's condition just when reading
-why it ended.
+why it ended; the mark of the pause after the character's action, as in „Minuta 312 · Eksploruje
+(pauza) · Passa 120/480” — it would read as if the pause concerned the character's action; for the
+mark of the pause after the bar of the condition, and for no mark with the pause shown by „Wznów”
+alone, no cost was kept beyond the loss of the textual mark of the pause the game has today.
 
 ### D-134 — Where does the player see that a map is solved?
 
@@ -2714,7 +2742,7 @@ From the first completion of a map by any of the player's characters, the list a
     reading „rozwiązana” in `positive`, also after a later map run on Las ends in death
   - violates: the mark shown on the screen after the completion and missing from the list and the
     card; the mark gone once a later map run on Las ends in death
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "7. Gdzie gracz widzi, że Las jest rozwiązany?" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-134 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3
+- **Origin:** none
 
 *Rationale:* a solved map stays solved, so the player sees where maps stand which of them a program
 has solved.
@@ -2732,7 +2760,7 @@ after its end.
 - **Verification:** an agent compares a change with the decision:
   - complies: the screen after a death of cold reading „Teraz” „Mag zamarzł” and „Passa 0/480”, with no longest streak
   - violates: the screen after a death showing the longest streak the map run reached
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "5. Gdzie i w jakiej postaci gracz widzi passę i warunek rozwiązania Lasu?"
+- **Origin:** none
 
 *Rationale:* the streak a map's solving condition counts is the one the bar of the solving condition in the header shows. Accepted
 with it: at a death of cold or hunger the streak stands at zero, so the screen after death does not
@@ -2759,12 +2787,14 @@ program, sets it to zero, on every map, while a change of the trip plan alone le
     character is chilled growing the streak; a game minute in which the character is starving
     leaving the streak as it stood; a streak broken by a wolf's bite; a switch of the character to
     another program leaving the streak as it stood
-- **Origin:** a part of the approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a map solved, and what opens the next one?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D16 and D17
+- **Origin:** none
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
 it, so a change of the program's rules or rule groups starts the streak again. Wounds from combat do not break it: a
 program is to handle an attack, not avoid it. The condition differs from map to map, so it lives in
-the map's data, and so does the map that opens it.
+the map's data, and so does the map that opens it. A map is a level of difficulty that the solving of
+the previous map opens: Las teaches keeping the loop going, Las — głębiej adds combat, and a later map
+is to teach another mechanic or to set a challenge that the means so far do not close.
 *Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
 the backpack at completion as a kind of solving condition while no map asks for it — code and tests
 of a kind the game does not use, a kind that can come with a map that needs it.
@@ -2779,10 +2809,15 @@ The operator blocks and unblocks a player account, named by its email address no
 - **Verification:** invariants: blocked-account-access · player-server-session · unblock-restores-no-session · unblock-restores-no-link. An agent compares a change with the decision:
   - complies: the owner runs `docker exec loop2 node dist/server/account-block.js block <email>` and the account's sessions in every browser end with the block, while the running server keeps serving
   - violates: an HTTP route of the account server that blocks accounts; a skill instruction in which an agent runs the command through the `mikrus` MCP server; unblocking that makes the sessions or the emailed links ended by the block valid again
-- **Origin:** blokada_konta_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 2, and § Settlements to record, row 1; potwierdzenie_adresu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row K10
+- **Origin:** none
 
-*Rationale:* the owner already reaches the server through SSH, so a command in the container adds no new way into the server, and it reports its outcome where the owner typed it. Blocking is possible only from the server's terminal, with no view in the browser, the player's address stays in the server's shell history, and the command opens the database beside the running server, waiting at most the bounded busy timeout for its write. Deleting the sessions and stopping the emailed links at the block, as logout deletes one session, leaves nothing that unblocking could bring back.
-*Rejected:* an owner panel in the browser with an owner role — a new route inside the trust boundary to defend; changing the database file by hand with an SQLite tool — skips the normalization of the address, the deletion of the sessions and the schema check; a block that cannot be undone — the operator could not take back a mistaken block; marking the sessions invalid instead of deleting them — every read and renewal has to check the mark, and unblocking must never clear it; an operator-only HTTP route reached from inside the container — has to prove that the tunnel cannot reach it, and needs a secret or an address check; a signal or a file the running server watches — a new channel into the server with no outcome to report.
+*Rationale:* the owner already reaches the server through SSH, so a command in the container adds no new way into the server, and it reports its outcome where the owner typed it. Blocking is possible only from the server's terminal, with no view in the browser, the player's address stays in the server's shell history, and the command opens the database beside the running server, waiting at most the bounded busy timeout for its write. Deleting the sessions and stopping the emailed links at the block, as logout deletes one session, leaves nothing that unblocking could bring back. The same holds for the emailed links of the account,
+the confirmation of the address and the reset of the password: a link that kept working under a block
+would change the state of a blocked account, and a blocked player could set a new password with it.
+Accepted with it: after an unblock the player signs in and asks for a new link with „Wyślij ponownie”,
+and a blocked player learns nothing of the reason from a link that no longer works, but learns it at
+the login (D-139).
+*Rejected:* an owner panel in the browser with an owner role — a new route inside the trust boundary to defend; changing the database file by hand with an SQLite tool — skips the normalization of the address, the deletion of the sessions and the schema check; a block that cannot be undone — the operator could not take back a mistaken block; marking the sessions invalid instead of deleting them — every read and renewal has to check the mark, and unblocking must never clear it; an operator-only HTTP route reached from inside the container — has to prove that the tunnel cannot reach it, and needs a secret or an address check; a signal or a file the running server watches — a new channel into the server with no outcome to report; emailed links that work in spite of the block — the blocked account changes state anyway, and with a reset link a blocked player sets a new password; emailed links that do not work during the block but work again after the unblock if they have not expired — inconsistent with the sessions, and a reset link intercepted before the block works the moment the account is unblocked.
 
 ### D-138 — How is a player's login kept between requests?
 
@@ -2792,7 +2827,7 @@ The browser holds an opaque, random session identifier in a host-scoped, Secure 
 - **Based on:** OWASP Session Management Cheat Sheet, session identifiers, server-side expiry and invalidation (https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html, read 2026-10-04) · MDN Set-Cookie, Secure and HttpOnly attributes and host scope (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie, read 2026-10-04) · OWASP JSON Web Token Cheat Sheet, token revocation trade-off (https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html, read 2026-10-04) · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "Once they have set their new password, the user should then login through the usual mechanism. Don't automatically log the user in" · "Ask the user if they want to invalidate all of their existing sessions, or invalidate the sessions automatically."; read 2026-10-30
 - **Relations:** none
 - **Verification:** invariants: player-opaque-session-cookie · player-server-session · password-reset-ends-sessions
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is a player's login kept between requests?" · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, row 14
+- **Origin:** none
 
 *Rationale:* the existing account database can hold a small server-side session record. The server can end access immediately after logout, account blocking or a password reset, without maintaining a token denylist. This adds database lookups and cleanup of expired records. A signed token would avoid session records, but immediate account blocking would still require checking server state or a denylist. A password reset ends every browser's session so that whoever took over the password does not play on after it changes; a player playing in a second browser meets „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” at the next save, the unsaved state waiting in that tab for the sign-in (D-211).
 *Rejected:* self-contained signed session tokens — their revocation adds state or a delay before a blocked account loses access; session secrets in browser storage or URLs — expose them to client code or URL leakage; signing the player in at once after a password reset — against OWASP and one more way of making a session, also from a link opened on someone else's computer; keeping the sessions at a password reset — someone who took over the password plays on after it changes, and the player has no way of removing them.
@@ -2807,7 +2842,7 @@ A login of a blocked account with the correct password is refused with „To kon
 - **Verification:** invariants: blocked-account-access. An agent compares a change with the decision:
   - complies: the login route checks the password through the gate first and settles a blocked account's correct password by releasing its admission, answering 403 `account-blocked`
   - violates: the blocked message for an address whose password was not checked or was wrong; a blocked login counted as a failure, so that five of them lock the address
-- **Origin:** blokada_konta_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* a player who knows the password learns why the game stays closed, while someone who knows only the address learns nothing more than from any wrong password, so the block is no clue for an address alone. The refusal is no guess of credentials, so it does not count towards a lock, and no sign-in, so it clears nothing; someone who knows a blocked account's password may repeat the attempt unslowed by the limits, each attempt still passing the bounded password gate. A new refusal code changes the server and the browser's client together.
 *Rejected:* the login message of D-100 for a blocked account too — the blocked player does not learn why; the blocked message for the address alone, before the password is checked — tells anyone who knows an address that its account is blocked; counting the refusal as a failed login — after five tries with the correct password the address locks and the player sees the limit's message, and people behind the same client address lose failures of their budget; counting it as a success — clears the address's failures on a refused login, so wrong guesses mixed with the correct password never lock it; status 401 — the status this API gives to missing credentials or session.
@@ -2826,16 +2861,23 @@ and an attack interrupts the action under way, which is lost.
 - **Verification:** invariants: action-in-progress. An agent compares a change with the decision:
   - complies: a new creature added to data together with its pairs of condition and action
   - violates: a wolf's behaviour written as a branch of the engine; a turn of combat costing game minutes of its own; eating during combat
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does combat go?" · koncepcja_projektowa.md there, D18 and D53
+- **Origin:** none
 
 *Rationale:* a fixed cost keeps a long fight from eating half a day and mixing into hunger and cold.
 A creature's behaviour can be read, so the player writes a counter to it: combat is the reading of
-another's behaviour, not the guessing of rolls. With combat verbs bound to combat, a rule group of
-combat stays silent outside it. The attacker striking first gives a branch that grants the first
-strike something to do.
+another's behaviour, not the guessing of rolls. A creature acting by pairs of the same form as the
+program rules, kept in data, makes a new opponent a row of data and not a branch of the engine. With
+combat verbs bound to combat, a rule group of combat stays silent outside it. The attacker striking
+first gives a branch that grants the first strike something to do: today a creature always attacks,
+so it strikes first, and a character that begins to hunt will be the attacker and will start the
+fight itself. Accepted with it: the creature striking first made every map with an attack harder, a
+deeper forest is solved markedly less often.
 *Rejected:* combat in game minutes — a fight would last half a day and spoil the needs; a finer tick
-of the simulation — gives the program nothing new to choose and multiplies the work; the first strike
-always to the character — branches granting it would give nothing.
+of the simulation, such as a tick of one second — gives the program not one new decision and multiplies the work, a
+minute of simulation costing eleven times more with a long chronicle than with an empty one; the first strike
+always to the character — branches granting it would give nothing; the mage's Rozbłysk, which
+gives the character the first strike even when it was attacked, made a stronger first Iskra instead —
+it skirted the problem for the mage and left it whole to the hunter.
 
 ### D-141 — When do combat turns take effect?
 
@@ -2847,9 +2889,9 @@ An encounter is scheduled for five game minutes after its attack minute M, with 
 - **Verification:** an agent compares a change with the decision:
   - complies: an attack in minute 200 resolving its turns in minute 205 with the program edited during the pause
   - violates: an attack resolving before its discovery pause or automatic recovery raising health during its waiting minutes; a well-fed mage's nature energy rising during those minutes
-- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3. Czy energia natury wraca w minutach walki?"
+- **Origin:** none
 
-*Rationale:* The player has time to write combat rules after the first attack reveals them, while the game minute remains the unit of time; the cost is reading the actions afterwards instead of watching them unfold. Nature energy stands with the needs, so the encounter's minutes leave the body and the energy as they were; the game has no spell of combat today.
+*Rationale:* The player has time to write combat rules after the first attack reveals them, while the game minute remains the unit of time; the cost is reading the actions afterwards instead of watching them unfold. Nature energy stands with the needs, so the encounter's minutes leave the body and the energy as they were, and a minute of combat stays a minute in which the body stands still, with no exception; the game has no spell of combat today, so energy in combat would serve nothing.
 *Rejected:* turns paced by real time — introduces finer simulation time; resolving in the attack minute — the first encounter resolves before the player can write combat rules; nature energy coming back in the encounter's minutes while the mage is well fed.
 
 ### D-142 — When can a creature attack a map run?
@@ -2892,9 +2934,9 @@ The character currently uses „Uderz — patyk”, which requires a stick in th
 - **Verification:** an agent compares a change with the decision:
   - complies: repeated dodges leaving one reduction, and a wolf below 8 health choosing its dodge
   - violates: a wolf dodge consuming the character’s protection or protecting the wolf from the next strike
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q8 and the accepted branch data
+- **Origin:** none
 
-*Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection.
+*Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection. The numbers of the actions and of the ranks of their branches are those of the predecessor game, loop, so the tests of this game may expect them. Accepted with it: the balance of loop was measured in a different game, so this one can come out easier or harder; with two ranks of the dodge branch the dodge takes the whole strike of the wolf; later tuning is a change of data and tests.
 *Rejected:* stacking dodges — adds a protection resource beyond the next strike; another initial balance — departs from the accepted predecessor numbers, whose different weapon and healing behaviour can make the present balance harsh.
 
 ### D-145 — How do weapon wear and wound dressing work today?
@@ -2937,10 +2979,10 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
 - **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
   - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them, as one entry of the chronicle at the game minute of the attack; after a reload at a later game minute, that paragraph standing in the chronicle at the game minute of the attack
   - violates: a completion before the turns displaying an invented victory, defeat or departure; the paragraph standing under the scene in the world area; an entry of the chronicle for each exchange of blows; the paragraph of an earlier attack still standing after the next attack
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-147 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, Questions to settle, questions 8, 9 and 15 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 1 and 5, and Decisions in play
+- **Origin:** none
 
-*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter.
-*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter.
+*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too: the chronicle lives in the memory of the page and not in the saved game, so after a load it begins with the paragraph of the last encounter, composed from the facts the saved state already holds — the creature, the attack minute and the result — and the entries from before the load are lost. The choice rests on two unmeasured assumptions: the size of a chronicle and the rarity of a refresh in the middle of a map run. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter; one more path in the code, with its test; and after a load the chronicle holds the entry of the fight without the entries that preceded it. In the minutes of an attack „Teraz” is the inscription alone, with no icon, no number of a rule and no minutes: „Potem” right below it already says by which rule the mage fights, so a second same number would give the player nothing, and the predecessor game's round and number of the combat rule are lost without loss, since this game counts no rounds. The inscription comes from the state of the combat in progress and not from the function that picks the rule a character carries out, so the invariant on what the rows show from that function names it as an exception.
+*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter; a chronicle empty after a load — after a refresh the player cannot return to why the streak fell, and the paragraph of the last encounter stands nowhere; the whole chronicle in the saved game — the version of the saved game would rise at once, and by D-206 the saved games that hold the players' programs would be discarded, the size of a chronicle is unmeasured, a saved game over the limit is not sent, so the game would stop saving, a limit on the entries makes untrue the sentence on the chronicle, and raising the limit of the server changes D-104 and D-207 and is work in the account server; the number of the combat rule that the turn would pick standing in „Teraz” beside the inscription, with a click that scrolls to it — the same number twice, in „Teraz” and one row lower in „Potem”; no „Teraz” after the end of a map run, or „Teraz” staying on the last action — the first leaves the player nowhere to read why the map run ended, the second reads after a death as something the mage still does.
 
 ### D-148 — Where is an attacking creature pictured today?
 
@@ -2967,7 +3009,7 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
 - **Verification:** an agent compares a change with the decision:
   - complies: solving Las opening Las — głębiej, which then stands on the list of the screen Mapy with its card for every character
   - violates: the simulation sending to Las — głębiej before Las is solved; Las — głębiej standing on the list before Las is solved
-- **Origin:** definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-149 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3
+- **Origin:** none
 
 *Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the end of the map run that opens a map names the way to it.
 *Rejected:* showing the locked map with an inactive send — reveals it before opening; filtering in the view alone — allows sending to an unavailable map through the simulation.
