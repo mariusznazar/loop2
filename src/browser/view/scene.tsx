@@ -182,7 +182,11 @@ function Effect({
               top: percent(to.y, frame.height),
             }}
           >
-            <img src={effect.href} alt="" draggable={false} />
+            <span
+              className="icon-mask"
+              aria-hidden="true"
+              style={{ "--icon": `url("${effect.href}")` } as CSSProperties}
+            />
           </div>
         </div>
       </div>

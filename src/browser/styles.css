@@ -1806,7 +1806,8 @@ header .failure-line {
  * stands on its plaque where it lands and the cloud on its first frame. The 300 ms is the limit D-317
  * gives. The plaque is a solid `panel` like the badge over the head (D-320), the icon on it of the
  * side of 24 px, a layout dimension chosen by viewing the scene at its one size (D-349), the icon
- * holding its own colour in its file (D-43). The flight is laid over the whole frame in two layers,
+ * the mask of `.icon-mask` in `text-strong`, as the icon over the head is, though no text stands
+ * beside it (D-40, D-43). The flight is laid over the whole frame in two layers,
  * so that the percentages of `translate` are parts of the frame: the outer one carries the icon
  * across, the inner one up and down.
  */
@@ -1821,11 +1822,11 @@ header .failure-line {
   position: absolute;
   padding: var(--space-xs);
   background: var(--panel);
-  color: var(--text);
+  color: var(--text-strong);
   transform: translate(-50%, -50%);
 }
 
-.scene-flight-plaque img {
+.scene-flight-plaque .icon-mask {
   display: block;
   height: 24px;
 }
