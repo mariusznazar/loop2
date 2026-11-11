@@ -109,7 +109,7 @@ klatki i położenia obrazków postaci i zasobów sceny, atrybuty
 minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
 w `assets/icons/`, ani ikona czynności nad głową postaci rysowana maską
 w `text-strong`, bo obok niej nie ma tekstu. Dwa sposoby stoją obok siebie do
-zadania 24: ikony czynności rysowane maską biorą kolor z tekstu obok, więc
+późniejszej zmiany: ikony czynności rysowane maską biorą kolor z tekstu obok, więc
 szarzeją razem z wyszarzoną komórką i zmiana `text-strong` dochodzi do nich
 sama; każda inna ikona ma kolor w swoim pliku, a gdy zmienia się wartość
 `text-strong`, zmień go w nim ręcznie (D-43).
@@ -330,9 +330,8 @@ przez tyle linii, ile da jej Prettier. Zaraz po tym `;`, w tej samej linii,
 stoi komentarz zaczynający się od `Source:` z niepustą treścią. Reguła
 `@font-face` ma tylko deskryptory `font-family`, `src` i `font-weight`.
 
-Źródło wartości ustalone z Mariuszem dla loop2 w zadaniu „Styleguide loop2”
-(styleguide_loop2.md w vaulcie, Notes/Projects/(P) Loop/_zadania, pytania
-Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki”:
+Źródło wartości ustalone z Mariuszem dla loop2, z jednym rodzajem dołożonym
+później:
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
@@ -345,10 +344,9 @@ Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki
 - dla wartości, której loop nie pokazała, a którą Mariusz wybrał z podglądu
   wariantów poza terenem i fokusem — grubość `--bar-width` belki przy zdaniu
   pod formularzem i linii wybranej zakładki, z podglądu wariantów karty
-  z 2026-11-02 w zadaniu „przyciski-i-zakladki” (To do 7) — wybór Mariusza
-  z tego podglądu, z nazwą zadania i datą wyboru;
+  z 2026-11-02 — wybór Mariusza z tego podglądu z datą wyboru;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
-  i grubości linii siatki — ustalenie zadania;
+  i grubości linii siatki — wybór Mariusza z 2026-10-20;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
   z którego pochodzą pliki czcionek (D-46), z jego tagiem i commitem.
 
