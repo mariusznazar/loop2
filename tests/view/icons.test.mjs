@@ -120,9 +120,17 @@ test("every icon file is a light shape without a background: svg and path elemen
 
 const CHANGES = "zmienione (bez tła, jasny kolor)";
 
-test("each icon credit records that the file was changed from its source", () => {
+/**
+ * How each icon file differs from its source. The files copied from the source repository had a
+ * black background removed and the shape drawn light; `wood-pile.svg` was taken from its page as
+ * the download with no background, so only its colour was changed.
+ */
+const CHANGES_OF = { "wood-pile": "zmienione (zmieniony kolor)" };
+const changesOf = (icon) => CHANGES_OF[icon] ?? CHANGES;
+
+test("each icon credit says how the file differs from its source, the one taken with no background by its colour alone", () => {
   for (const [icon, credit] of Object.entries(ICON_CREDITS))
-    assert.equal(credit.changes, CHANGES, icon);
+    assert.equal(credit.changes, changesOf(icon), icon);
 });
 
 /** A stand-in for the few DOM calls the footer makes: elements keep what is appended to them. */
@@ -220,7 +228,7 @@ test("each footer line names the icon by its title on game-icons.net and says af
     assert.ok(title, NAMED[i].icon);
     assert.equal(
       textOf(item),
-      `${NAMED[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${CHANGES}`,
+      `${NAMED[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${changesOf(NAMED[i].icon)}`,
     );
   });
 });
@@ -240,7 +248,7 @@ test("the footer credits the extinguished campfire's icon, by Delapouite, right 
   const { items } = await builtFooter();
   assert.equal(
     textOf(items[5]),
-    "ognisko wygasłe: „Wood Pile icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+    "ognisko wygasłe: „Wood Pile icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (zmieniony kolor)",
   );
   const links = items[5].children.filter((node) => typeof node !== "string");
   assert.equal(
@@ -337,7 +345,7 @@ test("each line of the section is the footer's line: the icon's title, author, g
   items.forEach((item, i) => {
     assert.equal(
       textOfMarkup(item),
-      `${NAMED[i].name}: „${TITLES[NAMED[i].icon]}”, ${ICON_CREDITS[NAMED[i].icon].author}, game-icons.net, CC BY 3.0, ${CHANGES}`,
+      `${NAMED[i].name}: „${TITLES[NAMED[i].icon]}”, ${ICON_CREDITS[NAMED[i].icon].author}, game-icons.net, CC BY 3.0, ${changesOf(NAMED[i].icon)}`,
     );
   });
 });
