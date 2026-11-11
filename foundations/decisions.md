@@ -1545,16 +1545,18 @@ Loop2 tests stand at three levels: unit test and integration test as defined in 
 
 ### D-82 — Which product documents supply test expectations?
 
-Test expectations may come from the loop2 foundation, accepted task documents in the folder that the entry `projects` under `loop2` in the locations file names, and in its `_zadania/` directory in state ready for cycle or completed, and the approved `definicja_mvp_loop2.md` there. The draft `koncepcja_projektowa.md` is a source only in a passage quoted by an accepted document; a test comment locating a documentary expectation names its file and line.
+The expectation of a test comes from the loop2 foundation — its decisions, invariants and glossary. What a test needs of the requirement it checks stands in the foundation, so a test comment names as the source of an expectation no document outside the foundation — a task document and a copy of one kept in the record of a task cycle included — and a comment that carries nothing the code needs is not written.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5p
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test whose expected value is written out in the test, the requirement behind it standing in a decision or an invariant; a comment that tells the code something the foundation does not and the code does not say, with that information entered into the foundation in the same change
+  - violates: a test comment that names a task document, a note or the copy of a task document in the record of a task cycle, with a line, as the source of the expected value
+- **Origin:** none
 
-*Rationale:* Accepted requirements carry expectations without making every expected number a foundation decision; an agent without access to the external documents sees their location but cannot verify their text.
-*Rejected:* Foundation alone — forces every expected number into a decision; a draft concept as an unrestricted source — treats unsettled ideas as requirements.
+*Rationale:* a source that lies outside the repository leaves an agent a name and a line that it cannot open and cannot verify, and a document of that kind is removed when its task closes, so the pointer to it goes dead. The foundation is where a requirement that matters for the code stands for every reader, and the code is written so that it is understood by itself: a comment that carries information the code needs makes that information an entry of the foundation, and a comment that carries none says nothing and is not written. An expectation such as 2 + 2 = 4 needs no source named beside it. Accepted with it: a requirement that only a document held has to be entered into the foundation before a test may expect it.
+*Rejected:* a comment that points to the copy of a task document kept in the record of a task cycle in the git history of loop2 — the foundation, with its decisions and invariants, exists to hold requirements, and sending the reader to a task document instead of it is the pointer this decision removes; a comment that sums up the requirement itself and names no source — nobody checks that the summary is faithful; leaving the sources as they were, in the author's notes — those notes are removed when their task closes.
 
 ### D-83 — Where are tests written and how do they enter the gate?
 
@@ -8100,20 +8102,20 @@ An agent reads root's SSH configuration and the system-wide one on the server on
 *Rationale:* root's SSH configuration holds the login to Mikrus Strych, an access value kept outside the repository by D-13, and a number shows none of it. The count lets an agent that looks for the reason of a failed backup confirm the condition D-238 rests on. The limit of D-12 is an agreement, not an enforced boundary, so a slip in the command's switches would print lines with the login; the count is accepted with that risk.
 *Rejected:* a ban on every reading, the two options checked only by a human at the installation — it costs nothing, but the condition of D-238 is then checked only at a hand installation, and an agent seeking the reason of a failed backup cannot confirm it
 
-### D-362 — How does loop2 point to places on the author's disk that lie outside the repository?
+### D-362 — How does loop2 point to places outside the repository that its readers cannot reach?
 
-loop2 names a place on the author's disk outside the repository, such as the folder of its projects in the notes and the list of its tasks, by the entry that stands for it under `loop2` in the locations file `~/.the-way/locations.json`, which are the entries `projects` and `tasks`, and no file git tracks holds an absolute path on that disk. A file may name a note and the folder it lies in within the notes, such as `Notes/Projects/(P) Loop/_zadania`, without a path on the disk.
+loop2 names a place on the author's disk outside the repository, such as the folder of its projects in the notes and the list of its tasks, by the entry that stands for it under `loop2` in the locations file `~/.the-way/locations.json`, which are the entries `projects` and `tasks`, and no file git tracks holds an absolute path on that disk. No file git tracks names a note the author keeps outside the repository or the folder it lies in, or a file of a repository its readers cannot reach, such as the private repository of the old loop game; what a reader needs of such a source stands in the foundation or in the file itself.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, product-foundation, test-helpers
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: tracked-file-private-paths. An agent compares a change with the decision:
-  - complies: a line of the agent instructions that names the entry `projects` under `loop2` in the locations file; a comment that names a note by its file name and the folder it lies in within the notes
-  - violates: a line of any tracked file that gives the folder of the notes, the list of tasks or an old copy of the repository by its path on the disk
-- **Origin:** zadanie_loop2_lokalizacje_poza_repozytorium.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 2, and § Settlements to record, row 1
+- **Verification:** invariants: tracked-file-private-paths · tracked-file-private-names. An agent compares a change with the decision:
+  - complies: a line of the agent instructions that names the entry `projects` under `loop2` in the locations file; a decision whose whole reasoning stands in its *Rationale* and *Rejected*, with *Origin* `none`; a comment that states in its own words what the code needs
+  - violates: a line of any tracked file that gives the folder of the notes, the list of tasks or an old copy of the repository by its path on the disk; a comment, an entry or a guideline that names a note the author keeps outside the repository, or a file of the private repository of the old loop game
+- **Origin:** none
 
-*Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note and the folder it lies in within the notes show less than a path and still let a reader find the source of a decision, so they stay.
-*Rejected:* removing only the three paths of the backlog section of the agent instructions — the other six paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; replacing the folder `Notes/Projects/(P) Loop` by a reference to the entry `projects` — about 310 changed lines, 298 of them in the *Origin* fields, to review, and a new rule for how later entries write *Origin*; removing the names of the notes altogether — decisions lose the pointer to their reasoning and an agent cannot reach the source on the author's computer either
+*Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note shows the same and leads a reader of the repository nowhere: the notes a decision or a test pointed to are removed when their task closes, so the pointer goes dead, and the private repository of the old loop game is not open to a reader at all. An agent that wants to know why a decision was made, or the author who returns to it after months, finds the reasoning where it stands in the entry, not in a note that no longer exists. What a reader needs of such a source therefore stands in the foundation, and the documents the notes held do not move into the repository, since that would make the author's working papers public and set a second source of truth beside the foundation.
+*Rejected:* removing only the three paths of the backlog section of the agent instructions — the other paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; clearing only the *Origin* fields of decisions — the rule on test expectations would go on telling new tests to name a note, and dead pointers in the tests would multiply; clearing the rule on test expectations and the comments in tests in a separate change — the human refused the split of the work into separate tasks; keeping the earlier rule that a file may name a note and the folder it lies in — it is the rule this decision reverses; correcting that earlier rule in a separate change — two changes in turn would alter the agent instructions, the rule on test expectations and the testing guidelines; moving the research and technology documents into the repository and pointing to them — the author's working notes become public, and the repository gets a second set of documents beside the foundation; moving every such document, the definitions and the concept included — the public repository gets the author's whole workshop and a second source of truth beside the foundation
 
 ### D-363 — Where does the player read what an action costs?
 
@@ -8189,3 +8191,16 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, which is the place the mage stood or walked to at the previous reading.
 *Rejected:* unknown
+
+### D-368 — How short can an action shortened by bought branches be?
+
+An action shortened by bought branches lasts at least one game minute.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-191
+- **Verification:** invariants: action-duration-minimum.
+- **Origin:** none
+
+*Rationale:* the branches shorten the time of an action by whole minutes, and the shortening of the exploration branch „Długi krok” alone takes two minutes from a step between tiles for each rank, so three ranks take six from a step of five. Without a floor the action would last no time or a negative time. The floor of one minute is one of the numbers of the old loop game's data that were accepted as requirements, so tests may expect it. Accepted with it: the numbers come from a game balanced otherwise, so loop2 may turn out easier or harder than that game, and tuning them later is a change of data and tests.
+*Rejected:* other numbers given by the human instead of the old loop game's data
