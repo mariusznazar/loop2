@@ -689,15 +689,13 @@ Jak przykrywa ekran:
   z wierszem ostrzeżeń pod nim stoi nad oknem i działa, więc nieudany zapis
   (D-208) i awaria gry (D-323) są widoczne, a kliknięcie w pasek opuszcza
   ekran przejścia (D-311, D-362). Okno nie przykrywa paska menu.
-- Okno nie ma zasłony ani tła za sobą, bo nie ma czego zasłaniać: ekran pod nim
-  jest ukryty. Stoi na tle `panel` z tekstem w `text` i ramką w `divider`
+- Okno nie ma zasłony ani tła za sobą. Stoi na tle `panel` z tekstem w `text` i ramką w `divider`
   (D-40), w kolumnie treści ekranu, o takiej wysokości, że pod nim zostaje
   miejsce na pasek menu i wiersz ostrzeżeń.
 - Najwyższą wysokość okna zadaje `max-height` w jednostce `vh`: wymiar układu,
   którego D-43 nie liczy jako wartości wpisanej zamiast tokenu. Jej wartość
-  stoi w regule `end-window` w `src/browser/styles.css`, sprawdzona w prawdziwej
-  przeglądarce w oknie 1280 × 720 i w jednej kolumnie. Wyższa treść przewija się
-  w oknie, nie wypycha go.
+  stoi w regule `end-window` w `src/browser/styles.css`. Wyższa treść przewija
+  się w oknie, nie wypycha go.
 - Przewija się tylko część środkowa: nagłówek okna — napis „Koniec przejścia”,
   tytuł i „✕” — oraz rząd przycisków u dołu stoją w miejscu i są stale w polu
   widzenia (D-362).
@@ -706,7 +704,7 @@ Jak się zamyka i otwiera:
 
 - „✕” i Escape zamykają okno i odsłaniają ekran; fokus idzie wtedy na
   „Koniec przejścia” w nagłówku ekranu. Escape czyta korzeń okna, nigdy
-  dokument, więc nie trafia w menu „Konto” (D-285).
+  dokument (D-285).
 - „Koniec przejścia” w nagłówku ekranu otwiera okno znowu. Stoi przed „Restart”,
   póki okno jest zamknięte po końcu przejścia; gdy okno stoi, nagłówek jest
   ukryty razem z ekranem (D-311, D-362).
@@ -739,8 +737,7 @@ nowej roli ani wartości:
 - Pasek czasu „Na co poszedł czas” ma tor w `highlight` i kawałki wypełnione w
   `text`, rozdzielone odstępem o szerokości `--frame-width`; długość kawałka
   jest jego udziałem w minutach, a obok stoi legenda z nazwą i procentem, procent
-  w `text-label`. Pasek nie ma tekstu, więc tor nie dostaje roli tekstu. Jego
-  wysokość to stopień skali odstępów, `--space-s`, nie `--bar-width`.
+  w `text-label`. Jego wysokość to stopień skali odstępów, `--space-s`, nie `--bar-width`.
 - Wszystkie przyciski okna — „✕”, „Restart”, „Zakończ”, „Otwarte: …” i „Dodaj
   regułę z tym” — to wspólne przyciski `ReactButton` (D-44): okno nie tworzy
   własnego elementu `<button>`, nie ustawia ich czcionki i nie zmienia ich
@@ -758,22 +755,24 @@ Fokus:
 - Część przewijana ma `tabIndex` równy 0: bez kontrolki w środku klawiatura nie
   ma inaczej jak ją przewinąć. Tab idzie po kolei: „✕”, część przewijana,
   kontrolki w niej, przyciski u dołu.
-- Okno nie zatrzymuje fokusu w sobie i nie ma `aria-modal`, bo pasek menu stoi
-  nad nim i ma być osiągalny z klawiatury.
+- Okno nie zatrzymuje fokusu w sobie i nie ma `aria-modal`; pasek menu nad nim
+  zostaje osiągalny z klawiatury.
 - Fokus każdego elementu okna, także korzenia po otwarciu, rysuje jedna reguła
   `:focus-visible` (reguła Visible focus, D-47); okno nie ustawia `outline`.
 
-Strona wszystkich stanów nie ma próbki okna: okno nie jest wspólną kontrolką,
-stanem ani rolą, a jego przyciski stoją tam w swoich stanach. Próbka okna
-musiałaby też składać stan gry, czego strona nie robi (D-45).
+Strona wszystkich stanów nie ma próbki okna; jego przyciski stoją tam w swoich
+stanach (D-45).
 
-Jedna rzecz zostaje otwarta dla człowieka: kawałki paska czasu odróżnia tylko
-ich kolejność, odstęp i długość, bo plik tokenów nie ma serii wypełnień, którą
-dałoby się im przypisać — ani koloru, ani wzoru, ani krycia — a nowa wartość
-wchodzi do pliku tylko ze źródłem ustalonym z człowiekiem (reguła Every value
-with its source). Otwarte jest też to, czy D-40 ma nazwać wypełnienie tego paska w `text`
-tak, jak nazywa wypełnienie paska wymagania w nagłówku, i czy pasek ma mieć
-nazwaną grubość zamiast stopnia skali odstępów.
+Otwarte dla człowieka:
+
+- kawałki paska czasu odróżnia tylko ich kolejność, odstęp i długość, bo plik
+  tokenów nie ma serii wypełnień; nowa wartość wchodzi ze źródłem ustalonym
+  z człowiekiem (reguła Every value with its source);
+- czy D-40 ma nazwać wypełnienie paska czasu w `text`, jak nazywa wypełnienie
+  paska wymagania w nagłówku, i czy pasek ma mieć nazwaną grubość zamiast
+  stopnia skali odstępów;
+- użycia ról, które mieszczą się w słowach D-40, ale nie zostały zatwierdzone
+  dla tych miejsc: tor paska czasu w `highlight` i ramka okna w `divider`.
 
 ## Examples
 
