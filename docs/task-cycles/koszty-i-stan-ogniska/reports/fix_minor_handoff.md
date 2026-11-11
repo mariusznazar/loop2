@@ -1,0 +1,12 @@
+# Handoff — the fix of the Minor findings of the review of the whole change
+
+You are the one author, resumed. The review of the whole change passed (`PASS 99b9ce97d467e232ba2feb9b4e14cca73b6dd7d9`) and listed four Minor findings within the task. The cycle fixes them once, here (step 9 of `implement-task`). Variant of `make-change`, in the words of its row: "the fix of a review's findings". Work from `the repository's root`, branch `task/koszty-i-stan-ogniska`; the fix range runs from `99b9ce97d467e232ba2feb9b4e14cca73b6dd7d9`.
+
+- Findings file (read whole): `docs/task-cycles/koszty-i-stan-ogniska/reports/review_whole_findings.md` — M1 to M4 in the reviewer's words. The review's full report is `docs/task-cycles/koszty-i-stan-ogniska/reports/review_whole_report.md`; read it where a finding points to it.
+- Fix each finding by the smallest change the task and the foundation allow. Never widen the task: its answers stay as settled (the wording of the price, the place of the price in the pick, the icon route).
+- M3 says in the reviewer's own words that no change is demanded, because the wrapping follows from the task's answer 2. If you hold that no code change can fix it without departing from the task, say so in your report with the evidence; you may not change the price's wording or the grid for it. The orchestrator keeps it for the request's list.
+- M2 is a foundation entry: write it through the project skill of its element (`the-way-record-decision`), reading it whole, and run `python -B .the-way/elements/common/foundation_check.py`.
+- M1: the licence asks only that the credit say the file was changed; make the sentence true for this file without breaking `icon-credits`, `tests/view/icons.test.mjs` and `test_icon_credits.py`; where a per-icon statement is the smallest true fix, take it and name the choice.
+- M4: the trust boundary (`assets/icons/wood-pile.svg`) is untouched by this fix; keep it so. Re-run the invariants whose files you touch.
+- Same boundaries as in `reports/author_handoff.md`: no run of `npm test` (the orchestrator's), focused checks with command and exit code, commits by explicit paths in English, no push.
+- Report: `docs/task-cycles/koszty-i-stan-ogniska/reports/fix_minor_report.md`, with status, commits, each check with command and exit code, your own-work check, per finding what you did or why not, **Unread material**, **Searches not found or unclear**, reaches beyond this handoff. Return status, commits, a one-line check result and the report's path.
