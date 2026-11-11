@@ -5,7 +5,7 @@
  * `section` with `role="dialog"` named by its title: at the top the label „Koniec przejścia”, the
  * title and „✕”; in the middle the scrolling part, which answers in order what happened (the longest
  * streak as the bar of the header's requirement, then the discovery), what it cost or gave, and why
- * (the last minutes, the paragraph of the last encounter, the rules that never fired, the time, the
+ * (the last minutes after a death only, the paragraph of the last encounter, the rules that never fired, the time, the
  * trip and the terrain), each section only where it has content; at the bottom the buttons, which
  * do not scroll. It is a component with no boundary of its own: the screen of a map run renders it
  * from the game state it was given, from the entries of „Ostatnie minuty” its chronicle memory
@@ -50,7 +50,7 @@ export type EndWindowControls = {
 export type EndWindowProps = {
   /** The game state the window draws; it draws nothing while the state holds no ended map run. */
   state: GameState;
-  /** The entries of „Ostatnie minuty”, oldest first; the section stands only where there are some. */
+  /** The entries of „Ostatnie minuty”, oldest first; the section stands only after a death and only where there are some (D-362). */
   lastMinutes: readonly ChronicleEntry[];
   controls: EndWindowControls;
 };
@@ -150,7 +150,7 @@ function EndWindowView({ state, lastMinutes, controls }: EndWindowProps) {
             {cost.text}
           </p>
         )}
-        {lastMinutes.length === 0 ? null : (
+        {run.death === null || lastMinutes.length === 0 ? null : (
           <section className="end-window-section">
             <h3 className="end-window-section-name">Ostatnie minuty</h3>
             <ul className="end-window-minutes">

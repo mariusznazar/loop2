@@ -478,8 +478,8 @@ test("a section stands only where it has content", async () => {
   });
 });
 
-// Catches the last minutes shown for a map run that ended in a completion when the screen gave
-// none, and none shown when it gave some after a death.
+// Catches the last minutes shown after a completion, which D-362 gives only after a death, and none
+// shown when the screen gave some after a death.
 test("the last minutes come from the entries the screen gives and stand only with them", async () => {
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, DIED, []);
@@ -490,8 +490,12 @@ test("the last minutes come from the entries the screen gives and stand only wit
     );
     await show(DIED, LAST_MINUTES);
     assert.equal(sectionHeads(container)[0], "Ostatnie minuty");
-    await show(SOLVED, []);
-    assert.equal(sectionHeads(container).includes("Ostatnie minuty"), false);
+    await show(SOLVED, LAST_MINUTES);
+    assert.equal(
+      sectionHeads(container).includes("Ostatnie minuty"),
+      false,
+      "after a completion there are none, whatever entries are given (D-362)",
+    );
   });
 });
 
