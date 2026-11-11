@@ -202,9 +202,19 @@ const NAMED = [
   ...ACTION_ICONS,
 ];
 
+// The credit of the pack of the cloud of dust, which follows the icons' lines (D-271, `sprite-credits`):
+// the title, author and licence the pack's page on OpenGameArt gives, read 2026-11-11, and the change
+// the files of the game made to it; the text and the two links as the task zbieranie-jako-widowisko
+// (To do 7) writes them.
+const PACK_LINE =
+  "Kurz: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)";
+const PACK_PAGE =
+  "https://opengameart.org/content/smoke-fire-animated-particle-16x16";
+const PACK_LICENCE = "http://creativecommons.org/licenses/by/3.0/";
+
 test("the section credits the campfire's icon, by Lorc, after the four resources' icons", () => {
   const items = itemsOf(sectionMarkup());
-  assert.equal(items.length, NAMED.length);
+  assert.equal(items.length, NAMED.length + 1);
   assert.equal(
     textOfMarkup(items[4]),
     "ognisko: „Campfire icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
@@ -230,7 +240,9 @@ test("the section credits the extinguished campfire's icon, by Delapouite, right
 test("the section credits the actions' icons after the two campfires', one line each, in the order of the data", () => {
   const items = itemsOf(sectionMarkup());
   assert.deepEqual(
-    items.slice(6).map((item) => textOfMarkup(item).split(":")[0]),
+    items
+      .slice(6, NAMED.length)
+      .map((item) => textOfMarkup(item).split(":")[0]),
     ACTION_ICONS.map((action) => action.name),
   );
 });
@@ -287,17 +299,38 @@ test("the section is a folded details whose summary reads Autorzy grafiki, with 
 
 test("each line of the section holds the icon's title, author, game-icons.net, CC BY 3.0 and the change, for the icon of each credit", () => {
   const items = itemsOf(sectionMarkup());
-  assert.equal(items.length, NAMED.length);
-  items.forEach((item, i) => {
+  assert.equal(items.length, NAMED.length + 1);
+  NAMED.forEach((named, i) => {
     assert.equal(
-      textOfMarkup(item),
-      `${NAMED[i].name}: „${TITLES[NAMED[i].icon]}”, ${ICON_CREDITS[NAMED[i].icon].author}, game-icons.net, CC BY 3.0, ${changesOf(NAMED[i].icon)}`,
+      textOfMarkup(items[i]),
+      `${named.name}: „${TITLES[named.icon]}”, ${ICON_CREDITS[named.icon].author}, game-icons.net, CC BY 3.0, ${changesOf(named.icon)}`,
     );
   });
 });
 
-test("the section links each icon's page and the licence, each opening in a new tab without opener or referrer", () => {
+test("the section's last line credits the pack of the dust: its title, author, page and licence, and that the files were recoloured, with its page and its licence linked", () => {
   const items = itemsOf(sectionMarkup());
+  const last = items[items.length - 1];
+  // React writes the ampersand of the title as an entity, as markup does.
+  assert.equal(textOfMarkup(last).replaceAll("&amp;", "&"), PACK_LINE);
+  const links = [...last.matchAll(/<a ([^>]*)>(.*?)<\/a>/g)];
+  assert.deepEqual(
+    links.map((link) => [link[1], link[2]]),
+    [
+      [
+        `href="${PACK_PAGE}" target="_blank" rel="noopener noreferrer"`,
+        "opengameart.org",
+      ],
+      [
+        `href="${PACK_LICENCE}" target="_blank" rel="noopener noreferrer"`,
+        "CC BY 3.0",
+      ],
+    ],
+  );
+});
+
+test("the section links each icon's page and the licence, each opening in a new tab without opener or referrer", () => {
+  const items = itemsOf(sectionMarkup()).slice(0, NAMED.length);
   items.forEach((item, i) => {
     const links = [...item.matchAll(/<a ([^>]*)>(.*?)<\/a>/g)];
     assert.equal(links.length, 2, NAMED[i].icon);

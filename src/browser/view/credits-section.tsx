@@ -3,11 +3,10 @@
  * keyboard, opens and closes. It holds no state and runs no script, so it stays as the page
  * leaves it when the screen around it changes. It stands on the login card and at the bottom of
  * Siedziba. Its content is from `creditLines()`: per icon „{name}: „{title}”, {author},
- * game-icons.net, CC BY 3.0, {changes}”, the icon's source page and the licence linked in a new tab.
+ * game-icons.net, CC BY 3.0, {changes}”, and after the icons the same line per pack of the scene's
+ * pictures, the source page and the licence linked in a new tab.
  */
 import { creditLines } from "./credit-lines.js";
-
-const SOURCE_SITE = "game-icons.net";
 
 function NewTabLink({ text, href }: { text: string; href: string }) {
   return (
@@ -26,7 +25,7 @@ export function CreditsSection() {
         {creditLines().map((credit) => (
           <li key={credit.name}>
             {`${credit.name}: „${credit.title}”, ${credit.author}, `}
-            <NewTabLink text={SOURCE_SITE} href={credit.sourceUrl} />
+            <NewTabLink text={credit.sourceSite} href={credit.sourceUrl} />
             {", "}
             <NewTabLink text={credit.licenceName} href={credit.licenceUrl} />
             {`, ${credit.changes}`}

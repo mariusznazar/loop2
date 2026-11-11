@@ -1,19 +1,23 @@
 import { ACTIONS, type ActionDef } from "../sim/data/actions.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
 import { RESOURCES } from "../sim/data/resources.js";
-import { ICON_CREDITS, ICON_LICENCE } from "./credits.js";
+import { ICON_CREDITS, ICON_LICENCE, PACK_CREDITS } from "./credits.js";
 
-/** One line of the section of credits: the credit of the icon of something the data names. */
+const SOURCE_SITE = "game-icons.net";
+
+/** One line of the section of credits: the credit of the icon of something the data names, or of a pack of the scene. */
 export type CreditLine = {
   /** Name of what the icon shows, from the data. */
   name: string;
-  /** Title of the icon, as its page on game-icons.net gives it; from the data. */
+  /** Title of the icon, as its page on game-icons.net gives it, or of the pack; from the data. */
   title: string;
   author: string;
+  /** The site of the source page, as the line's text names it. */
+  sourceSite: string;
   sourceUrl: string;
   licenceName: string;
   licenceUrl: string;
-  /** How the icon file was changed from its source. */
+  /** How the file was changed from its source. */
   changes: string;
 };
 
@@ -57,9 +61,9 @@ const WITH_ICONS: readonly WithIcon[] = [
   ...actionIcons(),
 ];
 
-/** The icon credits, one per icon the data names, in the order of WITH_ICONS. Pure. */
+/** The credits, one per icon the data names in the order of WITH_ICONS, then one per pack of the scene. Pure. */
 export function creditLines(): CreditLine[] {
-  return WITH_ICONS.map((named) => {
+  const icons = WITH_ICONS.map((named): CreditLine => {
     const credit = ICON_CREDITS[named.icon];
     if (!credit)
       throw new Error(`credit-lines: no credit for the icon ${named.icon}`);
@@ -67,10 +71,22 @@ export function creditLines(): CreditLine[] {
       name: named.name,
       title: named.iconTitle,
       author: credit.author,
+      sourceSite: SOURCE_SITE,
       sourceUrl: credit.sourceUrl,
       licenceName: ICON_LICENCE.name,
       licenceUrl: ICON_LICENCE.url,
       changes: credit.changes,
     };
   });
+  const packs = PACK_CREDITS.map((pack): CreditLine => ({
+    name: pack.name,
+    title: pack.title,
+    author: pack.author,
+    sourceSite: pack.sourceSite,
+    sourceUrl: pack.sourceUrl,
+    licenceName: pack.licenceName,
+    licenceUrl: pack.licenceUrl,
+    changes: pack.changes,
+  }));
+  return [...icons, ...packs];
 }

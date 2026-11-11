@@ -1670,6 +1670,7 @@ header .failure-line {
 
 .scene-prop,
 .scene-fire,
+.scene-dust,
 .scene-mage {
   position: absolute;
 }
@@ -1704,6 +1705,37 @@ header .failure-line {
 }
 
 .scene-mage[data-facing="left"] .scene-mage-sprite {
+  transform: scaleX(-1);
+}
+
+/*
+ * The mage gathering bends in place of standing (D-316, task zbieranie-jako-widowisko): the bend sheet
+ * takes the idle sheet's place for the whole gathering, from the moment the mage stands at its place
+ * (the walk's own sheets show first, below), and stands on its first frame, a bend, where the frames
+ * are left out.
+ */
+.scene-mage-bend {
+  display: none;
+}
+
+.scene-mage[data-bending] .scene-mage-bend {
+  display: block;
+}
+
+.scene-mage[data-bending] .scene-mage-idle {
+  display: none;
+}
+
+/*
+ * A mage that bends faces its prop, as the data gives it, whatever way it walked in (`data-bend-facing`,
+ * where the resource has a prop; the fibre's has none and bends as the mage faces). The bend sheet's
+ * frames reach right and the mage's figure is mirrored when it walked left, so where the two differ
+ * the sheet is mirrored once more: turned back for a mage that walked left to a prop on its right, the
+ * sticks, and turned over for a mage that walked right to a prop on its left, which the moss would be
+ * if the mage came to it from the left.
+ */
+.scene-mage[data-facing="left"][data-bend-facing="right"] .scene-mage-bend,
+.scene-mage[data-facing="right"][data-bend-facing="left"] .scene-mage-bend {
   transform: scaleX(-1);
 }
 
@@ -1767,6 +1799,45 @@ header .failure-line {
 }
 
 /*
+ * The effects of the end of a gathering (D-317, task zbieranie-jako-widowisko): the icon of the
+ * resource gathered flies to the mage, or the cloud of dust of a miss stands at the prop. Each is an
+ * effect of an ordinary event: it lasts 300 ms at most, shows no text and is gone after, also under
+ * the system's setting for reduced motion, which leaves only its movement out, so the icon then
+ * stands on its plaque where it lands and the cloud on its first frame. The 300 ms is the limit D-317
+ * gives. The plaque is a solid `panel` like the badge over the head (D-320), the icon on it of the
+ * side of 24 px, a layout dimension chosen by viewing the scene at its one size (D-349), the icon
+ * holding its own colour in its file (D-43). The flight is laid over the whole frame in two layers,
+ * so that the percentages of `translate` are parts of the frame: the outer one carries the icon
+ * across, the inner one up and down.
+ */
+.scene-flight,
+.scene-flight-across,
+.scene-flight-rise {
+  position: absolute;
+  inset: 0;
+}
+
+.scene-flight-plaque {
+  position: absolute;
+  padding: var(--space-xs);
+  background: var(--panel);
+  color: var(--text);
+  transform: translate(-50%, -50%);
+}
+
+.scene-flight-plaque img {
+  display: block;
+  height: 24px;
+}
+
+.scene-effect {
+  animation-name: scene-effect-life;
+  animation-duration: 300ms;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+/*
  * The scene's motion (D-316, D-319, D-320; task scena-z-ludzikiem, To do 5 and 10), from CSS at a
  * beat apart from the pace, and only where the system's setting asks for no less motion (D-317); under
  * that setting the frames stand on the first, the mage stands at its place at once and the bar jumps at
@@ -1804,9 +1875,29 @@ header .failure-line {
     animation-duration: 640ms;
   }
 
-  .scene-mage[data-walking] .scene-mage-idle {
+  .scene-mage[data-walking] .scene-mage-idle,
+  .scene-mage[data-walking] .scene-mage-bend {
     animation-name: scene-hidden;
     animation-duration: 640ms;
+  }
+
+  /* The cloud of dust runs its eight frames once through the 300 ms of its life. */
+  .scene-dust img {
+    animation-name: scene-frames;
+    animation-duration: 300ms;
+    animation-timing-function: steps(var(--frames));
+    animation-fill-mode: forwards;
+  }
+
+  .scene-flight-across {
+    animation-name: scene-flight-across;
+    animation-duration: 300ms;
+    animation-timing-function: linear;
+  }
+
+  .scene-flight-rise {
+    animation-name: scene-flight-rise;
+    animation-duration: 300ms;
   }
 
   .scene[data-standing="going"] .scene-badge-fill {
@@ -1828,6 +1919,35 @@ header .failure-line {
  */
 .scene:not([data-standing="going"]) * {
   animation-play-state: paused;
+}
+
+/* The effect's life: it stands visible to its last moment and is hidden at it, holding the hiding. */
+@keyframes scene-effect-life {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes scene-flight-across {
+  from {
+    translate: var(--from-x) 0;
+  }
+}
+
+@keyframes scene-flight-rise {
+  0% {
+    translate: 0 var(--from-y);
+    animation-timing-function: ease-out;
+  }
+
+  50% {
+    translate: 0 var(--peak);
+    animation-timing-function: ease-in;
+  }
+
+  100% {
+    translate: 0 0;
+  }
 }
 
 @keyframes scene-frames {
