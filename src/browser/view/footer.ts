@@ -51,12 +51,13 @@ function actionIcons(): WithIcon[] {
 }
 
 /**
- * Everything the data gives an icon, in the footer's order: the resources, then the campfire, then
- * the actions.
+ * Everything the data gives an icon, in the footer's order: the resources, then the campfire and
+ * the extinguished campfire, then the actions.
  */
 const WITH_ICONS: readonly WithIcon[] = [
   ...Object.values(RESOURCES),
   CAMPFIRE,
+  CAMPFIRE.extinguished,
   ...actionIcons(),
 ];
 

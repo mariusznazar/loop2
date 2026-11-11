@@ -1381,18 +1381,18 @@ Each feeding of a campfire burning at the feeding's start adds, at the feeding's
 
 ### D-70 — How does the browser view show a campfire?
 
-A campfire shows on the drawing of the game map as an icon on its tile, and its state — burning, with the minutes it has left, or extinguished — stands in the tile's row of the list of revealed tiles.
+A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one, and its minutes left stand in the tile's row of the list of revealed tiles.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-19
 - **Verification:** an agent compares a change with the decision:
-  - complies: a tile's row reading „ognisko — płonie, zostało 42 min”, and the campfire's icon on that tile of the drawing;
-  - violates: the minutes left written on the drawing beside the campfire's icon.
-- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jak ekran pokazuje ciepło, sytość, zdrowie, plecak i ognisko?"
+  - complies: a tile's row reading „ognisko — płonie, zostało 42 min”, and on that tile of the drawing the burning campfire's icon; the same campfire once its minutes run out, and a campfire crafted and not yet lit, drawn with the extinguished campfire's icon;
+  - violates: the minutes left written on the drawing beside the campfire's icon; one icon for a burning and for an extinguished campfire.
+- **Origin:** ognisko_i_jedzenie_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q11. Jak ekran pokazuje ciepło, sytość, zdrowie, plecak i ognisko?" · koszty_i_stan_ogniska_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play, "Zadanie zapisuje w całości"
 
-*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands. Accepted with it: the drawing alone does not tell a burning campfire from an extinguished one.
-*Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further.
+*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list.
+*Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further; one icon for both states — the drawing alone does not tell a burning campfire from an extinguished one.
 
 ### D-71 — In what order does a game minute of a map run take effect?
 
@@ -8115,7 +8115,22 @@ loop2 names a place on the author's disk outside the repository, such as the fol
 *Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note and the folder it lies in within the notes show less than a path and still let a reader find the source of a decision, so they stay.
 *Rejected:* removing only the three paths of the backlog section of the agent instructions — the other six paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; replacing the folder `Notes/Projects/(P) Loop` by a reference to the entry `projects` — about 310 changed lines, 298 of them in the *Origin* fields, to review, and a new rule for how later entries write *Origin*; removing the names of the notes altogether — decisions lose the pointer to their reasoning and an agent cannot reach the source on the author's computer either
 
-### D-363 — How does the mage show a gathering?
+### D-363 — Where does the player read what an action costs?
+
+The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name, in the same text as the name, so that it takes the name's role and dims with a greyed cell — such as „Wytwórz — ognisko (6 patyków)” — at every cell of its pick, a greyed one included, and at the action chosen in the panel, where the time of one execution stands; the row of a program rule shows no price. The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name, such as „(2 patyki, 10 energii natury)” and „(1 jagoda)”, so the data of the game's things hold the plural forms of their names; an action that takes a piece of a use — fuel, food or a thing to light — names the first item the data marks for that use, as the reason of its rule does (D-310), and an action that uses up nothing has no price. During a map run the price follows the character of the map run, as the time does (D-293), so the character with the bought branch „Czysty płomień” reads „Zapal — ognisko (10 energii natury)”, while on the screen Programy and outside a map run the price is the data's, „Zapal — ognisko (2 patyki, 10 energii natury)”.
+
+- **Scope:** browser-view, simulation
+- **Based on:** none
+- **Relations:** derives from D-288 · derives from D-63 · derives from D-293 · derives from D-310
+- **Verification:** an agent compares a change with the decision:
+  - complies: the cell „Wytwórz — ognisko (6 patyków)” in the pick of the rule panel, greyed with its price when it may not be picked; „Zasil — ognisko (1 patyk)”; „Uderz — patyk” with no price, since the stick stays in the backpack after a strike (D-145); the row „Zapas poniżej 8 · Patyk → Wytwórz — ognisko” with no price;
+  - violates: a price in the row of a program rule; „(6 × patyk)” in the panel; a price with a name in the singular after a count of 6; „Zapal — ognisko (2 patyki, 10 energii natury)” shown to the character with „Czysty płomień” during a map run
+- **Origin:** koszty_i_stan_ogniska_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 to 3, and § Settlements to record, rows 1 to 3 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "Where does the player read what an action costs?"
+
+*Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. The price stands where the action is picked, as the time does; the row of a rule keeps the narrow column of the program, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, with the names of things in the form their count takes, is the example of the definition, and every new thing will need those forms. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop; the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
+*Rejected:* the price in the row of a rule as well, hidden where the reason says what is missing, as in the old loop — a longer row, which in the narrow column of the program more often wraps to two lines; the price with a „×” sign, „(6 × patyk)”, as the reason at a rule is written — it needs no new data, but it departs from the example of the definition and reads as a list, not as a sentence; the price always from the data, „(2 patyki, 10 energii natury)” on every screen — one price and simpler code, but the panel would name sticks that lighting will not take from a character with „Czysty płomień”
+
+### D-364 — How does the mage show a gathering?
 
 While the mage gathers, with „Zbierz” or „Obchód”, fibre included, it bends in a loop through the whole action, from the moment it stands at the place of the action to its end, at the fixed beat of the scene's frames. Bending is a continuing occupation of the character, no effect of an ordinary event, so the limit of D-317 does not bind it. It faces the prop of what it gathers, as the game's data gives its side, and where the resource has no prop it bends as it stands.
 
@@ -8130,7 +8145,7 @@ While the mage gathers, with „Zbierz” or „Obchód”, fibre included, it b
 *Rationale:* the gathering is most of the time of a run, and a mage that stands through it leaves the scene with nothing to show for the longest action. The mage usually reaches the sticks and the moss walking left, so a facing that follows its walk would turn its back to a prop it reaches, and the prop's side in the data is what the player sees. Accepted with it: with „Obchód” the mage bends for forty game minutes though a patrol is a walk about the tile, and at 16× a gathering lasts 625 ms and the walk 640 ms, so the loop shows mostly from 1× to 4×.
 *Rejected:* the loop at „Zbierz” only — „Obchód” would look in the scene like waiting at the prop; one bend of at most 300 ms at the end of each gathering — at 1× the mage stands ten seconds with no motion, the gap the report of the reconnaissance names the largest, and at 16× the bend mostly comes while the mage still walks and is dropped
 
-### D-364 — What flies when something is gathered?
+### D-365 — What flies when something is gathered?
 
 When a gathering ends with a piece more in the backpack, the icon of the gathered resource, the one the game's data gives it and the drawing of the map shows, flies in an arc from the prop of the resource to the mage on a small plaque on a solid `panel` background, and vanishes at the mage. A resource with no prop sends it from under the mage's feet, and „Obchód” sends one icon for its whole result.
 
@@ -8145,7 +8160,7 @@ When a gathering ends with a piece more in the backpack, the icon of the gathere
 *Rationale:* the icon is the picture of the resource that the player knows from the map, and the plaque keeps it legible on the forest, as the badge over the head keeps the icon of an action. Nothing new enters the game's files for it.
 *Rejected:* the icon alone on the forest, with no plaque — it has its colour in its file and on a light ground it can vanish, for the reason D-320 puts the icon over the head on a plaque; a pixel picture of the resource from a pack in place of the icon — a new cut-out picture for each resource, the pack holds none of fibre, and leaving the words of the approved definition, „the icon flies”, is a change of the definition
 
-### D-365 — Where does the dust of a miss stand?
+### D-366 — Where does the dust of a miss stand?
 
 When „Zbierz” ends with no piece more in the backpack, a cloud of dust stands at the prop of the resource, and where the resource has no prop, under the mage's feet.
 
@@ -8160,13 +8175,13 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 *Rationale:* a miss leaves the stock of the tile and the backpack as they were, and the dust shows it where the hand reached for the prop, so that the player sees the gathering fail and not only the numbers stand still. Under the feet the dust stands for the fibre, which has no prop.
 *Rejected:* particles of single pixels in a brown that stands out from the ground — barely visible in the preview, and more or larger particles are still weak; a cloud drawn by hand from the pixels of Pixel Crawler in the colours of the scene — hand pixel work whose look is seen only at the request; the cloud of smoke of the campfire of Pixel Crawler — the files showed it about as light as the ground and covering at most 36 in 255, so it cannot be seen on the scene, and the pack holds no cloud; dust drawn by CSS alone — a new colour value in the token file and a departure from D-271
 
-### D-366 — Which readings of the game show an effect of the end of a gathering?
+### D-367 — Which readings of the game show an effect of the end of a gathering?
 
-The scene shows an effect of the end of a gathering, D-364 or D-365, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, and an effect that comes while another still runs takes its place.
+The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, and an effect that comes while another still runs takes its place.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-04 · derives from D-317 · derives from D-364 · derives from D-365
+- **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
 - **Verification:** an agent compares a change with the decision:
   - complies: a reading in which one „Zbierz — Patyk” ended with a piece more in the backpack showing the icon at the mage that gathered, though the action that starts in that reading leads the mage elsewhere; a reading that carries two ends of a gathering starting nothing; the end of „Zjedz” in the reading of a gathering's end leaving its result unread and starting nothing; the end at the discovery that stops the scene starting nothing; an effect running when the pause comes standing still and finishing when the game goes on
   - violates: an effect shown for a gathering that ended in the first reading the scene draws; an icon that lands where the next action leads the mage; a field of the game state that holds the result of a gathering for the scene

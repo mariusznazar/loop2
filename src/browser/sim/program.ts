@@ -18,6 +18,7 @@ import type {
   Activity,
   Backpack,
   Campfire,
+  CharacterSkills,
   Condition,
   ConditionContext,
   GroupId,
@@ -40,6 +41,62 @@ export type RunView = Pick<
 /** The nature energy an action costs, from the actions' data; 0 for an action that costs none. */
 export function natureEnergyCost(action: Action): number {
   return (ACTIONS[action.kind] as ActionDef).natureEnergy ?? 0;
+}
+
+/**
+ * The sticks lighting a campfire uses up: the data's count, none for a character with the bought
+ * branch „Czysty płomień” (D-63).
+ */
+export function campfireLightCount(skills: CharacterSkills): number {
+  return skillBonus(skills, "cleanFlame") > 0 ? 0 : CAMPFIRE.light.count;
+}
+
+/** What carrying out an action takes from the backpack and from the nature energy. */
+export type ActionPrice = {
+  /** The pieces it uses up, in the order they leave the backpack; none where it uses none. */
+  pieces: { item: ItemId; count: number }[];
+  /** The nature energy it takes; 0 for an action that costs none. */
+  natureEnergy: number;
+};
+
+/**
+ * The price of an action for a character of `skills`, as the data gives it: what crafting, lighting,
+ * feeding and eating use up of the piece the data marks for that use (the same first piece the
+ * reason of a rule names, D-310), and the nature energy of a spell (D-175). A strike uses up
+ * nothing (D-145), nor does any action of walking, gathering or combat. Pure.
+ */
+export function actionPrice(
+  kind: Action["kind"],
+  skills: CharacterSkills,
+): ActionPrice {
+  const natureEnergy = (ACTIONS[kind] as ActionDef).natureEnergy ?? 0;
+  const pieces: ActionPrice["pieces"] = [];
+  switch (kind) {
+    case "craftCampfire":
+      pieces.push(CAMPFIRE.craft);
+      break;
+    case "lightCampfire":
+      pieces.push({
+        item: CAMPFIRE.light.item,
+        count: campfireLightCount(skills),
+      });
+      break;
+    case "lightItem":
+      pieces.push({ item: firstItemFor("lightable"), count: 1 });
+      break;
+    case "feedCampfire":
+      pieces.push({ item: firstItemFor("fuel"), count: 1 });
+      break;
+    case "eat":
+      pieces.push({ item: firstItemFor("food"), count: 1 });
+      break;
+    default:
+      break;
+  }
+  return {
+    pieces: pieces.filter((piece) => piece.count > 0),
+    natureEnergy,
+  };
 }
 
 /** The number a kind of condition takes, from the conditions' data. */
@@ -290,8 +347,10 @@ function worldRefusal(run: RunView, action: Action): string | null {
       const campfire = campfireHere(run);
       if (campfire === undefined) return "tu nie stoi ognisko";
       if (campfire.minutesLeft > 0) return "ognisko już płonie";
-      return skillBonus(run.character.skills, "cleanFlame") > 0 ||
-        holds(backpack, CAMPFIRE.light)
+      return holds(backpack, {
+        item: CAMPFIRE.light.item,
+        count: campfireLightCount(run.character.skills),
+      })
         ? null
         : lacking(backpack, CAMPFIRE.light);
     }

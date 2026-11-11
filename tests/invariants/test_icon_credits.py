@@ -92,6 +92,7 @@ AUTHORS = {
     "deadly-strike.svg": "Lorc",
     "boot-kick.svg": "Lorc",
     "dodge.svg": "Felbrigg",
+    "wood-pile.svg": "Delapouite",
 }
 # Titles of the current icon files, as the headings of their pages on game-icons.net give them
 # (the environment facts game-icons-wood-stick-title, game-icons-berry-bush-title,
@@ -99,7 +100,7 @@ AUTHORS = {
 # game-icons-binoculars-title, game-icons-hiking-title, game-icons-direction-sign-title,
 # game-icons-grab-title, game-icons-claw-hammer-title, game-icons-match-tip-title,
 # game-icons-logging-title, game-icons-meal-title, game-icons-deadly-strike-title,
-# game-icons-boot-kick-title and game-icons-dodge-title).
+# game-icons-boot-kick-title, game-icons-dodge-title and game-icons-wood-pile-title).
 TITLES = {
     "wood-stick.svg": "Wood stick icon",
     "berry-bush.svg": "Berry bush icon",
@@ -117,6 +118,7 @@ TITLES = {
     "deadly-strike.svg": "Deadly strike icon",
     "boot-kick.svg": "Boot kick icon",
     "dodge.svg": "Dodge icon",
+    "wood-pile.svg": "Wood Pile icon",
 }
 
 FAKE_DOCUMENT = r"""

@@ -1,4 +1,9 @@
-import { ACTION_GROUPS, ACTIONS, type ActionDef } from "../sim/data/actions.js";
+import {
+  ACTION_GROUPS,
+  ACTIONS,
+  NATURE_ENERGY_NAME,
+  type ActionDef,
+} from "../sim/data/actions.js";
 import {
   CONDITION_SECTIONS,
   CONDITIONS,
@@ -8,6 +13,7 @@ import { ITEMS } from "../sim/data/items.js";
 import { MAPS } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import {
+  actionPrice,
   conditionNumber,
   onStep,
   type ConditionNumber,
@@ -674,7 +680,7 @@ export function actionPick(
         at: groups.indexOf(def.group),
         cell: {
           value: kind,
-          label: def.label,
+          label: actionCellLabel(state, kind),
           chosen: kind === held.kind,
           greyed: reason !== null || !known.includes(kind),
           reason,
@@ -783,6 +789,54 @@ export function actionTime(state: GameState, kind: ActionKind): string | null {
   if (base === null) return null;
   const minutes = run ? actionMinutes(base, kind, run.character.skills) : base;
   return `${minutes} min`;
+}
+
+/** The form of a name that follows `count` in Polish: 1 takes `one`, 2 to 4 `few` (not 12 to 14), every other count `many`. */
+export function countedName(
+  count: number,
+  forms: { one: string; few: string; many: string },
+): string {
+  if (count === 1) return forms.one;
+  const last = count % 10;
+  const lastTwo = count % 100;
+  return last >= 2 && last <= 4 && !(lastTwo >= 12 && lastTwo <= 14)
+    ? forms.few
+    : forms.many;
+}
+
+/**
+ * What one carrying out of an action costs, as the rule panel shows it after the action's name (D-363): the
+ * pieces it uses up, then the nature energy, each with its name in the form the count takes — „6
+ * patyków”, „2 patyki, 10 energii natury”. The price follows the character of the map run as the
+ * simulation gives it (the character with the branch „Czysty płomień” lights a campfire for 10 energii natury
+ * alone), and outside a map run it is the price from the data. Null for an action that costs nothing,
+ * a strike with a stick among them, which leaves the stick in the backpack (D-145). Pure.
+ */
+export function actionPriceText(
+  state: GameState,
+  kind: ActionKind,
+): string | null {
+  const { pieces, natureEnergy } = actionPrice(
+    kind,
+    state.run?.character.skills ?? {},
+  );
+  const parts = pieces.map(({ item, count }) => {
+    const { name, plural } = RESOURCES[item];
+    return `${count} ${countedName(count, { one: name, ...plural })}`;
+  });
+  if (natureEnergy > 0)
+    parts.push(
+      `${natureEnergy} ${countedName(natureEnergy, NATURE_ENERGY_NAME)}`,
+    );
+  return parts.length === 0 ? null : parts.join(", ");
+}
+
+/** The name of an action in the pick of the rule panel: its label, with its price in brackets where it has one. */
+function actionCellLabel(state: GameState, kind: ActionKind): string {
+  const price = actionPriceText(state, kind);
+  return price === null
+    ? ACTIONS[kind].label
+    : `${ACTIONS[kind].label} (${price})`;
 }
 
 /** The number of the rule group at `groupIndex` of the program, counted from zero: „2” for the second. */

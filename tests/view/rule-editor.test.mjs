@@ -1421,15 +1421,15 @@ test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walk
       [
         "Ogień",
         [
-          "Wytwórz — ognisko",
-          "Zapal — ognisko",
-          "Zapal — patyk",
-          "Zasil — ognisko",
+          "Wytwórz — ognisko (6 patyków)",
+          "Zapal — ognisko (2 patyki, 10 energii natury)",
+          "Zapal — patyk (1 patyk, 10 energii natury)",
+          "Zasil — ognisko (1 patyk)",
         ],
       ],
       [
         "Żywność i walka",
-        ["Zjedz — jagoda", "Uderz — patyk", "Kopnij", "Odskocz"],
+        ["Zjedz — jagoda (1 jagoda)", "Uderz — patyk", "Kopnij", "Odskocz"],
       ],
     ]);
     const timeOf = (name) =>
@@ -1441,6 +1441,69 @@ test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walk
     assert.equal(timeOf("Kopnij"), "tura");
     assert.equal(timeOf("Wędruj"), null, "no map gives a move its step");
     assert.ok(cellNamed(panel, "Zbierz").querySelector(".action-icon"));
+  });
+});
+
+// The price of the action (task koszty-i-stan-ogniska, To do 1 to 4; D-363): in the
+// panel only, in brackets after the name, beside the time where the action is the value shown.
+test("the price stands in the name of each action cell, a greyed one too, and the row of the rule shows no price", async () => {
+  await withPage(async (page) => {
+    // „Obchód” is greyed for a character that has not bought its branch, and has no price.
+    await mountPanel(
+      page,
+      twoGroups(),
+      { groupId: 1, ruleId: 1, field: "action" },
+      { state: runningGame() },
+    );
+    const panel = panelOf(page.root);
+    assert.ok(
+      cellNamed(panel, "Wytwórz — ognisko (6 patyków)"),
+      "the craft cell",
+    );
+    assert.ok(cellNamed(panel, "Zbierz"), "gathering costs nothing");
+    assert.ok(cellNamed(panel, "Uderz — patyk"), "a strike leaves the stick");
+    assert.equal(
+      cellNamed(panel, "Obchód").getAttribute("aria-disabled"),
+      "true",
+    );
+  });
+  await withPage(async (page) => {
+    // A rule holding an action the Understanding lacks: its cell is chosen and greyed, with its price.
+    await mountPanel(
+      page,
+      withFirstRule(ALWAYS, { kind: "craftCampfire" }),
+      { groupId: 1, ruleId: 1, field: "action" },
+      { state: newGame() },
+    );
+    const cell = cellNamed(panelOf(page.root), "Wytwórz — ognisko (6 patyków)");
+    assert.ok(cell, "the held action keeps its price");
+    assert.equal(cell.getAttribute("aria-disabled"), "true");
+  });
+  await withPage(async (page) => {
+    await mount(page, withFirstRule(ALWAYS, { kind: "craftCampfire" }));
+    const row = rowOf(page.root, 1);
+    assert.equal(textIn(row, ".rule-action"), "Wytwórz — ognisko");
+    assert.equal(row.textContent.includes("patyków"), false);
+  });
+});
+
+test("the value shown for the action field is its name with its price, and the time of one execution stands beside it", async () => {
+  await withPage(async (page) => {
+    await mountPanel(
+      page,
+      withFirstRule(ALWAYS, { kind: "lightCampfire" }),
+      { groupId: 1, ruleId: 1, field: "condition" },
+      { state: runningGame() },
+    );
+    const panel = panelOf(page.root);
+    const field = [...panel.querySelectorAll(".rule-panel-field")].find(
+      (each) => textIn(each, ".rule-panel-label") === "Czynność",
+    );
+    assert.equal(
+      textIn(field, ".rule-panel-value button"),
+      "Zapal — ognisko (2 patyki, 10 energii natury)",
+    );
+    assert.equal(textIn(field, ".rule-panel-time"), "5 min");
   });
 });
 
