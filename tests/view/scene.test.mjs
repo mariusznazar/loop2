@@ -760,3 +760,580 @@ test("the screen of a map run hands the events of each update to the scene", asy
     assert.equal((await mageAfter([])).walking, true);
   });
 });
+
+// --- the gathering as a spectacle (task zbieranie-jako-widowisko, To do 1 to 6) --------------------
+
+const GATHER_FIBER = { kind: "gather", resource: "fiber" };
+const PATROL_STICK = { kind: "patrol", resource: "stick" };
+
+/** The state with `count` pieces of the resource in the character's backpack. */
+const carrying = (state, item, count) =>
+  withRun(state, {
+    character: {
+      ...state.run.character,
+      backpack: { ...state.run.character.backpack, [item]: count },
+    },
+  });
+
+/** The events of the end of an activity, as a game minute returns them. */
+const ended = (action, minute = 10) => ({
+  kind: "activityFinished",
+  minute,
+  activity: { kind: "rule", ruleId: 1, action },
+});
+
+/**
+ * A scene that has drawn a gathering of the action with `before` pieces carried, then draws the same
+ * map run again with `after` pieces and the events given, as the screen draws a reading that carries
+ * the end of the gathering.
+ */
+async function reading(
+  page,
+  action,
+  { before, after, events, patch = {}, next = action },
+) {
+  const item = action.resource;
+  const mountedScene = await mounted(
+    page,
+    carrying(doingFrom(action, 0, 9), item, before),
+  );
+  await mountedScene.draw(
+    carrying({ ...doingFrom(next, 10, 10), ...patch }, item, after),
+    events,
+  );
+  return mountedScene;
+}
+
+/**
+ * Fires the end of an element's animation. A browser fires `animationend`; React reads the name it
+ * finds the page's style object able to prefix when it loads, which on jsdom, whose style object
+ * holds the prefixed property, is `webkitAnimationEnd`, so the page gets both.
+ */
+function endAnimation(element) {
+  const { Event } = element.ownerDocument.defaultView;
+  for (const name of ["animationend", "webkitAnimationEnd"])
+    element.dispatchEvent(new Event(name, { bubbles: true }));
+}
+
+const effectsOf = (scene) => [...scene.querySelectorAll(".scene-effect")];
+
+// To do 1, 2. Catches a mage that stands through the gathering, one that bends at „Zbierz” only, or
+// at a target with a prop only, and one that bends where it does something else.
+test("the mage bends while it gathers, „Zbierz” and „Obchód”, fibre included, and stands otherwise", async () => {
+  await withPage(async (page) => {
+    for (const action of [GATHER_STICK, GATHER_FIBER, PATROL_STICK]) {
+      const scene = await drawn(page, doing(action));
+      assert.ok(
+        one(scene, ".scene-mage").hasAttribute("data-bending"),
+        action.kind + " " + action.resource,
+      );
+    }
+    for (const state of [
+      doing({ kind: "explore" }),
+      doing({ kind: "eat" }),
+      withRun(sent(), { current: WAITING }),
+      withRun(doing(GATHER_STICK), { death: { minute: 3, cause: "cold" } }),
+      withRun(doing(GATHER_STICK), { completion: { minute: 3 } }),
+    ]) {
+      const scene = await drawn(page, state);
+      assert.equal(
+        one(scene, ".scene-mage").hasAttribute("data-bending"),
+        false,
+      );
+    }
+  });
+});
+
+// To do 2. Catches a bend sheet that is another file or has another frame count than the data's, and
+// a stylesheet that shows the idle sheet with the bend, or the bend sheet while the mage does not bend.
+test("the mage's bend sheet is the data's file, shown in place of the idle sheet while it bends and hidden otherwise", async () => {
+  await withPage(async (page) => {
+    const gathering = await drawn(page, doing(GATHER_STICK));
+    const bend = one(gathering, ".scene-mage-bend");
+    assert.deepEqual(sheetOf(bend), {
+      src: "/sprites/mage-bend.png",
+      alt: "",
+      frames: "4",
+    });
+    assert.equal(computed(bend, "display"), "block");
+    assert.equal(
+      computed(one(gathering, ".scene-mage-idle"), "display"),
+      "none",
+    );
+
+    const exploring = await drawn(page, doing({ kind: "explore" }));
+    assert.equal(
+      computed(one(exploring, ".scene-mage-bend"), "display"),
+      "none",
+    );
+    assert.notEqual(
+      computed(one(exploring, ".scene-mage-idle"), "display"),
+      "none",
+    );
+  });
+});
+
+// To do 1. Catches a mage that bends with its back to the prop: it walks left to the sticks, so its
+// figure is mirrored, and the bend sheet, whose frames reach right, must not be.
+test("a mage that walked left to the sticks bends facing right, toward them", async () => {
+  await withPage(async (page) => {
+    const { draw, mage } = await mounted(
+      page,
+      doingFrom({ kind: "explore" }, 0),
+    );
+    await draw(doingFrom(GATHER_STICK, 10), changed(GATHER_STICK, 10));
+    assert.equal(mage().getAttribute("data-facing"), "left", "precondition");
+    const sprite = one(mage(), ".scene-mage-sprite");
+    assert.equal(computed(sprite, "transform"), "scaleX(-1)");
+    assert.equal(
+      computed(one(mage(), ".scene-mage-bend"), "transform"),
+      "scaleX(-1)",
+      "turned back inside the mirrored figure",
+    );
+  });
+});
+
+// To do 3, 5, D-04. Catches an end of gathering that shows no flight, a flight of another icon than
+// the resource's, or one that comes without the backpack having gained a piece.
+test("a gathering that ends with a piece more in the backpack sends the icon of the resource flying, on a plaque", async () => {
+  await withPage(async (page) => {
+    const { scene } = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [ended(GATHER_STICK)],
+    });
+    const found = effectsOf(scene());
+    assert.equal(found.length, 1);
+    assert.ok(found[0].classList.contains("scene-flight"));
+    assert.equal(scene().querySelectorAll(".scene-dust").length, 0);
+    const icon = one(found[0], ".scene-flight-plaque img");
+    assert.equal(icon.getAttribute("src"), "/icons/wood-stick.svg");
+    assert.equal(icon.getAttribute("alt"), "");
+    assert.equal(found[0].textContent, "", "no text");
+    // It lands on the mage's body: the mage's frame at 42 plus 32, the line 136 less 18, as
+    // percentages of 336 × 152 pixels.
+    const plaque = one(found[0], ".scene-flight-plaque");
+    near(plaque.style.left, (74 / 336) * 100, "lands at x 74");
+    near(plaque.style.top, (118 / 152) * 100, "lands at y 118");
+    // It starts at the middle of the sticks, 91 and 125.5, which is 17 pixels right of the landing
+    // and 7.5 below it.
+    near(
+      found[0].style.getPropertyValue("--from-x"),
+      (17 / 336) * 100,
+      "from x",
+    );
+    near(
+      found[0].style.getPropertyValue("--from-y"),
+      (7.5 / 152) * 100,
+      "from y",
+    );
+  });
+});
+
+// To do 3. Catches a flight at „Obchód” that carries one icon per piece, or none for the whole result.
+test("„Obchód” sends one icon for its whole result, however many pieces it brought", async () => {
+  await withPage(async (page) => {
+    const { scene } = await reading(page, PATROL_STICK, {
+      before: 0,
+      after: 7,
+      events: [ended(PATROL_STICK)],
+    });
+    assert.equal(scene().querySelectorAll(".scene-flight").length, 1);
+    assert.equal(
+      scene().querySelectorAll(".scene-flight-plaque img").length,
+      1,
+    );
+  });
+});
+
+// To do 3. Catches a flight of the fibre that starts at a prop it has none of, or at the mage's head.
+test("the fibre's icon flies up from under the mage's feet, where it has no prop", async () => {
+  await withPage(async (page) => {
+    const { scene } = await reading(page, GATHER_FIBER, {
+      before: 0,
+      after: 1,
+      events: [ended(GATHER_FIBER)],
+    });
+    const flight = one(scene(), ".scene-flight");
+    assert.equal(
+      one(flight, ".scene-flight-plaque img").getAttribute("src"),
+      "/icons/flax.svg",
+    );
+    // The mage stands where it did, in the clearing at 144 (its body at 176); the feet are 3 above the
+    // line, 133, and the body 118: the icon starts 15 pixels below where it lands.
+    assert.equal(
+      flight.style.getPropertyValue("--from-x"),
+      "0%",
+      "straight up",
+    );
+    near(flight.style.getPropertyValue("--from-y"), (15 / 152) * 100, "from y");
+  });
+});
+
+// To do 4, D-66. Catches a miss that shows no dust, dust where the backpack gained a piece, dust at
+// „Obchód”, which never misses, and dust at another place than the prop's.
+test("„Zbierz” that ends with no new piece puts a cloud of dust at the prop, and no icon flies", async () => {
+  await withPage(async (page) => {
+    const { scene } = await reading(page, GATHER_STICK, {
+      before: 2,
+      after: 2,
+      events: [ended(GATHER_STICK)],
+    });
+    const found = effectsOf(scene());
+    assert.equal(found.length, 1);
+    assert.ok(found[0].classList.contains("scene-dust"));
+    assert.equal(scene().querySelectorAll(".scene-flight").length, 0);
+    assert.deepEqual(sheetOf(found[0]), {
+      src: "/sprites/dust.png",
+      alt: "",
+      frames: "8",
+    });
+    // Its 16 × 16 frame is centred on the sticks (80 + 11 = 91), 83 from the left, with its bottom at
+    // the line 132 and 2 below it.
+    placedAt(
+      found[0],
+      [(83 / 336) * 100, (118 / 152) * 100, (16 / 336) * 100, (16 / 152) * 100],
+      "dust",
+    );
+  });
+});
+
+test("a missed „Zbierz” of the fibre puts the cloud under the mage's feet", async () => {
+  await withPage(async (page) => {
+    const { scene } = await reading(page, GATHER_FIBER, {
+      before: 0,
+      after: 0,
+      events: [ended(GATHER_FIBER)],
+    });
+    const dust = one(scene(), ".scene-dust");
+    // Centred on the mage's body at 176, so 168 from the left, its bottom at the ground line 136 + 2.
+    placedAt(
+      dust,
+      [
+        (168 / 336) * 100,
+        (122 / 152) * 100,
+        (16 / 336) * 100,
+        (16 / 152) * 100,
+      ],
+      "dust",
+    );
+  });
+});
+
+test("an „Obchód” that brought nothing shows no effect", async () => {
+  await withPage(async (page) => {
+    const { scene } = await reading(page, PATROL_STICK, {
+      before: 3,
+      after: 3,
+      events: [ended(PATROL_STICK)],
+    });
+    assert.equal(effectsOf(scene()).length, 0);
+  });
+});
+
+// To do 5, D-317. Catches an effect that comes with no end of a gathering, from a first draw, or from
+// a reading that carries two ends, which are overdue; and one at the start of a map run.
+test("no effect without exactly one end of a gathering in a reading that has a previous reading", async () => {
+  await withPage(async (page) => {
+    // A reading with no end of a gathering: the backpack grew, nothing finished.
+    const none = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [],
+    });
+    assert.equal(effectsOf(none.scene()).length, 0);
+
+    // The end of another action.
+    const eating = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [ended({ kind: "eat" })],
+    });
+    assert.equal(effectsOf(eating.scene()).length, 0);
+
+    // Two ends in one reading, as after a catch-up: both overdue.
+    const two = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 2,
+      events: [ended(GATHER_STICK, 8), ended(GATHER_STICK, 10)],
+    });
+    assert.equal(effectsOf(two.scene()).length, 0);
+
+    // A map run started in the same reading has no previous reading of its own.
+    const started = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [{ kind: "mapRunStarted", seed: 1 }, ended(GATHER_STICK)],
+    });
+    assert.equal(effectsOf(started.scene()).length, 0);
+
+    // The first draw has no previous reading.
+    const first = await mounted(
+      page,
+      carrying(doingFrom(GATHER_STICK, 10, 10), "stick", 1),
+      [ended(GATHER_STICK)],
+    );
+    assert.equal(effectsOf(first.scene()).length, 0);
+  });
+});
+
+// D-322, D-317. Catches an effect started at a stop, which would stand frozen over a discovery, and
+// an effect already running that does not stand still with the rest of the scene at the pause.
+test("an effect whose turn comes at a stop is dropped, and one running stands still with the scene at a stop", async () => {
+  await withPage(async (page) => {
+    const atDiscovery = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [ended(GATHER_STICK)],
+      patch: {},
+    });
+    assert.equal(effectsOf(atDiscovery.scene()).length, 1, "precondition");
+
+    const stopped = await mounted(
+      page,
+      carrying(doingFrom(GATHER_STICK, 0, 9), "stick", 0),
+    );
+    await stopped.draw(
+      {
+        ...carrying(doingFrom(GATHER_STICK, 10, 10), "stick", 1),
+        paused: true,
+        discovery: NO_UNDERSTANDING_ITEMS,
+      },
+      [ended(GATHER_STICK)],
+    );
+    assert.equal(
+      effectsOf(stopped.scene()).length,
+      0,
+      "dropped at a discovery",
+    );
+
+    // The pause comes while the effect runs: the effect stays and its animation is held.
+    await atDiscovery.draw({
+      ...carrying(doingFrom(GATHER_STICK, 10, 10), "stick", 1),
+      paused: true,
+    });
+    const [held] = effectsOf(atDiscovery.scene());
+    assert.ok(held, "the effect stays through the pause");
+    assert.equal(computed(held, "animation-play-state"), "paused");
+    assert.equal(
+      computed(one(held, ".scene-flight-plaque"), "animation-play-state"),
+      "paused",
+    );
+  });
+});
+
+// D-317. Catches an effect that lasts longer than 300 ms or stays after its animation, and one that a
+// redraw at the next reading of the clock starts over.
+test("an effect lasts 300 ms, is dropped when its animation ends, and a redraw does not restart it", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [ended(GATHER_STICK)],
+    });
+    const [effect] = effectsOf(scene());
+    assert.equal(computed(effect, "animation-duration"), "300ms");
+    assert.equal(computed(effect, "animation-fill-mode"), "forwards");
+
+    // The next reading of the clock, with no event, keeps the same element.
+    await draw(carrying(doingFrom(GATHER_STICK, 10, 10), "stick", 1));
+    assert.equal(effectsOf(scene())[0], effect, "the same element");
+
+    // A child's animation ending is not the effect's end.
+    await inAct(() => endAnimation(one(effect, ".scene-flight-plaque")));
+    assert.equal(effectsOf(scene()).length, 1);
+
+    await inAct(() => endAnimation(effect));
+    assert.equal(effectsOf(scene()).length, 0, "gone after its animation");
+  });
+});
+
+// D-317, „latest wins”. Catches a second effect that stands beside a running one, or one that the
+// first's animation end removes.
+test("a new effect takes the place of the one still running, and the old one's end does not remove it", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [ended(GATHER_STICK)],
+    });
+    const [first] = effectsOf(scene());
+    await draw(carrying(doingFrom(GATHER_STICK, 20, 20), "stick", 1), [
+      ended(GATHER_STICK, 20),
+    ]);
+    const found = effectsOf(scene());
+    assert.equal(found.length, 1);
+    assert.ok(
+      found[0].classList.contains("scene-dust"),
+      "a miss follows the hit",
+    );
+    assert.notEqual(found[0], first);
+  });
+});
+
+// D-317, D-322. Catches an effect left behind when the map run ends or restarts.
+test("a map run started drops an effect still standing", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: [ended(GATHER_STICK)],
+    });
+    assert.equal(effectsOf(scene()).length, 1, "precondition");
+    await draw(doingFrom(GATHER_STICK, 0, 0), [
+      { kind: "mapRunStarted", seed: 2 },
+    ]);
+    assert.equal(effectsOf(scene()).length, 0);
+  });
+});
+
+// To do 3, 4, D-365, D-366. Catches an effect placed by where the mage goes next instead of where it
+// stood when the gathering ended: in the reading that carries the end the next action has started,
+// and a walk to the right edge (275) or to the sticks (42) is no place the mage is at. The mage of
+// every case stands at its place, which the first draw gives: the sticks 42, the bush 224, the
+// clearing 144 for the fibre. Its body is 32 to the right of its frame's edge, its feet likewise.
+test("an effect stands at the mage that gathered, though the next action walks elsewhere", async () => {
+  await withPage(async (page) => {
+    const EXPLORE = { kind: "explore" };
+    const ended = (action) => [
+      {
+        kind: "activityFinished",
+        minute: 10,
+        activity: { kind: "rule", ruleId: 1, action },
+      },
+      {
+        kind: "activityStarted",
+        minute: 10,
+        activity: { kind: "rule", ruleId: 1, action: EXPLORE },
+        stepTo: null,
+      },
+    ];
+    // A hit at the sticks, the mage's frame at 42: the icon lands at 74 and starts at 91, 17 right of it.
+    const stick = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: ended(GATHER_STICK),
+      next: EXPLORE,
+    });
+    const flight = one(stick.scene(), ".scene-flight");
+    near(
+      one(flight, ".scene-flight-plaque").style.left,
+      (74 / 336) * 100,
+      "the icon lands at the sticks' mage, not at 307",
+    );
+    near(flight.style.getPropertyValue("--from-x"), (17 / 336) * 100, "from x");
+
+    // A hit at the bush, the mage's frame at 224, then back to the sticks: lands at 256.
+    const BERRY = { kind: "gather", resource: "berry" };
+    const berry = await reading(page, BERRY, {
+      before: 0,
+      after: 1,
+      events: ended(BERRY),
+      next: GATHER_STICK,
+    });
+    near(
+      one(berry.scene(), ".scene-flight-plaque").style.left,
+      (256 / 336) * 100,
+      "the icon lands at the bush's mage",
+    );
+
+    // A hit of the fibre at the clearing, the mage's frame at 144: starts under its feet at 176.
+    const fibre = await reading(page, GATHER_FIBER, {
+      before: 0,
+      after: 1,
+      events: ended(GATHER_FIBER),
+      next: EXPLORE,
+    });
+    const fibreFlight = one(fibre.scene(), ".scene-flight");
+    near(
+      one(fibreFlight, ".scene-flight-plaque").style.left,
+      (176 / 336) * 100,
+      "lands at the mage of the clearing",
+    );
+    assert.equal(fibreFlight.style.getPropertyValue("--from-x"), "0%");
+
+    // A miss of the fibre: the cloud under the mage's feet, 168 from the left, not at the edge.
+    const missed = await reading(page, GATHER_FIBER, {
+      before: 0,
+      after: 0,
+      events: ended(GATHER_FIBER),
+      next: EXPLORE,
+    });
+    near(
+      one(missed.scene(), ".scene-dust").style.left,
+      (168 / 336) * 100,
+      "the cloud under the feet of the mage that gathered",
+    );
+
+    // A miss at the sticks stands at the sticks whatever comes next.
+    const sticks = await reading(page, GATHER_STICK, {
+      before: 1,
+      after: 1,
+      events: ended(GATHER_STICK),
+      next: EXPLORE,
+    });
+    near(
+      one(sticks.scene(), ".scene-dust").style.left,
+      (83 / 336) * 100,
+      "the cloud at the sticks",
+    );
+  });
+});
+
+// Finding B2 of the review. Catches a mage that bends with its back to its prop: the moss lies to the
+// mage's left, the sticks and the bush to its right. The bend sheet's frames reach right and the mage's
+// figure is mirrored when it walked left, so the sheet is mirrored again where the two differ.
+test("the bending mage faces its prop whatever way it walked: sticks and bush to the right, moss to the left", async () => {
+  await withPage(async (page) => {
+    const MOSS = { kind: "gather", resource: "moss" };
+    const BERRY = { kind: "gather", resource: "berry" };
+    const bendMirror = (mage) =>
+      computed(one(mage, ".scene-mage-bend"), "transform") === "scaleX(-1)";
+    const walked = async (from, to) => {
+      const { draw, mage } = await mounted(page, doingFrom(from, 0));
+      await draw(doingFrom(to, 10), changed(to, 10));
+      return mage();
+    };
+
+    // From the clearing's side to the sticks and the moss the mage walks left: its figure is mirrored.
+    const sticks = await walked({ kind: "explore" }, GATHER_STICK);
+    assert.equal(sticks.getAttribute("data-facing"), "left", "precondition");
+    assert.equal(sticks.getAttribute("data-bend-facing"), "right");
+    assert.equal(
+      bendMirror(sticks),
+      true,
+      "the sticks: turned back, facing right",
+    );
+
+    const moss = await walked({ kind: "explore" }, MOSS);
+    assert.equal(moss.getAttribute("data-facing"), "left", "precondition");
+    assert.equal(moss.getAttribute("data-bend-facing"), "left");
+    assert.equal(
+      bendMirror(moss),
+      false,
+      "the moss: left with the figure, not turned back",
+    );
+
+    // To the bush from the sticks the mage walks right: its figure is not mirrored.
+    const berry = await walked(GATHER_STICK, BERRY);
+    assert.equal(berry.getAttribute("data-facing"), "right", "precondition");
+    assert.equal(berry.getAttribute("data-bend-facing"), "right");
+    assert.equal(bendMirror(berry), false, "the bush: right with the figure");
+
+    // Placed at the moss at once, as at a first draw, the mage faces right: the bend turns over to the left.
+    const placed = (await mounted(page, doingFrom(MOSS, 0))).mage();
+    assert.equal(placed.getAttribute("data-facing"), "right", "precondition");
+    assert.equal(
+      bendMirror(placed),
+      true,
+      "the moss at a first draw: turned over",
+    );
+
+    // The fibre has no prop: the mage bends as it faces, whichever way that is.
+    for (const from of [{ kind: "explore" }, BERRY]) {
+      const fibre = await walked(from, GATHER_FIBER);
+      assert.equal(fibre.getAttribute("data-bend-facing"), null, "no prop");
+      assert.equal(bendMirror(fibre), false, "the fibre: as the mage faces");
+    }
+  });
+});

@@ -2,12 +2,10 @@
  * The folded credits of the icons (D-27, D-47): a native `<details>` that one click, or the
  * keyboard, opens and closes. It holds no state and runs no script, so it stays as the page
  * leaves it when the card around it changes. Its content is the footer's, from `footerCredits()`:
- * per icon „{name}: „{title}”, {author}, game-icons.net, CC BY 3.0, {changes}”, the icon's source
- * page and the licence linked in a new tab.
+ * per icon „{name}: „{title}”, {author}, game-icons.net, CC BY 3.0, {changes}”, and after the icons
+ * the same line per pack of the scene's pictures, the source page and the licence linked in a new tab.
  */
 import { footerCredits } from "./footer.js";
-
-const SOURCE_SITE = "game-icons.net";
 
 function NewTabLink({ text, href }: { text: string; href: string }) {
   return (
@@ -26,7 +24,7 @@ export function CreditsSection() {
         {footerCredits().map((credit) => (
           <li key={credit.name}>
             {`${credit.name}: „${credit.title}”, ${credit.author}, `}
-            <NewTabLink text={SOURCE_SITE} href={credit.sourceUrl} />
+            <NewTabLink text={credit.sourceSite} href={credit.sourceUrl} />
             {", "}
             <NewTabLink text={credit.licenceName} href={credit.licenceUrl} />
             {`, ${credit.changes}`}

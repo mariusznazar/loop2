@@ -18,6 +18,14 @@
  * element that runs an animation, so the clock's five redraws a second restart none (D-03's accepted
  * risk); a walk starts on a new element, which starts its animations afresh.
  *
+ * The mage that gathers bends in a loop at its place, on a third sheet of its own that takes the idle
+ * sheet's place for the whole action (task zbieranie-jako-widowisko). The end of a gathering shows an
+ * effect of an ordinary event, the icon of the resource flying to the mage or the cloud of dust of a
+ * miss, each at most 300 ms: the scene tells the end and its result from the game state of its
+ * previous reading, which it keeps, and the events of the call (D-04), with no field of the game
+ * state for it, and drops an effect that is overdue, one whose turn comes at a stop or in a reading
+ * that carries several ends (D-317).
+ *
  * The scene is a picture: no element of it takes the keyboard or a click, it is hidden from assistive
  * technology and no text or sign stands on it (D-321, D-272, D-44). Nothing runs when the module is
  * imported.
@@ -25,11 +33,12 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { AnimationEvent, CSSProperties } from "react";
 import type { GameEvent } from "../sim/game.js";
-import { SCENE } from "../sim/data/scene.js";
+import { SCENE, SCENE_EFFECTS } from "../sim/data/scene.js";
 import type { GameState } from "../sim/types.js";
-import { sceneDrawing } from "./scene-picture.js";
+import { sceneDrawing, sceneEffect } from "./scene-picture.js";
 import type {
   SceneDrawing,
+  SceneEffect,
   SceneSprite,
   ScenePlacedSprite,
 } from "./scene-picture.js";
@@ -62,6 +71,12 @@ type Shown = {
   facing: Facing;
   walk: number;
 };
+
+/**
+ * The effect the scene shows, with the number that keys its element: each new effect starts on an
+ * element of its own, and the number tells the effect that has ended from a newer one.
+ */
+type Effects = { serial: number; shown: SceneEffect | null };
 
 /** Events of no simulation call, one value, so a scene drawn without events sees no new ones. */
 const NO_EVENTS: readonly GameEvent[] = [];
@@ -119,6 +134,62 @@ function Badge({ badge }: { badge: NonNullable<SceneDrawing["badge"]> }) {
   );
 }
 
+/**
+ * The effect of a gathering's end. The icon flies in two layers, each over the whole frame so that a
+ * percentage is a part of it: the outer one carries it across, the inner one up and down, and the
+ * plaque stands at the place the icon lands, which is where it stands under the system's setting for
+ * reduced motion, an effect appearing still. The cloud of dust stands at its place, its frames run by
+ * CSS. Either ends its own life: the element's last animation tells the scene to drop it.
+ */
+function Effect({
+  effect,
+  frame,
+  onEnd,
+}: {
+  effect: SceneEffect;
+  frame: SceneSprite;
+  onEnd: (event: AnimationEvent<HTMLDivElement>) => void;
+}) {
+  if (effect.kind === "dust")
+    return (
+      <div
+        className="scene-effect scene-dust"
+        style={boxOf(effect.sprite, frame)}
+        onAnimationEnd={onEnd}
+      >
+        <Sheet sprite={effect.sprite} />
+      </div>
+    );
+  const { from, to } = effect;
+  const fromY = from.y - to.y;
+  const style = {
+    "--from-x": percent(from.x - to.x, frame.width),
+    "--from-y": percent(fromY, frame.height),
+    "--peak": percent(Math.min(fromY, 0) - SCENE_EFFECTS.arc, frame.height),
+  } as CSSProperties;
+  return (
+    <div
+      className="scene-effect scene-flight"
+      style={style}
+      onAnimationEnd={onEnd}
+    >
+      <div className="scene-flight-across">
+        <div className="scene-flight-rise">
+          <div
+            className="scene-flight-plaque"
+            style={{
+              left: percent(to.x, frame.width),
+              top: percent(to.y, frame.height),
+            }}
+          >
+            <img src={effect.href} alt="" draggable={false} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Where the drawing leads the mage: the place of its goal, or `kept` where its goal is to stay. */
 function placeOf(drawing: SceneDrawing, kept: number): number {
   const { goal } = drawing.mage;
@@ -161,6 +232,8 @@ export function Scene({
   const drawing = sceneDrawing(state);
   const [shown, setShown] = useState<Shown | null>(null);
   const [seenEvents, setSeenEvents] = useState(events);
+  const [lastState, setLastState] = useState(state);
+  const [effects, setEffects] = useState<Effects>({ serial: 0, shown: null });
   const mageRef = useRef<HTMLDivElement>(null);
 
   // Adjusted while rendering, as the props change: a first draw, and a map run started among new
@@ -182,6 +255,28 @@ export function Scene({
   const frameWidth = drawing?.mage.idle.width ?? 0;
   const next =
     drawing === null || current === null ? null : placeOf(drawing, current.x);
+
+  // The effect of a gathering's end, from the previous reading and the events of this one, made only
+  // where the scene goes on: an effect whose turn comes at a stop is overdue and dropped (D-317). A
+  // map run started, or no map run, leaves none.
+  let effect = effects;
+  if (drawing === null || started) {
+    if (effect.shown !== null) {
+      effect = { ...effect, shown: null };
+      setEffects(effect);
+    }
+  } else if (state !== lastState) {
+    if (fresh && drawing.standing === "going" && current !== null) {
+      // The effect belongs to the mage that gathered, at the place it stands or walks to at the previous
+      // reading, and not at where the action that starts in this reading leads it.
+      const made = sceneEffect(lastState, state, events, current.x);
+      if (made !== null) {
+        effect = { serial: effect.serial + 1, shown: made };
+        setEffects(effect);
+      }
+    }
+  }
+  if (state !== lastState) setLastState(state);
   const pending = current !== null && next !== current.x ? next : null;
 
   // A new place starts a walk from where the mage stands now, which only the browser knows on the
@@ -228,6 +323,13 @@ export function Scene({
         : now,
     );
   };
+  const effectEnded =
+    (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
+      if (event.target !== event.currentTarget) return;
+      setEffects((now) =>
+        now.serial === serial ? { ...now, shown: null } : now,
+      );
+    };
   // The badge of one action is one element from reading to reading, so its bar fills on; a new action,
   // which starts at a later minute, gets one of its own, which starts empty.
   const action = state.run?.current?.startMinute;
@@ -259,11 +361,21 @@ export function Scene({
           <Sheet sprite={drawing.fire} />
         </div>
       )}
+      {effect.shown === null || effect.shown.kind !== "dust" ? null : (
+        <Effect
+          key={`effect-${effect.serial}`}
+          effect={effect.shown}
+          frame={frame}
+          onEnd={effectEnded(effect.serial)}
+        />
+      )}
       <div
         key={walk}
         ref={mageRef}
         className="scene-mage"
         data-walking={walking ? "" : undefined}
+        data-bending={drawing.mage.bending ? "" : undefined}
+        data-bend-facing={drawing.mage.bendFacing ?? undefined}
         data-facing={current.facing}
         style={mageStyle}
         onAnimationEnd={onAnimationEnd}
@@ -271,11 +383,20 @@ export function Scene({
         <div className="scene-mage-sprite">
           <Sheet sprite={drawing.mage.idle} className="scene-mage-idle" />
           <Sheet sprite={drawing.mage.run} className="scene-mage-run" />
+          <Sheet sprite={drawing.mage.bend} className="scene-mage-bend" />
         </div>
         {drawing.badge === null ? null : (
           <Badge key={action} badge={drawing.badge} />
         )}
       </div>
+      {effect.shown === null || effect.shown.kind !== "flight" ? null : (
+        <Effect
+          key={`effect-${effect.serial}`}
+          effect={effect.shown}
+          frame={frame}
+          onEnd={effectEnded(effect.serial)}
+        />
+      )}
     </div>
   );
 }
