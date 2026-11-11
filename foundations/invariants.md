@@ -1282,9 +1282,9 @@ No file git tracks contains an absolute path on a disk or, in a Markdown file, a
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-362
+- **Derives from:** D-362 · .the-way/installation/README.md § A product whose repository is public adds a second check — "that no file git tracks holds an absolute path on the author's disk or, in a Markdown file, a link to a private note"; read 2026-11-11
 - **Part:** every
-- **Violated:** no
+- **Violated:** yes
 
 ## Withdrawn identifiers
 
