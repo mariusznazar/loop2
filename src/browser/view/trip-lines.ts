@@ -63,7 +63,8 @@ export function emptyLoopMark(plan: TripPlan): string | null {
   return plan.bring.length === 0 ? "Pętla nic nie zarobi do skrzynki" : null;
 }
 
-function itemList(entries: readonly TripEntry[]): string {
+/** The items of a list as „patyk 3, jagoda 2”, the form of the trip lines and of the end window. */
+export function itemList(entries: readonly TripEntry[]): string {
   return entries
     .map(({ item, count }) => `${ITEMS[item].name} ${count}`)
     .join(", ");
