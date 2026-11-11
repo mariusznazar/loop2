@@ -19,6 +19,40 @@ export const ICON_LICENCE = {
   url: "https://creativecommons.org/licenses/by/3.0/",
 } as const;
 
+/**
+ * The credit of a pack of pictures of the scene in assets/sprites whose licence asks for one (D-271,
+ * `sprite-credits`), in the shape of an icon's: what it is for, the pack's title, its author, its
+ * page and the site of it, the licence with its page, and how the files differ from the source. The
+ * title, the author and the licence are those the pack's page on OpenGameArt gives.
+ */
+export type PackCredit = {
+  /** What in the game the pack's pictures are for. */
+  name: string;
+  title: string;
+  author: string;
+  /** The site of the pack's page, as the credit's text names it. */
+  sourceSite: string;
+  sourceUrl: string;
+  licenceName: string;
+  licenceUrl: string;
+  changes: string;
+};
+
+/** The packs of the scene's pictures that ask for a credit; the cloud of dust is from the second. */
+export const PACK_CREDITS: readonly PackCredit[] = [
+  {
+    name: "Kurz",
+    title: "Smoke & Fire Animated Particle [16x16]",
+    author: "KnoblePersona",
+    sourceSite: "opengameart.org",
+    sourceUrl:
+      "https://opengameart.org/content/smoke-fire-animated-particle-16x16",
+    licenceName: "CC BY 3.0",
+    licenceUrl: "http://creativecommons.org/licenses/by/3.0/",
+    changes: "zmienione (przekolorowane)",
+  },
+];
+
 /** Credits keyed by icon file name without the extension. */
 export const ICON_CREDITS: Readonly<Record<string, IconCredit>> = {
   "wood-stick": {

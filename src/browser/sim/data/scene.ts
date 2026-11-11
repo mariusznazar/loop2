@@ -39,16 +39,51 @@ export const SCENE = {
   rightEdgeX: 275,
 } as const;
 
-/** The mage's sheets, by the archetype of the character: idle and run, each in its frame size. */
+/**
+ * The mage's sheets, by the archetype of the character: idle, run and bend, each in its frame size. The
+ * bend sheet is the mage of Pixel Crawler bending to the ground, made by hand from its idle frame
+ * (D-271): the frames are the full bend, the half bend, the standing frame and the half bend again, so
+ * that a loop of them bends and rises, and the sheet stands on its first frame, a bend, where the
+ * system's setting asks for no motion.
+ */
 export const SCENE_MAGES = {
   elementalMage: {
     idle: { file: "mage-idle.png", width: 64, height: 64, frames: 4 },
     run: { file: "mage-run.png", width: 64, height: 64, frames: 6 },
+    bend: { file: "mage-bend.png", width: 64, height: 64, frames: 4 },
   },
 } as const satisfies Record<
   ArchetypeId,
-  { idle: ScenePicture; run: ScenePicture }
+  { idle: ScenePicture; run: ScenePicture; bend: ScenePicture }
 >;
+
+/**
+ * The cloud of dust of a missed gathering: the eight cells of smoke of the pack Smoke & Fire Animated
+ * Particle [16x16] in a row, recoloured to the browns of the scene (D-271). It plays once, from the
+ * whole cloud to its last scraps, within the 300 ms of an effect of an ordinary event.
+ */
+export const SCENE_DUST = {
+  file: "dust.png",
+  width: 16,
+  height: 16,
+  frames: 8,
+} as const satisfies ScenePicture;
+
+/**
+ * Where the effects of a gathering's end stand, in the scene's pixels. Relative to the left edge of
+ * the mage's frame: the point on the mage's body, above the line it stands on, where the icon of a
+ * gathered resource lands (`body`), and the point of its feet where an effect starts or stands where
+ * the resource has no prop (`feet`, the fibre's). The cloud of dust stands on the ground line with
+ * its picture's lowest row `dustSink` pixels below it, where its smoke ends two rows above the
+ * picture's bottom edge.
+ */
+export const SCENE_EFFECTS = {
+  body: { x: 32, up: 18 },
+  feet: { x: 32, up: 3 },
+  dustSink: 2,
+  /** How far above the higher of its two ends the flying icon's arc rises. */
+  arc: 14,
+} as const;
 
 /** The campfire's sheet: burning with its frames, extinguished as the same picture without colour. */
 export const SCENE_FIRE = {
