@@ -3822,12 +3822,14 @@ using the game.
 - **Based on:** none
 - **Relations:** derives from D-07
 - **Verification:** invariants: player-self-registration · player-save-isolation · blocked-account-access.
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Who can create and use a player account?"
+- **Origin:** none
 
 *Rationale:* open registration lets players enter without the operator creating or approving each
 account. Access to a saved state belongs to its account, and blocking lets the operator stop that
 account's access. A blocked person can register a new account; this control does not identify or
-exclude a person across accounts. Registration and recovery add work to the account server.
+exclude a person across accounts. Registration and recovery add work to the account server. The
+choice is to be looked at again if account abuse or the volume of registrations calls for approval
+before play.
 *Rejected:* approving each new account before play — gives stronger control of initial access but
 requires the operator to handle every request; operator-created accounts — avoids a public
 registration flow but requires manual work and secure delivery for every new player.
@@ -3841,7 +3843,7 @@ the player signs in again to the same account, the game retries saving that stat
 - **Based on:** none
 - **Relations:** derives from D-07 · derives from D-138
 - **Verification:** invariants: expired-session-unsaved-progress.
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What happens to unsaved progress when a session expires?"
+- **Origin:** none
 
 *Rationale:* the browser computes the game between server calls; ending an HTTP session during
 play need not erase progress that is still in the browser. Requiring the same account for the
@@ -3866,7 +3868,7 @@ whose body holds the version of the shape, the revision the browser last saw and
     account with no saved game state answered with a success that says so
   - violates: a deployed game sends saved states to an HTTP address visible to the browser; an
     account with no saved game state answered with 404
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does the browser exchange saved game states with the server?"
+- **Origin:** none
 
 *Rationale:* the browser computes the game and only needs to load and submit a whole save.
 Request-response exchange covers this without an operation schema or a lasting connection. A later
@@ -3892,12 +3894,14 @@ layer.
 - **Based on:** SQLite documentation, appropriate for an application-specific server and one writer at a time (https://www.sqlite.org/whentouse.html, read 2026-10-04) · SQLite documentation, risks of a database file on a network filesystem (https://www.sqlite.org/useovernet.html, read 2026-10-04) · Docker documentation, volumes persist beyond a container's lifecycle (https://docs.docker.com/engine/storage/volumes/, read 2026-10-04) · PostgreSQL 18 documentation, separate server process (https://www.postgresql.org/docs/18/tutorial-arch.html, read 2026-10-04) · MongoDB documentation, 16 MiB document limit (https://www.mongodb.com/docs/manual/core/document/, read 2026-10-04)
 - **Relations:** derives from D-07
 - **Verification:** invariants: account-save-sqlite-store · account-save-durable-storage.
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Where are player accounts and saved game states stored?"
+- **Origin:** none
 
 *Rationale:* SQLite lets the one account and save server hold accounts and whole saved game states
-without operating another database process. The choice accepts SQLite's one-writer limit and the
-possibility of migrating data and access code if actual use exposes a problem. The file needs a
-durable local place because replacing a container must not erase player accounts or saves.
+without operating another database process. It is a simple start. The choice accepts SQLite's
+one-writer limit and the possibility of migrating data and access code if actual use exposes a
+problem, and is to be looked at again on observed database write failures or unacceptable waits, or
+when a second account server instance has to write the same data. The file needs a durable local
+place because replacing a container must not erase player accounts or saves.
 *Rejected:* PostgreSQL — adds a database server process and its operation before concurrent writes
 show a need for it; MongoDB — also adds a server process, while its document model brings no
 demonstrated benefit for storing whole saves and has a 16 MiB limit per document; ad hoc JSON
@@ -3919,15 +3923,23 @@ state whose character names an archetype missing from the data is also discarded
     state of another version discarded whole, even when its programs remain compatible
   - violates: a saved game state of another version loading its programs; a saved game state with a
     missing archetype loaded with that archetype replaced by another
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D23 and D46 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What happens to a saved game state of another version?"
+- **Origin:** none
 
 *Rationale:* loading a saved game state whose shape the game no longer describes gives faults that
-are hard to diagnose. A complete reset gives the MVP one load path and avoids separate compatibility
-handling for programs. It costs all the player's progress, including authored programs. An archetype
-missing from the game data leaves its character with nothing to act on.
+are hard to diagnose, so it is better to lose the progress honestly than to load a state the rules
+no longer describe. A complete reset gives the game one load path and avoids separate compatibility
+handling for programs. It costs all the player's progress, including authored programs. A character
+carries the identifier of its archetype, not a copy of its skills, and the catalogue of archetypes
+lives in the game data, so a retuning of the catalogue acts backward on a saved state; an archetype
+missing from the game data leaves its character with nothing to act on, and the state is discarded
+whole. The choice is to be looked at again when a release that changes the shape of the save is
+planned after players other than the game's author hold saved game states on the server.
 *Rejected:* a saved game state without a version number — an older shape can load silently and cause
-faults; keeping programs from a saved game state of another version — protects the player's work but
-requires separate compatibility handling, which is outside the MVP.
+faults that cannot be diagnosed; keeping programs from a saved game state of another version —
+protects the player's work but requires separate compatibility handling, which the scope the game
+started with leaves out; a list of skills saved with the character instead of the identifier of its
+archetype — it would freeze the character against the game data exactly when the data change, which
+they did every evening when this was decided.
 
 ### D-207 — When does the game save the game state on the server?
 
@@ -3962,14 +3974,16 @@ as refused as too large (D-208).
     save every 30 real seconds while earning loops alone pass; a save for each map run a catch-up
     ended; a new save time counted as a change, so a loaded paused tab with nothing passing sends at
     the hidden page
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row 1 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q11, § Questions carried to cycle, fourth and fifth questions, and § Settlements to record, row 18
+- **Origin:** none
 
 *Rationale:* the player saves nothing by hand, and a closed tab takes at most the last 30 real
 seconds of a manual map run — 30 game minutes at 1×, up to 480 at 16×, a whole map run of Las from the
 sending of the character — at the cost of a request every 30 real seconds per player while a manual
 map run passes. An earning loop takes no rhythm: a tab closed with its last save lost computes the
 game minutes since the save before by the catch-up, the same course at one earning loop, so earning
-loops save at the player's acts, after the ends of their map runs and at the hidden page. One save
+loops save at the player's acts, after the ends of their map runs and at the hidden page; starting
+an earning loop, stopping it and closing its report are changes the player makes, so they are among
+those acts. One save
 for a result sends what a save at its last end would send, and a save time changes at every save
 while the game state stays, so a loaded game state with nothing passing sends nothing. The page
 becoming hidden is the last moment a page reliably observes, and a `keepalive`
@@ -4006,10 +4020,10 @@ A save of the game state that succeeds shows nothing. When one fails, the header
   - violates: a line „Zapisano o 12:31” after each save; a too-large refusal retried as a failed
     save; a failed save shown nowhere, or only inside the closed menu „Konto”; a start of an earning
     loop refused for the number of earning loops
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 18, and § Settlements to record, row 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 17, Questions to settle, Q12, and § Settlements to record, row 19 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-208
+- **Origin:** none
 
-*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them.
-*Rejected:* a lasting line „Zapisano o 12:31”; nothing shown, a failed save included — the player plays on believing the progress saved; the too-large refusal counted as a failed save — endless retries; a limit of N earning loops at once; a slimmer save of earning loops; a higher limit — the browser sends no more than 64 KiB when a tab closes.
+*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them — measured when this was decided, the headquarters with one character came to 2947 bytes and a map run of Las at game minute 300 to 6150 bytes, of „Las — głębiej” to 7075, each with the copy of the program and its basis, which puts the limit at most at about 10 earning loops on Las or 8 on „Las — głębiej”, an upper estimate that counts neither the other characters nor the report; the progress since the last successful save is lost at a logout or at the closing of a tab; the player can shrink the game state only by stopping earning loops and by deleting programs („Usuń” of D-167, the last program staying), because when this was decided the player could remove no character, no part of the Understanding and no solved map, so that a player whose game state grows beyond what those two ways reach stays without saving until the limit changes; and the header line has one state more.
+*Rejected:* a lasting line „Zapisano o 12:31” in `text-secondary` — it would change every 30 real seconds while a map run passes, and add text to the header beside the line of an unconfirmed address, which stood there when this was weighed (D-157 now places it in „Konto”); nothing shown, a failed save included — the player plays on believing the progress saved, and loses it when the tab closes; the too-large refusal counted as a failed save — endless retries, the promise „Gra spróbuje ponownie.” that would not be kept, and a „Wyloguj” that would not work, so that a player at a shared computer stays signed in; a limit of N earning loops at once — the scope lets a team hold any number of characters, so this would be a rule it does not have, and a new number to settle; a slimmer save of earning loops — a longer task, a more complex load and no guarantee of reaching the threshold; a higher limit — the browser sends no more than 64 KiB when a tab closes, so the last save would be lost.
 
 ### D-209 — Which browser's save of the game state does the server accept?
 
@@ -4030,7 +4044,7 @@ plays on from the loaded state, saving as D-207 gives.
     the sentence in the header
   - violates: a save based on an earlier revision replacing the stored one; the tab whose save was
     refused saving its own game state again; a refused tab that stops saving until a reload
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 3 and 16, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* with saving that runs by itself, a tab left open on one device would otherwise overwrite
 an hour of play from another at its next save, without a word; refusing a save based on what the
@@ -4071,7 +4085,7 @@ the game. The tab whose save it refuses so shows „Gra została zaktualizowana.
     to reload rather than loading the newer saved game state
   - violates: an old tab's save of a lower version replacing the stored one; the server reading the
     version from inside the game
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 4
+- **Origin:** none
 
 *Rationale:* the server compares one number and computes nothing of the game (D-07), at the cost of
 knowing the version of the save it takes and of one state of the screen more. The version is
@@ -4103,12 +4117,15 @@ saved game state.
     state and showing its map run paused
   - violates: the unsaved game state written to `localStorage`; the kept state saved after a sign-in
     to another account; the game left running beside the forms
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, row 5 · reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, row 14
+- **Origin:** none
 
 *Rationale:* the progress the browser holds waits in the open tab for the same account, and nothing
 of it stays in the browser for the next person at a shared computer; unsaved progress lives only as
-long as the open tab, and its retry may lose to another browser's save (D-209). A game that left the
-screen spends no time the player cannot save.
+long as the open tab, and its retry may lose to another browser's save (D-209). Under another
+account the state is not saved, since that would cross the boundary of account ownership (D-203). A
+game that left the screen spends no time the player cannot save. This is also what a player playing
+in a second browser meets, at the next save, after a password reset has removed every session of the
+account (D-138): the unsaved state waits in that tab for the sign-in.
 *Rejected:* the unsaved state also kept in the browser's lasting storage (`localStorage`) for that
 account, surviving a reload — on a shared computer the state stays for the next person, and a new
 path of code and a new decision about the browser's storage; the game staying on the screen and
@@ -4134,14 +4151,18 @@ computing of time away included.
     Programy, the map run waiting with its screen after its end for „Restart” or „Zakończ”
   - violates: a loaded map run going on at once; a loaded map run moved on by the time away; loading
     that closes an ended map run as „Zakończ” does
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 8, 15 and 23, and § Settlements to record, row 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-212
+- **Origin:** none
 
 *Rationale:* a player who signs in on another device does not miss a discovery, an attack or the
 character's death in the first seconds, at the cost of one click after each load with a map run
 going on. A map run the player solves as a puzzle and watches does not end while the player is away,
 and the computing of time away starts from the loaded game state, in which such a map run stands
-paused. An ended map run keeps the state that explains its end, the copy's unsaved changes and
-„Restart” on the same seed.
+paused; the pause of a manual map run holds that map run alone, and the earning loops of other
+characters go on (D-250). Accepted with it: the computing of time away begins only after the load,
+and the pause has to hold one map run alone — it was then one field of the whole game state, and had
+it stopped the earning loops of other characters, `catch-up-state` would be false for them. An ended
+map run keeps the state that explains its end, the copy's unsaved changes and „Restart” on the same
+seed.
 *Rejected:* the map run coming back exactly as saved and going on if it went on, with the time away
 not moving it — a player signing in on another device may miss a discovery, an attack or the
 character's death in the first seconds; the computing of time away also moving a manual map run that
@@ -4178,14 +4199,18 @@ unsaved game state in the page's memory stay as they stand, while the player get
   - violates: a load that throws on a crafted document; a load that catches every error and answers
     a fault of the code with a refusal; a saved-game file that imports from the browser view; a
     second exemplar for the kind
-- **Origin:** zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 12 · reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* the first file that reads data from outside the simulation into the game state gives
 later saved-game work a concrete model of a strict load, its refusals and the version kept with the
 shape, apart from the functions that pass game time. A refusal says something about the document and
 starts a new game over it; an error of the code says nothing about the document, so it may stand
 where a whole saved game state stands, and a player who meets it waits for a retry or a fix with the
-state intact, not playing meanwhile.
+state intact, not playing meanwhile. An error of the code in the load would otherwise read as a
+damaged save, and the game would overwrite the saved game state at once with a new game, leaving the
+owner no trace; when this was decided no known input reached that path, but it ends in the
+overwriting of existing data. The browser view, not the simulation, writes the thrown
+error to the console, because the simulation has no access to the console.
 *Rejected:* the load in the browser view, which then replaces the game state itself — the breach of
 D-04; a lenient load that fills missing keys — a migration by another name, against discarding
 another version whole; an error of the code answered as a refusal, as it was, with a line in the
@@ -4202,7 +4227,7 @@ nothing.
 - **Based on:** none
 - **Relations:** derives from D-189
 - **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end.
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2, and § Settlements to record, row 1
+- **Origin:** none
 
 *Rationale:* a map run restart is a map run the player starts, and once a completion has solved the
 map that start falls on a solved map, so the state at the start decides for a restart as for any
@@ -4219,7 +4244,7 @@ już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.” 
 - **Based on:** none
 - **Relations:** derives from D-189 · derives from D-214
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, part a, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* the player tuning a program on a solved map reads from the start of the map run that
 the attempt earns nothing. Accepted with it: one more line on the screen.
@@ -4237,15 +4262,19 @@ was ready.
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-62 · derives from D-185 · derives from D-190 · derives from D-212
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 4 · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7
+- **Origin:** none
 
 *Rationale:* the player learns what the death took before pressing „Restart”. The first text gives
 no hours, since after a load such a number could already be false, and the second stands in `danger`
-because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
-game state remembers how each death was settled.
+because D-39 gives that role to a possible loss of a character or of progress. The line stands in
+the world area, where the line „Do skrzynki: …” stands (D-185), and the right area does not take
+over the end of a map run: a screen of its own for the end of a map run is a larger change, and
+making it here would be ahead of its time. Accepted with it: the game state remembers how each death
+was settled.
 *Rejected:* the same in the status row, which the header then held — a very long row and a change of its accepted wording;
 nothing on this screen, the telling left to the headquarters — the player may press „Restart”
-unaware of the lost progress.
+unaware of the lost progress; the lines of the end of a map run in the right area at once — a part
+of the larger change of a screen for the end of a map run, ahead of its time.
 
 ### D-217 — What does the game show of a character's resurrection?
 
@@ -4255,10 +4284,10 @@ The card and the screen of a character, and that character in the section „Kto
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-190 · derives from D-219
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part a, and question 12, and § Settlements to record, row 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-217 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4
+- **Origin:** none
 
-*Rationale:* the player sees the stake before paying it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. Accepted with it: the screens have to refresh as time passes.
-*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; a bare ready or not ready — the player does not know how long to wait; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes.
+*Rationale:* the player sees the stake before paying it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. The same row stands at the character in the section „Kto idzie” of the card of a map, where the player sends it. Accepted with it: the screens have to refresh as time passes; a row more at each character in „Kto idzie”; and a caption that speaks of a full hour while some tens of seconds are still missing to it and reads „0 min” at times — 7 h 59 min 30 s reads „za 8 godz. 0 min”, 59 min 30 s reads „za 1 godz. 0 min”, and exactly 59 min reads „za 59 min”.
+*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; a bare ready or not ready — the player does not know how long to wait, and the code hardly shrinks; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes; at the character in „Kto idzie” only a row in `danger` when the resurrection is not ready — the same row shown two ways in two places, for less text when all are ready; no row at the character in „Kto idzie” — a player sending the character would not see the risk that the player saw beside „Wyślij” when this was decided, so sending would get worse than it was.
 
 ### D-218 — How does the headquarters show a character's generation number?
 
@@ -4269,7 +4298,7 @@ The headquarters shows „pokolenie {n}” beside a character's name from genera
 - **Based on:** none
 - **Relations:** derives from D-40 · derives from D-190
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8, part b, and § Settlements to record, row 6
+- **Origin:** none
 
 *Rationale:* the label stands once the number has something to say, and `text-secondary` is the role
 D-40 gives a note, as the archetype beside it has. Accepted with it: the number grows during the
@@ -4286,9 +4315,10 @@ pace of a map run and while the game is closed.
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-190
 - **Verification:** invariants: resurrection-renewal.
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Settlements to record, row 7
+- **Origin:** none
 
-*Rationale:* the moment of a save is to go by the same clock, so the game holds one. Accepted with
+*Rationale:* the moment of a save is to go by the same clock, so the game holds one; the browser's
+clock is also the one the predecessor game, loop, goes by. Accepted with
 it: a wrong clock on the device shortens or lengthens the renewal, and a player can cheat by changing
 the clock, which D-07 accepts for the player's own progress.
 *Rejected:* the server's clock — a new version of the account database with a human action on the
@@ -4303,12 +4333,13 @@ A new character has generation number 1 and a ready resurrection.
 - **Based on:** none
 - **Relations:** derives from D-190
 - **Verification:** none
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question W1, and § Settlements to record, row 8
+- **Origin:** none
 
 *Rationale:* the tests of loop settle what they cover, and there a new character starts at number 1
-with its resurrection ready.
+with its resurrection ready. Accepted with it: behaviours of those tests that nobody chose knowingly
+come in too.
 *Rejected:* the tests of loop taken as material — about ten points get a question of their own, and
-the definition treats a significant departure from loop as disproving its goal.
+the success test of the first scope treats a significant departure from loop as refuting its goal.
 
 ### D-221 — When is a character's death settled?
 
@@ -4324,11 +4355,13 @@ holds a death unsettled.
 - **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
   - complies: the reading of the clock in which a character dies reaching the game as one result, the events of the game time passed with the death settled at that reading
   - violates: a caller of the functions that pass game time drawing or saving what they return with the death unsettled; a load that settles a death
-- **Origin:** rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 16, and § Questions carried to cycle, first question
+- **Origin:** none
 
 *Rationale:* the functions that pass game time stay as D-04 gives them and know no real moment, so
 `minute-span-split` compares what it compared, and a death settled at once keeps the screen, the
-game state and the save from showing a death apart from what it took. Accepted with it: every caller
+game state and the save from showing a death apart from what it took. A death is settled once, in
+the game minute of death, so a load of a game state saved on the screen after a death settles
+nothing a second time. Accepted with it: every caller
 of those functions, the computing of time away included, settles a death itself, and a game state
 saved with a death unsettled is refused at the next load and so discarded.
 *Rejected:* the moment as a further argument of every function that passes game time — each call
