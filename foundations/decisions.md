@@ -8046,3 +8046,33 @@ An agent uses Playwright MCP, the fallback way of D-254, only from a session of 
 
 *Rationale:* the process the product pins asks that two task cycles in separate worktrees can check at the same time without a browser they share. By default Playwright MCP keeps one persistent profile for the workspace root of its client and one browser instance can use it at a time, so two sessions started from one directory block each other; a session started in the worktree of its cycle has a profile of its own. Playwright CLI, the main way of D-254, needs no such condition: it keeps the sessions of each workspace apart from those of every other, and every worktree of loop2 is one. Risk taken, a hypothesis: the client of the agent gives the directory a session started in as its workspace root, which is known from the owner's notes and was not checked.
 *Rejected:* unknown
+
+### D-360 — What does a restore of the database from a backup do about the passwords and sessions it brings back?
+
+A restore of the account and save database from a backup signs nobody out: the passwords and sessions the backup holds come back as they were. Whoever reset a password since the backup resets it again, and the restore procedure ends by saying so.
+
+- **Scope:** deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-228 · derives from D-234
+- **Verification:** an agent compares a change with the decision:
+  - complies: a restore procedure that leaves every session the backup holds as it is and ends with a step in which an account reset since the backup is reset again by its holder
+  - violates: a restore step that deletes the sessions of the restored database, or that writes a session-key file with one new key, to sign everybody out
+- **Origin:** zadanie_odtwarzanie_bazy_z_kopii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2, and § Settlements to record, row 1
+
+*Rationale:* a restore from before a password reset brings back the old password, and whoever knows it signs in again whether or not the sessions were ended, so signing everybody out would not protect the account that was reset, and the one thing that does is a new password. The sessions of the players who did nothing stay valid, and nobody is thrown out of the game for a reset that was not theirs. The decision holds the same once other players have accounts; the owner then resets again only the accounts he knows were reset, and a reset he does not know of since the backup stays undone.
+*Rejected:* signing everybody out after the restore through a session-key file with one new key — needs an exception to D-13, and the old password still works, which takes the point from the action; signing everybody out by deleting the sessions from the restored database — a new server command with tests, and the same reason; a sentence about the effect and no step — on the day of the failure one has to think of resetting again on one's own; a row that holds only until the game is given to other players and a review after that — the review would give nothing more than the decision does now; a step in which the human reads the lines of password resets from the server's log since the time of the backup and writes to those accounts — it finds only the resets the log still holds, and it adds a step to the procedure on the day of the failure
+
+### D-361 — May an agent read root's SSH configuration on the server?
+
+An agent reads root's SSH configuration and the system-wide one on the server only as a count of the lines that set `KnownHostsCommand` or `VerifyHostKeyDNS` in them and in the files they pull in with `Include`, by the one command the `loop2-deploy` skill gives, which returns the number and nothing else; it never reads their content.
+
+- **Scope:** deployment, agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-12 · derives from D-238
+- **Verification:** an agent compares a change with the decision:
+  - complies: an agent that checks the condition of D-238 by running the skill's counting command through the `mikrus` MCP server and reports the number
+  - violates: an agent that prints, copies or quotes a line of root's SSH configuration; a skill that lets an agent read that configuration in any form but the count
+- **Origin:** zadanie_odtwarzanie_bazy_z_kopii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 2
+
+*Rationale:* root's SSH configuration holds the login to Mikrus Strych, an access value kept outside the repository by D-13, and a number shows none of it. The count lets an agent that looks for the reason of a failed backup confirm the condition D-238 rests on. The limit of D-12 is an agreement, not an enforced boundary, so a slip in the command's switches would print lines with the login; the count is accepted with that risk.
+*Rejected:* a ban on every reading, the two options checked only by a human at the installation — it costs nothing, but the condition of D-238 is then checked only at a hand installation, and an agent seeking the reason of a failed backup cannot confirm it
