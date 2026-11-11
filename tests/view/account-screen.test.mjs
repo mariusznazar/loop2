@@ -165,9 +165,12 @@ function shown(element) {
 }
 
 function buttonNamed(root, text) {
-  return all(root).find(
+  // Under the end-of-run window the header's buttons are hidden and the window has buttons of the
+  // same names (D-368), so the one a player sees comes first.
+  const named = all(root).filter(
     (element) => element.localName === "button" && element.textContent === text,
   );
+  return named.find(shown) ?? named[0];
 }
 
 /** The button „Konto” of the menu bar, or undefined where the bar holds the game's name alone. */
@@ -1727,8 +1730,8 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-206); 3 since To do 10 of petla-zarobkowa. */
-const VERSION = 3;
+/** The version of the shape of the saved game state this game writes and loads (D-206); 4 since To do 10 of koniec-przejscia. */
+const VERSION = 4;
 /** The version before the raise, which To do 10 and D-206 make another version. */
 const OLDER_VERSION = 2;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
@@ -3148,7 +3151,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
-    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    // To do 10 with D-206: 4 is the current version since the raise, so 2 is another one.
     [
       "another version",
       saveOf(withCharacter(), 7, OLDER_VERSION),
@@ -3289,7 +3292,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     await press(buttonNamed(root, "4×"));
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
-    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    // To do 10 with D-206: 4 is the current version since the raise, so 2 is another one.
     await held.answer(
       "loadSavedGame",
       saveOf(withCharacter(), 6, OLDER_VERSION),
@@ -4910,46 +4913,65 @@ test("browserAddress goes to a fragment with a new entry, replaces one without, 
 // --- the page around the card -------------------------------------------------------------------
 // Task logowanie-w-react, To do 6 and 8; spec decision 3; D-261, D-262.
 
-/** The page's own three parts, in the body beside the card. */
+/** The page's own two parts, in the body beside the card. */
 function pageParts(root) {
   const child = (name) =>
     childrenOf(root).find((element) => element.localName === name);
-  return [child("header"), child("main"), child("footer")];
+  return [child("header"), child("main")];
 }
 
-/** Whether the header, the place of the screen and the footer show, as the same word for each. */
+/** Whether the header and the place of the screen show, as the same word for each. */
 const partsShown = (root) => pageParts(root).map(shown);
 
 /** The waiting text that shows, or undefined. */
 const waitingText = (root) =>
   byClass(root, "session-check-text").find(shown)?.textContent;
 
-// To do 8, D-262. Catches the card inside `main` or under the header, the footer left beside the
-// card, and a waiting screen that loses the header and the footer.
-test("the card stands alone in the page's body, and the screens before and after it keep the header and the footer", async () => {
+// To do 8, D-262. Catches the card inside `main` or under the header, and a waiting screen that
+// loses the header. To do 1 of the task spokojniejszy-wyglad: catches a footer, whatever it holds,
+// standing at the page's body on a waiting screen or over the game.
+test("the card stands alone in the page's body, and the screens before and after it keep the header and have no footer", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
     assert.equal(waitingText(root), "Sprawdzanie logowania…");
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.equal(
+      tagged(root, "footer").length,
+      0,
+      "no footer on a waiting screen",
+    );
+    assert.equal(
+      tagged(root, "details").length,
+      0,
+      "no credits on a waiting screen",
+    );
+    assert.deepEqual(partsShown(root), [true, true]);
 
     await held.answer("currentAccount", NO_SESSION);
     const card = byClass(root, "account-card-screen")[0];
     assert.ok(card, "the card stands");
     assert.equal(card.parentElement, root);
     assert.ok(shown(card));
-    assert.deepEqual(partsShown(root), [false, false, false]);
+    assert.deepEqual(partsShown(root), [false, false]);
     assert.equal(tagged(root, "h1").filter(shown).length, 1, "one name shows");
 
     await signIn(held, ACCOUNT);
     assert.equal(cardOf(root), undefined);
     assert.equal(card.parentElement, null);
     assert.equal(waitingText(root), "Sprawdzanie logowania…");
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.deepEqual(partsShown(root), [true, true]);
+    assert.equal(tagged(root, "footer").length, 0, "no footer after sign-in");
+    assert.equal(tagged(root, "details").length, 0, "no credits after sign-in");
 
     await held.answer("loadSavedGame", NO_SAVE);
     assert.equal(gameShown(root), true);
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.deepEqual(partsShown(root), [true, true]);
+    assert.equal(tagged(root, "footer").length, 0, "no footer over the game");
+    assert.equal(
+      tagged(root, "details").length,
+      1,
+      "the game holds its one folded section of credits, on Siedziba",
+    );
   });
 });
 
@@ -4997,18 +5019,18 @@ test("the card of a reset link stands alone at once, and each way out of it show
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(RESET_LINK));
-    assert.deepEqual(partsShown(root), [false, false, false]);
+    assert.deepEqual(partsShown(root), [false, false]);
     assert.ok(shown(cardOf(root)));
 
     await press(buttonNamed(root, "Anuluj"));
     assert.equal(cardOf(root), undefined);
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.deepEqual(partsShown(root), [true, true]);
     assert.equal(waitingText(root), "Sprawdzanie logowania…");
 
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
     assert.equal(gameShown(root), true);
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.deepEqual(partsShown(root), [true, true]);
   });
 
   await onPage(async ({ root }) => {
@@ -5020,7 +5042,7 @@ test("the card of a reset link stands alone at once, and each way out of it show
     await held.answer("setPassword", INVALID_LINK);
     assert.equal(cardOf(root), undefined);
     assert.equal(waitingText(root), "Sprawdzanie logowania…");
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.deepEqual(partsShown(root), [true, true]);
   });
 });
 
@@ -5037,7 +5059,7 @@ test("an error of the code in the load of the kept state closes the card, so its
       fault.end();
     }
     assert.equal(cardOf(root), undefined);
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.deepEqual(partsShown(root), [true, true]);
     assert.ok(shown(buttonNamed(root, "Spróbuj ponownie")));
   });
 });
@@ -5051,7 +5073,7 @@ test("a sign-in that goes straight back to the kept game closes the card", async
     await signIn(held, ACCOUNT);
     assert.equal(cardOf(root), undefined);
     assert.equal(gameShown(root), true);
-    assert.deepEqual(partsShown(root), [true, true, true]);
+    assert.deepEqual(partsShown(root), [true, true]);
   });
 });
 

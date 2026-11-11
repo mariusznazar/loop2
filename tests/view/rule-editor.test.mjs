@@ -221,7 +221,7 @@ test("the action's icon stands in a mask whose file is the action's own, and the
   await withPage(async (page) => {
     await mount(page, twoGroups());
     const row = rowOf(page.root, 1);
-    const icon = row.querySelector(".rule-action .action-icon");
+    const icon = row.querySelector(".rule-action .icon-mask");
     assert.ok(icon, "the action has its icon");
     assert.equal(
       icon.style.getPropertyValue("--icon"),
@@ -1440,7 +1440,7 @@ test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walk
     assert.equal(timeOf("Obchód"), "40 min");
     assert.equal(timeOf("Kopnij"), "tura");
     assert.equal(timeOf("Wędruj"), null, "no map gives a move its step");
-    assert.ok(cellNamed(panel, "Zbierz").querySelector(".action-icon"));
+    assert.ok(cellNamed(panel, "Zbierz").querySelector(".icon-mask"));
   });
 });
 

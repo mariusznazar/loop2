@@ -17,6 +17,7 @@ import { characterName } from "./game.js";
 import { hexDistance, offsetToAxial, sameHex } from "./hex.js";
 import { checkProgram, ProgramCheckError } from "./programs.js";
 import { mapRunEnded } from "./run.js";
+import { MINUTE_KINDS } from "./run-record.js";
 import { skillProgress } from "./skills.js";
 import { pieceCount } from "./trip.js";
 import type {
@@ -52,6 +53,7 @@ import type {
   LoopStop,
   MapId,
   MapRun,
+  MinutesByAction,
   Pace,
   Practice,
   Program,
@@ -60,6 +62,7 @@ import type {
   ResourceId,
   RuleId,
   RunCharacter,
+  RunRecord,
   SavedProgram,
   Team,
   Tile,
@@ -72,7 +75,7 @@ import type {
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
  * `GameState` or a type it reaches, and of the items of the data, which `Backpack` enumerates.
  */
-export const SAVED_GAME_VERSION = 3;
+export const SAVED_GAME_VERSION = 4;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -617,6 +620,8 @@ function currentActivity(value: unknown, place: Place): CurrentActivity {
   const endMinute = count(read.endMinute);
   if (startMinute > place.minute || endMinute <= startMinute) refuse();
   const stepTo = read.stepTo === null ? null : place.onMap(read.stepTo);
+  // The pick starts no combat action outside a fight, so no game minute counts to one.
+  if (doing.kind === "rule" && isCombatAction(doing.action)) refuse();
   const moves = doing.kind === "rule" && MOVES[doing.action.kind] === true;
   if (moves !== (stepTo !== null)) refuse();
   if (stepTo && hexDistance(stepTo, place.at) !== 1) refuse();
@@ -853,9 +858,12 @@ const MAP_RUN_KEYS = [
   "completion",
 ] as const;
 
-/** The keys of a `GameMapRun`: those of a `MapRun` and the record of its copy. */
+/** The keys of a `GameMapRun`: those of a `MapRun`, its record and the record of its copy. */
 const GAME_MAP_RUN_KEYS = [
   ...MAP_RUN_KEYS,
+  "longestStreak",
+  "minutesByAction",
+  "enteredWith",
   "copy",
   "bringPlan",
   "deposited",
@@ -965,6 +973,38 @@ function plainMapRun(
 }
 
 /**
+ * What a manual map run keeps for its end: the longest streak, from the streak going on up to the
+ * game minute; a count of game minutes for each kind of the closed list and for no other, summing to
+ * the game minute; and the items the character entered with, read as a trip list is, in the order
+ * of the data's items and no more pieces together than the character carries.
+ */
+function record(
+  read: Record<"longestStreak" | "minutesByAction" | "enteredWith", unknown>,
+  run: Pick<MapRun, "streak" | "minute" | "character">,
+): RunRecord {
+  const longestStreak = count(read.longestStreak);
+  if (longestStreak < run.streak || longestStreak > run.minute) refuse();
+  const counts = fields(read.minutesByAction, MINUTE_KINDS);
+  const minutesByAction = {} as MinutesByAction;
+  let total = 0;
+  for (const kind of MINUTE_KINDS) {
+    minutesByAction[kind] = count(counts[kind]);
+    total += minutesByAction[kind];
+  }
+  if (total !== run.minute) refuse();
+  const enteredWith = tripList(read.enteredWith);
+  const order = Object.keys(ITEMS);
+  const ordered = enteredWith.every(
+    (entry, index) =>
+      index === 0 ||
+      order.indexOf(enteredWith[index - 1].item) < order.indexOf(entry.item),
+  );
+  const pieces = enteredWith.reduce((sum, entry) => sum + entry.count, 0);
+  if (!ordered || pieces > run.character.traits.carryingCapacity) refuse();
+  return { longestStreak, minutesByAction, enteredWith };
+}
+
+/**
  * The manual map run: a `MapRun`, and a deposit only at a completion, out of the frozen bring plan.
  * Its mark says whether the map was solved when it started: a run that has not completed holds the
  * mark exactly when the solved maps hold its map, which one manual map run at a time keeps true
@@ -980,6 +1020,7 @@ function mapRun(value: unknown, records: Records): GameMapRun {
   if (run.completion ? !mapSolved : solvedMapRun !== mapSolved) refuse();
   return {
     ...run,
+    ...record(read, run),
     copy: copy(read.copy, records),
     bringPlan,
     deposited: deposited(

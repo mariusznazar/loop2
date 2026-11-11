@@ -220,7 +220,7 @@ test("the badge over the mage holds the icon of the action as a mask and a fill 
     };
     const scene = await drawn(page, state);
     const badge = one(scene, ".scene-mage .scene-badge");
-    const icon = one(badge, ".action-icon");
+    const icon = one(badge, ".icon-mask");
     assert.equal(
       icon.style.getPropertyValue("--icon"),
       'url("/icons/grab.svg")',
@@ -235,7 +235,7 @@ test("the badge over the mage holds the icon of the action as a mask and a fill 
 
     const other = await drawn(page, doing({ kind: "explore" }));
     assert.equal(
-      one(other, ".scene-badge .action-icon").style.getPropertyValue("--icon"),
+      one(other, ".scene-badge .icon-mask").style.getPropertyValue("--icon"),
       'url("/icons/binoculars.svg")',
     );
     assert.equal(
@@ -906,9 +906,21 @@ test("a gathering that ends with a piece more in the backpack sends the icon of 
     assert.equal(found.length, 1);
     assert.ok(found[0].classList.contains("scene-flight"));
     assert.equal(scene().querySelectorAll(".scene-dust").length, 0);
-    const icon = one(found[0], ".scene-flight-plaque img");
-    assert.equal(icon.getAttribute("src"), "/icons/wood-stick.svg");
-    assert.equal(icon.getAttribute("alt"), "");
+    const icon = one(found[0], ".scene-flight-plaque .icon-mask");
+    assert.equal(
+      icon.style.getPropertyValue("--icon"),
+      'url("/icons/wood-stick.svg")',
+    );
+    assert.equal(
+      found[0].querySelector("img"),
+      null,
+      "the icon is a mask, not a picture of its file",
+    );
+    assert.equal(
+      computed(icon, "color"),
+      "var(--text-strong)",
+      "no text stands beside it: text-strong (D-40, D-43)",
+    );
     assert.equal(found[0].textContent, "", "no text");
     // It lands on the mage's body: the mage's frame at 42 plus 32, the line 136 less 18, as
     // percentages of 336 × 152 pixels.
@@ -940,7 +952,7 @@ test("„Obchód” sends one icon for its whole result, however many pieces it 
     });
     assert.equal(scene().querySelectorAll(".scene-flight").length, 1);
     assert.equal(
-      scene().querySelectorAll(".scene-flight-plaque img").length,
+      scene().querySelectorAll(".scene-flight-plaque .icon-mask").length,
       1,
     );
   });
@@ -956,8 +968,10 @@ test("the fibre's icon flies up from under the mage's feet, where it has no prop
     });
     const flight = one(scene(), ".scene-flight");
     assert.equal(
-      one(flight, ".scene-flight-plaque img").getAttribute("src"),
-      "/icons/flax.svg",
+      one(flight, ".scene-flight-plaque .icon-mask").style.getPropertyValue(
+        "--icon",
+      ),
+      'url("/icons/flax.svg")',
     );
     // The mage stands where it did, in the clearing at 144 (its body at 176); the feet are 3 above the
     // line, 133, and the body 118: the icon starts 15 pixels below where it lands.
