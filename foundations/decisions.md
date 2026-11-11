@@ -3419,12 +3419,15 @@ cap.
     map run „Restart” starts and the next map run it is sent on
   - violates: nature energy carried from one map run into the next; „Restart” keeping the nature
     energy of the game minute of death
-- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2. Jakie liczby ma energia natury: pułap, start przejścia, cena Płomyka, tempo powrotu, próg „dobrze najedzony” i chwila jego porównania, czy czar wymaga energii co najmniej równej cenie, zakres i wartość domyślna warunku „Energia natury poniżej”?"
+- **Origin:** none
 
 *Rationale:* nature energy belongs to the map run, as the body does, so every map run starts from
 the same state, and a „Restart” repeats its map run from game minute zero on the same seed, the
-energy included (D-62).
-*Rejected:* other numbers, or other answers to the points of the question, given point by point.
+energy included (D-62). The cap of 100 and the full start of a map run are those of the data and
+tests of the predecessor game, taken together with its other numbers of nature energy; that the
+start after a „Restart” is full too was not checked there, and is settled by this decision.
+*Rejected:* other numbers, or other answers to the points of the question about the numbers of
+nature energy, given point by point instead of the predecessor game's numbers taken together.
 
 ### D-177 — What does too little nature energy do to Płomyk?
 
@@ -3441,13 +3444,20 @@ any action of the character not feasible then, and the rule stays in the program
     price of 10
   - violates: Płomyk carried out with less nature energy than its price; a program rule of Płomyk
     taken out of the program for want of nature energy
-- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2. Jakie liczby ma energia natury: pułap, start przejścia, cena Płomyka, tempo powrotu, próg „dobrze najedzony” i chwila jego porównania, czy czar wymaga energii co najmniej równej cenie, zakres i wartość domyślna warunku „Energia natury poniżej”?"
+- **Origin:** none
 
 *Rationale:* a spell the mage cannot pay for is no action of the character to carry out then, so the
 program moves on to a program rule that does something, as with a full backpack (D-65), and the
 rule acts again once the energy has come back. Energy equal to the price is enough, so a mage can
-spend its energy down to zero.
-*Rejected:* other numbers, or other answers to the points of the question, given point by point.
+spend its energy down to zero. The price of 10 for a campfire and for a stick alike is that of the
+predecessor game's data, which call it a preliminary number, and its tests hold that 5 energy at a
+price of 10 leaves the spell not feasible; that energy equal to the price is enough was not checked
+there, and is settled by this decision. Accepted with it: a campfire burns 60 minutes, so a mage
+lighting one once an hour spends 10 energy an hour while a well-fed one regains 30, and the energy
+limits only a program that lets satiety fall below 60 or lights very often; the predecessor game
+did not take these numbers for final either.
+*Rejected:* other numbers, or other answers to the points of the question about the numbers of
+nature energy, given point by point instead of the predecessor game's numbers taken together.
 
 ### D-178 — What does the body row show of a mage's nature energy?
 
@@ -3463,12 +3473,14 @@ from game minute zero, in the role `text` at every value of the energy, zero inc
     „Energia natury 0” in the role `text`
   - violates: „Energia natury 0” in the role `danger`; 89.5 nature energy shown as „Energia natury
     90”; the energy left out of the body row until „Energia natury poniżej” is discovered
-- **Origin:** plomyk_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5. Czy i jak wiersz ciała pokazuje energię natury maga?"
+- **Origin:** none
 
 *Rationale:* the player reads the energy that opens and closes the spells beside the values of the
 body, as the game state holds it (D-125). Empty energy closes the spells and takes no health, so it
-threatens no loss of the character and stands in `text` (D-39). Accepted with it: a longer body
-row, and a player who sees the energy before discovering the condition on it.
+threatens no loss of the character and stands in `text` (D-39). The body row showed temperature,
+satiety and health, the first two in `danger` below their thresholds, and the energy joins it cut
+down to a whole number as satiety and health are. Accepted with it: a longer body row, and a player
+who sees the energy before discovering the condition on it.
 *Rejected:* the body row as it stood, with no nature energy.
 
 ### D-179 — How do items go into a map run and out of it?
@@ -3481,9 +3493,9 @@ The trip plan is a field of the program, both its lists are bound at the start o
 - **Verification:** invariants: trip-transfer. An agent compares a change with the decision:
   - complies: an item added to the trip plan during a map run that comes out only from the next map run; a trip plan over the map's cap entering cut, with a notice shown before the start; a character switched to another program in the middle of a map run bringing out at completion what the trip plan of the program it entered with names
   - violates: a backpack filled beyond what the chest held on a map run that is not a manual map run of a map already solved; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How do items go into a map run and out of it?"
+- **Origin:** none
 
-*Rationale:* The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it.
+*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it. The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number.
 *Rejected:* a choice made by a click before each start — the earning loop could not carry it out without the player.
 
 ### D-180 — Where does the player arrange the trip plan?
@@ -3496,10 +3508,10 @@ The screen Programy shows a section „Plan wyprawy” folded to a line of icons
 - **Verification:** an agent compares a change with the decision:
   - complies: the card of Las showing, at a character whose chosen program takes patyk 6 and jagoda 4 in its take list, what of them enters
   - violates: the card of a map showing the take list as the program asks it, with no account of what the map and the character let in
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q2" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-180 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 11 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3
+- **Origin:** none
 
-*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. Accepted with it: the plan of the copy is not changed during a map run.
-*Rejected:* the section under the rule groups on the screen of a map run — it takes the space of what the player watches; the plan in the headquarters character row.
+*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. The card of a map shows at each character what of the plan enters, and shows it always, also when the whole plan enters, so that a player with a full chest sees what will enter. Accepted with it: the plan of the copy is not changed during a map run, and one more line „Wejdzie: …” at each character on the card.
+*Rejected:* the section under the rule groups, and on the screen of a map run — it takes the space of what the player watches, and with a long program the plan is reached only by scrolling; the plan in the headquarters character row — when the same editor was to serve the copy in a map run and the saved program, a plan there could not be corrected in the copy during a map run; the line „Wejdzie: …” on the card only when less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters.
 
 ### D-181 — Which entries does a trip list accept?
 
@@ -3509,10 +3521,10 @@ The game currently accepts an item once on each trip list, and the same item can
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-120 · derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3" and "Q11", part a
+- **Origin:** none
 
-*Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds. A count beyond the safe integers would make the load of the saved game state refuse it whole, so the game never takes one.
-*Rejected:* all game items offered from the start — contradicts discovery; restoring the previous count in the field at once — hides the invalid draft the player entered; any integer from 1 up, with the load admitting it — numbers that integer arithmetic cannot hold exactly would stand in the game state.
+*Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds. A count beyond the safe integers would make the load of the saved game state refuse it whole, so the game never takes one. The item select list of a position offers the items of the Understanding, since the trip plan is a part of the program and what the program editor offers is tied to the Understanding (D-119); an item already on a list is not offered again by the select lists of that list, and stands on the other list as well. That an item stands at most once on a list and that a count is a whole number from 1 up are what the tests of the predecessor game held. Accepted with it: a plan cannot be arranged before the first item is discovered, when the chest is empty anyway, and the field shows an invalid entry beside the count the game goes on holding.
+*Rejected:* all game items offered from the start — contradicts discovery (D-118); restoring the previous count in the field at once, with the message standing until the next change of the field — hides the invalid draft the player entered; any integer from 1 up, with the load admitting it — numbers that integer arithmetic cannot hold exactly would stand in the game state.
 
 ### D-182 — What trip plan does a new program hold?
 
@@ -3522,9 +3534,9 @@ The program of a new game and a newly created program have both trip lists empty
 - **Based on:** none
 - **Relations:** derives from D-91 · derives from D-167 · derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q3"
+- **Origin:** none
 
-*Rationale:* The first plan belongs to the player, and before an item is discovered the chest is empty as well.
+*Rationale:* The first plan belongs to the player, and before an item is discovered the chest is empty as well; the tests of the predecessor game held an empty plan for a fresh game. Accepted with it: before the first item is discovered the plan cannot be arranged at all.
 *Rejected:* unknown
 
 ### D-183 — What happens to carried items when the player stops a run or completes with items outside its plan?
@@ -3535,10 +3547,10 @@ When „Zakończ” or „Restart” ends a map run before completion, or „Zat
 - **Based on:** none
 - **Relations:** derives from D-179
 - **Verification:** invariants: trip-run-end.
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q6" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5, and § Settlements to record, row 7
+- **Origin:** none
 
-*Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents.
-*Rejected:* „Zakończ” before completion giving back to the chest what the character brought in — „Zakończ” as a free undo of the withdrawal from the chest.
+*Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out, and what a character carries is lost with an attempt that ends before completion, as it is in death (D-190). Accepted with it: „Zakończ” after the character has brought a stock onto a map not yet solved loses that stock, and the player cannot view the earning-loop map run that „Zatrzymaj” cut off.
+*Rejected:* „Zakończ” before completion giving back to the chest what the character brought in — „Zakończ” as a free undo of the withdrawal from the chest; leaving the map run of a stopped earning loop to be viewed, as in the predecessor game — a third kind of end of a map run, taking the place of the one manual map run.
 
 ### D-184 — How does the headquarters show the chest's capacity?
 
@@ -3548,9 +3560,9 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 - **Based on:** none
 - **Relations:** derives from D-50
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4", part 2
+- **Origin:** none
 
-*Rationale:* The shared space is visible where the player prepares the next attempt; the heading changes with its contents.
+*Rationale:* The shared space is visible where the player prepares the next attempt; the heading changes with its contents. It reads like the heading of the backpack, „Plecak {pieces}/{cap}”, since the chest has a cap on the total count of pieces by the same rule of capacity as the backpack. Accepted with it: the heading changes with every change of the chest's contents.
 *Rejected:* the cap kept out of the headquarters — its remaining room would be hidden.
 
 ### D-185 — Where does the player read what completion deposited?
@@ -3561,10 +3573,10 @@ After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzyn
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8" and "Q12" · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, and Questions to settle, questions 4 and 7 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6
+- **Origin:** none
 
-*Rationale:* The transfer remains readable with the final state.
-*Rejected:* placing it under the backpack — changes the accepted placement below the status; showing nothing beyond the earlier screen — leaves the transfer unreported.
+*Rationale:* The transfer remains readable with the final state. The line stands in the world area, between the scene and the body row, since the paragraph of the last encounter has moved from under the scene into the chronicle (D-147), and the right area does not take over the end of a map run: a screen of its own for the end of a map run is a larger change, and making it here would be ahead of its time. Accepted when the line was placed under the discovery line and the paragraph of the last encounter, which then stood below the status row: after a completion in the minute of a discovery or after a fight the line stood one row, or a long paragraph, lower than the status row „… rozwiązany”.
+*Rejected:* placing it under the backpack, in the place of the line „Wyniesie” — changes the accepted placement below the status row; placing it directly under the status row, above the discovery line — the discovery line and the paragraph of the last encounter, which then stood below the status row, would go lower, and the look that D-122 and D-147 set would change; showing nothing beyond the earlier screen — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
 
@@ -3574,10 +3586,10 @@ During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `te
 - **Based on:** none
 - **Relations:** derives from D-179
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q8", "Q10", part c, and "Q11", parts c–e
+- **Origin:** none
 
-*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record.
-*Rejected:* a completion line alone — the running snapshot stays hidden; a line hidden for an empty snapshot — an item added during the run looks as though it could leave; a line from minute zero for every empty plan — persistent empty information; keeping the preview after the run ends; the role `text`.
+*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives early a part of what a clear showing of the trip plan in force in the map run going on asks for. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the plan is edited, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
+*Rejected:* a completion line alone — the running snapshot stays hidden; nothing beyond what stood on the screen; a line hidden for an empty snapshot — an item added during the first map run looks as though it could leave, the player does not see that it will not come out of that map run; a line from minute zero for every empty plan — persistent empty information, a constant line with no content at an empty plan; the line not counting the map's exit cap — on a map with an exit cap it would promise more than completion deposits; keeping the preview after the run ends, in the wording of the last minute, until „Restart” or „Zakończ”; the role `text`.
 
 ### D-187 — How does a map cap equipment and loot?
 
@@ -3587,10 +3599,10 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-64 · derives from D-179
 - **Verification:** invariants: trip-transfer.
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q1" and "Q10", part a
+- **Origin:** none
 
-*Rationale:* A map can ask for different equipment at entry and loot at exit, while carrying capacity describes the character during the attempt; this keeps two boundaries to check even where current maps leave them unset.
-*Rejected:* one cap for both directions — zero at entry would also prevent loot at exit; giving a current map a cap — adds a balance value beyond the accepted definition; removing caps from the definition — reopens readiness and the plan; leaving the definition intact and omitting the mechanism.
+*Rationale:* A map can ask for different equipment at entry and loot at exit, while carrying capacity describes the character during the attempt; this keeps two boundaries to check even where current maps leave them unset. Two fields, each of which may be unset, are the predecessor game's shape, and the map's cap acts at the boundaries of the map run, at entry and at completion, without stopping gathering, since the backpack's cap is the character's carrying capacity (D-64). Accepted with it: code, tests and a message that the player does not see while no current map sets a cap, the cost for which D-136 rejects a kind of solving condition no map asks for; and two cuts to check by tests instead of one.
+*Rejected:* one cap for both directions — zero at entry would also prevent loot at exit, a map with a cap of zero would return no loot; giving a current map a cap — adds a balance value beyond the accepted definition, a new number outside the predecessor game's data; removing caps from the definition — reopens readiness and the plan, it would need a new check of readiness and a review of the plan, holding up all the work planned alongside; leaving the definition intact and omitting the mechanism.
 
 ### D-188 — Where does the player learn that a map cuts the trip plan?
 
@@ -3600,10 +3612,10 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 - **Based on:** none
 - **Relations:** derives from D-170 · derives from D-179 · derives from D-187
 - **Verification:** none
-- **Origin:** plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q10", part b · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-188
+- **Origin:** none
 
-*Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places.
-*Rejected:* a warning confined to the card — omits the next restart.
+*Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places. A „Restart” is a map run, and a map run begins with entering the map, so the plan of the copy over the map's cap enters cut at a „Restart” and the player has to learn of it beforehand. The line compares the entry cap with the smaller of the take list's total and the carrying capacity, so it speaks of the map only when the map cuts the plan and not the backpack; when carrying capacity alone cuts it, the backpack already shows its cap as „Plecak {pieces}/{cap}”.
+*Rejected:* a warning confined to the card — omits the next restart; a warning in the headquarters only, as the line first stood beside the character, and not before a „Restart” — a restart would enter cut with no word beforehand.
 
 ### D-189 — What pays, and what takes from the chest?
 
@@ -3615,9 +3627,9 @@ A manual map run that first solves its map pays practice and loot once per map f
 - **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. An agent compares a change with the decision:
   - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was; stopping an earning loop in the middle of a map run adds the practice of that map run, while its loot stays out
   - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What pays, and what takes from the chest?" · plan_wyprawy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q5", "Q6" and § Settlements to record, row 11 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 5 and 22, and Questions to settle, questions 1 and 2 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 19, and Questions to settle, Q5
+- **Origin:** none
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion.
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then.
 *Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it.
 
 ### D-190 — What does a character's death take?
@@ -3630,9 +3642,9 @@ A character's death takes what it carried and pays nothing of its map run; when 
 - **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once · catch-up-death-moment. An agent compares a change with the decision:
   - complies: a character dying without a resurrection coming back with empty trees, its archetype and its place in the team unchanged; a death with a resurrection ready in an earning loop using it up, the map run paying nothing, the practice gathered at the earning loop staying and the next map run starting at once; a death with none stopping the earning loop and taking the practice gathered at it
   - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death; a death with no resurrection ready paying the practice gathered at the earning loop into the character skills
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What does a character's death take?" · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 10, 11, 14, 15, 17 and 22, and Questions to settle, questions 1 and 3 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q13 and Q16, and § Settlements to record, row 8
+- **Origin:** none
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows.
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. Accepted with it: the game had no sweeping over many seeds, which the design gives as the place where a program is lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready.
 *Rejected:* death without a cost; a stake in the earning loop only — everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection as an item in the chest — no chain of making produces it; partial pay for a map run ending in death — a leaky program would earn as much as a tight one.
 
 ### D-191 — How does a character skill grow?
@@ -3645,7 +3657,7 @@ A character skill grows by practice, which counts only its actions that ended in
 - **Verification:** an agent compares a change with the decision:
   - complies: gathering that adds practice only when an item is gained; a level computed from saved practice
   - violates: a shop selling a level of a character skill; a missed gathering that adds practice; a second counter inside one character skill
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character skill grow?"
+- **Origin:** none
 
 *Rationale:* buying is shallow — one easy map run nearly pays for a character skill, which makes learning a coupon. Practice ties growth to what the program actually does, so choosing a program is choosing what grows. Prices differ between branches, or an extra piece gathered would always beat a percentage of chance. Two counters inside one character skill would quietly speed up the whole economy, so a finer split makes a new character skill.
 *Rejected:* buying character skills with experience — shallow; practice counted from attempts instead of effects — rewards program rules that grind an action changing nothing; a separate counter for traits — a second economy to balance where one is enough.
@@ -3660,7 +3672,7 @@ A character is described by traits, character skills and the predispositions of 
 - **Verification:** an agent compares a change with the decision:
   - complies: carrying capacity as a trait; accuracy with a one-handed weapon as a branch of that weapon's tree
   - violates: a "strength" trait that raises the damage of one weapon
-- **Origin:** definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What describes a character?"
+- **Origin:** none
 
 *Rationale:* numbers and what a character can say in a program are not alternatives: they are three roles. A trait acts always, so it may be a number without becoming a slider, provided it grows only where the challenge grows with it. A predisposition sets characters apart by access rather than size, so two characters with the same numbers and other predispositions need two different programs, neither better.
 *Rejected:* strength as a trait — all it would do is raise carrying capacity, which stands apart; accuracy as a trait of the character — it concerns one class of weapon; speed of learning as a trait — a multiplier on all growth; a trait as a number never raised — safe, but does nothing.
@@ -3675,9 +3687,9 @@ An action ending in effect adds one practice to the character skill its pair of 
 - **Verification:** an agent compares a change with the decision:
   - complies: a patrol bringing several pieces and adding one practice; eating a berry at full satiety adding one practice
   - violates: a dodge with no strike adding practice; practice for each tile a scout reveals
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q5 and Q9; accepted settlement 1
+- **Origin:** none
 
-*Rationale:* The counter measures successful actions, not their quantity. Accepted with it: eating at full satiety can grow eating, at the cost of berries.
+*Rationale:* The counter measures successful actions, not their quantity, so an action bringing several pieces or tiles, as „Obchód” and „Zwiad” do, adds one practice, and a gathering whose piece did not get into the backpack adds none. The effect is counted case by case in the game minute in which the action gives it; the cases follow the tests of the predecessor game. Accepted with it: eating at full satiety can grow eating, at the cost of berries, so a program can grind eating by paying with berries.
 *Rejected:* eating adding practice only when satiety rises — the accepted effect is the berry eaten
 
 ### D-194 — When does a manual map run pay its practice to its character?
@@ -3690,10 +3702,10 @@ A manual map run holds the practice it gathers separately by character skill and
 - **Verification:** an agent compares a change with the decision:
   - complies: the first manual completion of a map paying its practice in the completion minute; a second manual completion leaving its practice with the run; restart before completion paying nothing
   - violates: practice reaching the character during an unfinished run; a second character's manual completion of a solved map paying practice; „Zakończ” paying a completed run a second time
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q1; accepted settlements 2 and 12 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
+- **Origin:** none
 
-*Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189).
-*Rejected:* practice for a repeat of a solved map paid on until the earning loop comes — a change of the goal of the work and of its plan, `solved-map-manual-run` broken on practice for that time, and this decision changed twice; the payment of the first completion and the earning loop entering the game in one push — a finished change waits for the next, and a longer branch brings more conflicts.
+*Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189). Accepted with it, for the time before the earning loop entered the game: repeating Las no longer raised a character, the whole team had at most two payments of practice and two of loot, a new character had nowhere to get practice, and nobody had measured whether Las — głębiej could be completed with a single payment.
+*Rejected:* practice for a repeat of a solved map paid on until the earning loop comes — the player could complete Las again and again and farm practice, while a manual run of a solved map is to pay nothing (D-189); it is also a change of the goal of the work and of its plan, `solved-map-manual-run` broken on practice for that time, and this decision changed twice; the payment of the first completion and the earning loop entering the game in one push — a finished change waits for the next, and a longer branch brings more conflicts.
 
 ### D-195 — When does a character skill tree become known?
 
@@ -3705,10 +3717,10 @@ A character skill tree with all its branches enters the Understanding in the gam
 - **Verification:** an agent compares a change with the decision:
   - complies: the first discovery of gathering also revealing its tree and „Obchód”
   - violates: a tree becoming known only on its first purchase; an unnamed tree in the band of a discovery
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3 and Q4; accepted settlements 3 and 4
+- **Origin:** none
 
-*Rationale:* Discovery tells the player what the action can grow before the first point is earned. Accepted with it: longer bands of a discovery and known actions that no character can yet carry out.
-*Rejected:* revealing a branch action on the first purchase — discovery would depend on a character’s purchase; showing the tree only at the first point; leaving the tree unnamed
+*Rationale:* Discovery tells the player what the action can grow before the first point is earned. The trees come up by the gate the skills panel of the predecessor game used: the branches show once the player knows an action the skill grows. Accepted with it: longer bands of a discovery at the first discoveries, and known actions that no character can yet carry out.
+*Rejected:* revealing a branch action on the first purchase, as the predecessor game did — discovery would depend on a character’s purchase, and the action would enter the Understanding otherwise than when discovered in play (D-118); showing the tree only at the first point; leaving the tree unnamed
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
 
@@ -3720,9 +3732,9 @@ Outside a map run the program editor currently offers the repertoire computed fr
 - **Verification:** an agent compares a change with the decision:
   - complies: „Obchód” offered in both editors during the run of its buyer and, outside a run, standing greyed and not to be picked with „wybierzesz w przejściu postaci, która ją kupiła”; „Obchód” still offered in the editor of Programy after its buyer's death, until „Restart” or „Zakończ”
   - violates: a branch bought by any teammate opening that action in the editor of Programy outside a map run; the editor of Programy turning to the archetype's offer when the player leaves the screen of a manual map run or when that map run ends
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q3; accepted settlement 4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 15 and 17, and § Settlements to record, row 11 · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 18
+- **Origin:** none
 
-*Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ”, as it does for „Kup” (D-200), so the offer does not change while it stands. Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress, whereas editing a saved program prepares the next send.
+*Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ”, as it does for „Kup” (D-200), so the offer does not change while it stands; the code already took the repertoire of the character in the map run for as long as the map run stood in the game state. A character without the branch passes over a rule with „Obchód” and the rule stays in the program (D-126). Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress (D-131), whereas editing a saved program prepares the next send, and a rule with „Obchód” can be written without losing the streak at game minute zero or in a saved program edited during a map run, which acts from the next entry onto a map other than a „Restart”; a fix made in the editor of Programy does not reach a waiting map run unless the player switches the character to that program, which sets the streak to zero; and the player sees in the Understanding an action that no character yet can carry out.
 *Rejected:* offering outside a run every branch any teammate bought — the shared editor would imply availability without choosing its character; the archetype's offer after the end of a map run, as this decision read word for word gave it — code to change, and on Programy after a death the offer changes while the map run still stands.
 
 ### D-197 — What does the gathering branch Obchód do?
@@ -3735,9 +3747,9 @@ The gathering tree has the branch „Obchód”, which opens „Obchód — {zas
 - **Verification:** an agent compares a change with the decision:
   - complies: a patrol taking the six pieces left on its tile when the batch is twelve; a full-hand gather taking the last single piece
   - violates: requiring a full batch before patrol can start; taking missing pieces from neighbouring tiles
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q9 and Q13; accepted settlement 5
+- **Origin:** none
 
-*Rationale:* A guaranteed batch changes how the program gathers. Accepted with it: the full action time can bring a smaller batch from a depleted tile.
+*Rationale:* A guaranteed batch changes how the program gathers, and the branch is one of the branches with a new mechanic that the trees take, a mechanic more in the code and the tests. Like „Zbierz”, „Obchód” is feasible when the tile has at least one piece of the resource and the backpack is not full. Accepted with it: the full action time can bring a smaller batch from a depleted tile, and the last gathering on a tile gives less than the description of „Pełna garść” says; on berries, moss and fibre „Obchód” brings at most 8 or 6 pieces for 40 minutes, since that is what a tile holds, and a tile emptied by gathering is full again only after five to six game hours.
 *Rejected:* requiring at least twelve pieces; filling a batch from neighbours; „Pełna garść” creating two pieces from one
 
 ### D-198 — What does the exploration branch Zwiad do?
@@ -3750,9 +3762,9 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 - **Verification:** an agent compares a change with the decision:
   - complies: a scout revealing a new neighbour’s item in the same discovery pause
   - violates: scouting from an already revealed current tile; one practice for every neighbour
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q9; accepted settlement 5
+- **Origin:** none
 
-*Rationale:* Scouting changes the exploration program’s reach. Accepted with it: it can reveal much of the small map quickly.
+*Rationale:* Scouting changes the exploration program’s reach, and it is one of the branches with a new mechanic that the trees take, a mechanic more in the code and the tests. Accepted with it: it can reveal much of the small map quickly, Las of 4 × 4 tiles several times faster.
 *Rejected:* only numerical branches, or only a selected subset of the non-numerical branches — omit the accepted changes to how programs work
 
 ### D-199 — What does the screen Postać show of character skills?
@@ -3765,10 +3777,10 @@ The screen Postać shows „Umiejętności” after a tree is known, with a row 
 - **Verification:** an agent compares a change with the decision:
   - complies: a fully bought numerical branch showing its current value with a disabled „Kup”; the whole section absent before any tree is known
   - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch; „Umiejętności” drawn on Siedziba
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q11; accepted settlement 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-199
+- **Origin:** none
 
-*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: no preview of unknown trees.
-*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note.
+*Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: no preview of unknown trees, so a new character in a new game does not announce that it will develop skills; the preview „teraz → po kupnie” needs the value of every kind of effect written in the data; for a branch without a number the player reads what it gives from its description alone; and the row of a fully bought branch is shorter than the others.
+*Rejected:* no numerical preview; „false → true” for non-numerical branches; „wykupiona” in place of the full-rank row; an empty-section note, a heading „Umiejętności” with the sentence „Postać nie zna jeszcze żadnego drzewa umiejętności.”.
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
@@ -3780,9 +3792,9 @@ The player currently buys a branch rank with „Kup” on the screen Postać out
 - **Verification:** an agent compares a change with the decision:
   - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run; „Kup” inactive on the screen Postać after a character's death until „Restart” or „Zakończ”
   - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on; „Kup” active while the screen after a completion waits for „Restart” or „Zakończ”
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6; accepted settlement 9 · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4, and § Settlements to record, row 6 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-200
+- **Origin:** none
 
-*Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
+*Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts; in the predecessor game's test a purchase touched neither the map run nor the program. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
 *Rejected:* „Kup” inactive at a character in an earning loop — to spend its points the player loses the backpack of the map run going on.
 
 ### D-201 — What does the map-run view show of its practice?
@@ -3795,9 +3807,9 @@ Below the body row the map-run view currently shows a line in the role `text`, �
 - **Verification:** an agent compares a change with the decision:
   - complies: the same positive practice line retained after death, although the run pays nothing
   - violates: zero-valued skills in the line; hiding the line immediately on completion
-- **Origin:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, Q6 and Q12; accepted settlement 10
+- **Origin:** none
 
-*Rationale:* The player can see what the run grows and what it gathered before its end. Accepted with it: the line does not itself distinguish paid practice from practice lost on death.
+*Rationale:* The player can see what the run grows and what it gathered before its end. The screens after a death and after a completion stand on the state of the minute of the end (D-62, D-132) and show the state that explains it (D-173), so the line stays in the wording of the last minute. Accepted with it: another line on the screen of a map run; the line does not itself distinguish paid practice from practice lost on death, and shows after a death practice the character will not get, and after a completion does not say outright that the practice entered the character, or that a „Zakończ” before completion loses it.
 *Rejected:* no run-practice line; hiding it on death; separate labels for payment and loss
 
 ### D-202 — Who can create and use a player account?
