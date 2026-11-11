@@ -87,19 +87,14 @@ programu nie jest dowodem poprawności, również w zapisanych obrazach i stanac
 Test parametru gry może użyć konkretnych liczb; oczekiwany czas przeżycia,
 tempo postępu lub trudność mapy wymagają uzgodnionego wymagania (D-80).
 
-Dokumentami źródłowymi są fundament loop2 — decyzje, niezmienniki i słownik —
-zaakceptowane zadania w katalogu, który wskazuje pozycja `projects` pod `loop2`
-w pliku lokalizacji `~/.the-way/locations.json`, i jego podkatalogu zadań (stan
-`ready for cycle` lub wykonane) oraz zatwierdzona `definicja_mvp_loop2.md` z tego
-katalogu (D-82). `koncepcja_projektowa.md` z tego katalogu
-jest szkicem: źródłem jest tylko fragment przytoczony
-przez zaakceptowany dokument. Q7c zadania przewodnika przytacza linię 1261
-koncepcji jako źródło jednego losowania przy wyborze kroku.
-
-Gdy nazwa testu nie wyjaśnia źródła wartości, komentarz wskazuje plik i linię
-albo osobę i datę rozstrzygnięcia. Recenzent pyta przy każdym sprawdzeniu:
-„skąd ta wartość?”. Źródła poza repozytorium wymagają dostępu do vaultu;
-sam odsyłacz nie jest odczytem źródła.
+Dokumentami źródłowymi są fundament loop2 — decyzje, niezmienniki i słownik (D-82).
+Oczekiwanie testu pochodzi z fundamentu, nie z dokumentu zadania ani z koncepcji.
+Wymaganie, którego test potrzebuje, a którego fundament jeszcze nie niesie, trafia
+najpierw do fundamentu, dopiero potem test z niego korzysta. Komentarz, który niesie
+informację ważną dla kodu, przenosi ją do fundamentu; komentarz bez takiej
+informacji się nie pisze — kod ma być zrozumiały sam, a 2 + 2 = 4 nie potrzebuje
+źródła. Komentarz testu nie wskazuje dokumentu spoza fundamentu. Recenzent pyta przy
+każdym sprawdzeniu: „skąd ta wartość?”; odpowiedzią jest wpis fundamentu.
 
 ### Test inputs and expected values
 
