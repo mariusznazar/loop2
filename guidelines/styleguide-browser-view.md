@@ -637,9 +637,11 @@ przy rekwizycie, a przy włóknie pod stopami maga, staje obłok kurzu z paczki 
 Animated Particle [16x16], przekolorowany na brązy sceny, które odróżniają się od gruntu, na
 którym stoi (D-365, D-271). Lot i kurz biegną w CSS z `src/browser/styles.css`, każdy 300 ms, kurz
 raz przez wszystkie swoje klatki; scena pamięta poprzedni odczyt stanu gry i zdarzenia wywołania,
-żeby rozpoznać koniec zbierania i trafienie albo chybienie, i opuszcza efekt zaległy: ten, którego
-kolej przychodzi przy zatrzymaniu, ten z odczytu, który niesie kilka końców zbierania, i ten z odczytu,
-w którym skończyła się też czynność biorąca sztuki z plecaka (D-366).
+żeby rozpoznać koniec zbierania i trafienie albo chybienie, i nie zaczyna efektu zaległego: tego, którego
+kolej przychodzi przy zatrzymaniu, tego z odczytu, który niesie kilka końców zbierania, i tego z odczytu,
+w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zaczęty stawia przy miejscu, w którym
+mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
+a nowy zajmuje jego miejsce (D-366).
 
 Przy zatrzymaniu — pauzie, odkryciu, śmierci i ukończeniu — cały ruch sceny,
 także ogień, mag, lot ikony i kurz, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu

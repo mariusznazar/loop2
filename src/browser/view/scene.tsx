@@ -267,8 +267,8 @@ export function Scene({
     }
   } else if (state !== lastState) {
     if (fresh && drawing.standing === "going" && current !== null) {
-      // The effect belongs to the mage that gathered, where it stood at the previous reading, and not
-      // to where the action that starts in this reading leads it.
+      // The effect belongs to the mage that gathered, at the place it stands or walks to at the previous
+      // reading, and not at where the action that starts in this reading leads it.
       const made = sceneEffect(lastState, state, events, current.x);
       if (made !== null) {
         effect = { serial: effect.serial + 1, shown: made };

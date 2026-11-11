@@ -38,6 +38,11 @@ export const SCENE = {
   background: { file: "forest-scene.png", width: 336, height: 152, frames: 1 },
   /** The line the mage's feet and the things standing on the ground stand on. */
   groundLine: 136,
+  /**
+   * The middle of the mage's figure, from the left edge of its frame: the figure is columns 20 to 44 of
+   * the frame's 64, so its middle is column 32. The effects stand on it.
+   */
+  mageMiddle: 32,
   /** Left edge of the mage's frame where it waits, in the middle of the clearing. */
   clearingX: 144,
   /**
@@ -87,8 +92,8 @@ export const SCENE_DUST = {
  * picture's bottom edge.
  */
 export const SCENE_EFFECTS = {
-  body: { x: 32, up: 18 },
-  feet: { x: 32, up: 3 },
+  body: { x: SCENE.mageMiddle, up: 18 },
+  feet: { x: SCENE.mageMiddle, up: 3 },
   dustSink: 2,
   /** How far above the higher of its two ends the flying icon's arc rises. */
   arc: 6,
