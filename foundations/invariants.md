@@ -336,7 +336,7 @@ icon's author, that page and the licence CC BY 3.0, and says how the icon file d
 source.
 
 - **Method:** test
-- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title · game-icons-binoculars-title · game-icons-hiking-title · game-icons-direction-sign-title · game-icons-grab-title · game-icons-claw-hammer-title · game-icons-match-tip-title · game-icons-logging-title · game-icons-meal-title · game-icons-deadly-strike-title · game-icons-boot-kick-title · game-icons-dodge-title
+- **Rests on:** game-icons-licence · game-icons-wood-stick-title · game-icons-berry-bush-title · game-icons-fern-title · game-icons-flax-title · game-icons-campfire-title · game-icons-binoculars-title · game-icons-hiking-title · game-icons-direction-sign-title · game-icons-grab-title · game-icons-claw-hammer-title · game-icons-match-tip-title · game-icons-logging-title · game-icons-meal-title · game-icons-deadly-strike-title · game-icons-boot-kick-title · game-icons-dodge-title · game-icons-wood-pile-title
 - **Derives from:** D-27
 - **Part:** browser-view · simulation
 - **Violated:** no
@@ -952,7 +952,7 @@ An action shortened by bought branches lasts at least one game minute.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/_zadania/wprawa_i_drzewa_loop2.md § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
+- **Derives from:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania) § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
 - **Part:** simulation
 - **Violated:** no
 
@@ -1241,7 +1241,7 @@ After an error that no code of the game handled, the game state held in the page
 No file of a part imports a file of another part, unless the *Depends on* of the importing file's part names the other part, the importing file stands under `tests/` and the imported file belongs to the part `test-helpers`, or an invariant "the part `<X>` does not depend on `<Y>`" reading `Violated: yes` says that the part `<X>` of the importing file depends on the part `<Y>` of the imported file today.
 
 - **Method:** test
-- **Rests on:** TODO
+- **Rests on:** TODO — the fact is not named in the foundation (a bare TODO since 2026-11-08, commit 842beb7); the human names the fact and its source
 - **Derives from:** D-351
 - **Part:** every
 - **Violated:** no
@@ -1274,6 +1274,16 @@ The server writes a failure report of the browser only as a kind, a code and a p
 - **Rests on:** none
 - **Derives from:** D-356
 - **Part:** account-server
+- **Violated:** no
+
+## tracked-file-private-paths
+
+No file git tracks contains an absolute path on a disk or, in a Markdown file, a link to a note, as the check of tracked files in the pinned the-way reads them.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-362 · .the-way/installation/README.md § A product whose repository is public adds a second check — "that no file git tracks holds an absolute path on the author's disk or, in a Markdown file, a link to a private note"; read 2026-11-11
+- **Part:** every
 - **Violated:** no
 
 ## Withdrawn identifiers

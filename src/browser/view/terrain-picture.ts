@@ -29,8 +29,9 @@ export type PictureTile = {
   revealed: boolean;
   icons: PictureIcon[];
   /**
-   * The icon of the campfire standing on the tile, burning or extinguished alike, or null: the
-   * drawing tells neither its state nor its minutes (D-19, D-70), and never dims it (D-41).
+   * The icon of the campfire standing on the tile, or null: its own icon while the campfire burns
+   * and the extinguished campfire's while it has no minutes left, never lit included, and never
+   * its minutes (D-19, D-70); it is never dimmed (D-41).
    */
   campfire: PictureIconPlace | null;
   outline: "character" | "stepTarget" | null;
@@ -106,10 +107,11 @@ export function terrainPicture(
       ? resourceOrder.filter((id) => Object.hasOwn(tile.stock, id))
       : [];
     // A campfire stands only on a revealed tile (D-72); its icon follows the resources' icons.
-    const hasCampfire =
-      tile.revealed && run.campfires.some((c) => sameHex(c.at, tile.at));
+    const campfireHere = tile.revealed
+      ? run.campfires.find((c) => sameHex(c.at, tile.at))
+      : undefined;
     const places = iconPlaces(
-      present.length + (hasCampfire ? 1 : 0),
+      present.length + (campfireHere === undefined ? 0 : 1),
       cx,
       cy,
       iconBox,
@@ -120,9 +122,17 @@ export function terrainPicture(
       ...places[i],
       dimmed: tile.stock[resource] === 0,
     }));
-    const campfire = hasCampfire
-      ? { href: `/icons/${CAMPFIRE.icon}.svg`, ...places[present.length] }
-      : null;
+    const campfire =
+      campfireHere === undefined
+        ? null
+        : {
+            href: `/icons/${
+              campfireHere.minutesLeft > 0
+                ? CAMPFIRE.icon
+                : CAMPFIRE.extinguished.icon
+            }.svg`,
+            ...places[present.length],
+          };
     const outline = sameHex(tile.at, run.character.at)
       ? "character"
       : run.current?.stepTo && sameHex(tile.at, run.current.stepTo)

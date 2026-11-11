@@ -953,20 +953,25 @@ function fireRun(minute) {
   return advanceMinutes(stocked, minute).state;
 }
 
-// Catches a campfire whose icon stands on another tile than its state, one that tells the state on
-// the drawing, and one whose state creeps into the line under the drawing.
+// Catches a campfire whose icon stands on another tile than its state, one drawn with the icon of
+// the other state, one that writes the words or minutes of its state on the drawing, and one whose
+// state creeps into the line under the drawing.
 test("the campfire's icon stands in its tile and its state in the row of the same key, and nowhere else", async () => {
   await withPage(async ({ window, document }) => {
     const { container, show } = await draw(document, fireRun(63));
-    for (const [state, text] of [
-      [fireRun(63), "ognisko — płonie, zostało 42 min"],
-      [fireRun(110), "ognisko — wygasłe"],
+    for (const [state, text, file] of [
+      [fireRun(63), "ognisko — płonie, zostało 42 min", "campfire.svg"],
+      [fireRun(110), "ognisko — wygasłe", "wood-pile.svg"],
     ]) {
       await show(state);
+      // Whichever state the campfire is in, one campfire icon stands, and it is the state's own.
       const icons = [
-        ...container.querySelectorAll('image[href="/icons/campfire.svg"]'),
+        ...container.querySelectorAll(
+          'image[href="/icons/campfire.svg"], image[href="/icons/wood-pile.svg"]',
+        ),
       ];
       assert.equal(icons.length, 1);
+      assert.equal(icons[0].getAttribute("href"), `/icons/${file}`);
       assert.equal(icons[0].getAttribute("class"), "icon");
       assert.equal(icons[0].parentElement.getAttribute("data-tile"), "1,1");
       assert.ok(rowOf(container, "1,1").textContent.includes(text));

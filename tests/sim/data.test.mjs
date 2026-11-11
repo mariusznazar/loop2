@@ -308,6 +308,11 @@ test("the campfire holds its name, costs, burning minutes, warmth and icon", () 
     warmth: 0.5,
     icon: "campfire",
     iconTitle: "Campfire icon",
+    extinguished: {
+      name: "ognisko wygasłe",
+      icon: "wood-pile",
+      iconTitle: "Wood Pile icon",
+    },
   });
 });
 
