@@ -1,0 +1,44 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/menu-bar.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a waiting screen's bar holds the game's name alone, with no item and no „Konto” (45.8646ms)
+✔ over the game the bar holds the name, „Siedziba” to #/, „Mapy” to #/mapy, „Programy” to #/programy and „Konto”, in that order and without icons (21.7973ms)
+✔ the item of the place the page gives is marked with aria-current, and none on a map run's screen (120.4619ms)
+✔ the bar follows the page's update: the marked item moves, and the open menu stays open (22.1772ms)
+✔ „Wróć do przejścia” stands as a link to the map run's address when the page gives it, after „Programy”, and not otherwise (15.1297ms)
+✔ „Konto” is a native button that says whether the menu stands open, and the menu starts closed (13.9948ms)
+✔ a click on „Konto” opens the menu with the account's address and „Wyloguj” (21.2554ms)
+✔ Escape closes the menu and focus lands on „Konto” (113.6672ms)
+✔ a click outside the menu closes it and focus lands on „Konto” (18.5032ms)
+✔ a click on an item of the bar, which stands outside the menu, closes it (17.198ms)
+✔ a second click on „Konto” closes the menu and focus lands on „Konto” (20.9365ms)
+✔ a click inside the menu keeps it open (13.9104ms)
+✔ a closed menu takes no focus: Escape and a click outside leave focus where it is (31.4609ms)
+✔ no arrow key moves anything: they neither open the menu nor move focus in it (19.9236ms)
+✔ the controls of the open menu stand after „Konto” in the order Tab walks them: „Wyślij ponownie”, then „Wyloguj” (20.6002ms)
+✔ an unconfirmed address shows its sentence in text-secondary above „Wyślij ponownie”; a confirmed one shows neither (16.7572ms)
+✔ right after registration the sentence is the outcome of the registration's message (46.6476ms)
+✔ a send waits with the button disabled as Wysyłanie…, the menu stays open, then the outcome stands, the button is restored and focused (61.6991ms)
+✔ the menu stays open after the answer to „Wyślij ponownie” until the player closes it (31.0462ms)
+✔ a failure of the client stands in warning with its own sentence, and the button stays (19.0611ms)
+✔ a refusal other than an address already confirmed is a failure too: its sentence in warning and the button stays (19.2657ms)
+✔ the server's answer that the address is already confirmed removes the sentence and the button, and keeps the address, „Wyloguj” and the open menu (18.4335ms)
+✔ the page's account turning confirmed removes the sentence and the button (17.4172ms)
+✔ an answer that comes while the menu is closed is there when the player opens it, and takes no focus (20.6845ms)
+✔ an answer that comes after the bar was disposed, or the player signed out, is ignored (33.9236ms)
+✔ „Wyloguj” hands the page one request and does nothing else itself (13.1107ms)
+✔ while the page's logout waits „Wyloguj” reads Wylogowywanie…, disabled, and sends nothing more; the menu stays open and on the answer the sentence and focus come back (18.9457ms)
+✔ the page giving no account while „Wyloguj” waits turns the bar into the name alone and takes no focus (28.7465ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1999.651

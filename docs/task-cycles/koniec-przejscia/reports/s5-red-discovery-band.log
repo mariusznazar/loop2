@@ -1,0 +1,38 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/discovery-band.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the first finished exploration of a tile with sticks and berries gives the band its text and no sentence about a rule (42.3187ms)
+✔ the first chill of a new game gives the text of the discovery and the sentence naming the group Program, with no number of the rule (18.16ms)
+✔ a renamed first group gives its name, and a group dragged above the one holding the rule leaves the sentence on the group that holds it (16.5742ms)
+✔ the rule deleted while the band stands leaves the text of the discovery with no sentence about the rule (13.3953ms)
+✔ there is no band without a discovery, and none once the player goes on (17.9533ms)
+✖ a discovery of an ended map run, in a completion or a death, draws no band, and a run that goes on keeps the band with „Wznów” (12.4425ms)
+✔ each button calls its own callback and nothing else (18.1843ms)
+✔ both buttons are the shared plain button (D-44) (14.8777ms)
+✔ „Dodaj regułę z tym” is disabled where the copy holds no rule group, and „Wznów” stays usable (17.4307ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1186.7467
+
+✖ failing tests:
+
+test at tests\view\discovery-band.test.mjs:222:1
+✖ a discovery of an ended map run, in a completion or a death, draws no band, and a run that goes on keeps the band with „Wznów” (12.4425ms)
+  Error: expected null, got <div class="discovery-band">
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.equal (tests/view/page-document.mjs:201:5)
+      at tests/view/discovery-band.test.mjs:236:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/discovery-band.test.mjs:223:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

@@ -1,0 +1,9 @@
+The plan was written before slices 1 to 4 were made. They are made (the last is commit `35c03cd`); where the plan's ranges or wording differ from the code as it stands, the code as it stands holds. Read `src/browser/view/run-screen.tsx` and `src/browser/view/game-view.ts` where they draw the window and the discovery band, `src/browser/view/end-window.tsx` and `src/browser/view/end-window-lines.ts` (the window now draws „Do skrzynki: …”, the death lines and the discovery, so the world area must no longer draw them), and the slice-4 report `docs/task-cycles/koniec-przejscia/reports/slice-4-report.md` (its "What I made" and "Problems as observed").
+
+Binding notes of the orchestrator:
+
+1. The band of a discovery is today drawn above the program by `src/browser/view/discovery-band.tsx`; slice 4 left it standing at an end (hidden under the covered areas while the window is open, shown after „✕”). Your slice removes it for an ended map run, as the plan says: nothing draws it once the map run has ended, in death or a completion; the window names the discovery. A map run that goes on keeps the band with „Wznów”.
+2. The functions of `src/browser/view/trip-lines.ts` that wrote the deposit line and the death lines leave with their tests only where nothing else uses them: search the whole `src/browser/` and `tests/` for each name before you delete it (slice 2 made `itemList` exported and the window's lines call into this file). A rule of `src/browser/styles.css` that no element uses any more goes; a class the window uses stays.
+3. Tests that checked the old lines and the old band at the end are replaced by tests of the new facts, each with the requirement that moved it as its reason (To do 3, row 6); do not weaken an assertion.
+4. You do not need to run a real browser; the orchestrator's final real-browser check covers the world area without the lines. Say in your report that you did not.
+5. `foundations/` is not yours; do not touch it.

@@ -1,0 +1,25 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/discovery-band.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the first finished exploration of a tile with sticks and berries gives the band its text and no sentence about a rule (51.8132ms)
+✔ the first chill of a new game gives the text of the discovery and the sentence naming the group Program, with no number of the rule (24.1149ms)
+✔ a renamed first group gives its name, and a group dragged above the one holding the rule leaves the sentence on the group that holds it (19.7681ms)
+✔ the rule deleted while the band stands leaves the text of the discovery with no sentence about the rule (14.4603ms)
+✔ there is no band without a discovery, and none once the player goes on (16.5262ms)
+✔ a discovery of an ended map run, in a completion or a death, draws no band, and a run that goes on keeps the band with „Wznów” (12.2274ms)
+✔ each button calls its own callback and nothing else (14.3527ms)
+✔ both buttons are the shared plain button (D-44) (14.5229ms)
+✔ „Dodaj regułę z tym” is disabled where the copy holds no rule group, and „Wznów” stays usable (20.0919ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1221.8923

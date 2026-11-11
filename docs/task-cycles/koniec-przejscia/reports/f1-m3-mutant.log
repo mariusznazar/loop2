@@ -1,0 +1,67 @@
+✔ a map run starts with a longest streak of 0 and a count of 0 game minutes for every kind of the closed list, and no more than that list (6.2317ms)
+✔ a game minute passed counts once, to the action under way at its start, a wait to the wait (4.2676ms)
+✔ the game minute of a death counts like any other, and the counts sum to the map run's game minute (0.7276ms)
+✔ the game minute of a completion counts like any other, on counts the map run already holds (1.548ms)
+✔ the longest streak stays after the streak falls to 0 in the cold, and the same whichever way the span is split (8.1518ms)
+✔ the longest streak stays after a change of the program, and grows again once the streak passes it (1.5085ms)
+✖ the minutes of a fight count to the fight, the minute of the attack to what the character was doing, and the last minute of a death in the fight too (10.3568ms)
+✖ a span split into any calls of the simulation gives the same record, a fight included (8.1856ms)
+✔ settling the death leaves the record as it is, and so does editing the program (7.8651ms)
+✔ a map run entered with what the send took from the chest keeps it, in the order of the data's items, none at 0, whatever the take list's order (0.6883ms)
+✔ a map run entered with an empty backpack keeps an empty list (0.4191ms)
+✔ a map run of a solved map keeps what it took from nowhere, and the chest stays as it was (0.3969ms)
+✔ what the character entered with stays to the end, though the backpack empties (1.1681ms)
+✔ a restart binds the record anew: the entry list from the copy and the chest as they stand, the longest streak and the counts from 0 (0.7605ms)
+✔ a map run of an earning loop keeps none of the record (0.4747ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 13
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 199.9689
+
+✖ failing tests:
+
+test at tests\sim\run-record.test.mjs:214:1
+✖ the minutes of a fight count to the fight, the minute of the attack to what the character was doing, and the last minute of a death in the fight too (10.3568ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 5
+  
+      at TestContext.<anonymous> (tests/sim/run-record.test.mjs:222:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 5,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\sim\run-record.test.mjs:246:1
+✖ a span split into any calls of the simulation gives the same record, a fight included (8.1856ms)
+  AssertionError [ERR_ASSERTION]: precondition: a fight
+  
+  0 !== 5
+  
+      at TestContext.<anonymous> (tests/sim/run-record.test.mjs:248:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 5,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

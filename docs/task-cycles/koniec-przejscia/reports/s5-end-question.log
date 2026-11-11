@@ -1,0 +1,48 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/end-question.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapisz”, „Odrzuć” and „Wróć” in that order, only „Odrzuć” a destructive button, each asking its own act (42.1542ms)
+✔ the line of D-172 stands under the sentence only while the copy's program is on the list and holds changes the copy lacks (22.3773ms)
+✔ „Zakończ” with unsaved changes asks at every moment of the map run, leaves the map run where it is and stops the one that goes on (486.0567ms)
+✔ „Zakończ” without unsaved changes ends the map run at once and opens Postać of its character (54.2143ms)
+✔ „Zapisz” saves the copy into its program, replacing what the program had since, ends the map run and leads to Postać, and Programy then shows that program (72.5265ms)
+✔ „Zapisz” of a copy whose program was deleted saves it as a new program under the first free name with no name field, ends the map run, and Programy shows the new program (142.6414ms)
+✔ „Odrzuć” ends the map run with no save, the program as it was, and leads to Postać (49.7219ms)
+✔ „Wróć” closes the question and puts the map run back as it was: one that went on goes on, one that was paused stays paused (197.6331ms)
+✔ leaving the screen closes the question and the map run stays paused on the return, “Zakończ” asking again (66.0866ms)
+✔ the question lives in the page alone: a game built from the kept document stands with no question and the map run paused (78.4084ms)
+✔ „Wznów” of the header and of the band and „Restart” close the question and do their own act; the pace buttons and a second „Zakończ” leave it (244.3087ms)
+✔ the buttons of the panel work while the question stands, and it goes when the copy holds no unsaved changes, leaving the map run paused (345.338ms)
+✔ an edit of the copy leaves the question unless the copy then equals its program, when the question goes like after a save (105.0234ms)
+✖ the question stands under the band of a discovery and directly above the heading of the copy, after the list „Program:” and „Nowy program”, also after a completion in the minute of a discovery (73.7782ms)
+✔ the question stays in its place while the panel shows another program, and never stands on Programy (34.3959ms)
+✔ after halt() the question changes nothing: „Zakończ” asks nothing and the three answers leave the game state as it was (90.9628ms)
+✔ the first answer takes the keyboard focus when the question opens (43.1857ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3195.4098
+
+✖ failing tests:
+
+test at tests\view\end-question.test.mjs:806:1
+✖ the question stands under the band of a discovery and directly above the heading of the copy, after the list „Program:” and „Nowy program”, also after a completion in the minute of a discovery (73.7782ms)
+  Error: expected ["discovery-band","run-program-place"], got ["run-program-place"]
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.deepEqual (tests/view/page-document.mjs:223:5)
+      at tests/view/end-question.test.mjs:833:12
+      at async tests/view/end-question.test.mjs:61:7
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async onPage (tests/view/end-question.test.mjs:51:3)
+      at async TestContext.<anonymous> (tests/view/end-question.test.mjs:829:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

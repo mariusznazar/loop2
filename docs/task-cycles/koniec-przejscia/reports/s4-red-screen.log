@@ -1,0 +1,96 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/run-screen.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the header stands above three areas of their own in the order world, program and tabs, holding the world, the program panel and the tabs with the chronicle, and no host for the rule panel (101.6082ms)
+✔ at a discovery the band stands in the program's area, above the program panel (54.7426ms)
+✔ the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it (60.8932ms)
+✔ the screen draws the map run it was given, the copy of that map run in its program panel, not the game state's (41.3466ms)
+✔ an open rule panel stands in the program under its header, the tabs and their content and the drawing stay where they were, and „✕” leaves the tab picked as it was (144.326ms)
+✔ at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group, opens its panel in the program under the new rule on the action, the tabs stand, and the streak goes to zero (68.5888ms)
+✔ „Wznów” of the band goes on as the header's „Wznów” does, and the band goes (40.6969ms)
+✔ a hovered tile of the drawing marks its row in the table of the area under the drawing and the line gives its numbers; a hovered row marks its tile (49.6374ms)
+✔ a click on Teraz and on Potem, and Enter and Space on them, scroll the row of their rule to the middle of the window (46.0343ms)
+✔ for a rule of a folded group Teraz and Potem scroll the header of that group (40.5068ms)
+✔ the program scrolls once per click and does not follow the rule when the game goes on (51.2104ms)
+✔ a row that names no rule is no control: the keyboard does not reach it and it scrolls nothing (87.8114ms)
+✔ while the program panel shows a saved program a click on Teraz scrolls nothing (43.2686ms)
+✖ told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again (23.9451ms)
+✔ what the window covers stays in the tree and keeps its state: the tab picked and the program panel stand through the window (28.4026ms)
+✖ „✕” asks the game view to close the window and the focus goes to „Koniec przejścia” in the header; „Koniec przejścia” asks to open it (22.3262ms)
+✖ the buttons of the window ask for „Restart”, „Zakończ” and the opening of the map they name (20.2733ms)
+✖ „Dodaj regułę z tym” of the window closes the window and then does what the panel's button does: the rule is added and its panel stands open (23.7469ms)
+✖ the window's „Ostatnie minuty” are the entries of the chronicle memory the screen was given, up to the death (33.7514ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 14
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2152.2198
+
+✖ failing tests:
+
+test at tests\view\run-screen.test.mjs:832:1
+✖ told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again (23.9451ms)
+  Error: the window stands: expected a true value, got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at tests/view/run-screen.test.mjs:838:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/run-screen.test.mjs:833:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\run-screen.test.mjs:878:1
+✖ „✕” asks the game view to close the window and the focus goes to „Koniec przejścia” in the header; „Koniec przejścia” asks to open it (22.3262ms)
+  Error: the window stands: expected a true value, got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at expectWindowIn (tests/view/run-screen.test.mjs:815:10)
+      at tests/view/run-screen.test.mjs:884:22
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/run-screen.test.mjs:879:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\run-screen.test.mjs:898:1
+✖ the buttons of the window ask for „Restart”, „Zakończ” and the opening of the map they name (20.2733ms)
+  Error: the window stands: expected a true value, got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at expectWindowIn (tests/view/run-screen.test.mjs:815:10)
+      at tests/view/run-screen.test.mjs:904:19
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/run-screen.test.mjs:899:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\run-screen.test.mjs:926:1
+✖ „Dodaj regułę z tym” of the window closes the window and then does what the panel's button does: the rule is added and its panel stands open (23.7469ms)
+  Error: the window stands: expected a true value, got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at expectWindowIn (tests/view/run-screen.test.mjs:815:10)
+      at tests/view/run-screen.test.mjs:932:7
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/run-screen.test.mjs:927:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\run-screen.test.mjs:957:1
+✖ the window's „Ostatnie minuty” are the entries of the chronicle memory the screen was given, up to the death (33.7514ms)
+  Error: the window stands: expected a true value, got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at expectWindowIn (tests/view/run-screen.test.mjs:815:10)
+      at tests/view/run-screen.test.mjs:964:7
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/run-screen.test.mjs:958:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

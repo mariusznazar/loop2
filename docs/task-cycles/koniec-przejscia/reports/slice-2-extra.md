@@ -1,0 +1,7 @@
+The plan was written before slice 1 was made. Slice 1 is made and reviewed (commits `41abf1f`, `d7ac8a9`); where the plan's ranges or wording differ from the code as it stands, the code as it stands holds.
+
+- `src/browser/sim/types.ts`: `GameMapRun` now has the fields `longestStreak`, `minutesByAction` (a `Record<MinuteKind, number>` over the closed list, all keys present, zeros included) and `enteredWith` (the entries `{item, count}` in the data's item order), and there are new types `MinuteKind` and `RunRecord`. The plan's range `src/browser/sim/types.ts:240-311` has moved: read the file's `GameMapRun` and the new types where they stand now.
+- `src/browser/sim/run-record.ts` (slice 1) holds `MINUTE_KINDS`, the closed list of the kinds, which you import for the shares of time instead of copying the list. Read it whole.
+- The foundation entries are written. The plan's row "(new) — What does the end of a map run explain?" is D-362; the changes of D-122, D-132, D-135, D-147, D-185, D-216 are in the tree. Where the decisions' wording and the plan's *Goal* differ on a text of the window, the task's passages above hold first, then the decisions.
+- The words of the window that the task gives only as a fragment are the fragment. A word you have to add is named in your report, never invented silently.
+- `src/browser/view/chronicle.ts`: the way to read the entries of „Ostatnie minuty” is the plan's: the `count` newest entries recorded up to and including the entry of the character's death, oldest first, none where the memory holds no entry of a death.

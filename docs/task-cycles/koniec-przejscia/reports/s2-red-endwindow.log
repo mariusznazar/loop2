@@ -1,0 +1,291 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/end-window-lines.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✖ the title after a death is the words of its cause in text-strong, after a completion the map's completion text in positive (4.1738ms)
+✖ the longest streak line gives the longest streak against the map's streak, positive where met, and none where the map asks no streak (0.9188ms)
+✖ the cost line after a completion is the deposit frozen at the completion, unchanged by later edits of the copy (0.5838ms)
+✖ after a death the cost line tells a used resurrection with the hours of the data in text-secondary, a missing one with the generation in danger, and nothing while the death is unsettled (0.559ms)
+✖ the discovery line gives the band text of the discovery, and says whether its rule can be added (0.3635ms)
+✖ the rules that never fired are the rules of the copy whose count is absent or 0, each with its number and its sentence (2.1268ms)
+✖ the shares of time join the walk kinds, wait and fight, keep at most five pieces of at least 8 %, and the rest in reszta (0.7136ms)
+✖ the trip rows give what the character entered with, the revealed terrain and the minutes on the way (0.3636ms)
+✖ the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of the map it opens (0.3206ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 0
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 279.8029
+
+✖ failing tests:
+
+test at tests\view\end-window-lines.test.mjs:63:1
+✖ the title after a death is the words of its cause in text-strong, after a completion the map's completion text in positive (4.1738ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + null
+  - {
+  -   role: 'text-strong',
+  -   text: 'Mag zamarzł'
+  - }
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:70:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: { text: 'Mag zamarzł', role: 'text-strong' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:94:1
+✖ the longest streak line gives the longest streak against the map's streak, positive where met, and none where the map asks no streak (0.9188ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + null
+  - {
+  -   role: 'text',
+  -   share: 0.24166666666666667,
+  -   text: 'najdłuższa passa 116/480'
+  - }
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:95:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: { text: 'najdłuższa passa 116/480', share: 0.24166666666666667, role: 'text' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:118:1
+✖ the cost line after a completion is the deposit frozen at the completion, unchanged by later edits of the copy (0.5838ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + null
+  - {
+  -   role: 'text-secondary',
+  -   text: 'Do skrzynki: patyk 3.'
+  - }
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:125:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: { text: 'Do skrzynki: patyk 3.', role: 'text-secondary' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:150:1
+✖ after a death the cost line tells a used resurrection with the hours of the data in text-secondary, a missing one with the generation in danger, and nothing while the death is unsettled (0.559ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + null
+  - {
+  -   role: 'text-secondary',
+  -   text: 'Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach czasu realnego.'
+  - }
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:157:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: { text: 'Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach czasu realnego.', role: 'text-secondary' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:173:1
+✖ the discovery line gives the band text of the discovery, and says whether its rule can be added (0.3635ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + null
+  - {
+  -   canAdd: true,
+  -   text: 'Odkryto: Eksploruj.'
+  - }
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:184:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: { text: 'Odkryto: Eksploruj.', canAdd: true },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:207:1
+✖ the rules that never fired are the rules of the copy whose count is absent or 0, each with its number and its sentence (2.1268ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     number: '1.2',
+  -     text: 'Zawsze → Wędruj'
+  -   },
+  -   {
+  -     number: '1.3',
+  -     text: 'Zawsze → Eksploruj'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:212:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { number: '1.2', text: 'Zawsze → Wędruj' }, { number: '1.3', text: 'Zawsze → Eksploruj' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:225:1
+✖ the shares of time join the walk kinds, wait and fight, keep at most five pieces of at least 8 %, and the rest in reszta (0.7136ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     label: 'Zbierz',
+  -     percent: 35
+  -   },
+  -   {
+  -     label: 'W drodze',
+  -     percent: 24
+  -   },
+  -   {
+  -     label: 'Czeka',
+  -     percent: 18
+  -   },
+  -   {
+  -     label: 'Walka',
+  -     percent: 12
+  -   },
+  -   {
+  -     label: 'Eksploruj',
+  -     percent: 9
+  -   },
+  -   {
+  -     label: 'reszta',
+  -     percent: 2
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:226:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { label: 'Zbierz', percent: 35 }, { label: 'W drodze', percent: 24 }, { label: 'Czeka', percent: 18 }, { label: 'Walka', percent: 12 }, { label: 'Eksploruj', percent: 9 }, { label: 'reszta', percent: 2 } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:277:1
+✖ the trip rows give what the character entered with, the revealed terrain and the minutes on the way (0.3636ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'weszła z patyk 3, jagoda 2',
+  -   'odsłonięto 5 z 16 kafelków',
+  -   'w drodze 7 min'
+  - ]
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:295:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'weszła z patyk 3, jagoda 2', 'odsłonięto 5 z 16 kafelków', 'w drodze 7 min' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\end-window-lines.test.mjs:309:1
+✖ the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of the map it opens (0.3206ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     mapId: 'forestDeep',
+  -     text: 'Otwarte: Las — głębiej →'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (tests/view/end-window-lines.test.mjs:310:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { mapId: 'forestDeep', text: 'Otwarte: Las — głębiej →' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

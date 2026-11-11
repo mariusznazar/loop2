@@ -1,0 +1,11 @@
+import { advanceMinutes, createCharacter, newGame, send, setPaused, settleDeath, mapRunEnded } from "../../../../dist/browser/sim/game.js";
+import { createProgram } from "../../../../dist/browser/sim/programs.js";
+import { loadSavedGame, savedGame } from "../../../../dist/browser/sim/saved-game.js";
+const two = createProgram(createCharacter(newGame(), "Ala").state).state;
+let s = send(two, { mapId: "forest", characterId: 1, programId: 1 }, 0).state;
+for (let i = 0; i < 50 && !mapRunEnded(s.run); i++) s = advanceMinutes(setPaused(s, false).state, 5000).state;
+s = settleDeath(s, 1_760_000_000_000).state;
+console.log(s.run.minute, s.run.streak, s.run.longestStreak, JSON.stringify(s.run.minutesByAction));
+const r = (x) => { const l = loadSavedGame(JSON.parse(JSON.stringify(savedGame(x)))); return JSON.stringify(l.ok ? "ok" : l); };
+console.log("plain", r(s));
+console.log("116", r({ ...s, run: { ...s.run, longestStreak: 116 } }));

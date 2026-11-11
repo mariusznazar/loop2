@@ -1,0 +1,33 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/end-question.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapisz”, „Odrzuć” and „Wróć” in that order, only „Odrzuć” a destructive button, each asking its own act (45.3437ms)
+✔ the line of D-172 stands under the sentence only while the copy's program is on the list and holds changes the copy lacks (24.9293ms)
+✔ „Zakończ” with unsaved changes asks at every moment of the map run, leaves the map run where it is and stops the one that goes on (455.0165ms)
+✔ „Zakończ” without unsaved changes ends the map run at once and opens Postać of its character (48.17ms)
+✔ „Zapisz” saves the copy into its program, replacing what the program had since, ends the map run and leads to Postać, and Programy then shows that program (63.5597ms)
+✔ „Zapisz” of a copy whose program was deleted saves it as a new program under the first free name with no name field, ends the map run, and Programy shows the new program (125.641ms)
+✔ „Odrzuć” ends the map run with no save, the program as it was, and leads to Postać (60.7379ms)
+✔ „Wróć” closes the question and puts the map run back as it was: one that went on goes on, one that was paused stays paused (160.8101ms)
+✔ leaving the screen closes the question and the map run stays paused on the return, “Zakończ” asking again (64.92ms)
+✔ the question lives in the page alone: a game built from the kept document stands with no question and the map run paused (75.0436ms)
+✔ „Wznów” of the header and of the band and „Restart” close the question and do their own act; the pace buttons and a second „Zakończ” leave it (197.0643ms)
+✔ the buttons of the panel work while the question stands, and it goes when the copy holds no unsaved changes, leaving the map run paused (301.6687ms)
+✔ an edit of the copy leaves the question unless the copy then equals its program, when the question goes like after a save (103.0661ms)
+✔ the question stands under the band of a discovery and directly above the heading of the copy, after the list „Program:” and „Nowy program”, also after a completion in the minute of a discovery (96.345ms)
+✔ the question stays in its place while the panel shows another program, and never stands on Programy (45.0667ms)
+✔ after halt() the question changes nothing: „Zakończ” asks nothing and the three answers leave the game state as it was (56.0016ms)
+✔ the first answer takes the keyboard focus when the question opens (24.5412ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2986.8104
