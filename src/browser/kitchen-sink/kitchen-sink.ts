@@ -578,9 +578,12 @@ const SURFACES = ROLES.filter(([, kind]) => kind === "tło").map(
 /** The icon files of the resources, in the data's order, never named here (D-18). */
 const ICONS = Object.values(RESOURCES).map(({ icon }) => `/icons/${icon}.svg`);
 
-/** An icon file drawn as the game draws it: the mask `icon-mask`, in the colour its place gives. */
-function iconMask(href: string): HTMLDivElement {
-  const mask = document.createElement("div");
+/**
+ * An icon file drawn as the game draws it: the mask `icon-mask`, in the colour its place gives. A
+ * `span` beside text, as the game draws it there, and a `div` in the foreign object of the drawing.
+ */
+function iconMask(href: string, tag: "span" | "div"): HTMLElement {
+  const mask = document.createElement(tag);
   mask.className = "icon-mask";
   mask.style.setProperty("--icon", `url("${href}")`);
   return mask;
@@ -609,7 +612,7 @@ function roleSample(name: string, kind: Kind): HTMLElement {
     // The role holds an opacity, not a colour: an icon as the drawing of the map draws it, in
     // `text-strong`, as it stands and dimmed by the role.
     for (const dimmed of [false, true]) {
-      const icon = iconMask(ICONS[0]);
+      const icon = iconMask(ICONS[0], "span");
       icon.classList.add("role-icon");
       if (dimmed) icon.classList.add("dimmed");
       sample.append(icon);
@@ -690,7 +693,7 @@ function drawSample(tiles: readonly SampleTile[]): SVGSVGElement {
       frame.setAttribute("height", String(places[i].size));
       const depleted = tile.icons === "first-depleted" && i === 0;
       frame.setAttribute("class", depleted ? "icon dimmed" : "icon");
-      frame.append(iconMask(href));
+      frame.append(iconMask(href, "div"));
       group.append(frame);
     });
     drawing.append(group);
