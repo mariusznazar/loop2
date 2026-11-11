@@ -66,6 +66,7 @@ function controlsNoting(asked) {
     setPace: (pace) => asked.push(["setPace", pace]),
     restart: () => asked.push(["restart"]),
     end: () => asked.push(["end"]),
+    openWindow: () => asked.push(["openWindow"]),
   };
 }
 
@@ -73,15 +74,17 @@ function controlsNoting(asked) {
  * Draws the header in a root of its own; `show(state)` draws it anew from another state, as the
  * screen does at each tick, and `asked` collects what the buttons asked for.
  */
-async function draw(document, state) {
+async function draw(document, state, windowOpen = false) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
   const asked = [];
   const controls = controlsNoting(asked);
-  const show = (next) =>
+  const show = (next, open = windowOpen) =>
     inAct(() =>
-      root.render(createElement(RunHeader, { state: next, controls })),
+      root.render(
+        createElement(RunHeader, { state: next, controls, windowOpen: open }),
+      ),
     );
   await show(state);
   return { container, asked, show };
@@ -230,14 +233,18 @@ test("a click on a pace button asks for that pace; the buttons stay while paused
 
 // D-62, D-334: the cause of the death is not the header's. Catches the cause left in the header and
 // a „ (pauza)” after the end.
-test("after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the paces are gone, and „Restart” and „Zakończ” stay", async () => {
+test("after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the paces are gone, and „Koniec przejścia”, „Restart” and „Zakończ” stand", async () => {
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
     assert.equal(buttonNamed(container, "Pauza") !== undefined, true);
     await show(dead(running, 312, "cold"));
     assert.equal(clockOf(container).textContent, "Minuta 312");
-    assert.deepEqual(labels(container), ["Restart", "Zakończ"]);
+    assert.deepEqual(labels(container), [
+      "Koniec przejścia",
+      "Restart",
+      "Zakończ",
+    ]);
     await show(dead(setPaused(running, true).state, 312, "cold"));
     assert.equal(clockOf(container).textContent, "Minuta 312");
   });
@@ -245,17 +252,82 @@ test("after a death the clock stands at the minute of the death with no cause an
 
 // D-132: the completion text is „Teraz”'s. Catches the completion text left in the header and a
 // „ (pauza)” after the end.
-test("after a completion the clock stands at the minute of the completion with no completion text and no „ (pauza)”; the paces and „Pauza” go, „Restart” and „Zakończ” stay", async () => {
+test("after a completion the clock stands at the minute of the completion with no completion text and no „ (pauza)”; the paces and „Pauza” go, „Koniec przejścia”, „Restart” and „Zakończ” stand", async () => {
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
     await show(completed(running, 480));
     assert.equal(clockOf(container).textContent, "Minuta 480");
-    assert.deepEqual(labels(container), ["Restart", "Zakończ"]);
+    assert.deepEqual(labels(container), [
+      "Koniec przejścia",
+      "Restart",
+      "Zakończ",
+    ]);
     await show(completed(setPaused(running, true).state, 480));
     assert.equal(clockOf(container).textContent, "Minuta 480");
     await show(running);
     assert.equal(buttonNamed(container, "Pauza") !== undefined, true);
+  });
+});
+
+// D-311, D-173, task To do 2. Catches a „Koniec przejścia” standing while the map run goes on or is
+// paused, one standing while the window stands over the header, one missing after either end with
+// the window closed, one after „Restart” and one asking for anything but the window.
+test("„Koniec przejścia” stands before „Restart” only in an ended map run with the window closed, and asks to open the window", async () => {
+  await withPage(async ({ document }) => {
+    const running = sent();
+    const { container, asked, show } = await draw(document, running);
+    assert.equal(buttonNamed(container, "Koniec przejścia"), undefined);
+    await show(setPaused(running, true).state);
+    assert.equal(buttonNamed(container, "Koniec przejścia"), undefined);
+    for (const ended of [dead(running, 312, "cold"), completed(running, 480)]) {
+      await show(ended, false);
+      assert.deepEqual(labels(container), [
+        "Koniec przejścia",
+        "Restart",
+        "Zakończ",
+      ]);
+      await show(ended, true);
+      assert.equal(
+        buttonNamed(container, "Koniec przejścia"),
+        undefined,
+        "none while the window stands",
+      );
+    }
+    await show(dead(running, 312, "cold"), false);
+    await click(buttonNamed(container, "Koniec przejścia"));
+    assert.deepEqual(asked, [["openWindow"]]);
+    await show(running, false);
+    assert.equal(
+      buttonNamed(container, "Koniec przejścia"),
+      undefined,
+      "none after „Restart” started a map run again",
+    );
+  });
+});
+
+// D-311, binding answer 1 of slice 4. Catches a header drawn visibly under the window, and a header
+// hidden while the window is closed or while the map run goes on.
+test("the header is hidden while the window stands over an ended map run, and shown otherwise", async () => {
+  await withPage(async ({ document }) => {
+    const running = sent();
+    const { container, show } = await draw(document, running);
+    const header = () => container.querySelector(".run-header");
+    assert.equal(header().hidden, false);
+    await show(running, true);
+    assert.equal(
+      header().hidden,
+      false,
+      "a map run that goes on has no window to hide the header",
+    );
+    const died = dead(running, 312, "cold");
+    await show(died, true);
+    assert.equal(header().hidden, true, "hidden under the window");
+    await show(died, false);
+    assert.equal(header().hidden, false, "shown with the window closed");
+    const done = completed(running, 480);
+    await show(done, true);
+    assert.equal(header().hidden, true);
   });
 });
 
@@ -496,7 +568,11 @@ test("after a death of cold the bar stands and reads „Passa 0/480”", async (
       fillOf(requirementsOf(container)[0]).style.getPropertyValue("--share"),
       "0",
     );
-    assert.deepEqual(labels(container), ["Restart", "Zakończ"]);
+    assert.deepEqual(labels(container), [
+      "Koniec przejścia",
+      "Restart",
+      "Zakończ",
+    ]);
   });
 });
 

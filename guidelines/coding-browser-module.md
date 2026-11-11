@@ -10,68 +10,70 @@ Czytaj również ogólne wytyczne kodowania.
 
 ## Files of this kind
 
-| File | Status | Decision |
-|---|---|---|
-| `src/browser/view/account-card.tsx` | exemplar | D-36 |
-| `src/browser/view/account-rules.ts` | copy | — |
-| `src/browser/view/app.ts` | do not copy | — |
-| `src/browser/view/away-report.ts` | copy | — |
-| `src/browser/view/body-row.ts` | do not copy | — |
-| `src/browser/view/character-screen.tsx` | copy | — |
-| `src/browser/view/character-skills.ts` | copy | — |
-| `src/browser/view/chronicle-entries.ts` | copy | — |
-| `src/browser/view/chronicle.ts` | copy | — |
-| `src/browser/view/clock.ts` | copy | — |
-| `src/browser/view/combat-line.ts` | do not copy | — |
-| `src/browser/view/controls/button.ts` | copy | — |
-| `src/browser/view/controls/number-field.ts` | copy | — |
-| `src/browser/view/controls/pick-cell.ts` | copy | — |
-| `src/browser/view/controls/react-button.tsx` | copy | — |
-| `src/browser/view/controls/react-number-field.tsx` | copy | — |
-| `src/browser/view/controls/react-pick-cell.tsx` | copy | — |
-| `src/browser/view/controls/react-select-list.tsx` | copy | — |
-| `src/browser/view/controls/react-text-field.tsx` | copy | — |
-| `src/browser/view/controls/select-list.ts` | copy | — |
-| `src/browser/view/controls/text-field.ts` | copy | — |
-| `src/browser/view/credits-section.tsx` | copy | — |
-| `src/browser/view/credits.ts` | copy | — |
-| `src/browser/view/discovery-band-text.ts` | copy | — |
-| `src/browser/view/discovery-band.tsx` | copy | — |
-| `src/browser/view/discovery-rule.ts` | copy | — |
-| `src/browser/view/email-confirmation.ts` | do not copy | — |
-| `src/browser/view/email-status.ts` | copy | — |
-| `src/browser/view/footer.ts` | do not copy | — |
-| `src/browser/view/game-saver.ts` | do not copy | — |
-| `src/browser/view/game-view.ts` | do not copy | — |
-| `src/browser/view/headquarters.tsx` | copy | — |
-| `src/browser/view/last-resort.ts` | copy | — |
-| `src/browser/view/map-lines.ts` | copy | — |
-| `src/browser/view/maps-screen.tsx` | copy | — |
-| `src/browser/view/menu-bar.tsx` | copy | — |
-| `src/browser/view/now-lines.ts` | copy | — |
-| `src/browser/view/now-rows.tsx` | copy | — |
-| `src/browser/view/password-reset.ts` | copy | — |
-| `src/browser/view/program-editor.ts` | do not copy | — |
-| `src/browser/view/program-list.tsx` | copy | — |
-| `src/browser/view/program-panel.tsx` | copy | — |
-| `src/browser/view/right-area.tsx` | copy | — |
-| `src/browser/view/rule-list.tsx` | copy | — |
-| `src/browser/view/rule-panel.tsx` | copy | — |
-| `src/browser/view/run-header.tsx` | copy | — |
-| `src/browser/view/run-screen.tsx` | copy | — |
-| `src/browser/view/scene-picture.ts` | copy | — |
-| `src/browser/view/scene.tsx` | copy | — |
-| `src/browser/view/screen-address.ts` | copy | — |
-| `src/browser/view/status-row.ts` | do not copy | — |
-| `src/browser/view/team-lines.ts` | copy | — |
-| `src/browser/view/terrain-drawing.tsx` | copy | — |
-| `src/browser/view/terrain-picture.ts` | copy | — |
-| `src/browser/view/tile-list.ts` | do not copy | — |
-| `src/browser/view/tile-table.tsx` | copy | — |
-| `src/browser/view/trip-editor.ts` | do not copy | — |
-| `src/browser/view/trip-lines.ts` | do not copy | — |
-| `src/browser/view/trip-plan.tsx` | copy | — |
-| `src/browser/view/world-area.tsx` | copy | — |
+| File                                               | Status      | Decision |
+| -------------------------------------------------- | ----------- | -------- |
+| `src/browser/view/account-card.tsx`                | exemplar    | D-36     |
+| `src/browser/view/account-rules.ts`                | copy        | —        |
+| `src/browser/view/app.ts`                          | do not copy | —        |
+| `src/browser/view/away-report.ts`                  | copy        | —        |
+| `src/browser/view/body-row.ts`                     | do not copy | —        |
+| `src/browser/view/character-screen.tsx`            | copy        | —        |
+| `src/browser/view/character-skills.ts`             | copy        | —        |
+| `src/browser/view/chronicle-entries.ts`            | copy        | —        |
+| `src/browser/view/chronicle.ts`                    | copy        | —        |
+| `src/browser/view/clock.ts`                        | copy        | —        |
+| `src/browser/view/combat-line.ts`                  | do not copy | —        |
+| `src/browser/view/controls/button.ts`              | copy        | —        |
+| `src/browser/view/controls/number-field.ts`        | copy        | —        |
+| `src/browser/view/controls/pick-cell.ts`           | copy        | —        |
+| `src/browser/view/controls/react-button.tsx`       | copy        | —        |
+| `src/browser/view/controls/react-number-field.tsx` | copy        | —        |
+| `src/browser/view/controls/react-pick-cell.tsx`    | copy        | —        |
+| `src/browser/view/controls/react-select-list.tsx`  | copy        | —        |
+| `src/browser/view/controls/react-text-field.tsx`   | copy        | —        |
+| `src/browser/view/controls/select-list.ts`         | copy        | —        |
+| `src/browser/view/controls/text-field.ts`          | copy        | —        |
+| `src/browser/view/credits-section.tsx`             | copy        | —        |
+| `src/browser/view/credits.ts`                      | copy        | —        |
+| `src/browser/view/discovery-band-text.ts`          | copy        | —        |
+| `src/browser/view/discovery-band.tsx`              | copy        | —        |
+| `src/browser/view/discovery-rule.ts`               | copy        | —        |
+| `src/browser/view/email-confirmation.ts`           | do not copy | —        |
+| `src/browser/view/email-status.ts`                 | copy        | —        |
+| `src/browser/view/end-window-lines.ts`             | copy        | —        |
+| `src/browser/view/end-window.tsx`                  | copy        | —        |
+| `src/browser/view/footer.ts`                       | do not copy | —        |
+| `src/browser/view/game-saver.ts`                   | do not copy | —        |
+| `src/browser/view/game-view.ts`                    | do not copy | —        |
+| `src/browser/view/headquarters.tsx`                | copy        | —        |
+| `src/browser/view/last-resort.ts`                  | copy        | —        |
+| `src/browser/view/map-lines.ts`                    | copy        | —        |
+| `src/browser/view/maps-screen.tsx`                 | copy        | —        |
+| `src/browser/view/menu-bar.tsx`                    | copy        | —        |
+| `src/browser/view/now-lines.ts`                    | copy        | —        |
+| `src/browser/view/now-rows.tsx`                    | copy        | —        |
+| `src/browser/view/password-reset.ts`               | copy        | —        |
+| `src/browser/view/program-editor.ts`               | do not copy | —        |
+| `src/browser/view/program-list.tsx`                | copy        | —        |
+| `src/browser/view/program-panel.tsx`               | copy        | —        |
+| `src/browser/view/right-area.tsx`                  | copy        | —        |
+| `src/browser/view/rule-list.tsx`                   | copy        | —        |
+| `src/browser/view/rule-panel.tsx`                  | copy        | —        |
+| `src/browser/view/run-header.tsx`                  | copy        | —        |
+| `src/browser/view/run-screen.tsx`                  | copy        | —        |
+| `src/browser/view/scene-picture.ts`                | copy        | —        |
+| `src/browser/view/scene.tsx`                       | copy        | —        |
+| `src/browser/view/screen-address.ts`               | copy        | —        |
+| `src/browser/view/status-row.ts`                   | do not copy | —        |
+| `src/browser/view/team-lines.ts`                   | copy        | —        |
+| `src/browser/view/terrain-drawing.tsx`             | copy        | —        |
+| `src/browser/view/terrain-picture.ts`              | copy        | —        |
+| `src/browser/view/tile-list.ts`                    | do not copy | —        |
+| `src/browser/view/tile-table.tsx`                  | copy        | —        |
+| `src/browser/view/trip-editor.ts`                  | do not copy | —        |
+| `src/browser/view/trip-lines.ts`                   | do not copy | —        |
+| `src/browser/view/trip-plan.tsx`                   | copy        | —        |
+| `src/browser/view/world-area.tsx`                  | copy        | —        |
 
 ## Rules
 
@@ -167,7 +169,7 @@ samymi klasami i atrybutami; wygląd stoi tylko w `src/browser/styles.css`.
 Komponent jest napisany po reactowemu, z polami kontrolowanymi i stanem
 w komponencie, nie owija funkcji DOM. Ekran, którego żadne zadanie nie przeniosło
 do Reacta, zostaje przy postaci DOM, a jego nową sekcję wolno zbudować w DOM
-(reguła *Nowy ekran i moduły w DOM*). Test `tests/view/react-controls.test.mjs`
+(reguła _Nowy ekran i moduły w DOM_). Test `tests/view/react-controls.test.mjs`
 rysuje obie postaci dla każdego rodzaju i stanu, których używa ekran w Reactcie,
 i porównuje znacznik, atrybuty i tekst, z atrybutem `value` pola poza
 porównaniem; nowa postać dostaje w nim przypadek.
@@ -180,7 +182,7 @@ porównaniem; nowa postać dostaje w nim przypadek.
 - **Bad:** Nowy ekran buduje elementy przez `document.createElement` na wzór modułu ze statusem `do not copy`.
 
 Nowy ekran nie powstaje na wzór pliku ze statusem `do not copy` w tabeli
-*Files of this kind*: te pliki budują elementy przez API DOM i stoją w tabeli,
+_Files of this kind_: te pliki budują elementy przez API DOM i stoją w tabeli,
 bo ekran, którego żadne zadanie nie przeniosło do Reacta, zostaje przy API DOM.
 Nowy ekran powstaje po wzorze pliku ze statusem `exemplar`. Plik budujący
 elementy przez API DOM, dodany po ostatnim audycie tabeli, nie ma w niej wiersza

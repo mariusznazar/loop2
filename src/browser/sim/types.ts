@@ -290,8 +290,33 @@ export type MapRun = {
 export type DeathSettlement =
   { kind: "resurrectionUsed" } | { kind: "progressLost"; generation: number };
 
+/**
+ * What the character was doing in a game minute of a manual map run, as the record counts it: the
+ * kind of an ordinary action of the data (one that is no combat action), a wait, or a fight.
+ */
+export type MinuteKind =
+  | Exclude<Action["kind"], CombatCharacterAction["action"]["kind"]>
+  | "wait"
+  | "combat";
+
+/** The game minutes of a manual map run by what the character was doing: every kind, 0 included. */
+export type MinutesByAction = Record<MinuteKind, number>;
+
 /** The map run of the game state: the map run of the minute with the record of its copy. */
 export type GameMapRun = MapRun & {
+  /** The greatest value `streak` held at the end of a game minute of this map run; 0 at start. */
+  longestStreak: number;
+  /**
+   * The game minutes of this map run by what the character was doing; each game minute passed counts
+   * once, to what the character was doing at its start, so the counts sum to `minute`.
+   */
+  minutesByAction: MinutesByAction;
+  /**
+   * The items the character entered with: the entries of the backpack the send gave it, in the order
+   * of the data's items, none with count 0. Bound at the start and carried unchanged to the run's
+   * end, the saved document and back; a restart binds it anew.
+   */
+  enteredWith: TripEntry[];
   copy: ProgramCopy;
   /** Bound at entry; editing or switching the copy leaves this snapshot intact. */
   bringPlan: TripEntry[];
@@ -309,6 +334,12 @@ export type GameMapRun = MapRun & {
    */
   deathSettlement: DeathSettlement | null;
 };
+
+/** The record a manual map run keeps for its end: the three fields of `GameMapRun` that make it up. */
+export type RunRecord = Pick<
+  GameMapRun,
+  "longestStreak" | "minutesByAction" | "enteredWith"
+>;
 
 /**
  * An earning loop of one character (D-241): the content of the program taken at its start, a plain

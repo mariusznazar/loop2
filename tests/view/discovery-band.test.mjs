@@ -1,7 +1,8 @@
 // The band of a discovery in React (task ekran-przejscia, To do 7; D-122, D-312, D-313, D-44, D-279)
 // on jsdom through tests/view/page-document.mjs (D-264): the text of the discovery, the sentence about
 // the rule the game wrote and the group it names, „Wznów” and „Dodaj regułę z tym”, the band gone
-// without a discovery and the band standing with no „Wznów” at the end of a map run. Real events and
+// without a discovery and the band gone at the end of a map run, where the window of the end names
+// the discovery (D-122). Real events and
 // the look are checked in the browser (D-88). Every comparison is of plain data or of a handful of
 // words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
@@ -216,7 +217,9 @@ test("there is no band without a discovery, and none once the player goes on", a
   });
 });
 
-test("a discovery held at a completion stands with „Dodaj regułę z tym” and no „Wznów”", async () => {
+// Catches a band drawn once the map run has ended in a completion or a death: the window of the end
+// names the discovery of its game minute instead (D-122, „Dodaj regułę z tym” in the window, D-313).
+test("a discovery of an ended map run, in a completion or a death, draws no band, and a run that goes on keeps the band with „Wznów”", async () => {
   await withPage(async ({ document }) => {
     const discovery = {
       actions: ["explore"],
@@ -230,14 +233,15 @@ test("a discovery held at a completion stands with „Dodaj regułę z tym” an
       ...completed(running, 480),
       discovery,
     });
-    assert.equal(textOf(container), "Odkryto: Eksploruj.");
-    assert.deepEqual(labels(container), ["Dodaj regułę z tym"]);
+    assert.equal(bandOf(container), null);
+    assert.equal(container.textContent, "");
 
     await show({ ...dead(running, 312, "cold"), discovery });
-    assert.equal(textOf(container), "Odkryto: Eksploruj.");
-    assert.deepEqual(labels(container), ["Dodaj regułę z tym"]);
+    assert.equal(bandOf(container), null);
+    assert.equal(container.textContent, "");
 
     await show({ ...running, paused: true, discovery });
+    assert.equal(textOf(container), "Odkryto: Eksploruj.");
     assert.deepEqual(labels(container), ["Dodaj regułę z tym", "Wznów"]);
   });
 });

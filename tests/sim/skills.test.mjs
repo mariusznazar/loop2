@@ -617,6 +617,10 @@ test("scout discovers neighboring resources and the gathering tree with Obchód 
     run: {
       ...run,
       copy: sent.run.copy,
+      // The fixture is a plain map run set in a game's map run: the record is the sent one's.
+      longestStreak: sent.run.longestStreak,
+      minutesByAction: sent.run.minutesByAction,
+      enteredWith: sent.run.enteredWith,
       current: ready({ kind: "explore" }).current,
       tiles: run.tiles.map((tile) => ({
         ...tile,

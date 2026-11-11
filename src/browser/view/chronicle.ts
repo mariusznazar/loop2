@@ -75,6 +75,8 @@ export type Chronicle = {
    * at its place where the window reaches it, and for „Walka” the paragraph alone.
    */
   window(filter: ChronicleFilter, size: number): ChronicleWindow;
+  /** The `size` newest entries up to and including the death's entry, oldest first; none with no death. */
+  entriesToDeath(size: number): ChronicleEntry[];
 };
 
 const KINDS: readonly ChronicleKind[] = [
@@ -117,6 +119,8 @@ export function createChronicle(state: GameState): Chronicle {
     ? { seq: 0, minute: combat.attackMinute }
     : null;
   let waiting = state.run?.current?.activity.kind === "wait";
+  // The place of the death's entry among the entries, null while no death is recorded.
+  let deathAt: number | null = null;
   let tab: ChronicleTab = "chronicle";
   let filter: ChronicleFilter = "all";
   let version = 0;
@@ -145,6 +149,7 @@ export function createChronicle(state: GameState): Chronicle {
     byKind = emptyIndex();
     paragraph = null;
     waiting = false;
+    deathAt = null;
   }
 
   function pick(nextTab: ChronicleTab, nextFilter: ChronicleFilter): void {
@@ -189,6 +194,14 @@ export function createChronicle(state: GameState): Chronicle {
           waiting = wait;
           break;
         }
+        case "characterDied": {
+          const entry = eventEntry(event, result.state);
+          if (entry) {
+            deathAt = entries.length;
+            add(entry);
+          }
+          break;
+        }
         default: {
           const entry = eventEntry(event, result.state);
           if (entry) add(entry);
@@ -224,6 +237,12 @@ export function createChronicle(state: GameState): Chronicle {
     return { rows, more: from > 0 };
   }
 
+  function entriesToDeath(size: number): ChronicleEntry[] {
+    if (deathAt === null) return [];
+    const from = Math.max(0, deathAt + 1 - Math.max(0, size));
+    return entries.slice(from, deathAt + 1);
+  }
+
   return {
     record,
     pickTab: (next) => picked(next, filter),
@@ -239,5 +258,6 @@ export function createChronicle(state: GameState): Chronicle {
       return snapshot;
     },
     window,
+    entriesToDeath,
   };
 }

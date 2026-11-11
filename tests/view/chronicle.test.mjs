@@ -668,3 +668,46 @@ test("a listener is called once for a result that changed the chronicle and once
   recordEvents(chronicle, state, [started(6, { kind: "explore" })]);
   assert.equal(calls, 3, "no call after the listener stopped");
 });
+
+// Catches the last minutes that take the paragraph of the last encounter as an entry, run on past the
+// death's entry, or change with edits of the copy made after the end (D-368, D-147, D-339). The
+// paragraph stands at the game minute of the attack and is no entry; the death's entry is the last of
+// the minutes, and an act after the end stands after it.
+test("the entries up to the death end with its entry, oldest first, leave out the paragraph of the last encounter and stay as they were after an edit", () => {
+  const { chronicle, state } = sentChronicle();
+  recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
+  recordEvents(chronicle, state, [attacked(5)]);
+  recordEvents(chronicle, state, [
+    started(7, { kind: "gather", resource: "stick" }),
+  ]);
+  recordEvents(chronicle, state, [
+    { kind: "characterDied", minute: 9, cause: "cold" },
+  ]);
+  const beforeEdit = chronicle.entriesToDeath(10);
+  assert.deepEqual(beforeEdit, [
+    waitAt(0),
+    entry(3, "action", "Eksploruj"),
+    entry(7, "action", "Zbierz — Patyk"),
+    entry(9, "world", "Mag zamarzł"),
+  ]);
+  chronicle.record({ state, events: [] }, state, { kind: "discard" });
+  assert.deepEqual(chronicle.entriesToDeath(10), beforeEdit);
+  assert.deepEqual(chronicle.entriesToDeath(2), [
+    entry(7, "action", "Zbierz — Patyk"),
+    entry(9, "world", "Mag zamarzł"),
+  ]);
+  assert.deepEqual(chronicle.entriesToDeath(0), []);
+});
+
+// Catches the last minutes shown with no death recorded, or with the entries of a chronicle that began
+// at a load, which holds only the paragraph of the last encounter (D-339).
+test("the entries up to the death are empty while no death is recorded and after a load", () => {
+  const { chronicle, state } = sentChronicle();
+  recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
+  assert.deepEqual(chronicle.entriesToDeath(4), []);
+  const dead = {
+    ...state,
+    run: { ...state.run, minute: 9, death: { minute: 9, cause: "cold" } },
+  };
+  assert.deepEqual(createChronicle(dead).entriesToDeath(4), []);
+});

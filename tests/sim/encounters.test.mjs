@@ -556,7 +556,14 @@ test("stepMinute and game advancement have the same attack and combat ordering",
       state.run.copy.program,
     );
     const advanced = advanceMinutes(state, 1);
-    assert.deepEqual(stepped.run, advanced.state.run);
+    // `stepMinute` steps a plain map run and keeps no record; the record is the game's own, so the
+    // two runs are compared with the record the game's map run held before the minute.
+    assert.deepEqual(stepped.run, {
+      ...advanced.state.run,
+      longestStreak: state.run.longestStreak,
+      minutesByAction: state.run.minutesByAction,
+      enteredWith: state.run.enteredWith,
+    });
     assert.deepEqual(stepped.events, advanced.events);
   }
 });

@@ -36,9 +36,14 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // `resurrectionReadyAtMs` and its map run `deathSettlement`, null on that map run, which goes on;
 // the document of version 1 keeps its characters and its map run without them.
 //
-// The document of the current version, version 3, is that of version 2 with the four keys of the
-// earning loops added and a third character for them (task petla-zarobkowa, To do 10 with D-206;
-// spec sections 1, 9, 11 and 13). It fills every optional branch of the game state: a map run with a
+// The document of version 3 is that of version 2 with the four keys of the earning loops added and
+// a third character for them (task petla-zarobkowa, To do 10 with D-206; spec sections 1, 9, 11 and
+// 13); the game refuses it as another version since version 4.
+//
+// The document of the current version, version 4, is that of version 3 with the three fields of the
+// record of a manual map run added to its map run: the longest streak, the game minutes by what the
+// character was doing, and what the character entered with (task koniec-przejscia, To do 5 and 10
+// with D-206, D-135 and D-368). It fills every optional branch of the game state: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
@@ -542,10 +547,11 @@ const loopOf = (id) => ({
 });
 
 /**
- * The document of the current version: version 2 with Ewa, who stopped a loop at generation 3, Ola's
- * earning loop, Ewa's stopped loop, a report of each kind of line and the moment of the save.
+ * The document of version 3: version 2 with Ewa, who stopped a loop at generation 3, Ola's earning
+ * loop, Ewa's stopped loop, a report of each kind of line and the moment of the save. Its map run has
+ * no record; the game refuses the document as another version.
  */
-const DOCUMENT = {
+const DOCUMENT_V3 = {
   version: 3,
   game: {
     ...DOCUMENT_V2.game,
@@ -598,11 +604,47 @@ const DOCUMENT = {
 };
 
 /**
+ * The record of the map run of the document, written out by hand: 212 game minutes of which 5 are
+ * the fight the map run's last combat tells of (game minutes 191 to 195, attacked at 190), the
+ * longest streak of 40 above the streak going on (16) and below the game minute, and the sticks the
+ * character took from the chest at the start (the backpack holds 4 sticks, 2 berries and 1 moss
+ * now; the comments of the document give the 6 sticks the chest held before the map run took 4).
+ */
+const RUN_RECORD = {
+  longestStreak: 40,
+  minutesByAction: {
+    explore: 40,
+    wander: 30,
+    walkTo: 20,
+    walkToCampfire: 10,
+    gather: 70,
+    patrol: 0,
+    craftCampfire: 20,
+    lightCampfire: 5,
+    lightItem: 0,
+    feedCampfire: 5,
+    eat: 5,
+    wait: 2,
+    combat: 5,
+  },
+  enteredWith: [{ item: "stick", count: 4 }],
+};
+
+/** The document of the current version: version 3 with the record in its map run. */
+const DOCUMENT = {
+  version: 4,
+  game: {
+    ...DOCUMENT_V3.game,
+    run: { ...DOCUMENT_V3.game.run, ...RUN_RECORD },
+  },
+};
+
+/**
  * A document of the current version with no manual map run, its counts beside program 1, Ala in an
  * earning loop whose map run is in a combat going on.
  */
 const HEADQUARTERS = {
-  version: 3,
+  version: 4,
   game: {
     programs: [{ id: 1, name: "Program", program: PROGRAM_1 }],
     nextProgramId: 2,
@@ -678,13 +720,13 @@ test("the current version is the one the document of the current version is writ
 // The `save` the server hands back: exactly `version`, `revision` and `game` (spec, decision 1).
 test("the server's save of the current version loads into the game it holds, its revision left out", () => {
   const save = {
-    version: 3,
+    version: 4,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // To do 10 with D-206: 3 is the current version since the raise, so 4 is another one.
-  assert.deepEqual(loadSavedGame({ ...save, version: 4 }), {
+  // To do 10 with D-206: 4 is the current version since the raise, so 5 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 5 }), {
     ok: false,
     reason: "version",
   });
@@ -843,6 +885,9 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
   passed.game.programs[0].program.groups[0].rules.pop();
   passed.game.team.characters[0].traits.carryingCapacity = 3;
   passed.game.run.copy.base.groups[0].rules[1].condition.value = 2;
+  passed.game.run.minutesByAction.explore = 1;
+  passed.game.run.enteredWith[0].count = 1;
+  passed.game.run.enteredWith.pop();
   assert.deepEqual(state, DOCUMENT.game);
 });
 
@@ -858,8 +903,8 @@ test("a moment of readiness below zero loads, as it is a safe integer of any sig
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
-  // To do 10 with D-206: 3 is the current version since the raise, so 4 stands in for another one.
-  for (const version of [0, 4, -1]) {
+  // To do 10 with D-206: 4 is the current version since the raise, so 5 stands in for another one.
+  for (const version of [0, 5, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -867,14 +912,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 4 of another shape",
-    { version: 4, game: "Las" },
+    "version 5 of another shape",
+    { version: 5, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 4 with an archetype absent from the data",
+    "version 5 with an archetype absent from the data",
     changed((document) => {
-      document.version = 4;
+      document.version = 5;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -892,12 +937,28 @@ test("the document of version 1 is refused as version, whatever its game holds",
 });
 
 // invariant: save-version
-// To do 10 with D-206: a save of the version before the raise is discarded whole, whatever it holds.
 test("the document of version 2 is refused as version, whatever its game holds", () => {
   assert.equal(DOCUMENT_V2.version, 2);
   assertRefused(
     "the document of version 2",
     structuredClone(DOCUMENT_V2),
+    "version",
+  );
+});
+
+// invariant: save-version
+// To do 10 with D-206: a save of the version before the raise is discarded whole, whatever it holds,
+// the player's programs included, though its game state is sound but for the record it lacks.
+test("the document of version 3 is refused as version, whatever its game holds", () => {
+  assert.equal(DOCUMENT_V3.version, 3);
+  assertRefused(
+    "the document of version 3",
+    structuredClone(DOCUMENT_V3),
+    "version",
+  );
+  assertRefused(
+    "the document of version 3 with the record of version 4 in its map run",
+    { ...structuredClone(DOCUMENT), version: 3 },
     "version",
   );
 });
@@ -1387,6 +1448,127 @@ const CRAFTED = {
     dead(document, { kind: "progressLost", generation: 3 });
     document.game.team.characters[1].generation = 5;
   },
+  // The record of the map run (task koniec-przejscia, To do 5 and 10): exactly its three keys, a
+  // longest streak from the streak going on (16) to the game minute (212), a count of game minutes
+  // for each kind of the closed list and none for another, summing to the game minute, and a list
+  // of the items the character entered with as a trip list is read.
+  "the map run without its longest streak": (document) =>
+    delete document.game.run.longestStreak,
+  "the map run without its game minutes by action": (document) =>
+    delete document.game.run.minutesByAction,
+  "the map run without what it entered with": (document) =>
+    delete document.game.run.enteredWith,
+  "a longest streak below the streak going on": (document) =>
+    (document.game.run.longestStreak = 15),
+  "a longest streak above the game minute": (document) =>
+    (document.game.run.longestStreak = 213),
+  "a longest streak below 0": (document) =>
+    (document.game.run.longestStreak = -1),
+  "a fractional longest streak": (document) =>
+    (document.game.run.longestStreak = 40.5),
+  "a longest streak as text": (document) =>
+    (document.game.run.longestStreak = "40"),
+  "a longest streak of none": (document) =>
+    (document.game.run.longestStreak = null),
+  "a longest streak not a number": (document) =>
+    (document.game.run.longestStreak = NaN),
+  "a longest streak beyond the safe integers": (document) =>
+    (document.game.run.longestStreak = 2 ** 53),
+  "game minutes by action of none": (document) =>
+    (document.game.run.minutesByAction = null),
+  "game minutes by action as a list": (document) =>
+    (document.game.run.minutesByAction = []),
+  "a kind missing from the game minutes by action": (document) => {
+    delete document.game.run.minutesByAction.wait;
+    document.game.run.minutesByAction.explore += 2;
+  },
+  "a kind outside the closed list": (document) =>
+    (document.game.run.minutesByAction.sleep = 0),
+  "a combat action among the kinds": (document) =>
+    (document.game.run.minutesByAction.kick = 0),
+  "another combat action among the kinds": (document) =>
+    (document.game.run.minutesByAction.strikeWithStick = 0),
+  "a kind every object inherits": (document) =>
+    (document.game.run.minutesByAction.toString = 0),
+  "a kind named __proto__": (document) =>
+    defineProto(document.game.run.minutesByAction, {}),
+  "a count of game minutes below 0": (document) => {
+    document.game.run.minutesByAction.explore = -1;
+    document.game.run.minutesByAction.wander = 71;
+  },
+  "a fractional count of game minutes": (document) => {
+    document.game.run.minutesByAction.explore = 39.5;
+    document.game.run.minutesByAction.wander = 30.5;
+  },
+  "a count of game minutes as text": (document) =>
+    (document.game.run.minutesByAction.explore = "40"),
+  "a count of game minutes of none": (document) =>
+    (document.game.run.minutesByAction.explore = null),
+  "a count of game minutes not a number": (document) =>
+    (document.game.run.minutesByAction.explore = NaN),
+  "a count of game minutes beyond the safe integers": (document) =>
+    (document.game.run.minutesByAction.explore = 2 ** 53),
+  "counts of game minutes summing to less than the game minute": (document) =>
+    (document.game.run.minutesByAction.explore = 39),
+  "counts of game minutes summing to more than the game minute": (document) =>
+    (document.game.run.minutesByAction.explore = 41),
+  "what it entered with of none": (document) =>
+    (document.game.run.enteredWith = null),
+  "what it entered with as an object": (document) =>
+    (document.game.run.enteredWith = {}),
+  "an item twice among what it entered with": (document) =>
+    document.game.run.enteredWith.push({ item: "stick", count: 1 }),
+  "an item absent from the data among what it entered with": (document) =>
+    (document.game.run.enteredWith[0].item = "sword"),
+  "an entry of what it entered with of count 0": (document) =>
+    (document.game.run.enteredWith[0].count = 0),
+  "an entry of what it entered with of a fractional count": (document) =>
+    (document.game.run.enteredWith[0].count = 2.5),
+  "an entry of what it entered with of a count as text": (document) =>
+    (document.game.run.enteredWith[0].count = "4"),
+  "an entry of what it entered with of a count beyond the safe integers": (
+    document,
+  ) => (document.game.run.enteredWith[0].count = 2 ** 53),
+  "an entry of what it entered with without its count": (document) =>
+    delete document.game.run.enteredWith[0].count,
+  "an entry of what it entered with with a key added": (document) =>
+    (document.game.run.enteredWith[0].note = "x"),
+  "an entry of what it entered with of none": (document) =>
+    (document.game.run.enteredWith[0] = null),
+  "what it entered with with a hole": (document) =>
+    (document.game.run.enteredWith[3] = { item: "berry", count: 1 }),
+  "a key added to what it entered with": (document) =>
+    (document.game.run.enteredWith.extra = 1),
+  // The game writes the entries in the order of the data's items (stick, berry, moss, fiber) and
+  // their counts sum to at most the character's carrying capacity (15 in this document).
+  "what it entered with out of the order of the data's items": (document) =>
+    (document.game.run.enteredWith = [
+      { item: "berry", count: 1 },
+      { item: "stick", count: 1 },
+    ]),
+  "what it entered with of a count above the carrying capacity": (document) =>
+    (document.game.run.enteredWith[0].count = 16),
+  "what it entered with of counts summing above the carrying capacity": (
+    document,
+  ) =>
+    (document.game.run.enteredWith = [
+      { item: "stick", count: 8 },
+      { item: "berry", count: 8 },
+    ]),
+  // The activity going on is an ordinary action or a wait, so no minute counts to a combat action.
+  "a combat action as the activity going on": (document) =>
+    (document.game.run.current.activity = {
+      kind: "rule",
+      ruleId: 2,
+      action: { kind: "kick" },
+    }),
+  // The earning loop's map run is a plain one: none of the record.
+  "an earning loop's map run with a longest streak": (document) =>
+    (olaLoop(document).run.longestStreak = 3),
+  "an earning loop's map run with game minutes by action": (document) =>
+    (olaLoop(document).run.minutesByAction = RUN_RECORD.minutesByAction),
+  "an earning loop's map run with what it entered with": (document) =>
+    (olaLoop(document).run.enteredWith = []),
   // The chest, by item and within its capacity.
   "a chest above its capacity": (document) =>
     (document.game.team.chest.pieces = { stick: 40, berry: 21 }),
@@ -1771,6 +1953,70 @@ const CRAFTED = {
 test("a crafted document of the current version is refused whole as shape", () => {
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
+});
+
+// invariant: save-version
+// To do 10: the record comes back whole after a load, whichever way the map run stands.
+test("the record loads back whole from a map run that goes on, one that died and one that completed", () => {
+  const going = changed((document) => {
+    document.game.paused = false;
+    document.game.discovery = null;
+  });
+  const died = changed((document) => dead(document));
+  const completed = changed((document) => {
+    document.game.paused = false;
+    document.game.realMsCarry = 0;
+    solvingItsMap(document);
+    document.game.run.completion = { minute: 212 };
+    document.game.run.deposited = [{ item: "berry", count: 2 }];
+  });
+  for (const [name, document] of Object.entries({ going, died, completed })) {
+    const loaded = loadSavedGame(document);
+    assert.equal(loaded.ok, true, name);
+    const { run } = loaded.state;
+    assert.equal(run.longestStreak, RUN_RECORD.longestStreak, name);
+    assert.deepEqual(run.minutesByAction, RUN_RECORD.minutesByAction, name);
+    assert.deepEqual(run.enteredWith, RUN_RECORD.enteredWith, name);
+  }
+});
+
+// invariant: save-version
+// Catches a condition set one step too strict, each edge being a value the game writes.
+test("a record at the edges of what it admits loads", () => {
+  const onlyWaiting = Object.fromEntries(
+    Object.keys(RUN_RECORD.minutesByAction).map((kind) => [kind, 0]),
+  );
+  const edges = {
+    "a longest streak equal to the streak going on": (document) =>
+      (document.game.run.longestStreak = 16),
+    "a longest streak equal to the game minute": (document) =>
+      (document.game.run.longestStreak = 212),
+    "every game minute counted to one kind": (document) =>
+      (document.game.run.minutesByAction = { ...onlyWaiting, wait: 212 }),
+    "a map run that entered with nothing": (document) =>
+      (document.game.run.enteredWith = []),
+    "a map run that entered with the whole of its carrying capacity in two items":
+      (document) =>
+        (document.game.run.enteredWith = [
+          { item: "stick", count: 8 },
+          { item: "berry", count: 7 },
+        ]),
+    "a map run that entered with every item": (document) =>
+      (document.game.run.enteredWith = [
+        { item: "stick", count: 1 },
+        { item: "berry", count: 1 },
+        { item: "moss", count: 1 },
+        { item: "fiber", count: 1 },
+      ]),
+  };
+  for (const [name, change] of Object.entries(edges)) {
+    const document = changed(change);
+    assert.deepEqual(
+      loadSavedGame(document),
+      { ok: true, state: document.game },
+      name,
+    );
+  }
 });
 
 // invariant: save-version
@@ -2286,6 +2532,12 @@ function completed(solved = false) {
         ...run,
         minute: later(run.minute),
         streak: 476,
+        // The record keeps pace: an unbroken streak of 476 and 476 game minutes spent eating.
+        longestStreak: 476,
+        minutesByAction: {
+          ...run.minutesByAction,
+          eat: run.minutesByAction.eat + 476,
+        },
         attackCooldownStart: later(run.attackCooldownStart),
         current: {
           ...run.current,

@@ -179,6 +179,9 @@ function passedAndEnded(state, nowMs = T0) {
 
 /** The ids of the fields a `GameMapRun` adds to a `MapRun`. */
 const MANUAL_ONLY = [
+  "longestStreak",
+  "minutesByAction",
+  "enteredWith",
   "copy",
   "bringPlan",
   "deposited",
