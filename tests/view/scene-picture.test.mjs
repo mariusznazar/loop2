@@ -35,8 +35,8 @@ const SENT = {
 };
 const ALWAYS = { kind: "always" };
 
-// The layout of the old Loop's scene (C:\Storage\repos\loop\src\components\probe\Scene.tsx lines
-// 44-58 at cdc7c0d), in the pixels of the 336 × 152 frame. A place is the left edge and the line the
+// The layout of the old Loop's scene (src/components/probe/Scene.tsx of the old Loop repository,
+// lines 44-58 at cdc7c0d), in the pixels of the 336 × 152 frame. A place is the left edge and the line the
 // picture stands on; the mage's place is its frame's left edge, its feet on the ground line. The
 // mage's frame is 64 pixels wide and the old Loop's was 32, so each of its places is the old one
 // moved 16 pixels left, which keeps the figure's centre where the old Loop had it.

@@ -1187,7 +1187,7 @@ test("a map run started drops an effect still standing", async () => {
   });
 });
 
-// To do 3, 4, D-363, D-364. Catches an effect placed by where the mage goes next instead of where it
+// To do 3, 4, D-364, D-365. Catches an effect placed by where the mage goes next instead of where it
 // stood when the gathering ended: in the reading that carries the end the next action has started,
 // and a walk to the right edge (275) or to the sticks (42) is no place the mage is at. The mage of
 // every case stands at its place, which the first draw gives: the sticks 42, the bush 224, the

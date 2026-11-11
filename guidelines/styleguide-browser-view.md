@@ -597,7 +597,7 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ### The scene of a map run
 
-- **Decision:** D-271 · D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-362 · D-363 · D-364 · D-365 · D-39 · D-40 · D-43
+- **Decision:** D-271 · D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-363 · D-364 · D-365 · D-366 · D-39 · D-40 · D-43
 - **Invariant:** none
 - **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi.
 - **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę.
@@ -626,20 +626,20 @@ w `src/browser/styles.css`. Zmiana celu w drodze skręca maga z miejsca, w któr
 Mag, który zbiera, schyla się w pętli w tym samym takcie klatek przez całe zbieranie,
 od chwili, gdy stanie na miejscu czynności, zwrócony ku rekwizytowi, który zbiera, z danych
 gry: ku prawej przy patykach i jagodach, ku lewej przy mchu; przy włóknie, które rekwizytu nie ma,
-zwrócony tak, jak stoi (D-362); jego klatki schylenia leżą w osobnym arkuszu z obrazkiem pierwszej klatki, pełnym
+zwrócony tak, jak stoi (D-363); jego klatki schylenia leżą w osobnym arkuszu z obrazkiem pierwszej klatki, pełnym
 schyleniem, na którym mag staje pod ustawieniem ograniczenia ruchu.
 
 Koniec zbierania pokazuje efekt zwykłego zdarzenia, najwyżej 300 ms, bez tekstu (D-317).
 Gdy do plecaka przybyła sztuka, z rekwizytu, a przy włóknie spod stóp maga, leci łukiem do jego
 tułowia ikona zasobu z danych gry, ta sama co na rysunku mapy, na małej plakietce w tle `panel`,
-jak plakietka nad głową; ikona trzyma kolor w swoim pliku (D-363, D-43). Gdy „Zbierz” chybi,
+jak plakietka nad głową; ikona trzyma kolor w swoim pliku (D-364, D-43). Gdy „Zbierz” chybi,
 przy rekwizycie, a przy włóknie pod stopami maga, staje obłok kurzu z paczki Smoke & Fire
 Animated Particle [16x16], przekolorowany na brązy sceny, które odróżniają się od gruntu, na
-którym stoi (D-364, D-271). Lot i kurz biegną w CSS z `src/browser/styles.css`, każdy 300 ms, kurz
+którym stoi (D-365, D-271). Lot i kurz biegną w CSS z `src/browser/styles.css`, każdy 300 ms, kurz
 raz przez wszystkie swoje klatki; scena pamięta poprzedni odczyt stanu gry i zdarzenia wywołania,
 żeby rozpoznać koniec zbierania i trafienie albo chybienie, i opuszcza efekt zaległy: ten, którego
 kolej przychodzi przy zatrzymaniu, ten z odczytu, który niesie kilka końców zbierania, i ten z odczytu,
-w którym skończyła się też czynność biorąca sztuki z plecaka (D-365).
+w którym skończyła się też czynność biorąca sztuki z plecaka (D-366).
 
 Przy zatrzymaniu — pauzie, odkryciu, śmierci i ukończeniu — cały ruch sceny,
 także ogień, mag, lot ikony i kurz, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu

@@ -1545,7 +1545,7 @@ Loop2 tests stand at three levels: unit test and integration test as defined in 
 
 ### D-82 — Which product documents supply test expectations?
 
-Test expectations may come from the loop2 foundation, accepted task documents in `C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/` and its `_zadania/` directory in state ready for cycle or completed, and the approved `definicja_mvp_loop2.md` there. The draft `koncepcja_projektowa.md` is a source only in a passage quoted by an accepted document; a test comment locating a documentary expectation names its file and line.
+Test expectations may come from the loop2 foundation, accepted task documents in the folder that the entry `projects` under `loop2` in the locations file names, and in its `_zadania/` directory in state ready for cycle or completed, and the approved `definicja_mvp_loop2.md` there. The draft `koncepcja_projektowa.md` is a source only in a passage quoted by an accepted document; a test comment locating a documentary expectation names its file and line.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
@@ -5721,8 +5721,7 @@ scene is the mage of Pixel Crawler.
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
   come from?” · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
-  item 2 · zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
-  items 2, 4 and 7, Questions to settle, questions 1 and 4
+  item 2
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
 fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
@@ -6993,7 +6992,7 @@ and shows no flash of its whole area.
   - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
     that moves under the system's setting for reduced motion as it does without it; an effect of
     an ordinary event that lasts 500 ms; a flying icon with a number beside it
-- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 5 and 8, Questions to settle, question 6 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F2 and F5 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 5
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F2 and F5 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 5
 
 *Rationale:* pictures scaled up can pass the area below which flashing is allowed, so no effect
 takes the whole area of the scene, and a player who asks the system for less motion gets less. An
@@ -8101,7 +8100,22 @@ An agent reads root's SSH configuration and the system-wide one on the server on
 *Rationale:* root's SSH configuration holds the login to Mikrus Strych, an access value kept outside the repository by D-13, and a number shows none of it. The count lets an agent that looks for the reason of a failed backup confirm the condition D-238 rests on. The limit of D-12 is an agreement, not an enforced boundary, so a slip in the command's switches would print lines with the login; the count is accepted with that risk.
 *Rejected:* a ban on every reading, the two options checked only by a human at the installation — it costs nothing, but the condition of D-238 is then checked only at a hand installation, and an agent seeking the reason of a failed backup cannot confirm it
 
-### D-362 — How does the mage show a gathering?
+### D-362 — How does loop2 point to places on the author's disk that lie outside the repository?
+
+loop2 names a place on the author's disk outside the repository, such as the folder of its projects in the notes and the list of its tasks, by the entry that stands for it under `loop2` in the locations file `~/.the-way/locations.json`, which are the entries `projects` and `tasks`, and no file git tracks holds an absolute path on that disk. A file may name a note and the folder it lies in within the notes, such as `Notes/Projects/(P) Loop/_zadania`, without a path on the disk.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, product-foundation, test-helpers
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: tracked-file-private-paths. An agent compares a change with the decision:
+  - complies: a line of the agent instructions that names the entry `projects` under `loop2` in the locations file; a comment that names a note by its file name and the folder it lies in within the notes
+  - violates: a line of any tracked file that gives the folder of the notes, the list of tasks or an old copy of the repository by its path on the disk
+- **Origin:** zadanie_loop2_lokalizacje_poza_repozytorium.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 2, and § Settlements to record, row 1
+
+*Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note and the folder it lies in within the notes show less than a path and still let a reader find the source of a decision, so they stay.
+*Rejected:* removing only the three paths of the backlog section of the agent instructions — the other six paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; replacing the folder `Notes/Projects/(P) Loop` by a reference to the entry `projects` — about 310 changed lines, 298 of them in the *Origin* fields, to review, and a new rule for how later entries write *Origin*; removing the names of the notes altogether — decisions lose the pointer to their reasoning and an agent cannot reach the source on the author's computer either
+
+### D-363 — How does the mage show a gathering?
 
 While the mage gathers, with „Zbierz” or „Obchód”, fibre included, it bends in a loop through the whole action, from the moment it stands at the place of the action to its end, at the fixed beat of the scene's frames. Bending is a continuing occupation of the character, no effect of an ordinary event, so the limit of D-317 does not bind it. It faces the prop of what it gathers, as the game's data gives its side, and where the resource has no prop it bends as it stands.
 
@@ -8111,12 +8125,12 @@ While the mage gathers, with „Zbierz” or „Obchód”, fibre included, it b
 - **Verification:** an agent compares a change with the decision:
   - complies: the mage at the sticks bending from the end of its walk to the end of „Zbierz — Patyk”, at the same beat at 1× and at 4×; the mage gathering fibre, which has no prop, bending where it stood; the mage of „Obchód” bending through its forty minutes; the mage at the moss, which lies to its left, bending facing left
   - violates: one bend of 300 ms at the end of each gathering; a mage that bends at „Zbierz” and stands at „Obchód”; a mage that stands in the frames of standing while it gathers fibre; a beat of the bend that follows the pace; a mage that bends with its back to the prop
-- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 6, and § Settlements to record, row 1
+- **Origin:** none
 
 *Rationale:* the gathering is most of the time of a run, and a mage that stands through it leaves the scene with nothing to show for the longest action. The mage reaches the sticks and the moss walking left and the bush walking right, so a facing that follows its walk would turn its back to a prop it reaches, and the prop's side in the data is what the player sees. Accepted with it: with „Obchód” the mage bends for forty game minutes though a patrol is a walk about the tile, and at 16× a gathering lasts 625 ms and the walk 640 ms, so the loop shows mostly from 1× to 4×.
 *Rejected:* the loop at „Zbierz” only — „Obchód” would look in the scene like waiting at the prop; one bend of at most 300 ms at the end of each gathering — at 1× the mage stands ten seconds with no motion, the gap the report of the reconnaissance names the largest, and at 16× the bend mostly comes while the mage still walks and is dropped
 
-### D-363 — What flies when something is gathered?
+### D-364 — What flies when something is gathered?
 
 When a gathering ends with a piece more in the backpack, the icon of the gathered resource, the one the game's data gives it and the drawing of the map shows, flies in an arc from the prop of the resource to the mage on a small plaque on a solid `panel` background, and vanishes at the mage. A resource with no prop sends it from under the mage's feet, and „Obchód” sends one icon for its whole result.
 
@@ -8126,12 +8140,12 @@ When a gathering ends with a piece more in the backpack, the icon of the gathere
 - **Verification:** an agent compares a change with the decision:
   - complies: the icon of a stick on a plaque in `panel` flying from the sticks to the mage after a „Zbierz — Patyk” that put a stick into the backpack; one icon after an „Obchód” that brought seven pieces; the icon of fibre starting under the mage's feet
   - violates: the icon straight on the picture of the forest with no plaque; an icon for a gathering that put no piece into the backpack; seven icons after one „Obchód”; a picture of the resource cut from a pack in place of the icon
-- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* the icon is the picture of the resource that the player knows from the map, and the plaque keeps it legible on the forest, as the badge over the head keeps the icon of an action. Nothing new enters the game's files for it.
 *Rejected:* the icon alone on the forest, with no plaque — it has its colour in its file and on a light ground it can vanish, for the reason D-320 puts the icon over the head on a plaque; a pixel picture of the resource from a pack in place of the icon — a new cut-out picture for each resource, the pack holds none of fibre, and leaving the words of the approved definition, „the icon flies”, is a change of the definition
 
-### D-364 — Where does the dust of a miss stand?
+### D-365 — Where does the dust of a miss stand?
 
 When „Zbierz” ends with no piece more in the backpack, a cloud of dust stands at the prop of the resource, and where the resource has no prop, under the mage's feet.
 
@@ -8141,22 +8155,22 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 - **Verification:** an agent compares a change with the decision:
   - complies: a missed „Zbierz — Patyk” leaving a cloud of dust at the sticks; a missed „Zbierz — Włókno” leaving one under the mage's feet
   - violates: dust at a „Zbierz” that put a piece into the backpack; dust over the mage's head, where the badge stands; no sign of a miss in the scene
-- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* a miss leaves the stock of the tile and the backpack as they were, and the dust shows it where the hand reached for the prop, so that the player sees the gathering fail and not only the numbers stand still. Under the feet the dust stands for the fibre, which has no prop.
 *Rejected:* particles of single pixels in a brown that stands out from the ground — barely visible in the preview, and more or larger particles are still weak; a cloud drawn by hand from the pixels of Pixel Crawler in the colours of the scene — hand pixel work whose look is seen only at the request; the cloud of smoke of the campfire of Pixel Crawler — the files showed it about as light as the ground and covering at most 36 in 255, so it cannot be seen on the scene, and the pack holds no cloud; dust drawn by CSS alone — a new colour value in the token file and a departure from D-271
 
-### D-365 — Which readings of the game show an effect of the end of a gathering?
+### D-366 — Which readings of the game show an effect of the end of a gathering?
 
-The scene shows an effect of the end of a gathering, D-363 or D-364, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the mage as it stood at the previous reading. Any other reading shows none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped, and an effect that comes while another still runs takes its place.
+The scene shows an effect of the end of a gathering, D-364 or D-365, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the mage as it stood at the previous reading. Any other reading shows none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped, and an effect that comes while another still runs takes its place.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-04 · derives from D-317 · derives from D-363 · derives from D-364
+- **Relations:** derives from D-04 · derives from D-317 · derives from D-364 · derives from D-365
 - **Verification:** an agent compares a change with the decision:
   - complies: a reading in which one „Zbierz — Patyk” ended with a piece more in the backpack showing the icon at the mage that gathered, though the action that starts in that reading leads the mage elsewhere; a reading that carries two ends of a gathering showing nothing; the end of „Zjedz” in the reading of a gathering's end leaving its result unread and showing nothing; the end at the discovery that stops the scene showing nothing
   - violates: an effect shown for a gathering that ended in the first reading the scene draws; an icon that lands where the next action leads the mage; a field of the game state that holds the result of a gathering for the scene
-- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, and Questions carried to cycle, question 2
+- **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, which is where the previous reading had it.
 *Rejected:* none considered
