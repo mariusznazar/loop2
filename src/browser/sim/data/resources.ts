@@ -9,7 +9,7 @@ export type ResourceDef = {
   /** File name in assets/icons, without the extension. */
   icon: string;
   /**
-   * Title of the icon, as its page on game-icons.net gives it; the footer's credit names it.
+   * Title of the icon, as its page on game-icons.net gives it; the section of credits names it.
    * Icon titles are game content, so they stand here in the data, not in the view's credits.ts:
    * content-identifiers keeps the names of resources out of the view, and a title such as
    * "Wood stick icon" holds the resource identifier `stick` as a word.

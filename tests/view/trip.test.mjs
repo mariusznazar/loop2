@@ -14,7 +14,6 @@ import {
 import { emptyProgram } from "../../dist/browser/sim/programs.js";
 import { tripCount, tripChoices } from "../../dist/browser/view/trip-editor.js";
 import {
-  deathSettlementLine,
   emptyLoopMark,
   entersLine,
   rehearsalMark,
@@ -301,7 +300,6 @@ test("the loop mark stands when the bring list is empty, and only then", () => {
 
 const SOLVED_LINE =
   "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.";
-const USED_LINE = "Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.";
 
 /** A run on a map solved before it started, the bring list set so the preview has text. */
 function solvedSent() {
@@ -312,10 +310,20 @@ function solvedSent() {
     23,
   ).state;
 }
-// The minute is set with the streak, as the load admits a streak no longer than the run.
+// The minute is set with the streak and the record, as the load admits a streak no longer than the
+// run and game minutes by action that sum to the minute: 479 minutes of waiting, a streak of 479.
 const completed = (state) =>
   advanceMinutes(
-    { ...state, run: { ...state.run, minute: 479, streak: 479 } },
+    {
+      ...state,
+      run: {
+        ...state.run,
+        minute: 479,
+        streak: 479,
+        longestStreak: 479,
+        minutesByAction: { ...state.run.minutesByAction, wait: 479 },
+      },
+    },
     1,
   ).state;
 /**
@@ -334,75 +342,53 @@ function died(state, readyAtMs) {
   return settleDeath(dying, 1_000).state;
 }
 
-// Catches a map-run screen that leaves the player thinking a solved-map run pays, or that
-// shows the solved-map line on a run that does pay; decision 8's table, the six rows.
-test("the six screens of a map run give the solved-map line, the deposit, the settlement and the preview in decision 8's order of lines", () => {
+// Catches a map-run screen that shows the deposit or the settlement in the world area, which the
+// window of the end holds (D-185, D-216, D-311), or that shows the solved-map line on a run that does
+// pay; the lines the world area reads, in decision 8's order, for the six screens of a map run.
+test("the six screens of a map run give the world area the solved-map line and the preview, and no deposit and no settlement", () => {
   const lines = (state) => ({
     solved: solvedRunText(state),
-    settlement: deathSettlementLine(state),
-    ...tripTexts(state),
+    preview: tripTexts(state).preview,
   });
-  const none = { solved: null, settlement: null };
 
   // going on, unmarked run: the preview alone
   assert.deepEqual(lines(sent()), {
-    ...none,
-    deposited: null,
+    solved: null,
     preview: "Wyniesie: patyk 3",
   });
   // going on, marked run: the solved line, and the preview reading nothing
   assert.deepEqual(lines(solvedSent()), {
-    ...none,
     solved: SOLVED_LINE,
-    deposited: null,
     preview: "Wyniesie: nic",
   });
-  // completion, unmarked: the deposit
-  assert.deepEqual(lines(completed(sent())), {
-    ...none,
-    deposited: "Do skrzynki: patyk 3.",
-    preview: null,
-  });
-  // completion, marked: the solved line, and a deposit reading nothing
+  // completion, unmarked: no line of the deposit in the world area
+  assert.deepEqual(lines(completed(sent())), { solved: null, preview: null });
+  // completion, marked: the solved line alone
   assert.deepEqual(lines(completed(solvedSent())), {
-    ...none,
     solved: SOLVED_LINE,
-    deposited: "Do skrzynki nic nie trafiło.",
     preview: null,
   });
-  // death, unmarked: the settlement, in the role of each kind of death
-  assert.deepEqual(lines(died(sent(), 0)), {
-    ...none,
-    settlement: { text: USED_LINE, danger: false },
-    deposited: null,
-    preview: null,
-  });
+  // death, unmarked: no line of the settlement in the world area
+  assert.deepEqual(lines(died(sent(), 0)), { solved: null, preview: null });
   assert.deepEqual(lines(died(sent(), 9_000_000)), {
-    ...none,
-    settlement: {
-      text: "Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 2.",
-      danger: true,
-    },
-    deposited: null,
+    solved: null,
     preview: null,
   });
-  // death, marked: the same settlement with the solved line
+  // death, marked: the solved line alone
   assert.deepEqual(lines(died(solvedSent(), 0)), {
-    ...none,
     solved: SOLVED_LINE,
-    settlement: { text: USED_LINE, danger: false },
-    deposited: null,
     preview: null,
   });
 });
 
 // Catches a screen that reads the settlement from anything but the state's own record: a death
-// not yet settled draws nothing, and a loaded screen is the same screen.
-test("a death not yet settled draws no settlement, and a loaded screen reads the same lines", () => {
+// not yet settled has no settlement, and a loaded game holds the same record, which the window of the
+// end reads after a load too (D-216).
+test("a death not yet settled has no settlement record, and a loaded game holds the same record and the same lines", () => {
   const unsettled = sent();
   const dying = { ...unsettled, run: { ...unsettled.run, death: "cold" } };
-  assert.equal(deathSettlementLine(dying), null);
-  assert.equal(deathSettlementLine(newGame()), null);
+  assert.equal(dying.run.deathSettlement, null);
+  assert.equal(newGame().run, null);
   assert.equal(solvedRunText(newGame()), null);
   for (const state of [
     died(solvedSent(), 0),
@@ -415,8 +401,8 @@ test("a death not yet settled draws no settlement, and a loaded screen reads the
     assert.equal(loaded.ok, true, String(state.run.completion?.minute));
     assert.deepEqual(solvedRunText(loaded.state), solvedRunText(state));
     assert.deepEqual(
-      deathSettlementLine(loaded.state),
-      deathSettlementLine(state),
+      loaded.state.run.deathSettlement,
+      state.run.deathSettlement,
     );
     assert.deepEqual(tripTexts(loaded.state), tripTexts(state));
   }

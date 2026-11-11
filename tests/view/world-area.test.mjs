@@ -1,12 +1,13 @@
 // The world area of the screen of a map run in React (task ekran-przejscia, To do 4, 5 and 6; D-311,
 // D-19, D-70, D-147, D-185, D-186, D-201, D-215, D-216, D-272, D-314) on jsdom through
-// tests/view/page-document.mjs (D-264): the scene, the lines of the
-// end, the body row with the backpack, the lines between the backpack and the drawing, the drawing
+// tests/view/page-document.mjs (D-264): the scene, the rows, the body row with the backpack, the lines
+// between the backpack and the drawing, the drawing
 // and the line of a tile under it, and the table of revealed tiles that stands in another area
 // and shares the hovered tile with the drawing. Real events and the look are checked in the
 // browser (D-88), so a hover case here holds only what jsdom shows. Every comparison is of plain
 // data or of a handful of words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { Fragment, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -27,6 +28,10 @@ import { WorldArea } from "../../dist/browser/view/world-area.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
+const STYLES = readFileSync(
+  new URL("../../src/browser/styles.css", import.meta.url),
+  "utf8",
+);
 const SENT = { mapId: "forest", characterId: 1 };
 const ALWAYS = { kind: "always" };
 
@@ -169,11 +174,12 @@ const tileOf = (container, key) =>
 const rowOf = (container, key) =>
   container.querySelector(`.tile-list tbody tr[data-tile="${key}"]`);
 
-// Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene
-// (below the lines of the end, where they would move as those grow), a paragraph of the last encounter
-// standing in the world area, which the chronicle holds since task kronika-z-filtrami, To do 6, or a
-// part out of the order of task item 4 and of task teraz-i-potem, To do 2 (D-311).
-test("the world area stands from the top: the scene, Teraz, Potem, the lines of the end, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no paragraph of the last encounter", async () => {
+// Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene,
+// a paragraph of the last encounter standing in the world area, which the chronicle holds since task
+// kronika-z-filtrami, To do 6, a part out of the order of task item 4 and of task teraz-i-potem, To do 2
+// (D-311), or a line of the deposit or of a death's settlement standing in the world area, which the
+// window of the end holds since task koniec-przejscia, To do 3 (D-185, D-216, D-311).
+test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -204,35 +210,44 @@ test("the world area stands from the top: the scene, Teraz, Potem, the lines of 
     assert.equal(parts[5][1], "Wprawa w tym przejściu: Eksploracja +12");
     assert.equal(parts[6][1], "Wyniesie: nic");
 
-    // Completed: the deposit stands under „Potem”, above the body row; the preview is gone.
+    // Completed: no deposit line under „Potem” (D-185: the window holds it); the solved line stays,
+    // and the preview is gone.
     await show(withRun(completed(solvedSent()), { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
       "scene",
       "now-row",
       "next-row",
-      "trip-result",
       "body-row",
       "trip-result",
       "world-drawing",
       "tile-line",
     ]);
     const ended = partsOf(container);
-    assert.equal(ended[3][1], "Do skrzynki nic nie trafiło.");
     assert.equal(
-      ended[5][1],
+      ended[4][1],
       "Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.",
     );
-
-    // Dead, the resurrection not ready: the settlement under „Potem”, in `danger`.
-    await show(withRun(died(sent(), 9_000_000), { lastCombat: WOLF }));
-    const [scene, now, next, settlement, body] = partsOf(container);
-    assert.deepEqual(
-      [scene[0], now[0], next[0], settlement[0], body[0]],
-      ["scene", "now-row", "next-row", "trip-result danger", "body-row"],
+    assert.ok(
+      ended.every(([, text]) => !text.includes("Do skrzynki")),
+      "the deposit stands nowhere in the world area",
     );
-    assert.equal(
-      settlement[1],
-      "Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie 2.",
+
+    // Dead, the resurrection not ready: no settlement line in the world area (D-216: the window
+    // holds it, in its section about what the death cost); the practice of the run stays after the
+    // death (D-201).
+    await show(withRun(died(sent(), 9_000_000), { lastCombat: WOLF }));
+    assert.deepEqual(classesOf(container), [
+      "scene",
+      "now-row",
+      "next-row",
+      "body-row",
+      "run-practice",
+      "world-drawing",
+      "tile-line",
+    ]);
+    assert.ok(
+      partsOf(container).every(([, text]) => !text.includes("Wskrzeszenie")),
+      "the settlement stands nowhere in the world area",
     );
   });
 });
@@ -253,7 +268,7 @@ const rowsOf = (container) => ({
 const textsOf = (row) => ({
   text: row.querySelector(".now-text").textContent,
   right: row.querySelector(".now-right")?.textContent ?? null,
-  icon: row.querySelector(".action-icon")?.style.getPropertyValue("--icon"),
+  icon: row.querySelector(".icon-mask")?.style.getPropertyValue("--icon"),
 });
 
 // Catches rows that name a rule other than the one under way and the one that wins, an icon of the
@@ -341,7 +356,7 @@ test("after a death Teraz says its cause in the role text, after a completion th
       const { now, next } = rowsOf(container);
       assert.equal(now.querySelector(".now-text").textContent, words);
       assert.equal(now.querySelector(".now-text").className, "now-text");
-      assert.equal(now.querySelector(".action-icon"), null);
+      assert.equal(now.querySelector(".icon-mask"), null);
       assert.equal(now.querySelector(".now-right"), null);
       assert.equal(next.querySelector(".next-label").textContent, "Potem");
     }
@@ -375,7 +390,7 @@ test("in the minutes of an attack Teraz says the fight alone and Potem names the
       now.querySelector(".now-text").textContent,
       "Walczy z wilkiem",
     );
-    assert.equal(now.querySelector(".action-icon"), null);
+    assert.equal(now.querySelector(".icon-mask"), null);
     assert.equal(now.querySelector(".now-right"), null);
     assert.deepEqual(textsOf(next), {
       text: "Kopnij",
@@ -385,19 +400,15 @@ test("in the minutes of an attack Teraz says the fight alone and Potem names the
   });
 });
 
-// Catches a settlement of a used resurrection drawn in `danger`, or a deposit drawn at death.
-test("the line of a death that used a resurrection is not in danger, and a death shows no deposit and no preview", async () => {
+// Catches the settlement of a death drawn in the world area, the line that the window of the end holds
+// (D-216, its section about what the death cost), or a deposit drawn at death (D-185).
+test("a death that used a resurrection shows no line of its settlement and no deposit and no preview in the world area", async () => {
   await withPage(async ({ document }) => {
     const { container } = await draw(document, died(sent(), 0));
     const lines = partsOf(container).filter(([name]) =>
       name.startsWith("trip-result"),
     );
-    assert.deepEqual(lines, [
-      [
-        "trip-result",
-        "Wskrzeszenie zużyte: wprawa i wykupione stopnie zostają.",
-      ],
-    ]);
+    assert.deepEqual(lines, []);
   });
 });
 
@@ -698,6 +709,45 @@ test("without a map run the world area and the table draw nothing", async () => 
   });
 });
 
+/**
+ * A property of an element as the real stylesheet, laid on its page, gives it, as `computed` of
+ * `scene.test.mjs` does: the page is the test's own jsdom page, whose first import started the
+ * memory limit.
+ */
+function computed(element, property) {
+  const { document, getComputedStyle } = element.ownerDocument.defaultView;
+  if (!document.querySelector("style[data-test-styles]")) {
+    const style = document.createElement("style");
+    style.setAttribute("data-test-styles", "");
+    style.textContent = STYLES;
+    document.head.append(style);
+  }
+  return getComputedStyle(element).getPropertyValue(property);
+}
+
+// Catches an icon of the drawing that does not stand in `text-strong` (D-40, D-43) — it would take
+// the `text` of the panel around the drawing — and a stock of 0 that does not dim it by `depleted`
+// (D-41). The values are those of the stylesheet's rules, read as the tokens they name.
+test("the icons of the drawing take the colour text-strong, the icon of a stock of 0 dimmed by depleted", async () => {
+  await withPage(async ({ document }) => {
+    const { container } = await draw(document, withTiles());
+    const frames = [...container.querySelectorAll(".terrain-drawing .icon")];
+    assert.ok(frames.length > 0, "the drawing holds icons");
+    for (const frame of frames) {
+      assert.equal(computed(frame, "color"), "var(--text-strong)");
+      assert.equal(
+        computed(frame.querySelector(".icon-mask"), "color"),
+        "var(--text-strong)",
+      );
+    }
+    const dimmed = frames.filter((frame) => frame.classList.contains("dimmed"));
+    assert.equal(dimmed.length, 1, "one icon stands at a stock of 0");
+    assert.equal(computed(dimmed[0], "opacity"), "var(--depleted)");
+    for (const frame of frames.filter((each) => !dimmed.includes(each)))
+      assert.notEqual(computed(frame, "opacity"), "var(--depleted)");
+  });
+});
+
 // Catches a drawing that hides a revealed tile's icons, dims one whose stock is not 0, or draws a
 // number. Dimmed icons are those of the stock 0 (D-41).
 test("the drawing has a tile per tile of the map run, the icons of the resources a revealed tile holds dimmed at a stock of 0, and no text", async () => {
@@ -716,20 +766,28 @@ test("the drawing has a tile per tile of the map run, the icons of the resources
         ["1,1", "tile revealed"],
       ],
     );
+    // Each icon is the mask of its file, which the stylesheet colours in `text-strong`.
     const icons = (key) =>
-      [...tileOf(container, key).querySelectorAll("image")].map((icon) => [
-        icon.getAttribute("href"),
-        icon.getAttribute("class"),
-      ]);
+      [...tileOf(container, key).querySelectorAll("foreignObject")].map(
+        (icon) => [
+          icon.querySelector(".icon-mask").style.getPropertyValue("--icon"),
+          icon.getAttribute("class"),
+        ],
+      );
     assert.deepEqual(icons("0,0"), [], "a tile not revealed has no icon");
     assert.deepEqual(icons("1,0"), [
-      ["/icons/wood-stick.svg", "icon"],
-      ["/icons/fern.svg", "icon"],
+      ['url("/icons/wood-stick.svg")', "icon"],
+      ['url("/icons/fern.svg")', "icon"],
     ]);
     assert.deepEqual(icons("1,1"), [
-      ["/icons/berry-bush.svg", "icon dimmed"],
-      ["/icons/flax.svg", "icon"],
+      ['url("/icons/berry-bush.svg")', "icon dimmed"],
+      ['url("/icons/flax.svg")', "icon"],
     ]);
+    assert.equal(
+      drawing.querySelector("image"),
+      null,
+      "no icon is drawn as a picture of its file, which holds its own colour",
+    );
     assert.equal(drawing.textContent, "");
     assert.equal(drawing.querySelector("title, desc, text"), null);
   });
@@ -846,7 +904,7 @@ test("a hovered tile marks its row and the line under the drawing shows its numb
     // The pointer over an icon of the tile hovers the tile, as over its polygon.
     await dispatch(
       window,
-      tileOf(container, "1,1").querySelector("image"),
+      tileOf(container, "1,1").querySelector(".icon-mask"),
       "pointerover",
     );
     assert.deepEqual(marked(), ["1,1", "1,1"]);
@@ -960,12 +1018,20 @@ test("the campfire's icon stands in its tile and its state in the row of the sam
       await show(state);
       // Whichever state the campfire is in, one campfire icon stands, and it is the state's own.
       const icons = [
-        ...container.querySelectorAll(
-          'image[href="/icons/campfire.svg"], image[href="/icons/wood-pile.svg"]',
+        ...container.querySelectorAll(".terrain-drawing foreignObject"),
+      ].filter((icon) =>
+        ["campfire.svg", "wood-pile.svg"].some((name) =>
+          icon
+            .querySelector(".icon-mask")
+            .style.getPropertyValue("--icon")
+            .includes(name),
         ),
-      ];
+      );
       assert.equal(icons.length, 1);
-      assert.equal(icons[0].getAttribute("href"), `/icons/${file}`);
+      assert.equal(
+        icons[0].querySelector(".icon-mask").style.getPropertyValue("--icon"),
+        `url("/icons/${file}")`,
+      );
       assert.equal(icons[0].getAttribute("class"), "icon");
       assert.equal(icons[0].parentElement.getAttribute("data-tile"), "1,1");
       assert.ok(rowOf(container, "1,1").textContent.includes(text));
@@ -1001,6 +1067,20 @@ test("the table has a column per resource of the map, a row per revealed tile wi
       ),
       ["", "patyk", "jagoda", "mech", "włókno", ""],
     );
+    // Each heading's icon is the mask of its resource's file, in the colour of the heading, and is
+    // no picture of the file (D-43).
+    assert.deepEqual(
+      [...table.querySelectorAll("thead th .icon-mask")].map((icon) =>
+        icon.style.getPropertyValue("--icon"),
+      ),
+      [
+        'url("/icons/wood-stick.svg")',
+        'url("/icons/berry-bush.svg")',
+        'url("/icons/fern.svg")',
+        'url("/icons/flax.svg")',
+      ],
+    );
+    assert.equal(table.querySelector("img"), null);
     assert.deepEqual(
       [...table.querySelectorAll("tbody tr")].map((row) =>
         [...row.children].map((cell) => cell.textContent),

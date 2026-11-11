@@ -119,6 +119,13 @@
   border: var(--frame-width) solid var(--divider);
 }
 
+/* The icon sample of the role `depleted`: a mask in `text-strong`, as on the map, 24 px a side. */
+.role-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--text-strong);
+}
+
 .role-icon.dimmed {
   opacity: var(--depleted);
 }

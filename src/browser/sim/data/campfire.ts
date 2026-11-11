@@ -21,7 +21,7 @@ export type CampfireDef = {
   warmth: number;
   /** File name in assets/icons, without the extension. */
   icon: string;
-  /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
+  /** Title of the icon, as its page on game-icons.net gives it; the section of credits names it. */
   iconTitle: string;
   /** What the drawing of the map shows for the campfire with no minutes of burning left, never lit included. */
   extinguished: {
@@ -29,7 +29,7 @@ export type CampfireDef = {
     name: string;
     /** File name in assets/icons, without the extension. */
     icon: string;
-    /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
+    /** Title of the icon, as its page on game-icons.net gives it; the section of credits names it. */
     iconTitle: string;
   };
 };

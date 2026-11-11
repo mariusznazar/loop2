@@ -143,6 +143,40 @@ test("the screen holds its heading Siedziba, then the sections „Drużyna” an
   });
 });
 
+// Catches the credits of the icons left off Siedziba (D-27), opened by default, standing above the
+// last part of the screen (the task's settlement 3), or lost at a refresh of the game state.
+test("the folded section „Autorzy grafiki” stands last on the screen, whatever the team and the chest hold, and stays as the player left it", async () => {
+  await withPage(async (page) => {
+    const state = teamOf(1);
+    const { screen } = await mount(page, propsOf(state));
+    const screenElement = page.root.querySelector(".headquarters");
+    const credits = () => screenElement.lastElementChild;
+    assert.equal(credits().localName, "details");
+    assert.equal(
+      screenElement.querySelectorAll("details").length,
+      1,
+      "one section stands",
+    );
+    assert.equal(text(credits(), "summary"), "Autorzy grafiki");
+    assert.equal(credits().open, false, "folded until the player opens it");
+    assert.ok(
+      all(credits(), "li").length > 0,
+      "it holds the credit of each icon",
+    );
+
+    const section = credits();
+    section.open = true;
+    for (const next of [
+      propsOf(withChest(createCharacter(state, "Ola").state, { stick: 1 })),
+      propsOf({ ...state, awayReport: [reportLine(1, { minutes: 3 })] }),
+    ]) {
+      await inAct(() => screen.update(next));
+      assert.equal(credits(), section, "the same section after a refresh");
+      assert.equal(section.open, true, "the player's opening is kept");
+    }
+  });
+});
+
 // Catches the order of the team changed to the name's or the last created's (D-54), a name that is no
 // link or leads elsewhere than to the character's screen, and a generation label at generation 1.
 test("each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype", async () => {
@@ -478,11 +512,16 @@ test("nothing on the screen sends a character or leads to the screen Mapy", asyn
         .sort(),
       ["Zamknij", "Zatrzymaj: Ola", "Załóż"],
     );
+    // The links of the folded section of credits lead to game-icons.net, not to a screen of the game.
     assert.deepEqual(
-      all(page.root, "a").map((link) => link.getAttribute("href")),
+      all(page.root, ".headquarters > :not(details) a").map((link) =>
+        link.getAttribute("href"),
+      ),
       ["#/postac/1", "#/postac/2"],
     );
-    const words = page.root.textContent;
+    const words = all(page.root, ".headquarters > :not(details)")
+      .map((part) => part.textContent)
+      .join(" ");
     for (const word of [
       "Wyślij",
       "Wejdź",

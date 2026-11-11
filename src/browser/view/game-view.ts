@@ -186,9 +186,17 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  *
  * The question of „Zakończ” is a memory of the view alone, never of the game state or of a save
  * (D-173): it pauses a map run that goes on as „Pauza” does and remembers that it did, so „Wróć”
- * puts the map run back as it was; it closes at „Wróć”, at „Wznów” and „Restart”, at the leaving of
- * Przejście and whenever the copy stops holding unsaved changes, and after `halt()` it changes
- * nothing (D-323).
+ * puts the map run back as it was, and remembers which button asked it, „Zakończ” or „Otwarte:
+ * {mapa} →”, so „Zapisz” and „Odrzuć” lead to Postać or to the card of the opened map; it closes at
+ * „Wróć”, at „Wznów” and „Restart”, at the leaving of Przejście and whenever the copy stops holding
+ * unsaved changes, and after `halt()` it changes nothing (D-323).
+ *
+ * The end-of-run window (D-368) is a memory of the view too, whether it is open: it opens when a map
+ * run ends and at every entering of the screen of an ended map run, is open when the view is built
+ * on one, and closes at „✕” and Escape, when the question stands and when the map run ends or
+ * starts again; „Koniec przejścia” in the header opens it. The view tells the screen of the map run
+ * whether the window stands, which is while it is open, the player is on that screen and no
+ * question stands.
  *
  * Every act of the player whose result changed the state, every game minute that ends the map run
  * in a death or a completion and every result in which a loop's map run ended is a moment of saving
@@ -203,11 +211,29 @@ export function createGameView(options: GameViewOptions): GameView {
   /** The game takes no change any more: an error nothing handled stopped it (D-323). */
   let halted = false;
   /**
-   * The question „Zapisać, odrzucić, wrócić?” of „Zakończ”, null while none stands (D-173):
-   * `resume` is whether „Wróć” sets the map run going again, which is so when the question paused a
-   * map run that went on. It lives in the memory of the page only.
+   * The question „Zapisać, odrzucić, wrócić?” of „Zakończ” or of „Otwarte: {mapa} →”, null while
+   * none stands (D-173): `resume` is whether „Wróć” sets the map run going again, which is so when
+   * the question paused a map run that went on, and `opens` the map „Otwarte: {mapa} →” asked it
+   * for, null where „Zakończ” did, since „Zapisz” and „Odrzuć” lead where the button that asked
+   * leads. It lives in the memory of the page only.
    */
-  let question: { readonly resume: boolean } | null = null;
+  let question: {
+    readonly resume: boolean;
+    readonly opens: MapId | null;
+  } | null = null;
+  /**
+   * Whether the end-of-run window is open (D-368): a memory of the page, never of the game state or
+   * the save. It opens when a map run ends and at every entering of the screen of an ended map run,
+   * it is open when the view is built on one, and it closes at „✕” and Escape, when the question
+   * stands, and when the map run ends or starts again. The window stands only while it is open, the
+   * player is on the screen of an ended map run and no question stands.
+   */
+  let endWindowOpen = state.run !== null && mapRunEnded(state.run);
+  /**
+   * The window opened before the page placed the game, where focus cannot go to it: the first
+   * reading of the clock after the game stands in the page moves it there, where focus is lost.
+   */
+  let windowFocusOwed = false;
 
   const element = document.createElement("div");
   element.className = "game-view";
@@ -298,6 +324,9 @@ export function createGameView(options: GameViewOptions): GameView {
       (event) => event.kind === "loopRunEnded",
     );
     state = result.state;
+    // The window opens at the game minute a map run ends. The end and the restart of the map run
+    // leave no ended map run, which is where it stands no more (D-368).
+    if (ended) endWindowOpen = true;
     chronicle.record(result, before, copyAct);
     // The question has no sense once the copy holds no unsaved changes; it does not come back.
     if (question !== null && !copyHasUnsavedChanges(state)) question = null;
@@ -321,6 +350,7 @@ export function createGameView(options: GameViewOptions): GameView {
       headquarters.update(headquartersProps());
     characterScreen?.update(characterProps(characterScreen.characterId));
     drawMapsScreen();
+    focusOwedWindow();
   });
   const saver = createGameSaver({
     client: options.client,
@@ -424,18 +454,78 @@ export function createGameView(options: GameViewOptions): GameView {
     runScreen.setQuestion(false);
   }
 
+  /** Whether the end-of-run window stands over the screen now (D-368, D-311). */
+  function windowShown(): boolean {
+    return (
+      endWindowOpen &&
+      current.kind === "run" &&
+      question === null &&
+      state.run !== null &&
+      mapRunEnded(state.run)
+    );
+  }
+
+  /** Tells the screen of the map run whether the window stands. */
+  function syncWindow(): void {
+    runScreen.setWindow(windowShown());
+  }
+
+  /** Moves the focus to a window opened before the page placed the game, where focus is lost. */
+  function focusOwedWindow(): void {
+    if (!windowFocusOwed || !element.isConnected) return;
+    windowFocusOwed = false;
+    const active = document.activeElement;
+    if (windowShown() && (active === null || active === document.body))
+      runScreen.focusWindow();
+  }
+
   /**
    * Ends the map run with `result`, which is `end` of the state or `end` of the state after a save,
-   * and leads to the screen Postać of its character, with a new entry (D-53, D-62, D-132).
+   * and leads to the screen Postać of its character, or, where `opens` names a map, to the screen
+   * Mapy at the card of that map, with a new entry (D-53, D-62, D-132, D-173).
    */
-  function endRun(result: (before: GameState) => GameResult): void {
+  function endRun(
+    result: (before: GameState) => GameResult,
+    opens: MapId | null,
+  ): void {
     const run = state.run;
     if (run === null) return;
     const characterId = run.character.id;
     question = null;
     act(result(state));
-    show({ kind: "character", characterId }, "go");
-    characterScreen?.focus();
+    if (opens === null) {
+      show({ kind: "character", characterId }, "go");
+      characterScreen?.focus();
+    } else {
+      show({ kind: "map", mapId: opens }, "go");
+      mapsScreen?.focus();
+    }
+  }
+
+  /**
+   * „Zakończ” (`opens` null) or „Otwarte: {mapa} →” of the header or the window: the map run ends at
+   * once where the copy holds no unsaved changes, and otherwise the question is asked, which closes
+   * the window and remembers which button asked it (D-173, D-53). A second ask leaves the question.
+   */
+  function askToEnd(opens: MapId | null): void {
+    clock.flush();
+    if (state.run === null) return;
+    if (!copyHasUnsavedChanges(state)) {
+      endRun(end, opens);
+      return;
+    }
+    if (halted || question !== null) return;
+    const run = state.run;
+    // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
+    const resume = !mapRunEnded(run) && !state.paused;
+    question = { resume, opens };
+    // The window covers the program panel, where the question stands, so it closes and stays closed
+    // after „Wróć” (D-173, D-311).
+    endWindowOpen = false;
+    if (resume) act(setPaused(state, true));
+    runScreen.setQuestion(true);
+    syncWindow();
+    runScreen.focusQuestion();
   }
 
   const runScreen = createRunScreen(
@@ -451,33 +541,44 @@ export function createGameView(options: GameViewOptions): GameView {
         clock.flush();
         act(setPace(state, pace));
       },
+      // „Restart” of the window closes it with the map run it covers; the focus then goes where the
+      // header's „Restart” leaves it, on that button (D-62, D-368).
       restart() {
         clock.flush();
+        const fromWindow = windowShown();
         closeQuestion();
         if (state.run) act(restart(state));
+        if (fromWindow && !halted) runScreen.focusHeaderButton("Restart");
       },
       // „Zakończ” leads to the screen Postać of the character, with a new entry (D-53, D-62, D-132);
       // with unsaved changes in the copy it asks first (D-173). A second click leaves the question.
       end() {
-        clock.flush();
-        if (state.run === null) return;
-        if (!copyHasUnsavedChanges(state)) {
-          endRun(end);
-          return;
-        }
-        if (halted || question !== null) return;
-        const run = state.run;
-        // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
-        const resume = !mapRunEnded(run) && !state.paused;
-        question = { resume };
-        if (resume) act(setPaused(state, true));
-        runScreen.setQuestion(true);
-        runScreen.focusQuestion();
+        askToEnd(null);
+      },
+      // „Otwarte: {mapa} →” of the window ends the map run as „Zakończ” does and leads to the screen
+      // Mapy at the card of the map it opened (D-53, D-173).
+      openMap(mapId) {
+        askToEnd(mapId);
+      },
+      // „Koniec przejścia” of the header opens the window; a question standing goes as „Wróć” closes
+      // it, since the window and the question never stand together (D-311).
+      openWindow() {
+        if (halted || state.run === null || !mapRunEnded(state.run)) return;
+        closeQuestion();
+        endWindowOpen = true;
+        syncWindow();
+      },
+      // „✕” and Escape of the window; the screen moves the focus to „Koniec przejścia” (D-368).
+      closeWindow() {
+        if (halted) return;
+        endWindowOpen = false;
+        syncWindow();
       },
       // „Zapisz”: the copy goes into its program, or, its program gone, into a new program under the
       // first free name, and the map run ends (D-173, D-171, D-172).
       saveAndEnd() {
         if (halted || question === null) return;
+        const { opens } = question;
         clock.flush();
         if (state.run === null || !copyHasUnsavedChanges(state)) return;
         endRun((before) => {
@@ -494,13 +595,14 @@ export function createGameView(options: GameViewOptions): GameView {
             state: ended.state,
             events: [...saved.events, ...ended.events],
           };
-        });
+        }, opens);
       },
       // „Odrzuć”: the map run ends and the copy's unsaved changes go with it (D-173).
       discardAndEnd() {
         if (halted || question === null) return;
+        const { opens } = question;
         clock.flush();
-        endRun(end);
+        endRun(end, opens);
       },
       // „Wróć”: the map run stays as it was before „Zakończ” (D-173).
       back() {
@@ -725,6 +827,14 @@ export function createGameView(options: GameViewOptions): GameView {
       closeQuestion();
       pauseOnLeaving();
     }
+    // The window opens at every entering of the screen of an ended map run (D-368).
+    if (
+      current.kind !== "run" &&
+      next.kind === "run" &&
+      state.run !== null &&
+      mapRunEnded(state.run)
+    )
+      endWindowOpen = true;
     const hash = screenAddress(next);
     if (how === "go") address.go(hash);
     else if (how === "replace") address.replace(hash);
@@ -738,6 +848,8 @@ export function createGameView(options: GameViewOptions): GameView {
     headquartersScreen.hidden = holder !== headquartersScreen;
     programsScreen.hidden = holder !== programsScreen;
     runScreen.element.hidden = holder !== runScreen.element;
+    // After the screen shows, so the window takes the focus on a screen that is there to take it.
+    syncWindow();
     drawPrograms();
     tellPlace();
   }
@@ -780,6 +892,7 @@ export function createGameView(options: GameViewOptions): GameView {
   function renderScreens(events: readonly GameEvent[]): void {
     headquarters.update(headquartersProps());
     runScreen.setQuestion(question !== null);
+    syncWindow();
     if (state.run !== null) runScreen.update(state, state.run, events);
     characterScreen?.update(characterProps(characterScreen.characterId));
     drawMapsScreen();
@@ -836,6 +949,7 @@ export function createGameView(options: GameViewOptions): GameView {
   programsPanel.update(state, []);
   renderScreens([]);
   show(current, "replace");
+  windowFocusOwed = windowShown();
   // The catch-up is the last step of building, so every place of loading goes the same way (D-212).
   clock.catchUp();
 
