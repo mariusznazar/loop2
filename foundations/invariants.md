@@ -952,7 +952,7 @@ An action shortened by bought branches lasts at least one game minute.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/_zadania/wprawa_i_drzewa_loop2.md § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
+- **Derives from:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania) § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
 - **Part:** simulation
 - **Violated:** no
 
@@ -1274,6 +1274,16 @@ The server writes a failure report of the browser only as a kind, a code and a p
 - **Rests on:** none
 - **Derives from:** D-356
 - **Part:** account-server
+- **Violated:** no
+
+## tracked-file-private-paths
+
+No file git tracks contains an absolute path on a disk or, in a Markdown file, a link to a note, as the check of tracked files in the pinned the-way reads them.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-362
+- **Part:** every
 - **Violated:** no
 
 ## Withdrawn identifiers

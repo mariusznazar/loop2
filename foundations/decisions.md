@@ -1545,7 +1545,7 @@ Loop2 tests stand at three levels: unit test and integration test as defined in 
 
 ### D-82 — Which product documents supply test expectations?
 
-Test expectations may come from the loop2 foundation, accepted task documents in `C:/Storage/The Brain/The Brain/Notes/Projects/(P) Loop/` and its `_zadania/` directory in state ready for cycle or completed, and the approved `definicja_mvp_loop2.md` there. The draft `koncepcja_projektowa.md` is a source only in a passage quoted by an accepted document; a test comment locating a documentary expectation names its file and line.
+Test expectations may come from the loop2 foundation, accepted task documents in the folder that the entry `projects` under `loop2` in the locations file names, and in its `_zadania/` directory in state ready for cycle or completed, and the approved `definicja_mvp_loop2.md` there. The draft `koncepcja_projektowa.md` is a source only in a passage quoted by an accepted document; a test comment locating a documentary expectation names its file and line.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
@@ -8076,3 +8076,18 @@ An agent reads root's SSH configuration and the system-wide one on the server on
 
 *Rationale:* root's SSH configuration holds the login to Mikrus Strych, an access value kept outside the repository by D-13, and a number shows none of it. The count lets an agent that looks for the reason of a failed backup confirm the condition D-238 rests on. The limit of D-12 is an agreement, not an enforced boundary, so a slip in the command's switches would print lines with the login; the count is accepted with that risk.
 *Rejected:* a ban on every reading, the two options checked only by a human at the installation — it costs nothing, but the condition of D-238 is then checked only at a hand installation, and an agent seeking the reason of a failed backup cannot confirm it
+
+### D-362 — How does loop2 point to places on the author's disk that lie outside the repository?
+
+loop2 names a place on the author's disk outside the repository, such as the folder of its projects in the notes and the list of its tasks, by the entry that stands for it under `loop2` in the locations file `~/.the-way/locations.json`, which are the entries `projects` and `tasks`, and no file git tracks holds an absolute path on that disk. A file may name a note and the folder it lies in within the notes, such as `Notes/Projects/(P) Loop/_zadania`, without a path on the disk.
+
+- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, product-foundation, test-helpers
+- **Based on:** none
+- **Relations:** none
+- **Verification:** invariants: tracked-file-private-paths. An agent compares a change with the decision:
+  - complies: a line of the agent instructions that names the entry `projects` under `loop2` in the locations file; a comment that names a note by its file name and the folder it lies in within the notes
+  - violates: a line of any tracked file that gives the folder of the notes, the list of tasks or an old copy of the repository by its path on the disk
+- **Origin:** zadanie_loop2_lokalizacje_poza_repozytorium.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1 and 2, and § Settlements to record, row 1
+
+*Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note and the folder it lies in within the notes show less than a path and still let a reader find the source of a decision, so they stay.
+*Rejected:* removing only the three paths of the backlog section of the agent instructions — the other six paths still show the layout of the disk and name notes, and a decision and the testing guidelines would point to the folder by a path while the backlog section points by an entry; replacing the folder `Notes/Projects/(P) Loop` by a reference to the entry `projects` — about 310 changed lines, 298 of them in the *Origin* fields, to review, and a new rule for how later entries write *Origin*; removing the names of the notes altogether — decisions lose the pointer to their reasoning and an agent cannot reach the source on the author's computer either
