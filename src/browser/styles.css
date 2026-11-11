@@ -545,11 +545,12 @@ header .failure-line {
 }
 
 /*
- * The icon of an action, drawn as a mask in the colour of the text beside it, so it greys with a greyed
- * cell (D-291, D-43). The file's URL is set on the element in `--icon`. The height is the line's, a
- * layout dimension D-43 leaves out.
+ * An icon of `assets/icons/`, drawn as a mask in the colour of the text beside it, so it greys with a
+ * greyed cell (D-291, D-43). Where no text stands beside it — the badge over the mage's head, the
+ * drawing of the map — the element sets the colour itself, in `text-strong`. The file's URL is set on
+ * the element in `--icon`. The height is the line's, a layout dimension D-43 leaves out.
  */
-.action-icon {
+.icon-mask {
   flex: none;
   height: 1lh;
   aspect-ratio: 1;
@@ -956,12 +957,6 @@ header .failure-line {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2xs);
-}
-
-/* An item's icon, as tall as the line it stands in. */
-.trip-plan-icon {
-  height: 1lh;
-  aspect-ratio: 1;
 }
 
 .trip-plan-list {
@@ -1732,7 +1727,7 @@ header .failure-line {
 
 /*
  * The badge over the mage's head (D-320): a solid `panel` with the icon of the action drawn as the
- * mask of `.action-icon` in `text-strong`, though no text stands beside it, and under it the bar of
+ * mask of `.icon-mask` in `text-strong`, though no text stands beside it, and under it the bar of
  * the progress, the fill in `positive` on a track in `highlight`. It sits just above the head, at the
  * middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen by
  * viewing the scene at its one size: 32 px, about two thirds of the width of the mage's figure, 25
@@ -1754,7 +1749,7 @@ header .failure-line {
   color: var(--text-strong);
 }
 
-.scene-badge .action-icon {
+.scene-badge .icon-mask {
   height: 32px;
 }
 
@@ -1894,6 +1889,20 @@ header .failure-line {
   fill: var(--tile-revealed);
 }
 
+/*
+ * An icon of the drawing is a mask in `text-strong`, as the icon over the mage's head is: no text
+ * stands beside it (D-40, D-43). It fills the square the foreign object of the drawing gives it.
+ */
+.terrain-drawing .icon {
+  color: var(--text-strong);
+}
+
+.terrain-drawing .icon .icon-mask {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .terrain-drawing .icon.dimmed {
   opacity: var(--depleted);
 }
@@ -1940,7 +1949,11 @@ header .failure-line {
   border-bottom: var(--frame-width) solid var(--divider);
 }
 
-.tile-list thead img {
+/* The icon of a column heading, in the colour of the heading and 16 px a side, a layout dimension. */
+.tile-list thead .icon-mask {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
   vertical-align: middle;
 }
 
@@ -2169,10 +2182,9 @@ header .failure-line {
   color: var(--warning);
 }
 
-/* A resource's icon, as tall as the line it stands in, as the trip plan's icons are. */
+/* A resource's icon, in the colour of the text it stands in and as tall as the line, as the trip plan's icons are. */
 .maps-card-icon {
-  height: 1lh;
-  aspect-ratio: 1;
+  display: inline-block;
   vertical-align: bottom;
   margin-right: var(--space-xs);
 }

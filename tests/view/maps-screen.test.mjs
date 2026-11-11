@@ -255,16 +255,20 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
       "mech — ≈ 6 z 16 kafelków, po 6, +1 co 60 min",
       "włókno — ≈ 6 z 16 kafelków, po 6, +1 co 60 min",
     ]);
-    // Each resource has the icon its data names, drawn from the icons' address.
+    // Each resource has the icon its data names, drawn as the mask of the file at the icons'
+    // address, in the colour of the text beside it, and as no picture of the file.
     assert.deepEqual(
-      all(lying, "img").map((icon) => icon.getAttribute("src")),
+      all(lying, ".icon-mask").map((icon) =>
+        icon.style.getPropertyValue("--icon"),
+      ),
       [
-        "/icons/wood-stick.svg",
-        "/icons/berry-bush.svg",
-        "/icons/fern.svg",
-        "/icons/flax.svg",
+        'url("/icons/wood-stick.svg")',
+        'url("/icons/berry-bush.svg")',
+        'url("/icons/fern.svg")',
+        'url("/icons/flax.svg")',
       ],
     );
+    assert.equal(lying.querySelector("img"), null, "no icon is a picture");
   });
 });
 
@@ -312,7 +316,7 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
       "1 % szansy na minutę, 180 min spokoju od wejścia i po każdej walce — średnio co ≈ 280 min",
     );
     assert.equal(
-      lurking.querySelector("img"),
+      lurking.querySelector("img, .icon-mask"),
       null,
       "the creature stands with no icon",
     );

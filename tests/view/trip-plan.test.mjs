@@ -74,7 +74,11 @@ test("an empty trip plan folds to the line „Plan wyprawy: pusty” with no ico
     assert.ok(button, "the line holds a button");
     assert.equal(button.textContent, "Plan wyprawy: pusty");
     assert.equal(button.getAttribute("aria-expanded"), "false");
-    assert.equal(root.querySelectorAll("img").length, 0, "no icon stands");
+    assert.equal(
+      root.querySelectorAll(".icon-mask").length,
+      0,
+      "no icon stands",
+    );
     assert.equal(root.querySelectorAll("select").length, 0, "no list stands");
   });
 });
@@ -91,11 +95,27 @@ test("a folded line shows each position's item icon and count, with Zabierz and 
         ],
       ),
     );
-    const icons = [...root.querySelectorAll("img")];
+    const icons = [...root.querySelectorAll(".icon-mask")];
     assert.deepEqual(
-      icons.map((icon) => icon.getAttribute("src")),
-      ["/icons/wood-stick.svg", "/icons/berry-bush.svg", "/icons/fern.svg"],
-      "each position's icon is its resource's file, in its order",
+      icons.map((icon) => icon.style.getPropertyValue("--icon")),
+      [
+        'url("/icons/wood-stick.svg")',
+        'url("/icons/berry-bush.svg")',
+        'url("/icons/fern.svg")',
+      ],
+      "each position's icon is the mask of its resource's file, in its order",
+    );
+    assert.deepEqual(
+      icons.map((icon) => [
+        icon.getAttribute("role"),
+        icon.getAttribute("aria-label"),
+      ]),
+      [
+        ["img", "patyk"],
+        ["img", "jagoda"],
+        ["img", "mech"],
+      ],
+      "each icon is named for what it shows, as its picture was",
     );
     assert.deepEqual(
       icons.map((icon) => icon.parentElement.textContent),

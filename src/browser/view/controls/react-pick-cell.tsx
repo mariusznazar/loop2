@@ -47,7 +47,7 @@ export function ReactPickCell({
     >
       {icon !== undefined ? (
         <span
-          className="action-icon"
+          className="icon-mask"
           aria-hidden="true"
           style={{ "--icon": `url("/icons/${icon}.svg")` } as CSSProperties}
         />

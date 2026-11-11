@@ -14,6 +14,7 @@
  * runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ITEMS } from "../sim/data/items.js";
@@ -204,10 +205,15 @@ export function TripPlanView({ program, items, onCommit }: TripPlanViewProps) {
                 <span className="trip-plan-label">{label}</span>
                 {program.tripPlan[side].map((entry) => (
                   <span className="trip-plan-position" key={entry.item}>
-                    <img
-                      className="trip-plan-icon"
-                      src={`/icons/${RESOURCES[entry.item].icon}.svg`}
-                      alt={ITEMS[entry.item].name}
+                    <span
+                      className="icon-mask"
+                      role="img"
+                      aria-label={ITEMS[entry.item].name}
+                      style={
+                        {
+                          "--icon": `url("/icons/${RESOURCES[entry.item].icon}.svg")`,
+                        } as CSSProperties
+                      }
                     />
                     {entry.count}
                   </span>

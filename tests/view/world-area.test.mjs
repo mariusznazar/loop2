@@ -253,7 +253,7 @@ const rowsOf = (container) => ({
 const textsOf = (row) => ({
   text: row.querySelector(".now-text").textContent,
   right: row.querySelector(".now-right")?.textContent ?? null,
-  icon: row.querySelector(".action-icon")?.style.getPropertyValue("--icon"),
+  icon: row.querySelector(".icon-mask")?.style.getPropertyValue("--icon"),
 });
 
 // Catches rows that name a rule other than the one under way and the one that wins, an icon of the
@@ -341,7 +341,7 @@ test("after a death Teraz says its cause in the role text, after a completion th
       const { now, next } = rowsOf(container);
       assert.equal(now.querySelector(".now-text").textContent, words);
       assert.equal(now.querySelector(".now-text").className, "now-text");
-      assert.equal(now.querySelector(".action-icon"), null);
+      assert.equal(now.querySelector(".icon-mask"), null);
       assert.equal(now.querySelector(".now-right"), null);
       assert.equal(next.querySelector(".next-label").textContent, "Potem");
     }
@@ -375,7 +375,7 @@ test("in the minutes of an attack Teraz says the fight alone and Potem names the
       now.querySelector(".now-text").textContent,
       "Walczy z wilkiem",
     );
-    assert.equal(now.querySelector(".action-icon"), null);
+    assert.equal(now.querySelector(".icon-mask"), null);
     assert.equal(now.querySelector(".now-right"), null);
     assert.deepEqual(textsOf(next), {
       text: "Kopnij",
@@ -716,20 +716,28 @@ test("the drawing has a tile per tile of the map run, the icons of the resources
         ["1,1", "tile revealed"],
       ],
     );
+    // Each icon is the mask of its file, which the stylesheet colours in `text-strong`.
     const icons = (key) =>
-      [...tileOf(container, key).querySelectorAll("image")].map((icon) => [
-        icon.getAttribute("href"),
-        icon.getAttribute("class"),
-      ]);
+      [...tileOf(container, key).querySelectorAll("foreignObject")].map(
+        (icon) => [
+          icon.querySelector(".icon-mask").style.getPropertyValue("--icon"),
+          icon.getAttribute("class"),
+        ],
+      );
     assert.deepEqual(icons("0,0"), [], "a tile not revealed has no icon");
     assert.deepEqual(icons("1,0"), [
-      ["/icons/wood-stick.svg", "icon"],
-      ["/icons/fern.svg", "icon"],
+      ['url("/icons/wood-stick.svg")', "icon"],
+      ['url("/icons/fern.svg")', "icon"],
     ]);
     assert.deepEqual(icons("1,1"), [
-      ["/icons/berry-bush.svg", "icon dimmed"],
-      ["/icons/flax.svg", "icon"],
+      ['url("/icons/berry-bush.svg")', "icon dimmed"],
+      ['url("/icons/flax.svg")', "icon"],
     ]);
+    assert.equal(
+      drawing.querySelector("image"),
+      null,
+      "no icon is drawn as a picture of its file, which holds its own colour",
+    );
     assert.equal(drawing.textContent, "");
     assert.equal(drawing.querySelector("title, desc, text"), null);
   });
@@ -846,7 +854,7 @@ test("a hovered tile marks its row and the line under the drawing shows its numb
     // The pointer over an icon of the tile hovers the tile, as over its polygon.
     await dispatch(
       window,
-      tileOf(container, "1,1").querySelector("image"),
+      tileOf(container, "1,1").querySelector(".icon-mask"),
       "pointerover",
     );
     assert.deepEqual(marked(), ["1,1", "1,1"]);
@@ -960,12 +968,20 @@ test("the campfire's icon stands in its tile and its state in the row of the sam
       await show(state);
       // Whichever state the campfire is in, one campfire icon stands, and it is the state's own.
       const icons = [
-        ...container.querySelectorAll(
-          'image[href="/icons/campfire.svg"], image[href="/icons/wood-pile.svg"]',
+        ...container.querySelectorAll(".terrain-drawing foreignObject"),
+      ].filter((icon) =>
+        ["campfire.svg", "wood-pile.svg"].some((name) =>
+          icon
+            .querySelector(".icon-mask")
+            .style.getPropertyValue("--icon")
+            .includes(name),
         ),
-      ];
+      );
       assert.equal(icons.length, 1);
-      assert.equal(icons[0].getAttribute("href"), `/icons/${file}`);
+      assert.equal(
+        icons[0].querySelector(".icon-mask").style.getPropertyValue("--icon"),
+        `url("/icons/${file}")`,
+      );
       assert.equal(icons[0].getAttribute("class"), "icon");
       assert.equal(icons[0].parentElement.getAttribute("data-tile"), "1,1");
       assert.ok(rowOf(container, "1,1").textContent.includes(text));
@@ -1001,6 +1017,20 @@ test("the table has a column per resource of the map, a row per revealed tile wi
       ),
       ["", "patyk", "jagoda", "mech", "włókno", ""],
     );
+    // Each heading's icon is the mask of its resource's file, in the colour of the heading, and is
+    // no picture of the file (D-43).
+    assert.deepEqual(
+      [...table.querySelectorAll("thead th .icon-mask")].map((icon) =>
+        icon.style.getPropertyValue("--icon"),
+      ),
+      [
+        'url("/icons/wood-stick.svg")',
+        'url("/icons/berry-bush.svg")',
+        'url("/icons/fern.svg")',
+        'url("/icons/flax.svg")',
+      ],
+    );
+    assert.equal(table.querySelector("img"), null);
     assert.deepEqual(
       [...table.querySelectorAll("tbody tr")].map((row) =>
         [...row.children].map((cell) => cell.textContent),

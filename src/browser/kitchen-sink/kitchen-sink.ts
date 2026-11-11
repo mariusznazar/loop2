@@ -578,6 +578,14 @@ const SURFACES = ROLES.filter(([, kind]) => kind === "tło").map(
 /** The icon files of the resources, in the data's order, never named here (D-18). */
 const ICONS = Object.values(RESOURCES).map(({ icon }) => `/icons/${icon}.svg`);
 
+/** An icon file drawn as the game draws it: the mask `icon-mask`, in the colour its place gives. */
+function iconMask(href: string): HTMLDivElement {
+  const mask = document.createElement("div");
+  mask.className = "icon-mask";
+  mask.style.setProperty("--icon", `url("${href}")`);
+  return mask;
+}
+
 function roleSample(name: string, kind: Kind): HTMLElement {
   const sample = document.createElement("span");
   sample.className = "role-sample";
@@ -598,14 +606,12 @@ function roleSample(name: string, kind: Kind): HTMLElement {
       sample.append(text);
     }
   } else if (name === "depleted") {
-    // The role holds an opacity, not a colour: an icon as it stands and dimmed by it.
+    // The role holds an opacity, not a colour: an icon as the drawing of the map draws it, in
+    // `text-strong`, as it stands and dimmed by the role.
     for (const dimmed of [false, true]) {
-      const icon = document.createElement("img");
-      icon.src = ICONS[0];
-      icon.alt = "";
-      icon.width = 24;
-      icon.height = 24;
-      icon.className = dimmed ? "role-icon dimmed" : "role-icon";
+      const icon = iconMask(ICONS[0]);
+      icon.classList.add("role-icon");
+      if (dimmed) icon.classList.add("dimmed");
       sample.append(icon);
     }
   } else {
@@ -676,15 +682,16 @@ function drawSample(tiles: readonly SampleTile[]): SVGSVGElement {
     // The game's placement of the icons on a tile, with its tile size and icon square.
     const places = iconPlaces(icons.length, cx, cy, TILE_SIZE * ICON_SQUARE);
     icons.forEach((href, i) => {
-      const image = document.createElementNS(SVG_NS, "image");
-      image.setAttribute("href", href);
-      image.setAttribute("x", String(places[i].x));
-      image.setAttribute("y", String(places[i].y));
-      image.setAttribute("width", String(places[i].size));
-      image.setAttribute("height", String(places[i].size));
+      // As the drawing of the game draws an icon: the mask in the square of a foreign object.
+      const frame = document.createElementNS(SVG_NS, "foreignObject");
+      frame.setAttribute("x", String(places[i].x));
+      frame.setAttribute("y", String(places[i].y));
+      frame.setAttribute("width", String(places[i].size));
+      frame.setAttribute("height", String(places[i].size));
       const depleted = tile.icons === "first-depleted" && i === 0;
-      image.setAttribute("class", depleted ? "icon dimmed" : "icon");
-      group.append(image);
+      frame.setAttribute("class", depleted ? "icon dimmed" : "icon");
+      frame.append(iconMask(href));
+      group.append(frame);
     });
     drawing.append(group);
     if (tile.outline) {

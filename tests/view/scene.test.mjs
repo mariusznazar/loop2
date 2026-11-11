@@ -220,7 +220,7 @@ test("the badge over the mage holds the icon of the action as a mask and a fill 
     };
     const scene = await drawn(page, state);
     const badge = one(scene, ".scene-mage .scene-badge");
-    const icon = one(badge, ".action-icon");
+    const icon = one(badge, ".icon-mask");
     assert.equal(
       icon.style.getPropertyValue("--icon"),
       'url("/icons/grab.svg")',
@@ -235,7 +235,7 @@ test("the badge over the mage holds the icon of the action as a mask and a fill 
 
     const other = await drawn(page, doing({ kind: "explore" }));
     assert.equal(
-      one(other, ".scene-badge .action-icon").style.getPropertyValue("--icon"),
+      one(other, ".scene-badge .icon-mask").style.getPropertyValue("--icon"),
       'url("/icons/binoculars.svg")',
     );
     assert.equal(

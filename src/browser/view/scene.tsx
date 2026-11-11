@@ -2,7 +2,7 @@
  * The scene of the world area of the screen of a map run (D-316 to D-322, D-272, D-43, D-04; task
  * scena-z-ludzikiem, To do 1 to 11): over the forest of D-314 the props, the campfire while one stands
  * on the character's tile, the mage with its idle and run sheets and, over its head, the badge — the
- * icon of the current action drawn as the mask of `.action-icon` and under it the bar of the action's
+ * icon of the current action drawn as the mask of `.icon-mask` and under it the bar of the action's
  * progress. Its files, places and frame counts come from `sceneDrawing`, the view names none. A place
  * and a size are percentages of the frame and a frame count a custom property, so the stylesheet holds
  * no length of a sprite and the scene is right at its one size.
@@ -106,7 +106,7 @@ function Badge({ badge }: { badge: NonNullable<SceneDrawing["badge"]> }) {
   return (
     <div className="scene-badge">
       <span
-        className="action-icon"
+        className="icon-mask"
         style={{ "--icon": `url("${badge.href}")` } as CSSProperties}
       />
       <span className="scene-badge-bar">

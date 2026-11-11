@@ -13,6 +13,7 @@
  * simulation's calls. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef } from "react";
+import type { CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
@@ -180,10 +181,14 @@ function MapCard({ mapId, solved }: { mapId: MapId; solved: boolean }) {
         <ul className="maps-card-lines">
           {resourceLines(map).map((resource) => (
             <li key={resource.id} className="maps-card-resource">
-              <img
-                className="maps-card-icon"
-                src={`/icons/${RESOURCES[resource.id].icon}.svg`}
-                alt=""
+              <span
+                className="icon-mask maps-card-icon"
+                aria-hidden="true"
+                style={
+                  {
+                    "--icon": `url("/icons/${RESOURCES[resource.id].icon}.svg")`,
+                  } as CSSProperties
+                }
               />
               {`${resource.text}, `}
               <span
