@@ -1,4 +1,4 @@
-// The end-of-run window in the game view (task koniec-przejscia, To do 1, 2, 8 and 9; D-362,
+// The end-of-run window in the game view (task koniec-przejscia, To do 1, 2, 8 and 9; D-364,
 // D-311, D-62, D-132, D-173, D-122, D-313, D-212, D-53, D-323, D-324) on jsdom through
 // tests/view/page-document.mjs (D-264): the game view is built as the page builds it, as in
 // tests/view/end-question.test.mjs, and the window is driven through the buttons the player presses
@@ -325,7 +325,7 @@ async function completeOnTheScreen({ pass, reading }) {
 
 // --- opening ------------------------------------------------------------------------------------
 
-// D-362, D-62, task To do 1. Catches a window that opens only after „Koniec przejścia”, one that
+// D-364, D-62, task To do 1. Catches a window that opens only after „Koniec przejścia”, one that
 // stands before the map run ends, one that leaves the header or an area of the screen visible
 // under it, and the death's title missing.
 test("the window opens at the game minute a character's death ends the map run while the player is on its screen, and covers the header and the three areas", async () => {
@@ -359,7 +359,7 @@ test("the window opens at the game minute a character's death ends the map run w
   });
 });
 
-// D-132, D-362, task To do 1 and 8. Catches a window that opens after a death alone, and one
+// D-132, D-364, task To do 1 and 8. Catches a window that opens after a death alone, and one
 // that stands with no way to the map the completion opened.
 test("the window opens at a completion too, titled by the completion text, with the way to the map it opened", async () => {
   await onPage(async (page) => {
@@ -404,7 +404,7 @@ test("the window opens again at every entering of the screen of an ended map run
   });
 });
 
-// D-212, D-362, D-96, task To do 2. Catches a game built on an ended map run — at a reload at its
+// D-212, D-364, D-96, task To do 2. Catches a game built on an ended map run — at a reload at its
 // address, after a sign-in, at another address of the page — with no window, and a window standing
 // under the other screen.
 test("a game built on an ended map run opens the window: at a reload at its address, after a sign-in, and at the entering from another address", async () => {
@@ -478,7 +478,7 @@ test("a window open at the build takes the keyboard focus at the first reading o
   });
 });
 
-// D-212, D-362. Catches a window that comes back after a load with „Ostatnie minuty” the memory
+// D-212, D-364. Catches a window that comes back after a load with „Ostatnie minuty” the memory
 // of the page no longer has, and one that lacks them where the chronicle holds the entries.
 test("„Ostatnie minuty” are the last entries of the chronicle up to the entry of the death after a death on the screen, and stand nowhere after a completion or a load", async () => {
   await onPage(async (page) => {
@@ -807,7 +807,7 @@ test("„Dodaj regułę z tym” of the window closes it, adds the rule of the d
 
 // --- the memory of the page ---------------------------------------------------------------------
 
-// D-362, D-323, D-173. Catches the memory of the window written into the game state or the save,
+// D-364, D-323, D-173. Catches the memory of the window written into the game state or the save,
 // and a window that survives a load: a game built from the kept document opens it as a map run
 // ended opens it, whatever the player did with it.
 test("the window stands in no game state and no saved document: closing and opening it changes the document not at all, and a load opens it by the rule of an ended map run", async () => {

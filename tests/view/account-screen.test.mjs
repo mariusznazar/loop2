@@ -166,7 +166,7 @@ function shown(element) {
 
 function buttonNamed(root, text) {
   // Under the end-of-run window the header's buttons are hidden and the window has buttons of the
-  // same names (D-362), so the one a player sees comes first.
+  // same names (D-364), so the one a player sees comes first.
   const named = all(root).filter(
     (element) => element.localName === "button" && element.textContent === text,
   );

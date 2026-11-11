@@ -1,6 +1,6 @@
 /**
  * The screen of a manual map run in React, Przejście (D-311, D-280, D-281, D-282, D-19, D-122, D-313,
- * D-362; task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1; task
+ * D-364; task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1; task
  * proporcje-sceny-i-programu, To do 1 and 2; task koniec-przejscia, To do 1, 2, 8 and 9): one header — the character's name, the map's name, the
  * clock, the bar of the solving condition and the buttons — over three areas, each a `screen-area`
  * element a narrower layout can rearrange, in this order in the document: the world, the program,
@@ -11,7 +11,7 @@
  * program panel, under its row (D-288), and changes neither the tabs nor the tab picked. The
  * question „Zapisać, odrzucić, wrócić?” of „Zakończ” is the program panel's: it stands inside the
  * panel, just above the heading of the copy, and the screen only tells the panel when to show it
- * (`setQuestion`). The end-of-run window (D-362) stands over the screen of an ended map run while
+ * (`setQuestion`). The end-of-run window (D-364) stands over the screen of an ended map run while
  * the game view tells the screen it is open (`setWindow`): the header and the three areas are then
  * `hidden`, which keeps them in the tree with their state, so the window covers the screen with its
  * header and the menu bar of the page, outside the game view, stays above it; the screen gives the
@@ -43,7 +43,7 @@ import { RunHeader, type RunHeaderControls } from "./run-header.js";
 import type { EndQuestionControls } from "./end-question.js";
 import { WorldArea } from "./world-area.js";
 
-/** The entries of „Ostatnie minuty” the screen asks its chronicle memory for (D-362). */
+/** The entries of „Ostatnie minuty” the screen asks its chronicle memory for (D-364). */
 const LAST_MINUTES = 4;
 
 /**
@@ -84,7 +84,7 @@ export type RunScreen = {
   /**
    * Shows the end-of-run window over the screen while `open` and the map run has ended, hiding the
    * header and the three areas under it, and takes it away otherwise; the game view decides when it
-   * stands (D-362). Showing what is shown changes nothing.
+   * stands (D-364). Showing what is shown changes nothing.
    */
   setWindow(open: boolean): void;
   /**
@@ -278,7 +278,7 @@ export function createRunScreen(
     });
     // The window takes the focus as it appears, which scrolls the page to its top edge, past the menu
     // bar of the page where the player had scrolled down the screen it covers now; the page goes to
-    // its top, so the menu bar stands above the window in sight (D-362).
+    // its top, so the menu bar stands above the window in sight (D-364).
     if (!hadWindow && element.querySelector(".end-window") !== null)
       document.documentElement.scrollTop = 0;
   }

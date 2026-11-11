@@ -1,4 +1,4 @@
-// The record a manual map run keeps for its end (task koniec-przejscia, To do 5, 10; D-135, D-362,
+// The record a manual map run keeps for its end (task koniec-przejscia, To do 5, 10; D-135, D-364,
 // D-212): the longest streak it reached, its game minutes by what the character was doing, and what
 // the character entered with. Expectations are written out by hand from the data and the decisions:
 // the cooling of Las (streak.test.mjs: no loss through game minute 83, the first chilled one is 84),

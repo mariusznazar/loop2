@@ -1,6 +1,6 @@
 /**
  * The header of the screen of a map run in React (D-311, D-130, D-132, D-62, D-188, D-122, D-44,
- * D-46, D-133, D-362; task ekran-przejscia, To do 1 and 8; task teraz-i-potem, To do 3; task
+ * D-46, D-133, D-364; task ekran-przejscia, To do 1 and 8; task teraz-i-potem, To do 3; task
  * koniec-przejscia, To do 2): the character's name, the map's name and after them the clock, the
  * bar of the solving condition, „Pauza” or „Wznów”, the five pace buttons, after the end of the map
  * run „Koniec przejścia”, then „Restart”, the warning of a cut trip plan and „Zakończ”, in this
@@ -29,7 +29,7 @@ import { tripWarning } from "./trip-lines.js";
 
 /** What the header's buttons ask for: the status row's, and the opening of the end-of-run window. */
 export type RunHeaderControls = StatusRowControls & {
-  /** „Koniec przejścia”: the end-of-run window opens over the screen again (D-362). */
+  /** „Koniec przejścia”: the end-of-run window opens over the screen again (D-364). */
   openWindow(): void;
 };
 
@@ -42,7 +42,7 @@ export type RunHeaderProps = {
   /**
    * Whether the end-of-run window stands over the screen. Over an ended map run the header is then
    * hidden, covered by the window, and has no „Koniec przejścia”; where the window is closed it has
-   * the button. A map run that goes on has neither (D-311, D-362).
+   * the button. A map run that goes on has neither (D-311, D-364).
    */
   windowOpen: boolean;
 };
@@ -56,7 +56,7 @@ export type RunHeaderProps = {
  * the streak as it stands then (D-133, D-135), „Pauza” and the pace buttons are not drawn, and
  * „Restart” and „Zakończ” stay; „Koniec przejścia” stands before „Restart” while the window of the
  * end is closed, and while it stands the header is `hidden`, so that the window covers the screen
- * (D-311, D-362).
+ * (D-311, D-364).
  */
 export function RunHeader({ state, controls, windowOpen }: RunHeaderProps) {
   const run = state.run;

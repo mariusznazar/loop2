@@ -1521,7 +1521,7 @@ header .failure-line {
 }
 
 /*
- * The end-of-run window over the screen of a map run (D-362, D-132, D-122, D-188, D-44, D-39, D-46):
+ * The end-of-run window over the screen of a map run (D-364, D-132, D-122, D-188, D-44, D-39, D-46):
  * a column on `panel` with its text in `text` and a frame in `divider`, as wide as the content column
  * of the screen it covers and no taller than 80vh, so that it leaves the menu bar and the row under
  * it visible in a window 720 px high and in the one column under 1074 px. The height is a layout

@@ -191,7 +191,7 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * „Wróć”, at „Wznów” and „Restart”, at the leaving of Przejście and whenever the copy stops holding
  * unsaved changes, and after `halt()` it changes nothing (D-323).
  *
- * The end-of-run window (D-362) is a memory of the view too, whether it is open: it opens when a map
+ * The end-of-run window (D-364) is a memory of the view too, whether it is open: it opens when a map
  * run ends and at every entering of the screen of an ended map run, is open when the view is built
  * on one, and closes at „✕” and Escape, when the question stands and when the map run ends or
  * starts again; „Koniec przejścia” in the header opens it. The view tells the screen of the map run
@@ -222,7 +222,7 @@ export function createGameView(options: GameViewOptions): GameView {
     readonly opens: MapId | null;
   } | null = null;
   /**
-   * Whether the end-of-run window is open (D-362): a memory of the page, never of the game state or
+   * Whether the end-of-run window is open (D-364): a memory of the page, never of the game state or
    * the save. It opens when a map run ends and at every entering of the screen of an ended map run,
    * it is open when the view is built on one, and it closes at „✕” and Escape, when the question
    * stands, and when the map run ends or starts again. The window stands only while it is open, the
@@ -325,7 +325,7 @@ export function createGameView(options: GameViewOptions): GameView {
     );
     state = result.state;
     // The window opens at the game minute a map run ends. The end and the restart of the map run
-    // leave no ended map run, which is where it stands no more (D-362).
+    // leave no ended map run, which is where it stands no more (D-364).
     if (ended) endWindowOpen = true;
     chronicle.record(result, before, copyAct);
     // The question has no sense once the copy holds no unsaved changes; it does not come back.
@@ -454,7 +454,7 @@ export function createGameView(options: GameViewOptions): GameView {
     runScreen.setQuestion(false);
   }
 
-  /** Whether the end-of-run window stands over the screen now (D-362, D-311). */
+  /** Whether the end-of-run window stands over the screen now (D-364, D-311). */
   function windowShown(): boolean {
     return (
       endWindowOpen &&
@@ -542,7 +542,7 @@ export function createGameView(options: GameViewOptions): GameView {
         act(setPace(state, pace));
       },
       // „Restart” of the window closes it with the map run it covers; the focus then goes where the
-      // header's „Restart” leaves it, on that button (D-62, D-362).
+      // header's „Restart” leaves it, on that button (D-62, D-364).
       restart() {
         clock.flush();
         const fromWindow = windowShown();
@@ -568,7 +568,7 @@ export function createGameView(options: GameViewOptions): GameView {
         endWindowOpen = true;
         syncWindow();
       },
-      // „✕” and Escape of the window; the screen moves the focus to „Koniec przejścia” (D-362).
+      // „✕” and Escape of the window; the screen moves the focus to „Koniec przejścia” (D-364).
       closeWindow() {
         if (halted) return;
         endWindowOpen = false;
@@ -827,7 +827,7 @@ export function createGameView(options: GameViewOptions): GameView {
       closeQuestion();
       pauseOnLeaving();
     }
-    // The window opens at every entering of the screen of an ended map run (D-362).
+    // The window opens at every entering of the screen of an ended map run (D-364).
     if (
       current.kind !== "run" &&
       next.kind === "run" &&

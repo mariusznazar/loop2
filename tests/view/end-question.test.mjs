@@ -169,7 +169,7 @@ const answersOf = (question) =>
 const answer = (root, text) => buttonIn(questionOf(root), text);
 const headerButton = (root, text) =>
   buttonIn(byClass(runScreenOf(root), "run-header")[0], text);
-/** The end-of-run window while it stands over the screen, undefined otherwise (D-362). */
+/** The end-of-run window while it stands over the screen, undefined otherwise (D-364). */
 const windowOf = (root) => byClass(runScreenOf(root), "end-window").find(shown);
 /** The „Zakończ” a player presses: the window's where it stands over an ended map run, else the header's. */
 const endButton = (root) =>

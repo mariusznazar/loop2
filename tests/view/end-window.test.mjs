@@ -1,4 +1,4 @@
-// The end-of-run window in React (task koniec-przejscia, To do 1, 2, 4 to 9; D-362, D-132, D-133,
+// The end-of-run window in React (task koniec-przejscia, To do 1, 2, 4 to 9; D-364, D-132, D-133,
 // D-135, D-185, D-216, D-122, D-147, D-188, D-313, D-44, D-39) on jsdom through
 // tests/view/page-document.mjs (D-264): the title after a death and after a completion in its
 // role, the sections only where they have content and in their order, the paragraph of the last
@@ -315,7 +315,7 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
 });
 
 // Catches a section that stands with no content, a section out of its order, a name in another role
-// and the paragraph of the last encounter standing among the last minutes (D-362, task To do 7).
+// and the paragraph of the last encounter standing among the last minutes (D-364, task To do 7).
 test("after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounter, the rules that never fired, the time, the trip", async () => {
   await withPage(async ({ document }) => {
     const state = {
@@ -478,7 +478,7 @@ test("a section stands only where it has content", async () => {
   });
 });
 
-// Catches the last minutes shown after a completion, which D-362 gives only after a death, and none
+// Catches the last minutes shown after a completion, which D-364 gives only after a death, and none
 // shown when the screen gave some after a death.
 test("the last minutes come from the entries the screen gives and stand only with them", async () => {
   await withPage(async ({ document }) => {
@@ -494,7 +494,7 @@ test("the last minutes come from the entries the screen gives and stand only wit
     assert.equal(
       sectionHeads(container).includes("Ostatnie minuty"),
       false,
-      "after a completion there are none, whatever entries are given (D-362)",
+      "after a completion there are none, whatever entries are given (D-364)",
     );
   });
 });
