@@ -787,14 +787,18 @@ const ended = (action, minute = 10) => ({
  * map run again with `after` pieces and the events given, as the screen draws a reading that carries
  * the end of the gathering.
  */
-async function reading(page, action, { before, after, events, patch = {} }) {
+async function reading(
+  page,
+  action,
+  { before, after, events, patch = {}, next = action },
+) {
   const item = action.resource;
   const mountedScene = await mounted(
     page,
     carrying(doingFrom(action, 0, 9), item, before),
   );
   await mountedScene.draw(
-    carrying({ ...doingFrom(action, 10, 10), ...patch }, item, after),
+    carrying({ ...doingFrom(next, 10, 10), ...patch }, item, after),
     events,
   );
   return mountedScene;
@@ -1180,5 +1184,98 @@ test("a map run started drops an effect still standing", async () => {
       { kind: "mapRunStarted", seed: 2 },
     ]);
     assert.equal(effectsOf(scene()).length, 0);
+  });
+});
+
+// To do 3, 4, D-363, D-364. Catches an effect placed by where the mage goes next instead of where it
+// stood when the gathering ended: in the reading that carries the end the next action has started,
+// and a walk to the right edge (275) or to the sticks (42) is no place the mage is at. The mage of
+// every case stands at its place, which the first draw gives: the sticks 42, the bush 224, the
+// clearing 144 for the fibre. Its body is 32 to the right of its frame's edge, its feet likewise.
+test("an effect stands at the mage that gathered, though the next action walks elsewhere", async () => {
+  await withPage(async (page) => {
+    const EXPLORE = { kind: "explore" };
+    const ended = (action) => [
+      {
+        kind: "activityFinished",
+        minute: 10,
+        activity: { kind: "rule", ruleId: 1, action },
+      },
+      {
+        kind: "activityStarted",
+        minute: 10,
+        activity: { kind: "rule", ruleId: 1, action: EXPLORE },
+        stepTo: null,
+      },
+    ];
+    // A hit at the sticks, the mage's frame at 42: the icon lands at 74 and starts at 91, 17 right of it.
+    const stick = await reading(page, GATHER_STICK, {
+      before: 0,
+      after: 1,
+      events: ended(GATHER_STICK),
+      next: EXPLORE,
+    });
+    const flight = one(stick.scene(), ".scene-flight");
+    near(
+      one(flight, ".scene-flight-plaque").style.left,
+      (74 / 336) * 100,
+      "the icon lands at the sticks' mage, not at 307",
+    );
+    near(flight.style.getPropertyValue("--from-x"), (17 / 336) * 100, "from x");
+
+    // A hit at the bush, the mage's frame at 224, then back to the sticks: lands at 256.
+    const BERRY = { kind: "gather", resource: "berry" };
+    const berry = await reading(page, BERRY, {
+      before: 0,
+      after: 1,
+      events: ended(BERRY),
+      next: GATHER_STICK,
+    });
+    near(
+      one(berry.scene(), ".scene-flight-plaque").style.left,
+      (256 / 336) * 100,
+      "the icon lands at the bush's mage",
+    );
+
+    // A hit of the fibre at the clearing, the mage's frame at 144: starts under its feet at 176.
+    const fibre = await reading(page, GATHER_FIBER, {
+      before: 0,
+      after: 1,
+      events: ended(GATHER_FIBER),
+      next: EXPLORE,
+    });
+    const fibreFlight = one(fibre.scene(), ".scene-flight");
+    near(
+      one(fibreFlight, ".scene-flight-plaque").style.left,
+      (176 / 336) * 100,
+      "lands at the mage of the clearing",
+    );
+    assert.equal(fibreFlight.style.getPropertyValue("--from-x"), "0%");
+
+    // A miss of the fibre: the cloud under the mage's feet, 168 from the left, not at the edge.
+    const missed = await reading(page, GATHER_FIBER, {
+      before: 0,
+      after: 0,
+      events: ended(GATHER_FIBER),
+      next: EXPLORE,
+    });
+    near(
+      one(missed.scene(), ".scene-dust").style.left,
+      (168 / 336) * 100,
+      "the cloud under the feet of the mage that gathered",
+    );
+
+    // A miss at the sticks stands at the sticks whatever comes next.
+    const sticks = await reading(page, GATHER_STICK, {
+      before: 1,
+      after: 1,
+      events: ended(GATHER_STICK),
+      next: EXPLORE,
+    });
+    near(
+      one(sticks.scene(), ".scene-dust").style.left,
+      (83 / 336) * 100,
+      "the cloud at the sticks",
+    );
   });
 });
