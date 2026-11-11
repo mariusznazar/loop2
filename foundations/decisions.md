@@ -44,10 +44,10 @@ The browser view is built in TypeScript with React, its screens written as `.tsx
 - **Based on:** Stack Overflow Developer Survey 2025, Technology, Web frameworks and technologies, All Respondents, "React 44.7%" (https://survey.stackoverflow.co/2025/technology, read 2026-11-02) · React documentation, React Versions, "When a new major is released, we archive the docs for the previous version as `x.react.dev`." (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/versions.md, read 2026-11-02) · React documentation, Versioning policy, Breaking changes, "Breaking changes are inconvenient for everyone, so we try to minimize the number of major releases" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/community/versioning-policy.md, read 2026-11-02) · React documentation, Using TypeScript, "you can get full React Web support by adding `@types/react` and `@types/react-dom` to your project" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/typescript.md, read 2026-11-02) · React 19 Upgrade Guide, UMD builds removed, "Starting with React 19, React will no longer produce UMD builds" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/blog/2024/04/25/react-19-upgrade-guide.md, read 2026-11-02)
 - **Relations:** derives from D-04
 - **Verification:** invariants: browser-view-framework
-- **Origin:** technologia_budowanie_ekranow.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
+- **Origin:** none
 
-*Rationale:* the screen of a map run changes up to five times a second beside fields in which the player types, so keeping focus and rows takes a mechanism rather than an author's discipline, and the program editor is what the project is judged by. A trial of the heaviest screen fitted in every option but one, so cost and upkeep decided: React has the widest use and the most documentation of the options, its major versions come rarely, and nothing in it asks for a way of loading code of the product's own. Lacks of the option chosen: its types stand in a separate package, it adds a bundler to the build and weight to the page, and the tests on the hand-made document model of the screens that move to it lose that model. Risks taken, each a hypothesis: a rebuilt node may restart a CSS animation and make the figure shake; a rule dragged between groups may leave the drop line on the screen; a number field whose value the game clips may lose its cursor.
-*Rejected:* the browser's DOM with no library — every screen written by hand and focus kept by discipline; Preact — it saves weight at the price of a way of loading it that nobody else uses and of a version changing fast; lit-html — its templates are not checked by types; Solid, Svelte, Vue and Angular — a compiler of their own and a second system of tests; Mithril, VanJS, Inferno, Alpine and idiomorph — small use or lacks, and idiomorph did not hold the extreme state.
+*Rationale:* the screen of a map run changes up to five times a second beside fields in which the player types, so keeping focus and rows takes a mechanism rather than an author's discipline, and the program editor is what the project is judged by. The program editor written in the browser's DOM loses the focus of a rule field when the offer of actions changes, because its rows are then built anew and the rebuild does not say where the focus returns (a reading of the code, not a run). A trial of the heaviest screen — 60 program rules and 500 chronicle entries, five updates a second beside a text field and a number field, run in a headless Chrome 156 with its processor throttled sixfold, and again at an extreme state of 200 rules and 2000 entries — fitted in every option but one: in all 48 runs no field lost focus, value or text cursor, and all 144 drags of a rule ended with the drop line on the right row. The exception, idiomorph on the DOM, took 98.5% of the browser's time at the extreme state and left a key press waiting up to 368 ms, while every other option had at most five keyboard events over 100 ms there. The trial screen was written for the trial and the throttling is no model of a weaker laptop, so the trial says nothing of the real editor's focus, and the faults of the libraries named below come from their documentation, a different kind of evidence. So cost and upkeep decided: React has the widest use (743 million npm downloads a month in the reading of 2026-11-01, an upper measure since installs as a dependency count) and the most documentation of the options, versioned with an archive of every major version; its major versions come rarely, announced by warnings, and nothing in it asks for a way of loading code of the product's own. Its game-state fit is direct: an external store with immutable readings. It has traps of its own on focus: a component defined inside a component, or a changed `key`, erases state and nodes, and a controlled field needs a synchronous update or the cursor jumps. Lacks of the option chosen: its types stand in a separate package; it comes to three packages, 33 with the build tools, and two packages and the types are lifted together; it adds a bundler to the build, since its packages hold only the older CommonJS format that a browser does not load and, from version 19, no ready file for a script tag; it adds about 218 KB to the page, which the server does not compress; and the tests on the hand-made document model of the screens that move to it lose that model, because a library draws no row on it, so such a case needs jsdom or happy-dom, a new package of tooling (jsdom has 20 dependencies), while the cases on pure functions stay in every option. A test on an imitation of the document proves focus and dragging in no option; only a browser does. Every new package passes the check for known vulnerabilities (D-33). A library need not cover the whole view, since in the trial each drew into a given element, but the view would then have two ways of building and the rule would have to say which holds where. Moving later from React to Preact costs little: the trial source built on both, differing by two files of seven lines and a JSX setting. Risks taken, each a hypothesis: a rebuilt node may restart a CSS animation and make the figure shake; a rule dragged between groups may leave the drop line on the screen; a number field whose value the game clips may lose its cursor.
+*Rejected:* the browser's DOM with no library — no package and no updates, since the interfaces it uses have been in the main browsers for years, and the tests on the document model stay, but every screen is written by hand (keyed lists, the drop line, the draft of a field), focus is kept by discipline, and no outside conventions exist, so the product guards its own; moving to a library later costs more with each screen written by hand, an assessment and no number; Preact — one package (28 with a bundler, one without it, checked with an import map) built from the same source as React, but it saves weight at the price of a way of loading it that nobody else uses and of a version changing fast: version 11 is fresh and the end of support of version 10 is not stated; without its compatibility layer a field takes `onInput`, not `onChange`; its signals could skip a redraw but need the state spread into signals and one more package; lit-html — two packages and no new build tool (checked with an import map), the files stay `.ts` and one function draws from the state, but its templates are text in a `.ts` file, which types do not check; rows must be bound with `repeat` and fields with `live` where a value changes outside the library; its testing documentation advises a browser over an imitation, though jsdom worked in the trial; and an import map would change the invariant on bare package names in the built page; Solid — four packages, 99 with Vite and a plugin, its own JSX compilation not matching TypeScript's, tests by Vitest, a component that runs once and is written differently from React's; its documentation carries no version number and no choice of one, and the registry already holds a 2.0 release candidate with breaking changes, so once the site moves to 2.0 its description stops matching the pinned 1.9 with nothing to show it, and the move rewrites part of the screens; Svelte — 19 packages, 71 with Vite and `svelte-check`, a `.svelte` format and a compiler of their own, types checked by a separate tool, Vitest with jsdom, a documentation page with no version number; Vue — 23 packages, 75 with Vite and `vue-tsc`, `.vue` files, Vitest with happy-dom, intermediate versions every 3 to 6 months with no fixed cycle and no long-term support, documentation with no release number; Angular — five packages, 360 with the tools, a compiler and the `ng` tool of their own, Vitest, and a TypeScript range of `>=6.0.0 <6.1.0` while the game compiles with 7.0.2, so building the page would go down to 6.0; a major version every 12 months with 24 months of support in all, so lifting it sets a date; Mithril — types outside the package, 90.8 thousand downloads a month, the last stable release in November 2025; VanJS — not measured, lists need a separate package, the smallest use, documentation with no version; Inferno — not measured, its way of compiling JSX not read; Alpine — not measured, screens written in HTML attributes outside the compiler and no types in the package, so a wrong name of a state field would show only in the game; idiomorph — one package and no tool, but screens written as HTML text, so every name from a player needs escaping by hand or opens a way to inject code into the page; its version is below 1.0 and its documentation is a README; it is the one option that did not hold the extreme state. Left out of the comparison: uhtml, with no release since August 2025 and a README that says version 5 has unfinished reactivity, taken as unmaintained, an assessment; and htm, last released in April 2022. Not compared because they do not meet the need: htmx, whose server returns the HTML while the game state is in the browser (D-04); graphics engines and canvas, since the player's fields must be ordinary fields; and morphdom, the same technique as idiomorph with a README silent on focus.
 
 ### D-04 — What is the game built with?
 
@@ -87,19 +87,30 @@ the server or the unsaved game state it kept in the page's memory after a save f
     browser view that writes a program rule straight into the game state; the clock's current
     reading written into the game state on each reading; a field added to the game state, and with
     it to the save, for what the scene's motion or the chronicle needs
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and §9 "Wskrzeszenie a doliczanie nieobecności" · zapis_stanu_na_serwerze_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 10 · rozliczenie_przejsc_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, and § Questions carried to cycle · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-04 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Decisions in play and Questions to settle, question 1
+- **Origin:** none
 
-*Rationale:* text code and tests give the most leverage in work with AI agents. A simulation of
-pure functions makes progress while away plain arithmetic and the save a JSON document, and runs on
-a phone as well; real time passed in as an argument keeps the earning loop, the catch-up and the
-renewal of a resurrection on one footing. The player changes the game state from the browser view —
+*Rationale:* text code and tests give the most leverage in work with AI agents. The simulation does
+not know the world as a picture: it computes state and events, with no physics and no scene in it.
+A simulation of pure functions makes progress while away plain arithmetic and the save a JSON
+document, and runs on a phone as well; real time passed in as an argument keeps the earning loop,
+the catch-up and the renewal of a resurrection on one footing. The earning loop knows the moment it
+started and goes one to one with real time, so it knows the real moment of each death; the catch-up
+passes the moment of the save; the function that passes a game minute and the sweep of the clock
+know neither. The browser's clock gives those moments — the one clock the open page goes by, as in
+the old loop game, and the one that dates a save — so a device whose clock is wrong shortens or
+lengthens the renewal of a resurrection, and a player can cheat by changing the clock, which the
+split of the game's work between server and browser (D-07) accepts for the player's own progress.
+The player changes the game state from the browser view —
 the program editor, sending a character, a map run restart — and the passing of real time changes it
 too; each goes through the simulation, so the game state changes in one place. A saved game state
 downloaded from the server is data from outside the game, and a function of the simulation turns it
 into a game state or refuses it, so loading also changes the game state in that one place; the
 state the page keeps after a save found no session goes back into the game the same way, so its
 map run comes back as a loaded one does. Such a function, like the one that starts a new game,
-passes no game time. The browser view also reads the
+passes no game time. It turns data from outside into a game state or refuses it — for another
+version of the game, a character archetype outside the game's data or a wrong shape — and reaches
+nothing outside the simulation, so the simulation takes on a function that reads untrusted data,
+accepted as the cost. The browser view also reads the
 game's content data, which stands apart from the game state, to name and picture what the game
 state holds. The moment of the browser's clock stands apart from it too: the game state stores a
 moment of an event, written once at the event, and the view compares it with its latest reading, so
@@ -109,7 +120,18 @@ previous reading and the events give it, so no state of a drawing enters the sav
 records what happened between two readings, such as a loss of the streak in a game minute the
 reading passed over or a change the player made to the copy, which one reading does not say either,
 and its previous reading and the events give it, so the chronicle does not enter the save (D-339).
-*Rejected:* Godot — slower to work on with AI agents; a browser view that draws from the game state
+Putting the whole chronicle into the save would raise the version of the save, so a save in use
+would be lost with the programs in it (D-206), and the size of a chronicle was never measured — an
+estimate gives 50 to 60 bytes an entry and several hundred entries in a long map run — while a save
+larger than 64 KiB is not sent (D-207), so the game would stop saving. Kept in the page's memory,
+the chronicle costs one more path in the code and its test: after a load it starts from the
+paragraph of the last encounter, built from the facts the saved state already holds (the creature,
+the minute of the attack, the result), and the entries before the load are gone. That choice rests
+on two things nobody measured, the size of a chronicle and how rarely a page is refreshed in the
+middle of a map run, and both are hypotheses.
+*Rejected:* Godot — slower to work on with AI agents; it would become sensible if movement and
+collisions became the heart of the game's fun, and rebuilding the proof of concept on another
+engine later is easier and makes more sense; a browser view that draws from the game state
 and changes nothing in it — the player changes the game state from the browser view; loading
 counted as a choice of the player, signing in, with this decision left as it stood — a strained
 reading, by which the next reader may take loading for a breach of this decision; the browser view
@@ -121,7 +143,15 @@ browser view drawing from the game state alone — each reading makes a new game
 a stale moment enters the saved document; a function of the simulation that takes the moment and
 returns the text to draw — the view would still draw from the moment, with content in the
 simulation; new fields in the game state for what an effect needs — state of a drawing would enter
-the save.
+the save; the chronicle in page memory with an empty chronicle after a load — after a refresh the
+player could not return to why the streak dropped, and the paragraph of the last encounter would
+no longer stand after a load, so the approved sentence of D-147 that it stands until another attack
+replaces it or „Restart” or „Zakończ” removes its map run would stop being true for a loaded map
+run; the whole chronicle in the save — the version of the save rises and the size is unmeasured, as
+above; raising the server's limit of 64 KiB for it — changes D-104 and D-207 and is work in the
+account server; the server's clock for the renewal of a resurrection — a new version of the
+account database with a step by a human on the server, a change of two decisions, and the open page
+goes by the browser's clock anyway, so the game would hold two clocks.
 
 ### D-05 — What serves the built game and account requests in the container?
 
@@ -133,14 +163,15 @@ not the game's HTML page.
 - **Based on:** Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/ § Serving static files in Express — "To serve static files such as images, CSS files, and JavaScript files, use the express.static built-in middleware function in Express."; read 2026-11-10) · Express 5 request routing and response API (https://expressjs.com/en/5x/api/express/ § express.Router() — "Creates a new router object." · "You can add middleware and HTTP method routes (such as get, put, post, and so on) to router just like an application."; read 2026-11-10) · Caddy 2 route, file_server and reverse_proxy (https://caddyserver.com/docs/caddyfile/directives/route § Examples — "Proxy requests to /api as-is, and rewrite all other requests based on whether they match a file on disk, otherwise /index.html. Then that file is served."; read 2026-11-10) · Docker multiple processes in one container (https://docs.docker.com/engine/containers/multi-service_container/ § introduction — "It's best practice to separate areas of concern by using one service per container."; read 2026-11-10)
 - **Relations:** derives from D-02 · derives from D-08
 - **Verification:** invariants: loop2-one-serving-process · loop2-api-error-route
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What serves the built game and account requests in the container?"
+- **Origin:** none
 
 *Rationale:* Express already handles the API and can serve the built files in the same process, so
 this choice adds no second server process or proxy configuration to the container. The application
 must set static-file and fallback rules carefully, including cache policy and a distinct error
 response for unmatched `/api/` requests. A later proxy can retain the public paths. The one serving
 process is the one in the loop2 container where the MVP runs, and the `/api/` paths it serves are
-the account and save routes.
+the account and save routes. The choice stands while serving the built files through Express stays
+easy to operate and the account API needs no process of its own.
 *Rejected:* Caddy in front of Express within the same container — provides a separate file server
 and proxy routing but adds another process to start, monitor and update, plus its configuration.
 
@@ -155,14 +186,23 @@ configurations and bundles the browser's code, React included, into the files th
 - **Relations:** none
 - **Verification:** invariants: application-package-layout · application-build-layout ·
   application-build-output
-- **Origin:** technologia_budowanie_ekranow.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
+- **Origin:** none
 
 *Rationale:* a shared installation keeps the local starting point small, while separate compiler
 environments keep browser and server types apart. The simulation is browser code, compiled by the
 browser's configuration and held in the shared package. The browser cannot load React's packages by
-itself, so the build takes one more build step, which also runs at each deployment.
+itself, so the build takes one more build step, which also runs at each deployment. The compiler
+alone does not do it: a `.tsx` file passes strict mode with TypeScript 7.0.2, but the compiler leaves
+the package names in `import`, and a browser cannot resolve such a name, so a tool that bundles the
+files, such as esbuild or Vite, or a map of imports is needed. Without a library the build is only
+the compiler and a copy of files. The build tools run only at build time, also in the container's
+build; where the game runs stays the player's browser, with files from the same server, and no new
+process, service or fee comes with them.
 *Rejected:* separate packages — add installation coordination; a map of imports with no bundler —
-React's packages hold a format the browser does not load.
+React's packages hold a format the browser does not load: checked in Chrome, the page fails with
+"does not provide an export named 'jsx'", and from version 19 React has no ready file for a script
+tag, its documentation sending to a server that is not the product's (lit-html and Preact do load
+that way).
 
 ### D-07 — How is the work of the game split between the server and the browser?
 
@@ -179,17 +219,24 @@ and sends the saved game state to the server.
     shape the browser sends beside the game with the stored one, reading nothing inside the game
   - violates: a server endpoint that advances a map run, or computes the catch-up; a server module
     that computes the outcome of a character's actions or of the time the game was closed
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D23 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How is the work of the game split between the server and the browser?"
+- **Origin:** none
 
 *Rationale:* computing the game in the browser keeps it computed as loop computes it, so the server
-adds only accounts and a save that follows the player from browser to browser. The catch-up
+adds only accounts and a save that follows the player from browser to browser. The whole game is a
+saved game state in JSON, and on return the game counts how many minutes passed and plays them, so
+the browser does the catch-up and the game needs no server for it. The saved game state carries the
+version number of its shape, which the server compares. The catch-up
 recomputes the map runs that would have happened, so a server running the game would buy little
 at many times the cost. Players can replace their own saved game states and forge their own
-progress. The MVP accepts that cost while the saved progress affects only its owner's game;
+progress. The MVP accepts that cost while the saved progress affects only its owner's game, and
+neither other players, nor rankings, nor a shared exchange, nor rewards outside a player's own game;
 account isolation prevents changing another player's saved state.
 *Rejected:* the server computing the game and running the earning loops itself — a second home for
 the simulation and many times the work, for little gain while the catch-up recomputes the same map
-runs; no accounts, with the save kept in the browser — drops the logging in the game is to have.
+runs, and with nothing for a server to compute while no one's browser is open; no accounts, with
+the save kept in the browser — drops the logging in the game is to have; a saved game state without
+a version number — a state loaded silently from before a change of the game's shape means errors
+that cannot be diagnosed.
 
 ### D-08 — Where does the game run?
 
@@ -225,10 +272,12 @@ key can only start a rebuild of a commit that belongs to that branch.
   - complies: a workflow that, on a push, calls the server's one rebuild command with the commit
   - violates: a workflow that copies the built files onto the server; a key that opens a shell on
     the server
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Wdrożenie"
+- **Origin:** none
 
 *Rationale:* the code is sent nowhere — the server takes it from GitHub itself — so a stolen key can
-start a rebuild but cannot bring code in. The price is a short break in access at every deployment.
+start a rebuild but cannot bring code in: the key is shut into one command that checks that the
+requested commit belongs to the branch. The price is a short break in access at every deployment, a
+dozen or so seconds.
 *Rejected:* none considered
 
 ### D-10 — How do players reach loop2 on the server?
@@ -260,11 +309,12 @@ that contains it.
   change with the decision:
   - complies: a workflow that runs on a push to `main` and asks the server to rebuild the pushed commit, a newer push replacing a deployment still waiting to run
   - violates: a workflow that deploys only from a separate `test` branch; a push to `main` that waits for someone to start its deployment by hand
-- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Która gałąź wdraża loop2 na serwer?"
+- **Origin:** none
 
 *Rationale:* every merged pull request reaches the test server with no manual step, and no second
 branch can drift from `main`. A newer push that replaces a deployment still waiting to run loses
-nothing, since its commit contains the older one.
+nothing, since its commit contains the older one. A separate deployment step with a test
+environment of its own may be added later.
 *Rejected:* a separate `test` branch, as the old loop game deploys — a manual step at every
 deployment and a risk of drifting from `main`.
 
@@ -279,12 +329,12 @@ change on the server that is not a deployment started by the automation is made 
 - **Verification:** an agent compares the change with the decision:
   - complies: a deployment skill in which the agent reads the deploy log and the container state through the `mikrus` MCP server and asks the human to run a rollback
   - violates: an instruction of the skill in which the agent installs the deploy script, edits `authorized_keys` or restarts a container through the `mikrus` MCP server; an SSH key of the agent's own on the server
-- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Jaki dostęp do serwera dostaje agent?"
+- **Origin:** none
 
-*Rationale:* Until public account launch, the test server is intended to hold only the owner's account, so reading through a tool that can run any command remains accepted; the agent reads logs and state itself instead of the human relaying them. An outsider who discovers the public address can nevertheless register, and the read-only limit protects that account only by agreement. The `mikrus` MCP server runs
+*Rationale:* Until public account launch, the test server is intended to hold only the owner's account, so reading through a tool that can run any command remains accepted; the agent reads logs and state itself instead of the human relaying them. The server holds nothing whose loss the owner fears, the container of the old loop game beside it included, so for now the work goes freely; the access needs further securing later. An outsider who discovers the public address can nevertheless register, and the read-only limit protects that account only by agreement. The `mikrus` MCP server runs
 every command with full rights, so the limit to reading is an agreement, not an enforced boundary.
 A deployment the automation starts on a push is no agent's change.
-*Rejected:* a separate SSH key for the agent, closed in a read-only script — more setup than the
+*Rejected:* for now, a separate SSH key for the agent, closed in a read-only script — more setup than the
 server's present contents warrant; no agent access to the server — the human relays every log and
 state.
 
@@ -314,7 +364,7 @@ The loop2 container is a Docker container.
 - **Verification:** an agent compares the change with the decision:
   - complies: a Compose file and a Dockerfile from which Docker builds and runs the loop2 container
   - violates: loop2 run as a service directly on the host, or in a container of another runtime
-- **Origin:** serwer_testowy_loop2.md in the vault (Notes/Projects/(P) Loop), § Questions to settle, "Czy kontener loop2 jest kontenerem Dockera?"
+- **Origin:** none
 
 *Rationale:* the host already runs Docker with Compose, and the old loop game runs there in a Docker
 container, so loop2 is run with the tool the host is already operated with.
@@ -405,10 +455,14 @@ change of data alone.
   change of data alone adds, an agent compares the change with the decision:
   - complies: a new creature added as a row of the creatures' data, which the simulation reads
   - violates: a wolf's damage written as a number in the combat code
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D10, §7 and principle #4
+- **Origin:** none
 
 *Rationale:* content in data makes a new item, game map or creature cheap, lets the content grow
-by rules rather than by code, and keeps names and look swappable, which a world of one's own needs.
+by rules rather than by code, and keeps names and look swappable, which a world of one's own needs:
+systems, objects, recipes and lore texts stand in data files, not in code, so swapping the skin or
+the names is cheap, which matters for the author's own intellectual property. A game map is a row of
+data, and each further map is meant to teach a further mechanic or set a challenge that the means
+so far do not close.
 *Rejected:* none considered
 
 ### D-19 — How does the player interact with the drawing of the game map?
@@ -429,17 +483,26 @@ character's tile, never on the drawing.
     marks the tile, while the tab „Teren” of the area under the world on the screen of a map run is
     picked (D-311)
   - violates: a click on a tile that sends the character there or changes the program
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Co pokazuje panel terenu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Decisions in play
+- **Origin:** none
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
 character's tile against numbers the list shows, and the list keeps the stock of every resource of
 a tile readable where numbers written into the tiles would not be; hovering ties a tile to its
-numbers without writing them on it. The list stands under a tab of the area under the world, which
-may show the chronicle instead, so the line under the drawing keeps the numbers beside the program
-while the player writes.
+numbers without writing them on it. The drawing shows a resource as an icon with no number, dimmed
+at stock zero, and only draws what it is given. The list stands under a tab of the area under the
+world, which may show the chronicle instead, so the line under the drawing keeps the numbers beside
+the program while the player writes. That area stands under the world, with the drawing of the map
+and the line of a tile above it, so the program keeps the wider column and the open panel of a rule
+takes no room from the tabs. Accepted with it: in a low window, such as 1280 × 720 px, the area
+begins below the lower edge of the window and has to be scrolled to.
 *Rejected:* the grid drawn without the list and its numbers — the player would write that condition
 without seeing the number it compares; numbers written into the tiles — unreadable where a tile
-holds several resources.
+holds several resources (four in the first game map); the area of the list and the
+chronicle under the program in a joined column — its place would depend on the length of the
+program, so with several rule groups it would slide far down and jump whenever the player opens the
+panel of a rule or folds a group; the list and the chronicle as tabs at the top of a joined column,
+"Program | Kronika | Teren" — the program and the chronicle are read together when the player checks
+why the character did what it did, and they would not be seen at once.
 
 ### D-20 — What interrupts the character's action in progress?
 
@@ -449,12 +512,13 @@ An attack interrupts the character's action still in progress, and that action i
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: action-in-progress
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Gdzie i kiedy gracz zmienia program i od kiedy zmiana działa?"
+- **Origin:** none
 
-*Rationale:* editing a program leaves the work already begun intact, while an attack makes the character respond to the creature instead; the program as it stands at each next choice controls that response. Losing the interrupted work makes an attack matter even when the character survives it.
+*Rationale:* editing a program leaves the work already begun intact, while an attack makes the character respond to the creature instead; the program as it stands at each next choice controls that response. Losing the interrupted work makes an attack matter even when the character survives it. A change of the program, or a condition of another rule that comes true, interrupts nothing — not even a long action such as an exploration — so the program, an attack apart, chooses a rule only after the action in progress ends, and a changed program works from the next free game minute of the map run in progress.
 *Rejected:* a change of the program allowed only outside a map run — every fix to the program
-would need the map run ended; a change of the program taking effect only from a map run restart —
-two versions of the program in force at once.
+would need the map run ended, and a map's solving condition that counts a streak without a change of
+program assumes changes during the map run; a change of the program taking effect only from a map
+run restart — two versions of the program in force at once.
 
 ### D-21 — How does time pass in a map run the player starts?
 
@@ -474,21 +538,27 @@ until „Wznów”.
   - violates: a map run the player can hold still only by ending it; a pace picked during a pause
     resuming the map run; a control that takes a map run straight to its result or back to an
     earlier game minute
-- **Origin:** mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions to settle", "Jak płynie czas przejścia — w jakim tempie i czy gracz może go zatrzymać?" · for the pace of loop at 1×: mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Context", "Tempo jednej minuty gry na sekundę realną pochodzi z danych loop" · in loop's repository, not loop2's: the data file `src/sim/data/balance.ts`, `gameMinutesPerRealSecond: 1` · rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "2. Czy cykl tego zadania zmienia decyzję D-21 i niezmiennik `player-map-run-pace`, które dziś trzymają przejście na jednej minucie gry na sekundę realną?", "3. Jakie tempa przewijania gracz wybiera i gdzie stoi przełącznik tempa?" and "13. Co robi wybranie tempa w czasie pauzy — także w zatrzymaniu przy odkryciu?" · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D22 · the part on a manual map run: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How fast does the earning loop go?"
+- **Origin:** none
 
-*Rationale:* solving a map is a puzzle the player may fast-forward: at one game minute per real
-second, the pace at which the predecessor game, loop, runs at 1×, each attempt at the 480 game
-minutes of Las takes eight real minutes, and at 16× half a real minute. Fast-forwarding is a faster
-pace of the same game minutes, which pass one after another in sight, so the player still watches
-the program act. A pause holds a map run without ending it, and it stays an act of its own, so a pace
-picked in a pause leaves the map run standing. Accepted with it: at 16× the screen moves on several
-game minutes at each refresh; real time passes in a hidden browser tab too, so a map run at 16× left
+*Rationale:* solving a map is a puzzle the player may fast-forward, while earning is income and goes
+by the clock of the world, so the control of the pace reaches only the map runs the player starts: at
+one game minute per real second, the pace at which the predecessor game, loop, runs at 1× (its
+balance data gives one game minute per real second at the multiplier 1×), each attempt at the 480
+game minutes of Las takes eight real minutes, and at 16× half a real minute. Fast-forwarding is a
+faster pace of the same game minutes, which pass one after another in sight, so the player still
+watches the program act. The paces stand as five buttons beside the pause, the chosen one marked as
+any chosen button of a group; the paces between 1× and 16× are a proposal, not taken from the
+predecessor game. A pause holds a map run without ending it, and it stays an act of its own, so a
+pace picked in a pause leaves the map run standing. Accepted with it: at 16× the screen moves on
+about three game minutes (3.2) at each refresh, which the clock makes every 200 ms; real time passes in a hidden browser tab too, so a map run at 16× left
 in a hidden tab passes the whole of Las unseen, its end included; a player who picks a pace in a
 pause sees nothing move until „Wznów”.
 *Rejected:* the same pace with no pause; a jump of a map run to its result, and a way back to an
 earlier game minute — the player would no longer watch the program act; picking a pace in a pause
 resuming the map run — the pace and the pause would stop being two acts; the pace buttons shown
-inactive during a pause — the player could not set the pace before going on.
+inactive during a pause — the player could not set the pace before going on; one pace control for
+solving and for earning — the passivity of the earning loop goes, and with it its point, since the
+player could fast-forward a day and take the wage.
 
 ### D-22 — Where does the simulation's randomness come from?
 
@@ -513,15 +583,22 @@ does.
   - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
     from the generator of the game map's layout; an earning loop that draws each map run's seed
     afresh; gathering that draws from the generator of attacks
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D19 and §9 "Losowania akcji dzielą strumień z losowaniem napaści" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Where does the simulation's randomness come from?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10, § Questions carried to cycle, second question, and § Settlements to record, row 9
+- **Origin:** none
 
 *Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
 run can be repeated when something has to be understood, and tests of the simulation can expect
-exact values. With a generator for each kind of draw, two programs on one seed meet attacks in the
+exact values. A restart takes the same seed for a fair comparison of two programs, and a change
+of the map takes a new one. With a generator for each kind of draw, two programs on one seed meet attacks in the
 same game minutes, so a difference between them is a difference of programs rather than of luck. The
 catch-up stands on it: without the seed it would invent a new course instead of computing the one that
-would have happened. Draws in combat, when they come, stay repeatable. The first map run of an
-earning loop has no map run to draw from, so it starts as a send does.
+would have happened, and the cheapness of the catch-up rests on that repeatability. Chance decides
+when an attack comes and the program decides how it ends, so combat itself is fully predictable; rolls — a
+chance to hit, a dodge, armour, resistances — are meant to enter it, since fully deterministic
+combat soon turns stiff and chances are a simple axis of progress, and the seed lets a map run keep
+both the rolls and its repeatability. Draws in combat, when they come, stay repeatable. The first map
+run of an earning loop has no map run to draw from, so it starts as a send does — the first map run
+of an earning loop in the old loop game also takes its seed from a real random draw. The draws that
+fix the map's layout at the start of a map run happen in a fixed order, which is a contract.
 *Rejected:* the browser's own random numbers in the simulation — repeatability goes, and with it the
 meaning of the count of firings a program rule shows; one generator for every kind of draw — two
 programs on one seed meet attacks in different game minutes, and splitting it once the maps are
@@ -553,17 +630,23 @@ campfire — the simulation chooses, not the program.
   - violates: a text field taking a condition as an expression; a kind of condition added to the
     closed list that takes a formula as text; a button that makes the character eat now; a rule
     group inside a rule group; a program rule naming which stick to burn
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D14, D15 and D9 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character act by its program?"
+- **Origin:** none
 
 *Rationale:* the game is the writing of behaviour, so carrying out a character's action by hand
 would get round its own core. Priorities with threshold sliders are decoration: different settings
-end a game map identically, since only the order of the character's actions counts. A rule group
-gives what a flat list cannot — two conditions joined — so two strategies for two depths of one
-crisis can be written, and a rule group that passes on keeps an empty one from stopping the
-character.
+end a game map identically, since only the order of the character's actions counts — in the old
+loop game, with a victory condition added, seven different settings of the sliders ended a map with
+the same time and the same health. The fear that a full program would turn the game into work
+proved the reverse: it was the model of thresholds that gave the player nothing to decide. A rule group gives what a flat list cannot — two conditions joined, since the condition of a
+rule is single — so two strategies for two depths of one crisis can be written ("when very cold —
+save yourself with anything" above "when chilly — build the cycle"), and a rule group that passes
+on keeps an empty one from stopping the character. A rule group is also the natural place for rules
+of a situation such as combat. The choice of a particular item belongs to the simulation, not to the
+player, and the conditions are chosen from a list, never written as expressions.
 *Rejected:* priorities with threshold sliders — decoration; conditions written as expressions — the
-player starts writing queries instead of arranging behaviour; a separate editor for combat — a
-second mechanism for the same thing; nested rule groups — one level is enough.
+player starts writing queries instead of arranging behaviour; a separate editor or tab for combat —
+rule groups do the same, so it would be a second mechanism for the same thing; nested rule groups —
+one level is enough.
 
 ### D-24 — What is a game map made of?
 
@@ -582,17 +665,23 @@ map sets.
   - complies: a new game map added as a row of the game maps' data, with its dimensions and
     resources; Las with a fixed entrance, Las — głębiej with a drawn one
   - violates: a game map with a hand-placed layout; a game map of square tiles
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D32, D17 and §5 "Mapa jest siatką sześciokątnych kafelków" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "What is a map made of?"
+- **Origin:** none
 
 *Rationale:* six neighbours at an equal distance make a move always mean the same. A resource that
 runs out makes wandering matter; without it a program finds one good tile and the rest of the map
-run looks as before. New challenges come from the map's settings alone — dimensions, densities,
-stocks, renewal, cost of a move. The first map has a fixed entrance because its first map run is a
-tutorial. Accepted with it: a random layout widens the spread between seeds.
+run looks as before. An empty time of renewal makes a resource finite, which is a kind of challenge
+for the program of its own. A map that leaves a resource off its list makes whoever needs it bring
+it. New challenges come from the map's settings alone — dimensions, densities, stocks, renewal,
+cost of a move — without a line of code. A game map is a row of data and a difficulty level that the
+solving of the previous map opens. The first map has a fixed entrance
+because its first map run is a tutorial. Accepted with it: a random layout widens the spread
+between seeds, so sweeping over many seeds becomes the only fair measure of a program, and every
+pinned number of the balance shifts at once.
 *Rejected:* a random layout without a fixed frame — difficulty cannot be steered; a fixed layout per
 game map — exploring loses its sense after the first map run; square tiles — four directions make a
-diagonal two moves, eight give it for free; the presence of a resource without a stock — cheaper,
-but tests nothing.
+diagonal two moves, eight give it for free, so the map is smaller than it looks; the presence of a
+resource without a stock — cheaper, but tests nothing, since it is the mechanic of running out that
+is at stake.
 
 ### D-25 — How does a character move?
 
@@ -611,13 +700,17 @@ only from a revealed tile, as much as lies on it.
     program choosing again; a gathering on a revealed tile holding one stick taking that stick
   - violates: a journey stored as a route; exploring that brings a stick; a gathering on a tile not
     yet revealed; a gathering that takes a stick from a revealed tile holding none
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D33 and §5 "Postać stoi na jednym kafelku" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a character move?"
+- **Origin:** none
 
-*Rationale:* the character reacts to the world between moves, and the state grows by nothing but
-the position and the target of the current move. Exploring that brought an item would be gathering
-in disguise.
-*Rejected:* travel as a state with a stored route — the program has no say on the way; exploring
-that brings an item.
+*Rationale:* the character reacts to the world between moves, an attack interrupts a move like any
+action, and the state grows by nothing but the position and the target of the current move. A move
+toward a farther target takes as long as a step to the neighbouring tile, and while the target is
+farther and the condition holds, the same rule fires again. Exploring gives knowledge, not an item:
+one that brought an item would be gathering in disguise, and exploring a revealed tile again would
+grind practice.
+*Rejected:* travel as a state with a stored route — the program has no say on the way, against the
+principle that the program decides every action; exploring that brings an item — "always → explore"
+would be gathering in disguise.
 
 ### D-26 — How does a program point at things of the world?
 
@@ -639,7 +732,7 @@ only that tile.
   - violates: a program rule naming "tile 7"; "Go — stick" sending the character off the known tile
     with sticks it stands on toward another one; a program rule naming "campfire 2"; a second
     campfire made on a tile that has one; a campfire warming a character on a neighbouring tile
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D34 · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does a program point at things of the world?"
+- **Origin:** none
 
 *Rationale:* the layout of a game map differs on every seed, and campfires arise in a different
 order on every seed, so a number given to a tile or a campfire means nothing that lasts, while "the
@@ -647,7 +740,9 @@ nearest" means the same on every map run. Where nothing of the kind is known, or
 already stands on such a thing, the nearest one is nowhere to go to; the program then passes over
 the program rule and picks a later one, as it does for any action of the character that cannot be
 carried out. A second campfire on one tile warms nothing above the ceiling of warmth and spoils the
-reading of the conditions about the fire.
+reading of the conditions about the fire. There may be several campfires, one to a tile, each warming
+only where it stands; "nearest" is the one reference that means the same on every map run. Accepted
+with it: a program cannot be written to go to that farther one.
 *Rejected:* numbering tiles in program rules — a program is written before the map run, and the
 layout is drawn at its start; numbering the campfires in program rules — a program is written before
 the map run, and the campfires arise during it.
@@ -671,20 +766,22 @@ say how the icon file differs from its source.
     and in the folded section of the login card
   - violates: an icon file placed straight in the directory the server serves; an icon drawn from
     an emoji, or loaded from another site while the game runs
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Grafika" · mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions carried to cycle", "Skąd biorą się ikony zasobów i czynności" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-27
+- **Origin:** none
 
 *Rationale:* game-icons.net holds a large set of game icons drawn in one style, under a licence that
 allows their use in the game on condition of credit, so one source keeps the game's icons alike as
-the game grows. An icon file comes from outside the product and is untrusted: holding nothing that
+the game grows. The game takes graphics from outside packs under licences that allow commercial use,
+keeps their sources outside the directory the server serves and shows the credits that the licences
+require in the game's footer. An icon file comes from outside the product and is untrusted: holding nothing that
 runs and reaching nothing outside itself, a changed file cannot act in the player's page. Sources
 kept apart from what the server serves leave the build to decide what reaches the player. The
 icons are changed to sit on the game's tiles, and the licence asks whoever distributes a changed
 work to include the licence or its address, to credit the work's original author, its title where
 one is supplied and the address the licensor gives for it, and to identify the use of the work in
 the changed work. game-icons.net supplies a title for each icon on its page. Saying how each icon
-file differs from its source goes beyond what the licence asks: it is the product's own choice. A
-list of credits takes more room than the login card can give, and folded it stays one click away,
-which keeps what the licence asks.
+file differs from its source goes beyond what the licence asks: it is the product's own choice. With
+dozens of icons a list of credits takes more room than the login card can give, and folded it stays
+one click away, which keeps what the licence asks.
 *Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
 thing costs drawing work; an icon package from npm — a dependency more for files the product can
 keep itself, entering through what the product already treats as untrusted.
