@@ -22,7 +22,7 @@ bez odstępstw zgodnie z D-38.
 | `control-border` | other | To da się kliknąć albo wpisać. | — | D-40 |
 | `selected` | other | To jest wybrane w swojej grupie. | — | D-40 |
 | `condition-unmet` | other | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu. | — | D-40 |
-| `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci i na ikonach rysunku mapy, choć obok nich nie ma tekstu. | — | D-40 |
+| `text-strong` | text | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga i na ikonach rysunku mapy, choć obok nich nie ma tekstu. | — | D-40 |
 | `text` | text | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem. | — | D-40 |
 | `text-secondary` | text | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”. | — | D-40 |
 | `text-label` | text | Nazwa pola albo sekcji, albo data. | — | D-40 |
@@ -110,7 +110,7 @@ minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
 w `assets/icons/`. Ikona z `assets/icons/` jest rysowana jednym sposobem,
 maską: obok tekstu bierze kolor tego tekstu, więc szarzeje razem z wyszarzoną
 komórką i zmiana `text-strong` dochodzi do niej sama, a tam, gdzie obok niej nie
-ma tekstu — nad głową postaci i na rysunku mapy — stoi w `text-strong` (D-43).
+ma tekstu — nad głową postaci, na plakietce ikony lecącej do maga i na rysunku mapy — stoi w `text-strong` (D-43).
 
 Czcionki interfejsu to Geist i Geist Mono z plików produktu (D-46): tekst gry
 idzie stosem Geist, kronika i zegar przejścia stosem Geist Mono.
@@ -630,7 +630,7 @@ schyleniem, na którym mag staje pod ustawieniem ograniczenia ruchu.
 Koniec zbierania pokazuje efekt zwykłego zdarzenia, najwyżej 300 ms, bez tekstu (D-317).
 Gdy do plecaka przybyła sztuka, z rekwizytu, a przy włóknie spod stóp maga, leci łukiem do jego
 tułowia ikona zasobu z danych gry, ta sama co na rysunku mapy, na małej plakietce w tle `panel`,
-jak plakietka nad głową; ikona trzyma kolor w swoim pliku (D-365, D-43). Gdy „Zbierz” chybi,
+jak plakietka nad głową; ikona jest maską w `text-strong`, jak ikona nad głową, choć obok niej nie ma tekstu (D-365, D-40, D-43). Gdy „Zbierz” chybi,
 przy rekwizycie, a przy włóknie pod stopami maga, staje obłok kurzu z paczki Smoke & Fire
 Animated Particle [16x16], przekolorowany na brązy sceny, które odróżniają się od gruntu, na
 którym stoi (D-366, D-271). Lot i kurz biegną w CSS z `src/browser/styles.css`, każdy 300 ms, kurz
