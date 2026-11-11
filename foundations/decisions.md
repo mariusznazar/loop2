@@ -1544,9 +1544,9 @@ Loop2 adopts the testing-guideline template of its pinned the-way in full, with 
 - **Based on:** none
 - **Relations:** none
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4
+- **Origin:** none
 
-*Rationale:* A common discipline makes the choice of a useful test and an independent expected value reviewable without prescribing proportions of test levels.
+*Rationale:* A common discipline makes the choice of a useful test and an independent expected value reviewable without prescribing proportions of test levels. The version of the template is that of the pinned the-way, named with no commit number, so the discipline follows the pin as the coding-guideline discipline of D-28 and the styleguide discipline of D-38 do. Where the template's default does not fit loop2, the departure is a decision of its own with its reason, as the decisions the binding sentence names give them, and the rest of the template's rules stand as it gives them, the wording accepted for loop2 standing in the testing guidelines. Weak point: every departure ages if nobody checks its condition of return when a change reaches its area.
 *Rejected:* Guidelines treated only as suggestions — leave each author to choose which obligations hold.
 
 ### D-74 — When are tests on generated inputs considered?
@@ -1557,10 +1557,10 @@ Tests on generated inputs are considered only when the task author names a game 
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4b and Q4g
+- **Origin:** none
 
-*Rationale:* The complexity of the game and the risk being protected justify generated inputs; the ability to generate them alone does not.
-*Rejected:* Adding property tests whenever a universal statement can be made — adds dependencies and maintenance without an established need; returning when needed without a stated condition — leaves the choice unconstrained.
+*Rationale:* The complexity of the game and the risk being protected justify generated inputs; the ability to generate them alone does not. The template recommends a test of a property wherever a sentence holds for all inputs; loop2 departs from that recommendation because of the scope of adopting the guidelines and the present complexity of the game, and the departure does not leave the behaviours of the game out of testing: it only sets when this kind of test is weighed. Cost accepted: the author's justification and the reviewer's assessment stand in place of tests added automatically, and the automatic search for unusual cases waits for a justified need. Gain: a smaller scope and no dependency, configuration or tests to maintain beyond what the game's complexity needs now. Naming no library leaves the task that shows the need free to choose its tool and to settle the cost of upkeep.
+*Rejected:* Adding property tests whenever a universal statement can be made — adds dependencies and maintenance without an established need; adding the property-test library, new tests on generated inputs and extra fixed runs together with the guidelines — more than the present complexity of the game needs, and it turns adopting the guidelines into making tests for everything; returning when needed without a stated condition — shorter, but leaves the choice unconstrained and leaves an agent free to decide.
 
 ### D-75 — When are complete player journeys tested in a real browser?
 
@@ -1570,9 +1570,9 @@ Permanent tests of complete player journeys in a real browser are deferred, and 
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10c
+- **Origin:** none
 
-*Rationale:* Manual checks keep the initial testing discipline proportionate to the game, at the cost of evidence of one run rather than permanent protection against recurrence.
+*Rationale:* Manual checks keep the initial testing discipline proportionate to the game, at the cost of evidence of one run rather than permanent protection against recurrence. Automation would give repeatable protection at once, but it needs a new environment and the upkeep of its tests. The template recommends a test of every critical journey in a real browser; this is a departure from that recommendation, justified by the scope of adopting the guidelines and the present complexity of the game. It leaves the duty of refusal tests on trust boundaries as it is, and it gives no leave to remove an existing test without the reason the rules for changing a test require.
 *Rejected:* Automating every critical journey at once — adds a browser environment and test maintenance before their cost is justified.
 
 ### D-76 — When do fonts and the preview server gain refusal tests?
@@ -1583,10 +1583,10 @@ Permanent refusal tests for font files and the local interface preview server ar
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q6c and Q6g · logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row S5
+- **Origin:** none
 
-*Rationale:* Keeping the guideline work bounded leaves these boundaries dependent on review, which can miss a defect; absence of a test proves neither refusal nor a vulnerability. A change that leaves the principle of a boundary as it was gives a refusal test nothing new to refuse, at the cost of the server staying without a permanent test.
-*Rejected:* Adding both refusal tests with the guidelines — expands the work and requires a choice of font verification; every change of a file of the boundary ending the exception — a refusal test in tasks that change no principle, against the human's answer that they bring no test files, and a change of the project's plan; new files of the boundary ending it, and a change of the build not — the same costs.
+*Rationale:* The departure is temporary and limits the rule that every trust boundary of the part map has a written refusal rule and at least one permanent test checking it directly. Neither boundary has such a test: the fonts are chosen by name and copied byte for byte with no check against the release they come from, and the preview server is a local one over the directory of the built page, while the existing test of that page's build expressly leaves its serving out of its scope; an audit of the tests found no direct refusal test for either. The template allows a departure through a justified decision of the product; this is not its exception for a boundary that is only the configuration of a service owned by another. Keeping the guideline work bounded leaves these boundaries dependent on review until the departure ends, which can miss a defect; the lack of a test stays explicit, and absence of a test proves neither refusal nor a vulnerability. Their refusals are written as invariants checked by review of changes — font files come only from the release of the Geist font repository named in D-46, and the preview server serves only its own directory and only on the developer's machine — so that the rule on trust boundaries names their refusal; the first task changing a boundary moves its invariant to a test. A change that leaves the principle of a boundary as it was gives a refusal test nothing new to refuse, at the cost of the server staying without a permanent test. The departure stands beside the rule on trust boundaries, not in the general section of behaviours deliberately left untested, and the departure for the sprite files (D-273) refers to this reading of what ends it.
+*Rejected:* Adding both refusal tests with the guidelines — expands the work by two cases and requires a choice of font verification; no invariants for these two boundaries and an exception written into the rule — shorter, but the rule on trust boundaries would not name their refusal; every change of a file of the boundary ending the exception — a refusal test in tasks that change no principle, against the human's answer that they bring no test files, and a change of the project's plan; new files of the boundary ending it, and a change of the build not — the same costs.
 
 ### D-77 — How are tests selected and limited as a whole?
 
@@ -1611,9 +1611,9 @@ A new or changed test case has a name describing its behaviour and condition, an
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5k
+- **Origin:** none
 
-*Rationale:* Named variants keep one behaviour readable without duplicating its preparation; combining unrelated behaviours obscures the cause of a failure.
+*Rationale:* Named variants keep one behaviour readable without duplicating its preparation; combining unrelated behaviours obscures the cause of a failure. This departs from the template's default of no logic in a test, which a test walking a list of crafted inputs, as an integration test of the public server does, would otherwise break. Cost: different behaviours have to be kept apart and the variants named; one large scenario saves preparation but makes the cause of a failure hard to point to. It refines how a case is shaped and does not order every existing test to be rewritten.
 *Rejected:* No logic at all in a test — excludes readable tables of crafted inputs; one large scenario for unrelated behaviours — obscures which behaviour failed.
 
 ### D-79 — How is the npm registry response contract checked?
@@ -1624,10 +1624,10 @@ The npm registry has no separate contract test: the real dependency audit in the
 - **Based on:** none
 - **Relations:** narrows D-73 · derives from D-33
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q4n
+- **Origin:** none
 
-*Rationale:* The real operation checks the format without a second check of the same agreement; a controlled response proves only the reaction to that response.
-*Rejected:* A separate registry contract test — adds maintenance without further protection.
+*Rationale:* The real operation checks the format without a second check of the same agreement; a controlled response proves only the reaction to that response. The npm registry in the dependency audit is the only service of another party that the tested code of loop2 talks to, so the template's row on code talking to such a service meets it only there: the tests of the audit substitute its result, while the gate runs the real audit, where an unreadable response of the registry ends in failure, and that run is taken as the check of the format.
+*Rejected:* A separate registry contract test — adds a test and its maintenance without further protection.
 
 ### D-80 — What establishes a game-balance expectation?
 
@@ -1637,10 +1637,10 @@ A test of a game parameter, such as survival time, progress rate or map difficul
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q3
+- **Origin:** none
 
-*Rationale:* Protecting agreed relationships and limits avoids preserving an accidental balance as a requirement; without an agreed difficulty the tests cannot judge whether a map is too easy or hard.
-*Rejected:* Freezing the current simulation outcome — treats present behaviour as the intended balance.
+*Rationale:* Protecting agreed relationships and limits avoids preserving an accidental balance as a requirement; without an agreed difficulty the tests cannot judge whether a map is too easy or hard. The price is named: as long as the intended difficulty is not settled, no test says that Las is too easy or too hard. An expected survival time, rate of progress or map difficulty becomes a requirement of a test only once it is agreed. The decision rests on the intended balance having no settled source and no settled place where it is written.
+*Rejected:* Freezing the current simulation outcome, such as today's survival time on Las, in a test — treats present behaviour as the intended balance.
 
 ### D-81 — At which levels do loop2 tests stand?
 
@@ -1650,10 +1650,10 @@ Loop2 tests stand at three levels: unit test and integration test as defined in 
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5e-Q5g and Q5n
+- **Origin:** none
 
-*Rationale:* The levels distinguish calculations from real connections and packaging, so a missing environment names which evidence is absent.
-*Rejected:* A separate unit test for every function — ties tests to code decomposition; treating imports as an application startup — leaves packaging and entry points untested.
+*Rationale:* The levels distinguish calculations from real connections and packaging, so a missing environment names which evidence is absent. A unit test executes the rules of the simulation or the logic that prepares a view in memory, with no real network, no reading or writing of data in files, no process and no browser; importing a built module is not an operation on test data in files, and a unit test may cover several functions together when that is the smallest fragment that shows the error. It is a fast and exact check of a rule, but proves nothing about files, the server or the screen. An integration test checks a concrete operation or connection on real files, local HTTP or processes, scripts among them, and the check of repository files by scripts belongs here too; it costs the preparation and cleanup of resources, and it can find a wrong path, command or response of the server. The test of starting the finished application as a whole belongs to the smoke level. A smoke test is a short check that building, configuration and start fit together, without proof of the whole game; it costs building and starting a process or container, and a separate name lets one say what was not checked when the container environment does not work. The tests of views that use a hand-made document model check only the logic modelled, not clicks, focus or look in a real browser, and the division does not present them as end-to-end tests; D-88 settles that exclusion. The glossary gets entries for unit test, which in loop2 may span several functions, and for integration test, which includes scripts that check repository files, each defined by the resources it may use; smoke test means the same as in the field and gets none.
+*Rejected:* A separate unit test for every function — more mechanical, but ties tests to code decomposition; treating imports as an application startup — leaves packaging and entry points untested; substituting every response in a test of an operation on files, HTTP or processes — cheaper, but gives no proof of a wrong path, command or server response; a glossary entry for each of the three names — consistent, at the cost of an entry nobody needs.
 
 ### D-82 — Which product documents supply test expectations?
 
@@ -1678,9 +1678,9 @@ Tests keep Node and Python, their existing directories, and the names `*.test.mj
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** invariants: node-test-selection
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5a and Q5r
+- **Origin:** none
 
-*Rationale:* Keeping the conventions avoids moving tests without changing their protection, while explicit inclusion checks prevent a new file being silently omitted.
+*Rationale:* Keeping the conventions avoids moving tests without changing their protection, while explicit inclusion checks prevent a new file being silently omitted. The command that runs the Node tests names some test files one by one and otherwise selects only some of the test directories, so a file placed elsewhere would silently not run. Cost: the current rules of finding files have to be watched, and one small test guards the inclusion; a migration would unify the layout, but it would need moves and coverage checks with no change in the behaviour of the game.
 *Rejected:* Migrating the tools and directories for uniformity — requires movement and coverage checks without a change to game behaviour; inclusion by review alone — depends on a reviewer noticing an omitted file.
 
 ### D-84 — Which real mechanisms do new or changed tests exercise?
@@ -1691,10 +1691,10 @@ A new or changed simulation test supplies explicit state, elapsed time and seed 
 - **Based on:** none
 - **Relations:** derives from D-73 · derives from D-04 · derives from D-22
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5b-Q5d and Q7
+- **Origin:** none
 
-*Rationale:* Real mechanisms reveal failures that their substitutes hide, while explicit time and readiness keep a run independent of computer speed; preparation and cleanup cost more than fixed sleeps.
-*Rejected:* A substitute for the mechanism whose failure is being tested — cannot demonstrate that failure; sleeping a fixed span as proof of readiness — depends on machine speed.
+*Rationale:* Real mechanisms reveal failures that their substitutes hide, while explicit time and readiness keep a run independent of computer speed; preparation and cleanup cost more than fixed sleeps. A seed is a number that fixes a repeatable sequence of draws; the repeatability it gives does not replace an independent expectation. The recipe uses D-04 and D-22 and no new library. A controlled response in place of a dependency serves to check the reaction to a forced error and is no proof that the replaced operation works; substituted responses alone are easier to control, but may hide damage to the real connection. A test waits for a specific signal or condition, with a limit of time and handling of an error, and does not assume that the passing of a fixed pause means readiness; checking a condition periodically is allowed. A fixed pause is simpler, but on a slower computer it may be too short, and on a faster one it wastes time; real waiting for game minutes is simpler to write, but it slows the test and ties its result to the moment of its running. The rules fix no concrete limits and do not order the existing helpers rebuilt in the work of adopting the guidelines: the HTTP helper limits idleness, not the whole request, and the wait for the server to start has no limit, so the helper takes these rules at its next change.
+*Rejected:* A substitute for the mechanism whose failure is being tested — cannot demonstrate that failure; waiting real minutes for the passing of game time — simpler to write, but slows the test and ties its result to the moment of its running; sleeping a fixed span as proof of readiness — depends on machine speed, too short on a slower computer and a waste of time on a faster one.
 
 ### D-85 — Which cases are the exemplars of the test levels?
 
@@ -1704,10 +1704,10 @@ The unit exemplar is the case "the count of a hand-made backpack is the pieces o
 - **Based on:** none
 - **Relations:** derives from D-81
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q5h-Q5j
+- **Origin:** none
 
-*Rationale:* Selected cases show useful patterns without treating every neighbouring case or helper as approved practice; their limits remain part of the selection.
-*Rejected:* New examples covering every rule at once — add test work; rules without examples — leave later authors no concrete model.
+*Rationale:* Selected cases show useful patterns without treating every neighbouring case or helper as approved practice; their limits remain part of the selection. The unit exemplar states the content of the backpack in the test and expects the sums 15, 7 and 0; the requirement of counting pieces together comes from D-64 and the expectations from arithmetic, with no call of a product function on the expected side. Its gain is a model of readable data and an independent result. The integration exemplar sends real requests that try to leave the public directory and checks the refusal and the absence of the files' content; its gain is a model of checking the visible effect of a real request instead of a call of a function. The selection does not approve the whole file of that case or its helpers as a model of limits and cleanup: the HTTP helper limits idleness, not the whole operation, and the wait for listening has no limit; the expected refusal and its invariant are settled by D-86, and the choice adds no repair of the helpers to any work. The smoke exemplar checks a normal start, forces an occupied port and requires an error without a report of readiness, then checks the normal start again; its gain is the control that the refusal comes from the forced problem and not from an application that does not start at all, and it rests on the invariant account-server-occupied-address. It is a model of the control of a start and a refusal, not proof of the full handling of HTTP, the working of the container or the game. Existing cases were chosen after comparing the existing tests and their helpers, without rewriting tests; cost: an example needs upkeep with the guidelines, and its limits must not be stretched to a whole file.
+*Rejected:* New examples covering every rule at once — a new exemplar would show the whole set of rules in one place, but it adds test work and more tests to the task; rules without examples — leave later authors no concrete model and make the rules harder to apply.
 
 ### D-86 — Which files may a visitor obtain from the public server?
 
@@ -1717,9 +1717,9 @@ Every visitor may retrieve the built game's files from its public directory and 
 - **Based on:** none
 - **Relations:** derives from D-05
 - **Verification:** invariants: public-file-access
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q6b and Q6f
+- **Origin:** none
 
-*Rationale:* A public game requires no account to fetch its assets, while the public directory bounds what the server exposes.
+*Rationale:* A public game requires no account to fetch its assets, while the public directory bounds what the server exposes. The refusal is described as a status 400, 403 or 404 with neither the content of the file nor a substitute page of the game, which is what the existing test of the server checks. The permission is written out as a rule, with an invariant that the existing test serves as evidence for, because a test alone does not tell a later author which decision justifies the refusal; the cost is an entry and the upkeep of its link with the test. The decision adds no mechanism of logging in and opens no new function of HTTP.
 *Rejected:* Keeping the permission only implicit in a test — leaves later authors without the rule that justifies refusal.
 
 ### D-87 — When are whole-screen pixel comparisons used?
@@ -1730,9 +1730,9 @@ Whole screens are not preserved by pixel-by-pixel image comparison, while agreed
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10b
+- **Origin:** none
 
-*Rationale:* Avoiding whole-screen references saves maintenance and judgement of intended differences, while leaving some visual differences for a person to catch.
+*Rationale:* Avoiding whole-screen references saves maintenance and judgement of intended differences, while leaving some visual differences for a person to catch. Image comparisons could catch such differences automatically, but they need reference images to keep and a judgement of each intended difference. The exclusion leaves the safety of external icons and fonts as it is, and it gives no leave to remove an existing test without the reason the rules for changing a test require.
 *Rejected:* Whole-screen comparisons without a demonstrated need — require reference images and repeated judgement of deliberate changes.
 
 ### D-88 — How are real browser events, focus and SVG checked?
@@ -1743,9 +1743,9 @@ Real browser events, focus and SVG rendering are checked manually after a change
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10d · logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czym zastąpić ręczny model dokumentu w testach ekranów przechodzących na React?”
+- **Origin:** none
 
-*Rationale:* A document model or a ready-made imitation provides quick logic checks but cannot establish the browser's behaviour; until automation is justified a person catches event and focus defects.
+*Rationale:* A document model or a ready-made imitation provides quick logic checks but cannot establish the browser's behaviour; until automation is justified a person catches event and focus defects. The tests of views on a hand-made document model do not check real events, focus or the drawing of SVG. The deferral of player-journey tests in D-75 covers only whole player journeys, so this exclusion stands separately from it. Weak point: until automation is justified, only a person catches a defect of an event or of focus. Screens built with React lose the hand-made document model in their tests and take a ready-made imitation of the document in its place; the exclusion covers that imitation as it covers the model.
 *Rejected:* Treating a document model or a ready-made imitation as real-browser evidence — claims protection neither can give.
 
 ### D-89 — Who revisits a deliberate testing exclusion?
@@ -1756,9 +1756,9 @@ For a change touching a category deliberately left without tests, its author and
 - **Based on:** none
 - **Relations:** derives from D-73 · derives from D-75 · derives from D-87 · derives from D-88
 - **Verification:** none
-- **Origin:** przewodnik_testow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q10a-Q10d
+- **Origin:** none
 
-*Rationale:* An exclusion can outlive its reason unless the changes that reach it revisit that reason.
+*Rationale:* An exclusion can outlive its reason unless the changes that reach it revisit that reason. Besides the categories the binding sentence names, a category deliberately left without a test is code that only passes or copies data and decides nothing: it has no separate permanent test, and the return is to a test once a rule, a transformation or an error appears in it; testing every such fragment would add upkeep and might duplicate the test of the behaviour that uses it, and the cost is that nothing gives a separate signal about the fragment. None of these exclusions covers a trust boundary, and none gives leave to remove an existing test without the reason the rules for changing a test require.
 *Rejected:* Keeping exclusions without a check on relevant changes — lets a temporary trade-off become a permanent blind spot.
 
 ### D-90 — Where do the program rules of a program belong?
