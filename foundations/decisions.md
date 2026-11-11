@@ -5696,26 +5696,33 @@ open while the screens move to React.
 ### D-271 — Where do the scene's pictures come from?
 
 The scene's pictures and the picture of the game behind the login card are sprites of the pack
-Pixel Crawler, kept in `assets/sprites/` outside the directory the account and save server serves
-and copied into it when the application is built. A sprite file holds pixels alone, and the
-character of the scene is the pack's mage.
+Pixel Crawler, and the dust of a miss is a sprite of the pack Smoke & Fire Animated Particle
+[16x16] recoloured to the scene's colours, all kept in `assets/sprites/` outside the directory the
+account and save server serves and copied into it when the application is built. A sprite file holds
+pixels alone, the game credits each pack whose licence asks for a credit, and the character of the
+scene is the mage of Pixel Crawler.
 
 - **Scope:** browser-view · build-tools · deployment
-- **Based on:** pixel-crawler-terms
+- **Based on:** pixel-crawler-terms · smoke-fire-particle-licence · cc-by-3-adaptation-credit
 - **Relations:** none
-- **Verification:** invariants: sprite-file-content · loop2-container-sprites. An agent compares a
+- **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. An agent compares a
   change with the decision:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
     PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
-    the character of the scene drawn from a sprite file made from the pack's mage
+    the character of the scene drawn from a sprite file made from the pack's mage; the cloud of dust
+    a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
+    holds, with a credit line for the pack in the footer
   - violates: a picture placed straight in the directory the server serves; a sprite file in
-    another format, or a PNG file carrying text or metadata chunks; a picture drawn from another pack;
+    another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack other than the two named; the cloud of dust in a colour that
+    does not stand out from the ground it stands on; a pack whose licence asks for a credit, used
+    with no credit line in the game;
     the hooded figure of loop as the character of the scene
 - **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
   come from?” · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
-  item 2
+  item 2 · zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
+  items 2, 4 and 7, Questions to settle, questions 1 and 4
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
 fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
@@ -5723,8 +5730,16 @@ are ready. Kept apart from what the server serves, as the icons and
 the fonts are, a picture reaches the player only through the build; it comes from outside the
 product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
 credit and allow its arts to be altered, so a picture made from them may be dimmed and composed.
+The smoke of the pack Pixel Crawler is about as light as the ground and cannot be seen on it, and
+the pack Smoke & Fire Animated Particle holds a cloud that, recoloured to the browns of the scene,
+stands out from the ground; its licence asks for a credit, which the game gives. Accepted with it:
+credits for the pack of the dust, and frames of a bending mage made by hand or generated.
 *Rejected:* the hooded figure of loop — it is a rogue, though the game calls it a mage; generated
-pictures as the main way — frames drift apart; new packs — another palette and scale, new licences.
+pictures as the main way — frames drift apart; any other new pack — another palette and scale,
+new licences; for the dust of a miss: the smoke of Pixel Crawler — it cannot be seen on the
+ground; particles of single pixels in a brown that stands out from the ground — barely visible; a
+cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only at
+the request.
 
 ### D-272 — Where may a picture of the game stand?
 
@@ -6962,20 +6977,28 @@ the character's tile, left out of the project, would enter it, and the scene wou
 
 ### D-317 — How long do the scene's effects last?
 
-The scene follows the system's setting for reduced motion and shows no flash of its whole area.
+An effect of an ordinary event lasts at most 300 ms and shows no text at 8× and 16×, and an effect
+overdue when its turn comes is dropped. The scene follows the system's setting for reduced motion
+and shows no flash of its whole area.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: the scene under the system's setting for reduced motion keeping its frames still; an
-    effect of the scene that changes a part of its area
+    effect of the scene that changes a part of its area; the icon of a gathered resource flying to
+    the mage in 300 ms and the cloud of dust of a miss gone in 300 ms, with no text on either; an
+    effect of a reading that carries several ends of a gathering, as after a catch-up, left out
   - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
-    that moves under the system's setting for reduced motion as it does without it
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F2 and F5 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 5
+    that moves under the system's setting for reduced motion as it does without it; an effect of
+    an ordinary event that lasts 500 ms; a flying icon with a number beside it
+- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 5 and 8, Questions to settle, question 6 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F2 and F5 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 5
 
 *Rationale:* pictures scaled up can pass the area below which flashing is allowed, so no effect
-takes the whole area of the scene, and a player who asks the system for less motion gets less.
+takes the whole area of the scene, and a player who asks the system for less motion gets less. An
+effect of an ordinary event is a short sign of one event, so it fits the fastest pace, where the
+events follow one another within a second, and one whose turn has passed would show something
+that is no longer so.
 *Rejected:* none considered
 
 ### D-318 — Where does the mage go for each action?
@@ -8076,3 +8099,48 @@ An agent reads root's SSH configuration and the system-wide one on the server on
 
 *Rationale:* root's SSH configuration holds the login to Mikrus Strych, an access value kept outside the repository by D-13, and a number shows none of it. The count lets an agent that looks for the reason of a failed backup confirm the condition D-238 rests on. The limit of D-12 is an agreement, not an enforced boundary, so a slip in the command's switches would print lines with the login; the count is accepted with that risk.
 *Rejected:* a ban on every reading, the two options checked only by a human at the installation — it costs nothing, but the condition of D-238 is then checked only at a hand installation, and an agent seeking the reason of a failed backup cannot confirm it
+
+### D-362 — How does the mage show a gathering?
+
+While the mage gathers, with „Zbierz” or „Obchód”, fibre included, it bends in a loop through the whole action, from the moment it stands at the place of the action to its end, at the fixed beat of the scene's frames. Bending is a continuing occupation of the character, no effect of an ordinary event, so the limit of D-317 does not bind it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-316 · derives from D-317 · derives from D-319
+- **Verification:** an agent compares a change with the decision:
+  - complies: the mage at the sticks bending from the end of its walk to the end of „Zbierz — Patyk”, at the same beat at 1× and at 4×; the mage gathering fibre, which has no prop, bending where it stood; the mage of „Obchód” bending through its forty minutes
+  - violates: one bend of 300 ms at the end of each gathering; a mage that bends at „Zbierz” and stands at „Obchód”; a mage that stands in the frames of standing while it gathers fibre; a beat of the bend that follows the pace
+- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2 and 6, and § Settlements to record, row 1
+
+*Rationale:* the gathering is most of the time of a run, and a mage that stands through it leaves the scene with nothing to show for the longest action. Accepted with it: with „Obchód” the mage bends for forty game minutes though a patrol is a walk about the tile, and at 16× a gathering lasts 625 ms and the walk 640 ms, so the loop shows mostly from 1× to 4×.
+*Rejected:* the loop at „Zbierz” only — „Obchód” would look in the scene like waiting at the prop; one bend of at most 300 ms at the end of each gathering — at 1× the mage stands ten seconds with no motion, the gap the report of the reconnaissance names the largest, and at 16× the bend mostly comes while the mage still walks and is dropped
+
+### D-363 — What flies when something is gathered?
+
+When a gathering ends with a piece more in the backpack, the icon of the gathered resource, the one the game's data gives it and the drawing of the map shows, flies in an arc from the prop of the resource to the mage on a small plaque on a solid `panel` background, and vanishes at the mage. A resource with no prop sends it from under the mage's feet, and „Obchód” sends one icon for its whole result.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-316 · derives from D-317 · derives from D-320
+- **Verification:** an agent compares a change with the decision:
+  - complies: the icon of a stick on a plaque in `panel` flying from the sticks to the mage after a „Zbierz — Patyk” that put a stick into the backpack; one icon after an „Obchód” that brought seven pieces; the icon of fibre starting under the mage's feet
+  - violates: the icon straight on the picture of the forest with no plaque; an icon for a gathering that put no piece into the backpack; seven icons after one „Obchód”; a picture of the resource cut from a pack in place of the icon
+- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 2
+
+*Rationale:* the icon is the picture of the resource that the player knows from the map, and the plaque keeps it legible on the forest, as the badge over the head keeps the icon of an action. Nothing new enters the game's files for it.
+*Rejected:* the icon alone on the forest, with no plaque — it has its colour in its file and on a light ground it can vanish, for the reason D-320 puts the icon over the head on a plaque; a pixel picture of the resource from a pack in place of the icon — a new cut-out picture for each resource, the pack holds none of fibre, and leaving the words of the approved definition, „the icon flies”, is a change of the definition
+
+### D-364 — Where does the dust of a miss stand?
+
+When „Zbierz” ends with no piece more in the backpack, a cloud of dust stands at the prop of the resource, and where the resource has no prop, under the mage's feet.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-66 · derives from D-271 · derives from D-316 · derives from D-317
+- **Verification:** an agent compares a change with the decision:
+  - complies: a missed „Zbierz — Patyk” leaving a cloud of dust at the sticks; a missed „Zbierz — Włókno” leaving one under the mage's feet
+  - violates: dust at a „Zbierz” that put a piece into the backpack; dust over the mage's head, where the badge stands; no sign of a miss in the scene
+- **Origin:** zbieranie_jako_widowisko_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 3
+
+*Rationale:* a miss leaves the stock of the tile and the backpack as they were, and the dust shows it where the hand reached for the prop, so that the player sees the gathering fail and not only the numbers stand still. Under the feet the dust stands for the fibre, which has no prop.
+*Rejected:* particles of single pixels in a brown that stands out from the ground — barely visible in the preview, and more or larger particles are still weak; a cloud drawn by hand from the pixels of Pixel Crawler in the colours of the scene — hand pixel work whose look is seen only at the request; the cloud of smoke of the campfire of Pixel Crawler — the files showed it about as light as the ground and covering at most 36 in 255, so it cannot be seen on the scene, and the pack holds no cloud; dust drawn by CSS alone — a new colour value in the token file and a departure from D-271

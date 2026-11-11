@@ -765,6 +765,12 @@ The GitHub repository `mariusznazar/screenshots` is public.
 
 - **Source:** https://api.github.com/repos/mariusznazar/screenshots (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-11) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-11
 
+## smoke-fire-particle-licence
+
+The page of the pack Smoke & Fire Animated Particle [16x16] on OpenGameArt gives KnoblePersona as its author and CC-BY 3.0 as its licence, the name of the licence linking to the Creative Commons Attribution 3.0 licence at http://creativecommons.org/licenses/by/3.0/.
+
+- **Source:** https://opengameart.org/content/smoke-fire-animated-particle-16x16 (archived: https://web.archive.org/web/20260929142553/https://opengameart.org/content/smoke-fire-animated-particle-16x16, 2026-09-29) § author — "KnoblePersona" · § License(s) — "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/; read 2026-11-11
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

@@ -198,6 +198,7 @@ map — which the tests of every part may import and code that is no test may no
 | game-icons.net | them → us | untrusted |
 | github.com/vercel/geist-font | them → us | untrusted |
 | the Pixel Crawler pack of Anokolisa | them → us | untrusted |
+| the pack Smoke & Fire Animated Particle [16x16] of KnoblePersona | them → us | untrusted |
 | Mikrus Outsider | both | untrusted |
 | Mikrus Strych | both | untrusted |
 | the `pusher` service of Mikrus | both | untrusted |
