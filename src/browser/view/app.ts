@@ -23,7 +23,6 @@ import {
   type ConfirmationNotice,
   type PageAddress,
 } from "./email-confirmation.js";
-import { createFooter } from "./footer.js";
 import {
   createGameView,
   type GameEntry,
@@ -115,12 +114,12 @@ function createPageNotice(sentence: string): HTMLElement {
 }
 
 /**
- * Builds the page in `root`: the header with the menu bar, the place of the screen, and the footer.
+ * Builds the page in `root`: the header with the menu bar and the place of the screen.
  * The page first asks the server whom this browser is signed in as and shows only that it is
  * asking; once the server names an account, it goes on asking for the account's saved game state,
  * and only that answer builds the game: a new game where there is none, else the game the load
  * gives. The login card comes only once the server says there is no session, and while it stands
- * nothing else does: it stands in `root` beside those three, which are hidden (D-262). Any other
+ * nothing else does: it stands in `root` beside those two, which are hidden (D-262). Any other
  * answer is a warning with „Spróbuj ponownie”, which repeats both requests, never a guess, and so
  * is a load that meets an error of the code: it builds no game, so nothing is saved. The menu bar
  * (D-280) holds the game's name alone while no game stands, and over the game the items and the menu
@@ -170,8 +169,6 @@ export function startApp(
 
   const main = document.createElement("main");
   main.className = "app-main";
-
-  const footer = createFooter();
 
   // The session check: what the page says while it asks, and the warning with its retry.
   const check = document.createElement("section");
@@ -264,7 +261,6 @@ export function startApp(
     card = null;
     header.hidden = false;
     main.hidden = false;
-    footer.hidden = false;
     main.replaceChildren(...screen);
   }
 
@@ -290,7 +286,6 @@ export function startApp(
     });
     header.hidden = true;
     main.hidden = true;
-    footer.hidden = true;
     root.append(card.element);
   }
 
@@ -612,6 +607,6 @@ export function startApp(
     await checkSession();
   }
 
-  root.append(header, main, footer);
+  root.append(header, main);
   void start();
 }

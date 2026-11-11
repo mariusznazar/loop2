@@ -21,7 +21,7 @@ export type ActionDef = {
   combat?: { damage: number; item?: ItemId } | { reducesNextDamageBy: number };
   /** File name in assets/icons, without the extension: the icon the action shows wherever it stands. */
   icon: string;
-  /** Title of the icon, as its page on game-icons.net gives it; the footer's credit names it. */
+  /** Title of the icon, as its page on game-icons.net gives it; the section of credits names it. */
   iconTitle: string;
 };
 

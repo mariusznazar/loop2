@@ -632,7 +632,7 @@ header .failure-line {
 }
 
 /*
- * The screen of the login card, in the body in place of the header, the main and the footer, which
+ * The screen of the login card, in the body in place of the header and the main, which
  * are hidden while it stands (D-262): all the height left, with the card centred across and its
  * top edge fixed at 15 % of the window's height, so unfolding the credits, switching a tab and the
  * sentence appearing under a form move nothing above them. A card taller than the window makes the
@@ -717,8 +717,12 @@ header .failure-line {
   margin-top: var(--space-m);
 }
 
-/* The folded credits, last in the card and set off by a line: an addition in `text-secondary`. */
-.account-card details {
+/*
+ * The folded credits, last in the card and last on Siedziba, set off by a line: an addition in
+ * `text-secondary` (D-27).
+ */
+.account-card details,
+.headquarters details {
   margin-top: var(--space-l);
   padding-top: var(--space-m);
   border-top: var(--frame-width) solid var(--divider);
@@ -726,16 +730,19 @@ header .failure-line {
   color: var(--text-secondary);
 }
 
-.account-card summary {
+.account-card summary,
+.headquarters summary {
   cursor: pointer;
 }
 
-.account-card .credits {
+.account-card .credits,
+.headquarters .credits {
   margin-top: var(--space-s);
 }
 
-/* A row of the credits wraps in the card, so a gap tells one icon's row from the next. */
-.account-card .credits li + li {
+/* A row of the credits wraps, so a gap tells one icon's row from the next. */
+.account-card .credits li + li,
+.headquarters .credits li + li {
   margin-top: var(--space-xs);
 }
 
@@ -1956,18 +1963,6 @@ header .failure-line {
 /* The line at the left edge of the hovered tile's row, the row's colours unchanged. */
 .tile-list tbody tr.hovered th {
   border-left-color: var(--link-highlight);
-}
-
-/* The footer stands as wide as the content above it, so its line and its text start where the content does. */
-footer {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 1344px;
-  margin: var(--space-xl) auto 0;
-  padding: var(--space-m) 0 var(--space-l);
-  border-top: var(--frame-width) solid var(--divider);
-  font-size: var(--font-size-detail);
-  color: var(--text-secondary);
 }
 
 .credits {

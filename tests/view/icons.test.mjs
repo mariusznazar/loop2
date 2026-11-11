@@ -133,39 +133,24 @@ test("each icon credit says how the file differs from its source, the one taken 
     assert.equal(credit.changes, changesOf(icon), icon);
 });
 
-/** A stand-in for the few DOM calls the footer makes: elements keep what is appended to them. */
-function fakeDocument() {
-  return {
-    createElement(tag) {
-      return {
-        tag,
-        children: [],
-        append(...items) {
-          this.children.push(...items);
-        },
-      };
-    },
-  };
-}
-const textOf = (node) =>
-  typeof node === "string"
-    ? node
-    : (node.textContent ?? node.children.map(textOf).join(""));
+// --- the folded credits: a React section, read as markup, which needs no document ---------------
 
-async function builtFooter() {
-  const { createFooter, footerCredits } =
-    await import("../../dist/browser/view/footer.js");
-  const saved = globalThis.document;
-  globalThis.document = fakeDocument();
-  try {
-    return {
-      items: createFooter().children[0].children,
-      credits: footerCredits(),
-    };
-  } finally {
-    globalThis.document = saved;
-  }
-}
+/** The section as markup; no `document` stands, as the section needs none. */
+const sectionMarkup = () => renderToStaticMarkup(createElement(CreditsSection));
+
+/** The text of a piece of markup: its tags dropped, its entities left as written. */
+const textOfMarkup = (markup) => markup.replace(/<[^>]*>/g, "");
+
+/** The `<li>` elements of the section's markup. */
+const itemsOf = (markup) =>
+  [...markup.matchAll(/<li>(.*?)<\/li>/g)].map((match) => match[1]);
+
+/** The links of one credit: their attribute text and their text. */
+const linksOf = (item) =>
+  [...item.matchAll(/<a ([^>]*)>(.*?)<\/a>/g)].map((match) => ({
+    attributes: match[1],
+    text: match[2],
+  }));
 
 /** Each icon's title as its page on game-icons.net gives it (environment facts game-icons-*-title). */
 const TITLES = {
@@ -189,7 +174,7 @@ const TITLES = {
 };
 
 /**
- * The icons of the actions, one line each in the footer, after the campfire's: named by the actions
+ * The icons of the actions, one line each in the section, after the campfire's: named by the actions
  * that show the icon, in the order of the data (actions.ts).
  */
 const ACTION_ICONS = [
@@ -207,7 +192,7 @@ const ACTION_ICONS = [
 ];
 
 /**
- * Everything the data gives an icon, in the footer's order: the resources, the campfire, the
+ * Everything the data gives an icon, in the section's order: the resources, the campfire, the
  * extinguished campfire, the actions.
  */
 const NAMED = [
@@ -217,50 +202,35 @@ const NAMED = [
   ...ACTION_ICONS,
 ];
 
-test("each footer line names the icon by its title on game-icons.net and says after the licence that it was changed", async () => {
-  const { items, credits } = await builtFooter();
-  assert.ok(credits.length > 0);
-  assert.equal(items.length, NAMED.length);
-  assert.equal(items.length, credits.length);
-  items.forEach((item, i) => {
-    const credit = credits[i];
-    const title = TITLES[NAMED[i].icon];
-    assert.ok(title, NAMED[i].icon);
-    assert.equal(
-      textOf(item),
-      `${NAMED[i].name}: „${title}”, ${credit.author}, game-icons.net, CC BY 3.0, ${changesOf(NAMED[i].icon)}`,
-    );
-  });
-});
-
-test("the footer credits the campfire's icon, by Lorc, after the four resources' icons", async () => {
-  const { items } = await builtFooter();
+test("the section credits the campfire's icon, by Lorc, after the four resources' icons", () => {
+  const items = itemsOf(sectionMarkup());
   assert.equal(items.length, NAMED.length);
   assert.equal(
-    textOf(items[4]),
+    textOfMarkup(items[4]),
     "ognisko: „Campfire icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
   );
-  const links = items[4].children.filter((node) => typeof node !== "string");
-  assert.equal(links[0].href, "https://game-icons.net/1x1/lorc/campfire.html");
+  assert.match(
+    linksOf(items[4])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/lorc\/campfire\.html"/,
+  );
 });
 
-test("the footer credits the extinguished campfire's icon, by Delapouite, right after the campfire's", async () => {
-  const { items } = await builtFooter();
+test("the section credits the extinguished campfire's icon, by Delapouite, right after the campfire's", () => {
+  const items = itemsOf(sectionMarkup());
   assert.equal(
-    textOf(items[5]),
+    textOfMarkup(items[5]),
     "ognisko wygasłe: „Wood Pile icon”, Delapouite, game-icons.net, CC BY 3.0, zmienione (zmieniony kolor)",
   );
-  const links = items[5].children.filter((node) => typeof node !== "string");
-  assert.equal(
-    links[0].href,
-    "https://game-icons.net/1x1/delapouite/wood-pile.html",
+  assert.match(
+    linksOf(items[5])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/delapouite\/wood-pile\.html"/,
   );
 });
 
-test("the footer credits the actions' icons after the two campfires', one line each, in the order of the data", async () => {
-  const { items } = await builtFooter();
+test("the section credits the actions' icons after the two campfires', one line each, in the order of the data", () => {
+  const items = itemsOf(sectionMarkup());
   assert.deepEqual(
-    items.slice(6).map((item) => textOf(item).split(":")[0]),
+    items.slice(6).map((item) => textOfMarkup(item).split(":")[0]),
     ACTION_ICONS.map((action) => action.name),
   );
 });
@@ -273,18 +243,6 @@ test("the campfire's data names the icon file campfire.svg and its title on game
 test("the extinguished campfire's data names the icon file wood-pile.svg and its title on game-icons.net", () => {
   assert.equal(CAMPFIRE.extinguished.icon, "wood-pile");
   assert.equal(CAMPFIRE.extinguished.iconTitle, "Wood Pile icon");
-});
-
-test("the footer links open in a new tab, without opener or referrer", async () => {
-  const { items } = await builtFooter();
-  for (const item of items) {
-    const links = item.children.filter((node) => typeof node !== "string");
-    assert.equal(links.length, 2);
-    for (const link of links) {
-      assert.equal(link.target, "_blank", link.href);
-      assert.equal(link.rel, "noopener noreferrer", link.href);
-    }
-  }
 });
 
 test("each icon the data names, the campfire's included, exists as a file", () => {
@@ -316,18 +274,6 @@ test("each icon file has a credit with an author and the source commit", () => {
     assert.ok(ICON_CREDITS[name.replace(/\.svg$/, "")], name);
 });
 
-// --- the folded credits: a React section, read as markup, which needs no document ---------------
-
-/** The section as markup; no `document` stands, as the section needs none. */
-const sectionMarkup = () => renderToStaticMarkup(createElement(CreditsSection));
-
-/** The text of a piece of markup: its tags dropped, its entities left as written. */
-const textOfMarkup = (markup) => markup.replace(/<[^>]*>/g, "");
-
-/** The `<li>` elements of the section's markup. */
-const itemsOf = (markup) =>
-  [...markup.matchAll(/<li>(.*?)<\/li>/g)].map((match) => match[1]);
-
 test("the section is a folded details whose summary reads Autorzy grafiki, with no state", () => {
   assert.equal(globalThis.document, undefined);
   const markup = sectionMarkup();
@@ -339,7 +285,7 @@ test("the section is a folded details whose summary reads Autorzy grafiki, with 
   assert.doesNotMatch(markup, /\son[a-z]+=|<script/i, "no script");
 });
 
-test("each line of the section is the footer's line: the icon's title, author, game-icons.net, CC BY 3.0 and the change", () => {
+test("each line of the section holds the icon's title, author, game-icons.net, CC BY 3.0 and the change, for the icon of each credit", () => {
   const items = itemsOf(sectionMarkup());
   assert.equal(items.length, NAMED.length);
   items.forEach((item, i) => {
